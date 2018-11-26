@@ -1,0 +1,24 @@
+= render 'resultado_consulta'
+= form_tag search_admin_materia_rubro_relacions_path, remote: true, html: { method: :post, class: 'filter', autocomplete: :off } do
+  .row
+    .col-lg-3.col-12.mt-2
+      .row
+        .col-12
+          = label_tag :materia, t(:materia_sustancia), class: "string"
+        .col-12     
+          = text_field_tag :materia, nil, placeholder: 'Ingrese el nombre de la materia a buscar...', class: 'form-control'
+    .col-lg-3.col-12.mt-2
+      .row
+        .col-12
+          = label_tag :ciiu, t(:ciiu), class: "string"
+        .col-12
+          = text_field_tag :ciiu, nil, placeholder: 'Ingrese el nombre de la actividad economica a buscar...', class: 'form-control'
+    .col-lg-3.col-12.mt-2
+      .row
+        .col-12
+          = label_tag :propiedad, t(:propiedad), class: "string"
+        .col-12
+          = text_field_tag :propiedad, nil, placeholder: 'Ingrese el nombre de la propiedad a buscar...', class: 'form-control'
+    .col-lg-2.col-12.mt-2.d-flex.align-items-end
+      = button_tag "Buscar", 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Buscando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-sm btn-block btn-disabled"# float-right", disabled: :disabled
+%br

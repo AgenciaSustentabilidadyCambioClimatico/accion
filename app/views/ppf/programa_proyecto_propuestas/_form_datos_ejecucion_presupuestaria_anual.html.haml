@@ -1,0 +1,108 @@
+:javascript
+	$(document).ready(function() {
+		$('.parent-checkbox').on('click', function() {
+			ancestorBlock=$(this).parent();
+			childGroup=ancestorBlock.children('.group-hide');
+			childControl=ancestorBlock.children('i[class^="fa fa-chevron-"]');
+			__show_hide_(childGroup,childControl);
+		});
+		theChosenOne();
+		htmlErrorToTooltip('top');
+	});
+
+	function theChosenOne() {
+		$('.chosen-control').chosen({
+			allow_single_deselect: true,
+			no_results_text: 'No se encontraron resultados',
+			width: '100%'
+		});
+	}
+
+	$(document).on('nested:fieldAdded', function(event){
+		initDateTimePicker();
+		iniciarAutoNumeric();
+		theChosenOne();
+	});
+		
+:css
+	.year { width: 80px; }
+	.fecha-transferencia { width: 150px; }
+	.centro-de-costos select.form-control:not([size]):not([multiple]) { height: 2.05rem }
+	.montos-transferidos, .montos-ejecutados { width: 170px; }
+	table tr td div input { height: 1.88rem }
+- titulo t(:datos_ejecución_presupuestaria_anual)
+= simple_nested_form_for @programa_proyecto_propuesta, url: guardar_datos_ejecucion_presupuestaria_anual_ppf_tarea_pendiente_programa_proyecto_propuesta_path, method: :patch, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-md-5.col-12
+			.card.m-0{class: ('has-error' if f.object.errors.messages.has_key?(:proyecto_con_atencion_directa_a_beneficiarios))}
+				.card-header.pt-1.pb-1.pl-3
+					.row.pr-2
+						.col-9
+							%h5.no-margin.float-left
+								%abbr{title: :required} *
+								= t(:proyecto_con_atención_directa_a_beneficiarios)
+						.col-3.bg-white.text-center
+							.form-group.boolean.required.programa_proyecto_propuesta_proyecto_proyecto_con_atencion_directa_a_beneficiarios.mb-0
+								.radio-buttons
+									= f.collection_radio_buttons :proyecto_con_atencion_directa_a_beneficiarios, [[true, t(:yes)] ,[false, t(:no)]], :first, :last #, item_wrapper_class: "form-check"
+							- if f.object.errors.messages.has_key?(:proyecto_con_atencion_directa_a_beneficiarios)
+								%span.help-block
+									= f.object.errors.messages[:proyecto_con_atencion_directa_a_beneficiarios].first				
+		.col-md-7.col-12.mt-3.mt-sm-0
+			#checkbox-tree-selector-actividades-economicas.mb-3
+				.card.m-0{class: ('has-error' if f.object.errors.messages.has_key?(:sectores_economicos))}
+					.card-header.pt-1.pb-1.pl-3
+						%h5.no-margin.float-left
+							%abbr{title: :required} *
+							= t(:elegir_sectores_económicos)
+						.float-right
+							%i.fa.fa-chevron-right
+					.card-body.p-0.group-hide.required
+						= f.input "sectores_economicos[0]", as: :hidden, wrapper: false, input_html: { value: nil }
+						= selector_de_actividades_economicas(@actecos_checked,:programa_proyecto_propuesta)
+						- if f.object.errors.messages.has_key?(:sectores_economicos)
+							%span.help-block
+								= f.object.errors.messages[:sectores_economicos].first
+	.row.mt-1	
+		.col-12
+			.row
+				.col-12
+					.form-group
+						.card.mb-0
+							.card-header.pt-2.pb-1
+								%h5.no-margin.float-left
+									%abbr{:title => "required"} *
+									= t(:datos_de_ejecución_presupuestaria)
+								= f.link_to_add :ejecucion_presupuestarias, data: { target: "#ejecucion-presupuestarias" }, class: 'float-right' do
+									%i.fa.fa-plus-circle
+							.card-body.p-0
+								.table-responsive-sm
+									%table#ejecucion-presupuestarias.table.table-striped.mb-0
+										%thead
+											%tr
+												%th.year=t(:año)
+												%th.fecha-transferencia=t(:fecha_transferencia)
+												%th.centro-de-costos=t(:centro_de_costo)
+												%th.montos-transferidos=t(:montos_transferidos)
+												%th.montos-ejecutados=t(:montos_ejecutados)
+												%th.pr-2.pl-2.remove-cell=t(:eliminar)
+										%tbody
+											= f.fields_for :ejecucion_presupuestarias, :wrapper => false  do |ep|
+												%tr.fields
+													%td.p-0.year
+														= ep.input :año, label: false, input_html: { class: 'm-0 required-field', value: @programa_proyecto_propuesta.fecha_inicio_legal_proyecto.try(:year) }, required: true, wrapper_class: 'm-0 p-0'
+													%td.p-0.fecha-transferencia
+														= ep.input :fecha_transferencia, as: :string, input_html: { class: 'basic-datetimepicker required required-field', value: ((ep.object.fecha_transferencia.blank?) ? nil : localize(ep.object.fecha_transferencia)), onkeydown: 'return false' }, label: false, wrapper_class: 'm-0 p-0'
+													%td.p-0.centro-de-costos
+														= ep.input :centro_de_costo_id, label: false, collection: CentroDeCosto.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'm-0 ep-centro-de-costo chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione un centro de costo' }, required: true, wrapper_class: 'm-0 p-0'
+													%td.p-0.montos-transferidos
+														= ep.input :montos_transferidos, label: false, as: :string, input_html: { class: 'moneda required-field' }, wrapper_class: 'm-0 p-0', required: true
+													%td.p-0.montos-ejecutados
+														= ep.input :montos_ejecutados, label: false, as: :string, input_html: { class: 'moneda required-field' }, wrapper_class: 'm-0 p-0', required: true
+													%td.remove-cell
+														= ep.link_to_remove do
+															%i.fa.fa-times-circle.left.link-to-remove-row
+
+	.float-right
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'guardar-revisor-button', class: "btn btn-primary btn-sm float-right ml-1"# btn-disabled", disabled: :disabled

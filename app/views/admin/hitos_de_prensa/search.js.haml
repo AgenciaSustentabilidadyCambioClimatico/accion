@@ -1,0 +1,8 @@
+- if @errors == true
+	$('#contribuyentes-remote-filter').html("#{j render 'filter_form'}");
+	htmlErrorToTooltip('top');
+- else
+	- @contribuyente = Contribuyente.new
+	$('#contribuyentes-remote-filter').html("#{j render 'filter_form'}");
+	$('#contribuyentes-remote-table').html("#{j render 'table'}");
+$('.loading-data').hide();

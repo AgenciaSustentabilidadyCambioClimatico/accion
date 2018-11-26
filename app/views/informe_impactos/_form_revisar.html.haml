@@ -1,0 +1,36 @@
+= simple_form_for(@informe_impacto, remote: true, url: dirigir_revision_manifestacion_de_interes_path(@tarea,:aceptar),authenticity_token: true) do |f|
+  .card
+    .card-header
+      %h5.no-margin=t(:revisar_informe_de_impactos)
+    .card-body
+      .row
+        .col-md-4.col-sm-12
+          = f.input :nombre_documento, disabled: :disabled, input_html: { disabled: :disabled }
+        .col-md-8.col-sm-12
+          = link_to @informe_impacto.documento.url, target: :_blank, class: 'btn btn-sm btn-primary margin-top-25 float-right' do
+            %i.fa.fa-download{title: @informe_impacto.nombre_documento}
+            = t(:descargar)
+        .col-12
+          = f.input :observacion, input_html: {class: 'required'}
+  .row
+    .col
+      .float-right
+        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+        = button_tag t(:aceptar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Aceptando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+        = link_to t(:rechazar), '#','data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Rechazando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-danger rechazar"
+  .row.pt-2
+    .col-sm-12
+      = render 'convocatorias/table_descargables'
+    
+:javascript
+  $(document).ready(function(){
+    $('.rechazar').on('click',function(){
+      observaciones = $('#informe_impacto_observacion').val();
+      $.ajax({
+        url: "#{dirigir_revision_manifestacion_de_interes_path(@tarea,:rechazar)}",
+        type: 'POST',
+        headers: { 'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')},
+        data: {observaciones: observaciones}
+      })
+    });
+  });

@@ -1,0 +1,39 @@
+:javascript
+  $(document).ready(function() {
+    $('table.establecimientos').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+  });
+%div.table-responsive
+  %table.table.establecimientos.table-striped
+    %thead
+      %tr
+        %th.rut=t(:rut)
+        %th.razon-social=t(:razón_social)
+        %th=t(:tamaño_institución)
+        %th=t(:nombre_de_establecimiento)
+        %th=t(:dirección)
+        %th=t(:comuna)
+        %th=t(:región)
+        %th=t(:tipo)
+        %th.dos.iconos-acciones=t(:acciones)
+    %tbody
+      - establecimientos.each do | establecimiento |
+        - i = establecimiento.contribuyente
+        %tr
+          %td= "#{i.rut}-#{i.dv}"
+          %td= i.razon_social
+          %td --
+          %td= establecimiento.nombre_de_establecimiento
+          %td= establecimiento.direccion
+          %td= establecimiento.comuna.nombre unless establecimiento.comuna.nil?
+          %td= establecimiento.region.nombre unless establecimiento.region.nil?
+          %td= establecimiento.tipo_de_establecimiento
+          %td.dos.iconos-acciones
+            = link_to edit_admin_establecimiento_path(establecimiento) do
+              %i.fa.fa-edit

@@ -1,0 +1,54 @@
+- datatable = datatable.nil? ? true : datatable
+- if datatable
+  :javascript
+    $(document).ready(function() {
+      $('table.acciones').DataTable({
+        responsive: true,
+        lengthMenu: [[30], [30]],
+        columnDefs: [ { targets: [-1], orderable: false } ],
+        language: {
+          url: "#{asset_path('spanish.json')}"
+        },
+      });
+    });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:acciones).downcase)
+  .card-body
+    .table-responsive
+      %table.table.acciones.table-striped
+        %thead
+          %tr
+            %th=t(:nombre)
+            %th=t(:descripción)
+            %th=t(:materia_sustancia)
+            %th=t(:meta_asociada)
+            %th=t(:medio_verificación)
+            %th=t(:acciones_relacionadas)
+            %th=t(:clasificaciones)
+            - if @tarea_pendiente.blank? # DZC 2018-10-29 09:55:55 se permite edición y borrado solo desde el mantenedor de metas y acciones
+              %th.dos.iconos-acciones=t(:acciones)
+
+        %tbody
+          -unless @acciones.blank? #DZC a menos que no haya acciones relacionadas...
+            - @acciones.each do |record|
+              -
+              - meta = record.meta.blank? ?  nil : record.meta
+              - clasificaciones = record.accion_clasificaciones
+              - acciones_relacionadas = record.accion_relacionadas.map{|a|a.accion}
+              %tr
+                %td=record.nombre
+                %td=record.descripcion
+                %td=record.debe_asociar_materia_sustancia == true ? t(:yes) : t(:no) 
+                %td=meta.blank? ? '--' : meta.nombre
+                %td=record.medio_de_verificacion_generico
+                %td=acciones_relacionadas.size==0 ? '--' : acciones_relacionadas.map{|m|m.nombre}.join(", ")
+                %td=clasificaciones.map{|m|m.clasificacion.nombre}.join(", ")
+                - if @tarea_pendiente.blank? # DZC 2018-10-29 09:55:55 se permite edición y borrado solo desde el mantenedor de metas y acciones
+                  %td.dos.iconos-acciones
+                    %div
+                      = link_to edit_admin_accion_path(record) do
+                        %i.fa.fa-edit
+                      = link_to admin_accion_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:accion).downcase), remote: false } do
+                        %i.fa.fa-trash

@@ -1,0 +1,245 @@
+:javascript
+	$(document).ready(function(){
+		$('.chosen-control').chosen({
+			allow_single_deselect: true,
+			no_results_text: 'No se encontraron resultados',
+			width: '100%'
+		});
+		$("#intitucion_cogestora").click(function(){
+			$('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, resultado_mostrados: 10}");
+			cogestor();
+		});
+		$("#intitucion_presentar").click(function(){
+			$('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, resultado_mostrados: 10}");
+			presentada();
+		});
+		function presentada(){
+			$('.seleccionar-contribuyente-button').off().on('click', function() {
+				ppp_iid = $("select#programa_proyecto_propuesta_institucion_a_la_cual_se_presentara_la_propuesta_id");
+				ppp_siid = $("select#programa_proyecto_propuesta_sucursal_institucion_a_la_cual_se_presentara_la_propuesta_id");
+				try {
+					data=JSON.parse($('.contribuyente-radio:checked').val());
+					$('#contribuyente-id-receptor').val(data.id);
+					ppp_iid.empty().append("<option value='"+data.id+"'>"+data.razon_social+"</option>");
+					if ( data.establecimientos.length > 0 ) {
+						ppp_siid.empty();
+						$.each(data.establecimientos,function(k,v){
+							ppp_siid.append("<option value='"+v[1]+"'>"+v[0]+"</option>");
+						});
+						ppp_siid.removeAttr('disabled')
+					}
+					checkFieldValidity($("input#programa_proyecto_propuesta_institucion_a_la_cual_se_presentara_la_propuesta_id"));
+				} catch(e) {
+					alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+				}
+			});
+		}
+		function cogestor(){
+			$('.seleccionar-contribuyente-button').off().on('click', function() {
+				try {
+					data=JSON.parse($('.contribuyente-radio:checked').val());
+					$("#programa_proyecto_propuesta_institucion_que_solicita_apoyo_id").val(data.id);
+					$("#programa_proyecto_propuesta_institucion_que_solicita_apoyo_id").change();
+				} catch(e) {
+					alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+				}
+			});				
+		}
+		//Permite que al seleccionar un usuario desde el modal se adjunte su información
+		$('.seleccionar-usuario-button').click(function() {
+			try {
+				data=JSON.parse($('.usuario-radio:checked').val());
+				$("#programa_proyecto_propuesta_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
+				$("#programa_proyecto_propuesta_representante_institucion_para_solicitud_id").val(data.id);
+				$("#programa_proyecto_propuesta_representante_institucion_para_solicitud_id").change();
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+	})
+#programa-proyecto-propuestaContent.tab-content
+	#tipo-de-propuesta.tab-pane.fade.disabled{"aria-expanded" => tabs[:"tipo-de-propuesta"], "aria-labelledby" => "tipo-de-propuesta-tab", :role => "tabpanel", class: ("show active" if tabs[:"tipo-de-propuesta"])}
+		.card
+			.card-body
+				.row
+					.col-lg-7.col-12
+						= f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, input_html: { class: 'auto-save required-field' }, required: true, disabled: @revisando
+					.col-lg-5.pl-lg-0.col-sm-12
+						= f.input :proponente, input_html: { class: 'required-field' }, readonly: true, required: true, disabled: @revisando
+					.col-12
+						= f.input :descripcion, as: :text, input_html: { class: 'auto-save required-field', rows: 4 }, label: t(:descripción), disabled: true
+	#datos-institucion.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"datos-institucion"] ? 'true' : 'false'), "aria-labelledby" => "datos-institucion-tab", :role => "tabpanel", class: ("show active" if tabs[:"datos-institucion"])}
+		.card
+			.card-body
+				.row
+					.col-lg-7.pr-lg-0.col-12
+						.row
+							.col-lg-2.pr-0.col-md-2.col-4
+								- unless @revisando
+									.form-group.integer.required.proveedor_contribuyente_id
+										%label.string.control-label.required
+											%abbr{title: :required}*
+											= t(:eligir_institucion)
+										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: "intitucion_cogestora" do
+											%i.fa.fa-search-plus
+											Buscar
+							.col-lg-0.col-md-10.col-8
+								= f.input :institucion_que_solicita_apoyo_id, as: :hidden, wrapper: false, input_html: { class: 'auto-save'}
+								%abbr{title: :required}*
+								= label_tag t(:nombre_institucion_apoyo), nil, class: 'no-form label string control-label disabled'
+								- nombre_contribuyente = f.object.contribuyente.nombre if f.object.contribuyente.present?
+								= text_field_tag :nombre_institucion, nombre_contribuyente, class: 'form-control disabled', disabled: true						
+						.row
+							.col-lg-4.pr-lg-0.col-12
+								= f.input :rut_institucion_que_solicita_apoyo, input_html: { class: 'auto-save required-field' }, label: t(:rut_institución_que_solicita_apoyo), required: true, disabled: true
+							.col-lg-8.col-12
+								= f.input :direccion_institucion_que_solicita_apoyo, input_html: { class: 'auto-save required-field' }, label: t(:dirección_institución_que_solicita_apoyo), required: true, disabled: true
+							.col-lg-7.pr-lg-0.col-12
+								= f.input :lugar_institucion_que_solicita_apoyo, input_html: { class: 'auto-save required-field' }, label: t(:lugar_institución_que_solicita_apoyo), required: true, disabled: true
+							.col-lg-5.col-12
+								= f.input :ubicacion_exacta_institucion_que_solicita_apoyo, input_html: { class: 'auto-save required-field' }, label: t(:ubicacion_exacta_institucion_que_solicita_apoyo), required: true, disabled: true
+							.col-12
+								= f.input :tipo_contribuyente_institucion_que_solicita_apoyo, input_html: { class: 'auto-save required-field chosen'}, label: t(:tipo_contribuyente_institucion_que_solicita_apoyo_id), required: true, disabled: true
+						.row
+							.pr-0.col-md-4.col-6
+								- unless @revisando
+									.form-group.integer.required.proveedor_contribuyente_id
+										%label.string.control-label.required
+											%abbr{title: :required}*
+											= t(:eligir_representante)
+										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-usuario", class: 'form-control btn btn-primary btn-sm', flujo_id: (@flujo.present? ? @flujo.id : nil) do
+											%i.fa.fa-search-plus
+											Buscar
+							.col-md-4.col-6
+								= f.input :representante_institucion_para_solicitud_id, collection: @representantes, input_html: { class: 'auto-save required-field' }, label: t(:nombre_representante_institucion), required: true, disabled: @revisando
+							.col-md-4.col-12
+								= f.input :rut_representante_institucion_para_solicitud, input_html: { class: 'auto-save required-field' }, label: t(:rut_representante_institucion), required: true, disabled: true
+						.row
+							.col-md-6.pr-md-0.col-12
+								= f.input :email_representante_institucion_para_solicitud, input_html: { class: 'auto-save required-field' }, label: t(:email_representante_institucion), required: true, disabled: true
+							.col-md-6.col-12
+								= f.input :telefono_representante_institucion_para_solicitud, input_html: { class: 'auto-save required-field' }, label: t(:teléfono_representante_institucion), required: true, disabled: true
+					.col-lg-5.col-12
+						%label
+						#mapa-institucion-que-solicita-apoyo
+	#objetivo-propuesta.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"objetivo-propuesta"] ? 'true' : 'false'), "aria-labelledby" => "objetivo-propuesta-tab", :role => "tabpanel", class: ("show active" if tabs[:"objetivo-propuesta"])}
+		.card
+			.card-body
+				.row
+					.col-12
+						= f.input :nombre_propuesta, input_html: { class: 'auto-save' }, label: t(:nombre_propuesta), required: true, disabled: @revisando
+					.col-md-6.pr-md-0.col-12
+						= f.input :motivacion_y_objetivos, as: :text, input_html: { class: 'auto-save' }, label: t(:motivación_y_objetivos), required: true, disabled: @revisando
+					.col-md-6.col-12
+						= f.input :equipo_de_trabajo_comprometido, as: :text, input_html: { class: 'auto-save' }, label: t(:equipo_de_trabajo_comprometido), required: true, disabled: @revisando
+					.col-lg-6.pr-lg-0.col-12
+						= f.input :instituciones_participantes_propuesta, as: :text, input_html: { class: 'auto-save' }, label: t(:instituciones_participantes_propuesta), required: true, disabled: @revisando
+					.col-lg-6.col-12
+						.row
+							.col-lg-12.col-md-4.col-12
+								= f.input :monto_aproximado_a_solicitar, as: :string, input_html: { class: 'moneda auto-save' }, label: t(:monto_aproximado_a_solicitar), required: true, disabled: @revisando
+							.col-lg-6.col-md-4.pr-md-0.col-12
+								= f.input :fecha_aproximada_postulacion, as: :string, input_html: { class: 'auto-save basic-datetimepicker required-field', value: ((f.object.fecha_aproximada_postulacion.blank?) ? nil : localize(f.object.fecha_aproximada_postulacion)), onkeydown: 'return false' }, label: t(:fecha_aproximada_postulacion), required: true, disabled: @revisando
+							.col-lg-6.col-md-4.col-12
+								= f.input :fecha_aproximada_decision, as: :string, input_html: { class: 'auto-save basic-datetimepicker required-field', value: ((f.object.fecha_aproximada_decision.blank?) ? nil : localize(f.object.fecha_aproximada_decision)) }, label: t(:fecha_aproximada_decision), required: true, disabled: @revisando
+					.col-12
+						= f.input :motivos_relevantes_para_postular, as: :text, input_html: { class: 'auto-save' }, label: t(:motivos_relevantes_para_postular), required: true, disabled: @revisando
+					.col-lg-1.col-12.pr-lg-1
+						- unless @revisando
+							= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'buscar-contribuyente btn-sm btn btn-block mt-lg-3', id: "intitucion_presentar" do
+								%i.fa.fa-search-plus.fa-2x
+					.col-lg-6.pl-lg-0.pr-lg-0.col-12
+						- instituciones = []
+						- institucion = Contribuyente.new
+						- unless @programa_proyecto_propuesta.institucion_a_la_cual_se_presentara_la_propuesta_id.blank?
+							- institucion = @programa_proyecto_propuesta.institucion_a_la_cual_se_presentara
+							- instituciones << [institucion.razon_social, institucion.id]
+						= f.input :institucion_a_la_cual_se_presentara_la_propuesta_id, label: t(:institucion_a_la_cual_se_presentara_la_propuesta_id), collection: instituciones, input_html: { class: 'auto-save required-field float-left', disabled: true}, required: true, prompt: "Seleccione una institución desde el buscador"
+						%i.fa.fa-times.deseleccionar-contribuyente
+						= f.input :institucion_a_la_cual_se_presentara_la_propuesta_id, wrapper: false, as: :hidden, input_html: { id: 'contribuyente-id-receptor', value: institucion.id}, disabled: @revisando
+					.col-lg-5.col-12
+						- sucursales = []
+						- disable = true
+						- unless institucion.blank? || institucion.id.blank?
+							- disable = false
+							- sucursales = institucion.establecimiento_contribuyentes.map{|s|["<label>#{s.direccion}</label> - #{s.casa_matriz ? 'Casa Matriz' : 'Sucursal' }".html_safe, s.id]}
+						= f.input :sucursal_institucion_a_la_cual_se_presentara_la_propuesta_id, label: t(:sucursal_institucion_a_la_cual_se_presentara_la_propuesta_id), collection: sucursales, input_html: { class: 'auto-save', disabled: @revisando ? true : disable }, include_blank: false
+					.col-lg-6.pr-lg-0.col-12
+						= f.input :instrumento_relacionado, collection: ProgramaProyectoPropuesta.instrumentos_relacionados_collection(f.object.id), input_html: { class: 'auto-save required-field chosen-control', "data-placeholder"=>"Seleccione una relación"}, label: t(:instrumentos_relacionados), required: true, disabled: @revisando, as: :grouped_select, group_method: :last, :selected =>"#{f.object.instrumento_relacionado_type}:#{f.object.instrumento_relacionado_id}"
+					.col-lg-6.col-12
+						= f.input :nombre_del_fondo_al_cual_se_esta_postulando, input_html: { class: 'auto-save' }, label: t(:nombre_del_fondo_al_cual_se_esta_postulando), required: true, disabled: @revisando
+					-#DZC Gino
+					- if @revisando
+						.col-lg-6.pr-0.col-12
+							= label_tag t(:documento_con_programa_proyecto_existente),nil, class: "string mb-0"
+							-#
+								= __descargar_archivo(f.object.documento_con_programa_proyecto_existente, :documento_con_programa_proyecto_existente, false)
+							= __descargar_archivo(f.object.documento_con_programa_proyecto_existente, f.object, false)
+					- else #los disabled: @revisando son legacy ya que en un requerimiento posterior se pidió agregar este if para descargar cuando se esté revisando
+						.col-lg-4.col-9
+							= f.input :documento_con_programa_proyecto_existente, as: :file, input_html: { class: 'form-control auto-save required-field' }, label: t(:documento_con_programa_proyecto_existente), required: true, disabled: @revisando
+							= f.hidden_field :documento_con_programa_proyecto_existente_cache, disabled: @revisando
+						.col-lg-1.col-3.align-self-end
+							-#
+								= __descargar_archivo(f.object.documento_con_programa_proyecto_existente, :documento_con_programa_proyecto_existente)
+							= __descargar_archivo(f.object.documento_con_programa_proyecto_existente, f.object)
+					-#DZC
+					.col-lg-6.col-12
+						= f.input :programa_proyecto_propuesta_base_id, collection: ProgramaProyectoPropuesta.ppp_base_vista, input_html: { class: 'auto-save required-field' }, label: t(:programa_proyecto_propuesta_base), required: false, disabled: @revisando
+	- if @revisando
+		- checks = tabs.reject{|l,v| l == :"revision-propuesta" || l == :"datos-institucion" && @programa_proyecto_propuesta.propuesto_ejecutado_por_agencia? }
+		#revision-propuesta.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"revision-propuesta"] ? 'true' : 'false'), "aria-labelledby" => "revision-propuesta-tab", :role => "tabpanel", class: ("show active" if tabs[:"revision-propuesta"])}
+			.card
+				.card-body
+					.row
+						.col-lg-6.col-md-4.pr-md-0.col-12
+							= f.input :resultado_de_la_revision, collection: ProgramaProyectoPropuesta.resultado_revisiones.keys.each_with_index.map { |w,k| [w.humanize, k]}, input_html: { class: 'required-field', rows: 4 }, label: t(:resultado_de_la_revisión), required: true
+						.col-lg-6.col-md-8.col-12
+							= f.label :secciones_observadas_revision, class: 'control-label' do
+								%abbr{title: :required} *
+								= t(:secciones_con_observaciones)
+							.form-control.secciones-observadas-revision-checkbox-group{class: ('has-error' if field_with_errors?(@programa_proyecto_propuesta, :secciones_observadas_revision))}
+								= f.collection_check_boxes :secciones_observadas_revision, checks.map{|k,v|[I18n.t(k.as_key),k.as_key]}, :last, :first, item_wrapper_tag: false, boolean_style: :inline, checked: @programa_proyecto_propuesta.secciones_observadas_revision do |cb|
+									.label-group
+										= cb.check_box 
+										= cb.label
+								- if field_with_errors?(@programa_proyecto_propuesta, :secciones_observadas_revision)
+									%span.help-block
+										= f.object.errors.messages[:secciones_observadas_revision].first
+						.col-lg-6.pr-lg-0.col-12
+							= f.input :comentario_al_asignar_revisor, as: :text, input_html: { class: 'required-field textarea-in-form-tab', rows: 4 }, label: t(:comentarios_jefe_de_línea), disabled: true
+						.col-lg-6.col-12
+							= f.input :actual_observaciones_y_comentarios_revision, as: :text, input_html: { class: 'required-field textarea-in-form-tab', rows: 4 }, label: t(:observaciones_y_comentarios), required: true
+						.col-md-6.pr-md-0.col-12
+							-#DZC Agregado por nosotros
+							= f.input :responsable_coordinacion_postulacion_y_seguimiento_id, collection: @programa_proyecto_propuesta.usuarios_para_lista(Rol::COORDINADOR), input_html: { class: 'required-field' }, label: t(:responsable_coordinación_postulación_y_seguimiento), required: true
+							-#DZC
+						- if @programa_proyecto_propuesta.tipo_instrumento_id == TipoInstrumento::PPP_PROPUESTOS_Y_EJECUTADOS_POR_AGENCIA || @programa_proyecto_propuesta.tipo_instrumento_id == TipoInstrumento::PPP_PROPUESTOS_AGENCIA_Y_EJECUTADOS_TERCEROS
+							.col-md-6.col-12
+								-#DZC Agregado por nosotros
+								= f.input :responsable_elaboracion_propuesta_y_seguimiento_id, collection: @programa_proyecto_propuesta.usuarios_para_lista(Rol::RESPONSABLE_ELABORACION_PROPUESTA), input_html: { class: 'required-field' }, label: t(:responsable_elaboración_propuesta_y_seguimiento), required: true
+								-#DZC
+						- if @programa_proyecto_propuesta.tipo_instrumento_id == TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS && @nuevo_usuario
+							.col-md-6.col-12.pt-2
+								= label_tag t(:alerta_nuevo_usuario), nil, class: 'no-form label string'
+									
+						- unless @programa_proyecto_propuesta.historia_respuesta_proponente_revision.blank?
+							.col-12
+								= render 'table_comentarios', data: @programa_proyecto_propuesta.historia_respuesta_proponente_revision, elementos: :respuesta_proponente
+	- if @resolviendo
+		#resolver-observaciones.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"resolver-observaciones"] ? 'true' : 'false'), "aria-labelledby" => "resolver-observaciones-tab", :role => "tabpanel", class: ("show active" if tabs[:"resolver-observaciones"])}
+			.card
+				.card-body
+					.row
+						.col-12
+							= f.input :actual_respuesta_proponente_revision, as: :text, input_html: { class: 'required-field textarea-in-form-tab', rows: 4 }, label: t(:respuesta_observaciones), required: true
+						.col-9
+							= f.input :documento_proponente_revision, as: :file, input_html: { class: 'required form-control required-field' }, label: t(:documento_adjunto)
+							= f.hidden_field :documento_proponente_revision_cache
+						.col-3.align-self-end
+							-#
+								= __descargar_archivo(f.object.documento_proponente_revision, :documento_proponente_revision)
+							= __descargar_archivo(f.object.documento_proponente_revision, f.object)
+						- unless @programa_proyecto_propuesta.historia_observaciones_y_comentarios_revision.blank?
+							.col-12
+								= render 'table_comentarios', data: @programa_proyecto_propuesta.historia_observaciones_y_comentarios_revision, elementos: :observaciones_y_comentarios

@@ -1,0 +1,49 @@
+.row.justify-content-center
+	.col-lg-12
+		.row
+			.col-12
+				.card
+					.card-body.table
+						.row
+							.col-12
+								%table#estandares-homologacion.table.table-striped.mb-0
+									%thead
+										%tr
+											%th= t(:estándar)
+											%th= t(:archivos_referencia)
+											%th= t(:acción)
+									%tbody
+										%tr
+											%td= @estandar.nombre
+											%td
+												- @estandar.referencias.each do |referencia|
+													= link_to referencia.url, download: ''  do
+														%i.fa.fa-download.p-1  #{referencia.file.filename}
+											%td.dos.iconos-acciones
+												= link_to edit_admin_estandar_homologacion_path(@estandar) do
+													%i.fa.fa-edit
+												-if current_user.is_admin?
+													= link_to admin_estandar_homologacion_path(@estandar), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:estándar)), remote: false } do
+														%i.fa.fa-trash
+						.row.mt-4
+							.col-12
+								%table#estandares-metas.table.table-striped.mb-0
+									%thead
+										%tr
+											%th= t(:accion)
+											%th= t(:materia)
+											%th= t(:meta)
+											%th= t(:alcance)
+											%th= t(:criterio)
+											%th= t(:descripcion)
+											%th= t(:detalle)
+									%tbody
+										- @estandar.estandar_set_metas_acciones.each do |meta|
+											%tr.fields
+												%td.align-bottom= meta.accion.nombre
+												%td.align-bottom= meta.materia_sustancia.present? ? meta.materia_sustancia.nombre : ""
+												%td.align-bottom= meta.meta.nombre
+												%td.align-bottom= meta.alcance.nombre
+												%td.align-bottom= meta.criterio_inclusion_exclusion
+												%td.align-bottom= meta.descripcion_accion
+												%td.align-bottom= meta.detalle_medio_verificacion	
