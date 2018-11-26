@@ -1,0 +1,10 @@
+= simple_form_for(@hito_de_prensa, url: search_admin_hitos_de_prensa_index_path, remote: true, html: { method: :put, class: 'filter', autocomplete: :off }) do |f|
+	.card
+		.card-header
+			Busqueda de hitos de prensa
+		.card-body
+			.row
+				.col-10
+					= f.input :nombre, label: false, input_html: { class: 'required-field' }, placeholder: "Nombre Hitos", as: :string, required: true
+				.col-2
+					= button_tag "Buscar", 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Buscando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-secondary btn-block btn-disabled", disabled: :disabled

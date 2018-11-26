@@ -1,0 +1,39 @@
+- titulo t(:actividades_económicas)
+:javascript
+  $(document).ready(function() {
+    $('table.actividades-economicas').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+  });
+= link_to t(:agregar_, item: t(:actividad_económica).downcase), new_admin_actividades_economica_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:actividades_económicas).downcase)
+  .card-body
+    %table.table.actividades-economicas.table-striped
+      %thead
+        %tr
+          %th.codigo-ciiu=t(:código_ciiu_v2)
+          %th.descripcion-codigo=t(:descripción)
+          %th.descripcion-codigo=t(:descripción_ciiu_v2)
+          %th.codigo-ciiu=t(:código_ciiu_v4)
+          %th.descripcion-codigo=t(:descripción_ciiu_v4)
+          %th.dos.iconos-acciones=t(:acciones)
+
+      %tbody
+        - @actividades_economicas.each do |record|
+          %tr
+            %td=record.codigo_ciiuv2
+            %td=record.descripcion
+            %td=record.descripcion_ciiuv2
+            %td=record.codigo_ciiuv4
+            %td=record.descripcion_ciiuv4
+            %td.dos.iconos-acciones
+              = link_to edit_admin_actividades_economica_path(record) do
+                %i.fa.fa-edit

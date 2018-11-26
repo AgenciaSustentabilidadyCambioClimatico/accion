@@ -1,0 +1,33 @@
+:javascript
+	$(document).ready(function(){
+		$('#establecimiento').chosen(chosenOptions);
+		$('#establecimiento').change(function(){
+			$.ajax({
+				url: "#{ppf_tarea_pendiente_aprobar_establecimiento_path(@tarea_pendiente)}",
+				type: "GET",
+				dataType: "script",
+				data: { establecimiento: $(this).val() },
+				beforeSend: function(){
+					loadingParent = $(".loading-data").parent().parent()[0]
+					$('.loading-data').height(loadingParent.scrollHeight).show();
+					spinner = $('.loading-data > .spinner').css({'display':'block'})
+					scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+					spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
+				}
+			}).fail(function() {
+		    alert( "Error: Verifique su conexiòn a internet y vuelva a intentar" );
+		    $('.loading-data').hide();
+		  }).success(function(){
+		  	$('.loading-data').hide();
+		  });
+		});
+	});
+- titulo t(:revisar_seguimiento)
+.card
+	.card-body
+		.row.justify-content-center
+			.col-md-5
+				= select_tag :establecimiento, options_from_collection_for_select(@establecimientos, "id", "nombre_direccion_and_contribuyente", :selected=>@establecimiento), { class: 'form-control',:prompt => 'Seleccione un Establecimiento'}
+#auditoria_aprobar
+	-if @establecimiento.present?
+		= render "form_aprobar"

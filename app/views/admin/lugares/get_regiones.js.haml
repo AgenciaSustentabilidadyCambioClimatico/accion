@@ -1,0 +1,9 @@
+-#Permite agregar las regiones al select
+$('#region_id').empty();
+$('#region_id').append( $('<option value>Agregar Nueva Regiòn</option>'));
+- @regiones.each do |region|
+  $('#region_id').append($('<option value="#{region.id}">#{region.nombre}</option>'));
+
+-#para quitar las comunas que ya se encuenten cargadas
+$('#provincia_id').empty();
+$('#comuna_id').empty();

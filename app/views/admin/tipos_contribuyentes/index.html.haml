@@ -1,0 +1,35 @@
+- titulo t(:tipos_contribuyentes)
+:javascript
+  $(document).ready(function() {
+    $('table.tipos-contribuyentes').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [3], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+  });
+= link_to t(:agregar_, item: t(:tipo_contribuyente).downcase), new_admin_tipos_contribuyente_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:tipos_contribuyentes).downcase)
+  .card-body
+    %table.table.tipos-contribuyentes.table-striped
+      %thead
+        %tr
+          %th=t(:nombre)
+          %th=t(:tipo_contribuyente)
+          %th=t(:descripción)
+          %th.dos.iconos-acciones=t(:acciones)
+
+      %tbody
+        - @tipos_contribuyentes.each do |record|
+          %tr
+            %td=record.nombre
+            %td=record.tipo_contribuyente.blank? ? '--' : record.tipo_contribuyente.nombre
+            %td=record.descripcion
+            %td.dos.iconos-acciones
+              = link_to edit_admin_tipos_contribuyente_path(record) do
+                %i.fa.fa-edit

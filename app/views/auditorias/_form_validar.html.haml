@@ -1,0 +1,58 @@
+- titulo t(:elementos_por_validar_, item: "#{@auditoria.nombre.upcase}")
+= simple_form_for @auditoria, url: guardar_validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=titulo_instrumento.html_safe
+          -if @proyecto.blank?
+            %h5.no-margin=titulo_acuerdo.html_safe
+          -else
+            %h5.no-margin=titulo_proyecto.html_safe
+          %h5.no-margin=datos_beneficiario.html_safe    
+          %h5
+          %h5   
+          %h5.no-margin=t(:elementos_observados_o_rechazados)        
+        .card-body.p-0
+          %table.table.table-striped.table-bordered#adhesiones_rechazadas
+            %thead
+              %tr
+                %th=t(:rut_institucion)
+                %th=t(:auditoria)
+                %th=t(:auditoria_id)
+                %th=t(:elemento_auditado)
+                %th=t(:elemento_auditado_id)
+                %th=t(:campos_acción)
+                %th=t(:aplica)
+                %th=t(:motivo)
+                %th=t(:cumple)
+                %th=t(:estado)
+                %th=t(:evidencial)
+                %th=t(:archivo_informe)
+                %th=t(:validar)
+                %th=t(:observaciones)
+            %tbody
+              = f.fields_for :auditoria_elementos do |ae|
+                - if @auditoria.con_validacion && ([5].include?(ae.object.estado)) && (ae.object.validacion_fecha.nil?)
+                  %tr
+                    %td=ae.object.adhesion_elemento.persona.contribuyente.rut_completo
+                    %td=ae.object.auditoria.nombre
+                    %td=ae.object.auditoria.id
+                    %td=ae.object.adhesion_elemento.alcance.nombre
+                    %td=ae.object.id
+                    %td=ae.object.set_metas_accion.descripcion_accion
+                    %td=ae.object.aplica ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
+                    %td=ae.object.motivo
+                    %td=ae.object.cumple ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
+                    %td=ae.object.estado_detalle
+                    %td.text-center
+                      = link_to ae.object.archivo_evidencia.url, target: :_blank do
+                        %i.fa.fa-file
+                    %td.text-center
+                      = link_to ae.object.archivo_informe.url, target: :_blank do
+                        %i.fa.fa-file
+                    %td= ae.input :validacion_aceptada, collection: [['Otorga Validación', true], ['Rechaza otorgar Validación', false]], label: false, include_blank: false, include_hidden: false, input_html: {class: 'not-required-if-other-like-me-is-present estado'}
+                    %td.comentario= ae.input :validacion_observaciones, label: false, input_html: {readonly: false}
+  .float-right
+    = volver_root
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary button-send"

@@ -1,0 +1,206 @@
+- if @tipo_rendicion == :envio
+  :javascript
+    $(document).ready(function() {
+      $(".subir_tecnica").click(function (e){
+        e.preventDefault();
+        $('#actividad_item_archivos_tecnica_'+$(this).val()).trigger("click");
+      });
+      $(".subir_respaldo").click(function (e){
+        e.preventDefault();
+        $('#actividad_item_archivos_respaldo_'+$(this).val()).trigger("click");
+      });
+      $("input:file").change(function (e){
+        var partes = $(this).attr("id").split("_");
+        var id = partes[partes.length-1];
+        var nombre = partes[partes.length-2]
+        var boton = $("#subir_"+nombre+"_"+id);
+        boton.removeClass("btn-warning").removeClass("btn-success").addClass("btn-success");
+        hideTooltipError(boton);
+      });
+      $('.fecha_realizacion_input').on('change',function(){
+        class_busqueda = $(this).attr('id');
+        $("."+class_busqueda).val($(this).val());
+      });
+      $('.fecha_realizacion_input').trigger('change')
+
+      $('.button-send').click(function(e){
+        e.preventDefault();
+        var val = $(this).attr('id');
+        var act_id = $(this).attr('data-actividad');
+        sin_archivos = false;
+        fecha_mala = false
+        var archivos_respaldo = $('#actividad_item_archivos_respaldo_'+val);
+        var archivos_tecnica = $('#actividad_item_archivos_tecnica_'+val);
+        if (archivos_respaldo.length > 0){
+          if (archivos_respaldo.get(0).files.length === 0) {
+            showTooltipError('Adjunte archivo de respaldo', $('#subir_respaldo_'+val), 'top');
+            sin_archivos = true;
+          }   
+        }
+        if (archivos_tecnica.length > 0){
+          if (archivos_tecnica.get(0).files.length === 0) {
+            showTooltipError('Adjunte archivo de técnica', $('#subir_tecnica_'+val), 'top');
+            sin_archivos = true;
+          }
+        }
+        fecha_compromiso = $('#fecha_realizacion_compromiso_'+act_id);
+        f_c = fecha_compromiso.val().split('-');
+        if(new Date(f_c[2],f_c[1]-1, f_c[0]) > new Date()){
+          fecha_mala = true;
+          showTooltipError('Fecha realización compromiso no puede ser mayor a hoy', fecha_compromiso, 'top');
+        }else{
+          hideTooltipError(fecha_compromiso);
+        }
+        if (sin_archivos || fecha_mala){
+          return;
+        }
+        $('#edit_actividad_item_'+val).submit();
+      });
+    });
+- else
+  :javascript
+    $(document).ready(function() {
+      $("select[class$='-est-id-input']").on('change',function(){
+        opcionElegida = $(this).val();
+        id = $(this).attr('class').split(' ')[3].match(/.*?-est-id-input/)[0] + "-textarea";
+        $("."+id).attr('disabled',(opcionElegida != 4))
+      });
+
+      $('.button-send').click(function(e){
+        e.preventDefault();
+        var val = $(this).attr('id');
+        errores = false;
+        var estado = $("."+val+"-est-id-input");
+        var observacion = $("."+val+"-est-id-input-textarea");
+
+        if (estado.val() == "") {
+          showTooltipError('Seleccione un estado', estado, 'top');
+          errores = true;
+        }else{
+          hideTooltipError(estado)
+        }
+        if (estado.val() == 4 && observacion.val() == "") {
+          showTooltipError('Debe ingresar una observación', observacion, 'top');
+          errores = true;
+        }else{
+          hideTooltipError(observacion)
+        }
+        if (errores){
+          return;
+        }
+        $('#edit_actividad_item_'+val).submit();
+      });
+    });
+
+- titulo_rendicion = @tipo_rendicion == :envio ? t(:envío_rendición_actividades) : (@tipo_rendicion == :tecnica ? t(:revisión_técnica) : t(:revisión_contable))
+- accion_archivo = @tipo_rendicion == :envio ? t(:subir_archivos) : t(:bajar_archivos)
+- titulo titulo_rendicion
+- clase_fecha_real_comp = @tipo_rendicion == :envio ? "min-width-120" :  ""
+- colspan_doble = @tipo_rendicion == :envio ? 2 : 1
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin=t(:proyecto)
+      .card-body.p-0
+        .table-responsive
+          %table.table.table-bordered.actividades{width: "100%"}
+            %thead
+              %tr
+                %th{rowspan: "2"}=t(:actividad)
+                %th{rowspan: "2"}=t(:fecha_finalización)
+                %th{rowspan: "2"}=t(:fecha_realización_compromiso)
+                %th{rowspan: "2"}=t(:glosa)
+                %th{rowspan: "2"}=t(:ítem)
+                %th{rowspan: "2"}=t(:tipo_aporte)
+                %th{rowspan: "2"}=t(:monto)
+                %th{colspan: colspan_doble}=accion_archivo
+                %th{colspan: "2"}=t(:estado_rendición)  
+                %th{colspan: colspan_doble}=t(:observaciones)
+                %th{rowspan: "2"}=t(:accion)
+              %tr
+                - if colspan_doble == 1
+                  - tipo_rend_text =  @tipo_rendicion == :tecnica ? t(:técnica) : t(:respaldo_contable)
+                  %th= tipo_rend_text
+                  %th=t(:técnica)
+                  %th=t(:respaldo_contable)
+                  %th=tipo_rend_text
+                - else 
+                  - (1..3).each do |bla|
+                    %th=t(:técnica)
+                    %th=t(:respaldo_contable)
+            %tbody
+              - @proyecto.proyecto_actividad.order("fecha_finalizacion ASC").each do |actividad|
+                %tr
+                  - total_actividades = actividad.actividad_item.length
+                  - total_glosas = actividad.actividad_item.map{ |e| e.glosa_id}.uniq.size
+                  - cant_act_item = total_actividades + (4 - total_glosas)
+                  %td{rowspan: "#{cant_act_item}"}=actividad.nombre
+                  - fecha_finalizacion = actividad.fecha_finalizacion.blank? ? "-" : l(actividad.fecha_finalizacion, format: '%d-%m-%Y')
+                  %td{rowspan: "#{cant_act_item}"}=fecha_finalizacion
+                  %td{rowspan: "#{cant_act_item}", class: clase_fecha_real_comp}
+                    - fecha_realizacion_compromiso = actividad.fecha_realizacion_compromiso.blank? ? "" : l(actividad.fecha_realizacion_compromiso, format: '%d-%m-%Y')
+                    - if @tipo_rendicion == :envio
+                      .form-group.disabled
+                        = text_field_tag "fecha_realizacion_compromiso_#{actividad.id}", fecha_realizacion_compromiso, class: 'form-control basic-datetimepicker fecha_realizacion_input'
+                    - else
+                      = fecha_realizacion_compromiso
+                  - @glosas.each_with_index do |glosa, index_glosa|
+                    - items = actividad.actividad_item.order("id ASC").where(glosa_id: glosa.id).all
+                    - if items.length > 0
+                      - if index_glosa > 0
+                        %tr
+                          %td{rowspan: "#{items.length}"}
+                            %div.acortar-texto{title: "#{glosa.nombre}"}=glosa.nombre
+                          - items.each_with_index do |item, index_item|
+                            - if index_item > 0
+                              %tr
+                                = render 'item_rendiciones', item: item
+                            - else
+                              = render 'item_rendiciones', item: item
+                      - else 
+                        %td{rowspan: "#{items.length}"}
+                          %div.acortar-texto{title: "#{glosa.nombre}"}=glosa.nombre
+                        - items.each_with_index do |item, index_item|
+                          - if index_item > 0
+                            %tr
+                              = render 'item_rendiciones', item: item
+                          - else
+                            = render 'item_rendiciones', item: item
+                    - else
+                      - if index_glosa > 0
+                        %tr
+                          %td{rowspan: "1"}
+                            %div.acortar-texto{title: "#{glosa.nombre}"}=glosa.nombre
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+                          - if @tipo_rendicion == :envio
+                            %td=" - "
+                            %td=" - "
+                      - else
+                        %td{rowspan: "1"}
+                          %div.acortar-texto{title: "#{glosa.nombre}"}=glosa.nombre
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        %td=" - "
+                        - if @tipo_rendicion == :envio
+                          %td=" - "
+                          %td=" - "
+
+  = render 'table_multas_rendiciones', proyecto: @proyecto
+
+.float-right
+  = volver_root
+  %br
+  %br
