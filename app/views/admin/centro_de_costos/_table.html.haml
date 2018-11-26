@@ -1,0 +1,39 @@
+:javascript
+  $(document).ready(function() {
+    $('table.centro-de-costos').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:centro_de_costos).downcase)
+  .card-body
+    .table-responsive
+      %table.table.centro-de-costos.table-striped
+        %thead
+          %tr
+            %th=t(:nombre)
+            %th=t(:ano_asignacion)
+            %th=t(:monto_asignacion)
+            %th=t(:descripción)
+            %th.dos.iconos-acciones=t(:acciones)
+
+        %tbody
+          - @centro_de_costos.each do |record|
+            %tr
+              %td=record.nombre
+              %td=record.ano_asignacion
+              %td=number_to_currency record.monto_asignacion
+              %td=record.descripcion
+              %td.dos.iconos-acciones
+                %div
+                  = link_to edit_admin_centro_de_costo_path(record) do
+                    %i.fa.fa-edit
+                  = link_to admin_centro_de_costo_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:centro_de_costo).downcase), remote: false } do
+                    %i.fa.fa-trash

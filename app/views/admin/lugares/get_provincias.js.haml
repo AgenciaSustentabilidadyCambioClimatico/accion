@@ -1,0 +1,8 @@
+-#Permite agregar las provincias al select
+$('#provincia_id').empty();
+$('#provincia_id').append( $('<option value>Agregar Nueva Provincia</option>'));
+- @provincias.each do |provincia|
+  $('#provincia_id').append($('<option value="#{provincia.id}">#{provincia.nombre}</option>'));
+
+-#para quitar las comunas que ya se encuenten cargadas
+$('#comuna_id').empty();

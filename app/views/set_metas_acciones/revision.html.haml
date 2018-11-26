@@ -1,0 +1,4 @@
+- titulo t(:propuestas_de_acuerdo)
+= link_to t(:agregar_, item: t(:acción).downcase), new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes), class: 'btn btn-sm btn-primary margin-bottom-20'
+#propuestas-de-acuerdo-revision-remote-table
+	= render 'table'

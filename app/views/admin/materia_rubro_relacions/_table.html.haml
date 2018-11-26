@@ -1,0 +1,43 @@
+- es_para_seleccion = es_para_seleccion.nil? ? false : es_para_seleccion
+- data_table = data_table.nil? ? true : data_table
+- if data_table
+  - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+  :javascript
+    $(document).ready(function() {
+      $('table.levantados').DataTable({
+        lengthMenu: [[#{resultado_mostrados}], [#{resultado_mostrados}]],
+        pageLength: #{resultado_mostrados},
+        columnDefs: [ { targets: [-1], orderable: false } ],
+        language: {
+          url: "#{asset_path('spanish.json')}"
+        }
+      });
+    });
+%div.table-responsive
+  %table.table.levantados.table-striped
+    %thead
+      %tr
+        %th=t(:materia_sustancia)
+        %th=t(:ciiu)
+        %th=t(:datos_a_levantar_por_rubro_y_materia_sustancia)
+        - if es_para_seleccion
+          %th.iconos-acciones=t(:seleccione)
+        - else
+          %th.dos.iconos-acciones=t(:acciones)
+
+    %tbody
+      - @levantados.each do | levantar |
+        %tr
+          %td= levantar.materia_sustancia.nombre
+          %td= levantar.actividad_economica.codigo_ciiuv2
+          %td= levantar.recolectados.to_sentence
+          - if es_para_seleccion
+            %td.iconos-acciones
+              = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio' }
+          - else
+            %td.dos.iconos-acciones
+              = link_to edit_admin_materia_rubro_relacion_path(levantar) do
+                %i.fa.fa-edit
+              -if current_user.is_admin?
+                = link_to admin_materia_rubro_relacion_path(levantar), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:propiedad)), remote: false } do
+                  %i.fa.fa-trash

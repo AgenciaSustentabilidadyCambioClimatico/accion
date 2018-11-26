@@ -1,0 +1,76 @@
+:javascript
+	$(document).ready(function() {
+		$('body').on('change','.contribuyente-radio',function() {
+		 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		});
+		
+		$('.seleccionar-contribuyente-button').click(function() {
+			ppp_iid = $("select#programa_proyecto_propuesta_organismo_ejecutor_id");
+			try {
+				data=JSON.parse($('.contribuyente-radio:checked').val());
+				$('#contribuyente-id-receptor').val(data.id);
+				ppp_iid.empty().append("<option value='"+data.id+"'>"+data.razon_social+"</option>");
+				checkFieldValidity($("input#programa_proyecto_propuesta_organismo_ejecutor_id"));
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+	});
+
+- titulo t(:programa_proyecto_propuesta)
+= simple_form_for @programa_proyecto_propuesta, url: guardar_datos_postulacion_ppf_tarea_pendiente_programa_proyecto_propuesta_path, method: :patch, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= t(:datos_postulación)
+				.card-body
+					.row
+						.pr-sm-0.col-md-1.col-sm-2.col-12
+							- unless @revisando
+								= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'buscar-contribuyente btn-sm btn btn-block mt-lg-3' do
+									%i.fa.fa-search-plus.fa-2x
+						.pl-sm-0.col-md-11.col-sm-10.col-12
+							- instituciones = []
+							- institucion = Contribuyente.new
+							- unless @programa_proyecto_propuesta.organismo_ejecutor_id.blank?
+								- institucion = @programa_proyecto_propuesta.organismo_ejecutor
+								- instituciones << [institucion.razon_social, institucion.id]
+							= f.input :organismo_ejecutor_id, label: t(:organismo_ejecutor_id), collection: instituciones, input_html: { class: 'auto-save required-field float-left', disabled: true}, required: true, prompt: "Seleccione una institución desde el buscador"
+							%i.fa.fa-times.deseleccionar-contribuyente
+							= f.input :organismo_ejecutor_id, wrapper: false, as: :hidden, input_html: { id: 'contribuyente-id-receptor', value: institucion.id}, disabled: @revisando
+						.col-md-6.pr-lg-0.col-12
+							= f.input :responsable_coordinacion_ejecucion_seguimiento_id, collection:  @programa_proyecto_propuesta.usuarios_para_lista(Rol::COORDINADOR), input_html: { class: 'required-field', rows: 4 }, label: t(:responsable_coordinación_ejecución_seguimiento_id), required: true
+
+						.col-md-6.col-12
+							= f.input :resultado_postulacion, collection: ProgramaProyectoPropuesta.resultado_postulaciones.keys.each_with_index.map {|w,k|[w.humanize,k]}, input_html: { class: 'required-field', rows: 4 }, label: t(:resultado_postulación), required: true
+						.col-lg-4.pr-0.col-10
+							= f.input :documento_recepcion_postulacion, as: :file, input_html: { class: 'required form-control required-field border-right-0' }, label: t(:documento_recepción_postulación), required: true
+							= f.hidden_field :documento_recepcion_postulacion_cache
+						.pl-0.col-2
+							= __upload_status(f.object,:documento_recepcion_postulacion)
+						.col-lg-4.pr-0.col-10
+							= f.input :documentos_administrativos_aprobando_el_proyecto, as: :file, input_html: { class: 'required form-control required-field border-right-0' }, label: t(:documentos_administrativos_aprobando_el_proyecto).html_safe, required: true
+							= f.hidden_field :documentos_administrativos_aprobando_el_proyecto_cache
+						.pl-0.col-2
+							= __upload_status(f.object,:documentos_administrativos_aprobando_el_proyecto)
+						.col-md-4.pr-md-0.col-12
+							= f.input :fecha_postulacion, as: :string, input_html: { class: 'auto-save basic-datetimepicker required-field', value: ((f.object.fecha_postulacion.blank?) ? nil : localize(f.object.fecha_postulacion)), onkeydown: 'return false' }, label: t(:fecha_postulación), required: true
+						.col-md-4.pr-md-0.col-12
+							= f.input :fecha_entrega_resultados, as: :string, input_html: { class: 'auto-save basic-datetimepicker required-field', value: ((f.object.fecha_entrega_resultados.blank?) ? nil : localize(f.object.fecha_entrega_resultados)), onkeydown: 'return false' }, label: t(:fecha_entrega_resultados), required: true
+						.col-md-4.col-12
+							= f.input :fecha_inicio_legal_proyecto, as: :string, input_html: { class: 'auto-save basic-datetimepicker required-field', value: ((f.object.fecha_inicio_legal_proyecto.blank?) ? nil : localize(f.object.fecha_inicio_legal_proyecto)), onkeydown: 'return false' }, label: t(:fecha_inicio_legal_proyecto), required: true
+						.col-md-6.pr-md-0.col-12
+							= f.input :motivos_resultado, as: :text, label: t(:motivos_resultado), input_html: { class: 'textarea-in-form' }, placeholder: "Indique un motivo del resultado", required: true
+						.col-md-6.col-12
+							= f.input :plazo_ejecucion_legal, as: :string, input_html: { class: 'auto-save required-field basic-datetimepicker', value: ((f.object.plazo_ejecucion_legal.blank?) ? nil : localize(f.object.plazo_ejecucion_legal)), onkeydown: 'return false' }, label: t(:plazo_ejecución_legal), required: true
+						.col-md-6.pr-md-0.col-12
+							= f.input :monto_aprobado, as: :string, input_html: { class: 'moneda auto-save' }, label: t(:monto_aprobado), required: true
+						.col-md-6.col-12
+							= f.input :codigo_bip, input_html: { class: 'auto-save required-field' }, label: t(:codigo_bip), required: true
+	.float-right
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'guardar-revisor-button', class: "btn btn-primary btn-sm float-right ml-1"# btn-disabled", disabled: :disabled
+
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true

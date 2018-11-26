@@ -1,0 +1,48 @@
+.row
+  .col-12
+    .card
+      .card-header
+        = link_to t(:back), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-warning float-right m-1' 
+        %h5.no-margin=titulo_instrumento.html_safe
+        %h5.no-margin=titulo_acuerdo.html_safe
+        %h5.no-margin=datos_beneficiario.html_safe            
+      .card-body
+        %h5.m-0.float-left
+          = t(:lista_de_, items: t(:acciones).downcase)
+        %table.table.set_metas_acciones.table-striped
+          %thead
+            %tr
+              %th=t(:meta)
+              %th=t(:acción)
+              %th=t(:materia)
+              %th=t(:valor_referencia)
+              %th=t(:alcance)
+              %th=t(:criterio_inclusión_exclusión)
+              %th=t(:descripción_acción)
+              %th=t(:detalle_medio_verificación)
+              %th=t(:plazo)
+          %tbody
+            - @set_metas_acciones.each do |record|
+              - ms = record.materia_sustancia
+              %tr.fila_de_metas
+                %td=record.meta.nombre
+                %td=record.accion.nombre
+                %td=ms.blank? ? '--' : ms.nombre
+                %td=record.valor_referencia
+                %td=record.alcance.nombre
+                %td=record.criterio_inclusion_exclusion
+                %td=record.descripcion_accion
+                %td=record.detalle_medio_verificacion
+                %td="#{record.plazo_valor} #{t(record.plazo_unidad_tiempo)}"
+:javascript
+  var comentario = undefined;
+  $(document).ready(function() {
+    $('table.set_metas_acciones').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  }); 

@@ -1,0 +1,9 @@
+= simple_form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: 'form-devise'} ) do |f|
+	= f.input :reset_password_token, as: :hidden
+	%h2.form-devise-heading
+		= "Cambie su contraseña"
+	= f.input :password, required: true, autofocus: true, placeholder: 'Nueva contraseña', label: false
+	= f.input :password_confirmation, required: true, placeholder: "Confirme su nueva contraseña", label: false
+	= f.button :submit, "Cambiar", class: 'btn btn-sm btn-primary btn-block'
+	= render "devise/shared/links"
+	

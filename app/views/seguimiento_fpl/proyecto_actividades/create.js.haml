@@ -1,0 +1,4 @@
+- if @redirect_to
+	window.location.replace("#{@redirect_to}");
+- else
+	= render 'layouts/remote_form', block: 'calendario', form_partial: 'form_calendario'

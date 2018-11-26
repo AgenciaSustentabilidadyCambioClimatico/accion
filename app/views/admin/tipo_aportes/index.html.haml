@@ -1,0 +1,4 @@
+- titulo t(:tipo_aportes)
+= link_to t(:agregar_, item: t(:tipo_aporte).downcase), new_admin_tipo_aporte_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#tipo-aporte-remote-table
+	= render 'table'

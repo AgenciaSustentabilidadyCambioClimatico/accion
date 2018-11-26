@@ -1,0 +1,6 @@
+- titulo t(:convocatorias_,tarea: @tarea.nombre).html_safe
+= link_to t(:agregar_, item: t(:convocatoria).downcase), new_tarea_pendiente_convocatoria_path(@tarea_pendiente), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#convocatoria-ceremonia-remote-table
+	= render 'form_preparar_convocatoria'
+.float-right
+	= link_to t(:volver), root_path, class: 'btn btn-sm btn-warning'

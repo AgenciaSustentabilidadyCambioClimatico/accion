@@ -1,0 +1,180 @@
+:javascript
+
+	var valor_previo;
+	var nombre_previo;
+	$(document).ready(function() {
+		$('.chosen-control').chosen(chosenOptions);
+		htmlErrorToTooltip('top');
+
+		$('#encuesta_unidad_tiempo_para_contestar').change(function(){
+			var sdh = $('#encuesta_solo_dias_habiles');
+			if($(this).val() === "hours"){
+				sdh.prop('checked', false);
+				sdh.prop('disabled', true);
+			}else{
+				sdh.prop('disabled', false);
+			}
+		});
+
+		$('body').on('change', '.ep-orden', function(){
+			var elem_base = $(this);
+			var elementos = $('.ep-orden');
+			elementos.each(function(){
+				var elem = $(this);
+				if(elem.val() == elem_base.val() && elem.prop("id") != elem_base.prop("id")){
+					elem.val(parseInt(elem_base.val()) + 1);
+					elem.trigger("change");
+				}
+			});
+		});
+
+		$('body').on('chosen:showing_dropdown','.ep-pregunta',function() {
+			valor_previo = this.value;
+			nombre_previo = $(this).find("option:selected").text();
+		});
+
+		$('body').on('change', '.ep-pregunta', function(){
+			var elem = $(this);
+			if(valor_previo == ""){
+				$(".ep-pregunta").each(function(){
+					if($("#"+$(this).prop("id")+"_chosen:visible").length > 0 && $(this).prop("id") != elem.prop("id")){
+						$(this).find("option[value='"+elem.val()+"']").remove();
+						$(this).trigger("chosen:updated");
+					}
+				});
+			}else{
+				$(".ep-pregunta").each(function(){
+					if($("#"+$(this).prop("id")+"_chosen:visible").length > 0 && $(this).prop("id") != elem.prop("id")){
+						$(this).append("<option value='"+valor_previo+"'>"+nombre_previo+"</option>");
+						$(this).trigger("chosen:updated");
+					}
+				});
+				$(".ep-pregunta").each(function(){
+					if($("#"+$(this).prop("id")+"_chosen:visible").length > 0 && $(this).prop("id") != elem.prop("id")){
+						$(this).find("option[value='"+elem.val()+"']").remove();
+						$(this).trigger("chosen:updated");
+					}
+				});
+			}
+		});
+
+		$(".ep-pregunta").each(function(){
+			var elem = $(this);
+			$(".ep-pregunta").each(function(){
+				if($("#"+$(this).prop("id")+"_chosen:visible").length > 0 && $(this).prop("id") != elem.prop("id")){
+					$(this).find("option[value='"+elem.val()+"']").remove();
+					$(this).trigger("chosen:updated");
+				}
+			});
+		});
+
+
+	});
+
+	$(document).on('nested:fieldAdded:encuesta_preguntas', function(e) {
+	  checkFieldValidity($('#encuesta_titulo'));
+		var agregado = $(e.target).find(".ep-pregunta");
+	  $(".ep-pregunta").filter(function() { return $(this).val() != ""; }).each(function(){
+	  	if($("#"+$(this).prop("id")+"_chosen:visible").length > 0){
+	  		agregado.find("option[value='"+this.value+"']").remove();
+	  	}
+	  });
+		agregado.chosen(chosenOptions);
+	});
+
+	$(document).on('nested:fieldRemoved:encuesta_preguntas', function(e){
+	  checkFieldValidity($('#encuesta_titulo'));
+		//Se agrega opcion de elemento eliminado
+		var eliminado = $(e.target).find(".ep-pregunta");
+		var valor = eliminado.val();
+		if(valor != ""){
+			var nombre = eliminado.find('option:selected').text();
+			$(".ep-pregunta").each(function(){
+	  		if($("#"+$(this).prop("id")+"_chosen:visible").length > 0){
+					$(this).append("<option value='"+valor+"'>"+nombre+"</option>");
+					$(this).trigger("chosen:updated");
+	  		}
+			});
+		}
+	});
+
+- preguntas = Pregunta.all.map{|c|["#{c.texto} - [#{t(c.tipo_respuestas)}]",c.id]}
+- titulo t(:encuesta)
+= simple_nested_form_for [:admin,@encuesta], remote: true, html: { autocomplete: :off } do |f|
+	=# f.hidden_field :borrable, value: true
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@encuesta)
+				.card-body
+					.row
+						.col-12
+							= f.input :titulo, label: t(:título), input_html: { class: 'required-field' }, placeholder: "Indique un título", required: true
+						.col-lg-5.col-md-4.pr-md-0.col-12
+							= f.input :valor_tiempo_para_contestar, label: t(:valor_tiempo_para_contestar), input_html: { class: 'required-field' , min: "1"}, required: true
+						.col-lg-5.col-md-5.col-12
+							= f.input :unidad_tiempo_para_contestar, collection: Encuesta.unidad_tiempo_para_contestar.map{|u,i|[t("_#{u}"),u]}, label: t(:unidad_tiempo_para_contestar), input_html: { class: 'required-field' }, required: true
+						= f.hidden_field :solo_dias_habiles, value: false #DZC Se instancia en false para eliminar por ahora la posibilidad de escoger que solo sean días hábiles. Eliminar si se decide habilitar esta opción 
+						-#DZC Se decide eleiminar la posibilidad de feriados, tentativamente
+							.col-lg-2.col-md-3.pl-md-0.col-12
+								%label.string.control-label
+									%abbr{title: :required}
+										*
+									=t(:sólo_días_hábiles)
+								= f.input :solo_dias_habiles, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }, disabled: @encuesta.unidad_tiempo_para_contestar == :hours
+		.col-12
+			.row
+				.col-12
+					.form-group
+						.card.mb-0
+							.card-header
+								%h5.no-margin.float-left
+									%abbr{:title => "required"} *
+									= t(:preguntas)
+								= f.link_to_add :encuesta_preguntas, data: { target: "#encuesta-preguntas" }, class: 'float-right' do
+									%i.fa.fa-plus-circle
+							.card-body.p-0.chosen-responsive
+								%table#encuesta-preguntas.table.table-striped.mb-0
+									%thead
+										%tr
+											%th.weight-cell=t(:orden)
+											%th.required-cell=t(:obligatorio)
+											%th=t(:pregunta)
+											%th.pr-2.pl-2.remove-cell=t(:eliminar)
+									%tbody
+										-orden_desde = 0
+										= f.fields_for :encuesta_preguntas, @encuesta.encuesta_preguntas.sort_by(&:orden), :wrapper => false  do |ep|
+											%tr.fields
+												- base = @preguntas_base.map{|i| i.id}.include?(ep.object.pregunta_id)
+												-if base
+													- orden_desde += 1
+													= ep.input :orden, as: :hidden, wrapper: false
+													= ep.input :obligatorio, as: :hidden, wrapper: false
+													= ep.input :pregunta_id, as: :hidden, wrapper: false
+													%td.p-0.weight-cell
+														= ep.input :orden, label: false, as: :string, input_html: { class: 'm-0 required-field'}, disabled: base, required: true, wrapper_class: 'm-0'
+												-else
+													%td.p-0.weight-cell
+														= ep.input :orden, label: false, collection: (orden_desde...preguntas.size).map{|n|[n,n]}, input_html: { class: 'm-0 required-field ep-orden'}, disabled: base, required: true, wrapper_class: 'm-0'
+
+												- input_check = { class: 'im-not-required-check-the-others'}
+												- input_check[:checked] = true if base
+												%td.p-0.required-cell
+													= ep.input :obligatorio, as: :boolean, label: false, input_html: input_check, disabled: base, wrapper: false
+												%td.p-0
+													= ep.input :pregunta_id, label: false, collection: preguntas, input_html: { class: 'm-0 ep-pregunta chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione una pregunta' }, disabled: base, required: true, wrapper_class: 'm-0'
+												%td.remove-cell
+													- if !base 
+														= ep.link_to_remove do
+															%i.fa.fa-times-circle.left.link-to-remove-row							
+	.float-right
+		-#
+			- if @encuesta.titulo != 'Nueva Encuesta - FAVOR CAMBIAR NOMBRE Y GUARDAR' || @encuesta.base
+				= link_to t(:back), admin_encuestas_path, class: 'btn btn-sm btn-warning', remote: false
+			- else
+				= link_to t(:back), admin_encuesta_path(@encuesta), method: :delete, class: 'btn btn-sm btn-warning', remote: false
+
+		= link_to t(:back), admin_encuestas_path, class: 'btn btn-sm btn-warning', remote: false
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

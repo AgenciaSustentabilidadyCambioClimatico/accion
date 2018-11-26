@@ -1,0 +1,63 @@
+- es_para_seleccion = es_para_seleccion.nil? ? false : es_para_seleccion
+- data_table = data_table.nil? ? true : data_table
+- if data_table
+  - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+  :javascript
+    $(document).ready(function() {
+      $('table.contribuyentes').DataTable({
+        lengthMenu: [[#{resultado_mostrados}], [#{resultado_mostrados}]],
+        pageLength: #{resultado_mostrados},
+        columnDefs: [ { targets: [2], orderable: false } ],
+        language: {
+          url: "#{asset_path('spanish.json')}"
+        }
+      });
+    });
+
+
+%div.table-responsive
+  %table.table.contribuyentes.table-striped
+    %thead
+      %tr
+        %th.rut=t(:rut)
+        %th.razon-social=t(:razón_social)
+        %th=t(:tamaño_institución)
+        %th=t(:nombre_maquinaria)
+        %th=t(:numero_serie)
+        %th=t(:patente)
+        %th=t(:establecimiento)
+        %th=t(:tipo)
+        - if es_para_seleccion
+          %th.iconos-acciones=t(:seleccione)
+        - else #if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+          %th.dos.iconos-acciones=t(:acciones)
+
+    %tbody
+      - @maquinarias.each do | maquinaria |
+        - i = maquinaria.contribuyente
+        %tr
+          %td= "#{i.rut}-#{i.dv}"
+          %td= i.razon_social
+          %td --
+          %td= maquinaria.nombre_maquinaria
+          %td= maquinaria.numero_serie
+          %td= maquinaria.patente
+          %td= maquinaria.establecimiento_contribuyente.nombre_and_direccion if maquinaria.establecimiento_contribuyente.present?
+          %td= maquinaria.tipo
+          - if es_para_seleccion
+            - tipo_contribuyentes = i.dato_anual_contribuyentes.map{|m| m.tipo_contribuyente_id} #i.dato_anual_contribuyentes.inject({}){|h,anc|h[anc.tipo_contribuyente_id]=anc.nombre;h}
+            - actividades_economicas = i.actividad_economica_contribuyentes.map{|m|m.actividad_economica_id} 
+            - establecimientos = i.establecimiento_contribuyentes.map{|m|["<label>#{m.direccion}</label> - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }".html_safe, m.id]} 
+            - data_contribuyente = { id: i.id, rut: "#{i.rut}-#{i.dv}", razon_social: i.razon_social, actividades_economicas: actividades_economicas, tipo_contribuyentes: tipo_contribuyentes, establecimientos: establecimientos }
+            %td.iconos-acciones
+              = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio' }
+          - else #if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+            %td.dos.iconos-acciones
+              = link_to edit_admin_maquinaria_path(maquinaria) do
+                %i.fa.fa-edit
+              - if current_user.is_admin?
+                - if maquinaria.adherido_activo?
+                  %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"No es posible eliminar maquinarias que se encuentran participando en algún instrumento de la agencia"}
+                - else
+                  = link_to admin_maquinaria_path(maquinaria), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:maquinaria)), remote: false } do
+                    %i.fa.fa-trash

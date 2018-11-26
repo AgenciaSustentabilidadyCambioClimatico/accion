@@ -1,0 +1,250 @@
+:javascript
+  var map;
+  var marker;
+  var geocoder;
+
+  $(document).ready(function() {
+    $('.participantes').DataTable({
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      responsive: true,
+      paginate: false,
+      searching: false,
+      columnDefs: [ { targets: [0], orderable: false }], 
+    });
+
+
+    $('#btn_mostrar_mapa').click(function(e){
+      e.preventDefault();
+      hideTooltipError($(this));
+      direccionAMapa();
+    });
+
+    $('#minuta_direccion').on('keyup',function(){
+      if($(this).val() != ""){
+        $('#btn_mostrar_mapa').removeClass('d-none');
+      }else{
+        $('#btn_mostrar_mapa').addClass('d-none');
+      }
+      actualizar_previsualizacion();
+    });
+
+    $('#minuta_fecha').on('change',function(){
+      actualizar_previsualizacion();
+    });
+
+    $('#seleccionar').change(function(){
+      $("input[name='convocados[]']").prop('checked', $(this).is(':checked'));
+    });
+
+    loadScript();
+
+  });
+
+  function initMap(){
+    var uluru = {lat: -33.4429091, lng: -70.6538699};
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 5,
+      center: uluru
+    });
+
+    marker = new google.maps.Marker({
+      position: uluru,
+      map: null
+    });
+
+    map.addListener('click', function(e) {
+      marker.setPosition(e.latLng);
+      marker.setMap(map);
+      mapaADireccion(e.latLng);
+    });
+
+    geocoder = new google.maps.Geocoder();
+
+    direccionAMapa();
+
+  }
+
+  function loadScript() {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&callback=initMap";
+    document.body.appendChild(script);
+  }
+
+
+  function direccionAMapa() {
+    var address = $('#minuta_direccion').val();
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == 'OK') {
+        map.setCenter(results[0].geometry.location); 
+        map.setZoom(18);
+        marker.setPosition(results[0].geometry.location);
+        marker.setMap(map);
+        $('#minuta_lat').val(""+results[0].geometry.location.lat());
+        $('#minuta_lng').val(""+results[0].geometry.location.lng());
+      } else {
+        console.log('Geocode was not successful for the following reason: ' + status);
+      }
+    });
+  }
+
+  function mapaADireccion(latLng) {
+    geocoder.geocode({'location': latLng}, function(results, status) {
+      if (status === 'OK') {
+        if (results[0]) {
+          $('#minuta_direccion').val(results[0].formatted_address);
+          $('#minuta_lat').val(""+latLng.lat());
+          $('#minuta_lng').val(""+latLng.lng());
+        } else {
+          $('#minuta_direccion').val('Dirección no cargada');
+        }
+      } else {
+        $('#minuta_direccion').val('Dirección no cargada');
+      }
+      actualizar_previsualizacion();
+    });
+  }
+
+  function actualizar_previsualizacion(){
+    var fecha = $('#minuta_fecha').val();
+    var lugar = $('#minuta_direccion').val();
+    var encabezado = $('#encabezado_base').val();
+    var mensaje = $('#mensaje_base').val();
+
+    if(fecha != ""){
+      encabezado = encabezado.replace(/\[fecha_minuta\]/g, fecha);
+      mensaje = mensaje.replace(/\[fecha_minuta\]/g, fecha);
+    }
+
+    if(lugar != ""){
+      encabezado = encabezado.replace(/\[lugar_minuta\]/g, lugar);
+      mensaje = mensaje.replace(/\[lugar_minuta\]/g, lugar);
+    }
+
+    $('#minuta_encabezado').val(encabezado);
+    $('#minuta_mensaje').val(mensaje);
+
+  }
+
+- titulo t(:minuta_, item: "#{@tipo.descripcion}")
+-#titulo t(:elaborar_y_cargar_minuta_o_acta_y_asistencia)
+
+
+/evalua el caso de que se trate de una nueva convocatoria existente en cuyo caso asigna la jerarquia pertinente  
+- url = tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria,  @minuta)
+- hay_archivos_anexos = (@informe_de_acuerdo.present? && @informe_de_acuerdo.archivos_anexos.present?) ? true : false
+= simple_form_for @minuta, url: url, remote: true, html: { autocomplete: :off } do |f|
+  =f.hidden_field :flujo_id, value: @flujo.id
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=titulo_instrumento.html_safe
+          -if !@manifestacion_de_interes.blank?
+            %h5.no-margin=titulo_acuerdo.html_safe
+          -elsif !@proyecto.blank?
+            %h5.no-margin=titulo_proyecto.html_safe
+          -elsif !@ppp.blank?
+            %h5.no-margin=titulo_programa.html_safe
+          %h5.no-margin=datos_beneficiario.html_safe
+        .card-body
+          .row
+            .col-lg-6.col-12
+              .row
+                .col-12
+                  - nombre=@convocatoria.nombre
+                  = f.input :nombre, label: t(:nombre_convocatoria_asociada), input_html: { class: 'required-field', value: nombre}, readonly: true
+                .col-12
+                  - fecha=@minuta.fecha
+                  - fecha=f.object.fecha.blank? ? fecha : f.object.fecha
+                  = f.input :fecha, label: t(:indicar_fecha), input_html: { class: 'required-field basic-datetimepicker', value: fecha}, as: :string, required: true
+                .col-12
+                  - direccion=@minuta.direccion
+                  - direccion=f.object.direccion.blank? ? direccion : f.object.direccion
+                  = f.input :direccion, label: t(:indicar_lugar), required: true, input_html: { class: 'required-field'}
+                  = f.hidden_field :lat
+                  = f.hidden_field :lng
+                .col-12
+                  = button_tag class: "btn btn-success btn-sm d-none", id: "btn_mostrar_mapa" do
+                    %i.fa.fa-map-marker
+                    =t(:mostrar_en_mapa)
+                .col-12
+                  = render 'table_descargables'
+                - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
+                  .col-12.my-2
+                    = f.label t(:descarga_acuerdo)
+                    = link_to obtener_archivo_apl_022_path(@tarea_pendiente, @flujo), download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
+                      %i.fa.fa-download
+                    - if hay_archivos_anexos
+                      %br
+                      = f.label t(:descargar_archivos_anexos)
+                      = __descargar_archivo(@informe_de_acuerdo.archivos_anexos,@informe_de_acuerdo, false)
+                .col-10
+                  -#DZC se prefiere la tarea de la convocatoria para el caso de que se acceda a la minuta desde el mantenedor de convocatorias                  
+                  - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
+                    - tipo_de_acta = 'adjuntar_acuerdo_firmado'
+                    - tipo_de_asistente = 'firmantes'
+                    - campo = 'im-not-required-check-the-others'
+                  - else
+                    - tipo_de_acta = 'adjuntar_acta_minuta_reunion'
+                    - tipo_de_asistente = 'personas_que_asistieron'
+                    - campo = 'required-field'
+                  = f.input :acta, as: :file, input_html: {class: 'form-control #{campo}', multiple: false}, label: t(tipo_de_acta.to_sym), required: true
+                  = f.hidden_field :acta_cache
+                .col-2
+                  -#
+                  = __descargar_archivo(f.object.acta,f.object)
+                - unless @convocatoria.tarea_codigo == Tarea::COD_APL_021 
+                  .col-10 
+                    = f.input :lista_asistencia, as: :file, input_html: {class: 'form-control required-field', multiple: false}, label: t(:adjuntar_lista_asistencia), required: true
+                    = f.hidden_field :lista_asistencia_cache
+                  .col-2
+                    = __descargar_archivo(f.object.lista_asistencia,f.object)
+            .col-lg-6.col-12.mt-3
+              %div#map{style: "height: 300px;"}
+        %hr
+        .card-body
+          .row
+            .col-12
+              .form-inputs
+                = f.input :mensaje_encabezado, label: t(:asunto_del_mensaje), readonly: false, required: true, input_html: {class: 'required-field'}
+                /%input{type: "hidden", id: "encabezado_base", value: @encabezado}
+                = f.input :mensaje_cuerpo, label: t(:mensaje), as: :text, readonly: false, required: true, input_html: { class: 'required-field', rows: 10}
+                /%input{type: "hidden", id: "mensaje_base", value: @cuerpo_mensaje}
+
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(tipo_de_asistente.to_sym)
+        .card-body
+          %table.table.table-striped.participantes
+            %thead
+              %tr
+                %th
+                  = check_box_tag :seleccionar, '', false, class: "not-required-if-other-like-me-is-present"
+                %th=t(:nombre)
+                %th=t(:rut)
+                %th=t(:institución)
+                %th=t(:rut_institución)
+                %th=t(:rol)
+            %tbody
+              - @convocados.each do |dest|
+                %tr
+                  %td= check_box_tag "convocados[]", dest[:id], dest[:asistio], class: "not-required-if-other-like-me-is-present"
+                  %td=dest[:nombre_completo]
+                  %td=dest[:rut]
+                  %td=dest[:institucion]
+                  %td=dest[:rut_institucion]
+                  %td=dest[:rol]              
+  .float-right
+    - if @tarea.codigo == Tarea::COD_APL_038
+      = link_to t(:volver), edit_tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria), class: 'btn btn-warning btn-sm' 
+    - elsif @convocatoria.tarea_codigo != Tarea::COD_APL_021
+      = link_to t(:listado_convocatorias), tarea_pendiente_convocatorias_path(@tarea_pendiente_convocatoria), class: 'btn btn-warning btn-sm' 
+    - if (@minuta.plazo_vigente?(@minuta.fecha_acta) && !@convocatoria.terminada) || (@convocatoria.tarea_codigo == Tarea::COD_APL_021)
+      = button_tag t(:enviar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+    %br
+    %br

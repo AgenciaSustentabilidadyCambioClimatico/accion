@@ -1,0 +1,2 @@
+class RegistroAperturaCorreo < ApplicationRecord
+end

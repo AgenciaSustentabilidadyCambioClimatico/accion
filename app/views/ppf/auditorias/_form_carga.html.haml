@@ -1,0 +1,78 @@
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
+  });
+= simple_form_for @auditoria, url: ppf_tarea_pendiente_update_cargar_path(@tarea_pendiente), remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:estado_elementos_auditados)
+        .card-body.p-0
+          %table.table.table-bordered.table-striped.mb-0
+            %thead
+              %tr
+                %th=t(:rut)
+                %th=t(:elemento_auditado)
+                %th=t(:campos_acción)
+                %th=t(:aplica)
+                %th=t(:motivo)
+                %th=t(:cumple)
+                %th=t(:archivo_evidencia)
+                %th=t(:archivo_informe)
+                %th=t(:estado)
+                %th=t(:observaciones)
+            %tbody
+              -# @audit_rechazados.each do |audit|
+              - @ad_elementos.each do |elemento|
+                - (elemento.estado == 1) ? aplica = "--" : elemento.aplica ? aplica = "Si" : aplica = "No" 
+                - (elemento.estado == 1) ? cumple = "--" : elemento.cumple ? cumple = "Si" : cumple = "No" 
+                %tr
+                  %td= @establecimiento.contribuyente.rut_completo
+                  %td= @establecimiento.nombre_direccion_and_contribuyente
+                  %td= elemento.set_metas_accion.accion.descripcion.upcase_first
+                  %td= aplica
+                  %td= elemento.motivo
+                  %td= cumple
+                  %td.text-center
+                    -if  elemento.archivo_evidencia.present?
+                      = link_to elemento.archivo_evidencia.url, download: ''  do
+                        %i.fa.fa-download
+                    -else
+                      = "--"
+                  %td.text-center
+                    -if  elemento.archivo_informe.present?
+                      = link_to elemento.archivo_informe.url, download: ''  do
+                        %i.fa.fa-download
+                    -else
+                      = "--"
+                  %td= elemento.estado_detalle
+                  %td=elemento.observacion
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:carga_resultados)
+        .card-body
+          .row
+            .col-12.col-lg-6
+              = label_tag t(:formato_elementos_auditar), nil, class: 'string'
+              = link_to ppf_tarea_pendiente_descargar_formato_path(@tarea_pendiente, establecimiento: @establecimiento), class: 'btn btn-sm btn-outline-secondary btn-block', download: '' do
+                %i.fa.fa-download
+                = t(:descargar)
+            .col-12.col-lg-6
+              = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", t(:formato_carga_auditorías), {tarea_pendiente: @tarea_pendiente})
+            .col-12.col-lg-6
+              = f.input :archivos_informe, as: :file, input_html: {class: "form-control required-field", multiple: true},label: t(:archivos_informe), required: true, multiple: true
+            .col-12.col-lg-6
+              = f.input :archivos_evidencia, as: :file, input_html: {class: "form-control required-field", multiple: true},label: t(:archivos_evidencia), required: true
+            .col-12
+              = f.input :archivo_carga_auditoria, as: :file, input_html: {class: "form-control required-field"},label: t(:carga_resultados_auditoría), required: true
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

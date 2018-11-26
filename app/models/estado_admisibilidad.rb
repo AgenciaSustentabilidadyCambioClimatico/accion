@@ -1,0 +1,2 @@
+class EstadoAdmisibilidad < ApplicationRecord
+end
