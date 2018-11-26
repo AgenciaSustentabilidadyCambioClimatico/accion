@@ -106,7 +106,7 @@
       .card-body
         .row
           .col-lg-7.col-12
-            = f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, input_html: { class: 'auto-save required-field'}, required: true
+            = f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, input_html: { "data-tooltip" => true,class: 'auto-save required-field', :title => "Testeo de tooltips"}, required: true
           .col-lg-5.pl-lg-0.col-sm-12
             = f.input :proponente, input_html: { value: current_user.nombre_completo, class: 'required-field' }, readonly: true, required: true
           .col-lg-12.col-12
