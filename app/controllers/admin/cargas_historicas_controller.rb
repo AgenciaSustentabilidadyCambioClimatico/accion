@@ -37,10 +37,10 @@ class Admin::CargasHistoricasController < ApplicationController
 		send_file("#{Rails.root}/app/assets/archivos_comunes/formato_instrumento.xlsx", filename: "formatoCargaHistoricaInstrumento.xlsx", type: "application/xlsx")
 	end
 	def formato_apl
-		send_file("#{Rails.root}/app/assets/archivos_comunes/formato/formato_apl.xlsx", filename: "formatoCargaHistoricaAPLs.xlsx", type: "application/xlsx")
+		send_file("#{Rails.root}/app/assets/archivos_comunes/formato_apl.xlsx", filename: "formatoCargaHistoricaAPLs.xlsx", type: "application/xlsx")
 	end
 	def formato_ppf
-		send_file("#{Rails.root}/app/assets/archivos_comunes/formato/formato_ppf.xlsx", filename: "formatoCargaHistoricaPPFs.xlsx", type: "application/xlsx")
+		send_file("#{Rails.root}/app/assets/archivos_comunes/formato_ppf.xlsx", filename: "formatoCargaHistoricaPPFs.xlsx", type: "application/xlsx")
 	end
 
 	def formato_adhesion
