@@ -59,6 +59,7 @@ yarn.lock
 /*.tmproj
 **.swp
 /public/uploads/*
+!/public/uploads/carga_historica/formato/*
 /public/assets/*
 /public/downloads/*
 /public/integrity/*
