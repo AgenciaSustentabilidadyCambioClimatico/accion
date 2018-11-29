@@ -16,11 +16,14 @@
 			- if grupo == mostrar
 				- contribuyente = proyecto.contribuyente
 				%tr
-					-
 					%td=proyecto.codigo
 					%td=proyecto.nombre
-					%td=contribuyente.nombre
-					%td.text-center="#{contribuyente.rut}-#{contribuyente.dv}"
+					- unless contribuyente.blank?
+						%td=contribuyente.nombre
+						%td.text-center="#{contribuyente.rut}-#{contribuyente.dv}"
+					- else
+						%td="SIN CONTRIBUYENTE"
+						%td.text-center="SIN CONTRIBUYENTE"
 					%td=proyecto.estado
 					%td.text-center=proyecto.fecha_informe
 					- unless mostrar == :iniciados
