@@ -68,9 +68,13 @@ class Admin::OtrosController < ApplicationController
         }
         format.html { redirect_to edit_admin_otro_url(@otro), notice: 'Otro elemento certificable correctamente creado.' }
       else
+        errores = @otro.errors.messages.map{|k,v|
+          v
+        }
         format.html { render :new }
         format.js {
-          flash[:error] = "Error al crear."
+          # DZC 2018-12-28 12:55:59 se agrega mensaje de error al intentar 
+          flash[:error] = "Error al crear: #{errores.to_sentence}."
         }
       end
     end

@@ -1,6 +1,6 @@
 class User < ApplicationRecord
   attr_accessor :is_admin, :updated, :current, :flujo_id
-   has_many :personas, dependent: :destroy
+  has_many :personas, dependent: :destroy
   has_many :contribuyentes, through: :personas
   has_many :persona_cargos, through: :personas
   has_many :tarea_pendientes, dependent: :destroy
