@@ -1,0 +1,61 @@
+- if @users.size > 0
+	:javascript
+		$(document).ready(function() {
+			$('table.users').DataTable({
+				responsive: true,
+				lengthMenu: [[30], [30]],
+				columnDefs: [ { targets: [5], orderable: false } ],
+				order: [[ 1, 'desc' ]],
+				language: {
+					url: "#{asset_path('spanish.json')}"
+				}
+			});
+		});
+
+- titulo t(:usuarios)
+- if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+	= link_to t(:agregar_, item: t(:usuario).downcase), new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+- if current_user.is_admin?
+	= link_to '#', "data-toggle"=>:modal, "data-target"=>"#permisos-privacidad", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
+		%i.fa.fa-edit
+		Permisos de privacidad
+
+.card
+	.card-header
+		%h5.no-margin
+			= t(:lista_de_, items: t(:usuarios).downcase)
+	.card-body
+		%table.table.table-striped.usuarios.no-margin{class: ('users' unless @users.size <= 0)}
+			%thead
+				%tr
+					%th=t(:rut)
+					%th.center=t(:nombre_completo)
+					%th=t(:email)
+					%th=t(:teléfono)
+					%th.last-login=t(:last_login)
+					-# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+					%th.dos.iconos-acciones=t(:acción)
+			%tbody
+				- @users.each do |user|
+					-# unless user.id == current_user.id
+					%tr
+						%td=user.rut
+						%td=user.nombre_completo
+						%td=user.email
+						%td=user.telefono
+						%td.last-login
+							- unless user.last_sign_in_at.nil?
+								= l user.last_sign_in_at, format: '%d %b %Y %H:%M:%S'
+							- else
+								= '--'
+						-# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+						%td.dos.iconos-acciones
+							= link_to edit_admin_user_path(user), title: "Editar los datos del usuario" do
+								%i.fa.fa-edit
+							-if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+								-if !user.editable?
+									%i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El usuario se encuentra participando en algún instrumento de la agencia"}
+								= link_to admin_user_path(user), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+									%i.fa.fa-trash
+
+= render 'layouts/privacidad', entidad: :usuarios

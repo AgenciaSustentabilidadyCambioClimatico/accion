@@ -1,0 +1,95 @@
+:javascript
+  $(document).ready(function(){
+
+    $('#enviar-pertinencia-button').click(function(e){
+      $('#manifestacion_de_interes_update_respuesta_pertinencia').val(true);
+    });
+
+    $('#manifestacion_de_interes_resultado_pertinencia').change(function(){
+      carga_por_resultado($(this).val());
+    });
+
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+
+    if($('#manifestacion_de_interes_resultado_pertinencia').val() != "aceptada"){
+      $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
+    }
+
+  });
+
+  function carga_por_resultado(val){
+    var obs = $('#manifestacion_de_interes_observaciones_pertinencia_factibilidad');
+    var comp = $('#manifestacion_de_interes_compromiso_pertinencia_factibilidad');
+    if(val == "realiza_observaciones" || val == "solicita_condiciones_y_contiene_observaciones" || val == "no_aceptada"){
+      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", true);
+    }else{
+      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", false);
+    }
+    if(val == "solicita_condiciones" || val == "solicita_condiciones_y_contiene_observaciones" || val == "no_aceptada"){
+      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", true);
+    }else{
+      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", false);
+    }
+    $('#observaciones_label').html($('#observaciones_label').html().replace('<abbr title="required">*</abbr>',''));
+    if(val == "aceptada"){
+      $(".chosen-control").prop('disabled', false).trigger('chosen:updated');
+      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", true);
+    }else{
+      $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
+      $('#observaciones_label').html('<abbr title="required">*</abbr>'+$('#observaciones_label').html());
+      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", false);
+    }
+  }
+
+- titulo t(:responder_pertinencia_factibilidad)
+- tabs = { "tipo-de-acuerdo": false, "datos-institucion": false, "contexto-sector": false, "datos-proyecto": false, "objetivo-acuerdo": false, "pertinencia-factibilidad": true }
+#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+    - tabs.each do |tab,active|
+      %li.nav-item
+        %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          =t(tab.to_s.gsub('-','_'))
+        - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+          %small.total-error
+            %i.fa.fa-exclamation
+
+= simple_form_for @manifestacion_de_interes, url: responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: 'tipo-de-acuerdo-tab' }
+  = f.submit "", class: 'd-none'
+  = f.input :update_respuesta_pertinencia, as: :hidden, wrapper: false, input_html: { value: "" }
+  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+  = render "form_manifestacion_de_interes", tabs: tabs, f: f do
+    #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
+      .card
+        .card-body
+          .row
+            .col-12
+              = f.input :dato_temporal, input_html: { autocomnplete: 'off', value: @manifestacion_de_interes.resultado_pertinencia.humanize }, readonly: true, required: false, label: t(:resultado_de_la_pertinencia)
+            -# .col-12
+            -#   = f.input :respuesta_resultado_pertinencia, collection: ManifestacionDeInteres.respuesta_resultado_pertinencia.keys.map { |w| [w.humanize, w] }, required: true, label: t(:respuesta_a_observaciones_pertinencia_factibilidad)
+            -if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
+              .col-12.col-lg-6
+                = f.label t(:acepta_condiciones), required: true
+                = f.input :acepta_condiciones_pertinencia, as: :radio_buttons, collection: [["Si", true],["No", false]], label: false, required: true, item_wrapper_class: :radio, item_wrapper_tag: :div
+              .col-12.col-lg-6
+                = f.input :compromiso_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
+            .col-12.col-lg-6
+              = f.input :observaciones_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
+            .col-12.col-lg-6
+              =f.input :respuesta_observaciones_pertinencia_factibilidad, as: :text, required: true, input_html: {rows: 4}, label: t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase)
+            .col-12.col-lg-6
+              =f.input :respuesta_otros_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:respuesta_a_otros_pertinencia_factibilidad)
+            .col-5
+              = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}
+            .col-1
+              -#
+                = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,:archivo_respuesta_pertinencia_factibilidad)
+              = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object)
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "enviar-pertinencia-button"

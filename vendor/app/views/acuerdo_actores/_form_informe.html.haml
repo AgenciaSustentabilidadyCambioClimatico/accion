@@ -1,0 +1,198 @@
+:javascript
+  $(document).ready(function() {
+
+    $(".modal").on('hide.bs.modal', function () {
+      previsualizar();
+    });
+
+    $('#informe_acuerdo_archivos_anexos').change(function (){
+      //$('#archivos_cargados').find(".parciales").remove();
+      $.each(this.files,function(index, value){
+        li = "<li class='list-group-item d-flex justify-content-between align-items-center parciales'>";
+        li += "<input name='por_eliminar[]' type='checkbox' value='";
+        li += this.name;
+        li += "' />";
+        li += this.name;
+        li += "<span class='badge badge-pill'>";
+        li += "<i class='fa fa-circle-o-notch fa-spin fa-2x'>";
+        li += "</span></li>";
+        $('#archivos_cargados').append(li);
+      });
+    });
+
+    $('.calcula-adhesiones-etapa').change(function(){
+      var adhesiones = "true";
+      var pma = $('#informe_acuerdo_plazo_maximo_adhesion').val();
+      var pfi = $('#informe_acuerdo_plazo_finalizacion_implementacion').val();
+      if(parseInt(pma) < parseInt(pfi)){
+        adhesiones = "false";
+      }
+      $("input[name='informe_acuerdo[adhesiones]']").val([adhesiones]);
+    });
+
+    $('#consultar-button').click(function(e){
+      $("input[name='informe_acuerdo[adhesiones]']").removeAttr('disabled');
+    });
+
+    remover_auditoria();
+
+    $('.add-auditoria').click(function(){
+      $('#tabla_auditoria').append("#{ j render partial: 'form_auditoria'}");
+
+      iniciarAutoNumeric();
+      remover_auditoria();
+    });
+
+    $('body').on('change', '.con-certificacion', function(){
+      var validacion = $(this).closest("tr").find(".con-validacion");
+      console.log(validacion);
+      if($(this).is(":checked")){
+        validacion.prop("disabled", false);
+      }else{
+        validacion.prop("disabled", true);
+        validacion.prop("checked", false);
+      }
+    });
+    
+  });
+
+  function remover_auditoria(){
+    $('.remove-auditoria').click(function(){
+      $(this).closest("tr").remove();
+    });
+  }
+
+  function previsualizar(){
+
+    $('#informe_acuerdo_fundamentos').val(CKEDITOR.instances['informe_acuerdo_fundamentos'].getData());
+    $('#informe_acuerdo_antecedentes').val(CKEDITOR.instances['informe_acuerdo_antecedentes'].getData());
+    $('#informe_acuerdo_normativas_aplicables').val(CKEDITOR.instances['informe_acuerdo_normativas_aplicables'].getData());
+    $('#informe_acuerdo_alcance').val(CKEDITOR.instances['informe_acuerdo_alcance'].getData());
+    $('#informe_acuerdo_campo_de_aplicacion').val(CKEDITOR.instances['informe_acuerdo_campo_de_aplicacion'].getData());
+    $('#informe_acuerdo_definiciones').val(CKEDITOR.instances['informe_acuerdo_definiciones'].getData());
+    $('#informe_acuerdo_objetivo_general').val(CKEDITOR.instances['informe_acuerdo_objetivo_general'].getData());
+    $('#informe_acuerdo_objetivo_especifico').val(CKEDITOR.instances['informe_acuerdo_objetivo_especifico'].getData());
+    $('#informe_acuerdo_mecanismo_de_implementacion').val(CKEDITOR.instances['informe_acuerdo_mecanismo_de_implementacion'].getData());
+    $('#informe_acuerdo_mecanismo_evaluacion_cumplimiento').val(CKEDITOR.instances['informe_acuerdo_mecanismo_evaluacion_cumplimiento'].getData());
+    $('#informe_acuerdo_derechos').val(CKEDITOR.instances['informe_acuerdo_derechos'].getData());
+    $('#informe_acuerdo_obligaciones').val(CKEDITOR.instances['informe_acuerdo_obligaciones'].getData());
+    $('#informe_acuerdo_difusion').val(CKEDITOR.instances['informe_acuerdo_difusion'].getData());
+    $('#informe_acuerdo_promocion').val(CKEDITOR.instances['informe_acuerdo_promocion'].getData());
+    $('#informe_acuerdo_incentivos').val(CKEDITOR.instances['informe_acuerdo_incentivos'].getData());
+    $('#informe_acuerdo_sanciones').val(CKEDITOR.instances['informe_acuerdo_sanciones'].getData());
+    $('#informe_acuerdo_personerias').val(CKEDITOR.instances['informe_acuerdo_personerias'].getData());
+    $('#informe_acuerdo_ejemplares').val(CKEDITOR.instances['informe_acuerdo_ejemplares'].getData());
+    $('#informe_acuerdo_firmas').val(CKEDITOR.instances['informe_acuerdo_firmas'].getData());
+
+    var datos = new Object();
+    datos.fundamentos = $('#informe_acuerdo_fundamentos').val();
+    datos.antecedentes = $('#informe_acuerdo_antecedentes').val();
+    datos.normativas_aplicables = $('#informe_acuerdo_normativas_aplicables').val();
+    datos.alcance = $('#informe_acuerdo_alcance').val();
+    datos.campo_de_aplicacion = $('#informe_acuerdo_campo_de_aplicacion').val();
+    datos.definiciones = $('#informe_acuerdo_definiciones').val();
+    datos.objetivo_general = $('#informe_acuerdo_objetivo_general').val();
+    datos.objetivo_especifico = $('#informe_acuerdo_objetivo_especifico').val();
+    datos.mecanismo_de_implementacion = $('#informe_acuerdo_mecanismo_de_implementacion').val();
+    datos.tipo_acuerdo = $("input[name='informe_acuerdo[tipo_acuerdo]']:checked").val();
+    datos.plazo_maximo_adhesion = $('#informe_acuerdo_plazo_maximo_adhesion').val();
+    datos.plazo_finalizacion_implementacion = $('#informe_acuerdo_plazo_finalizacion_implementacion').val();
+    datos.mecanismo_evaluacion_cumplimiento = $('#informe_acuerdo_mecanismo_evaluacion_cumplimiento').val();
+    datos.plazo_maximo = $('#informe_acuerdo_plazo_maximo').val();
+    datos.plazo_maximo_neto = $('#informe_acuerdo_plazo_maximo_neto').val();
+    datos.adhesiones = $("input[name='informe_acuerdo[adhesiones]']:checked").val();
+    datos.con_validacion = $("input[name='informe_acuerdo[con_validacion]']:checked").val();
+    datos.derechos = $('#informe_acuerdo_derechos').val();
+    datos.obligaciones = $('#informe_acuerdo_obligaciones').val();
+    datos.difusion = $('#informe_acuerdo_difusion').val();
+    datos.promocion = $('#informe_acuerdo_promocion').val();
+    datos.incentivos = $('#informe_acuerdo_incentivos').val();
+    datos.sanciones = $('#informe_acuerdo_sanciones').val();
+    datos.personerias = $('#informe_acuerdo_personerias').val();
+    datos.ejemplares = $('#informe_acuerdo_ejemplares').val();
+    datos.firmas = $('#informe_acuerdo_firmas').val();
+    datos.archivos_anexos = "";
+    $.each($('#informe_acuerdo_archivos_anexos')[0].files,function(){
+      datos.archivos_anexos += this.name + ",";
+    });
+
+    var auditorias = [];
+    $("input[name='informe_acuerdo[auditorias][][nombre]']").each(function() {
+      var audit = new Object();
+      audit.nombre = this.value;
+      auditorias.push(audit);
+    });
+    datos.auditorias = auditorias;
+
+    $.ajax({
+      url: "#{mostrar_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}",
+      type: 'POST',
+      dataType: 'html',
+      data: JSON.parse('{"informe":'+JSON.stringify(datos)+'}'),
+      success: function(response) {
+        $('#previsualizacion_base').html(response);
+      }
+    });
+    
+  }
+:css 
+  #previsualizacion { font-size: 10px; }
+  #previsualizacion p[style=''] { height: 15px; }
+  #previsualizacion br { line-height: 31px; }
+.card
+  .card-body
+    .row
+      .col-12.col-lg-6
+        %ul.list-group
+          %li.list-group-item
+            ="Partes que suscriben el acuerdo:"
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-1" do
+            %li.list-group-item
+              =t(:fundamentos_antecedentes_y_normativas_aplicables)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-2" do
+            %li.list-group-item
+              =t(:alcance_campo_de_aplicación_y_definiciones)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-3" do
+            %li.list-group-item
+              =t(:objetivo_general_y_específico)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-4" do
+            %li.list-group-item
+              =t(:mecanismo_de_implementación)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-5" do
+            %li.list-group-item
+              =t(:mecanismo_de_evaluación_de_cumplimiento)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-6" do
+            %li.list-group-item
+              =t(:derechos_y_obligaciones_de_las_partes_que_suscriben_el_acuerdo)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-7" do
+            %li.list-group-item
+              =t(:difusión_promoción_incentivos_y_sanciones)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-8" do
+            %li.list-group-item
+              =t(:personerías_ejemplares_y_firmas)
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-9" do
+            %li.list-group-item
+              =t(:anexos)
+
+      .col-12.col-lg-6
+        .card
+          .card-header
+            %h5.no-margin.float-left
+              = t(:previsualización)
+          .card-body.table-responsive
+            #previsualizacion_base{style: "font-size: 11px; min-width: 450px; height: 600px"}
+              = render 'informe'
+    = simple_form_for @informe, url: guardar_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), remote: true, method: :patch do |f|
+      = render 'modal_1', f: f
+      = render 'modal_2', f: f
+      = render 'modal_3', f: f
+      = render 'modal_4', f: f
+      = render 'modal_5', f: f
+      = render 'modal_6', f: f
+      = render 'modal_7', f: f
+      = render 'modal_8', f: f
+      = render 'modal_9', f: f
+      .float-right
+        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+
+              

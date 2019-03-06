@@ -1,0 +1,2 @@
+class TamanoContribuyente < ApplicationRecord
+end

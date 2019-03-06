@@ -1,0 +1,36 @@
+= titulo t(:comentario)
+= simple_form_for @comentario, remote: true, html: { autocomplete: :off, multipart: true } do |f|
+  = simple_nested_form_for @comentario do |snf|
+    .row
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              = action_label_of_(@comentario)
+          .card-body
+            .row
+              .col-4
+                .row
+                  .col-12
+                    = f.input :tipo_comentario_id, collection: TipoComentario.all.map{|m|[m.nombre,m.id]}, require: true
+                  .col-12
+                    = f.input :email_contacto, label: t(:correo_contacto), require: true
+              .col-8
+                .row
+                  .col-12
+                    = f.input :comentario, input_html: { rows: 4 }, label: t(:comentario), require: true, placeholder: "Cuéntanos cual fue el problema o qué te gustaría cambiar ó agregar a este sistema."
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              = "Adjuntar archivos"
+              %a.tooltip-block.info{ href: "#", "data-toggle": :tooltip, title: "Acompaña una captura de pantalla para que sea más fácil de entender" }
+                %i.fa.fa-question-circle
+              = snf.link_to_add :comentario_archivos, data: { target: "#comentario-archivos" }, class: 'float-right' do
+                %i.fa.fa-plus-circle
+                =t(:agregar)
+          .card-body.table
+            = render 'nested_form_archivos', snf: snf, target: 'comentario-archivos'
+  .float-right
+    = link_to t(:back), comentarios_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

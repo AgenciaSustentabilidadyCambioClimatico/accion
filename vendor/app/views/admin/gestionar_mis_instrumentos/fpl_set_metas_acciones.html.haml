@@ -1,0 +1,52 @@
+- titulo t(:calendario_actividades)
+.row
+  .col-12
+    .card
+      .card-header
+        = link_to t(:back), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-warning float-right m-1'        
+        %h5.no-margin=titulo_instrumento.html_safe
+        %h5.no-margin=titulo_proyecto.html_safe
+        %h5.no-margin=datos_beneficiario.html_safe
+      .card-body.p-0
+        .table-responsive
+          %table.table.table-striped.table-bordered.etapas.mb-0{width: "100%"}
+            %thead
+              %tr
+                %th{rowspan: "2"}=t(:actividad)
+                %th{rowspan: "2"}=t(:rrhh_propio)
+                %th{colspan: "2"}=t(:rrhh_externo)
+                %th{colspan: "3"}=t(:gasto_operación)
+                %th{colspan: "3"}=t(:gasto_adm)
+                %th.none{rowspan: "2"}=t(:fecha_finalización)
+                %th.none{rowspan: "2"}=t(:suma_valorado)
+                %th.none{rowspan: "2"}=t(:suma_líquido)
+                %th.none{rowspan: "2"}=t(:suma_fpl)
+                %th.none{rowspan: "2"}=t(:total)
+              %tr
+                %th=t(:líquido)
+                %th=t(:fpl)
+                %th=t(:valorado)
+                %th=t(:líquido)
+                %th=t(:fpl)
+                %th=t(:valorado)
+                %th=t(:líquido)
+                %th=t(:fpl)
+            %tbody
+              - @actividades.sort_by{|a|a["fecha_finalizacion"]}.each do |actividad|
+                %tr
+                  %td=actividad["nombre"]
+                  %td=number_to_currency(actividad["rrhh_propios"])
+                  %td=number_to_currency(actividad["rrhh_externos_liquido"])
+                  %td=number_to_currency(actividad["rrhh_externos_fpl"])
+                  %td=number_to_currency(actividad["gastos_operaciones_valor"])
+                  %td=number_to_currency(actividad["gastos_operaciones_liquido"])
+                  %td=number_to_currency(actividad["gastos_operaciones_fpl"])
+                  %td=number_to_currency(actividad["gastos_adm_valor"])
+                  %td=number_to_currency(actividad["gastos_adm_liquido"])
+                  %td=number_to_currency(actividad["gastos_adm_fpl"])
+                  %td=actividad["fecha_finalizacion"]
+                  %td=number_to_currency(actividad["suma_valorado"])
+                  %td=number_to_currency(actividad["suma_liquido"])
+                  %td=number_to_currency(actividad["suma_fpl"])
+                  %td=number_to_currency(actividad["total"])
+%br

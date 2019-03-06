@@ -1,0 +1,29 @@
+:javascript
+	$(document).ready(function() {
+		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+	});
+
+- titulo t(:contestar_evaluación_y_consultar_proceso_de_negociación)
+- (@tab_metas.present? && @tab_metas) ? tabs = { "evaluacion": false, "set-metas-accion": true } : tabs = { "evaluacion": true, "set-metas-accion": false } # DZC 2018-11-02 18:54:52 se agrega para posicionar la vista en la pestaña set de metas y acciones
+#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+		- tabs.each do |tab,active|
+			%li.nav-item
+				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+					=t(tab.to_s.gsub('-','_'))
+				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+					%small.total-error
+						= @total_de_errores_por_tab[tab].size
+	#manifestacionContent.tab-content
+		#evaluacion.tab-pane.fade{"aria-expanded" => tabs[:"evaluacion"], "aria-labelledby" => "evaluacion-tab", :role => "tabpanel", class: ("show active" if tabs[:"evaluacion"])}
+			.card
+				.card-body
+					#responder-encuesta-remote-form
+						= render 'admin/encuestas/responder_encuesta_form', externo: true
+		#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
+			.card
+				.card-body.p-0
+					#propuestas-de-acuerdo-remote-table
+						= render 'set_metas_acciones/table', externo: true
+					-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+					= render 'set_metas_acciones/modal'

@@ -1,0 +1,172 @@
+class AcuerdoActoresController < ApplicationController
+	before_action :authenticate_user!
+	skip_before_action :verify_authenticity_token, only: [:mostrar_informe, :reload_informe]
+	before_action :set_tarea_pendiente
+	before_action :set_flujo
+	before_action :set_manifestacion_de_interes
+	before_action :set_obtiene_mapa_actual_y_actores
+
+
+	def index
+	end
+
+	def reload_informe
+    @auditorias = Auditoria.where(flujo_id: @flujo.id).all
+		@datos = @informe._a_datos(@auditorias)
+		respond_to do |format|
+			format.js
+		end
+	end
+
+	def mostrar_informe
+		@datos = params[:informe]
+		@datos["auditorias"] = @datos["auditorias"].values
+		respond_to do |format|
+			format.html{ render partial: 'informe'}
+			format.js{ render partial: 'informe'}
+		end
+	end
+
+	def guardar_informe #DZC APL-018
+		# DZC 2018-11-12 18:36:00 se modifica para eliminar archivos seleccionados para su eliminación
+		archivos_por_eliminar = params[:por_eliminar]
+		archivos_previos =[]
+		archivos_nuevos =[]
+		@informe.archivos_anexos.each do |archivo|
+			
+			unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.file.filename))
+				archivos_previos << Pathname.new(archivo.path).open
+			end
+		end
+		if !informe_params[:archivos_anexos].blank?
+			informe_params[:archivos_anexos].each do |archivo|
+				
+				unless  (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.original_filename))
+					archivos_nuevos <<  archivo
+				end
+			end
+		end
+		@informe.assign_attributes(informe_params)
+		@informe.assign_attributes(archivos_anexos: archivos_previos+archivos_nuevos)
+		@informe.tarea_codigo = Tarea::COD_APL_018 # DZC 2018-11-08 14:02:58 se agrega para evitar validación de existencia de archivos_anexos_posteriores_firmas en el modelo
+		# DZC 2018-11-12 11:36:06 elimina los archivos seleccionados para eliminacion
+		
+		@informe.auditorias = params[:informe_acuerdo][:auditorias]
+		@informe.auditorias = [] if @informe.auditorias.nil?
+		respond_to do |format|
+			if @informe.valid?
+				@informe.save
+				audits_ids = []
+				Auditoria.where(flujo_id: @flujo.id).where.not(id: @informe.auditorias.map{|a| a[:id]}).delete_all #DZC busca y elimina los audits existentes y relacionados con esta instancia de informe, y que el usuario decidio no mantener
+				@informe.auditorias.each do |aud_data|
+					
+					audits_ids << aud_data[:id] if aud_data[:id] != "no"
+					
+					aud = (aud_data[:id] == "no") ? Auditoria.new : Auditoria.find(aud_data[:id])
+					aud.assign_attributes({
+						flujo_id: @flujo.id,
+						nombre: aud_data[:nombre],
+						plazo: aud_data[:plazo],
+						con_certificacion: aud_data[:con_certificacion],
+						con_validacion: aud_data[:con_validacion],
+						final: aud_data[:final]
+					})
+					audits_ids << aud.id if aud.save
+				end
+
+				# Auditoria.where("id NOT IN (?)", audits_ids).delete_all
+				
+		    @auditorias = Auditoria.where(flujo_id: @flujo.id).all
+				@datos = @informe._a_datos(@auditorias)
+
+				#DZC las condiciones de término se encuentra programdas fuera de este controlador
+				format.js{ 
+					flash[:success] = "Informe guardado correctamente"
+				}
+			else
+				
+				@auditorias = Auditoria.where(flujo_id: @flujo.id).all
+				@datos = @informe._a_datos(@auditorias)
+				format.js{ 
+					flash[:error] = "Se han detectado los siguientes errores:\n #{@informe.errors.full_messages.to_sentence}"
+				}
+			end
+		end
+	end
+
+	private
+
+	def set_tarea_pendiente
+		@tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
+		autorizado? @tarea_pendiente
+    @descargables = @tarea_pendiente.get_descargables
+	end
+
+	#DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
+	def set_flujo
+		@flujo = @tarea_pendiente.flujo
+		@tarea = @tarea_pendiente.tarea
+		@tipo_instrumento=@flujo.tipo_instrumento
+		@manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
+		@manifestacion_de_interes.update(tarea_codigo: @tarea.codigo) unless @manifestacion_de_interes.blank?
+		@proyecto = @flujo.proyecto_id.blank? ? nil : Proyecto.find(@flujo.proyecto_id)
+		@ppp = @flujo.programa_proyecto_propuesta_id.blank? ? nil : ProgramaProyectoPropuesta.find(@flujo.programa_proyecto_propuesta_id)
+	end
+
+	def set_manifestacion_de_interes
+		# @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
+    @informe = @manifestacion_de_interes.informe_acuerdo.nil? ? @manifestacion_de_interes.build_informe_acuerdo : @manifestacion_de_interes.informe_acuerdo
+		#@informe = @manifestacion_de_interes.build_informe_acuerdo if @infome.nil?
+		@manifestacion_de_interes.temporal = true
+		@manifestacion_de_interes.mapa_de_actores_correctamente_construido = true
+    @manifestacion_de_interes.accion_en_mapa_de_actores = :revision
+		@manifestacion_de_interes.accion_en_set_metas_accion = :actualizacion
+		@set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+    @set_metas_accion = SetMetasAccion.new
+    if params[:tab_metas].present? # DZC 2018-11-05 09:50:57 permite focalizar la vista en la pestaña set metas y acciones
+    	@tab_metas = params[:tab_metas]
+  	end    
+    unless @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank?
+      comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
+      @propuestas_con_observaciones = comentarios[:requiere_correcciones]
+    end
+		unless @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank?
+      comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.last
+      @actores_con_observaciones = comentarios[:actores_con_observaciones]
+    end
+    @actores_mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::FIRMANTE).includes([:rol, persona: [:user,:contribuyente, persona_cargos: [:cargo]]]).all
+    
+	end
+
+
+  #DZC leo las tablas y campo de la manifestación
+	def set_obtiene_mapa_actual_y_actores
+		#DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
+		@actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+		@actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+		if @tarea_pendiente.data == {primera_ejecucion: true}
+			@actores = MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas)
+		else
+			@actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
+		end
+
+	end
+
+	def actualizar_mapa_de_actores_manifestacion_de_interes_params
+		params.require(:manifestacion_de_interes).permit(
+			:mapa_de_actores_archivo,
+			:mapa_de_actores_archivo_cache
+		)
+	end
+
+	def informe_params
+		params.require(:informe_acuerdo).permit(
+			:fundamentos,:antecedentes, :normativas_aplicables, :alcance, :campo_de_aplicacion, :definiciones, 
+			:objetivo_general, :objetivo_especifico, :mecanismo_de_implementacion, :tipo_acuerdo, :plazo_maximo_adhesion, 
+			:plazo_finalizacion_implementacion, :mecanismo_evaluacion_cumplimiento, :plazo_maximo, :plazo_maximo_neto, :adhesiones,
+			:derechos, :obligaciones, :difusion, :promocion, :incentivos, :sanciones, :personerias, :ejemplares, :firmas,
+			:archivos_anexos_cache, archivos_anexos: []
+		)
+	end
+
+end

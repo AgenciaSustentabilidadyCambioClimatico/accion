@@ -1,0 +1,149 @@
+:javascript
+  $(document).ready(function(){
+    //$('#manifestacion_de_interes_comentarios_y_observaciones_actualizacion_mapa_de_actores').val("");
+    if (actores_requieren_correcciones()){
+      debeComentar($('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:checked'),true);
+    };
+    $('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]').click(function(){
+      if ($('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:checked').val() == "true"){
+        $('.fila_de_actores').each(function(){
+          $(this).find('.actor_observado').prop('checked', false);
+        });
+      };
+      debeComentar(this,true);
+    });
+    // DZC 2018-10-09 18:16:55 revisa si se selecciona la opción "requiere correcciones"
+    $('.actor_observado').click(function(){
+      if (actores_requieren_correcciones()){
+        // DZC 2018-10-09 14:55:49 cambia la opción seleccionada en "se aprueba el mapa de actores" acorde a si se ha o no elegido la opción "requiere correcciones"
+        $('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:last').prop('checked', true);
+        debeComentar($('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:checked'),true);
+      };
+    });
+    function debeComentar(checkbox,checkValidity) {
+      c = $('#manifestacion_de_interes_comentarios_y_observaciones_actualizacion_mapa_de_actores');
+      id  = $(checkbox).attr("id");
+      if(~id.indexOf("false")) {
+        c.removeAttr('readonly').addClass('required-field');
+        $('label[for="manifestacion_de_interes_comentarios_y_observaciones_actualizacion_mapa_de_actores"] > abbr').show();
+      } else if (~id.indexOf("true")) {
+        c.attr('readonly','readonly').val("").removeClass('required-field');
+        $('label[for="manifestacion_de_interes_comentarios_y_observaciones_actualizacion_mapa_de_actores"] > abbr').hide();
+      }
+      
+      if ( checkValidity ) {
+        checkFieldValidity(c);
+      }
+    };
+    //DZC revisa si se encuentra seleccionado para corrección a lo menos un actor 
+    function actores_requieren_correcciones(){
+      var cantidad_que_requiere = 0;
+      requieren = false;
+      $('.fila_de_actores').each(function(){      
+        if ($(this).find('.actor_observado').is(':checked')){
+          cantidad_que_requiere += 1;
+        };
+      });
+      if (cantidad_que_requiere >0){
+        requieren = true;
+      };
+      return requieren;
+    };
+  });
+- externo = externo.nil? ? false : externo
+- if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+  - titulo t(:actualizar_mapa_de_actores) unless externo
+  - readonly = true
+- elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+  - titulo t(:revisar_mapa_de_actores) unless externo
+  - required = true
+
+- if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+  - url = actualizar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
+- elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+  - url = enviar_revision_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
+
+= simple_form_for @manifestacion_de_interes, url: url, remote: true, html: { autocomplete: :off } do |f|
+  = f.hidden_field :actores_con_observaciones, class: 'actores-con-observaciones'
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+        .card-body
+          .row
+            -if @tarea.requiere_revision?
+              .col-lg-4.col-12
+                .row
+                  .col-12
+                    .form-group
+                      %label.string.control-label
+                        = t(:descargar_mapa_de_actores)
+                      -if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                        - url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes) 
+                      -else
+                        - url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+                      = link_to url, class: 'btn btn-sm btn-outline-secondary btn-block' do
+                        %i.fa.fa-download
+                        = t(:descargar)
+                  
+                  - if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+                    .pr-0.col-10
+                      = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control auto-save border-right-0 required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
+                      = f.hidden_field :mapa_de_actores_archivo_cache
+                    .pl-0.col-2
+                      = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
+                      -#
+                        = __upload_status(f.object,:mapa_de_actores_archivo)
+                  - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                    .form-group.boolean.required.manifestacion_de_interes_mapa_de_actores_correctamente_construido{class: ('has-error' if f.object.errors.messages.has_key?(:mapa_de_actores_correctamente_construido))}
+                      %label.boolean.required{for: :manifestacion_de_interes_mapa_de_actores_correctamente_construido}
+                        %abbr{:title => "required"} *
+                        = t(:mapa_de_actores_correctamente_construido)
+                      .radio-buttons.form-control
+                        = f.collection_radio_buttons :mapa_de_actores_correctamente_construido, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
+              .col-lg-8.col-12
+                - if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                  = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required
+                - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion 
+                  - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+                  .form-group
+                    %label.string
+                      = t(:comentarios)
+                  %table.table.table-striped
+                    %thead
+                      %tr
+                        %th=t(:fecha_y_hora)
+                        %th=t(:usuario)
+                        %th=t(:texto)
+                    %tbody
+                      - comentarios.each do |c|
+                        %tr
+                          %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
+                          %td=c[:user]
+                          %td=c[:texto]
+            - else
+              .col-lg-12.col-12
+                .row
+                  .col-12
+                    .form-group
+                      %label.string.control-label
+                        = t(:descargar_mapa_de_actores)
+                      
+                      = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
+                        %i.fa.fa-download
+                        = t(:descargar)
+                  .pr-0.col-10
+                    = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control auto-save border-right-0 required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
+                    = f.hidden_field :mapa_de_actores_archivo_cache
+                    = f.hidden_field :actores_con_observaciones, value: nil 
+                    = f.hidden_field :mapa_de_actores_correctamente_construido, value: true 
+                    = f.hidden_field :comentarios_y_observaciones_actualizacion_mapa_de_actores, value: nil
+                  .pl-0.col-2
+                    = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
+                    -#
+                      = __upload_status(f.object,:mapa_de_actores_archivo)
+            
+  .float-right
+    = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled

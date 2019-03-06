@@ -1,0 +1,9 @@
+- if @errors == true
+	$('#contribuyentes-remote-filter').html("#{j render 'filter_form', es_para_seleccion: @es_para_seleccion, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados}");
+	htmlErrorToTooltip('top');
+- else
+	$('#contribuyentes-remote-table').html("#{j render 'table', es_para_seleccion: @es_para_seleccion, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados}");
+
+//$('#resultado-consulta-remote-block').html("#{j render 'resultado_consulta'}");
+$('.loading-data').hide();
+closeAlertMessage();

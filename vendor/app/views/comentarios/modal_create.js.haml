@@ -1,0 +1,4 @@
+= render 'layouts/remote_form', block: 'modal-comentario', form_partial: 'form_modal', message_block: 'comentario-messages'
+toggleAddLink();
+- unless @error
+	$('.descartar-button').text("Cerrar");

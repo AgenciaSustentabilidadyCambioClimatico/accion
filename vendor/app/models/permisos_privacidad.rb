@@ -1,0 +1,2 @@
+class PermisosPrivacidad < ApplicationRecord
+end

@@ -1,0 +1,21 @@
+.modal.fade{id: :"modal-7", tabindex: "-1", role: :dialog, "aria-labelledby": :modal7Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header
+        =t(:difusión_promoción_incentivos_y_sanciones_esta_última_si_corresponde)
+      .modal-body
+        .row
+          .col-12
+            = f.input :difusion, as: :ckeditor, input_html: { value: @datos["difusion"]}, label: t(:difusión)
+          .col-12
+            = f.input :promocion, as: :ckeditor, input_html: { value: @datos["promocion"]}, label: t(:promoción)
+          .col-12
+            = f.input :incentivos, as: :ckeditor, input_html: { value: @datos["incentivos"]}
+          .col-12
+            = f.input :sanciones, as: :ckeditor, input_html: { value: @datos["sanciones"]}
+      .modal-footer
+        -#
+          %button.btn.btn-secondary{disabled: true}
+            Seleccionar otro acuerdo como base
+        %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
+          Terminar

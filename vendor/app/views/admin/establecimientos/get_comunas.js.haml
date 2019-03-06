@@ -1,0 +1,5 @@
+-#Permite agregar las comunas al select
+$('#establecimiento_contribuyente_comuna_id').empty();
+$('#establecimiento_contribuyente_comuna_id').append( $('<option>Selecciona una comuna</option>'));
+- @comunas.each do |comuna|
+  $('#establecimiento_contribuyente_comuna_id').append($('<option value="#{comuna.id}">#{comuna.nombre}</option>'));

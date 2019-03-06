@@ -1,0 +1,173 @@
+- titulo t(:proveedor)
+- if @proveedor.contribuyente_id.blank?
+	- sin_contribuyente = true
+- else
+	- contribuyente = @proveedor.contribuyente
+- i_collection=contribuyente ? [[contribuyente.razon_social,contribuyente.id]] : []
+
+:javascript
+	var valor_previo;
+	var nombre_previo;
+
+	$(document).ready(function() {
+		$('.chosen-control').chosen({
+			allow_single_deselect: true,
+			no_results_text: 'No se encontraron resultados',
+			width: '100%'
+		});
+		/*$("i.deseleccionar-contribuyente").click(function() {
+			$("select#proveedor_contribuyente_id option:not([value=''])").remove();
+			checkFieldValidity($("input#proveedor_contribuyente_id"));
+			$(this).hide();
+		});*/
+
+		$('body').on('change','.contribuyente-radio',function() {
+		 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		});
+
+		$('body').on('focus','.tp-proveedor',function() {
+			valor_previo = this.value;
+			nombre_previo = $(this).find("option:selected").text();
+		});
+
+		$('body').on('change','.tp-proveedor',function() {
+			var elem = $(this);
+			if(valor_previo == ""){
+				if(this.value != ""){
+					$(".tp-proveedor:visible").each(function(){
+						if($(this).prop("id") != elem.prop("id")){
+	  					$(this).find("option[value='"+elem.val()+"']").remove();
+						}
+					});
+				}
+			}else{
+				if(this.value == ""){
+					$(".tp-proveedor:visible").each(function(){
+						if($(this).prop("id") != elem.prop("id")){
+							$(this).append("<option value='"+valor_previo+"'>"+nombre_previo+"</option>");
+						}
+					});
+				}else if(valor_previo != this.value){
+					$(".tp-proveedor:visible").each(function(){
+						if($(this).prop("id") != elem.prop("id")){
+							$(this).append("<option value='"+valor_previo+"'>"+nombre_previo+"</option>");
+						}
+					});
+					$(".tp-proveedor:visible").each(function(){
+						if($(this).prop("id") != elem.prop("id")){
+	  					$(this).find("option[value='"+elem.val()+"']").remove();
+						}
+					});
+				}
+			}
+		});
+		
+		$('.seleccionar-contribuyente-button').click(function() {
+			try {
+				data=JSON.parse($('.contribuyente-radio:checked').val());
+				$("input#proveedor_contribuyente_id").val(data.id);
+				$("input#proveedor_rut_contribuyente").val(data.rut);
+				$("input#proveedor_nombre_contribuyente").val(data.razon_social);
+				checkFieldValidity($("input#proveedor_contribuyente_id"));
+				//$("i.deseleccionar-contribuyente").show();
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+		htmlErrorToTooltip('top');
+		$(".tp-proveedor:visible").each(function(){
+			var elem = $(this);
+			$(".tp-proveedor:visible").each(function(){
+				if($(this).prop("id") != elem.prop("id")){
+					$(this).find("option[value='"+elem.val()+"']").remove();
+				}
+			});
+		});
+
+	});
+
+	$(document).on('nested:fieldAdded:proveedor_tipo_proveedores', function(e){
+	  checkFieldValidity($('#contribuyente_id'));
+	  //Se borran los que ya estan seleccionados en otros
+		var agregado = $(e.target).find(".tp-proveedor");
+	  $(".tp-proveedor:visible").filter(function() { return $(this).val() != ""; }).each(function(){
+	  	agregado.find("option[value='"+this.value+"']").remove();
+	  });
+	});
+	$(document).on('nested:fieldRemoved:proveedor_tipo_proveedores', function(e){
+		$(e.target).closest('tr').addClass('nested-row-removed');
+		submitBtn = $(e.target).parents('form').find('.btn-disabled');
+		if ( $('select.tp-proveedor').parents('.fields:not([style="display: none;"])').length == 0 ) {
+			submitBtn.attr('disabled','disabled');
+		}
+		//Se agrega opcion de elemento eliminado
+		var eliminado = $(e.target).find(".tp-proveedor");
+		var valor = eliminado.val();
+		if(valor != ""){
+			var nombre = eliminado.find('option:selected').text();
+			$(".tp-proveedor:visible").each(function(){
+				$(this).append("<option value='"+valor+"'>"+nombre+"</option>");
+			});
+		}
+	});
+
+= simple_nested_form_for [:admin,@proveedor], remote: true, html: { autocomplete: :off, class: 'proveedor-form' } do |f|
+	= f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'required-field' }
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@proveedor)
+				.card-body
+					.row
+						.col-lg-7.pr-lg-0.col-12
+							.row
+								.col-lg-2.pr-0.col-md-2.col-4
+									.form-group.integer.required.proveedor_contribuyente_id
+										%label.string.control-label.required
+											%abbr{title: :required}*
+											= t(:institución)
+										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary' do
+											%i.fa.fa-search-plus
+											Buscar
+								.col-lg-0.col-md-10.col-8
+									= f.input :rut_contribuyente, label: t(:rut), input_html: { class: 'required-field' }, readonly: true, placeholder: "12345678-9", required: true
+									//%i.fa.fa-times.deseleccionar-contribuyente
+								.col-12
+									= f.input :nombre_contribuyente, label: t(:nombre_institución), input_html: { class: 'required-field' }, readonly: true, placeholder: "Razón social de la institución", required: true
+								.col-12
+									= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), as: :grouped_select, collection: TipoInstrumento.por_padre, group_method: :last, input_html: { class: 'im-not-required-check-the-others' }, required: false
+								.col-12
+									= f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
+								.col-12
+									= f.input :clasificacion_id, label: t(:clasificacion), collection: Clasificacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
+								.col-12
+									= f.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
+						.col-lg-5.col-12
+							.row
+								.col-12
+									.form-group
+										.card.mb-0
+											.card-header.p-1.pr-3
+												%label.integer.float-left.m-0
+													%abbr{:title => "required"} *
+													= t(:tipo_proveedor)
+												= f.link_to_add :proveedor_tipo_proveedores, data: { target: "#proveedor-tipo-proveedores" }, class: 'float-right' do
+													%i.fa.fa-plus-circle
+											.card-body.p-0
+												%table#proveedor-tipo-proveedores.table.table-striped.mb-0
+													%tbody
+														= f.fields_for :proveedor_tipo_proveedores, :wrapper => false  do |ptp|
+															%tr.fields
+																%td.p-0
+																	= ptp.input :tipo_proveedor_id, label: false, collection: TipoProveedor.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'tp-proveedor required-field' }, required: true, wrapper_class: 'm-0'
+																%td.accion.no-padding.remove-row
+																	= ptp.link_to_remove do
+																		%i.fa.fa-times-circle.left.link-to-remove-row
+
+	.float-right
+		= link_to t(:back), admin_proveedores_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, buscar_por_actividad_economica: true, resultado_mostrados: 10

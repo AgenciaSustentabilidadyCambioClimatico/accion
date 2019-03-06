@@ -1,0 +1,20 @@
+= render 'resultado_consulta'
+= form_tag search_admin_dato_recolectados_path, remote: true, html: { method: :post, class: 'filter', autocomplete: :off } do
+  .row
+    .col-lg-6.col-12.mt-2
+      .row
+        .col-12
+          = label_tag :nombre, t(:nombre), class: "string"
+        .col-12     
+          = text_field_tag :nombre, nil, placeholder: 'Ingrese el nombre del producto a buscar...', class: 'form-control'
+    .col-lg-6.col-12.mt-2
+      .row
+        .col-12
+          = label_tag :cpc, t(:codigo_producto), class: "string"
+        .col-12
+          = text_field_tag :cpc, nil, placeholder: 'Ingrese el codigo del producto a buscar...', class: 'form-control'
+  .row
+    .col-lg-9.col-12.d-none.d-lg-block
+    .col-lg-3.col-12.mt-2
+      = button_tag "Buscar", 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Buscando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-sm btn-block btn-disabled"# float-right", disabled: :disabled
+%br
