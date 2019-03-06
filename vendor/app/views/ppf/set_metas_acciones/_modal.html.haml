@@ -1,0 +1,9 @@
+.modal.fade#set-metas-accion-remote-modal-form{tabindex: "-1", role: :dialog, "aria-labelledby": :SetMetasAccionModalEditLabel, "aria-hidden": true}
+	.modal-dialog.modal-dialog-centered.modal-lg.larger-please{role: :document}
+		.modal-content.p-0
+			.modal-body.p-0
+				.text-center.loading-wrapper
+					= image_tag("loading.gif", class: :spinner)
+			.modal-footer
+				%button.btn.btn-sm.btn-secondary.float-left{type: :button, "data-dismiss"=>:modal}
+					Cerrar

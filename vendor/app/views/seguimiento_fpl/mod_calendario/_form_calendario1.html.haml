@@ -1,0 +1,73 @@
+:javascript
+
+  $(document).ready(function() {
+
+  });
+
+- titulo t(:modificación_calendario)
+= simple_form_for @proyecto, url: seguimiento_fpl_mod_calendario_path(@proyecto), method: :patch do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:proyecto)
+        .card-body
+          .table-responsive
+            %table.table.table-bordered.actividades{width: "100%"}
+              %thead
+                %tr
+                  %th
+                    =t(:actividad)
+                  %th=t(:estado)
+                  %th=t(:fecha_finalización)
+                  %th=t(:glosa)
+                  %th=t(:ítem)
+                  %th=t(:tipo_aporte)
+                  %th=t(:monto)
+              %tbody
+                - @proyecto.proyecto_actividad.each do |actividad|
+                  %tr
+                    - total_actividades = actividad.actividad_item.length
+                    - total_glosas = actividad.actividad_item.map{ |e| e.glosa_id}.uniq.size
+                    - cant_act_item = total_actividades + (4 - total_glosas)
+                    %td{rowspan: "#{cant_act_item}"}=actividad.nombre
+                    %td{rowspan: "#{cant_act_item}"}="esto es un estado"
+                    %td{rowspan: "#{cant_act_item}"}
+                      = f.input :fecha_finalizacion, label: false, input_html: { class: 'required-field basic-datetimepicker', value: actividad.fecha_finalizacion, id: "proyecto_actividad_#{actividad.id}_fecha_finalizacion", name: "proyecto_actividad[#{actividad.id}][fecha_finalizacion]"}, as: :string
+                    - @glosas.each_with_index do |glosa, index_glosa|
+                      - items = actividad.actividad_item.where(glosa_id: glosa.id).all
+                      - if items.length > 0
+                        - if index_glosa > 0
+                          %tr
+                            %td{rowspan: "#{items.length}"}=glosa.nombre
+                            - items.each_with_index do |item, index_item|
+                              - if index_item > 0
+                                %tr
+                                  = render 'item', item: item, f: f
+                              - else
+                                = render 'item', item: item, f: f
+                        - else 
+                          %td{rowspan: "#{items.length}"}=glosa.nombre
+                          - items.each_with_index do |item, index_item|
+                            - if index_item > 0
+                              %tr
+                                = render 'item', item: item, f: f
+                            - else
+                              = render 'item', item: item, f: f
+                      - else
+                        - if index_glosa > 0
+                          %tr
+                            %td{rowspan: "1"}=glosa.nombre
+                            %td=" - "
+                            %td=" - "
+                            %td=" - "
+                        - else
+                          %td{rowspan: "1"}=glosa.nombre
+                          %td=" - "
+                          %td=" - "
+                          %td=" - "
+  .float-right
+    = link_to t(:back), seguimiento_fpl_proyecto_documento_garantias_path(@proyecto), class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+%br
+%br

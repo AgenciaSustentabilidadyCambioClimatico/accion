@@ -1,0 +1,27 @@
+= simple_form_for @proyecto_pago, url: seguimiento_fpl_proyecto_proyecto_pago_path(@tarea_pendiente,@proyecto,@proyecto_pago), remote: true do |f|
+  - es_orden = modulo == :orden
+  .row
+    .col-12
+      .card
+        .card-header
+          - titulo = es_orden ? t(:ingreso_n_orden_de_pago) : t(:ingreso_fecha_pago_efectiva)
+          %h5.no-margin=titulo
+        .card-body
+          .row
+            .col-12
+              %label.string=t(:proyecto)
+              %h5=@proyecto.nombre
+            .col-6
+              = f.input :modelo, as: :hidden, input_html: {value: modulo}
+              = f.input :monto, label: t(:monto_a_pagar), as: :string, disabled: true, input_html: {value: number_to_currency(@proyecto_pago.monto)}
+            - if es_orden
+              .col-6
+                = f.input :numero_orden_pago, label: t(:número_orden_pago), required: true, as: :string, input_html: {class: 'numero'}
+            - else
+              .col-6
+                - fecha_pago_efectiva = @proyecto_pago.fecha_pago_efectiva.blank? ? nil : l(@proyecto_pago.fecha_pago_efectiva,format: '%d-%m-%Y')
+                = f.input :fecha_pago_efectiva, label: t(:fecha_pago_efectiva), as: :string, required: true, input_html: {class: 'basic-datetimepicker required-field',value: fecha_pago_efectiva, autocomplete: 'off'}
+
+  .float-right
+    = volver_root
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"# btn-disabled", disabled: :disabled

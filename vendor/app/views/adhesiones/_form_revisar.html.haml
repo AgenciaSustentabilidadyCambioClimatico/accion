@@ -1,0 +1,70 @@
+:javascript
+  $(document).ready(function(){
+    $(".aceptado").change(function(){
+      valor = $(this).val()
+      if(valor==""){
+        $(this).closest("tr").find($('.observacion')).attr("disabled", true);
+      }else if(valor=="true"){
+        $(this).closest("tr").find($('.observacion')).attr("disabled", false).removeClass('required-field');
+      }else if(valor=="false"){
+        $(this).closest("tr").find($('.observacion')).attr("disabled", false).addClass('required-field');
+      }      
+    })
+  })
+
+-if @flujo.apl?
+  - titulo t(:revision_adhesiones)
+-if @flujo.ppf?
+  - titulo t(:revision_adhesion)
+
+= simple_form_for @adhesion, url: guardar_revisar_adhesion_path(@tarea_pendiente), method: :patch, remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+          %b
+            =t(:estado_adhesiones)
+          %h5.no-margin=titulo_instrumento.html_safe
+          -if !@manifestacion_de_interes.blank?
+            %h5.no-margin=titulo_acuerdo.html_safe
+          -elsif !@proyecto.blank?
+            %h5.no-margin=titulo_proyecto.html_safe
+          -elsif !@ppp.blank?
+            %h5.no-margin=titulo_programa.html_safe
+          %h5.no-margin=datos_beneficiario.html_safe
+        .card-body.p-0
+          %table.table.table-striped.table-bordered#adhesiones_rechazadas
+            %thead
+              %tr
+                %th=t(:rut_institucion)
+                %th=t(:nombre_institución)
+                %th=t(:comuna_establecimiento)
+                %th=t(:direccion_establecimiento)
+                %th=t(:nombre_encargado)
+                %th=t(:fono_encargado)
+                %th=t(:mail_encargado)
+                %th.estado=t(:estado)
+                %th=t(:observaciones)
+            %tbody
+              - @pendientes.each_with_index do |fila, posicion|
+                %tr
+                  %td=fila[:rut_institucion]
+                  %td=fila[:nombre_institucion]
+                  %td=fila[:comuna_instalacion]
+                  %td=fila[:direccion_instalacion]
+                  %td=fila[:nombre_encargado]
+                  %td=fila[:fono_encargado]
+                  %td=fila[:email_encargado]
+                  %td.estado
+                    = f.input :aceptado, collection: { Aceptado: true, Observado: false}, label: false, input_html: { name: "aceptado[#{posicion}]", class: "aceptado not-required-if-other-like-me-is-present"}
+                  %td
+                    = f.input :observacion, as: :text, label: false, input_html: { name: "observacion[#{posicion}]", class: "observacion"}, disabled: true
+  .row
+    .col-12
+      .float-right
+        = volver_root
+        - unless @pendientes.blank?
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary button-send, btn-disabled", disabled: true
+#aceptadas.mt-2
+  =render "aceptados"

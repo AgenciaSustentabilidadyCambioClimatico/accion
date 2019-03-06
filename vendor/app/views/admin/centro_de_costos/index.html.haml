@@ -1,0 +1,4 @@
+- titulo t(:centro_de_costos)
+= link_to t(:agregar_, item: t(:centro_de_costo).downcase), new_admin_centro_de_costo_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#centro-de-costo-remote-table
+	= render 'table'

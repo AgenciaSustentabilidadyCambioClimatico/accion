@@ -1,0 +1,173 @@
+:javascript
+
+  $(document).ready(function() {
+   /*
+    $(".nav-link").on('click',function(e){
+      e.preventDefault()
+      id = $(this).attr('href').replace("#","")
+      //$(this).parents(".tabs-container").find(id).tab('show')
+      $(this).closest(".tabs-container").find(".tab-pane").hide()
+      $(this).closest(".tabs-container").find("."+id+"-tab").show()
+    });
+    */
+  });
+
+- titulo t(:modificación_de_actividad)
+= simple_nested_form_for @proyecto, url: '' do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            =t(:actividad)
+        .card-body
+          =# f.fields_for :proyecto_actividad, :wrapper => false do |pa|
+          = f.fields_for :proyecto_actividad, f.object.proyecto_actividad.limit(1), :wrapper => false do |pa|
+            #proyectos_actividades
+              .card.fields
+                .card-header
+                  .row
+                    .col-1
+                      =pa.label :nombre
+                    .col-10
+                      =pa.input :nombre, label: false
+                    .col-1
+                      =pa.link_to_remove do
+                        %i.fa.fa-times-circle
+                .card-body
+                  .row
+                    .col-6
+                      = label_tag t(:estado_actividad), nil, class: 'no-form label string control-label disabled'
+                      = text_field_tag :estado_actividad, nil, class: 'form-control disabled', disabled: true
+                    .col-6
+                      = f.input :fecha_iniciacion, input_html: { class: 'required-field basic-datetimepicker'}, as: :string
+                    .col-12
+                      %br
+                    .col-12
+                      .tabs-container
+                        #tab-menu-controls.no-margin{role: :tabpanel}
+                          %ul#proyecto.nav.nav-tabs{role: :tablist}
+                            %li.nav-item
+                              %a#rrhh-propio-tab.nav-link.active{"aria-controls": :visibles, "aria-expanded": :true, "data-toggle": :tab, href: "#rrhh-propio", role: :tab}
+                                =Glosa.glosa_por_id(1)
+                            %li.nav-item
+                              %a#rrhh-externo-tab.nav-link{"aria-controls": :ocultos, "aria-expanded": false, "data-toggle": :tab, href: "#rrhh-externo", role: :tab}
+                                =Glosa.glosa_por_id(2)
+                            %li.nav-item
+                              %a#gastos-operacionales-tab.nav-link{"aria-controls": :ocultos, "aria-expanded": false, "data-toggle": :tab, href: "#gastos-operacionales", role: :tab}
+                                =Glosa.glosa_por_id(3)
+                            %li.nav-item
+                              %a#gastos-administrativos-tab.nav-link{"aria-controls": :ocultos, "aria-expanded": false, "data-toggle": :tab, href: "#gastos-administrativos", role: :tab}
+                                =Glosa.glosa_por_id(4)
+
+                        #proyecto-content.tab-content
+                          #rrhh-propio.rrhh-propio-tab.tab-pane.fade.active.show{"aria-expanded": true, "aria-labelledby": "rrhh-propio-tab", role: :tabpanel}
+                            .card.append-group
+                              .card-header.pl-3.pt-1.pb-1
+                                = pa.link_to_add :actividad_item, data: { target: "#actividad_items_glosa1" } do
+                                  %i.fa.fa-plus-circle
+                                  = t(:agregar_ítem)
+                              .card-body.p-0
+                                %table.table.table-striped#actividad_items_glosa1.m-0
+                                  %thead
+                                    %tr
+                                      %th
+                                      %th=t(:nombre)
+                                      %th=t(:tipo_aporte)
+                                      %th=t(:monto)
+                                  %tbody
+                                    = pa.fields_for :actividad_item, pa.object.actividad_item.where(glosa_id: 1), :wrapper => false do |ai1|
+                                      %tr.fields
+                                        %td
+                                          =ai1.link_to_remove class: 'm-0 text-center' do
+                                            %i.fa.fa-times-circle
+                                        %td.p-0
+                                          = ai1.input :nombre , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :tipo_aporte, collection:  @tipo_aportes,label: false, label_method: :nombre, include_blank: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :monto , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                          #rrhh-externo.rrhh-externo-tab.tab-pane.fade{"aria-expanded": false, "aria-labelledby": "rrhh-externo-tab", role: :tabpanel}
+                            .card.append-group
+                              .card-header.pl-3.pt-1.pb-1
+                                = pa.link_to_add :actividad_item, data: { target: "#actividad_items_glosa1" } do
+                                  %i.fa.fa-plus-circle
+                                  = t(:agregar_ítem)
+                              .card-body.p-0
+                                %table.table.table-striped#actividad_items_glosa1.m-0
+                                  %thead
+                                    %tr
+                                      %th
+                                      %th=t(:nombre)
+                                      %th=t(:tipo_aporte)
+                                      %th=t(:monto)
+                                  %tbody
+                                    = pa.fields_for :actividad_item, pa.object.actividad_item.where(glosa_id: 2), :wrapper => false do |ai1|
+                                      %tr.fields
+                                        %td
+                                          =ai1.link_to_remove class: 'm-0 text-center' do
+                                            %i.fa.fa-times-circle
+                                        %td.p-0
+                                          = ai1.input :nombre , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :tipo_aporte, collection:  @tipo_aportes,label: false, label_method: :nombre, include_blank: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :monto , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                          #gastos-operacionales.gastos-operacionales-tab.tab-pane.fade{"aria-expanded": false, "aria-labelledby": "gastos-operacionales-tab", role: :tabpanel}
+                            .card.append-group
+                              .card-header.pl-3.pt-1.pb-1
+                                = pa.link_to_add :actividad_item, data: { target: "#actividad_items_glosa1" } do
+                                  %i.fa.fa-plus-circle
+                                  = t(:agregar_ítem)
+                              .card-body.p-0
+                                %table.table.table-striped#actividad_items_glosa1.m-0
+                                  %thead
+                                    %tr
+                                      %th
+                                      %th=t(:nombre)
+                                      %th=t(:tipo_aporte)
+                                      %th=t(:monto)
+                                  %tbody
+                                    = pa.fields_for :actividad_item, pa.object.actividad_item.where(glosa_id: 3), :wrapper => false do |ai1|
+                                      %tr.fields
+                                        %td
+                                          =ai1.link_to_remove class: 'm-0 text-center' do
+                                            %i.fa.fa-times-circle
+                                        %td.p-0
+                                          = ai1.input :nombre , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :tipo_aporte, collection:  @tipo_aportes,label: false, label_method: :nombre, include_blank: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :monto , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                          #gastos-administrativos.gastos-administrativos-tab.tab-pane.fade{"aria-expanded": false, "aria-labelledby": "gastos-administrativos-tab", role: :tabpanel}
+                            .card.append-group
+                              .card-header.pl-3.pt-1.pb-1
+                                = pa.link_to_add :actividad_item, data: { target: "#actividad_items_glosa1" } do
+                                  %i.fa.fa-plus-circle
+                                  = t(:agregar_ítem)
+                              .card-body.p-0
+                                %table.table.table-striped#actividad_items_glosa1.m-0
+                                  %thead
+                                    %tr
+                                      %th
+                                      %th=t(:nombre)
+                                      %th=t(:tipo_aporte)
+                                      %th=t(:monto)
+                                  %tbody
+                                    = pa.fields_for :actividad_item, pa.object.actividad_item.where(glosa_id: 4), :wrapper => false do |ai1|
+                                      %tr.fields
+                                        %td
+                                          =ai1.link_to_remove class: 'm-0 text-center' do
+                                            %i.fa.fa-times-circle
+                                        %td.p-0
+                                          = ai1.input :nombre , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :tipo_aporte, collection:  @tipo_aportes,label: false, label_method: :nombre, include_blank: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                                        %td.p-0
+                                          = ai1.input :monto , label: false, wrapper_class: 'm-0', input_html: { class: 'm-0 rounded-0'}
+                  
+  .float-right
+    = link_to t(:back), seguimiento_fpl_proyecto_documento_garantias_path(@proyecto), class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+%br
+%br

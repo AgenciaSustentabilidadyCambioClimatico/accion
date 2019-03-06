@@ -1,0 +1,138 @@
+# Logfile created on 2019-03-06 12:11:35 -0300 by logger.rb/61378
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting Middleware
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting render_partial
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting collection_with_template
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting render_template
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:11:35 -0300 dherrera (4709)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting Middleware
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting render_partial
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting collection_with_template
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting render_template
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:12:40 -0300 dherrera (4792)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting Middleware
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting render_partial
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting collection_with_template
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting render_template
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:13:05 -0300 dherrera (4972)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting Middleware
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting render_partial
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting collection_with_template
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting render_template
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:24:02 -0300 dherrera (6244)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting Middleware
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting render_partial
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting collection_with_template
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting render_template
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:25:44 -0300 dherrera (6750)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Scout Agent [2.4.14] Initialized
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActionController::Base
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActionController::Metal
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActionController::Api
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting Middleware
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActionView::PartialRenderer
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting render_partial
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting render_partial_with_scout_instrument, render_partial_without_scout_instrument
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting collection_with_template
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting collection_with_template_with_scout_instrument, collection_with_template_without_scout_instrument
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActionView::TemplateRenderer
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting render_template
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting render_template_with_scout_instrument, render_template_without_scout_instrument
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActiveRecord::ConnectionAdapters::AbstractAdapter
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActiveRecord::Querying - ActiveRecord::Querying
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting ActiveRecord::Relation#exec_queries - ActiveRecord::Relation (prepending)
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Instrumenting Net::HTTP
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Installed Background Job Integration [delayed_job]
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Installed Application Server Integration [null].
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Scout Agent [2.4.14] Installed
+[03/06/19 12:25:55 -0300 dherrera (6779)] INFO : Deferring agent start. Standing by for first request
+[03/06/19 12:25:57 -0300 dherrera (6779)] INFO : Scout Agent [2.4.14] starting for [ascc2] Framework [rails3_or_4] App Server [null] Background Job Framework [delayed_job] Hostname [dherrera]
+[03/06/19 12:25:57 -0300 dherrera (6779)] INFO : Initializing worker thread.
+[03/06/19 12:25:57 -0300 dherrera (6779)] INFO : Sending Application Startup Info - App Server: null, Framework: Rails, Framework Version: 5.1.6, Database Engine: postgres
+[03/06/19 12:27:57 -0300 dherrera (6779)] INFO : [12:25] Delivering 0 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded across (unknown) processes.
+[03/06/19 12:28:57 -0300 dherrera (6779)] INFO : [12:26] Delivering 8 Metrics for 1 requests and 1 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:29:57 -0300 dherrera (6779)] INFO : [12:27] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:30:57 -0300 dherrera (6779)] INFO : [12:28] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:31:57 -0300 dherrera (6779)] INFO : [12:29] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:32:57 -0300 dherrera (6779)] INFO : [12:30] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:33:57 -0300 dherrera (6779)] INFO : [12:31] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.
+[03/06/19 12:34:57 -0300 dherrera (6779)] INFO : [12:32] Delivering 2 Metrics for 0 requests and 0 Slow Transaction Traces and 0 Job Traces, Recorded from 1 processes.

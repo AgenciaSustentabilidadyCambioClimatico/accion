@@ -1,0 +1,33 @@
+-if @acceso == :admin || @acceso == :jefe_de_linea || @acceso == :revisor_tecnico
+  - titulo t(:maquinaria)
+  - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+    = link_to t(:agregar_, item: t(:maquinaria).downcase), new_admin_maquinaria_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+  - if current_user.is_admin?
+    = link_to '#', "data-toggle"=>:modal, "data-target"=>"#permisos-privacidad", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
+      %i.fa.fa-edit
+      Permisos de privacidad
+  .card
+    .card-header
+      %h5.no-margin
+        = t(:buscar_, item: t(:establecimiento_por_institucion).downcase)
+    .card-body
+      #establecimientos-remote-filter
+        = render 'filter_form'
+
+  .card
+    .card-header
+      %h5.no-margin
+        = t(:lista_de_, items: t(:maquinarias).downcase)
+    .card-body
+      #establecimientos-remote-table
+        = render 'table'
+  = render 'layouts/privacidad', entidad: :maquinarias
+-else
+  - titulo t(:maquinaria)
+  .card
+    .card-header
+      %h5.no-margin
+        = t(:lista_de_, items: t(:maquinarias).downcase)
+    .card-body
+      #establecimientos-remote-table
+        = render 'table'

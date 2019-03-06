@@ -1,0 +1,91 @@
+:javascript
+	function __chosen_actecos() {
+		$('.contribuyente-acteco').chosen({
+			allow_single_deselect: true,
+			no_results_text: 'No se encontraron resultados',
+			width: '100%'
+		});
+	}
+	$(document).ready(function(){
+		__chosen_actecos();
+		$('body').on('change','.contribuyente-radio',function() {
+			$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		});
+
+		$('.seleccionar-contribuyente-button').click(function() {
+			try {
+				data=JSON.parse($('.contribuyente-radio:checked').val());
+				$("input#otro_contribuyente_id").val(data.id);
+				$("input#otro_rut_contribuyente").val(data.rut);
+				$("input#otro_nombre_contribuyente").val(data.razon_social);
+				$.each(data.establecimientos, function (i, item) {
+				   $('select#otro_establecimiento_contribuyente_id').append("<option value='"+item[1]+"'>"+item[0]+"</option>");
+				});			
+
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+		htmlErrorToTooltip('top');
+	});
+
+	$(document).on('nested:fieldAdded:actividad_economica_contribuyentes', function(event){
+	  __chosen_actecos();
+	})
+- url = !@otro.id.nil? ? admin_otro_path(@otro) : admin_otros_path
+= simple_form_for [:admin, @otro], remote: true, html: { autocomplete: :off, class: 'otro-form' } do |f|
+	= f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'required-field' }
+	- fields_visibility = f.object.fields_visibility
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@otro)
+				.card-body
+					.row
+						-if @acceso == :admin
+							.col-lg-2.pr-0.col-md-2.col-4
+								.form-group.integer.required.proveedor_contribuyente_id
+									%label.string.control-label.required
+										%abbr{title: :required}*
+										= t(:institución)
+									= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary' do
+										%i.fa.fa-search-plus
+										Buscar
+						.col-lg-0.col-md-5.col-4
+							= f.input :rut_contribuyente, label: t(:rut), input_html: { class: 'required-field' }, readonly: true, placeholder: "12345678-9" , required: true
+							//%i.fa.fa-times.deseleccionar-contribuyente
+						.col-lg-0.col-md-5.col-4
+							= f.input :nombre_contribuyente, label: t(:nombre_institución), input_html: { class: 'required-field' }, readonly: true, placeholder: "Razón social de la institución", required: true
+					.row
+						.col-12						
+							= label :establecimiento_contribuyente_id, t(:establecimiento), class: "string mb-0"	
+							= f.select :establecimiento_contribuyente_id, @otro.contribuyente.present? ? @otro.contribuyente.establecimiento_contribuyentes.map{|u| [u.nombre_and_direccion, u.id]} : [], {:include_blank => 'Seleccione un establecimiento'}, { class: 'form-control contribuyente-establecimiento mt-2'}
+					.row
+						.col-6
+							= f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Nombre del otro", required: true
+						.col-6
+							= f.input :tipo, label: t(:tipo), placeholder: "Tipo de otro"
+						.col-6
+							= f.input :identificador_unico, label: t(:identificador_único), placeholder: "Identificador del otro", readonly: (@acceso != :admin)
+						.col-6
+							%label.control-label.required
+								%abbr{title: :required}*
+								=t(:alcance)
+							= f.select :alcance_id, Alcance.obtener_alcances_para_otros, {:include_blank => 'Seleccione un alcance'}, { class: 'form-control required-field'}
+						.col-12
+							= f.input :imagen, as: :file, input_html: {class: "form-control", multiple: true}, label: t(:subir_imagen)
+						-@otro.imagen.each_with_index do |imagen, index|
+							.col-3
+								= link_to image_download_admin_maquinarias_path(:file_name => "#{imagen}", id: @otro.id), class: 'btn btn-sm btn-outline-secondary btn-block', download: '' do
+									%i.fa.fa-download
+									= t(:descargar)+" #{index+1}"
+			-if f.object.persisted? && PrivacidadPermiso.posee_eleccion_usuario("otros")
+				= render 'privacidad', fields_visibility: fields_visibility
+
+	.float-right
+		= link_to t(:back), admin_otros_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+-if @acceso == :admin
+	= render 'admin/contribuyentes/buscador', es_para_seleccion: true

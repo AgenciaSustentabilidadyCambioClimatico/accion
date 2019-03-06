@@ -1,0 +1,45 @@
+:javascript
+  $(document).ready(function() {
+    $('table.clasificaciones').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:clasificaciones).downcase)
+  .card-body
+    .table-responsive
+      %table.table.clasificaciones.table-striped
+        %thead
+          %tr
+            %th=t(:nombre)
+            %th=t(:descripción)
+            %th=t(:referencia)
+            %th=t(:clasificación_padre)
+            %th=t(:es_meta)
+            %th.dos.iconos-acciones=t(:acciones)
+
+        %tbody
+          - @clasificaciones.each do |record|
+            %tr
+              %td=record.nombre
+              %td=record.descripcion
+              %td=record.referencia
+              %td
+                - if record.clasificacion_padre.blank?
+                  = '--'
+                - else
+                  = record.clasificacion_padre.nombre
+              %td=record.es_meta == true ? t(:yes) : t(:no) 
+              %td.dos.iconos-acciones
+                %div
+                  = link_to edit_admin_clasificacion_path(record) do
+                    %i.fa.fa-edit
+                  = link_to admin_clasificacion_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:clasificacion).downcase), remote: false } do
+                    %i.fa.fa-trash

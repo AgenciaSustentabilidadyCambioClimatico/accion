@@ -1,0 +1,4 @@
+- unless @actores.blank?
+	$('#actores-remote-table').html("#{j render 'table'}");
+= render 'layouts/remote_form', block: 'actualizar'
+clearTimeout(cierreAlerta);

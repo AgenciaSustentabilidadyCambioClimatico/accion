@@ -1,0 +1,38 @@
+- titulo t(:programa_proyecto_propuesta)
+= simple_form_for @programa_proyecto_propuesta, url: guardar_observaciones_tecnicas_ppf_tarea_pendiente_programa_proyecto_propuesta_path, method: :patch, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= t(:observaciones_técnicas)
+				.card-body
+					.row
+						.col-md-5.pr-md-0.col-12
+							.row
+								.col-12
+									= f.input :resultado_observaciones_tecnicas, collection: ProgramaProyectoPropuesta.resultado_observaciones_tecnicas.keys.each_with_index.map { |w,k| [w.humanize, k]}, input_html: { class: 'required-field', rows: 4 }, label: t(:resultado_observaciones_técnicas), required: true
+								.col-9
+									= f.input :archivo_observaciones_tecnicas, as: :file, input_html: { class: 'required form-control required-field' }, label: t(:archivo_observaciones_técnicas), required: true
+									= f.hidden_field :archivo_observaciones_tecnicas_cache
+								.col-3.align-self-end
+									-#
+										= __descargar_archivo(f.object.archivo_observaciones_tecnicas, :archivo_observaciones_tecnicas)
+									= __descargar_archivo(f.object.archivo_observaciones_tecnicas, f.object)
+								.col-12
+									= f.input :fecha_observaciones_tecnicas, as: :string, input_html: { class: 'auto-save basic-datetimepicker-max-today required-field', value: ((f.object.fecha_observaciones_tecnicas.blank?) ? nil : localize(f.object.fecha_observaciones_tecnicas)), onkeydown: 'return false' }, label: t(:fecha_observaciones_técnicas), required: true
+						
+						.col-md-7.col-12
+							.row
+								.col-12
+									= f.input :actual_comentarios_observaciones_tecnicas, as: :text, label: t(:comentarios_observaciones_técnicas), input_html: { class: 'comentarios-observaciones-tecnicas textarea-in-form' }, placeholder: "Indique un comentario", required: true
+								.col-12
+									.form-group
+										%label.control-label
+											= t(:descargar_propuesta_inicial)
+										= link_to @programa_proyecto_propuesta.archivo_propuesta_elaboracion.url, class: 'form-control' do
+											%i.fa.fa-download
+											= t(:archivo_propuesta_elaboración_descargar)
+	.float-right
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'guardar-revisor-button', class: "btn btn-primary btn-sm float-right ml-1"# btn-disabled", disabled: :disabled

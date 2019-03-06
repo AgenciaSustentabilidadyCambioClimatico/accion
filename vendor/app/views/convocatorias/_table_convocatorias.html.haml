@@ -1,0 +1,59 @@
+:javascript
+  $(document).ready(function() {
+    $('table.descargable-tareas').DataTable({
+      order: [[0, 'desc']], //ordena la tabla por columnas según criterio
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+    %b
+      = t(:lista_de_, items: t(:convocatorias).downcase)
+    %h5.no-margin=titulo_instrumento.html_safe
+    -if !@manifestacion_de_interes.blank?
+      %h5.no-margin=titulo_acuerdo.html_safe
+    -elsif !@proyecto.blank?
+      %h5.no-margin=titulo_proyecto.html_safe
+    -elsif !@ppp.blank?
+      %h5.no-margin=titulo_programa.html_safe
+    %h5.no-margin=datos_beneficiario.html_safe
+  .card-body
+    .table-responsive
+      %table.table.descargable-tareas.table-striped
+        %thead
+          %tr
+            %th.text-center=t(:id)
+            %th.text-left=t(:nombre_convocatoria)
+            %th=t(:direccion_reunion)
+            %th.text-center=t(:fecha_reunion)
+            %th.text-center=t(:estado)
+            %th.tres.iconos-acciones=t(:acciones)
+        %tbody
+          - @convocatorias.each do |record|
+            %tr
+              %td.text-center=record.id
+              %td.text-left=record.nombre
+              %td.text-left=record.direccion
+              %td.text-center=record.fecha
+              - if record.terminada?
+                %td.text-center="terminada"
+              -else
+                %td.text-center="en curso"
+              %td.tres.iconos-acciones
+                %div
+                  = link_to tarea_pendiente_convocatoria_descargar_adjuntos_path(@tarea_pendiente, record.id), title: 'adjuntos' do
+                    %i.fa.fa-paperclip 
+                  = link_to edit_tarea_pendiente_convocatoria_path(@tarea_pendiente, record.id), title: 'editar convocatoria' do
+                    %i.fa.fa-edit
+                  = link_to edit_tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, record.id), title: 'crear/enviar minuta' do
+                    %i.fa.fa-wpforms
+                  - if !record.terminada
+                    - titulo='ELIMINAR CONVOCATORIA - '+record.nombre
+                    = link_to  tarea_pendiente_convocatoria_path(@tarea_pendiente, record.id), title: titulo, method: :delete, data: { confirm: "Se eliminarán también del registro las personas convocadas y la minuta respectiva. ¿Esta seguro que desea eliminar?", remote: false } do
+                      %i.fa.fa-trash

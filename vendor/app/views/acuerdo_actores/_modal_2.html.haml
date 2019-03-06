@@ -1,0 +1,19 @@
+.modal.fade{id: :"modal-2", tabindex: "-1", role: :dialog, "aria-labelledby": :modal2Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header
+        =t(:alcance_campo_de_aplicación_y_definiciones)
+      .modal-body
+        .row
+          .col-12
+            = f.input :alcance, as: :ckeditor, input_html: { value: @datos["alcance"]}
+          .col-12
+            = f.input :campo_de_aplicacion, label: t(:campo_de_aplicacion), as: :ckeditor, input_html: { value: @datos["campo_de_aplicacion"]}
+          .col-12
+            = f.input :definiciones, as: :ckeditor, input_html: { value: @datos["definiciones"]}
+      .modal-footer
+        -#
+          %button.btn.btn-secondary{disabled: true}
+            Seleccionar otro acuerdo como base
+        %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
+          Terminar

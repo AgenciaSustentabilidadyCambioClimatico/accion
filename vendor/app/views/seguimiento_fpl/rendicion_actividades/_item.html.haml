@@ -1,0 +1,72 @@
+= simple_form_for item, url: seguimiento_fpl_proyecto_rendicion_actividad_path(@tarea_pendiente,@proyecto, item) do |f|
+	- estado_respaldo =  item.estado_respaldo
+	- estado_tecnica =  item.estado_tecnica
+	- clase_estado = clase_segun_estado(item.estado_tecnica_id)
+	- clase_tecnica = clase_estado[:clase]
+	- deshab_tecnica = clase_estado[:deshabilitado]
+	- texto_boton_tecnica = clase_estado[:texto_boton]
+	- clase_estado = clase_segun_estado(item.estado_respaldo_id)
+	- clase_respaldo = clase_estado[:clase]
+	- deshab_respaldo = clase_estado[:deshabilitado]
+	- texto_boton_respaldo = clase_estado[:texto_boton]
+	- clase_tecnica_td = @tipo_rendicion == :tecnica ? "min-width-140" : ""
+	- clase_contable_td = @tipo_rendicion == :contable ? "min-width-140" : ""
+	- boton_desabilitado = (@tipo_rendicion == :tecnica ? item.estado_tecnica_id != 2 : item.estado_respaldo_id != 2 )
+	- en_mod = @en_modificacion.include? item.proyecto_actividad.id
+	%td=item.nombre
+	%td
+		%div.acortar-texto{title: "#{item.tipo_aporte.nombre}"}=item.tipo_aporte.nombre
+	%td=number_to_currency(item.monto)
+	- if @tipo_rendicion == :envio
+		%td
+			- if (item.estado_tecnica_id == 2 || item.estado_tecnica_id == 3)
+				= link_to "", class: "btn btn-sm #{clase_tecnica} disabled" do
+					- clase_fa = item.estado_tecnica_id == 2 ? 'fa-spinner fa-spin' : 'fa-check-circle-o'
+					%i.fa{class: clase_fa} 
+					= texto_boton_tecnica
+			- else
+				%button.btn.btn-sm.subir_tecnica{id: "subir_tecnica_#{item.id}", value: "#{item.id}", disabled: deshab_tecnica || en_mod, class: "#{clase_tecnica}"} 
+					%i.fa.fa-upload
+					= texto_boton_tecnica
+				= f.input :archivos_tecnica, label: false, as: :file, input_html: {class: "d-none", multiple: true, id: "actividad_item_archivos_tecnica_#{item.id}"}
+		%td
+			- if (item.estado_respaldo_id == 2 || item.estado_respaldo_id == 3)
+				= link_to "", class: "btn btn-sm #{clase_respaldo} disabled" do
+					- clase_fa = item.estado_respaldo_id == 2 ? 'fa-spinner fa-spin' : 'fa-check-circle-o'
+					%i.fa{class: clase_fa} 
+					= texto_boton_respaldo
+			- else
+				%button.btn.btn-sm.subir_respaldo{id: "subir_respaldo_#{item.id}", value: "#{item.id}", disabled: deshab_respaldo || en_mod, class: "#{clase_respaldo}"} 
+					%i.fa.fa-upload
+					= texto_boton_respaldo
+				= f.input :archivos_respaldo, label: false, as: :file, input_html: {class: "d-none", multiple: true, id: "actividad_item_archivos_respaldo_#{item.id}"}, required: true
+	- else 
+		%td
+			- clase_activo = boton_desabilitado ? "disabled" : ""
+			= link_to seguimiento_fpl_proyecto_rendicion_actividad_descargar_path(@tarea_pendiente,@proyecto,item,@tipo_rendicion), class: "btn btn-sm btn-success #{clase_activo}" do
+				%i.fa.fa-download 
+				=t(:bajar)
+	%td{class: clase_tecnica_td}
+		- if @tipo_rendicion == :tecnica
+			= f.input :estado_tecnica_id, collection: @estado_rendiciones, label: false, disabled: boton_desabilitado, input_html: {class: "#{item.id}-est-id-input"}
+		- else 
+			=estado_tecnica.nombre
+	%td{class: clase_contable_td}
+		-if @tipo_rendicion == :contable
+			= f.input :estado_respaldo_id, collection: @estado_rendiciones, label: false, disabled: boton_desabilitado, input_html: {class: "#{item.id}-est-id-input"}
+		- else
+			=estado_respaldo.nombre
+	- if @tipo_rendicion == :envio
+		%td=item.observacion_tecnica
+		%td=item.observacion_respaldo
+	- else
+		%td.min-width-180
+			- if @tipo_rendicion == :tecnica
+				= f.input :observacion_tecnica, label: false, as: :text, input_html: {disabled: :disabled, class: "#{item.id}-est-id-input-textarea"}
+			- else
+				= f.input :observacion_respaldo, label: false, as: :text, input_html: {disabled: :disabled, class: "#{item.id}-est-id-input-textarea"}
+	%td
+		- if @tipo_rendicion == :envio
+			- boton_desabilitado = (deshab_tecnica && deshab_respaldo)
+			= f.input :fecha_realizacion_compromiso, as: :hidden, label: false, input_html: { class: "fecha_realizacion_compromiso_#{item.proyecto_actividad.id}" }
+		= f.submit class: "btn btn-sm btn-primary button-send", value: t(:save), id: item.id, data: { actividad: item.proyecto_actividad.id }, disabled: boton_desabilitado || en_mod

@@ -1,0 +1,41 @@
+- custom_id = custom_id.blank? ? nil : custom_id
+- data_table = data_table.nil? ? true : data_table
+- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+
+.modal.fade{id: :"buscar-contribuyente#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content.p-3
+      .modal-body.no-padding
+        .card.no-margin
+          .card-header
+            %h5.no-margin
+              = t(:buscar_, item: t(:institución).downcase)
+          .card-body
+            %div{id: "contribuyentes-remote-filter#{custom_id}"}
+              = form_tag search_contribuyente_admin_contribuyentes_path, remote: true, html: { method: :post, class: 'filter', autocomplete: :off } do
+                .row
+                  .col-lg-3.pr-lg-0.col-12
+                    = text_field_tag :rut, nil, class: 'not-required-if-other-like-me-is-present form-control form-control-sm m-0', placeholder: "R.U.T", as: :string, required: false
+                  .col-12.col-lg-8
+                    = text_field_tag :razon_social, nil, class: 'not-required-if-other-like-me-is-present form-control form-control-sm m-0', placeholder: "Razón social", as: :string, required: false
+                  .col-lg-1.col-12
+                    = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled"
+        %br
+        -#
+          #resultado-consulta-remote-block
+          - if @filtro_utilizado
+            .alert.alert-dismissible.fade.show.mb-3{class: @contribuyentes.size == 0 ? 'alert-danger' : 'alert-success' }
+            = "<b>Resultados:</b> #{@contribuyentes.size}</b> - <b>Filtro:</b> #{@filtro_utilizado}.".html_safe
+
+        .card.no-margin
+          .card-header
+            %h5.no-margin
+              = t(:lista_de_, items: t(:contribuyentes).downcase)
+          .card-body.pl-0.pr-0
+            %div{id: "contribuyentes-remote-table#{custom_id}"}
+              = render 'admin/contribuyentes/table', data_table: data_table, es_para_seleccion: true, resultado_mostrados: resultado_mostrados
+      .modal-footer.pr-0
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Cerrar
+        %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled}
+          Seleccionar

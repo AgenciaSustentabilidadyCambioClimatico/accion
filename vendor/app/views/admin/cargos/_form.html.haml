@@ -1,0 +1,17 @@
+- titulo t(:cargo)
+= simple_form_for [:admin,@cargo], remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@cargo)
+				.card-body
+					.row
+						.col-12
+							= f.input :nombre, label: t(:name), placeholder: "Ingrese nombre del cargo", input_html: { class: 'required-field' }, required: true
+						.col-12
+							= f.input :descripcion, label: t(:description), input_html: { class: 'required-field', rows: 6 }, placeholder: "Ingrese una descripción para este cargo", required: true
+	.float-right
+		= link_to t(:back), admin_cargos_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

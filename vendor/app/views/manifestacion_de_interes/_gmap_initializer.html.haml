@@ -1,0 +1,225 @@
+- ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry";
+:javascript
+	var ubicacionEntidadCogestoraMap;
+	var representacionSeleccionTerritorioMap;
+	var areaInfluenciaProyectoMap;
+	var alternativasInstalacionMap;
+	var representacionEnMapaProyectoMap;
+
+	var coords = [];
+	var places = [];
+	var markers = [];
+
+	var areaInfluenciaProyectoKML		=	"#{@area_influencia_proyecto_kml.blank? ? 'false' : @area_influencia_proyecto_kml}"
+	var alternativasInstalacionKML	=	"#{@alternativas_instalacion_kml.blank? ? 'false' : @alternativas_instalacion_kml}"
+
+	function initializeUbicacionEntidadGestoraMap(lat,lng) {
+		ubicacionEntidadCogestoraMap = new google.maps.Map(document.getElementById('mapa-entidad-cogestora'), {
+			zoom: 14,
+			minZoom: 11,
+			center: new google.maps.LatLng(lat,lng),
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		});
+		marker = new google.maps.Marker({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
+	}
+
+	function initializeRepresentacionSeleccionTerritorioMap(lat,lng) {
+		representacionSeleccionTerritorioMap = new google.maps.Map(document.getElementById('representacion-seleccion-territorio-mapa'), {
+			zoom: 4,
+			center: new google.maps.LatLng(lat,lng),
+			mapTypeId: google.maps.MapTypeId.TERRAIN
+		});
+	}
+
+	function initializeAreaInfluenciaProyectoMap(lat,lng) {
+		areaInfluenciaProyectoMap = new google.maps.Map(document.getElementById('area-influencia-proyecto-mapa'), {
+			zoom: 4,
+			center: new google.maps.LatLng(lat,lng),
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapTypeControl: false,
+			disableDefaultUI: true,
+			zoomControl: true
+		});
+		if ( areaInfluenciaProyectoKML != "false" ) {
+			areaInfluenciaProyectoKMLParser = new geoXML3.parser({map: areaInfluenciaProyectoMap});
+			areaInfluenciaProyectoKMLParser.parse(areaInfluenciaProyectoKML);
+		} else {
+					/*areaInfluenciaProyectoDrawingManager = new google.maps.drawing.DrawingManager({
+						drawingMode: google.maps.drawing.OverlayType.MARKER,
+						drawingControl: true,
+						drawingControlOptions: {
+							position: google.maps.ControlPosition.TOP_CENTER,
+							drawingModes: ['marker', 'circle', 'polygon', 'polyline', 'rectangle']
+						}
+					});
+					areaInfluenciaProyectoDrawingManager.setMap(areaInfluenciaProyectoMap);*/
+			//Permite definir los controles a usar dentro del mapa.-
+			areaInfluenciaProyectoMap.data.setControls(["Point","Polygon"]);
+			areaInfluenciaProyectoMap.data.setStyle({
+				editable: true,
+				draggable: true
+			});
+			areaInfluenciaProyectoMap.data.addListener('addfeature', saveAreaInfluenciaProyectoData);
+			areaInfluenciaProyectoMap.data.addListener('removefeature', saveAreaInfluenciaProyectoData);
+			areaInfluenciaProyectoMap.data.addListener('setgeometry', saveAreaInfluenciaProyectoData);
+			//permite eliminar una figura con el click derecho
+			areaInfluenciaProyectoMap.data.addListener('rightclick', function(e) {
+				areaInfluenciaProyectoMap.data.remove(e.feature);
+			});	  
+
+			if ( areaInfluenciaProyectoData != false ) {
+				loadSavedData(areaInfluenciaProyectoMap,JSON.parse(areaInfluenciaProyectoData));
+			}
+		}
+		// Cargar el control personalizado
+		var centerControlDiv = document.createElement('div');
+		var centerControl = new CenterControl(centerControlDiv, areaInfluenciaProyectoMap);
+		centerControlDiv.index = 1;
+		areaInfluenciaProyectoMap.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
+	}
+
+	function initializeAlternativasInstalacionMap(lat,lng) {
+		alternativasInstalacionMap = new google.maps.Map(document.getElementById('alternativas-instalacion-mapa'), {
+			zoom: 4,
+			center: new google.maps.LatLng(lat,lng),
+			mapTypeId: google.maps.MapTypeId.ROADMAP,
+			mapTypeControl: false,
+			disableDefaultUI: true,
+			zoomControl: true
+		});
+		if ( alternativasInstalacionKML != "false" ) {
+			alternativasInstalacionKMLParser = new geoXML3.parser({map: alternativasInstalacionMap});
+			alternativasInstalacionKMLParser.parse(alternativasInstalacionKML);
+		} else {
+			alternativasInstalacionMap.data.setControls(["Point","Polygon"]);
+			alternativasInstalacionMap.data.setStyle({
+				editable: true,
+				draggable: true
+			});
+			
+			alternativasInstalacionMap.data.addListener('addfeature', saveAlternativasInstalacionData);
+			alternativasInstalacionMap.data.addListener('removefeature', saveAlternativasInstalacionData);
+			alternativasInstalacionMap.data.addListener('setgeometry', saveAlternativasInstalacionData);
+			alternativasInstalacionMap.data.addListener('rightclick', function(e) {
+				alternativasInstalacionMap.data.remove(e.feature);
+			});
+
+			if ( alternativasInstalacionData != false ) {
+				loadSavedData(alternativasInstalacionMap,JSON.parse(alternativasInstalacionData));
+			}
+			// Cargar el control personalizado
+			var centerControlDiv = document.createElement('div');
+			var centerControl = new CenterControl(centerControlDiv, alternativasInstalacionMap);
+			centerControlDiv.index = 1;
+			alternativasInstalacionMap.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
+		}
+	}
+
+	function loadSavedData(map,data) {
+		//var data = JSON.parse(localStorage.getItem(item));
+		map.data.forEach(function (f) {
+			map.data.remove(f);
+		});
+		map.data.addGeoJson(data)
+	}
+
+	function saveAreaInfluenciaProyectoData(){
+		e=$('#manifestacion_de_interes_area_influencia_proyecto_data');
+		areaInfluenciaProyectoMap.data.toGeoJson(function(json) {
+			v=JSON.stringify(json);
+			localStorage.setItem('areaInfluenciaProyectoGeoData', v);
+			e.val(v);
+		});		
+	}
+
+	function saveAlternativasInstalacionData(){
+		e=$('#manifestacion_de_interes_alternativas_instalacion_data');
+		alternativasInstalacionMap.data.toGeoJson(function(json) {
+			v=JSON.stringify(json);
+			localStorage.setItem('alternativasInstalacionGeoData', v);
+			e.val(v);
+		});
+	}
+
+	function setPolygon(coords,map) {
+		polygon = new google.maps.Polygon({
+			paths: coords,
+			strokeColor: '#FF0000',
+			strokeOpacity: 0.8,
+			strokeWeight: 2,
+			fillColor: '#FF0000',
+			fillOpacity: 0.35
+		});
+		polygon.setMap(map);
+	}
+
+	function addMarker(map,location) {
+		pinIcon = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00",null,null,null,new google.maps.Size(14,20));
+		marker = new google.maps.Marker({
+			position: location,
+			map: map,
+			icon: pinIcon
+		});
+		markers.push(marker);
+	}
+
+	function removeAllMarkers() {
+		for (var i = 0; i < markers.length; i++) {
+			markers[i].setMap(null);
+		}
+		markers = [];
+	}
+
+	function setAllMarkers(coords,map) {
+		for (var i = 0; i < coords.length; i++) {
+			addMarker(map,coords[i]);
+		}
+	}
+
+	function setCoordinates() {
+		//removeAllMarkers();
+		if ( places.length > 0 ) {
+			$.post("#{geo_localization_coordinates_path}", { geo_localization: { place: JSON.stringify(places) }}, function(data){
+				coords = [];
+				$.each(data.response,function(k,v){					
+					latLngLocation = { lat: v.latitud, lng: v.longitud };
+					coords.push( latLngLocation );
+					//addMarker(representacionSeleccionTerritorioMap,latLngLocation);
+				});				
+			}).done(function() {
+				$('#manifestacion_de_interes_coordernadas_territorios').val(JSON.stringify(coords));
+				$('#manifestacion_de_interes_coordernadas_territorios').trigger("change");
+		  });
+		}else{
+			$('#manifestacion_de_interes_coordernadas_territorios').val("");
+			$('#manifestacion_de_interes_coordernadas_territorios').trigger("change");
+		}
+	}
+
+	//Para crear el control personalizado
+	function CenterControl(controlDiv, map) {
+		// Set CSS for the control border.
+		var controlUI = document.createElement('div');
+		controlUI.style.backgroundColor = '#fff';
+		controlUI.style.border = '2px solid #fff';
+		controlUI.style.borderRadius = '3px';
+		controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+		controlUI.style.cursor = 'default';
+		controlUI.style.marginLeft = '0px';
+		controlUI.style.marginTop = '5px';
+		controlUI.style.textAlign = 'center';
+		controlUI.title = 'Presione click derecho para eliminar el poligono';
+		controlDiv.appendChild(controlUI);
+
+		// Set CSS for the control interior.
+		var controlText = document.createElement('div');
+		controlText.style.color = 'rgb(25,25,25)';
+		controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+		controlText.style.fontSize = '11px';
+		controlText.style.lineHeight = '20px';
+		controlText.style.paddingLeft = '5px';
+		controlText.style.paddingRight = '5px';
+		controlText.innerHTML = 'Borrar';
+		controlUI.appendChild(controlText);
+	};

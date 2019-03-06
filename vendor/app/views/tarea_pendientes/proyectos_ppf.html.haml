@@ -1,0 +1,3 @@
+- titulo t(:tareas_pendientes_, tipo: t(:proyectos_ppf)).html_safe
+
+= render 'table', titulo: t(:lista_de_, items: t(:proyectos_pendientes).downcase), pendientes: @pendientes

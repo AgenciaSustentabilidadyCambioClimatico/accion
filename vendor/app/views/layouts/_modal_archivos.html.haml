@@ -1,0 +1,28 @@
+- unless adjuntos.size > 0
+  .center-text
+    = '--'
+- else
+  - da  = "lista-archivos-modal-id-#{item.id}"
+  = link_to '#', "data-toggle"=>:modal, "data-target"=>"##{da}" do
+    %i.fa.fa-paperclip
+  .modal.fade{id: da, tabindex: "-1", role: :dialog, "aria-labelledby"=>:listaArchivosLabel, "aria-hidden"=>true}
+    .modal-dialog.modal-dialog-centered.modal-lg{role: :document}
+      .modal-content
+        .modal-header
+          %h5.modal-title#listaArchivosLabel
+          %button.close{type: :button, "data-dismiss"=>:modal, "arial-label"=>:close}
+            %span{"aria-hidden"=>true}
+              &times;
+        .modal-body
+          - adjuntos.each do |o|
+            - a = o.archivo
+            - e = a.file.extension.downcase
+            - if %w{jpg png jpg jpeg}.include?(e)
+              = image_tag(a, style: 'width:100%', class: 'margin-bottom-10')
+            - elsif %w{pdf doc docx odt}.include?(e)
+              %embed{src: a, width: "100%", height: "720px", type: 'application/pdf'}
+            - else
+              = a
+        .modal-footer
+          %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+            Cerrar
