@@ -1,0 +1,4 @@
+- unless @error_en_las_rendiciones
+	- mensajes_antes_de_enviar = ( @diferencias_contrato ? "<div class='text-center alert alert-warning'><i class='fa fa-warning fa-2x'></i><p class='m-0'>#{t(:diferencias_fecha_fin_contrato)}<br/><b>¿Desea continuar?</b></p></div>" : nil )
+	= simple_form_for(@proyecto, url: seguimiento_fpl_proyecto_proyecto_actividades_aceptar_modificaciones_path(@tarea_pendiente,@proyecto), remote: true, html: { autocomplete: :off}) do |f|
+		= f.submit t(:aceptar_cambios), id: 'aceptar-cambios', class: 'btn btn-danger btn-sm', data: { confirm: "<div class='text-center alert alert-danger'><i class='fa fa-warning fa-2x'></i> <p class='m-0'>Al aceptar estos cambios los datos originales del calendario se reemplazaran.</p></div>#{mensajes_antes_de_enviar}", disable_with: "Enviando..." }

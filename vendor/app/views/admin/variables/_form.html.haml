@@ -1,0 +1,18 @@
+- titulo t(:variable)
+= simple_form_for [:admin,@variable], remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@variable)
+				.card-body
+					.row
+						.col-12
+							- if @variable.new_record?
+								= f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre de la variable", input_html: { class: 'required-field' }, required: true
+						.col-12
+							= f.input :valor, label: t(:valor), placeholder: "Ingrese el valor de la variable", input_html: { class: 'required-field', rows: 6 }, required: true
+	.float-right
+		= link_to t(:back), admin_variables_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

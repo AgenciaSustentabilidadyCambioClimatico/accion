@@ -1,0 +1,3 @@
+class AuditoriaHistorico < ApplicationRecord
+	mount_uploader :documento_respaldo, ArchivoDocumentosGenericosManifestacionDeInteresUploader
+end

@@ -1,0 +1,169 @@
+:javascript
+  var map;
+  var marker;
+  var geocoder;
+
+  $(document).ready(function() {
+    $('.firmantes').DataTable({
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      responsive: true,
+      paginate: false,
+      searching: false,
+      columnDefs: [ { targets: [0], orderable: false }], 
+    });
+
+    $('#btn_mostrar_mapa').click(function(e){
+      e.preventDefault();
+      hideTooltipError($(this));
+      direccionAMapa();
+    });
+
+    $('#manifestacion_de_interes_direccion_firma').on('keyup',function(){
+      if($(this).val() != ""){
+        $('#btn_mostrar_mapa').removeClass('d-none');
+      }else{
+        $('#btn_mostrar_mapa').addClass('d-none');
+      }
+    });
+
+    $('#seleccionar').change(function(){
+      $("input[name='manifestacion_de_interes[firmantes][]'").prop('checked', $(this).is(':checked'));
+    });
+
+    $('.button-send').click(function(e){
+      e.preventDefault();
+      if($('#manifestacion_de_interes_lat_firma').val() == "" && $('#manifestacion_de_interes_lng_firma').val() == ""){
+        showTooltipError('Debe geolocalizar la dirección en mapa', $('#btn_mostrar_mapa'), 'top');
+      }else{
+        $('#edit_manifestacion_de_interes_1').submit();
+      }
+    });
+
+    loadScript();
+
+  });
+
+  function initMap(){
+    var uluru = {lat: -33.4429091, lng: -70.6538699};
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 5,
+      center: uluru
+    });
+
+    marker = new google.maps.Marker({
+      position: uluru,
+      map: null
+    });
+
+    map.addListener('click', function(e) {
+      marker.setPosition(e.latLng);
+      marker.setMap(map);
+      mapaADireccion(e.latLng);
+    });
+
+    geocoder = new google.maps.Geocoder();
+
+    direccionAMapa();
+
+  }
+
+  function loadScript() {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src = "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&callback=initMap";
+    document.body.appendChild(script);
+  }
+
+
+  function direccionAMapa() {
+    var address = $('#manifestacion_de_interes_direccion_firma').val();
+    geocoder.geocode( { 'address': address}, function(results, status) {
+      if (status == 'OK') {
+        map.setCenter(results[0].geometry.location); 
+        map.setZoom(18);
+        marker.setPosition(results[0].geometry.location);
+        marker.setMap(map);
+        $('#manifestacion_de_interes_lat_firma').val(""+results[0].geometry.location.lat());
+        $('#manifestacion_de_interes_lng_firma').val(""+results[0].geometry.location.lng());
+      } else {
+        console.log('Geocode was not successful for the following reason: ' + status);
+      }
+    });
+  }
+
+  function mapaADireccion(latLng) {
+    geocoder.geocode({'location': latLng}, function(results, status) {
+      if (status === 'OK') {
+        if (results[0]) {
+          $('#manifestacion_de_interes_direccion_firma').val(results[0].formatted_address);
+          $('#manifestacion_de_interes_lat_firma').val(""+latLng.lat());
+          $('#manifestacion_de_interes_lng_firma').val(""+latLng.lng());
+        } else {
+          $('#manifestacion_de_interes_direccion_firma').val('Dirección no cargada');
+        }
+      } else {
+        $('#manifestacion_de_interes_direccion_firma').val('Dirección no cargada');
+      }
+    });
+  }
+
+
+- titulo t(:manifestación_de_acuerdo)
+= simple_form_for @manifestacion_de_interes, url: firma_manifestacion_de_interes_path(@tarea_pendiente), html: { autocomplete: 'off', method: :patch, multipart: true }  do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true, input_html: { value: true }
+  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:convocatoria_firma)
+        .card-body
+          .row
+            .col-lg-6.col-12
+              .row
+                .col-12
+                  = f.input :fecha_firma, label: t(:indicar_fecha), input_html: { class: 'required-field basic-datetimepicker'}, as: :string, required: true
+                .col-12
+                  = f.input :direccion_firma, label: t(:indicar_lugar), required: true, input_html: { class: 'required-field'}
+                  = f.hidden_field :lat_firma
+                  = f.hidden_field :lng_firma
+                .col-12
+                  = button_tag class: "btn btn-success btn-sm d-none", id: "btn_mostrar_mapa" do
+                    %i.fa.fa-map-marker
+                    =t(:mostrar_en_mapa)
+                .col-12
+                  = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:formato_acuerdo), tarea_pendiente: @tarea_pendiente)
+                .col-12
+                  = f.input :firma_archivo, as: :file, input_html: {class: "form-control", multiple: true}, label: t(:adjuntar_acuerdo_firmado_e_indicar_firmantes)
+            .col-lg-6.col-12.mt-3
+              %div#map{style: "height: 300px;"}
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:firmantes)
+        .card-body
+          %table.table.table-striped.firmantes
+            %thead
+              %tr
+                %th
+                  = check_box_tag :seleccionar, '', false, class: "not-required-if-other-like-me-is-present"
+                %th=t(:rut)
+                %th=t(:nombre)
+            %tbody
+              - @firmantes.each do |firmante|
+                %tr
+                  %td
+                    - checked = @manifestacion_de_interes.firmantes.include?(firmante.persona_id.to_s) rescue false
+                    = check_box_tag "manifestacion_de_interes[firmantes][]", firmante.persona_id, checked, class: "not-required-if-other-like-me-is-present", readonly: checked, disabled: checked
+                    - if checked
+                      = hidden_field_tag "manifestacion_de_interes[firmantes][]", firmante.persona_id 
+                  %td=firmante.persona.user.rut
+                  %td=firmante.persona.user.nombre_completo
+  .float-right
+    = volver_root
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+    %br
+    %br

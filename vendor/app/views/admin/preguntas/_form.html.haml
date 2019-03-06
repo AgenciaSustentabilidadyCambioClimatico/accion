@@ -1,0 +1,23 @@
+- titulo t(:pregunta)
+- url = (@pregunta.nil? or @pregunta.id.nil?) ? admin_preguntas_path : admin_pregunta_path
+= simple_form_for @pregunta, url: url, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@pregunta)
+				.card-body
+					.row
+						.col-12
+							= f.input :texto, label: t(:texto), input_html: { class: 'required-field' }, placeholder: "Indique la pregunta", required: true
+						.col-12
+							= f.input :tipo_respuestas, collection: Pregunta.tipo_respuestas.map{|u,i|[t("#{u}"),u]}, label: t(:tipo_respuestas), input_html: { class: 'required-field' }, required: true
+						.col-12
+							%label.control-label
+								=t(:es_pregunta_base)
+							= f.input :base, label: false, input_html: { class: 'form-control' }, wrapper: false, disabled: [1,2].include?(@pregunta.id)
+
+	.float-right
+		= link_to t(:back), admin_preguntas_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

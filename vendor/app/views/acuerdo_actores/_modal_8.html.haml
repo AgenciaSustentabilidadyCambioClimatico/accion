@@ -1,0 +1,19 @@
+.modal.fade{id: :"modal-8", tabindex: "-1", role: :dialog, "aria-labelledby": :modal8Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header
+        =t(:personerías_ejemplares_y_firmas_personerías_y_firmas_de_mapa_de_actores)
+      .modal-body
+        .row
+          .col-12
+            = f.input :personerias, as: :ckeditor, input_html: { value: @datos["personerias"]}, readonly: true, disabled: true, label: t(:pesonería)
+          .col-12
+            = f.input :ejemplares, as: :ckeditor, input_html: { value: @datos["ejemplares"]}
+          .col-12
+            = f.input :firmas, as: :ckeditor, input_html: { value: @datos["firmas"]}, readonly: true, disabled: true
+      .modal-footer
+        -#
+          %button.btn.btn-secondary{disabled: true}
+            Seleccionar otro acuerdo como base
+        %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
+          Terminar

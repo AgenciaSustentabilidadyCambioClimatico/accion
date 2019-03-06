@@ -1,0 +1,14 @@
+.modal.fade{id: :"terminar-negociacion-acuerdo", tabindex: "-1", role: :dialog, "aria-labelledby": :SetMetasAccionModalLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header
+        %h5.no-margin
+          = t(:terminar_proceso_de_negociacion)
+      .modal-body
+        .row
+          .col-12
+            = f.input :comentarios_y_observaciones_negociacion_acuerdo, label: t(:observaciones_comentarios_siguiente_etapa), input_html: { class: '', value: @comentarios}, placeholder: "Ingrese comentario u observación", as: :text, required: true
+      .modal-footer
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Cerrar
+        = f.submit "Terminar proceso de negociación", class: 'btn btn-sm btn-primary btn-sm', data: { confirm: t(:confirma_poner_termino_negociacion), remote: false }

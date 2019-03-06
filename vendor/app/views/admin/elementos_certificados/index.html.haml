@@ -1,0 +1,45 @@
+:javascript
+  $(document).ready(function() {
+
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+
+    htmlErrorToTooltip('top');
+
+    $("#institucion_id").change(function(){
+      $.ajax({
+        url: "#{filtro_institucion_admin_elementos_certificados_path}",
+        type: "GET",
+        dataType: "script",
+        data: { institucion_id: this.value},
+        beforeSend: function(){
+          loadingParent = $(".loading-data").parent().parent()[0]
+          $('.loading-data').height(loadingParent.scrollHeight).show();
+          //$('.loading-data').show();
+        }
+      }).fail(function(a, b, c) {
+        alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+        $('.loading-data').hide();
+      }).success(function(){
+        $('.loading-data').hide();
+      });
+    });
+
+  });
+- titulo t(:mis_elementos_certificados)
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin=t(:instituciones)
+      .card-body
+        .col-12
+          = select_tag :institucion_id, options_from_collection_for_select(@instituciones, "id", "razon_social"), { class: 'form-control chosen-control',:prompt => 'Seleccione una institución' }
+#elementos-certificados-remote-table
+  = render 'table'
+.float-right
+  = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+

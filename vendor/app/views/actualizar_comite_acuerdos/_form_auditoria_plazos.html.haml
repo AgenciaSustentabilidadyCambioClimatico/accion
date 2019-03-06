@@ -1,0 +1,418 @@
+:javascript
+	$(document).ready(function() {
+
+		//DZC constantes
+		const tipo_acuerdo_original = $('.ta').val();
+		const plazo_maximo_adhesion_original = $('.pma').val();
+		const plazo_finalizacion_implementacion_original = $('.pfi').val();
+		const plazo_maximo_original = $('pm').val();
+		const plazo_maximo_neto_original = $('pmn').val();
+
+		//DZC variables de clase
+		var fecha_firma_original = $('.ff').val();
+		var fecha_sel = fecha_firma_original.split('-');
+		//var fecha_sel_format = new Date(fecha_sel[0], fecha_sel[1] -1, fecha_sel[2]);
+		var firma_ano = +fecha_sel[0];
+		var firma_mes = +fecha_sel[1]-1;
+		var firma_dia = +fecha_sel[2];
+
+
+		var valido = true;
+
+		var orden = 1;
+
+
+		//var plazo_maximo_adhesion_original = $('#informe_plazo_maximo_adhesion');
+
+		//DZC ejecuta la función para remover auditorias
+		remover_auditoria();
+
+		//DZC reordena el orden de las auditorias
+		reordenar_auditorias();
+
+		//DZC agrega auditorias al partial que las lista al final de la vista
+		$('.add-auditoria').click(function(){
+			revisa_plazos_auditorias();			
+			if (plazo_auditoria_final_vigente()){
+				$('#tabla_auditoria').append("#{ j render partial: 'form_auditoria'}");
+				remover_auditoria();
+				reordenar_auditorias();
+				revisa_plazos_auditorias();
+			} else{
+				alert("\nEl plazo para realizar la auditoría final se encuentra vencido.\nNo se acepta el ingreso de nuevas auditorías.");
+			};
+		});
+
+		//DZC desactiva el campo radial para tipo_acuerdo
+		$(".desactivado_ta *").prop('disabled',true); 
+
+		//DZC verifica que los plazos de la tabla auditoria sean o no editables
+		if(tipo_acuerdo_original != 'simultáneo'){
+			$(".desactivado-pa *").prop('disabled',true);
+		};
+
+		verifica_plazos();
+
+		//DZC (1)
+		$('.pma').change(function() {
+			var fecha = Date.today().set({year: firma_ano, month: firma_mes, day: firma_dia});
+			if ( ($(this).val() < plazo_maximo_adhesion_original) || !verifica_plazos() ) {
+				$(this).val(plazo_maximo_adhesion_original);
+			};
+			//DZC cambia el valor de la fecha del campo correspondiente
+			fecha = actualiza_fecha(+$(this).val(), '.pmaf');
+			$('.pmaf').val(fecha.getFullYear()+'-'+obtiene_mes_a_mostrar(fecha)+'-'+fecha.getDate());	
+
+		});
+
+		//DZC (2)
+		$('.pfi').change(function() {
+			var fecha = Date.today().set({year: firma_ano, month: firma_mes, day: firma_dia});
+			if ( $(this).val() < plazo_finalizacion_implementacion_original || !verifica_plazos() ) {
+				$(this).val(plazo_finalizacion_implementacion_original);
+			};
+
+			//DZC cambia el valor de la fecha del campo correspondiente
+			fecha = actualiza_fecha(+$(this).val(), '.pfif');
+			$('.pfif').val(fecha.getFullYear()+'-'+obtiene_mes_a_mostrar(fecha)+'-'+fecha.getDate());	
+		});	
+
+		//DZC (3)
+		$('.pm').change(function() {
+			var fecha = Date.today().set({year: firma_ano, month: firma_mes, day: firma_dia});
+			if ( $(this).val() < plazo_maximo_original || !verifica_plazos() ) {
+				$(this).val(plazo_maximo_original);
+			};
+			if ($('.ta').val() != "simultáneo"){
+				if ((actualiza_fecha($('.pfi').val(), '.pfif') > actualiza_fecha($(this).val(), '.pmf'))) {
+					$(this).val() = $('.pfi').val();
+				};
+			};
+			//DZC cambia el valor de la fecha del campo correspondiente
+			fecha = actualiza_fecha(+$(this).val(), '.pmf');
+			$('.pmf').val(fecha.getFullYear()+'-'+obtiene_mes_a_mostrar(fecha)+'-'+fecha.getDate());			
+		});
+
+		//DZC (4)
+		$('.pmn').change(function() {
+			var fecha = Date.today().set({year: firma_ano, month: firma_mes, day: firma_dia});
+			if ( $(this).val() < plazo_maximo_neto_original || !verifica_plazos() ) {
+				$(this).val(plazo_maximo_neto_original);
+			};
+			//DZC cambia el valor de la fecha del campo correspondiente
+			fecha = actualiza_fecha(+$(this).val(), '.pmnf');
+			$('.pmnf').val(fecha.getFullYear()+'-'+obtiene_mes_a_mostrar(fecha)+'-'+fecha.getDate());
+		});	
+
+		//TODO: realizar al final de la validación de todos los plazos de auditorias
+		//DZC verifica el valor de los plazos de auditorias
+		$('.auditoria-plazo').change(function() {
+			if (!verifica_plazos() ){
+				$(this).val(1);
+			};
+		});
+	});
+
+	//DZC FUNCIONES
+	
+	//DZC revisa y ajusta plazos de auditorías
+	function revisa_plazos_auditorias(){
+		$('.auditoria-plazo').change(function() {
+			if (!verifica_plazos() ){
+				$(this).val(1);
+			};
+		});
+	}
+
+
+	//DZC calcula y actualiza el valor de la fecha
+	function actualiza_fecha(mes, tipo){
+		var fecha = Date.today();
+		switch(tipo){
+			case '.pmaf':
+			case '.pmnf':
+				fecha = suma_meses_firma(mes);
+				break;
+			case '.pfif':
+				fecha = suma_meses_firma(meses_pfi(mes));
+				break;
+			case '.pmf':
+				fecha = suma_meses_firma(+$('.pma').val());
+				fecha.add(mes).months();
+				break;
+		}
+		return fecha;
+	}
+
+	//DZC obtiene el valor de meses de pfi
+	function meses_pfi(mes){
+		if ($('.ta').val() != "simultáneo"){
+			mes = mes + (+$('.pma').val())
+		}
+		return mes;		
+	}
+
+	//DZC adiciona meses a la fecha de firma
+	function suma_meses_firma(mes){
+		var fecha_firma_original = $('.ff').val();
+		var fecha_sel = fecha_firma_original.split('-');
+		var firma_ano = +fecha_sel[0];
+		var firma_mes = (+fecha_sel[1])-1;
+		var firma_dia = +fecha_sel[2];
+		var fecha = Date.today().set({ year: firma_ano, month: firma_mes, day: firma_dia });
+		fecha.add(mes).months();
+		return fecha;
+	}
+
+	//DZC obtiene el mes a mostrar en los campos de fecha, agregando '0'
+	function obtiene_mes_a_mostrar(fecha){
+		var mes_a_mostrar = fecha.getMonth()+1;
+		if (mes_a_mostrar < 10){
+			mes_a_mostrar = '0'+mes_a_mostrar;
+		}
+		return mes_a_mostrar;
+	}
+
+	//DZC remueve la auditoria al presionar el botón
+	function remover_auditoria(){
+		$('.remove-auditoria').click(function(){
+			$(this).closest("tr").remove();
+			reordenar_auditorias();
+		});
+	}
+
+	//DZC reordena auditorias
+	function reordenar_auditorias(){
+		var cont = 1
+		var plazo = 0
+		$('.auditoria-orden').each(function(){
+			$(this).val(cont);
+			cont +=1;
+		});
+	}
+
+	//DZC obtiene plazo mayor entre auditorias intermedias
+	function plazo_mayor_auditorias_intermedias(){
+		var max = 0;
+		var plazo = 0;
+		$('.auditoria').each(function(){ 
+			if ($(this).find('.auditoria-final').is(':not(:checked)')){
+				plazo = $(this).find('.auditoria-plazo').val();
+				if (plazo > max){
+					max = plazo;
+				};
+			};
+		}); 
+		return max;
+	}
+
+	//DZC obtiene el plazo de la auditoria final
+	function plazo_auditorias_final(){
+		var plazo = 0;
+		$('.auditoria').each(function(){ 
+			if ($(this).find('.auditoria-final').is(':checked')){
+				plazo = $(this).find('.auditoria-plazo').val();
+			};
+		}); 
+		return plazo;
+	}
+
+	//DZC verifica si plazo de auditoría final esta vencido
+	function plazo_auditoria_final_vigente(){
+		var plazo_vigente = true;
+		var ta = $('.ta').val();
+		var pma = +$('.pma').val();
+		var paf = +plazo_auditorias_final();
+		var fecha = Date.today();
+		if (ta != 'simultáneo'){	
+			fecha = suma_meses_firma(paf+pma);
+		}else{
+			fecha = suma_meses_firma(paf);
+		};		 
+		if (fecha < Date.today()){
+			plazo_vigente = false;
+		};
+		return plazo_vigente;
+	}
+	
+	//DZC verifica validez de pfi
+	function verifica_plazos(){
+		var plazos_correctos = true
+		var ta = $('.ta').val();
+		var pma = +$('.pma').val(); //DZC (1)
+		var pfi = +$('.pfi').val(); //DZC (2)
+		var pm = +$('.pm').val(); //DZC (3)
+		var pmn = +$('.pmn').val(); //DZC (4)
+		var pmai = +plazo_mayor_auditorias_intermedias();
+		var paf = +plazo_auditorias_final();
+		var errores = "";
+
+		var pma_nombre = "plazo máximo de adhesión";
+		var pfi_nombre ="plazo de finalización de la implementación";
+		var pm_nombre ="plazo máximo para iniciar el proceso de certificación final";
+		var pmn_nombre ="plazo máximo neto para iniciar el proceso de certificación final";
+		var pmai_nombre ="plazo mas alto entre las auditorías intermedias";
+		var paf_nombre ="plazo de la auditoría final";
+	
+		//DZC tipo de acuerdo asincrónico
+		if (ta != 'simultáneo'){
+			//DZC pm (3) existe
+			if (('.pm').length > 0 && pm > 0){
+				//DZC (a)
+				if (pfi > pm){
+					errores += "\nEl "+pm_nombre+" ("+pm+") NO PUEDE SER MENOR que el "+pfi_nombre+" ("+pfi+").";
+				};
+				//DZC (b)
+				if (pmn < pfi){
+					errores += "\nEl "+pmn_nombre+" NO PUEDE SER MENOR que el "+pfi_nombre+".";
+				};
+				//DZC (c.1)
+				if (pmn < (pm + pma)){
+					errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR que el resultado de la suma entre "+pm_nombre+" y el "+pma_nombre+" ("+(pm + pma)+").";
+				};
+				//DZC (d)
+				if (pm < pmai){
+					errores += "\nEl "+pm_nombre+" ("+pm+") NO PUEDE SER MENOR al "+pmai_nombre+" ("+pmai+").";
+				};
+				//DZC (paf > pm)
+				if (paf > pm){
+					errores += "\nEl "+paf_nombre+" ("+paf+") NO PUEDE SER MAYOR al "+pm_nombre+" ("+pm+").";
+				};
+			} else {
+				//DZC (c.2)
+				if (pmn < pma){
+					errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR que el "+pma_nombre+" ("+(pma)+").";
+				};
+				//DZC (e)
+				if (pmn < pmai) {
+					errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR al "+pmai_nombre+" ("+pmai+").";
+				};
+				//DZC (paf > pmn)
+				if (paf > pmn){
+					errores += "\nEl "+paf_nombre+" ("+paf+") NO PUEDE SER MAYOR al "+pmn_nombre+" ("+pmn+").";
+				};	
+			};
+		} else {
+			//DZC tipo de acuerdo simultáneo
+			//DZC (a)
+			if (pmn < pma){
+				errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR al "+pma_nombre+" ("+pma+").";
+			};
+			//DZC (b)
+			if (pmn < pfi){
+				errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR al "+pfi_nombre+" ("+pfi+").";
+			};
+			//DZC (c)
+			if (pmn < pmai){
+				errores += "\nEl "+pmn_nombre+" ("+pmn+") NO PUEDE SER MENOR al "+pmai_nombre+" ("+pmai+").";
+			};
+			//DZC (paf > pmn)
+			if (paf > pmn){
+				errores += "\nEl "+paf_nombre+" ("+paf+") NO PUEDE SER MAYOR al "+pmn_nombre+" ("+pmn+").";
+			};
+		};
+		//DZC (pmai > paf)
+		if (pmai > paf){
+			errores += "\nEl "+pmai_nombre+" ("+pmai+") NO PUEDE SER MAYOR al "+paf_nombre+" ("+paf+").";
+		};
+		if (errores !=""){
+			errores += "\n\n Por favor corrija el o los errores.";
+			alert(errores);
+			plazos_correctos = false;
+		};
+		return plazos_correctos;
+	}
+
+-# DZC 2018-11-07 12:08:52 se instancian los valores de los plazos al mínimo posible, en caso de que lleguen nulos por un error en la adhesión a un standar o acuerdo anterior. TODO: Validar que estos campos no sen nulos previo al término de la APL-016  
+- @informe.plazo_maximo_adhesion = @informe.plazo_maximo_adhesion.blank? ? 1 : @informe.plazo_maximo_adhesion
+- @informe.plazo_finalizacion_implementacion = @informe.plazo_finalizacion_implementacion.blank? ? 1 : @informe.plazo_finalizacion_implementacion
+- @informe.plazo_maximo = @informe.plazo_maximo_adhesion.blank? ? 0 : @informe.plazo_maximo_adhesion
+- @informe.plazo_maximo_neto = @informe.plazo_maximo_neto.blank? ? 1 : @informe.plazo_maximo_neto
+- @informe.calcula_fechas
+
+.card
+	.card-body
+		= simple_form_for @informe, url: guardar_comite_actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), remote: true, method: :patch do |f|
+			.card
+				.card-body
+					.row
+						.col-12.col-lg-2 
+							= f.input :fecha_firma, as: :string, input_html: {class: 'basic-datetimepicker ff', value: (@informe.fecha_firma)}, label: t(:fecha_firma_acuerdo), required: false, disabled: true					
+						.col-12.col-lg-4.desactivado_ta
+							= f.label t(:tipo_acuerdo), required: false
+							= f.input :tipo_acuerdo, as: :radio_buttons, collection: InformeAcuerdo.tipo_acuerdos.keys.map { |w| [w.humanize, w] }, label: false, checked: @informe.tipo_acuerdo, input_html: {class: 'ta'}, required: false, disabled: true
+						.col-12.col-lg-3
+							= f.label t(:con_extension), required: true
+							= f.input :con_extension, as: :radio_buttons, collection: [["Si", "si"],["No", "no"]], label: false, checked: (@informe.con_extension ? "si" : "no"), input_html: {class: 'required-field'}, required: true
+						.col-12.col-lg-3
+							= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-acuerdo", class: 'btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
+								%i.fa.fa-file-text-o
+									Terminar acuerdo
+					.row
+						.col-12.col-lg-3
+							= f.input :plazo_maximo_adhesion, input_html: {class: 'required-field pma', min: 1, value: @informe.plazo_maximo_adhesion}, as: :integer, label: t(:plazo_maximo_adhesion), required: true, disabled: !@informe.plazo_maximo_adhesion_pendiente?
+
+						.col-12.col-lg-2 
+							= f.input :fecha_plazo_maximo_adhesion, as: :string, input_html: {class: 'basic-datetimepicker pmaf', value: @informe.fecha_plazo_maximo_adhesion}, label: t(:plazo_maximo_adhesion_fecha), required: false, disabled: true
+
+						.col-12.col-lg-3
+							- nombre = (@informe.tipo_acuerdo==:simultáneo.to_s)? ('plazo_finalizacion_implementacion') : ('fecha_limite_finalizacion_implementacion')
+							= f.input :plazo_finalizacion_implementacion, input_html: {class: 'required-field pfi', min: 1, value: @informe.plazo_finalizacion_implementacion}, as: :integer, label: t((nombre).to_sym), required: true, disabled: !@informe.plazo_finalizacion_implementacion_pendiente?
+
+						.col-12.col-lg-3
+							= f.input :fecha_plazo_finalizacion_implementacion, as: :string, input_html: {class: 'basic-datetimepicker pfif', value: @informe.fecha_plazo_finalizacion_implementacion}, label: t((nombre+'_fecha').to_sym), required: false, disabled: true
+					.row
+
+						.col-12.col-lg-4
+							= f.input :plazo_maximo, as: :string, input_html: {class: 'required-field pm', min: 0,value: @informe.plazo_maximo}, as: :integer, label: t(:plazo_maximo_iniciar_certificacion_final), required: true, disable: !@informe.plazo_maximo_pendiente?
+						.col-12.col-lg-4
+							= f.input :fecha_plazo_maximo, as: :string, input_html: {class: 'basic-datetimepicker pmf', value: @informe.fecha_plazo_maximo}, label: t(:plazo_maximo_fecha), required: false, disabled: true
+					.row
+
+						.col-12.col-lg-4
+							= f.input :plazo_maximo_neto, as: :string, input_html: {class: 'required-field pmn', min: 1, value: @informe.plazo_maximo_neto}, as: :integer, label: t(:plazo_maximo_neto_iniciar_certificacion_final), required: true, disable: !@informe.plazo_maximo_neto_pendiente?
+
+						.col-12.col-lg-2
+							= f.input :fecha_plazo_maximo_neto, as: :string, input_html: {class: 'basic-datetimepicker pmnf', value: (@informe.fecha_plazo_maximo_neto)}, label: t(:plazo_maximo_neto_fecha), required: false, disabled: true
+
+						.col-12-col-lg-4
+							= f.input :archivos_anexos, as: :file, input_html: { class: "form-control"}
+			.card
+				.card-header
+					=t(:auditorías)
+					= link_to '#', class: 'pull-right add-auditoria' do
+						%i.fa.fa-plus-circle
+						= t(:agregar).downcase
+				.card-body.p-0
+					%table.table.table-striped.table-bordered#tabla_auditoria
+						%thead
+							%tr
+								%th
+								%th=t(:orden)
+								%th=t(:auditoría_intermedia)
+								%th=t(:plazo_meses)
+								%th=t(:certificable_si_no)
+								%th=t(:con_validación)
+								%th=t(:final)
+						%tbody
+							- @auditorias.each do |aud|
+								%tr.auditoria
+									%td
+										= hidden_field_tag "informe_acuerdo[auditorias][][id]", aud.id
+										= link_to '#', class: 'remove-auditoria' do
+											%i.fa.fa-times-circle.link-to-remove-row
+									%td
+										= text_field_tag "", nil, class: 'form-control auditoria-orden', required: false, disabled: true	
+									%td
+										= text_field_tag "informe_acuerdo[auditorias][][nombre]", aud.nombre, class: "form-control auditoria-nombre"
+									%td.desactivado-pa{style: "max-width:70px"}
+										= number_field_tag "informe_acuerdo[auditorias][][plazo]", aud.plazo, class: "form-control auditoria-plazo", min: 0
+									%td
+										= check_box_tag "informe_acuerdo[auditorias][][con_certificacion]", aud.id, aud.con_certificacion?, class: "form-control auditoria-certificacion"
+									%td
+										= check_box_tag "informe_acuerdo[auditorias][][con_validacion]", aud.id, aud.con_validacion?, class: "form-control auditoria-validacion"
+									%td
+										= radio_button_tag "informe_acuerdo[auditorias][][final]", aud.id, aud.final?, class: "form-control auditoria-final"
+			.float-right
+				= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+= render 'terminar_acuerdo', remote: true

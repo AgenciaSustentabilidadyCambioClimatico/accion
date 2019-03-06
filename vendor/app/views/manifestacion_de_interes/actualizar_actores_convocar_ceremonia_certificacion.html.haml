@@ -1,0 +1,30 @@
+:javascript
+	$(document).ready(function() {
+		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+	});
+
+- titulo t(:actualizar_mapa_de_actores_convocar_ceremonia_certificacion)
+- tabs = { "mapa-de-actores": true, "convocar-ceremonia-certificacion": false }
+#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+		- tabs.each do |tab,active|
+			%li.nav-item
+				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+					=t(tab.to_s.gsub('-','_'))
+				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+					%small.total-error
+						= @total_de_errores_por_tab[tab].size
+	#manifestacionContent.tab-content
+		#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
+			.card
+				.card-body.p-0
+					#actores-remote-table
+						= render 'actores/table'
+					#actualizar-remote-form
+						= render 'actores/form', externo: true
+		#convocar-ceremonia-certificacion.tab-pane.fade{"aria-expanded" => tabs[:"convocar-ceremonia-certificacion"], "aria-labelledby" => "cargar-documentos-diagnostico-tab", :role => "tabpanel", class: ("show active" if tabs[:"convocar-ceremonia-certificacion"])}
+			.card
+				.card-body.p-0
+					= link_to t(:agregar_, item: t(:convocatoria).downcase), new_manifestacion_de_interes_convocatoria_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+					#convocatoria-remote-table
+						= render 'convocatorias/form_preparar_convocatoria', externo: true

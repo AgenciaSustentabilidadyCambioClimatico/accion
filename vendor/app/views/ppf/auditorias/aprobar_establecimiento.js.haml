@@ -1,0 +1,4 @@
+- if @establecimiento.present?
+	$('#auditoria_aprobar').html("#{ j render 'form_aprobar'}");
+- else
+	$('#auditoria_aprobar').empty();

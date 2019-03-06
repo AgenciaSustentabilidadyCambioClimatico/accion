@@ -1,0 +1,55 @@
+:javascript
+  $(document).ready(function() {
+    $('table.descargable-tareas').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:descargables).downcase)
+  .card-body
+    .table-responsive
+      %table.table.descargable-tareas.table-striped
+        %thead
+          %tr
+            %th.text-center=t(:id)
+            %th=t(:nombre)
+            %th.text-center=t(:código)
+            %th.doc-type=t(:formato)
+            %th=t(:contenido)
+            %th.archivo-descargable-tarea.text-center=t(:archivo)
+            %th.tres.iconos-acciones=t(:acciones)
+        %tbody
+          - @descargable_tareas.each do |record|
+            %tr
+              %td.text-center=record.id
+              %td=record.nombre.blank? ? '--' : record.nombre
+              %td.text-center=record.codigo.blank? ? '--' : record.codigo
+              %td.doc-type
+                - formato = record.formato.to_s.upcase
+                = formato.blank? ? '--' : formato
+              %td
+                - contenido = record.contenido.to_s.as_hash.map{|c,lines|lines.map{|line|line["insert"]}.join("") }.join("")
+                - if contenido.blank?
+                  = '--'
+                - else
+                  = contenido[0,222]
+              %td.archivo-descargable-tarea.text-center.vertical-align-middle
+                - if record.archivo.blank?
+                  = '--'
+                - else
+                  = render 'layouts/modal_archivos', item: record, adjuntos: [record]
+              %td.tres.iconos-acciones
+                %div
+                  = link_to descargar_admin_tarea_descargable_tarea_path(@tarea,record) do
+                    %i.fa.fa-download
+                  = link_to edit_admin_tarea_descargable_tarea_path(@tarea,record) do
+                    %i.fa.fa-edit
+                  = link_to admin_tarea_descargable_tarea_path(@tarea,record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:descargable_tarea).downcase), remote: true } do
+                    %i.fa.fa-trash

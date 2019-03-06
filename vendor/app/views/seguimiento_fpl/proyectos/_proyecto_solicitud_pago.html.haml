@@ -1,0 +1,32 @@
+- monto_garantizado = proyecto.monto_garantizado
+- monto_rendido_fpl = proyecto.monto_rendido_fpl
+- monto_pagado = proyecto.monto_pagado
+- monto_asignado_fpl = proyecto.monto_asignado_fpl
+- maximo_posible_2 = monto_asignado_fpl - monto_pagado
+- maximo_posible = monto_garantizado + monto_rendido_fpl - monto_pagado
+- if (maximo_posible > 0 && @correcto.nil?)
+  -# solo carga la primera vez
+  :javascript
+    $(document).ready(function(){
+      $('.moneda-maximo-#{proyecto.id}').autoNumeric('init', {aSep: '.', aDec: ',', aPad: false, vMin: 0.0, vMax: "#{maximo_posible}"});    
+    })
+- centro_de_costo = proyecto.centro_de_costo
+%td=proyecto.nombre
+%td=number_to_currency monto_asignado_fpl
+%td=number_to_currency monto_garantizado
+%td=number_to_currency monto_rendido_fpl
+%td=number_to_currency monto_pagado
+%td=centro_de_costo.blank? ? '--' : centro_de_costo.nombre
+%td=number_to_currency proyecto.cc_ano_vigente
+%td=number_to_currency proyecto.cc_con_compromisos
+%td=number_to_currency proyecto.multas
+%td=number_to_currency proyecto.monto_proceso_pago
+%td
+  - if maximo_posible > 0
+    = text_field_tag :monto_pagar, nil, class: "monto-pagar-#{proyecto.id}-input form-control moneda-maximo-#{proyecto.id}"
+  - else
+    = t(:sin_valores_por_pagar)
+%td
+  - if maximo_posible > 0
+    = link_to t(:enviar), enviar_pago_seguimiento_fpl_proyecto_path(@tarea_pendiente,proyecto), id: "monto-pagar-#{proyecto.id}", class: "enviar-monto-pagar btn btn-sm btn-primary"
+  

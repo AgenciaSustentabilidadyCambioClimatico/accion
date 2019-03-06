@@ -1,0 +1,34 @@
+- @_comentarios = @programa_proyecto_propuesta.comentarios_observaciones_tecnicas.blank? ? nil : @programa_proyecto_propuesta.comentarios_observaciones_tecnicas
+- titulo t(:programa_proyecto_propuesta)
+= simple_form_for @programa_proyecto_propuesta, url: guardar_elaboracion_inicial_propuesta_ppf_tarea_pendiente_programa_proyecto_propuesta_path, method: :patch, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= t(:elaboración_inicial_propuesta)
+				.card-body
+					.row
+						.col-12{class: @_comentarios.blank? ? '' : 'col-md-5 pr-md-0'}
+							.row
+								.pr-0.col-10{class: @_comentarios.blank? ? 'col-md-6' : ''}
+									= f.input :archivo_propuesta_elaboracion, as: :file, input_html: { class: 'required form-control required-field border-right-0' }, label: t(:archivo_propuesta_elaboración)
+									= f.hidden_field :archivo_propuesta_elaboracion_cache
+								.pl-0.col-2{class: @_comentarios.blank? ? 'pr-0' : ''}
+									= __upload_status(f.object,:archivo_propuesta_elaboracion)
+								.col-12{class: @_comentarios.blank? ? 'col-md-4' : ''}
+									= __mostrar_descargable(@descargables,'PPF-007-DES-001', {tarea_pendiente: @tarea_pendiente})
+								- unless @programa_proyecto_propuesta.archivo_observaciones_tecnicas.blank?
+									.col-12
+										.form-group
+											%label.control-label
+												= t(:archivo_observaciones_técnicas)
+											= link_to @programa_proyecto_propuesta.archivo_observaciones_tecnicas.url, class: 'btn btn-sm btn-outline-secondary btn-block' do
+												%i.fa.fa-download
+												= t(:descargar)
+						- unless @_comentarios.blank?
+							.col-md-7.col-12
+								= render 'table_comentarios', data: @_comentarios, elementos: :comentarios_observaciones_técnicas
+	.float-right
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'guardar-revisor-button', class: "btn btn-primary btn-sm float-right ml-1"# btn-disabled", disabled: :disabled

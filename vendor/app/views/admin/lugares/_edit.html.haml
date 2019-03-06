@@ -1,0 +1,106 @@
+:javascript
+	$(document).ready(function() {
+		//Permite darle estilo al select
+		htmlErrorToTooltip('top');
+		/*=========================================================
+		/=            verificar que radio esta marcado            =
+		/==========================================================*/
+		$('input[name=seleccion]').on('change keyup', function(){
+			var valor = $('input[name=seleccion]:checked' ).val();
+			$('.fields').attr('readonly', true);
+			$('input[name='+valor+']').removeAttr('readonly');
+			$('.select_field').addClass('d-none');
+			$('.input_field').removeClass('d-none');
+			if (valor == "comuna"){
+				$("#select_provincia").removeClass('d-none');
+				$("#input_provincia").addClass('d-none');
+			}else if (valor == "provincia"){
+				$("#select_region").removeClass('d-none');
+				$("#input_region").addClass('d-none');
+			}else if (valor == "region"){
+				$("#select_pais").removeClass('d-none');
+				$("#input_pais").addClass('d-none');
+			}
+
+
+		});					
+	});
+
+= form_tag actualizar_admin_lugares_path, remote: true, html: { method: :patch, class: 'filter', autocomplete: :off } do
+	= hidden_field_tag :pais_original, @lugar[:pais]
+	= hidden_field_tag :region_original, @lugar[:region]
+	= hidden_field_tag :provincia_original, @lugar[:provincia]
+	= hidden_field_tag :comuna_original, @lugar[:comuna]
+	.row
+		.col-12
+			.card.shadow
+				.card-header
+					%h5.no-margin
+						= t(:editar_lugar)
+				.card-body
+					.row#pais_row
+						.col-2
+							= label_tag '',nil, class: 'control-label string optional'
+							= radio_button_tag 'seleccion', "pais", false, class: "form-control"	
+						.col-lg-5.col-10.d-none#select_pais.select_field
+							%label.control-label.required
+								%abbr{title: :required}*
+								=t(:seleccione_un_país)
+							= select_tag :pais_id, options_from_collection_for_select(Pais.all, "id", "nombre", @lugar[:pais]), { class: 'form-control validado chosen-control',:prompt => 'Listado de Paìs'}
+						.col-lg-5.col-10#input_pais.input_field
+							= label_tag 'Paìs',nil, class: 'control-label string optional'
+							= text_field_tag :pais, @lugar[:pais_nombre],class: 'form-control validado field_pais fields', readonly: :readonly
+						.col-lg-2.d-flex.align-items-end
+							-if current_user.is_admin?
+								= link_to delete_admin_lugares_path(1, @lugar[:pais]), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:pais)), remote: false } do
+									%i.fa.fa-trash.text-danger
+
+					-if @lugar[:region].present?
+						.row#region_row	
+							.col-2
+								= label_tag '',nil, class: 'control-label string optional'
+								= radio_button_tag 'seleccion', "region", false, class: "form-control"	
+							.col-lg-5.col-10.d-none#select_region.select_field
+								%label.control-label.required
+									%abbr{title: :required}*
+									=t(:seleccione_una_región)
+								= select_tag :region_id, options_from_collection_for_select(Region.all, "id", "nombre", @lugar[:region]), { class: 'form-control validado',:prompt => 'Listado de Regiòn'}
+							.col-lg-5.col-10#input_region.input_field
+								= label_tag 'Regiòn',nil, class: 'control-label string optional'
+								= text_field_tag :region, @lugar[:region_nombre],class: 'form-control validado field_region fields', readonly: :readonly
+							.col-lg-2.d-flex.align-items-end
+								-if current_user.is_admin?
+									= link_to delete_admin_lugares_path(2, @lugar[:region]), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:region)), remote: false } do
+										%i.fa.fa-trash.text-danger
+					-if @lugar[:provincia].present?
+						.row#provincia_row	
+							.col-2
+								= label_tag '',nil, class: 'control-label string optional'
+								= radio_button_tag 'seleccion', "provincia", false, class: "form-control"	
+							.col-lg-5.col-10.d-none#select_provincia.select_field
+								%label.control-label.required
+									%abbr{title: :required}*
+									=t(:seleccione_una_provincia)
+								= select_tag :provincia_id, options_from_collection_for_select(Provincia.all, "id", "nombre", @lugar[:provincia]), { class: 'form-control validado',:prompt => 'Listado de Provincia'}
+							.col-lg-5.col-10#input_provincia.input_field
+								= label_tag 'Provincia',nil, class: 'control-label string optional'
+								= text_field_tag :provincia, @lugar[:provincia_nombre],class: 'form-control validado field_provincia fields', readonly: :readonly
+							.col-lg-2.d-flex.align-items-end
+								-if current_user.is_admin?
+									= link_to delete_admin_lugares_path(3, @lugar[:provincia]), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:provincia)), remote: false } do
+										%i.fa.fa-trash.text-danger
+					-if @lugar[:comuna].present?
+						.row#comuna_row	
+							.col-2
+								= label_tag '',nil, class: 'control-label string optional'
+								= radio_button_tag 'seleccion', "comuna", false, class: "form-control"
+							.col-lg-5.col-10#input_comuna.input_field
+								= label_tag 'Comuna',nil, class: 'control-label string optional'
+								= text_field_tag :comuna, @lugar[:comuna_nombre],class: 'form-control validado field_comuna fields', readonly: :readonly
+							.col-lg-2.d-flex.align-items-end
+								-if current_user.is_admin?
+									= link_to delete_admin_lugares_path(4, @lugar[:comuna]), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:comuna)), remote: false } do
+										%i.fa.fa-trash.text-danger
+	.float-right
+		= link_to t(:back), admin_lugares_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled"		

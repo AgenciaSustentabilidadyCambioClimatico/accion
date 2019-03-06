@@ -1,0 +1,43 @@
+:javascript
+  $(document).ready(function() {
+    $('table.encuestas').DataTable({
+      order: [[0, 'asc']],
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:encuestas).downcase)
+  .card-body
+    .table-responsive
+      %table.table.encuestas.table-striped
+        %thead
+          %tr
+            %th=t(:id)
+            %th=t(:título)
+            %th=t(:tiempo_para_contestar)
+            %th=t(:total_de_preguntas)
+            %th.dos.iconos-acciones=t(:acciones)
+
+        %tbody
+          - @encuestas.each do |record|
+            %tr
+              %td=record.id
+              %td=record.titulo
+              %td
+                - unidad_tiempo = t("_#{record.unidad_tiempo_para_contestar}")
+                ="#{record.valor_tiempo_para_contestar} #{unidad_tiempo}"
+              %td=record.encuesta_preguntas.size
+              %td.dos.iconos-acciones
+                %div
+                  = link_to edit_admin_encuesta_path(record) do
+                    %i.fa.fa-edit
+                  - unless record.base #sDZC se indispobiliza la eliminación de las encuentas base 
+                    = link_to admin_encuesta_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:encuesta).downcase), remote: false } do
+                      %i.fa.fa-trash

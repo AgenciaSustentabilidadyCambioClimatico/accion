@@ -1,0 +1,5 @@
+- titulo t(:hitos_de_prensa)
+- if user_signed_in?
+	= link_to t(:agregar_, item: t(:hito_de_prensa).downcase), @ruta_new, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#hitos-de-prensa-remote-table
+	= render 'table'
