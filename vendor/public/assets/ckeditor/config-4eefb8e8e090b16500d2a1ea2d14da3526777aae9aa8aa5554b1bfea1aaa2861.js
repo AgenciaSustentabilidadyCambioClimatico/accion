@@ -1,0 +1,1 @@
+CKEDITOR.editorConfig=function(e){e.height="100",e.toolbarGroups=[{name:"basicstyles"},{name:"paragraph",groups:["list","indent","blocks","align"]},{name:"styles"},{name:"colors"}],e.removeButtons="Cut,Copy,Paste,Undo,Redo,Anchor",e.removeDialogTabs="link:advanced",e.defaultLanguage="es"};

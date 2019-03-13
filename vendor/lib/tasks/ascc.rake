@@ -140,5 +140,30 @@ namespace :ascc do
   	puts(%x{env})
   end
 
+  desc "Crea el usuario superadmin del sistema"
+  task :crea_superadmin, [:rut,:nombre,:telefono,:email,:password,:password_confirm,:contribuyente_id] => :environment do |task,args|
+
+  	u = User.new({
+      rut: args.rut,
+      nombre_completo: args.nombre,
+      telefono: args.telefono,
+      email: args.email,
+      password: args.password,
+      password_confirmation: args.password_confirm,
+      personas_attributes: [{
+    		contribuyente_id: args.contribuyente_id,
+    		email_institucional: args.email,
+    		persona_cargos_attributes: [{
+    			cargo_id: 1
+    		}]
+      }]
+    })
+    if u.save
+    	p 'Usuario creado correctamente'
+    else
+    	p "Error al crear #{u.errors.messages}"
+    end
+	end
+
 
 end

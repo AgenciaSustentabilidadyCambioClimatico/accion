@@ -10,6 +10,6 @@ class CreateMinutas < ActiveRecord::Migration[5.1]
       t.json :lista_asistencia
       t.timestamps
     end
-    add_foreign_key :minutas, :convocatorias
+    #add_foreign_key :minutas, :convocatorias
   end
 end

@@ -4,9 +4,9 @@ class DeviseCreateUsers < ActiveRecord::Migration[5.1]
 			create_table :users do |t|
 				## Database authenticatable
 				t.string		:rut, null: false
-				# t.string		:nombres, null: false
-				# t.string		:apellido_paterno, null: false
-				# t.string		:apellido_materno, null: false
+				t.string		:nombres, null: false
+				t.string		:apellido_paterno, null: false
+				t.string		:apellido_materno, null: false
 				t.string		:nombre_completo, null: false
 				t.string		:telefono, null: false
 				t.string		:email,  null: false, default: ""

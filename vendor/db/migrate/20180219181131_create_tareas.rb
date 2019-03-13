@@ -4,7 +4,7 @@ class CreateTareas < ActiveRecord::Migration[5.1]
       t.integer :etapa_id
       t.integer :tipo_instrumento_id, null: false
       t.integer :rol_id, null: false
-      t.integer :encuesta_id, :integer
+      t.integer :encuesta_id
       t.string :nombre, null: false
       t.text :descripcion
       t.string :recordatorio_tarea_asunto
@@ -14,7 +14,7 @@ class CreateTareas < ActiveRecord::Migration[5.1]
       t.boolean :cualquiera_con_rol_o_usuario_asignado
       t.text :condicion_de_acceso
       t.boolean :es_una_encuesta, default: false, null: false
-      t.string :codigo, null: false
+      t.string :codigo
     end
     add_index :tareas, :codigo
     add_foreign_key :tareas, :etapas
