@@ -4,7 +4,7 @@ class CreateHitoDePrensaResponsables < ActiveRecord::Migration[5.1]
       t.integer :hitos_de_prensa_id
       t.integer :user_id
     end
-    add_foreign_key :hito_de_prensa_responsables, :hitos_de_prensa
+    add_foreign_key :hito_de_prensa_responsables, :hitos_de_prensa, column: :hitos_de_prensa_id
     add_foreign_key :hito_de_prensa_responsables, :users
   end
 end

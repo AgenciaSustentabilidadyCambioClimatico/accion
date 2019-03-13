@@ -1,6 +1,6 @@
 class AddCampoToPregunta < ActiveRecord::Migration[5.1]
   def change
-  	add_column :preguntas, :base, :boolean, default: false, null: true
+  	add_column :preguntas, :base, :boolean, default: true, null: false
   	Pregunta.update_all(base: false)
   	add_timestamps :preguntas, null: true
   	# rellena los registros preexistentes

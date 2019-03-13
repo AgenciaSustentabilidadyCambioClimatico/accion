@@ -167,20 +167,20 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.bigint "manifestacion_de_interes_id"
     t.string "nombre"
     t.integer "plazo"
-    t.boolean "con_certificacion"
-    t.boolean "con_validacion"
-    t.boolean "final"
+    t.boolean "con_certificacion", default: false
+    t.boolean "con_validacion", default: false
+    t.boolean "final", default: false
     t.bigint "flujo_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "auditoria_id"
-    t.bigint "convocatoria_id"
     t.date "ceremonia_certificacion_fecha"
     t.string "ceremonia_certificacion_direccion"
     t.decimal "ceremonia_certificacion_lat"
     t.decimal "ceremonia_certificacion_lng"
     t.text "ceremonia_certificacion_firmantes"
     t.json "ceremonia_certificacion_archivo"
+    t.bigint "convocatoria_id"
     t.boolean "archivo_correcto"
     t.index ["flujo_id"], name: "index_auditorias_on_flujo_id"
   end
@@ -220,18 +220,6 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
-  end
-
-  create_table "ckeditor_assets", force: :cascade do |t|
-    t.string "data_file_name", null: false
-    t.string "data_content_type"
-    t.integer "data_file_size"
-    t.string "type", limit: 30
-    t.integer "width"
-    t.integer "height"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["type"], name: "index_ckeditor_assets_on_type"
   end
 
   create_table "clasificaciones", force: :cascade do |t|
@@ -290,7 +278,6 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.text "fields_visibility"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["razon_social"], name: "contribuyentes_razon_social"
     t.index ["rut"], name: "index_contribuyentes_on_rut", unique: true
   end
 
@@ -323,9 +310,9 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.json "archivo_adjunto"
     t.text "caracterizacion"
     t.boolean "terminada", default: false
+    t.integer "tipo"
     t.bigint "flujo_id"
     t.string "tarea_codigo"
-    t.integer "tipo"
     t.text "nombre"
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
@@ -451,7 +438,7 @@ ActiveRecord::Schema.define(version: 20181121200018) do
   create_table "encuesta_preguntas", force: :cascade do |t|
     t.integer "encuesta_id", null: false
     t.integer "pregunta_id", null: false
-    t.integer "orden", limit: 2, default: 0, null: false
+    t.integer "orden", default: 0, null: false
     t.boolean "obligatorio", default: false, null: false
     t.boolean "base", default: false, null: false
     t.datetime "created_at", null: false
@@ -464,9 +451,9 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.integer "pregunta_id", null: false
     t.text "respuesta", null: false
     t.integer "flujo_id", null: false
+    t.integer "institucion_proveedor_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "institucion_proveedor_id"
   end
 
   create_table "encuestas", force: :cascade do |t|
@@ -474,9 +461,9 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.integer "valor_tiempo_para_contestar", null: false
     t.integer "unidad_tiempo_para_contestar", null: false
     t.boolean "solo_dias_habiles", default: false, null: false
+    t.boolean "base", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "base", default: false, null: false
   end
 
   create_table "establecimiento_contribuyentes", force: :cascade do |t|
@@ -494,9 +481,9 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.string "telefono"
     t.string "email"
     t.text "fields_visibility"
+    t.datetime "fecha_eliminacion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.datetime "fecha_eliminacion"
   end
 
   create_table "estado_admisibilidades", force: :cascade do |t|
@@ -565,12 +552,12 @@ ActiveRecord::Schema.define(version: 20181121200018) do
   create_table "flujo_tareas", force: :cascade do |t|
     t.integer "tarea_entrada_id", null: false
     t.integer "tarea_salida_id"
+    t.boolean "sin_salida", default: false
     t.text "rol_destinatarios", null: false
+    t.text "descripcion_flujo"
     t.text "condicion_de_salida", null: false
     t.string "mensaje_salida_asunto"
     t.text "mensaje_salida_cuerpo"
-    t.boolean "sin_salida", default: false, null: false
-    t.text "descripcion_flujo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -578,9 +565,9 @@ ActiveRecord::Schema.define(version: 20181121200018) do
   create_table "flujos", force: :cascade do |t|
     t.integer "contribuyente_id"
     t.integer "tipo_instrumento_id", null: false
+    t.integer "proyecto_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "proyecto_id"
     t.integer "manifestacion_de_interes_id"
     t.integer "programa_proyecto_propuesta_id"
     t.boolean "terminado", default: false
@@ -808,7 +795,6 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.integer "roles_especificos_usuario_carga_datos"
     t.text "roles_especificos_comentarios_carga_datos"
     t.text "informe"
-    t.text "observaciones_documentos_diagnostico"
     t.integer "user_carga_actores_id"
     t.text "comentarios_y_observaciones_documento_diagnosticos"
     t.text "comentarios_y_observaciones_set_metas_acciones"
@@ -826,6 +812,7 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.text "tarea_codigo"
     t.text "comentarios_y_observaciones_termino_acuerdo"
     t.datetime "fecha_termino_acuerdo"
+    t.text "observaciones_documentos_diagnostico"
     t.datetime "diagnostico_fecha_termino"
     t.text "instrumentos_relacionados_historico"
     t.date "fecha_manifestacion"
@@ -1150,16 +1137,16 @@ ActiveRecord::Schema.define(version: 20181121200018) do
   create_table "proyecto_actividades", force: :cascade do |t|
     t.integer "proyecto_id"
     t.string "nombre"
+    t.integer "duracion"
     t.date "fecha_finalizacion"
     t.date "fecha_realizacion_compromiso"
-    t.integer "duracion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "proyecto_pagos", force: :cascade do |t|
     t.bigint "proyecto_id"
-    t.datetime "fecha_pago", default: -> { "now()" }, null: false
+    t.datetime "fecha_pago", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.integer "monto", null: false
     t.integer "numero_orden_pago"
     t.date "fecha_pago_efectiva"
@@ -1337,8 +1324,8 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.integer "user_id", null: false
     t.text "data"
     t.text "resultado"
-    t.datetime "created_at", default: -> { "now()" }, null: false
-    t.datetime "updated_at", default: -> { "now()" }, null: false
+    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
     t.boolean "primera_ejecucion", default: true
   end
 
@@ -1346,6 +1333,7 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.integer "etapa_id"
     t.integer "tipo_instrumento_id", null: false
     t.integer "rol_id", null: false
+    t.integer "encuesta_id"
     t.string "nombre", null: false
     t.text "descripcion"
     t.string "recordatorio_tarea_asunto"
@@ -1355,7 +1343,6 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.boolean "cualquiera_con_rol_o_usuario_asignado"
     t.text "condicion_de_acceso"
     t.boolean "es_una_encuesta", default: false, null: false
-    t.integer "encuesta_id"
     t.string "codigo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -1421,6 +1408,7 @@ ActiveRecord::Schema.define(version: 20181121200018) do
 
   create_table "users", force: :cascade do |t|
     t.string "rut", null: false
+    t.string "nombre_completo", null: false
     t.string "telefono", null: false
     t.string "email", default: "", null: false
     t.string "web_o_red_social_1"
@@ -1445,7 +1433,6 @@ ActiveRecord::Schema.define(version: 20181121200018) do
     t.datetime "locked_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "nombre_completo", null: false
     t.string "invitation_token"
     t.datetime "invitation_created_at"
     t.datetime "invitation_sent_at"
@@ -1534,7 +1521,7 @@ ActiveRecord::Schema.define(version: 20181121200018) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
-  add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
+  add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
   add_foreign_key "flujos", "tipo_instrumentos"
