@@ -9,7 +9,7 @@ class ActividadEconomica < ApplicationRecord
 	def self.__select(lowest_only=true)
 		acteco = ActividadEconomica
 		if lowest_only
-			acteco.where("length(codigo_ciiuv2) = 6")
+			acteco = acteco.where("length(codigo_ciiuv2) = 6")
 		end
     acteco.all.map {|acteco| [acteco.as_label, acteco.id]}
   end

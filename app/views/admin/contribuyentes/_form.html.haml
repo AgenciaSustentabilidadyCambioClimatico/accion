@@ -22,7 +22,13 @@
 	})
 
 	$(document).on('nested:fieldAdded:establecimiento_contribuyentes', function(){
+		__chosen_actecos();
 		checkFieldValidity($("#contribuyente_rut"));
+	});
+
+	//Al momento de agregar dato anual
+	$(document).on('nested:fieldAdded:dato_anual_contribuyentes', function(){
+		__chosen_actecos();
 	});
 
 	$("body").on('change', '.checkbox-casa-matriz', function(){
@@ -138,7 +144,7 @@
 													%td.no-padding.casa-matriz=establ.input :casa_matriz, as: :boolean, label: false, disabled: true, input_html: { class: "not-required-if-other-like-me-is-present" }
 													%td.no-padding.direccion=establ.input :direccion, label: false, readonly: true
 													%td.no-padding.ciudad=establ.input :ciudad, label: false, readonly: true
-													%td.no-padding.region=establ.select :region_id, Region.__select, {}, { class: 'form-control', disabled: true}
+													%td.no-padding.region=establ.select :region_id, Region.__select, {}, { class: 'form-control contribuyente-acteco', disabled: true}
 													%td.no-padding.comuna=establ.select :comuna_id, Comuna.__select, {}, { class: 'form-control', disabled: true}
 													- unless no_acceso
 														%td.accion.no-padding.remove-row
@@ -149,8 +155,8 @@
 													%td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras'}, label: false
 													-regiones = Region.__select
 													-region_selec = establ.object.region_id.nil? ? regiones.first.last : establ.object.region_id
-													%td.no-padding.region=establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region'}
-													%td.no-padding.comuna=establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna' }
+													%td.no-padding.region=establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region contribuyente-acteco'}
+													%td.no-padding.comuna=establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna contribuyente-acteco' }
 													- unless no_acceso
 														%td.accion.no-padding.remove-row
 															= establ.link_to_remove do
@@ -210,8 +216,8 @@
 												= snf.fields_for :dato_anual_contribuyentes, :wrapper => false  do |dato_anual|
 													%tr.fields.desactivado
 														%td.no-padding.periodo-dato-anual=dato_anual.input :periodo, input_html: { class: 'im-not-required-check-the-others form-control', min: 1900, max: Date.today.year  }, label: false
-														%td.no-padding.tipo-contribuyente=dato_anual.select :tipo_contribuyente_id, TipoContribuyente::__select, {}, { class: 'im-not-required-check-the-others form-control'}
-														%td.no-padding.rango-venta=dato_anual.select :rango_venta_contribuyente_id, RangoVentaContribuyente::__select, {}, { class: 'im-not-required-check-the-others form-control'}
+														%td.no-padding.tipo-contribuyente=dato_anual.select :tipo_contribuyente_id, TipoContribuyente::__select, {}, { class: 'im-not-required-check-the-others form-control contribuyente-acteco'}
+														%td.no-padding.rango-venta=dato_anual.select :rango_venta_contribuyente_id, RangoVentaContribuyente::__select, {}, { class: 'im-not-required-check-the-others form-control contribuyente-acteco'}
 														%td.no-padding.numero-trabajadores=dato_anual.input :numero_trabajadores, label: false
 														%td.no-padding.f22_c645=dato_anual.input :f22c_645, label: false
 														%td.no-padding.f22_c646=dato_anual.input :f22c_646, label: false

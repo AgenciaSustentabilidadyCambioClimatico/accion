@@ -11,7 +11,7 @@ default: &default
 
 development:
   <<: *default
-  database: ascc_gitlab
+  database: ascc_gitlab_broken_bd
 test:
   <<: *default
   database: ascc_test__up
