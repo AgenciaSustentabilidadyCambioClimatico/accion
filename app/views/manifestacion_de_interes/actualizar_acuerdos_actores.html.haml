@@ -1,0 +1,38 @@
+:javascript
+	$(document).ready(function() {
+		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+	});
+
+- titulo t(:actualizar_actores_resolver_comentarios_set_metas_acciones)
+- url = tarea_pendiente_termina_actualizacion_actores_resuelve_comentarios_propuestas_path(@tarea_pendiente)
+= simple_form_for @tarea_pendiente, url: url, remote: true, html: { autocomplete: :off } do |f|
+	= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-actualizar-acuerdo-actores", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
+		/%i.fa.fa-file-signature
+		%i.fa.fa-file-text-o
+		Terminar actualización mapa de actores y resolución de comentarios en propuestas de acuerdo
+	= render 'modal_terminar_actualizar_acuerdo_actores', f: f
+- (@tab_metas.present? && @tab_metas) ? tabs = { "mapa-de-actores": false, "set-metas-accion": true } : tabs = { "mapa-de-actores": true, "set-metas-accion": false } # DZC 2018-11-02 18:02:00 se agrega para posicionar la vista en la pestaña set de metas y acciones
+#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+		- tabs.each do |tab,active|
+			%li.nav-item
+				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+					=t(tab.to_s.gsub('-','_'))
+				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+					%small.total-error
+						= @total_de_errores_por_tab[tab].size
+	#manifestacionContent.tab-content
+		#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
+			.card
+				.card-body.p-0
+					#actores-remote-table
+						= render 'actores/table'
+					#actualizar-remote-form
+						= render 'actores/form', externo: true
+		#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
+			.card
+				.card-body.p-0
+					#propuestas-de-acuerdo-remote-table
+						= render 'set_metas_acciones/table', externo: true
+					-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+					= render 'set_metas_acciones/modal'

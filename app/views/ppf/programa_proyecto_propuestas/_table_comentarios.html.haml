@@ -1,0 +1,29 @@
+- pra =  @programa_proyecto_propuesta.propuesto_ejecutado_por_agencia?
+- tarea =  @tarea.present? ? (@tarea.codigo == Tarea::COD_PPF_007)  : false
+.card.mt-2.mb-0.border-primary
+	.card-header
+		%h5.no-margin.text-primary
+			= t(:historial_de_, items: t(elementos).downcase)
+	.card-body.p-0
+		.table-responsive
+			%table.table.actores.table-striped.m-0
+				%thead
+					%tr
+						%th.comentarios-usuario=t(:usuario)
+						%th.comentarios-fecha=t(:fecha)
+						%th.comentarios-text=t(:texto)
+						-unless tarea
+							%th.comentarios-data=t(:secciones_con_observaciones)
+				%tbody
+					- data.each do |d|
+						%tr
+							%td=d[:usuario]
+							%td=l(d[:fecha_y_hora], format: "%d-%m-%Y %H:%M")
+							%td=d[:texto]
+							-unless tarea
+								%td
+									- data = d[:data].reject{|r|r.blank?} unless d[:data].blank?
+									- if ( pra && data.size == 2 ) || ( ! pra && data.size == 3 )
+										= t(:todas_las_secciones)
+									- else
+										= data.map{|m|t(m)}.join(", ")

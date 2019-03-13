@@ -1,0 +1,83 @@
+- titulo __mostrar_(t(:modificar_calendario),@proyecto.nombre)
+= link_to t(:agregar_, item: t(:actividad).downcase), new_seguimiento_fpl_proyecto_proyecto_actividad_path(@tarea_pendiente,@proyecto), class: 'btn btn-outline-secondary btn-sm margin-bottom-20 float-left'
+.clearfix
+:javascript
+	var hubieron_cambios = false
+	var hubieron_cambios_fecha_mayor = false
+	var hubieron_cambios_fecha_30_dias = false
+	var hubieron_cambios_cambio_modalidad = false
+	var hubieron_cambios_boleta_gar_prox_vencer = false
+	var hubieron_cambios_monto_agencia_menor = false
+	var fecha_mayor = ""
+	var fecha_30_dias = ""
+	var cambio_modalidad = ""
+	var boleta_gar_prox_vencer = ""
+	var monto_agencia_menor = ""
+	$(document).ready(function(){
+		$('.save-all').on('click',function(e){
+			//hubieron_cambios = true;
+			if (hubieron_cambios){
+				// si fecha finalizacion es mayor al fin de contrato
+				if (hubieron_cambios_fecha_mayor) {
+					fecha_mayor = "\nFecha de finalización es mayor que la fecha de término de contrato.";				
+				}
+				// si fecha finalizacion es en 30 dias o menos
+				if (hubieron_cambios_fecha_30_dias) {
+					var fecha_30_dias = "\nFecha de finalización es menor a 30 días de término de contrato."
+				}
+				// si la modalidad de pago cambió 
+				if (hubieron_cambios_cambio_modalidad) {
+					var cambio_modalidad = "\nSe cambió la modalidad de pago."				
+				}
+				// si la boleta de garantia va a vencer 30 dias
+				if (hubieron_cambios_boleta_gar_prox_vencer) {
+					var boleta_gar_prox_vencer = "\nHay boletas de garantía por vencer."
+				}
+				// si el monto entregado por la agencia es mayor que nuevo total de proyecto
+				if (hubieron_cambios_monto_agencia_menor) {
+					var monto_agencia_menor = "\nMonto entregado por la agencia es mayor que el total del proyecto."				
+				}
+				url = $(this).attr('href')
+				e.preventDefault();
+				mensajes = [fecha_mayor,fecha_30_dias,cambio_modalidad,boleta_gar_prox_vencer,monto_agencia_menor]
+				megaMensaje = ""
+				for (i = 0; i < mensajes.length; i++){
+					if (mensajes[i] != undefined){
+						megaMensaje += mensajes[i]						
+					}
+				}
+				respuesta = confirm("Las modificaciones realizadas implicarán realización de un nuevo contrato. "+megaMensaje+"\n¿Desea continuar?")
+				if (respuesta){
+					// redirecciono para cierto lado, sino se queda aqui modificando
+				}				
+			}
+		});
+	});
+#table-actividades
+	= render 'table_actividades'
+
+.modal.fade{id: :"rendicion-modal", tabindex: "-1", role: :dialog, "aria-labelledby": :rendicionModalLabel, "aria-hidden": true}
+	.modal-dialog.modal-dialog-centered.modal-lg{role: :document}
+		.modal-content#rendicion-remote-form
+			= render 'form_rendicion'
+:javascript
+	$(document).ready(function() { $('#rendicion-modal').on('hide.bs.modal', function (e) { $.get("#{seguimiento_fpl_proyecto_proyecto_actividades_reset_rendiciones_url(@tarea_pendiente,@proyecto)}") }) });
+
+.modal.fade{id: :"nuevo-anticipo-modal", tabindex: "-1", role: :dialog, "aria-labelledby": :nuevoAnticipoModalLabel, "aria-hidden": true}
+	.modal-dialog.modal-dialog-centered.modal-lg.larger-please{role: :document}
+		.modal-content#nuevo-anticipo-remote-form
+			= render 'form_nuevo_anticipo'
+.row
+	.col-12
+		.float-right
+			= volver_root
+			= link_to '#', "data-toggle"=>:modal, "data-target"=>"#rendicion-modal", class: 'btn btn-outline-secondary btn-sm mr-1' do
+				= t(:rendición)
+			= link_to '#', "data-toggle"=>:modal, "data-target"=>"#nuevo-anticipo-modal", class: 'btn btn-outline-secondary btn-sm mr-1' do
+				= t(:modificación_anticipo)
+			- if @esta_revisando_cambios_tarea_15_desde_tarea_16
+				#guardar-modificaciones-remote-form.float-right
+					= render 'form_aceptar_modificaciones'
+			- else
+				#guardar-modificaciones-remote-form.float-right
+					= render 'form_guardar_modificaciones'

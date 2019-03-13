@@ -1,0 +1,34 @@
+- custom_id = custom_id.blank? ? nil : custom_id
+- data_table = data_table.nil? ? true : data_table
+- es_para_seleccion = es_para_seleccion.blank? ? false : es_para_seleccion
+- buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
+- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+
+.modal.fade{id: :"buscar-contribuyente#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content.p-3
+      .modal-body.no-padding
+        .card.no-margin
+          .card-header
+            %h5.no-margin
+              = t(:buscar_, item: t(:institución).downcase)
+          .card-body
+            %div{id: "maquinarias-remote-filter#{custom_id}"}
+              = render 'admin/maquinarias/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados
+        %br
+        -#
+          #resultado-consulta-remote-block
+            = render 'admin/maquinarias/resultado_consulta'
+
+        .card.no-margin
+          .card-header
+            %h5.no-margin
+              = t(:lista_de_, items: t(:maquinarias).downcase)
+          .card-body.pl-0.pr-0
+            %div{id: "maquinarias-remote-table#{custom_id}"}
+              = render 'admin/maquinarias/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados
+      .modal-footer.pr-0
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Cerrar
+        %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled}
+          Seleccionar

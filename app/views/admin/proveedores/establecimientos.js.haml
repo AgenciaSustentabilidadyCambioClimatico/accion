@@ -1,0 +1,4 @@
+= render 'layouts/remote_form', block: 'proveedor-establecimientos', form_partial: 'table_establecimientos', local_assigns: {establecimientos: @establecimientos}	
+//$('#proveedor-establecimientos-remote-form').html("#{j render 'table_establecimientos', establecimientos: @establecimientos, es_para_seleccion: false}");
+//$('.loading-data').hide();
+$('#proveedor-establecimientos').modal('show');

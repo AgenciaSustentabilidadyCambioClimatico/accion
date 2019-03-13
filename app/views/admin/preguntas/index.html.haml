@@ -1,0 +1,4 @@
+- titulo t(:preguntas)
+= link_to t(:agregar_, item: t(:pregunta).downcase), new_admin_pregunta_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#pregunta-remote-table
+	= render 'table'

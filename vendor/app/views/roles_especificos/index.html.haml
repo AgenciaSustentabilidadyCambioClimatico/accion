@@ -1,0 +1,101 @@
+- i_collection= []
+:javascript
+  var seleccionado="";
+  var seleccionado_clase="";
+  var url_entregables = "#{roles_especificos_entregables_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}"
+  var url_carga_datos = "#{roles_especificos_carga_datos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}"
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    $("i.deseleccionar-entregables").click(function() {
+      $("select#manifestacion_de_interes_roles_especificos_institucion_entregables option:not([value=''])").remove();
+      $("#manifestacion_de_interes_roles_especificos_usuario_entregables").html("");
+      $(this).hide();
+    });
+    $("i.deseleccionar-carga-datos").click(function() {
+      $("select#manifestacion_de_interes_roles_especificos_institucion_carga_datos option:not([value=''])").remove();
+      $("#manifestacion_de_interes_roles_especificos_usuario_carga_datos").html("");
+      $(this).hide();
+    });
+
+    $('body').on('change','.contribuyente-radio',function() { $('.seleccionar-contribuyente-button').removeAttr('disabled'); });
+    $('.seleccionar-contribuyente-button').click(function() {
+      try {
+        data=JSON.parse($('.contribuyente-radio:checked').val());
+        $("select#manifestacion_de_interes_roles_especificos_institucion_"+seleccionado).append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
+        $("input#manifestacion_de_interes_roles_especificos_institucion_"+seleccionado).val(data.id);
+        checkFieldValidity($("select#manifestacion_de_interes_roles_especificos_institucion_"+seleccionado));
+        $("i.deseleccionar-"+seleccionado_clase).show();
+        $("#contribuyente_id").val(data.id);
+        //se usa de esta forma para enviar el form a travez de una llamada js, submit normal lo envia como 'remote: false'
+        Rails.fire(document.querySelector('#filtro_contribuyente'), 'submit');
+      } catch(e) {
+        alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+      }
+    });
+    $('.buscar-entregables').click(function() {
+      seleccionado="entregables";
+      seleccionado_clase=seleccionado;
+      $('#filtro_contribuyente').attr('action', url_entregables);
+    });
+    $('.buscar-carga-datos').click(function() {
+      seleccionado="carga_datos";
+      seleccionado_clase="carga-datos";
+      $('#filtro_contribuyente').attr('action', url_carga_datos);
+    });
+    htmlErrorToTooltip('top');
+  });
+:css
+  .dataTables_filter input[type="search"] {
+    margin-right: 10px;
+  }
+  div.dataTables_wrapper div.dataTables_paginate { 
+    margin-right: 10px;
+  }
+- titulo t(:manifestación_de_acuerdo)
+= simple_form_for @manifestacion_de_interes, url: roles_especificos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes),method: :patch, html: { autocomplete: :off } do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:asignar_usuarios_a_cargo_de_entregables_implementación_y_carga_de_datos_empresa)
+        .card-body
+          .row
+            .col-12.col-lg-6
+              .col-12
+                .row
+                  .col-lg-11.col-12.pr-lg-0
+                    = f.input :roles_especificos_institucion_entregables, as: :hidden, wrapper: false
+                    = f.input :roles_especificos_institucion_entregables, label: t(:institución_entregables), collection: i_collection, input_html: { class: 'required-field float-left', disabled: :true }, required: true, prompt: "Seleccione una institución desde el buscador"
+                    %i.fa.fa-times.deseleccionar-contribuyente.deseleccionar-entregables
+                  .col-lg-1.col-12
+                    = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'buscar-contribuyente buscar-entregables btn-sm btn btn-block mt-lg-3 px-0' do
+                      %i.fa.fa-search-plus.fa-2x
+              .col-12
+                = f.input :roles_especificos_usuario_entregables, collection: [], input_html: { class: "required-field" }
+              .col-12
+                = f.input :roles_especificos_comentarios_entregables, as: :text, required: false
+            .col-12.col-lg-6
+              .col-12
+                .row
+                  .col-lg-11.col-12.pr.lg-0
+                    = f.input :roles_especificos_institucion_carga_datos, as: :hidden, wrapper: false
+                    = f.input :roles_especificos_institucion_carga_datos, label: t(:institución_carga_datos), collection: i_collection, input_html: { class: 'not-required-if-other-like-me-is-present float-left', disabled: :true }, required: true, prompt: "Seleccione una institución desde el buscador"
+                    %i.fa.fa-times.deseleccionar-contribuyente.deseleccionar-carga-datos
+                  .col-lg-1.col-12.pr-1
+                    = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'buscar-contribuyente buscar-carga-datos btn-sm btn btn-block mt-lg-3 px-0' do
+                      %i.fa.fa-search-plus.fa-2x
+              .col-12
+                = f.input :roles_especificos_usuario_carga_datos, collection: [], input_html: { class: "required-field" }
+              .col-12
+                = f.input :roles_especificos_comentarios_carga_datos, as: :text, required: false
+            
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+= form_tag "", id: :filtro_contribuyente, remote: true, authenticity_token: true do
+  = hidden_field_tag(:contribuyente_id)
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true

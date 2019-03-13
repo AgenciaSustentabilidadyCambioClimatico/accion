@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  minuta_id: 1
+  participante_id: 1
+  asistio: false
+
+two:
+  minuta_id: 1
+  participante_id: 1
+  asistio: false

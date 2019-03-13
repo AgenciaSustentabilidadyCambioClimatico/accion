@@ -1,0 +1,149 @@
+- titulo t(:tarea)
+:javascript
+	$(document).ready(function() {
+		$('.chosen-control').chosen({
+			allow_single_deselect: true,
+			no_results_text: 'No se encontraron resultados',
+			width: '100%'
+		});
+		var currentInput;
+		$('.recordatorio').each(function(k,v) {
+			currentInput=$(v);
+			update_previsualizacion();
+		});
+		$('.recordatorio').on('change keyup',function() {
+			currentInput=$(this);
+			update_previsualizacion();
+		});
+		$('.availables-tags > span').click(function(){
+			if ( currentInput !== undefined ) {
+				textWithTag=$(currentInput).val() + $(this).text().replace(/[\s]+/,'')
+				currentInput.val( textWithTag );
+				update_previsualizacion();
+			}
+		});
+		function update_previsualizacion() {
+			previsualizacion=$('#previsualizacion-'+currentInput.attr("aria-label"))
+			previsualizacion.text(currentInput.val());
+			$.each(#{raw json_escape @tarea.metodos(current_user).to_json},function(k,v){
+				if ( previsualizacion.html() ) {
+					previsualizacion.html( previsualizacion.html().replace(k,v).replace(/\n/,"<br />") );
+				}
+			})
+		}
+		$('#tarea_es_una_encuesta').click(function(){
+			if ( $(this).is(':checked')) {
+				$('div.tarea_encuesta_id').removeClass('d-none');
+				$('#tarea_encuesta_id').addClass('required-field');
+			} else {
+				$('div.tarea_encuesta_id').addClass('d-none');
+				$('#tarea_encuesta_id').removeClass('required-field');
+			}
+		});
+		htmlErrorToTooltip('top');
+	});
+
+= simple_form_for [:admin,@tarea], remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@tarea)
+				.card-body
+					.row
+						.col-lg-6.pr-lg-0.col-12
+							.row
+								.col-12
+									= f.input :nombre, label: t(:nombre), placeholder: "Ingrese el nombre de la tarea", input_html: { class: 'required-field' }, required: true
+								.col-12
+									= f.input :descripcion, label: t(:descripción), placeholder: "Ingrese la descripción de la tarea", input_html: { class: 'required-field descripcion-tarea', rows: 4 }, required: true
+						.col-lg-6.col-12
+							.row
+								.col-lg-6.pr-lg-0.col-12
+									- desactivado = (action_name == "edit") ? true : false
+									= f.input :codigo, input_html: { class: 'required-field', placeholder: "Ej. APL-001" }, label: t(:código), readonly: desactivado
+								.col-lg-6.col-12
+									= f.input :etapa_id, collection: Etapa.all.map{|m|[m.nombre,m.id]}, label: t(:etapa), input_html: { class: 'im-not-required-check-the-others' }
+								.col-12
+									= f.input :rol_id, collection: Rol.order(id: :asc).all.map{|m|[m.nombre,m.id]}, label: t(:role), input_html: { class: 'chosen-control required-field', type: :string, "data-placeholder"=>"Seleccione un rol" }, required: true
+								.col-12
+									= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), as: :grouped_select, collection: TipoInstrumento.por_padre(), group_method: :last, input_html: { class: 'required-field' }, required: true
+								.col-md-4.pr-lg-0.col-12
+									%label.string.control-label
+										=t(:posee_formulario)
+									= f.input :posee_formulario, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
+								.col-md-8.pr-lg-0.col-12
+									%label.string.control-label
+										=t(:cualquiera_con_rol_o_usuario_asignado)
+									= f.input :cualquiera_con_rol_o_usuario_asignado, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
+								.col-md-3.pr-lg-0.col-12
+									%label.string.control-label
+										=t(:es_una_encuesta)
+									= f.input :es_una_encuesta, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
+								.col-md-9.col-12
+									- es_una_encuesta = (f.object.es_una_encuesta==true)
+									= f.input :encuesta_id, collection: Encuesta.all.map{|m|[m.titulo,m.id]}, label: t(:encuesta), required: true, wrapper_class: (es_una_encuesta ? nil : 'd-none'), input_html: { class: (es_una_encuesta ? 'required-field' : nil) }
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= t(:recordatorio)
+				.card-body
+					.row
+						.col-lg-6.col-12
+							.row
+								.col-12
+									.form-group
+										%label.control-label.string
+											= t(:lista_de_, items: t(:campos_disponibles).downcase)
+										#notificacion_tarea_lista_campos_disponibles.form-control.text.rounded-0.border-0.pl-0.availables-tags
+											- @tarea.metodos(current_user).each do |k,tag|
+												%span.mr-2{class: tag}
+													=k
+								.col-12
+									= f.input :recordatorio_tarea_asunto, label: t(:recordatorio_asunto), placeholder: "Ingrese el asunto del recordatorio para esta tarea", input_html: {  class: 'required im-not-required-check-the-others recordatorio asunto', "aria-label"=> :asunto }
+								.col-12
+									%label.control-label
+										=t(:recordatorio_frecuencia)
+									= f.input :recordatorio_tarea_frecuencia, label: false, wrapper_html: {class: "input-group"} do
+										= f.input_field :recordatorio_tarea_frecuencia, class: "required im-not-required-check-the-others form-control validado", placeholder: "Ingrese la frecuencia del recordatorio para esta tarea"
+										.input-group-append
+											%button.btn.btn-outline-secondary#help_recordatorio{type: "button", "data-toggle" => "modal", "data-target" => "#helpRecordatorio"}
+												%i.fa.fa-question
+								.col-12
+									= f.input :recordatorio_tarea_cuerpo, label: t(:recordatorio_cuerpo), placeholder: "Ingrese el contenido del recordatorio para esta tarea", input_html: { class: 'required im-not-required-check-the-others recordatorio cuerpo', "aria-label"=> :cuerpo }
+						.col-lg-6.col-12
+							.row
+								.col-12
+									%label.string.control-label
+										=t(:previsualización_recordatorio)
+									#tarea_recordatorio_previsualizacion.form-control.text
+										%h5#previsualizacion-asunto
+										%p#previsualizacion-cuerpo.mb-0
+	.float-right
+		= link_to t(:back), admin_tareas_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+.modal.fade{id: :"helpRecordatorio", tabindex: "-1", role: :dialog, "aria-labelledby": :helpRecordatorioLabel, "aria-hidden": true}
+	.modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+		.modal-content
+			.modal-header
+				%h5.modal-title#helpRecordatorioLabel Frecuencia recordatorio
+				%button.close{type: "button", "data-dismiss" => "modal", "aria-label" => "close"}
+					%span{"aria-hidden" => "true"} &times;
+			.modal-body
+				Recuerde que debe indicar 5 valores, puede utilizar asteriscos para todos los casos o especificar lo siguiente: 
+				%ol
+					%li minuto (0-59)
+					%li hora (0-23)
+					%li día del mes (1-31)
+					%li mes (1-12)
+					%li día de la semana (0-6 donde 0=Domingo)
+				Ejemplo:
+				%ul
+					%li 0 10 * * * (Todos los días a las 10 am)
+					%li 30 * * * 0 (Cada 30 minutos sólo los domingos)
+					%li 0 8 15 * * (La quincena de cada mes a las 8 am)
+
+			.modal-footer
+				%button.btn.btn-secondary{type: "button", "data-dismiss" => "modal"} Cerrar

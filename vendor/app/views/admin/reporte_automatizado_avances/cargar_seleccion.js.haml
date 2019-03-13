@@ -1,0 +1,4 @@
+- if @instrumento.present?
+	$('#filtro_cargar').html("#{ j render 'form_carga_instrumento'}");
+- else
+	$('#filtro_cargar').empty();

@@ -1,0 +1,35 @@
+:javascript
+  $(document).ready(function() {
+    $('table.actividades').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:actividades).downcase)
+  .card-body
+    .table-responsive
+      %table.table.actividades.table-striped
+        %thead
+          %tr
+            %th=t(:nombre)
+            %th=t(:descripción)
+            %th.dos.iconos-acciones=t(:acciones)
+
+        %tbody
+          - @actividades.each do |record|
+            %tr
+              %td=record.nombre
+              %td=record.descripcion
+              %td.dos.iconos-acciones
+                %div
+                  = link_to edit_admin_actividad_path(record) do
+                    %i.fa.fa-edit
+                  = link_to admin_actividad_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:actividad).downcase), remote: false } do
+                    %i.fa.fa-trash

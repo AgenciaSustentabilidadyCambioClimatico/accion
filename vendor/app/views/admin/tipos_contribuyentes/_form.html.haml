@@ -1,0 +1,18 @@
+= simple_form_for @tipo_contribuyente, url: @url, remote: true do |f|
+	.row
+		.col-lg-12.column
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@tipo_contribuyente)
+				.card-body
+					.row
+						.col-lg-6.col-md-6
+							= f.input :nombre, label: t(:nombre), required: true, input_html: { class: 'required-field' }
+						.col-lg-6.col-md-6
+							= f.input :tipo_contribuyente_id, collection: TipoContribuyente.__select(), label: t(:tipo_contribuyente)
+						.col-12
+							= f.input :descripcion, as: :text, label: t(:descripción), input_html: { class: 'required-field' }, required: true
+	.float-right
+		= link_to t(:back), admin_tipos_contribuyentes_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

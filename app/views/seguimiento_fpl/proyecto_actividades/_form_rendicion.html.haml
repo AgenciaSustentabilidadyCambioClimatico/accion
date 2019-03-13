@@ -1,0 +1,48 @@
+:javascript
+  $(document).ready(function() {
+    $(document).on('nested:fieldRemoved', function(e){
+      $(e.target).closest('tr').addClass('nested-row-removed')
+      checkFieldValidity($(e.target).find('input'));
+
+      submitBtn = $(e.target).parents('form').find('.btn-disabled');
+      if ( $('input.p-rendicion').parents('.fields:not([style="display: none;"])').length == 0 ) {
+        submitBtn.attr('disabled','disabled');
+      } else {
+        submitBtn.removeAttr('disabled');
+      }
+
+    });
+    $(document).on('nested:fieldAdded', initDateTimePicker);
+    $('.basic-datetimepicker').each(function(){
+      calcular_rendicion_mod(this);
+    });
+    $('#rendicion-modal').modal({backdrop:'static',show: false});
+  });
+
+= simple_nested_form_for @proyecto, url: seguimiento_fpl_proyecto_proyecto_actividades_actualizar_rendiciones_path(@tarea_pendiente,@proyecto), remote: true, html: { autocomplete: :off } do |f|
+  .modal-header
+    %h5.modal-title#rendicionModalLabel.m-0.float-left
+      =t(:rendición)
+    = f.link_to_add :rendiciones, data: { target: "#row-rendiciones" }, class: 'float-right to-add-target' do
+      %i.fa.fa-plus-circle
+      = t(:agregar)
+  .modal-body
+    #rendiciones-messages-remote-block
+    %table.table.table-striped.table-bordered#row-rendiciones.m-0
+      %thead
+        %th=t(:fecha_rendición)
+        %th.remove-cell
+      %tbody
+        = f.fields_for :rendiciones, (@puede_guardar_directamente ? nil : @rendiciones_attributes.map{|m|Rendicion.new(m)}.sort_by{|r|r[:fecha_rendicion]}), :wrapper => false  do |r|
+          %tr.fields
+            %td.p-0
+              - fecha_rendicion = r.object.fecha_rendicion.blank? ? "" : l(r.object.fecha_rendicion, format: '%d-%m-%Y')
+              = r.input :fecha_rendicion, label: false,  as: :string, input_html:{ class: 'm-0 basic-datetimepicker required-field p-rendicion', onchange: "calcular_rendicion_mod(this);", value: fecha_rendicion}, wrapper_class: 'm-0'
+            %td.remove-cell
+              = r.link_to_remove do
+                %i.fa.fa-times-circle.link-to-remove-row
+        
+  .modal-footer
+    %button.btn.btn-sm.btn-secondary.salir-rendicion-modal-button{type: :button, "data-dismiss"=>:modal}
+      Salir
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

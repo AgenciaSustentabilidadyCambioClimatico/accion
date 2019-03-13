@@ -1,0 +1,4 @@
+$('#dato_recolectado_unidades_compatibles').empty().attr("data-placeholder", "Seleccione unidades compatibles");
+- @unidades.each do |unidad|
+  $('#dato_recolectado_unidades_compatibles').append($('<option value="#{unidad[1]}">#{unidad[0]}</option>'));
+$('#dato_recolectado_unidades_compatibles').trigger("chosen:updated");

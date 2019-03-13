@@ -1,0 +1,46 @@
+:javascript	
+	$(document).ready(function() {
+		//permite cargar los unidades segùn la selecciòn previa
+		$("#dato_recolectado_unidad_base").on("change", function(){
+			if(this.value != ""){
+		    $.ajax({
+		      url: "#{get_unidades_admin_dato_recolectados_path}",
+		      type: "GET",
+		      dataType: "script",
+		      data: { base: $(this).val() }
+		    });
+			}
+		});
+
+		$(".select-form").chosen();
+		
+	})
+- url = !@propiedad.id.nil? ? admin_dato_recolectado_path(@propiedad) : admin_dato_recolectados_path
+= simple_form_for [:admin,@propiedad], url: url, remote: true, html: { autocomplete: :off, class: 'propiedad-form' } do |f|
+	.row
+		.col-lg-12.column
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@propiedad)
+				.card-body
+					.row
+						.col-12
+							= f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Ingrese el nombre de la propiedad"
+						.col-12
+							= f.input :descripcion, label: t(:descripcion), input_html: { class: 'required-field' }, placeholder: "Ingrese la descripción de la propiedad"
+						.col-12.col-md-6
+							= f.input :cpc, label: t(:codigo_producto), input_html: { class: 'required-field' }, placeholder: "Ingrese el código de producto"
+						.col-12.col-md-6
+							= f.input :medios_verificacion, label: t(:medios_verificacion), input_html: { class: 'required-field' }, placeholder: "Ingrese el medio de verificación"
+						.col-12.col-md-6
+							%abbr{title: :required}*
+							= label :unidad_base, t(:unidad_base), class: "string"
+							= f.select :unidad_base, @unidades, {:include_blank => ''}, { class: 'form-control contribuyente-establecimiento mt-2 select-form required-field', "data-placeholder" => "Seleccione una unidad base..."}
+						.col-12.col-md-6
+							%abbr{title: :required}*
+							= label :unidades_compatibles, t(:unidades_compatibles), class: "string"
+							= f.select :unidades_compatibles, f.object.new_record? ? [] : DatoRecolectado.compatibles(f.object.unidad_base) , {:prompt => ''}, { class: 'form-control contribuyente-establecimiento mt-2 select-form chosen-select required-field', multiple: :multiple, "data-placeholder" => "Seleccione una unidad base antes..."}
+	.float-right
+		= link_to t(:back), admin_dato_recolectados_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

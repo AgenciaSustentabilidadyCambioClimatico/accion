@@ -1,0 +1,91 @@
+:javascript
+  $(document).ready(function() {
+
+    es_endoso($('#documento_garantia_tipo_documento_garantia_id').val());
+
+    $('#documento_garantia_tipo_documento_garantia_id').on('change',function(){
+      es_endoso(this.value);
+    });
+    $("input:file").on('change',function (){
+      $(this).parent().children("label").html($(this)[0].files[0].name);
+    });
+
+    $("#documento_garantia_fecha_vencimiento").change(function(){
+      no_vencida($(this).val());
+    });
+
+    no_vencida($("#documento_garantia_fecha_vencimiento").val());
+  });
+
+  function es_endoso(value){
+    if(value == 4){
+      $('#documento_garantia_monto').prop('disabled', true);
+      $('#documento_garantia_estado_documento_garantia_id').prop('disabled', true);
+      $('#estado_doc').hide();
+      $('#documento_garantia_documento_garantia_id').prop('disabled', false);
+      $('#documento_garantia_monto').val("");
+    }else{
+      $('#documento_garantia_monto').prop('disabled', false);
+      $('#documento_garantia_estado_documento_garantia_id').prop('disabled', false);
+      $('#estado_doc').show();
+      $('#documento_garantia_documento_garantia_id').prop('disabled', true).val("");
+      $('#documento_garantia_estado_documento_id').val("");
+    }
+  }
+
+  function no_vencida(value){
+    var parts =value.split('-');
+    var date = new Date(parts[2], parts[1] - 1, parts[0]);
+    var edg = $("#documento_garantia_estado_documento_garantia_id option[value=1]");
+    if(date < new Date()){
+      edg.prop('disabled', true);
+      if($("#documento_garantia_estado_documento_garantia_id option:selected").val() === "1"){
+        $("#documento_garantia_estado_documento_garantia_id").val("");
+      }
+    }else{
+      edg.prop('disabled', false);
+    }
+
+  }
+
+- titulo t(:documentos_garantia)
+= simple_form_for @doc_garantia, url: @url, remote: true, html: { multipart: true, autocomplete: :off } do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:ingresa_nuevo_documento)
+        .card-body
+          .row
+            = f.hidden_field :proyecto_id, value: @proyecto.id
+            .col-12.col-md-6
+              .form-inputs
+                = f.association :tipo_documento_garantia, label_method: :nombre, value_method: :id, label: t(:tipo_documento), required: true, input_html: {class: "required-field"}
+            .col-12.col-md-6
+              .form-inputs
+                = f.input :documento_garantia_id, label: t(:documento_endoso), as: :grouped_select, collection: DocumentoGarantia.por_padre(@proyecto.id, @doc_garantia.documento_garantia_id), group_method: :last, required: true, input_html: {class: "not-required-if-other-like-me-is-present"}
+            .col-12.col-md-6
+              .form-inputs
+                = f.input :numero_documento, label: t(:numero_documento), required: true, as: :string, input_html: {class: "required-field numero"}
+            .col-12.col-md-6
+              .form-inputs
+                -if @doc_garantia.fecha_vencimiento_original.nil?
+                  - fecha_vencimiento = @doc_garantia.fecha_vencimiento.blank? ? nil : l(@doc_garantia.fecha_vencimiento,format: '%d-%m-%Y')
+                  = f.input :fecha_vencimiento, label: t(:vencimiento), as: :string, required: true, input_html: {class: 'basic-datetimepicker required-field', value: fecha_vencimiento}
+                -else
+                  - fecha_vencimiento = l(@doc_garantia.fecha_vencimiento_original,format: '%d-%m-%Y')
+                  = f.input :fecha_vencimiento_original, label: t(:vencimiento), as: :string, required: true, input_html: {class: 'basic-datetimepicker required-field', value: fecha_vencimiento}
+            .col-12.col-md-6
+              .form-inputs
+                = f.input :monto, label: t(:monto), required: true, as: :string, input_html: {type: :text, class: "not-required-if-other-like-me-is-present moneda"}
+            .col-md-5.pr-0.col-10
+              = f.input :archivo, as: :file, input_html: { class: 'form-control auto-save border-right-0' }, label: t(:cargar_comprobante_de_documento_pdf_o_imagen), required: true
+              = f.hidden_field :archivo_cache
+            .col-2.col-md-1.pl-0.carga-comprobante-estado-archivo
+              = __upload_status(f.object,:archivo)
+            .col-12.col-md-6#estado_doc
+              .form-inputs
+                = f.association :estado_documento_garantia, label_method: :nombre, value_method: :id, label: t(:estado_documento)
+  .float-right
+    = link_to t(:back), seguimiento_fpl_proyecto_documento_garantias_path(@tarea_pendiente,@proyecto), class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

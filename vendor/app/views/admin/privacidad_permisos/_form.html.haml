@@ -1,0 +1,7 @@
+= simple_form_for(@admin_privacidad_permiso) do |f|
+  = f.error_notification
+
+    = f.input :entidad
+    = f.input :fields_visibility
+
+  = f.button :submit

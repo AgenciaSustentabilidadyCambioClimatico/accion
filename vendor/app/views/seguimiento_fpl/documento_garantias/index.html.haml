@@ -1,0 +1,87 @@
+:javascript
+  $(document).ready(function() {
+    var tabla = $('.documentos').DataTable({
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [ { targets: [5,6], orderable: false }, 
+      { render: $.fn.dataTable.render.number( '.', ',', 0, '$' ), targets: 4 },
+       ],
+      responsive: true,
+      searching: false,
+      paging: true
+
+    });
+  });
+
+- titulo t(:documentos_garantia)
+= link_to t(:agregar_, item: t(:documento).downcase), new_seguimiento_fpl_proyecto_documento_garantia_path(@tarea_pendiente,@proyecto), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin
+          =t(:documentos_ingresados)
+      .card-body
+        %table.table.table-striped.documentos
+          %thead
+            %tr
+              %th=t(:tipo_documento)
+              %th=t(:numero_documento)
+              %th=t(:vencimiento)
+              %th=t(:fecha_ingreso)
+              %th=t(:monto)
+              %th=t(:documento)
+              %th=t(:acción)
+          %tbody#tabla_body
+            - @proyecto.documento_garantias.each do |documento|
+              %tr
+                %td=documento.tipo_documento_garantia.nombre
+                %td=documento.numero_documento
+                %td
+                  -if documento.fecha_vencimiento_original.nil?
+                    .d-none
+                      =documento.fecha_vencimiento
+                    =l(documento.fecha_vencimiento, format: '%d-%m-%Y')
+                  -else
+                    .d-none
+                      =documento.fecha_vencimiento_original
+                    =l(documento.fecha_vencimiento_original, format: '%d-%m-%Y')
+                %td
+                  .d-none
+                    =documento.created_at
+                  =l(documento.created_at, format: '%d-%m-%Y')
+                %td=documento.monto
+                %td.text-center
+                  - unless documento.archivo.url.blank?
+                    = link_to documento.archivo.url, target: :_blank do 
+                      %i.fa.fa-file
+                %td.text-center
+                  = link_to edit_seguimiento_fpl_proyecto_documento_garantia_path(@tarea_pendiente,@proyecto,documento) do
+                    %i.fa.fa-edit
+                  - msg = t(:está_seguro_que_desea_borrar?, item: t(:documento_garantia).downcase)
+                  - if documento.posee_endosos
+                    - msg = "El documento posee endosos, ¿está seguro que desea borrar?"
+                  = link_to seguimiento_fpl_proyecto_documento_garantia_path(@tarea_pendiente,@proyecto,documento), method: :delete, data: { confirm: msg, remote: false } do
+                    %i.fa.fa-trash
+      .card-footer
+        .row
+          .col-4
+            .form-inputs
+              .form-group.disabled
+                = label_tag t(:monto_garantizado_hoy), nil, class: 'no-form label string control-label disabled'
+                = text_field_tag :monto_garantizado_hoy, number_to_currency(@proyecto.monto_garantizado), disabled: true, class: 'form-control disabled'
+          .col-4
+            .form-inputs
+              .form-group.disabled
+                = label_tag t(:vencimiento_ultima_garantia), nil, class: 'no-form label string control-label disabled'
+                = text_field_tag :vencimiento_ultima_garantia, @ultima_fecha, disabled: true, class: 'form-control disabled'
+          .col-4
+            .form-inputs
+              .form-group.disabled
+                = label_tag :monto_garantizado_mes, t(:monto_garantizado_un_mes_mas), class: 'no-form label string control-label disabled'
+                = text_field_tag :monto_garantizado_mes, number_to_currency(@monto_mes), disabled: true, class: 'form-control disabled'
+.float-right
+  = volver_root
+  %br
+  %br

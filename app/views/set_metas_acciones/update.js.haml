@@ -1,0 +1,5 @@
+= render 'layouts/remote_form', block: 'set-metas-accion', message_block: 'messages-in-modal'
+- unless @errors
+	-# ToDo: recargar tabla y poner mensajes dentro del formulario sólo esto cuando sea enviado desde un modal, ver contribuyentes/buscador para posible solución
+	- @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+	$('#propuestas-de-acuerdo-remote-table').html("#{ j render 'set_metas_acciones/table', externo: true}");

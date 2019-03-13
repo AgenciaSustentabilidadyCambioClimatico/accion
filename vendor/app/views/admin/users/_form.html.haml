@@ -1,0 +1,171 @@
+:css
+	.hidden-block { display: none; }
+	.persona-button-block { position: absolute; width: 100%; height: 40px; bottom: -80px; right: -5px; }
+	i.deseleccionar-contribuyente { display: none; cursor: pointer; margin: 5px 0 0 -30px; }
+
+- pick_a_institucion="Seleccione una institución desde el buscador"
+- pick_a_contribuyente="Seleccione un establecimiento"
+:javascript
+	var rowFields=null;
+	$(document).ready(function() {
+		$("i.deseleccionar-contribuyente").click(function() {
+			pr = $(this).parents('div.row');
+			cs = pr.find('.contribuyente-selector');
+			es = pr.find('.establecimiento-selector');
+			cs.empty().append("<option value=''>#{pick_a_institucion}</option>").val("");
+			es.empty().append("<option value=''>#{pick_a_contribuyente}</option>");
+			checkFieldValidity(cs);
+			$(this).hide();
+		});
+		$('#buscar-contribuyente').on('show.bs.modal', function (e) {
+			rowFields = $(e.relatedTarget).parents('.card');
+		})
+		$('body').on('change','.contribuyente-radio',function() { $('.seleccionar-contribuyente-button').removeAttr('disabled'); });
+		$('.seleccionar-contribuyente-button').click(function() {
+			try {
+				cs=rowFields.find('.contribuyente-selector');
+				es=rowFields.find('.establecimiento-selector');
+				data=JSON.parse($('.contribuyente-radio:checked').val());
+				cs.removeClass('border-error').removeAttr('data-original-title');
+				cs.append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
+				cs.val(data.id);
+				checkFieldValidity(cs);
+				$("i.deseleccionar-contribuyente").show();
+				if (data.establecimientos.length > 0) {
+					es.empty().append("<option value=''>Seleccione un establecimiento</option>");
+				}
+				$.each(data.establecimientos,function(k,v) {
+					es.append("<option value='"+v[1]+"'>"+v[0]+"</option>");
+				});
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+		if ( $("#user_rut").val() !== "" ) {
+			$("#user_rut").val( $.formatRut( $("#user_rut").val() ) );
+		}
+	});
+	$(document).on('nested:fieldAdded:personas', function(e) {
+		randomId='persona-cargos-'+randomString();
+		$(e.target).find('#persona-cargos').attr("id",randomId)
+		$(e.target).find('a[data-target="#persona-cargos"]').attr("data-target",randomId)
+		checkFieldValidity($('#user_nombre_completo'));
+	});
+	$(document).on('nested:fieldAdded:persona_cargos', function(e) {
+		$(e.target).find('select').chosen(chosenOptions);
+	});
+	$(document).on('nested:fieldRemoved:personas', function(e){
+		$(e.target).find(':input').removeClass('required-field not-required-if-other-like-me-is-present');
+		checkFieldValidity($('#user_nombre_completo'));
+	});
+- titulo t(:user)
+- require_ish = @user.new_record? ? 'required-field' : 'im-not-required-check-the-others required'
+= simple_nested_form_for [:admin,@user], remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@user)
+				.card-body
+					.row
+						.col-lg-2.pr-lg-0.col-12
+							= f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, disabled: ! @user.new_record? 
+						.col-lg-4.pr-lg-0.col-12
+							= f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'required-field' }, readonly: (@acceso != :admin)
+						.col-lg-3.pr-lg-0.col-12
+							= f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'required-field' }, readonly: (@acceso != :admin)
+						.col-lg-3.pr-lg-0.col-12
+							= f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'required-field numero' }, readonly: (@acceso != :admin)
+						.col-lg-3.pr-lg-0.col-12
+							= f.input :web_o_red_social_1, label: t(:web_o_red_social_,n: 1), placeholder: "Ingresar web o red social 1", input_html: { class: 'im-not-required-check-the-others' }, readonly: (@acceso != :admin)
+						.col-lg-3.col-12
+							= f.input :web_o_red_social_2, label: t(:web_o_red_social_,n: 2), placeholder: "Ingresar web o red social 2", input_html: { class: 'im-not-required-check-the-others' }, readonly: (@acceso != :admin)
+						.col-lg-6.pr-lg-0.col-12
+							= f.input :password, label: t(:password), placeholder: "Ingresar nueva contraseña", input_html: { class: require_ish }, wrapper_class: 'required', required: @user.new_record?, readonly: (@acceso != :admin)
+						.col-lg-6.col-12
+							= f.input :password_confirmation, label: t(:password_confirmation), placeholder: "Ingresar confirmar nueva contraseña", input_html: { class: require_ish }, wrapper_class: 'required', required: @user.new_record?, readonly: (@acceso != :admin)
+
+		.col-12
+			-if @acceso == :admin
+				.row.mb-3
+					.col-12
+						- if @user.editable?
+							= f.link_to_add :personas, data: { target: "#user-personas" }, class: 'btn btn-sm btn-info' do
+								%i.fa.fa-plus-circle
+								= "Asociar a institución"
+						- else
+							= f.link_to_add :personas, data: { target: "#user-personas", confirm: t(:confirma_agregar_persona), remote: false }, class: 'btn btn-sm btn-info' do
+								%i.fa.fa-plus-circle
+								= "Asociar a institución"
+						
+			.row#user-personas
+				-if @acceso == :admin
+					- @personas_acceso = @user.personas
+				-else
+					- @personas_acceso = @user.personas.where(contribuyente_id: current_user.instituciones_donde_es_admin)
+				= f.fields_for :personas, @personas_acceso, :wrapper => false  do |p|
+					.col-lg-6.col-12.fields
+						- c = p.object.contribuyente
+						- if c.blank?
+							- ic = []
+							- ec = []
+						- else
+							- ic = [[c.razon_social,c.id]]
+							- ec = c.establecimiento_contribuyentes.map{|m|["<label>#{m.direccion}</label> - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }".html_safe, m.id]}
+						.card
+							.card-header
+								-if @acceso == :admin
+									%h5.no-margin.float-left
+										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
+											=t(:buscar)
+											%i.fa.fa-search-plus
+									%h5.no-margin.float-left
+										&nbsp;
+										&#47;
+										&nbsp;
+								%h5.no-margin.float-left
+									- if @user.editable?
+										= p.link_to_remove class: 'text-danger' do
+											=t(:eliminar)
+											%i.fa.fa-times-circle.left.link-to-remove-row
+									- else
+										= p.link_to_remove class: 'text-danger', data: { confirm: t(:confirma_eliminar_persona), remote: false }  do
+											=t(:eliminar)
+											%i.fa.fa-times-circle.left.link-to-remove-row
+							.card-body
+								.row
+									.col-12
+										= p.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'contribuyente-selector', id: "#hidden_#{p.object.id}_user_persona_contribuyente_id" }
+										= p.input :contribuyente_id, label: t(:institución), collection: ic, input_html: { class: 'contribuyente-selector not-required-if-other-like-me-is-present float-left' }, required: true, prompt: pick_a_institucion
+										%i.fa.fa-times.deseleccionar-contribuyente
+									.col-12
+										= p.input :email_institucional, required: true, label: t(:email_institucional), placeholder: "Ingresar email institucional", input_html: { class: 'required-field' }
+									.col-12
+										= p.input :telefono_institucional, label: t(:teléfono_institucional), placeholder: "Ingresar teléfono institucional", input_html: { class: 'not-required-if-other-like-me-is-present numero validado' }
+									.col-12
+										= p.input :establecimiento_contribuyente_id, collection: ec, input_html: { class: 'establecimiento-selector not-required-if-other-like-me-is-present' }, label: t(:establecimiento), include_blank: pick_a_contribuyente
+									.col-12
+										.form-group.append-group
+											-if @acceso == :admin
+												%label.control-label
+													= p.link_to_add :persona_cargos, data: { target: ".persona-cargos" } do
+														%i.fa.fa-plus-circle
+														= t(:agregar_, item: t(:cargo).downcase)
+											%table.table.table-striped.persona-cargos
+												%tbody
+													= p.fields_for :persona_cargos, :wrapper => false  do |pc|
+														%tr.fields
+															%td.no-padding
+																= pc.input :cargo_id, collection: Cargo.__select, input_html: { class: 'chosen-control required-field' }, required: true, prompt: "Seleccione un cargo", label: false, wrapper_class: 'no-margin'
+															%td.accion.no-padding.remove-row
+																= pc.link_to_remove do
+																	%i.fa.fa-times-circle.left.link-to-remove-row.fa-2x
+			.float-right
+				= link_to t(:back), admin_users_path, class: 'btn btn-sm btn-warning'
+				- if @user.editable?
+					= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+				- else
+					= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", data: { confirm: t(:confirma_edicion_usuario), remote: false }, disabled: :disabled 
+
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true

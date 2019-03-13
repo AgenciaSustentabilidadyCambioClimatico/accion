@@ -1,0 +1,2 @@
+class TipoComentario < ApplicationRecord
+end

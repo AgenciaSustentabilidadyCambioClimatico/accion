@@ -1,0 +1,4 @@
+- titulo t(:flujo_tareas)
+= link_to t(:agregar_, item: t(:flujo_tarea).downcase), new_admin_flujo_tarea_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#flujo-tarea-remote-table
+	= render 'table'

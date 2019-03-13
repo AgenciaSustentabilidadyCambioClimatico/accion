@@ -1,0 +1,12 @@
+default_url_options_host: <%= ENV["MAILER_DEFAULT_URL_OPTIONS_HOST"] %>
+default_url_options_port: <%= ENV["MAILER_DEFAULT_URL_OPTIONS_PORT"] %>
+default_options_from: <%= ENV["MAILER_DEFAULT_OPTIONS_FROM"] %>
+asset_host: <%= ENV["MAILER_ASSET_HOST"] %>
+smtp_settings_address: <%= ENV["MAILER_SMTP_SETTINGS_ADDRESS"] %>
+smtp_settings_port: <%= ENV["MAILER_SMTP_SETTINGS_PORT"] %>
+smtp_settings_domain: <%= ENV["MAILER_SMTP_SETTINGS_DOMAIN"] %>
+smtp_settings_user_name: <%= ENV["MAILER_SMTP_SETTINGS_USER_NAME"] %>
+smtp_settings_password: <%= ENV["MAILER_SMTP_SETTINGS_PASSWORD"] %>
+smtp_settings_authentication: <%= ENV["MAILER_SMTP_SETTINGS_AUTHENTICATION"] %> #plain
+smtp_settings_enable_starttls_auto: <%= ENV["MAILER_SMTP_SETTINGS_ENABLE_STARTTLS_AUTO"] %>
+contacto: <%= ENV["MAILER_DEFAULT_CONTACTO"] %>

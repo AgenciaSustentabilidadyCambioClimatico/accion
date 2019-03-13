@@ -1,0 +1,104 @@
+:javascript
+	$(document).ready(function() {
+		$('.chosen-control').chosen(chosenOptions);
+		if ($('[type="radio"]:checked').length > 0) {
+			posee_magnitud_fisica_asociada($('[type="radio"]:checked'),false);
+		}
+		$('[type="radio"]').click(function(){
+			posee_magnitud_fisica_asociada(this,true);
+		});
+
+		function posee_magnitud_fisica_asociada(checkbox,checkValidity)
+		{
+			ub	= $('#materia_sustancia_unidad_base');
+			ubo	= $('#materia_sustancia_unidad_base option:not([value='*']');
+			id 	= $(checkbox).attr("id");
+
+			if(~id.indexOf("true")) {
+				ub.removeAttr('disabled').addClass('required-field chosen-control').chosen(chosenOptions);
+				$('label[for="materia_sustancia_unidad_base"] > abbr').show();
+			} else if (~id.indexOf("false")) {
+				ub.attr('disabled','disabled').removeClass('required-field chosen-control border-error').tooltip('dispose').chosen('destroy');
+				ubo.attr('selected', 'selected');
+				$('label[for="materia_sustancia_unidad_base"] > abbr').hide();
+			}
+			if ( checkValidity ) {
+				checkFieldValidity(ub);
+			}
+		}
+		htmlErrorToTooltip('top');
+	});
+	
+	$(document).on('nested:fieldAdded:materia_sustancia_clasificaciones', function(e){
+		checkFieldValidity($('#materia_sustancia_nombre'));
+	});
+	
+	$(document).on('nested:fieldRemoved:materia_sustancia_clasificaciones', function(e){
+		submitBtn = $(e.target).parents('form').find('.btn-disabled');
+		if ( $('select.ms-clasificacion').parents('.fields:not([style="display: none;"])').length == 0 ) {
+			submitBtn.attr('disabled','disabled');
+		} else {
+			submitBtn.removeAttr('disabled');
+		}
+	});
+
+	$(document).on('nested:fieldAdded:materia_sustancia_clasificaciones', function(e) {
+		$(e.target).find('select').chosen(chosenOptions);
+	});
+:css
+	label[for="materia_sustancia_unidad_base"] abbr { display: none; }
+- titulo t(:materia_sustancia)
+= simple_nested_form_for [:admin,@materia_sustancia], remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_of_(@materia_sustancia)
+				.card-body
+					.row
+						.col-lg-6.pr-lg-0.col-12
+							.row
+								.col-12
+									= f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Indique un nombre", required: true
+								.col-12
+									= f.input :meta_id, label: t(:meta), collection: Clasificacion.where(es_meta: true).all.map{|c|[c.nombre,c.id]}, input_html: { class: 'required-field' }, required: true
+								.col-12
+									= f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una descripción", required: true
+								.col-12
+									.form-group.boolean.required.materia_sustancia_posee_una_magnitud_fisica_asociada{class: ('has-error' if f.object.errors.messages.has_key?(:posee_una_magnitud_fisica_asociada))}
+										%label.boolean.required{:for => "materia_sustancia_posee_una_magnitud_fisica_asociada"}
+											%abbr{:title => "required"} *
+											= t(:posee_una_magnitud_física_asociada)
+										.radio-buttons
+											= f.collection_radio_buttons :posee_una_magnitud_fisica_asociada, [[true, t(:yes)] ,[false, t(:no)]], :first, :last
+										- if f.object.errors.messages.has_key?(:posee_una_magnitud_fisica_asociada)
+											%span.help-block
+												= f.object.errors.messages[:posee_una_magnitud_fisica_asociada].first
+								.col-12
+									= f.select :unidad_base, @unidades, {:prompt => ''}, { 'data-placeholder': 'Seleccione una unidad base', class: "form-control", required: true }
+						.col-lg-6.col-12.mt-2.mt-lg-0
+							.row
+								.col-12
+									.form-group
+										.card.mb-0
+											.card-header.p-1.pr-3
+												%label.integer.float-left.m-0
+													%abbr{:title => "required"} *
+													= t(:clasificaciones)
+												= f.link_to_add :materia_sustancia_clasificaciones, data: { target: "#materia-sustancia-clasificaciones" }, class: 'float-right' do
+													%i.fa.fa-plus-circle
+											.card-body.p-0
+												%table#materia-sustancia-clasificaciones.table.table-striped.mb-0
+													%tbody
+														= f.fields_for :materia_sustancia_clasificaciones, :wrapper => false  do |msc|
+															%tr.fields
+																%td.p-0
+																	= msc.input :clasificacion_id, label: false, collection: Clasificacion.where(es_meta: false).all.map{|c|[c.nombre,c.id]}, input_html: { class: 'ms-clasificacion chosen-control required-field', 'data-placeholder': 'Seleccione una clasificación' }, required: true, wrapper_class: 'm-0'
+																%td.accion.no-padding.remove-row
+																	= msc.link_to_remove do
+																		%i.fa.fa-times-circle.left.link-to-remove-row
+
+	.float-right
+		= link_to t(:back), admin_materia_sustancias_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

@@ -1,0 +1,2 @@
+class TipoDeMedio < ApplicationRecord
+end

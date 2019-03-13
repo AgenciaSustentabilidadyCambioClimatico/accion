@@ -1,0 +1,34 @@
+-unless @mis_instituciones
+	- titulo t(:instituciones)
+	- if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+		= link_to t(:agregar_, item: t(:institución).downcase), new_admin_contribuyente_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+	- if current_user.is_admin?
+		= link_to '#', "data-toggle"=>:modal, "data-target"=>"#permisos-privacidad", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
+			%i.fa.fa-edit
+			Permisos de privacidad
+	.card
+		.card-header
+			%h5.no-margin
+				= t(:buscar_, item: t(:institución).downcase)
+		.card-body
+			#contribuyentes-remote-filter
+				= render 'filter_form'
+
+	.card
+		.card-header
+			%h5.no-margin
+				= t(:lista_de_, items: t(:instituciones).downcase)
+		.card-body
+			#contribuyentes-remote-table
+				= render 'table'
+
+	= render 'layouts/privacidad', entidad: :instituciones
+-else
+	- titulo t(:mis_instituciones)
+	.card
+		.card-header
+			%h5.no-margin
+				= t(:lista_de_, items: t(:instituciones).downcase)
+		.card-body
+			#contribuyentes-remote-table
+				= render 'table'

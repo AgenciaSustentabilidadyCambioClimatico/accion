@@ -1,0 +1,20 @@
+.col-lg-4.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= "Privacidad"
+				.card-body
+					.row
+						.col-12
+							.alert.alert-info
+								%i.fa.fa-info-circle
+								Permitir a otros usuarios ver los siguientes campos
+							- fields_visibility = {} if fields_visibility.blank?
+							- @privacidad = PrivacidadPermiso.where(entidad: "usuarios").first
+							%ul.p-0
+								- [:rut,:nombre_completo,:telefono,:email,:web_o_red_social_1,:web_o_red_social_2].each do |attr|
+									-if @privacidad.attributes["fields_visibility"].present? && @privacidad.fields_visibility[attr] == "Por usuario"
+										%li.list-style-none
+											= check_box_tag "user[fields_visibility][#{attr}]", ( fields_visibility[attr] ? 1 : 0 ), fields_visibility[attr], class: 'im-not-required-check-the-others'
+											%label.string.control-label
+												=t(attr)

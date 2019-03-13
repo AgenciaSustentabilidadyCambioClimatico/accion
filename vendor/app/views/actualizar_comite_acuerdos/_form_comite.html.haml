@@ -1,0 +1,43 @@
+.card
+	.card-body
+		= simple_form_for :informe, url: guardar_comite_actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), remote: true, method: :patch do |f|
+			.card
+				.card-body
+					.row
+						.col-12.col-lg-4
+							= f.label t(:tipo_acuerdo)
+							= f.input :tipo_acuerdo, as: :radio_buttons, collection: ManifestacionDeInteres.tipo_acuerdos.keys.map { |w| [w.humanize, w] }, label: false, checked: @datos["tipo_acuerdo"], input_html: {class: 'required-field'}, required: true
+						.col-12.col-lg-4
+							= f.label t(:con_extension)
+							= f.input :con_extension, as: :radio_buttons, collection: [["Si", "si"],["No", "no"]], label: false, checked: @datos["con_extension"], input_html: {class: 'required-field'}, required: true
+						.col-12.col-lg-6
+							= f.input :plazo_maximo_adhesion, input_html: {class: 'required-field', min: 1, value: @datos["plazo_maximo_adhesion"]}, as: :integer, required: true
+						.col-12.col-lg-6
+							= f.input :plazo_finalizacion_implementacion, input_html: {class: 'required-field', min: 1, value: @datos["plazo_finalizacion_implementacion"]}, as: :integer, required: true
+						.col-12.col-lg-4
+							= f.input :plazo_maximo, as: :string, input_html: {class: 'basic-datetimepicker required-field', value: @datos["plazo_maximo"]}, required: true
+						.col-12.col-lg-4
+							= f.input :plazo_maximo_neto, as: :string, input_html: {class: 'basic-datetimepicker required-field', value: @datos["plazo_maximo_neto"]}, required: true
+						.col-12-col-lg-4
+							= f.input :archivo_acta_comite, as: :file, input_html: {class: 'form-control'}
+			.card
+				.card-header
+					%h5.no-margin
+						= t(:datos)
+				.card-body.p-0
+					.table-responsive
+						%table.table.table-striped.table-bordered
+							%thead
+								%tr
+									%th=t(:auditoría_intermedia)
+									%th=t(:plazo)
+									%th=t(:certificable_si_no)
+									%th=t(:con_validación)
+							%tbody
+								%tr
+									%td
+									%td
+									%td
+									%td
+			.float-right
+				= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary"

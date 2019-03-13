@@ -1,0 +1,6 @@
+var comunas_array = #{ raw @comunas.to_json };
+var select_comuna = "#contribuyente_establecimiento_contribuyentes_attributes_#{@codigo}_comuna_id"
+$(select_comuna).empty();
+$.each(comunas_array,function(index, value){
+$(select_comuna).append("<option value='"+value[1]+"'>"+value[0]+"</option>");
+});

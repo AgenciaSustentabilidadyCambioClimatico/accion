@@ -1,0 +1,90 @@
+:javascript
+  $(document).ready(function(){
+    $("#adhesiones_rechazadas").DataTable({
+      responsive: true,
+      lengthMenu: [[8], [8]],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+-if @flujo.apl?
+  - titulo t(:manifestación_de_acuerdo)
+-if @flujo.ppf?
+  - titulo t(:atencion_directa_adhesion)
+-
+= simple_form_for @adhesion, url: guardar_actualizar_adhesion_path(@tarea_pendiente), method: :patch, remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+          %b
+            = t(:adhesiones)
+          %h5.no-margin=titulo_instrumento.html_safe
+          -if !@manifestacion_de_interes.blank?
+            %h5.no-margin=titulo_acuerdo.html_safe
+          -elsif !@proyecto.blank?
+            %h5.no-margin=titulo_proyecto.html_safe
+          -elsif !@ppp.blank?
+            %h5.no-margin=titulo_programa.html_safe
+          %h5.no-margin=datos_beneficiario.html_safe
+        .card-body
+          %table.table.table-striped#adhesiones_rechazadas
+            %thead
+              %tr
+                %th=t(:rut_institucion)
+                %th=t(:nombre_institución)
+                %th=t(:comuna_establecimiento)
+                %th=t(:direccion_establecimiento)
+                %th=t(:nombre_encargado)
+                %th=t(:fono_encargado)
+                %th=t(:mail_encargado)
+                %th=t(:observaciones)
+                %th=t(:estado)
+            %tbody
+              - @todas.each do |k,v|
+                - v.each do |fila|
+                  %tr
+                    %td=fila[:rut_institucion]
+                    %td=fila[:nombre_institucion]
+                    %td=fila[:comuna_instalacion]
+                    %td=fila[:direccion_instalacion]
+                    %td=fila[:nombre_encargado]
+                    %td=fila[:fono_encargado]
+                    %td=fila[:email_encargado]
+                    %td=fila[:observaciones]
+                    %td=k.upcase
+  .row
+    .col-12.col-lg-6
+      .card
+        .card-header
+          %h5.no-margin=t(:subir_documentacion_adhesiones)
+        .card-body
+          .row
+            .col-12
+              = f.input :archivos_adhesion_y_documentacion, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
+              = f.hidden_field :archivos_adhesion_y_documentacion_cache
+            .col-12
+              = f.input :archivo_elementos, label: t(:archivo_elementos_adheridos), as: :file, required: true, input_html: {class: "required-field form-control auto-save "}
+              = f.hidden_field :archivo_elementos_cache
+    .col-12.col-lg-6
+      .card
+        .card-header
+          %h5.m-0
+            = t(:descargar_archivos_formatos)
+        .card-body
+          .row
+            .col-12
+              .form-group
+                %label.string.control-label
+                  = t(:formato_excel_de_elementos_adherir)
+                = link_to descargar_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-outline-secondary btn-block' do
+                  %i.fa.fa-download
+                  = t(:descargar)
+              = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", "Documento de adhesión", {tarea_pendiente: @tarea_pendiente})
+  .float-right
+    = volver_root
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+
+

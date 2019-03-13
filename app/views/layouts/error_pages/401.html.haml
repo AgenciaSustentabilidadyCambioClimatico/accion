@@ -1,0 +1,13 @@
+- content_for :content_title do
+	- I18n.t('page_', error: 401).html_safe
+
+
+.alert-info.alert.text-center
+	%i.fa.fa-warning.fa-3x
+	%h3
+		Aviso
+	%p
+		Si ve este mensaje se debe a que <b>usted no tiene los permisos para acceder a esta página</b>. Por favor omita este mensaje si llegó por error. Sin embargo, si <b>usted cree que debería poder acceder</b> a esta página, <b>contáctese con el administrador del sitio</b> para solucionar el problema.
+
+
+	= link_to t(:salir_de_esta_página), root_path, class: 'btn btn-sm btn-danger'

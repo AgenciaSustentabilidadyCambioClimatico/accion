@@ -1,0 +1,19 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  convocatoria_id: 1
+  fecha: 2018-06-05
+  direccion: MyString
+  lat: 9.99
+  lng: 9.99
+  acta: MyText
+  lista_asistencia: MyText
+
+two:
+  convocatoria_id: 1
+  fecha: 2018-06-05
+  direccion: MyString
+  lat: 9.99
+  lng: 9.99
+  acta: MyText
+  lista_asistencia: MyText
