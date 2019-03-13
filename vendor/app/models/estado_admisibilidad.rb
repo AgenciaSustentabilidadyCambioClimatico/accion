@@ -1,2 +1,0 @@
-class EstadoAdmisibilidad < ApplicationRecord
-end

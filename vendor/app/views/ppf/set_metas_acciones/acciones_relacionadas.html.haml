@@ -1,5 +1,0 @@
-- titulo t(:acciones_relacionadas_de_,accion: @accion.nombre).html_safe
-#acciones-relacionadas-remote-table
-  = render 'admin/acciones/table', datatable: (request.xhr? == false)
-.float-right
-  = link_to t(:back), ppf_tarea_pendiente_set_metas_acciones_path(@tarea_pendiente), class: 'btn btn-sm btn-warning'

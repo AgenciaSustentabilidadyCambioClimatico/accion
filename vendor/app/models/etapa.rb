@@ -1,2 +1,0 @@
-class Etapa < ApplicationRecord
-end

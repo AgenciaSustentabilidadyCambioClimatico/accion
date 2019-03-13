@@ -1,5 +1,0 @@
-.col-12
-	- if !(@accion == :revision) && @establecimiento.present? && @set_metas_acciones.count > 0
-		-# = link_to t(:enviar_a_revision), enviar_a_revision_ppf_tarea_pendiente_set_metas_acciones_path(@tarea_pendiente, establecimiento: @establecimiento), {param1: 'value1', param2: 'value2', method: :post, class: 'btn btn-sm btn-warning float-right m-1' }
-		= button_to t(:enviar_a_revision), enviar_a_revision_ppf_tarea_pendiente_set_metas_acciones_path(@tarea_pendiente, establecimiento: @establecimiento), class: 'btn btn-sm btn-warning float-right m-1'
-	= link_to t(:back), root_path, class: 'btn btn-sm btn-warning float-right m-1'

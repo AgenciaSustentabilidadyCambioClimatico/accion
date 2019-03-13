@@ -1,3 +1,0 @@
-class ProyectoActividadMod < ApplicationRecord
-	
-end

@@ -1,2 +1,0 @@
-class DatoLevantadoMensualsController < ApplicationController
-end

@@ -1,2 +1,0 @@
-class RegistroAperturaCorreo < ApplicationRecord
-end

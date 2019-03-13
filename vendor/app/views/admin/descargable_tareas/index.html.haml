@@ -1,6 +1,0 @@
-- titulo t(:descargables_,tarea: @tarea.nombre).html_safe
-= link_to t(:agregar_, item: t(:descargable_tarea).downcase), new_admin_tarea_descargable_tarea_path(@tarea), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-#descargable-tarea-remote-table
-	= render 'table'
-.float-right
-	= link_to t(:volver_a_, lista: t(:tareas).downcase), admin_tareas_path, class: 'btn btn-sm btn-warning'

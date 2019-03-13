@@ -1,6 +1,0 @@
-= simple_form_for(resource, as: resource_name, url: confirmation_path(resource_name), html: { method: :post, class: 'form-devise' }) do |f|
-	%h2.form-devise-heading
-		= "Reenviar instrucciones de confirmación"
-	= f.input :email, required: true, autofocus: true, placeholder: 'Correo', label: false
-	= f.button :submit, "Reenviar", class: 'btn btn-sm btn-primary btn-block'
-	= render "devise/shared/links"

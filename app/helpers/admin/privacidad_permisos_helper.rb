@@ -1,2 +1,0 @@
-module Admin::PrivacidadPermisosHelper
-end

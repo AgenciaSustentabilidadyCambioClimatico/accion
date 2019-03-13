@@ -1,2 +1,0 @@
-class ActividadItemMod < ApplicationRecord
-end

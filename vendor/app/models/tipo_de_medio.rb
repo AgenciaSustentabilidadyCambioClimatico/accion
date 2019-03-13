@@ -1,2 +1,0 @@
-class TipoDeMedio < ApplicationRecord
-end
