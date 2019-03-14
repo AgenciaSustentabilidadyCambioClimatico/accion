@@ -1,4 +1,0 @@
-- titulo "#{t(:bandeja_de_entrada)}<small>&nbsp;</small>".html_safe
-
-/- if policy(@manifestacion).index?
-= render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true

@@ -1,5 +1,0 @@
-= simple_format(@message)
--# Permite adjuntar el pixel (imagen), que permite registar la apertura del correo
--#%img{src:"http://190.215.33.11:3999/registro_apertura/#{@registro}.png"}
-= image_tag "#{registro_apertura_correos_url(@registro)}.png"
-= link_to 'Revisar reportes de auditoria', @url
