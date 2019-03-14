@@ -1,2 +1,0 @@
-class TipoDocumentoDiagnostico < ApplicationRecord
-end

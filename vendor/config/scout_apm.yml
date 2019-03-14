@@ -1,9 +1,0 @@
-common: &defaults
-  name: ascc2
-  key: Rails.application.secrets.secret_key_base
-  log_level: info
-  monitor: true
-
-development:
-  dev_trace: true
-  <<: *defaults

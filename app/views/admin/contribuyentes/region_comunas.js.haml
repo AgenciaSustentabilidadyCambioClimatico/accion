@@ -4,3 +4,4 @@ $(select_comuna).empty();
 $.each(comunas_array,function(index, value){
 $(select_comuna).append("<option value='"+value[1]+"'>"+value[0]+"</option>");
 });
+$(select_comuna).trigger('chosen:updated');

@@ -1,2 +1,0 @@
-= link_to '#', "data-toggle"=>:modal, "data-target"=>"#proveedor-establecimientos"
-= render 'modal_proveedor_establecimientos', remote: true

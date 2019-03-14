@@ -1,2 +1,0 @@
-class TipoComentario < ApplicationRecord
-end

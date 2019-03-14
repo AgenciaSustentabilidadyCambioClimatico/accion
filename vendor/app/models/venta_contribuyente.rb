@@ -1,2 +1,0 @@
-class VentaContribuyente < ApplicationRecord
-end

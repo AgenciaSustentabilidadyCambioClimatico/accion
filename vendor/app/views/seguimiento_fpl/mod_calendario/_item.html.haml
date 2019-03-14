@@ -1,6 +1,0 @@
-%td
-	=f.input :nombre, label: false, input_html: {id: "actividad_item_#{item.id}_nombre", name: "actividad_item[#{item.id}][nombre]", value: item.nombre}
-%td
-	=f.input :tipo_aporte, collection:  @tipo_aportes,label: false, label_method: :nombre, include_blank: false, input_html: {id: "actividad_item_#{item.id}_tipo_aporte_id", name: "actividad_item[#{item.id}][tipo_aporte_id]"}, label_method: :nombre, selected: item.tipo_aporte_id
-%td
-	=f.input :monto, label: false, as: :string, input_html: {id: "actividad_item_#{item.id}_monto", name: "actividad_item[#{item.id}][monto]", value: item.monto, class: 'moneda'}
