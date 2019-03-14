@@ -50,7 +50,7 @@ class Region < ApplicationRecord
 	end
 
 	def self.__select
-		lista = []
+		lista = [["",""]]
 		Region.order(nombre: :asc).map do |c|
 			lista << [c.nombre, c.id]
 		end

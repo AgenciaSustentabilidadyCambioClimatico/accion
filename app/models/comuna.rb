@@ -11,7 +11,7 @@ class Comuna < ApplicationRecord
 	end
 
 	def self.__select provincia_id=nil, region_id=nil
-		lista = []
+		lista = [["",""]]
 		comunas = Comuna.order(nombre: :asc)
 		unless provincia_id.nil?
 			comunas = comunas.where(provincia_id: provincia_id)

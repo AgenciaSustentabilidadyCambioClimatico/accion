@@ -1,9 +1,0 @@
-
-$('#modal-agregar-instrumento-remote-table').html("#{ j render 'admin/hitos_de_prensa/filter_table_modal',no_data: true}");
-
-$('[id*="-asociar-instrumento"]').click(function(){ $('#instrumento-added').val($(this).attr("data-flujo-id")); 
-$('#instrumento-added-text').val($(this).attr("data-nombre")); $('[data-target="#hito-de-prensa-instrumentos"]').trigger('click'); $(this).closest( "tr" ).remove(); });
-//$('#instrumento_nombre').val(""); 
-
-htmlErrorToTooltip('top');
-enableDisabledButton();

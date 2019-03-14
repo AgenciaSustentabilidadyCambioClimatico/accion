@@ -4,7 +4,8 @@
 		$('.contribuyente-acteco').chosen({
 			allow_single_deselect: true,
 			no_results_text: 'No se encontraron resultados',
-			width: '100%'
+			width: '100%',
+			search_contains: true
 		});
 	}
 	$(document).ready(function(){
@@ -19,6 +20,7 @@
 
 	$(document).on('nested:fieldAdded:actividad_economica_contribuyentes', function(event){
 		__chosen_actecos();
+		checkFieldValidity($("#contribuyente_rut"));
 	})
 
 	$(document).on('nested:fieldAdded:establecimiento_contribuyentes', function(){
@@ -29,6 +31,12 @@
 	//Al momento de agregar dato anual
 	$(document).on('nested:fieldAdded:dato_anual_contribuyentes', function(){
 		__chosen_actecos();
+		checkFieldValidity($("#contribuyente_rut"));
+	});
+
+
+	$(document).on('nested:fieldRemoved', function(){
+		checkFieldValidity($("#contribuyente_rut"));
 	});
 
 	$("body").on('change', '.checkbox-casa-matriz', function(){
@@ -109,7 +117,7 @@
 										= snf.fields_for :actividad_economica_contribuyentes, :wrapper => false  do |actecos|
 											%tr.fields
 												%td.no-padding
-													= actecos.input :actividad_economica_id, collection: (no_acceso ? actecos.object.actividad_economica.para_lista : ActividadEconomica.__select), input_html: { class: 'form-control-sm  contribuyente-acteco desactivado', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
+													= actecos.input :actividad_economica_id, collection: (no_acceso ? actecos.object.actividad_economica.para_lista : ActividadEconomica.__select), input_html: { class: 'form-control-sm  contribuyente-acteco desactivado required-field', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
 												- unless no_acceso 
 													%td.accion.no-padding.remove-row.desactivado
 														= actecos.link_to_remove do
@@ -155,8 +163,8 @@
 													%td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras'}, label: false
 													-regiones = Region.__select
 													-region_selec = establ.object.region_id.nil? ? regiones.first.last : establ.object.region_id
-													%td.no-padding.region=establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region contribuyente-acteco'}
-													%td.no-padding.comuna=establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna contribuyente-acteco' }
+													%td.no-padding.region=establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region contribuyente-acteco required-field', "data-placeholder"=>"Seleccione una región"}
+													%td.no-padding.comuna=establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna contribuyente-acteco required-field', "data-placeholder"=>"Seleccione una comuna" }
 													- unless no_acceso
 														%td.accion.no-padding.remove-row
 															= establ.link_to_remove do

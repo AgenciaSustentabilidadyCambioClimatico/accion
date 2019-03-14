@@ -1,2 +1,0 @@
-class CampoReemplazo < ApplicationRecord
-end
