@@ -13,6 +13,8 @@ class Persona < ApplicationRecord
   # DZC 2018-11-02 15:05:11 se modifica la condicion allow_blank a objeto de que el mantenedor de usuarios permita que el campo venga nulo 
   validates :telefono_institucional, numericality: true, length: {in: 8..11}, allow_blank: true
 
+  attr_accessor :establecimientos_data
+
 	def self.responsables_select(not_in=[])
     u=User
     u=u.where("id NOT IN (?)",not_in) if not_in.size > 0

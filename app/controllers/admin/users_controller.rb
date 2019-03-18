@@ -137,6 +137,7 @@ class Admin::UsersController < ApplicationController
           persona_cargos_attributes: [
           	:id,
           	:persona_id,
+          	:establecimiento_contribuyente_id,
           	:cargo_id,
           	:_destroy,
           ]
