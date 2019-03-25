@@ -1636,7 +1636,9 @@ es:
         persona_cargo:
           attributes:
             cargo_id:
-              blank: Indique un cargo
+              blank: Debe asociar un cargo al establecimiento
+            establecimiento_contribuyente_id:
+              blank: Debe asociar un establecimiento al cargo
             persona_id:
               blank: Indique una persona
         cargo:

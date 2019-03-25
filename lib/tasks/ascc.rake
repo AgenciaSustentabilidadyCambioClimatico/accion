@@ -165,5 +165,14 @@ namespace :ascc do
     end
 	end
 
+  desc "Asigna establecimiento a cargo en personas, relacion actualizada"
+  task :asigna_establecimiento_cargo => :environment do |task, args|
+    Persona.all.each do |persona|
+      ec_id = persona.establecimiento_contribuyente_id
+      ec_id = persona.contribuyente.direccion_principal.id if ec_id.nil?
+      persona.persona_cargos.update_all(establecimiento_contribuyente_id: ec_id)
+    end
+  end
+
 
 end

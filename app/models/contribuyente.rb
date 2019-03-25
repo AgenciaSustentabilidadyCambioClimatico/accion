@@ -81,6 +81,7 @@ class Contribuyente < ApplicationRecord
 		else
 			direccion = establecimiento_contribuyentes.first
 		end
+    direccion
 	end
 
 	def tipo_contribuyente

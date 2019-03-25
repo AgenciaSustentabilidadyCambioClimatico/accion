@@ -50,4 +50,15 @@ namespace :ascc do
     end
   end
 
+  desc "Ejecuta la rake task ':asigna_establecimiento_cargo'"
+  task :asigna_establecimiento_cargo do
+    on roles(:app) do
+      within release_path do
+        with rails_env: fetch(:rails_env) do
+          execute :rake, "ascc:asigna_establecimiento_cargo"
+        end
+      end
+    end
+  end
+
 end

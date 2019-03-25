@@ -1,5 +1,6 @@
 namespace :rake do
   # DZC 2018-11-22 12:15:24 se agrega para ejecutar rake tasks desde capistrano
+  # Ejecutar: cap staging rake:invoke task='namespace:task'
   def args
     fetch(:delayed_job_args, "")
   end
