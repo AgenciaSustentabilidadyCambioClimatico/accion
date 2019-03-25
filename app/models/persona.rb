@@ -6,7 +6,7 @@ class Persona < ApplicationRecord
 	has_many :persona_cargos, foreign_key: :persona_id, dependent: :destroy
 	# has_many :adhesion_elementos, dependent: :destroy
 	has_many :convocatoria_destinatarios, foreign_key: :destinatario_id, dependent: :destroy #DZC 2018-10-10 15:44:07 
-	accepts_nested_attributes_for :persona_cargos, :allow_destroy => true
+	accepts_nested_attributes_for :persona_cargos, :allow_destroy => true, reject_if: proc {|data| data['establecimiento_contribuyente_id'].blank? && data['cargo_id'].blank? }
 
 	validates :contribuyente_id, presence: true
   validates :email_institucional, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
