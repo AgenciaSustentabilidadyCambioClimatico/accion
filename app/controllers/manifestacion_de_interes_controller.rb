@@ -197,6 +197,8 @@ class ManifestacionDeInteresController < ApplicationController
         format.html { redirect_to root_path, notice: success }
       else
         @total_de_errores_por_tab = @manifestacion_de_interes.errores_agrupados
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR           
+
         if @manifestacion_de_interes.temporal.blank?
           flash.now[:error] = "Antes de enviar la manifestación debe completar todos los campos requeridos"
         end

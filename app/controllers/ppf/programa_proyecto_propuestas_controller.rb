@@ -430,6 +430,8 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 					format.html { redirect_to root_path, notice: success }       
 				end				
 			else
+				@recuerde_guardar_minutos = ProgramaProyectoPropuesta::MINUTOS_MENSAJE_GUARDAR
+
 				if @programa_proyecto_propuesta.temporal.blank?
 					flash.now[:error] = "Antes de enviar la propuesta programa / proyecto debe completar todos los campos requeridos"
 				end
