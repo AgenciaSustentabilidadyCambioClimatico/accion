@@ -14,6 +14,8 @@ module Ascc
     config.i18n.default_locale = :es
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
     config.active_job.queue_adapter = :delayed_job
+
+    config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do
     #   config.web_console.whitelisted_ips = '0.0.0.0/0'
