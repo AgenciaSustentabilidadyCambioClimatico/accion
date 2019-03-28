@@ -1,4 +1,4 @@
-= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry";
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry", async: true;
 :javascript
 	var ubicacionInstitucionQueSolicitaApoyoMap;
 	function initializeUbicacionInstitucionQueSolicitaApoyoMap(lat,lng) {

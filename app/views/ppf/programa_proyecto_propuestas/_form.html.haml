@@ -60,7 +60,9 @@
 			} else {
 				tab.hide();
 			}
-		};		
+		};
+
+  	
 
 		function check_campos_relacionados(resultadoRevision, onChange) {
 			seccionesGroup = $('.secciones-observadas-revision-checkbox-group');
@@ -184,4 +186,11 @@
 = render 'admin/users/buscador'
 - ue =  @programa_proyecto_propuesta.ubicacion_exacta_institucion_que_solicita_apoyo.blank? ? [] : @programa_proyecto_propuesta.ubicacion_exacta_institucion_que_solicita_apoyo.split(",")
 :javascript
-	initializeUbicacionInstitucionQueSolicitaApoyoMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+
+	var mapa_datos_institucion_inicializado = false;
+	$("#datos-institucion-tab").click(function(){
+		if(!mapa_datos_institucion_inicializado){
+			mapa_datos_institucion_inicializado = true;
+			initializeUbicacionInstitucionQueSolicitaApoyoMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+		}
+	});
