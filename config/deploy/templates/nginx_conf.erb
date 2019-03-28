@@ -69,7 +69,7 @@ server {
   }
 
   location ^~ /assets/ {
-    root <%= current_path %>/public
+    root <%= current_path %>/public;
     gzip_static on;
     expires 1y;
     add_header Cache-Control public;
