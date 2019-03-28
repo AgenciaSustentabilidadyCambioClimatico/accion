@@ -116,7 +116,7 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	validates :instrumento_relacionado, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :institucion_a_la_cual_se_presentara_la_propuesta_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :nombre_del_fondo_al_cual_se_esta_postulando, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :documento_con_programa_proyecto_existente, presence: true, on: :update, unless: -> { temporal.to_s == "true" }, if: -> {tipo_instrumento_id.present? && tipo_instrumento_id == TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS}
+	validates :documento_con_programa_proyecto_existente, presence: true, on: :update, if: -> {temporal.to_s != "true" && (tipo_instrumento_id.present? && tipo_instrumento_id == TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS)}
 	#validates :programa_proyecto_propuesta_base_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 
 	validates :revisor_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_revisor }
