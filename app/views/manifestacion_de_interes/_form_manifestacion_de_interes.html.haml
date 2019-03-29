@@ -528,41 +528,16 @@
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript
-  var mapa_datos_institucion_inicializado = false;
-  var mapa_contexto_sector_inicializado = false;
-  var mapa_datos_proyecto_inicializado = false;
-
-
-  $("#datos-institucion-tab").click(function(){
-    if(!mapa_datos_institucion_inicializado){
-      mapa_datos_institucion_inicializado = true;
-      initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
-    }
-  });
-
-  $("#contexto-sector-tab").click(function(){
-    if(!mapa_contexto_sector_inicializado){
-      mapa_contexto_sector_inicializado = true;
-      initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
-    }
-  });
-
-  $("#datos-proyecto-tab").click(function(){
-    if(!mapa_datos_proyecto_inicializado){
-      mapa_datos_proyecto_inicializado = true;
-      initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
-      initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
-    }
-  });
-
-  
+  initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+  initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
   
   //carga la data desde el mapa, con el poligono
   var areaInfluenciaProyectoData  = #{@manifestacion_de_interes.area_influencia_proyecto_data.blank? ? false : (raw json_escape @manifestacion_de_interes.area_influencia_proyecto_data.to_json)};
   var alternativasInstalacionData = #{@manifestacion_de_interes.alternativas_instalacion_data.blank? ? false : (raw json_escape @manifestacion_de_interes.alternativas_instalacion_data.to_json)};
 
   //Permite cargar el mapa de area de inicia y alternativa de instalaciòn
-  
+  initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
+  initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
   //initializeRepresentacionEnMapaProyectoMap(-30.0000000, -71.0000000);
 
   $(document).ready(function() {    
