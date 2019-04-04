@@ -209,6 +209,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def revisor #DZC TAREA APL-002
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
   end
 
   def asignar_revisor #DZC TAREA APL-002
@@ -230,6 +231,7 @@ class ManifestacionDeInteresController < ApplicationController
         # format.html { redirect_to revisor_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Revisor asignado correctamente' }}
         format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Revisor asignado correctamente' }}
       else
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         format.js { }
         format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {error: 'Problema al asignar revisor' }}
       end
@@ -237,6 +239,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def admisibilidad #DZC TAREA APL-003
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
   end
 
   def revisar_admisibilidad  #DZC TAREA APL-003
@@ -274,6 +277,7 @@ class ManifestacionDeInteresController < ApplicationController
           render js: "window.location='#{root_path}'"}
         format.html { redirect_to root_path, flash: {notice: 'Admisibilidad enviada correctamente' }}
       else
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         format.js { }
         format.html { render :admisibilidad}
@@ -282,6 +286,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def observaciones_admisibilidad #DZC APL-004
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
     unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -321,6 +326,7 @@ class ManifestacionDeInteresController < ApplicationController
           format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones. Se ha puesto término a la manifestación' }}
         end
       else
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         @total_de_errores_por_tab = [] if @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
         @total_de_errores_por_tab[:"admisibilidad"] = [""]
         format.js { flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos" }
@@ -329,7 +335,8 @@ class ManifestacionDeInteresController < ApplicationController
     end
   end
 
-  def pertinencia_factibilidad #DZC TAREA APL-005
+  def pertinencia_factibilidad #DZC TAREA APL-005 
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
     # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
     @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
   end
@@ -369,6 +376,7 @@ class ManifestacionDeInteresController < ApplicationController
           render js: "window.location='#{root_path}'"}
         format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
       else
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
         @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
@@ -379,6 +387,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def responder_pertinencia_factibilidad #DZC APL-006
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
     unless @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -422,6 +431,7 @@ class ManifestacionDeInteresController < ApplicationController
           format.html { redirect_to root_path(@tarea_pendiente, @manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones sobre pertinencia y factibilidad. Se ha puesto término a la manifestación' }}
         end
       else
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
         @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
