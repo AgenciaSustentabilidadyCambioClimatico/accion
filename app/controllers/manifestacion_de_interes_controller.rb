@@ -376,7 +376,7 @@ class ManifestacionDeInteresController < ApplicationController
           render js: "window.location='#{root_path}'"}
         format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
       else
-        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
         @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
@@ -387,7 +387,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def responder_pertinencia_factibilidad #DZC APL-006
-    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
+    @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
     unless @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -431,7 +431,7 @@ class ManifestacionDeInteresController < ApplicationController
           format.html { redirect_to root_path(@tarea_pendiente, @manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones sobre pertinencia y factibilidad. Se ha puesto término a la manifestación' }}
         end
       else
-        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige
+        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
         @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
