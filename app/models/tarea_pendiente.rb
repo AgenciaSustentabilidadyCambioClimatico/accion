@@ -256,7 +256,11 @@ class TareaPendiente < ApplicationRecord
       when Tarea::COD_APL_025 
         flujo = pend.flujo
         firma_fecha = flujo.manifestacion_de_interes.firma_fecha
-        meses = InformeAcuerdo.find_by(manifestacion_de_interes_id: flujo.manifestacion_de_interes_id).plazo_maximo_adhesion
+
+        # DZC 2019-04-30 12:17:48 corrije posible ejecución de método sobre objeto nulo
+        meses = InformeAcuerdo.find_by(manifestacion_de_interes_id: flujo.manifestacion_de_interes_id)
+        meses = meses.present? ? meses.plazo_maximo_adhesion : nil
+
         unless meses.blank?
           plazo = firma_fecha + meses.months
           if (Time.now > plazo) 
