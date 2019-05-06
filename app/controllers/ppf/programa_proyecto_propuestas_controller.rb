@@ -240,6 +240,7 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 
 	def resolver_observaciones
 		@mantener_temporal = true #Se concidera que es temporal siempre, a excepcion de cuando se presiona el boton de enviar.-
+		@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-05-06 12:31:55 precave ocurrencia de situación reportada en requerimiento 2019-05-03
 	end
 
 	def guardar_observaciones_resueltas #DZC TAREA PPF-004 TERMINO
@@ -266,6 +267,7 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 					format.html { render :resolver_observaciones }       
 				end					
 			else
+				@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-05-06 12:31:55 precave ocurrencia de situación reportada en requerimiento 2019-05-03
 				format.js { }
 				format.html { render :resolver_observaciones }
 			end
@@ -273,6 +275,7 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 	end
 
 	def revision
+		@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-05-06 12:31:55 corrige requerimiento 2019-05-03
 	end
 
 	def guardar_revision #DZC TAREA PPF-003 TERMINO
@@ -298,6 +301,7 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 				 }
 				format.html { redirect_to root_path, notice: success }
 			else
+				@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-05-06 12:31:55 corrige requerimiento 2019-05-03
 				format.js { }
 				format.html { render :revision }
 			end
