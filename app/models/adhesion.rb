@@ -446,9 +446,15 @@ class Adhesion < ApplicationRecord
 		end
 
 		#DZC (3) verifica que el contribuyente y el tipo de contribuyente esten relacionados según la tabla dato anual contribuyente 
-		tipo_contribuyente = TipoContribuyente.find_by(nombre: fila[:tipo_institucion].to_s)
+		# DZC 2019-05-20 12:25:19 se modifica para evitar búsquedas case sensitive
+		# tipo_contribuyente = TipoContribuyente.find_by(nombre: fila[:tipo_institucion].to_s)
+		tipo_contribuyente = TipoContribuyente.find_by('nombre ILIKE ?', fila[:tipo_institucion].to_s)
+
 		tamano_empresa_split = fila[:tamaño_empresa].split('-')
-		rango_venta_contribuyente = RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last)
+
+		# DZC 2019-05-20 12:34:43 se modifica para evitar búsquedas case sensitive
+		# rango_venta_contribuyente = RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last)
+		rango_venta_contribuyente = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano_empresa_split.last)
 		# 
 		datos_anuales_contribuyente = contribuyente.dato_anual_contribuyentes.where(tipo_contribuyente_id: tipo_contribuyente.id).where(rango_venta_contribuyente_id: rango_venta_contribuyente.id).first
 		if datos_anuales_contribuyente.blank?
@@ -461,7 +467,11 @@ class Adhesion < ApplicationRecord
 		end
 
 		#DZC (4) verifica la ubicación del contribuyente y en caso de ausencia crea y asocia el establecimiento.
-		comuna = Comuna.where(nombre: fila[:comuna_casa_matriz].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+
+		# DZC 2019-05-20 12:04:40 se modifica para evitar comparación de comunas case sensitive
+		# comuna = Comuna.where(nombre: fila[:comuna_casa_matriz].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+		comuna = Comuna.where('comunas.nombre ILIKE ?', fila[:comuna_casa_matriz].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+
 		#DZC se agrega la dirección en la búsqueda de la casa matríz
 		establecimiento_contribuyente = contribuyente.establecimiento_contribuyentes.where(comuna_id: comuna.id, direccion: fila[:direccion_casa_matriz].to_s).first
 		if establecimiento_contribuyente.nil?
@@ -501,7 +511,11 @@ class Adhesion < ApplicationRecord
 		end
 
 		#DZC (6) se busca la existencia del rol
-		cargo = Cargo.find_by(nombre: fila[:cargo_encargado].to_s)
+
+		# DZC 2019-05-20 12:27:40 se modifica para evitar búsquedas case sensitive
+		# cargo = Cargo.find_by(nombre: fila[:cargo_encargado].to_s)
+		cargo = Cargo.find_by('nombre ILIKE ?', fila[:cargo_encargado].to_s)
+
 		persona_cargo = persona.persona_cargos.where(cargo_id: cargo.id).first if cargo.present?
 		if persona_cargo.nil?
 			persona_cargo = PersonaCargo.new(
@@ -517,7 +531,10 @@ class Adhesion < ApplicationRecord
 			rol_id: Rol::RESPONSABLE_CUMPLIMIENTO_COMPROMISOS
 		)
 
-		alcance = Alcance.find_by(nombre: fila[:alcance].to_s)
+		# DZC 2019-05-20 12:29:42 se modifica para evitar búsquedas case sensitive
+		# alcance = Alcance.find_by(nombre: fila[:alcance].to_s)
+		alcance = Alcance.find_by('nombre ILIKE ?', fila[:alcance].to_s)
+
 		establecimiento_alcance = nil
 		maquinaria = nil
 		otro = nil
@@ -526,7 +543,9 @@ class Adhesion < ApplicationRecord
 		when Alcance::ORGANIZACION
 			# NADA
 		when Alcance::ESTABLECIMIENTO
-			comuna = Comuna.where(nombre: fila[:comuna_instalacion].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+			# DZC 2019-05-20 12:18:25 se modifica para evitar comparación de comunas case sensitive
+			# comuna = Comuna.where(nombre: fila[:comuna_instalacion].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+			comuna = Comuna.where('comunas.nombre ILIKE ?', fila[:comuna_instalacion].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
 			establecimiento_alcance = contribuyente.establecimiento_contribuyentes.where(comuna_id: comuna.id, direccion: fila[:direccion_instalacion].to_s).first			
 			if establecimiento_alcance.blank?
 				establecimiento_alcance = EstablecimientoContribuyente.new(
