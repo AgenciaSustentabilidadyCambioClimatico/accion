@@ -98,13 +98,24 @@ class ManifestacionDeInteres < ApplicationRecord
 	validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :mapa_de_actores_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :numero_empresas, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+	# DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
+	validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present?} 
+
+	# DZC 2019-06-25 16:26:07 se agrega para manejar monto máximo a ingresar
+	validates :numero_empresas, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.numero_empresas.present? || temporal.to_s != "true" }
+
 	validates :porcentaje_mipymes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :produccion, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :ventas, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+
+	# DZC 2019-06-25 16:20:54 se agrega para manejar monto máximo a ingresar
+	validates :ventas, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.ventas.present? || temporal.to_s != "true" }
+	
 	validates :porcentaje_exportaciones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :principales_mercados, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :numero_trabajadores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+
+	# DZC 2019-06-25 16:20:35 se agrega para manejar monto máximo a ingresar
+	validates :numero_trabajadores, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.numero_trabajadores.present? || temporal.to_s != "true" }
+
 	validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :principales_impactos_socioambientales_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :principales_problemas_y_desafios, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
@@ -130,7 +141,10 @@ class ManifestacionDeInteres < ApplicationRecord
 	validates :motivacion_y_objetivos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :equipo_de_trabajo_comprometido, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :patrocinadores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :monto_total_comprometido, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+
+	# DZC 2019-06-25 16:25:09 se agrega para manejar monto máximo a ingresar
+	validates :monto_total_comprometido, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.monto_total_comprometido.present? || temporal.to_s != "true" }
+
 	validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :otros_recursos_comprometidos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 	validates :carta_de_apoyo_y_compromiso, presence: true, on: :update, unless: -> { temporal.to_s == "true" }

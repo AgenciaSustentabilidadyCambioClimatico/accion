@@ -20,7 +20,9 @@ class AcuerdoActoresController < ApplicationController
 
 	def mostrar_informe
 		@datos = params[:informe]
-		@datos["auditorias"] = @datos["auditorias"].values
+		# DZC 2019-06-21 17:53:28 se modifica para evitar error por ejecución de método sobre objeto nulo
+		# @datos["auditorias"] = @datos["auditorias"].values
+		@datos["auditorias"] = @datos["auditorias"].values rescue []
 		respond_to do |format|
 			format.html{ render partial: 'informe'}
 			format.js{ render partial: 'informe'}
@@ -28,6 +30,7 @@ class AcuerdoActoresController < ApplicationController
 	end
 
 	def guardar_informe #DZC APL-018
+		# binding.pry
 		# DZC 2018-11-12 18:36:00 se modifica para eliminar archivos seleccionados para su eliminación
 		archivos_por_eliminar = params[:por_eliminar]
 		archivos_previos =[]
@@ -46,14 +49,26 @@ class AcuerdoActoresController < ApplicationController
 				end
 			end
 		end
+		# binding.pry
 		@informe.assign_attributes(informe_params)
-		@informe.assign_attributes(archivos_anexos: archivos_previos+archivos_nuevos)
+		# DZC 2019-06-19 17:39:50 se modifica para corregir error en asignación de archivos
+		# @informe.assign_attributes(archivos_anexos: archivos_previos+archivos_nuevos)
+		@informe.archivos_anexos = archivos_previos+archivos_nuevos
 		@informe.tarea_codigo = Tarea::COD_APL_018 # DZC 2018-11-08 14:02:58 se agrega para evitar validación de existencia de archivos_anexos_posteriores_firmas en el modelo
 		# DZC 2018-11-12 11:36:06 elimina los archivos seleccionados para eliminacion
-		
-		@informe.auditorias = params[:informe_acuerdo][:auditorias]
-		@informe.auditorias = [] if @informe.auditorias.nil?
+
+		@informe.auditorias = params[:informe_acuerdo][:auditorias].values rescue []
+		# @informe.auditorias = [] if @informe.auditorias.nil?
+
+		# DZC 2019-06-19 14:58:54 corrige error en
+		# if @informe.auditorias.present? 
+		# 	@informe.auditorias.map!{|a| a if (a[:nombre].present? && a[:plazo].present?)}
+		# 	@informe.auditorias = @informe.auditorias.compact
+		# else
+		# 	@informe.auditorias = []
+		# end
 		respond_to do |format|
+			# binding.pry
 			if @informe.valid?
 				@informe.save
 				audits_ids = []

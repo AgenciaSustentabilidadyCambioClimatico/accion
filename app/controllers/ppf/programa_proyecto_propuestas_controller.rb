@@ -252,6 +252,7 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 			@programa_proyecto_propuesta.instrumento_relacionado_type       =  instrumento_relacionado_params.present? ? instrumento_relacionado_params[:type] : nil
 			# 
 			@programa_proyecto_propuesta.completar_informacion!
+			@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-06-17 17:17:51 precave ocurrencia de situación reportada en OpenProyect id: 1895			
 			if @programa_proyecto_propuesta.save
 				if programa_proyecto_propuesta_resolver_observaciones_params[:temporal]=="false"      
 					success = 'Resolución de observaciones propuesta correctamente enviada'
@@ -267,7 +268,6 @@ class Ppf::ProgramaProyectoPropuestasController < ApplicationController
 					format.html { render :resolver_observaciones }       
 				end					
 			else
-				@recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-05-06 12:31:55 precave ocurrencia de situación reportada en requerimiento 2019-05-03
 				format.js { }
 				format.html { render :resolver_observaciones }
 			end

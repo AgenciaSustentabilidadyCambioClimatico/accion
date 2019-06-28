@@ -13,6 +13,7 @@ set :stage, "staging"
 set :deploy_to, deploy["path"]
 set :nginx_server_name, deploy["domain"]
 set :nginx_port, 3999
+set :nginx_read_timeout, 60
 server deploy["server"]["host"], user: deploy["server"]["user"], roles: %w{app web db}
 role :app, [login]
 role :web, [login]

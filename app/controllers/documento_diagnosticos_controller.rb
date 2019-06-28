@@ -56,12 +56,11 @@ class DocumentoDiagnosticosController < ApplicationController
 				@manifestacion_de_interes.update(enviar_revision_update_documento_diagnostico_params)
 
 				continua_flujo_segun_tipo_tarea #DZC agregamos nuevamente la tarea pendiente para el revisado 
-
 				format.js {
-				@comentarios = @manifestacion_de_interes.comentarios_diagnostico_ordenados
-				# (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
-				@manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos = nil
-				flash.now[:success] = "Documentos diagnóstico correctamente actualizados"
+					@comentarios = @manifestacion_de_interes.comentarios_diagnostico_ordenados
+					# (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
+					@manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos = nil
+					flash.now[:success] = "Documentos diagnóstico correctamente actualizados"
 				}
 			else
 				format.js {

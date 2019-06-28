@@ -9,9 +9,15 @@ default: &default
   template: template0
   schema_search_path: "public, admin"
 
+
+timeout: 50000  
+
 development:
   <<: *default
-  database: ascc_gitlab
+  # database: ascc_development
+  # database: ascc_staging
+  database: ascc_qa_daniel
+  # database: ascc_qa
 test:
   <<: *default
   database: ascc_test__up

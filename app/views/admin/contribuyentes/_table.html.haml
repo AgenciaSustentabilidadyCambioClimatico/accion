@@ -7,7 +7,8 @@
   - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
   :javascript
     $(document).ready(function() {
-      $('table.contribuyentes').DataTable({
+      //DZC 2019-06-17 11:57:12 se modifica para considerar al contribuyente seleccionado en otra página
+      var tabla_de_contribuyentes = $('table.contribuyentes').DataTable({
         lengthMenu: [[#{resultado_mostrados}], [#{resultado_mostrados}]],
         pageLength: #{resultado_mostrados},
         columnDefs: [ { targets: [2], orderable: false } ],
@@ -37,6 +38,7 @@
           - actividades_economicas = i.actividad_economica_contribuyentes.map{|m|m.actividad_economica_id} 
           - establecimientos = i.establecimiento_contribuyentes.map{|m|["<label>#{m.direccion}</label> - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }".html_safe, m.id]}
           - es_maquinaria ? establecimientos_para_maquinaria = i.establecimiento_contribuyentes.map{|m|[m.nombre_and_direccion,m.id]} : establecimientos_para_maquinaria = []
+          -#DZC 2019-06-17 14:56:38 se corrige error en variable "#{PUTi.rut}-#{i.dv}" por "#{i.rut}-#{i.dv}"
           - data_contribuyente = { id: i.id, rut: "#{i.rut}-#{i.dv}", razon_social: i.razon_social, actividades_economicas: actividades_economicas, tipo_contribuyentes: tipo_contribuyentes, establecimientos: establecimientos, establecimientos_nombre_direccion: establecimientos_para_maquinaria, direccion_principal: i.direccion_principal }
           %td.iconos-acciones
             = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio' }

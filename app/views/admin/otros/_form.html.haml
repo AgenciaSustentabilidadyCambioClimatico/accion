@@ -8,13 +8,20 @@
 	}
 	$(document).ready(function(){
 		__chosen_actecos();
-		$('body').on('change','.contribuyente-radio',function() {
-			$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		});
+
+	
+		//DZC 2019-06-17 13:58:48 se modifica para usar la función verificarModal() 
+		//$('body').on('change','.contribuyente-radio',function() {
+		//	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
 
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				$("input#otro_contribuyente_id").val(data.id);
 				$("input#otro_rut_contribuyente").val(data.rut);
 				$("input#otro_nombre_contribuyente").val(data.razon_social);

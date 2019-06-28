@@ -3,16 +3,24 @@
   var desc = #{raw json_escape(@tipo_instrumentos.inject({}){|h,ti|h[ti.id]=ti.descripcion;h}.to_json)}
   $(document).ready(function(){
 
-    $('body').on('change','.contribuyente-radio',function() {
-      $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-    });
+    //DZC 2019-06-17 14:02:32 se modifica para usar la función verificarModal()
+    //$('body').on('change','.contribuyente-radio',function() {
+    //  $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+    //});
+    verificarModal();
+
+
     $('body').on('change','.usuario-radio',function() {
       $('.seleccionar-usuario-button').removeAttr('disabled'); 
     });
     
     $('.seleccionar-contribuyente-button').on('click', function() {
       try {
-        data=JSON.parse($('.contribuyente-radio:checked').val());
+        //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+        //data=JSON.parse($('.contribuyente-radio:checked').val());
+        data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
+
         $("#manifestacion_de_interes_contribuyente_id").val(data.id);
         $("#manifestacion_de_interes_contribuyente_id").change();
       } catch(e) {
@@ -128,7 +136,6 @@
           .col-lg-5.pl-lg-0.col-sm-12
             = f.input :proponente, input_html: { value: current_user.nombre_completo, class: 'required-field' }, readonly: true, required: true
           .col-lg-12.col-12
-            
             = f.input :proponente_institucion_id, collection: @contribuyentes_del_proponente.map{|m|[(m.razon_social.blank? ? "Sin razón social. RUT: #{m.rut_completo}".upcase : m.razon_social),m.id]}, input_html: { class: 'required-field' }, prompt: t(:prompt_,g:nil,e:t(:institución).downcase), required: true, label: t(:institución)
           .col-12
             = f.input :descripcion_acuerdo, as: :text, input_html: { class: 'required-field', rows: 4 }, label: t(:descripción_acuerdo), readonly: true
@@ -528,16 +535,41 @@
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript
-  initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
-  initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
+  var mapa_datos_institucion_inicializado = false;
+  var mapa_contexto_sector_inicializado = false;
+  var mapa_datos_proyecto_inicializado = false;
+
+
+  $("#datos-institucion-tab").click(function(){
+    if(!mapa_datos_institucion_inicializado){
+      mapa_datos_institucion_inicializado = true;
+      initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+    }
+  });
+
+  $("#contexto-sector-tab").click(function(){
+    if(!mapa_contexto_sector_inicializado){
+      mapa_contexto_sector_inicializado = true;
+      initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
+    }
+  });
+
+  $("#datos-proyecto-tab").click(function(){
+    if(!mapa_datos_proyecto_inicializado){
+      mapa_datos_proyecto_inicializado = true;
+      initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
+      initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
+    }
+  });
+
+  
   
   //carga la data desde el mapa, con el poligono
   var areaInfluenciaProyectoData  = #{@manifestacion_de_interes.area_influencia_proyecto_data.blank? ? false : (raw json_escape @manifestacion_de_interes.area_influencia_proyecto_data.to_json)};
   var alternativasInstalacionData = #{@manifestacion_de_interes.alternativas_instalacion_data.blank? ? false : (raw json_escape @manifestacion_de_interes.alternativas_instalacion_data.to_json)};
 
   //Permite cargar el mapa de area de inicia y alternativa de instalaciòn
-  initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
-  initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
+  
   //initializeRepresentacionEnMapaProyectoMap(-30.0000000, -71.0000000);
 
   $(document).ready(function() {    

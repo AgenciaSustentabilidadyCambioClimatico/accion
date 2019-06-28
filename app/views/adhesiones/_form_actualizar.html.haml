@@ -76,13 +76,14 @@
         .card-body
           .row
             .col-12
+              = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", "Documento de adhesión", {tarea_pendiente: @tarea_pendiente})            
               .form-group
                 %label.string.control-label
                   = t(:formato_excel_de_elementos_adherir)
                 = link_to descargar_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-outline-secondary btn-block' do
                   %i.fa.fa-download
                   = t(:descargar)
-              = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", "Documento de adhesión", {tarea_pendiente: @tarea_pendiente})
+
   .float-right
     = volver_root
     = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled

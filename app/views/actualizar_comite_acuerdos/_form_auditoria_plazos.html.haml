@@ -229,7 +229,7 @@
 		}else{
 			fecha = suma_meses_firma(paf);
 		};		 
-		if (fecha < Date.today()){
+		if ( (paf != 0) && (fecha < Date.today()) ){
 			plazo_vigente = false;
 		};
 		return plazo_vigente;
@@ -343,7 +343,8 @@
 							= f.input :tipo_acuerdo, as: :radio_buttons, collection: InformeAcuerdo.tipo_acuerdos.keys.map { |w| [w.humanize, w] }, label: false, checked: @informe.tipo_acuerdo, input_html: {class: 'ta'}, required: false, disabled: true
 						.col-12.col-lg-3
 							= f.label t(:con_extension), required: true
-							= f.input :con_extension, as: :radio_buttons, collection: [["Si", "si"],["No", "no"]], label: false, checked: (@informe.con_extension ? "si" : "no"), input_html: {class: 'required-field'}, required: true
+							-#DZC 2019-06-11 17:16:58 se modifica valor de checked: para un correcto uso de la vista
+							= f.input :con_extension, as: :radio_buttons, collection: [["Si", true],["No", false]], label: false, checked: (@informe.con_extension.present? ? (@informe.con_extension ? true : false) : false), input_html: {class: 'required-field'}, required: true
 						.col-12.col-lg-3
 							= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-acuerdo", class: 'btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
 								%i.fa.fa-file-text-o

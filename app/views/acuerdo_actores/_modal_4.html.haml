@@ -41,20 +41,20 @@
                       - @auditorias.each do |aud|
                         %tr
                           %td
-                            = hidden_field_tag "informe_acuerdo[auditorias][][id]", aud.id
+                            = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][id]", aud.id
                             = link_to '#', class: 'remove-auditoria' do
                               %i.fa.fa-times-circle.link-to-remove-row
                           %td
-                            = text_field_tag "informe_acuerdo[auditorias][][nombre]", aud.nombre, class: "form-control"
+                            = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][nombre]", aud.nombre, class: "form-control informe_acuerdo_auditoria_nombre"
                           %td{style: "max-width:70px"}
-                            = text_field_tag "informe_acuerdo[auditorias][][plazo]", aud.plazo, class: "form-control numero"
+                            = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo]", aud.plazo, class: "form-control numero"
                           %td
-                            = check_box_tag "informe_acuerdo[auditorias][][con_certificacion]", true, aud.con_certificacion?, class: "form-control con-certificacion"
+                            = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, class: "form-control con-certificacion" 
                           %td
-                            = hidden_field_tag "informe_acuerdo[auditorias][][con_validacion]", false
-                            = check_box_tag "informe_acuerdo[auditorias][][con_validacion]", true, aud.con_validacion?, class: "form-control con-validacion", disabled: !aud.con_certificacion?
+                            = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", false
+                            = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", true, aud.con_validacion?, class: "form-control con-validacion", disabled: !aud.con_certificacion?
                           %td
-                            = radio_button_tag "informe_acuerdo[auditorias][][final]", true, aud.final?, class: "form-control"
+                            = radio_button_tag "informe_acuerdo[auditorias][#{aud.id}][final]", true, aud.final?, class: "form-control"
       .modal-footer
         -#
           %button.btn.btn-secondary{disabled: true}

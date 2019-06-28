@@ -441,7 +441,10 @@
 		verificarModal();
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				$("input#manifestacion_de_interes_institucion_gestora_acuerdo").val(data.razon_social);
 				$("input#manifestacion_de_interes_rut_institucion_gestora_acuerdo").val(data.rut);
 				if(data.direccion_principal != null){

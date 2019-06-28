@@ -24,14 +24,22 @@
 		$('#buscar-contribuyente').on('show.bs.modal', function (e) {
 			rowFields = $(e.relatedTarget).parents('.card');
 		})
-		$('body').on('change','.contribuyente-radio',function(){
-			$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		});
+
+		//DZC 2019-06-17 14:01:19 se modifica para usar la función verificarModal()
+		//$('body').on('change','.contribuyente-radio',function(){
+		//	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
+
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
 				var establecimientos_html = "Seleccione un establecimiento^$^";
 				cs=rowFields.find('.contribuyente-selector');
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				cs.removeClass('border-error').removeAttr('data-original-title');
 				cs.append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
 				cs.val(data.id);

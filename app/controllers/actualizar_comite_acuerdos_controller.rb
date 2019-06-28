@@ -31,12 +31,15 @@ class ActualizarComiteAcuerdosController < ApplicationController
 			end
 			@informe.assign_attributes(archivos_anexos_posteriores_firmas: archivos_previos+archivos_nuevos)
 			r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, tab_metas: true)
+			@informe.solo_guarda_archivos = true #DZC 2019-06-11 17:12:18 se agrega para evitar validación del atributo :con_extension
 			if @informe.save
 				@informe.update(necesita_evidencia: false)
+				@informe.solo_guarda_archivos = false #DZC 2019-06-13 12:44:47 se agrega para mantener validaciones desde vista
 				format.js { 
           flash.now[:success] = 'Archivos guardados.'
           @set_metas_accion = SetMetasAccion.new
           @set_metas_accion.anexo = params[:anexo]
+          
           render js: "window.location='#{r_to}'"
         }
         format.html {
@@ -45,6 +48,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
       else
       	format.js { 
           flash[:error] = "No se guardaron los archivos por los siguientes errores: #{@informe.errors.full_messages.to_sentence}"
+          @informe.solo_guarda_archivos = false
           render js: "window.location='#{r_to}'"
         }
 			end	
@@ -119,6 +123,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
 		end
 
 		def set_informe
+			# binding.pry
 			@informe=InformeAcuerdo.find_by(manifestacion_de_interes_id: @manifestacion_de_interes.id)
 			@informe.calcula_fechas #DZC instancia las fechas de los plazos en variables no persistentes para su uso en la vista 
 			if @informe.blank?

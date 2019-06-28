@@ -105,13 +105,13 @@ class SetMetasAccionesController < ApplicationController
     render layout: false 
   end
 
-  def update
-       
+  def update 
     set_metas_accion_anterior = @set_metas_accion
     # @manifestacion_de_interes.accion_en_set_metas_accion = params[:accion].to_sym
     respond_to do |format|
       @set_metas_accion.assign_attributes(set_metas_accion_params)
-      if set_metas_accion_params["materia_sustancia_id"].blank?
+      # DZC 2019-06-21 17:08:57 se modifica para considerar ingreso de comentarios en APL-020
+      if set_metas_accion_params["materia_sustancia_id"].blank? && ![Tarea::COD_APL_019, Tarea::COD_APL_020].include?(@tarea.codigo)
         @set_metas_accion.materia_sustancia_id = nil
       end
       if @set_metas_accion.save

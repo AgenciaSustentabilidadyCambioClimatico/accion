@@ -541,7 +541,6 @@ class ManifestacionDeInteresController < ApplicationController
       @propuestas_con_observaciones = comentarios[:requiere_correcciones]
       @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
     end
-    
   end
 
   def termina_etapa_diagnostico #DZC APL-014 TERMINA TODAS LAS TAREAS DESDE APL-014 HACIA ATRAS
@@ -843,8 +842,15 @@ class ManifestacionDeInteresController < ApplicationController
       # DZC 2018-10-10 16:42:42 se agrega contribuyente del proponente
       @contribuyente = Contribuyente.new
       personas_proponentes = current_user.personas & Responsable.responsables_por_rol(Rol::PROPONENTE)
+      
       # DZC 2018-11-19 10:27:27 se modifica para que no hayan contribuyentes precargados
-      @contribuyentes_del_proponente = Contribuyente.where(id: personas_proponentes.pluck(:contribuyente_id))
+      # DZC 2019-06-17 18:07:31 se modifica para cargar el contribuyente escogido
+      if @tarea.codigo == Tarea::COD_APL_001
+        @contribuyentes_del_proponente = Contribuyente.where(id: personas_proponentes.pluck(:contribuyente_id))
+      else
+        @contribuyentes_del_proponente = [@manifestacion_de_interes.proponente_institucion]
+      end
+
 
       #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
     	@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all

@@ -37,8 +37,12 @@
     remover_auditoria();
 
     $('.add-auditoria').click(function(){
-      $('#tabla_auditoria').append("#{ j render partial: 'form_auditoria'}");
-
+      var id_temporal = 'id_temporal_'+$.now();
+      var partial_auditorias = "#{ j render partial: 'form_auditoria'}";
+      partial_auditorias = partial_auditorias.replace(/id_temporal/g, id_temporal);
+      $('#tabla_auditoria').append(partial_auditorias);
+      // $('#tabla_auditoria').append("#{ j render partial: 'form_auditoria'}");
+      
       iniciarAutoNumeric();
       remover_auditoria();
     });
@@ -117,13 +121,16 @@
     });
 
     var auditorias = [];
-    $("input[name='informe_acuerdo[auditorias][][nombre]']").each(function() {
+    //DZC 2019-06-19 16:13:24
+    //$("input[name='informe_acuerdo[auditorias][][nombre]']").each(function() {
+    $(".informe_acuerdo_auditoria_nombre").each(function() {
       var audit = new Object();
       audit.nombre = this.value;
       auditorias.push(audit);
     });
     datos.auditorias = auditorias;
-
+    
+    //console.log(auditorias);    
     $.ajax({
       url: "#{mostrar_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}",
       type: 'POST',

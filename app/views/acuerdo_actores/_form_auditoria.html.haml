@@ -1,16 +1,16 @@
 %tr
   %td
-    = hidden_field_tag "informe_acuerdo[auditorias][][id]", "no"
+    = hidden_field_tag "informe_acuerdo[auditorias][id_temporal][id]", "no"
     = link_to '#', class: 'remove-auditoria' do
       %i.fa.fa-times-circle.link-to-remove-row
   %td
-    = text_field_tag "informe_acuerdo[auditorias][][nombre]", nil, class: "form-control"
+    = text_field_tag "informe_acuerdo[auditorias][id_temporal][nombre]", nil, class: "form-control"
   %td{style: "max-width:70px"}
-    = text_field_tag "informe_acuerdo[auditorias][][plazo]", nil, class: "form-control numero"
+    = text_field_tag "informe_acuerdo[auditorias][id_temporal][plazo]", nil, class: "form-control numero"
   %td
-    = check_box_tag "informe_acuerdo[auditorias][][con_certificacion]", true, false, class: "form-control con-certificacion"
+    = check_box_tag "informe_acuerdo[auditorias][id_temporal][con_certificacion]", true, false, class: "form-control con-certificacion"
   %td
-    = hidden_field_tag "informe_acuerdo[auditorias][][con_validacion]", false
-    = check_box_tag "informe_acuerdo[auditorias][][con_validacion]", true, false, class: "form-control con-validacion", disabled: true
+    = hidden_field_tag "informe_acuerdo[auditorias][id_temporal][con_validacion]", false
+    = check_box_tag "informe_acuerdo[auditorias][id_temporal][con_validacion]", true, false, class: "form-control con-validacion", disabled: true
   %td
-    = radio_button_tag "informe_acuerdo[auditorias][][final]", true, false, class: "form-control"
+    = radio_button_tag "informe_acuerdo[auditorias][id_temporal][final]", true, false, class: "form-control"

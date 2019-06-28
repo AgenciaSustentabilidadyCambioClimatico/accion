@@ -197,16 +197,22 @@ class AuditoriasController < ApplicationController
     end
 
     def set_auditoria
+      # binding.pry
       @auditoria = Auditoria.find_by_id(@tarea_pendiente.data[:auditoria_id])
-      if @tarea.codigo == Tarea::COD_APL_032 && @auditoria.archivo_correcto
-        
+      # DZC 2019-06-19 12:56:28 se mueve para correcto funcionamiento del algoritmo
+      @auditoria_elementos = nil
+      if @tarea.codigo == Tarea::COD_APL_032 #&& @auditoria.archivo_correcto #DZC 2019-06-19 12:57:04 se modifica para correcto funcionamiento del algoritmo
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id) #.where(estado: [3,4]) #DZC elementos a auditar
+        # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
+        @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
       elsif @tarea.codigo == Tarea::COD_APL_033
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [2]) #DZC elementos a auditar
       else #DZC APL-034
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [5]) #DZC elementos a auditar
       end
-      @auditoria_elementos = nil
+      # binding.pry
+      # DZC 2019-06-19 12:45:07 se comenta para correcto funcionamiento del algoritmo
+      # @auditoria_elementos = nil
     end
 
     def set_datos

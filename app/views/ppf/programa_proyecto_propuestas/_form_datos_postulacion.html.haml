@@ -7,7 +7,10 @@
 		$('.seleccionar-contribuyente-button').click(function() {
 			ppp_iid = $("select#programa_proyecto_propuesta_organismo_ejecutor_id");
 			try {
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				$('#contribuyente-id-receptor').val(data.id);
 				ppp_iid.empty().append("<option value='"+data.id+"'>"+data.razon_social+"</option>");
 				checkFieldValidity($("input#programa_proyecto_propuesta_organismo_ejecutor_id"));
@@ -15,8 +18,20 @@
 				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
 			}
 		});
+		// DZC 2019-06-25 15:26:55 se agrega para manejar obligatoriedad de campo "Motivos resultado"
+		motivo_obligatorio();
+		$('#programa_proyecto_propuesta_resultado_postulacion').change(function() {
+			motivo_obligatorio();
+		});
 	});
-
+	// DZC 2019-06-25 15:26:55 se agrega para manejar obligatoriedad de campo "Motivos resultado"
+	function motivo_obligatorio(){
+		if ($('#programa_proyecto_propuesta_resultado_postulacion').val() == 1){
+			$('.programa_proyecto_propuesta_motivos_resultado').find('abbr').show()
+		}else{
+			$('.programa_proyecto_propuesta_motivos_resultado').find('abbr').hide()
+		}
+	}
 - titulo t(:programa_proyecto_propuesta)
 = simple_form_for @programa_proyecto_propuesta, url: guardar_datos_postulacion_ppf_tarea_pendiente_programa_proyecto_propuesta_path, method: :patch, remote: true, html: { autocomplete: :off } do |f|
 	.row

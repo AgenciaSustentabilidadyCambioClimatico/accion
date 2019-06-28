@@ -11,6 +11,7 @@ set :ssh_options, {
 }
 set :deploy_to, deploy["path"]
 set :nginx_server_name, deploy["domain"]
+set :nginx_read_timeout, 60
 server deploy["server"]["host"], user: deploy["server"]["user"], roles: %w{app web db}
 role :app, [login]
 role :web, [login]

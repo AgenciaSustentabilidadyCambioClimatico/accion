@@ -1,14 +1,14 @@
 class InformeAcuerdo < ApplicationRecord
   belongs_to :manifestacion_de_interes
 
-  validates :con_extension, presence: true, unless: -> {self.tarea_codigo == Tarea::COD_APL_018}
+  # validates :con_extension, presence: true, unless: -> { self.tarea_codigo == Tarea::COD_APL_018 || self.solo_guarda_archivos}
   validates :plazo_maximo_adhesion, presence: true#, on: :update #, unless: -> { (self.plazo_maximo_adhesion.blank? ? (self.plazo_maximo_adhesion = 0) : false }
   validates :plazo_finalizacion_implementacion, presence: true#, on: :update
   validates :plazo_maximo_neto, presence: true#, on: :update
   validate :plazos_correctos?, on: :update, unless: ->{self.accion.present? && self.accion == "guardar_archivos_anexos_posteriores_firmas"} #DZC 2018-11-15 14:44:46 valida que los plazos contengan la lógica entre ellos, salvo que solo se esté guardando el archivo de evidencia obligatorio
   
-
-
+  # DZC 2019-06-11 17:56:58 se agrega para validar :con_extension
+  validate :extension_valida?, unless: -> { self.tarea_codigo == Tarea::COD_APL_018 || self.solo_guarda_archivos}
 
   mount_uploaders :archivos_anexos, ArchivosAnexosInformeAcuerdosUploader
   mount_uploaders :archivos_anexos_posteriores_firmas, ArchivosAnexosPosterioresFirmasInformeAcuerdosUploader #DZC se agrega para tarea APL-023
@@ -23,6 +23,9 @@ class InformeAcuerdo < ApplicationRecord
 
   # DZC 2018-11-12 10:44:17 se agrega variable archivos_por_eliminar
   attr_accessor :fecha_firma, :fecha_plazo_maximo_adhesion, :fecha_plazo_finalizacion_implementacion, :fecha_plazo_maximo, :fecha_plazo_maximo_neto, :auditorias, :tarea_codigo, :archivos_por_eliminar, :accion
+
+  # DZC 2019-06-11 17:04:55 se agrega para evitar validación en solo guardado de archivos
+  attr_accessor :solo_guarda_archivos
 
   # def agrega_id_archivos_anexos
   #   unless self.archivo_anexos.blank?
@@ -62,10 +65,15 @@ class InformeAcuerdo < ApplicationRecord
   #   se_validan
   # end
 
+  # DZC 2019-06-11 17:58:51 se agrega para validar existencia de atributo :con_extension
+  def extension_valida?
+    self.con_extension.present? || [true,false].include?(self.con_extension)
+  end
 
   def plazos_correctos? #DZC MODIFICAR PREGUNTANDO VALIDACIONES DE PENDIENTES
     
     flujo = self.manifestacion_de_interes.flujo
+    # binding.pry
     auditoria_intermedia_maxima = self.auditorias.select{|a| a[:final].blank?}.sort_by{|a| a[:plazo]}.reverse.first
     auditoria_final = self.auditorias.select{|a| a[:final].present?}
     unless (auditoria_final.blank? || auditoria_final.size > 1)
@@ -83,7 +91,7 @@ class InformeAcuerdo < ApplicationRecord
       pmn_nombre ="plazo máximo neto para iniciar el proceso de certificación final"
       pmai_nombre ="plazo mas alto entre las auditorías intermedias"
       paf_nombre ="plazo de la auditoría final"
-
+      # binding.pry
       errors.add(:plazo_maximo_adhesion, "El plazo debe ser mayor a 0") if (pma < 1)
       errors.add(:plazo_finalizacion_implementacion, "El plazo debe ser mayor a 0") if (pfi <1)
       errors.add(:plazo_maximo_neto, "El plazo debe ser mayor a 0") if (pma < 1)
@@ -91,24 +99,25 @@ class InformeAcuerdo < ApplicationRecord
       if (pmai > paf)
         errors.messages[:auditorias] += ["El #{pmai_nombre} (#{pmai}) NO PUEDE ser MAYOR al #{paf_nombre} (#{paf})."]
       else
+        #DZC 2019-06-11 16:36:50 se modifican los textos de las validaciones para mayor claridad
         if ta != 'simultáneo'
           if (!pm.blank? && pm > 0) #DZC pm existe
-            errors.add(:plazo_maximo, "El #{pm_nombre} (#{pm}) NO PUEDE ser MENOR que el #{pfi_nombre} (#{pfi}).") if (pfi > pm)
-            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} NO PUEDE ser MENOR que el #{pfi_nombre}.") if (pmn < pfi)
-            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR que el resultado de la suma entre #{pm_nombre} y el #{pma_nombre} (#{(pm + pma)}).") if (pmn < (pm + pma))
-            errors.add(:plazo_maximo, "El #{pm_nombre} (#{pm}) NO PUEDE ser MENOR al #{pmai_nombre} (#{pmai}).") if (pm < pmai)
-            errors.add(:plazo_maximo, "El #{paf_nombre} (#{paf}) NO PUEDE ser MAYOR al #{pm_nombre} (#{pm}).") if (paf > pm)
+            errors.add(:plazo_maximo, "El #{pm_nombre} (#{pm}) DEBE SER MAYOR O IGUAL que el #{pfi_nombre} (#{pfi}).") if (pfi > pm)
+            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} DEBE SER MAYOR O IGUAL que el #{pfi_nombre}.") if (pmn < pfi)
+            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al resultado de la suma entre #{pm_nombre} y el #{pma_nombre} (#{(pm + pma)}).") if (pmn < (pm + pma))
+            errors.add(:plazo_maximo, "El #{pm_nombre} (#{pm}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pm < pmai)
+            errors.add(:plazo_maximo, "El #{paf_nombre} (#{paf}) DEBE SER MENOR O IGUAL al #{pm_nombre} (#{pm}).") if (paf > pm)
           else 
-            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR que el #{pma_nombre} (#{(pma)}).") if (pmn < pma)
-            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR al #{pmai_nombre} (#{pmai}).") if (pmn < pmai) 
-            errors.add(:plazo_maximo_neto, "El #{paf_nombre} (#{paf}) NO PUEDE ser MAYOR al #{pmn_nombre} (#{pmn}).") if (paf > pmn)
+            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL que el #{pma_nombre} (#{(pma)}).") if (pmn < pma)
+            errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pmn < pmai) 
+            errors.add(:plazo_maximo_neto, "El #{paf_nombre} (#{paf}) DEBE SER MENOR O IGUAL al #{pmn_nombre} (#{pmn}).") if (paf > pmn)
           end
         else 
           #DZC tipo de acuerdo simultáneo
-          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR al #{pma_nombre} (#{pma}).") if (pmn < pma)
-          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR al #{pfi_nombre} (#{pfi}).") if (pmn < pfi)
-          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) NO PUEDE ser MENOR al #{pmai_nombre} (#{pmai}).") if (pmn < pmai)
-          errors.add(:plazo_maximo_neto, "El #{paf_nombre} (#{paf}) NO PUEDE ser MAYOR al #{pmn_nombre} (#{pmn}).") if (paf > pmn)
+          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pma_nombre} (#{pma}).") if (pmn < pma)
+          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pfi_nombre} (#{pfi}).") if (pmn < pfi)
+          errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pmn < pmai)
+          errors.add(:plazo_maximo_neto, "El #{paf_nombre} (#{paf}) DEBE SER MENOR O IGUAL al #{pmn_nombre} (#{pmn}).") if (paf > pmn)
         end
       end
       plazos_correctos = (errors.size == 0)? true : false

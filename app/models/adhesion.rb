@@ -91,14 +91,22 @@ class Adhesion < ApplicationRecord
 			instituciones_con_archivo = []
 
 			data.each_with_index do |fila, posicion|
-				# 
+
+				# DZC 2019-06-11 15:41:28 se agrega para evitar errores en lectura y problamiento de tablas
+		    fila_identificador = fila[:identificador].present? ? fila[:identificador].to_s : fila[:identificador]
+		    fila_patente = fila[:patente].present? ? fila[:patente].to_s : fila[:patente]
+
 				if fila[:fecha_adhesion].blank? || fila[:rut_institucion].blank? || fila[:tipo_institucion].blank? || fila[:rut_encargado].blank? || 
 					fila[:alcance].blank? || fila[:sector_productivo].blank? || fila[:tamaño_empresa].blank? || 
 					fila[:comuna_casa_matriz].blank? || fila[:cargo_encargado].blank?
 					errores[:base] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
 				else
 					rut_institucion = fila[:rut_institucion].to_s.gsub('k', 'K')
-					rut_encargado = fila[:rut_encargado].to_s.gsub('k', 'K')
+					# DZC 2019-06-19 11:18:31 se modifica para que exista coherencia entre las comparaciones de RUT
+					# rut_encargado = fila[:rut_encargado].to_s.gsub('k', 'K')
+					fila[:rut_encargado] = fila[:rut_encargado].to_s.gsub('k', 'K')
+					rut_encargado = fila[:rut_encargado]
+
 					contribuyente = nil
 					# valida institucion (si existe y si estan sus campos)
 					if !rut_institucion.rut_valid?
@@ -253,13 +261,15 @@ class Adhesion < ApplicationRecord
 									end								
 								end
 							when "Maquinaria"
-								if fila[:identificador].blank? && fila[:patente].blank?
+								if fila_identificador.blank? && fila_patente.blank?
 									errores[:identificador] << " Debe completar las celdas Identificador o Patente para línea #{(posicion+2)}"
 								else 
 
 									mq = nil
 									unless contribuyente.blank?
-										mq = Maquinaria.where(contribuyente_id: contribuyente.id).where("numero_serie = ? OR patente = ?", fila[:identificador], fila[:patente]).first
+
+										# DZC 2019-06-06 13:46:13 se setean como texto los datos identificador y patente
+										mq = Maquinaria.where(contribuyente_id: contribuyente.id).where("numero_serie = ? OR patente = ?", fila_identificador, fila_patente).first
 									end
 									if mq.blank?
 										if fila[:nombre_elemento].blank?
@@ -270,7 +280,7 @@ class Adhesion < ApplicationRecord
 							when "Producto"
 								#no se realiza nada
 							else
-								if fila[:identificador].blank?
+								if fila_identificador.blank?
 									errores[:identificador] << " Debe completar las celdas Identificador para línea #{(posicion+2)}"
 								end
 							end
@@ -425,6 +435,10 @@ class Adhesion < ApplicationRecord
       archivo_respaldo = f if f.file.filename == fila[:nombre_archivo]
     end
 
+    # DZC 2019-06-11 15:41:28 se agrega para evitar errores en lectura y problamiento de tablas
+    fila_identificador = fila[:identificador].present? ? fila[:identificador].to_s : fila[:identificador]
+    fila_patente = fila[:patente].present? ? fila[:patente].to_s : fila[:patente]
+
     contribuyente = Contribuyente.find_by(rut: (fila[:rut_institucion][0,fila[:rut_institucion].length-2].to_i))
 		if contribuyente.nil?
 			contribuyente = Contribuyente.new(
@@ -569,20 +583,20 @@ class Adhesion < ApplicationRecord
 			end
 			persona.update(establecimiento_contribuyente_id: establecimiento_alcance.id)
 		when Alcance::MAQUINARIA
-			maquinaria = Maquinaria.where(contribuyente_id: contribuyente.id).where("numero_serie = ? OR patente = ?", fila[:identificador].to_s, fila[:patente].to_s).first
+			maquinaria = Maquinaria.where(contribuyente_id: contribuyente.id).where("numero_serie = ? OR patente = ?", fila_identificador, fila_patente ).first
 			if maquinaria.nil?
 				maquinaria = Maquinaria.new(
 					establecimiento_contribuyente_id: establecimiento_contribuyente.id,
 					contribuyente_id: contribuyente.id,
 					nombre_maquinaria: fila[:nombre_elemento].to_s,
-					numero_serie: fila[:identificador],
-					patente: fila[:patente].to_s,
+					numero_serie: fila_identificador,
+					patente: fila_patente,
 					tipo: fila[:tipo_elemento].to_s
 				)
 				maquinaria.save(validate: false)
 			end
 		else
-			otro = Otro.find_by(identificador_unico: fila[:identificador])
+			otro = Otro.find_by(identificador_unico: fila_identificador)
 			if otro.nil?
 				otro = Otro.new(
 					establecimiento_contribuyente_id: establecimiento_contribuyente.id,
@@ -590,7 +604,7 @@ class Adhesion < ApplicationRecord
 					contribuyente_id: contribuyente.id,
 					nombre: fila[:nombre_elemento].to_s,
 					tipo: fila[:tipo_elemento].to_s,
-					identificador_unico: fila[:identificador]
+					identificador_unico: fila_identificador
 				)
 				otro.save(validate: false)
 			end

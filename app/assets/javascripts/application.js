@@ -679,6 +679,12 @@ function isAValidURL(str) {
 //Permite verificar un cambio dentro de un modal de busqueda y al seleccionar remover el disabled del boton.
 function verificarModal(){
   $('body').on('change','.contribuyente-radio',function() {
+    // DZC 2019-06-17 12:48:00 se modifica para que solo se pueda seleccionar un contribuyente
+    seleccionado = $(this);
+    $('table.contribuyentes').DataTable().$('.contribuyente-radio').each(function(){
+      $(this).prop("checked", false);
+    });
+    seleccionado.prop("checked", true);
     $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
   });  
 }
