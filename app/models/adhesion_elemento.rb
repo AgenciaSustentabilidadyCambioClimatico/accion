@@ -15,14 +15,16 @@ class AdhesionElemento < ApplicationRecord
 
   serialize :fila
 
+  # DZC 2019-07-05 15:56:17 se corrige comportamiento inesperado en construcción de archivo de formato de datos productivos
   def tipo
-    tipo = "No encontrado"
     if self.establecimiento_contribuyente_id.present?
-      tipo = "Establecimiento"
+      "Establecimiento"
     elsif self.maquinaria_id.present?
-      tipo = "Maquinaria"
+      "Maquinaria"
     elsif self.otro_id.present?
-      tipo = "Otro"
+      "Otro"
+    else
+      "No encontrado"
     end              
   end
 

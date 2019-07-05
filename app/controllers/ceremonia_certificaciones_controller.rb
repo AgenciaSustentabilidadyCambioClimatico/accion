@@ -146,9 +146,10 @@ class CeremoniaCertificacionesController < ApplicationController
 					@fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone.to_date : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
 					@direccion = Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? nil : Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo)
 					# DZC 2018-11-07 02:49:38 se agrega nombre de auditoria al nombre de la convocatoria, y se agrega el id de la convocatoria a la tabla de la auditoría
+					@nombre = "Ceremonia de Certificación" #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
 					if @tarea_pendiente.data.present? && @tarea_pendiente.data.has_key?(:auditoria_id)
 						auditoria = Auditoria.find(@tarea_pendiente.data[:auditoria_id])
-						@nombre = "Ceremonia de Certificación" + (auditoria.nombre.present? ? +" "+auditoria.nombre : nil)
+						@nombre += (auditoria.nombre.present? ? +" "+auditoria.nombre : "") #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
 					end
 					@convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha: @fecha, direccion: @direccion, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo, nombre: @nombre)
 					@convocatoria.save(validate: false)
@@ -160,6 +161,7 @@ class CeremoniaCertificacionesController < ApplicationController
 				@convocatoria.accion = "nueva_convocatoria"
 				@tarea_pendiente.update(data: {convocatoria_id: @convocatoria.id})
 			when "edit_convocatoria", "update_convocatoria", "destroy"
+				# binding.pry
 				@convocatoria = Convocatoria.find_by(id: @tarea_pendiente.data[:convocatoria_id])
 				@convocatoria.accion = "update_convocatoria"
 			end

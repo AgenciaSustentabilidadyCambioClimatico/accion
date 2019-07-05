@@ -62,7 +62,7 @@
                   - unless pendiente.determina_convocatoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'                 
                 -elsif tarea.codigo == Tarea::COD_APL_037
-                  - unless pendiente.determina_convocatoria.blank?
+                  - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank? #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
                 =tarea_nombre
               %td.dos.iconos-acciones
