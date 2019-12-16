@@ -124,7 +124,7 @@ GEM
       activemodel (>= 4.0.0)
       activesupport (>= 4.0.0)
       mime-types (>= 1.16)
-    chartkick (2.3.3)
+    chartkick (3.3.0)
     choice (0.2.0)
     chronic (0.10.2)
     climate_control (0.2.0)
