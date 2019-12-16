@@ -1,6 +1,19 @@
 namespace :ascc do
 
-	desc ""
+
+
+	desc "ENV"
+	task :escribe_env => :environment do |task, args|
+		#`tail /home/dzuniga/PROYECTOS/DESARROLLO/ASCC/RAILS/ascc_sistemas/log/prueba.log`
+		#x{touch /home/dzuniga/PROYECTOS/DESARROLLO/ASCC/RAILS/ascc_sistemas/log/prueba.log}
+		File.open('/home/dzuniga/PROYECTOS/DESARROLLO/ASCC/RAILS/ascc_sistemas/log/prueba.log', 'w+') do |f|
+			ENV.each do |e|
+				f.write(e)
+			end
+		end
+	end
+
+	desc "Notifica tareas pendientes"
 	task :notificador_de_tareas_pendientes, [:tarea_id] => :environment do |task, args|
 		begin
 			tarea = Tarea.find(args.tarea_id)
@@ -54,7 +67,7 @@ namespace :ascc do
 									rgc = RegistroAperturaCorreo.create(user_id: persona.user.id, flujo_tarea_id: ft.id, fecha_envio_correo: DateTime.now, flujo_id: pendiente.flujo.id)
 									FlujoMailer.delay.enviar(
 										ft.asunto_format(persona.user),
-										ft.cuerpo_format(persona.user), 
+										ft.cuerpo_format(persona.user),
 										persona.email_institucional,
 										rgc.id)
 								end
@@ -64,14 +77,23 @@ namespace :ascc do
 					else
 						contenido_pendientes = pendientes.inject({}){|h,p|h[p.user_id]=[] unless h.include?(p.user_id); h[p.user_id] << p; h }
 						User.includes([:personas]).where(id: pendientes.map{|m|m.user_id}).each do |user|
-
 							metodos = tarea.metodos(user)
 							contenido_pendientes[user.id].each do |pendiente|
-								persona = user.persona_segun_(pendiente.flujo.contribuyente_id)
-								email = persona.email_institucional
+								##
+								# DZC 2019-08-16 19:54:56
+								# se corrige y simplifica el código, agregando el registro de apertura del correo (bit
+								# acusete) y que este se envíe via delayed_job
+								email = (pendiente.persona.present? && pendiente.persona.email_institucional.present?) ? pendiente.persona.email_institucional : user.email
 								asunto = Tarea.replace_values(metodos,tarea.recordatorio_tarea_asunto)
-								cuerpo = Tarea.replace_values(metodos,tarea.recordatorio_tarea_cuerpo)
-	         			RecordatorioMailer.enviar(email,asunto,cuerpo).deliver
+								cuerpo = Tarea.replace_values(metodos,tarea.recordatorio_tarea_cuerpo)										
+								rgc = RegistroAperturaCorreo.create(user_id: user.id, flujo_tarea_id: nil, fecha_envio_correo: DateTime.now, flujo_id: pendiente.flujo.id)
+								FlujoMailer.delay.enviar(
+									asunto,
+									cuerpo,
+									email,
+									rgc.id
+								)			
+								# RecordatorioMailer.delay.enviar(email,asunto,cuerpo)	
 	         		end
 						end
 					end
@@ -80,11 +102,8 @@ namespace :ascc do
 		rescue ActiveRecord::RecordNotFound => record_not_found
 			puts record_not_found
 		end
-		ap "----------------------------------------------------------------------------"
-		ap ""
-		ap ""
-		ap ""
-		ap ""
+		puts "------"
+		puts ""
 	end
 
 	desc "Carga de proyectos desde db remota"
@@ -108,13 +127,13 @@ namespace :ascc do
 	task :limpia_cache_carrierwave do |task, args|
 		%x{echo "Eliminando temporales de Carrierwave"}
 		ruta = "#{Rails.root}/public/uploads/tmp/"
-		FileUtils.rm_rf Dir.glob(ruta+"*") if File.exist?(ruta) 
+		FileUtils.rm_rf Dir.glob(ruta+"*") if File.exist?(ruta)
 		# CarrierWave.clean_cached_files!
 		%x{echo "Temporales de Carrierwave eliminados"}
 	end
 
 	# DZC 2018-11-22 12:19:48 rake task que agrega a crontab la ejecución de :limpia_cache_carrierwave todos los días a las 03:00 horas
-  desc "Agrega la rake task ':limpia_cache_carrierwave' a crontab"
+  desc "# DZC 2019-08-23 20:24:47 DEPLETED - Agrega la rake task ':limpia_cache_carrierwave' a crontab"
   task :agrega_limpia_cache_carrierwave_a_crontab do |task, args|
     __crontab_old = "#{Rails.root}/tmp/__#{Time.now.to_i}_tareas_crontab_old"
     %x{crontab -l > #{__crontab_old}}
@@ -124,11 +143,11 @@ namespace :ascc do
     %x{rm #{__crontab_old}}
   end
 
-  desc "Agrega los recordatorios de tareas al crontab"
+  desc "# DZC 2019-08-23 20:24:47 DEPLETED - Agrega los recordatorios de tareas al crontab"
   task :agrega_recordatorios_crontab => :environment do |task, args|
   	tarea = Tarea.first
   	if tarea.present?
-  		tarea.update_crontab 
+  		tarea.update_crontab
   	else
   		Rake::Task["ascc:agrega_limpia_cache_carrierwave_a_crontab"].reenable
   		Rake::Task["ascc:agrega_limpia_cache_carrierwave_a_crontab"].invoke

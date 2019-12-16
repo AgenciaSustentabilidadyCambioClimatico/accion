@@ -4,7 +4,7 @@ class Admin::UsersController < ApplicationController
 	before_action :set_user, only: [:edit, :update, :destroy]
   before_action :set_new_contribuyente, only: [:new, :edit, :create, :update]
   before_action :set_flujo, only: [:buscador]
-  before_action :posee_permisos_administracion_admin
+  before_action :posee_permisos_administracion_admin, except: [:edit_modal]
 
 	def index
 		# binding
@@ -38,30 +38,56 @@ class Admin::UsersController < ApplicationController
 	def create
 		@user = User.new(create_user_params)
 		respond_to do |format|
-			if @user.save
-				message = t(:m_successfully_created, m: t(:user))
-				format.js { flash.now[:success] = message }
-				format.html { redirect_to admin_users_url, notice: message }
-			else
-				@personas = @user.personas
-				format.js
-				format.html { render :new }
-			end
+      if @user.user_id.nil?
+  			if @user.save
+          if(create_user_params[:temporal] == "true")
+            @usuario_temporal = @user
+            format.js {}
+          else
+    				message = t(:m_successfully_created, m: t(:user))
+    				format.js { flash.now[:success] = message }
+    				format.html { redirect_to admin_users_url, notice: message }
+          end
+  			else
+          if(create_user_params[:temporal] == "true")
+            @usuario_temporal = @user
+            format.js {}
+          else
+    				@personas = @user.personas
+    				format.js
+    				format.html { render :new }
+          end
+  			end
+      else
+        @user.save(validate: false)
+        @usuario_temporal = @user
+        format.js {}
+      end
 		end
 	end
 
 	def update
+    @user.assign_attributes(update_user_params)
 		respond_to do |format|
 			# DZC 2018-11-16 13:00:30 se agrega manejo de errores por datos instanciados en tablas
 			begin
-				if @user.update(update_user_params)
-					message = t(:m_successfully_updated, m: t(:user))
-					format.js { flash.now[:success] = message }
-					format.html { redirect_to admin_users_url, notice: message }
-				else
-					format.js
-					format.html { render :edit }
-				end
+        if @user.valid?
+          if !@user.user_id.nil? && @user.user_id == @user.id
+            @usuario_temporal = @user.clonar_con_relaciones
+          else
+            @user.save
+            @usuario_temporal = @user
+          end
+          format.js {}
+        else
+          if @user.temporal
+            @usuario_temporal = @user
+          else
+            format.html { render :edit }
+          end
+          format.js {}
+        end
+
 			rescue ActiveRecord::InvalidForeignKey => e
 				format.js{
 					flash[:error] = "No se pudo actualizar las asociaciones con instituciones del usuario por que ya existen datos ingresados al sistema que requieren la existencia de dichas relaciones"
@@ -105,10 +131,22 @@ class Admin::UsersController < ApplicationController
     end
 	end
 
+  def edit_modal
+    if params[:id].blank?
+      @usuario_temporal = User.new
+    else
+      @usuario_temporal = User.unscoped.find_by(user_id: params[:id], flujo_id: params[:flujo_id]) || User.unscoped.find(params[:id])
+    end
+    @usuario_temporal.temporal = true
+    @usuario_temporal.flujo_id = params[:flujo_id]
+    @usuario_temporal.user_id = params[:user_id] unless params[:user_id].blank?
+    render layout: false
+  end
+
 	######################################################################################################################################################################################
 	private
 		def set_user
-			@user = User.find(params[:id])
+			@user = User.unscoped.find(params[:id])
 			@persona =  @user.personas.size > 0 ? @user.personas.first : Persona.new
 		end
 
@@ -126,6 +164,9 @@ class Admin::UsersController < ApplicationController
 				:web_o_red_social_2,
 				:password,
 				:password_confirmation,
+        :temporal,
+        :flujo_id,
+        :user_id,
 				personas_attributes: [
           :id,
           :user_id,

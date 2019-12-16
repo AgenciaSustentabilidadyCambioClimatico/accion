@@ -259,18 +259,29 @@ class MapaDeActor < ApplicationRecord
 				establecimiento_contribuyente.save(validate: false)
 			end
 
+			##
 			# DZC (5) se busca la existencia del usuario y persona, en caso de ausencia se crean.
 			# DZC 2018-10-20 19:45:45 se consideran el rut y el email en conjunto para la búsqueda del usuario
-			usuario = User.find_by(rut: fila[:rut_persona].to_s, email: fila[:email_institucional].to_s)
-			if usuario.blank?
-				usuario = User.invite!(
-					rut: fila[:rut_persona].to_s.gsub(/k/,'K'),
-					nombre_completo: fila[:nombre_completo_persona].to_s,
-					telefono: fila[:telefono_institucional].to_s,
-					email: fila[:email_institucional].to_s
+			# DZC 2019-08-05 se corrige validación de email, pues es posible que el correo exista en una 
+			# relación persona pero no en la tabla user.
+			usuario = User.find_by(rut: fila[:rut_persona].to_s)
+			unless usuario.present?
+				##
+				# DZC 2019-08-08 15:20:37
+				# Se precave posibilidad de que se produzca un error en la creación del usuario por existir otro
+				# con el mismo email.
+				begin
+					usuario = User.invite!(
+						rut: fila[:rut_persona].to_s.gsub(/k/,'K'),
+						nombre_completo: fila[:nombre_completo_persona].to_s,
+						telefono: fila[:telefono_institucional].to_s,
+						email: fila[:email_institucional].to_s
 					)
-				# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
-				usuario.save(validate: false)
+					# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
+					usuario.save(validate: false)
+				rescue Exception => e
+					puts("Se produjo el error #{e} en la creación de un nuevo usuario por mapa de actores#{flujo.present? ? ' para el flujo '+flujo.id: ''}#{tarea_pendiente.present? ? ' tarea_pendiente '+tarea_pendiente.id : ''}") rescue nil
+				end
 			else
 				unless historico 
 					usuario.update(
@@ -280,18 +291,18 @@ class MapaDeActor < ApplicationRecord
 				end
 			end
 
-			# persona = usuario.personas.first
-			# if persona.blank?
-
-			#DZC se modifica búsqueda para un array de personas asociadas al mismo usuario.
-			personas_id = usuario.personas.pluck(:id) if usuario.personas.present?
-			
-			# DZC 2018-10-23 15:28:19 se determina la persona relacionada con ese usuario y contribuyente (solo puede haber una persona por institución para el usuario)
+			##
+			# DZC 2018-10-23 15:28:19 se determina la persona relacionada con ese usuario y contribuyente
+			# (solo puede haber una persona por institución para el usuario)
 			persona = Persona.where(user_id: usuario.id, contribuyente_id: contribuyente.id).first
 
-			if persona.present? && personas_id.present? && personas_id.include?(persona.id)
+			##
+			# DZC 2019-08-08 13:21:10 se modifica para actualizar el email institucional de la relación
+			# persona.
+			if persona.present?
 					persona.update(
-						telefono_institucional: fila[:telefono_institucional].to_s
+						telefono_institucional: fila[:telefono_institucional].to_s,
+						email_institucional: fila[:email_institucional].to_s
 						)
 			else 
 				persona = Persona.new(
@@ -338,7 +349,6 @@ class MapaDeActor < ApplicationRecord
 			else #DZC 2018-10-30 11:09:27 se agrega para evitar problemas al instanciar el dato en mapa_de_actores
 				persona_cargo_institucion = nil
 			end
-
 			
 			persona_cargo_institucion_id = persona_cargo_institucion.blank? ? nil : persona_cargo_institucion.id
 

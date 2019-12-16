@@ -81,6 +81,35 @@ class DocumentoDiagnosticosController < ApplicationController
 		end
 	end
 
+
+	def descarga_estandar_acuerdo_informe
+		estandar = params['estandar_id'].present? ? params['estandar_id'].to_i : nil
+		acuerdo_antiguo = params['acuerdo_id'].present? ? params['acuerdo_id'].to_i : nil
+		informe_impacto = params['informe_id'].present? ? params['informe_id'].to_i : nil
+		if acuerdo_antiguo.present?
+			mia = ManifestacionDeInteres.find(acuerdo_antiguo)
+			archivos = []
+			mia.documento_diagnosticos.each do |doc|
+				archivos << doc.archivo
+			end
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_diagnostico.zip")
+		end
+		if estandar.present?
+			estandar = EstandarHomologacion.find(estandar)
+			archivos = estandar.referencias
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_estandar.zip")
+		end
+		if informe_impacto.present?
+			informe = InformeImpacto.find(informe_impacto)
+			archivos = []
+			archivos << informe.documento
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_informe_impacto.zip")
+		end
+	end
+
 	def descarga
 		acuerdo_antiguo = @manifestacion_de_interes.diagnostico_id
 		estandar = @manifestacion_de_interes.estandar_de_certificacion_id
@@ -134,7 +163,10 @@ class DocumentoDiagnosticosController < ApplicationController
 				:publico,
 				:archivo,
 				:archivo_cache,
-				:_destroy
+				:_destroy,
+				:estandar_id,
+				:acuerdo_id,
+				:informe_id
 			]
 		)
 	end

@@ -59,6 +59,7 @@
 									%li= link_to t(:tipos_contribuyentes), admin_tipos_contribuyentes_path, class: 'dropdown-item'
 									%li= link_to t(:actividades_económicas), admin_actividades_economicas_path, class: 'dropdown-item'
 									%li= link_to t(:lugares), admin_lugares_path, class: 'dropdown-item'
+									%li= link_to t(:cuencas_subcuencas), admin_cuencas_path, class: 'dropdown-item'
 							%li.dropdown-submenu
 								%a.dropdown-item.dropdown-toggle
 									= t(:configuración_tipo_instrumento)
@@ -68,6 +69,7 @@
 									%li= link_to t(:flujo_tareas), admin_flujo_tareas_path, class: 'dropdown-item'
 									%li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
 									%li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
+									%li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
 							%li.dropdown-submenu
 								%a.dropdown-item.dropdown-toggle
 									= t(:diccionario_de_acciones)
@@ -136,5 +138,5 @@
 								%li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
 		= link_to root_path, class: 'navbar-brand' do
 			= image_tag ("logo-ascc.png")
-		%button.navbar-toggler{"aria-controls" => "navbar-nav-dropdown", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbar-nav-dropdown", "data-toggle" => "collapse", :type => "button"}
+		%button.navbar-toggler.custom-toggler{"aria-controls" => "navbar-nav-dropdown", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbar-nav-dropdown", "data-toggle" => "collapse", :type => "button"}
 			%span.navbar-toggler-icon

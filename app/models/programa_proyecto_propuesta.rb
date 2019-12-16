@@ -222,7 +222,6 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	  self.rut_representante_institucion_para_solicitud = self.current_user.rut
 	  
 	  persona_de_contribuyente = self.current_user.personas.where(contribuyente_id: contribuyente.id).first
-	  # self.email_representante_institucion_para_solicitud = persona_de_contribuyente.email_institucional rescue binding.pry
 	  # DZC 2018-10-05 11:09:07 se elimina el rescue
 	  self.email_representante_institucion_para_solicitud = persona_de_contribuyente.email_institucional
 	  self.telefono_representante_institucion_para_solicitud = persona_de_contribuyente.telefono_institucional

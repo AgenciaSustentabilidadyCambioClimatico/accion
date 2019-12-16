@@ -7,4 +7,9 @@ class DatoAnualContribuyente < ApplicationRecord
   validates :tipo_contribuyente_id, presence: true
   validates :rango_venta_contribuyente_id, presence: true
   validates_uniqueness_of :periodo, scope: [:contribuyente_id], unless: proc{self.periodo.blank?}
+
+  
+  def contribuyente
+    super || (Contribuyente.unscoped.find(self.contribuyente_id) if self.contribuyente_id.present?)
+  end
 end

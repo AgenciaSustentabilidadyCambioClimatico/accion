@@ -1,0 +1,34 @@
+= simple_form_for [:admin,usuario_temporal], remote: true, html: { autocomplete: :off } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :user_id, as: :hidden, wrapper: false
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            = action_label_representante(usuario_temporal)
+        .card-body
+          .row
+            .col-12.col-lg-4
+              = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion form-temporal-boton-guardar-usuario', readonly: !usuario_temporal.user_id.nil? }
+            .col-12.col-lg-8
+              = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-temporal-boton-guardar-usuario' }
+            .col-12.col-lg-4
+              = f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'form-temporal-boton-guardar-usuario' }
+            .col-12.col-lg-4
+              = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-usuario' }
+    .col-12.mt-2.text-right
+      %button.btn.btn-primary#deshacer-usuario-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
+        =t(:volver_a_lista)
+      -confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
+      %button.btn.btn-primary.guarda-usuario-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+        Guardar
+:javascript
+
+  $(document).ready(function(){
+    iniciarAutoNumeric();
+    nuevo_usuario_temporal_validaciones();
+    htmlErrorToTooltip('top');
+
+  });

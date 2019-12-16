@@ -2,7 +2,7 @@ class Admin::ContribuyentesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_contribuyente, only: [:show, :edit, :update, :destroy]
   before_action :es_encargado_institucion
-  before_action :sin_permisos, except: [:search]
+  before_action :sin_permisos, except: [:search, :region_comunas, :edit_modal, :create, :update]
 
   def index
     if @mis_instituciones
@@ -125,33 +125,105 @@ class Admin::ContribuyentesController < ApplicationController
   def create
     parameters = contribuyente_params
     @contribuyente = Contribuyente.new(parameters)
-    casa_matriz_set = parameters.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 0
+    
+    if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+      @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
+    end
+    if contribuyente_params[:establecimiento_contribuyentes_attributes].nil? || contribuyente_params[:establecimiento_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+      @error_extra = "Debe ingresar al menos un establecimiento" if @error_extra.nil?
+    end
+    if parameters.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : parameters.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size == 0
+      @error_extra = "Debe seleccionar una casa matriz" if @error_extra.nil?
+    elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 1
+      @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
+    end
+
+    errores = false
+    errores = true unless @error_extra.nil? 
+    errores = true unless @contribuyente.valid?
+
+    @contribuyente.establecimiento_contribuyentes.each{|ec| errores = true unless ec.valid?}
+    @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
+
     respond_to do |format|
-      if casa_matriz_set && @contribuyente.save
-        format.js { 
-          flash.now[:success] = 'Institución correctamente creada.'
-          @contribuyente = Contribuyente.new
-        }
-        format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente creada.' }
+      if @contribuyente.contribuyente_id.nil?
+        unless errores
+          @contribuyente.save
+          if(parameters[:temporal] == "true") 
+            @contribuyente_temporal = @contribuyente
+            format.js {}
+          else
+            format.js { 
+              flash.now[:success] = 'Institución correctamente creada.'
+              @contribuyente = Contribuyente.new
+            }
+            format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente creada.' }
+          end
+        else
+          if(parameters[:temporal] != "true")
+            flash[:error] = @error_extra unless @error_extra.nil?
+            format.html { render :new }
+          else
+            @contribuyente_temporal = @contribuyente
+          end
+          format.js
+        end
       else
-        
-        flash[:error] = "Debe seleccionar una casa matriz" unless casa_matriz_set
-        format.html { render :new }
-        format.js
+        @contribuyente.save(validate: false)
+        @contribuyente_temporal = @contribuyente
+        format.js {}
       end
     end
   end
 
   def update
     #se usa select porque where hace llamada a bd y trae info aun no guardada o actualizada
-    casa_matriz_set = contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 0
+    
+    
+    if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+      @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
+    end
+    if contribuyente_params[:establecimiento_contribuyentes_attributes].nil? || contribuyente_params[:establecimiento_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+      @error_extra = "Debe ingresar al menos un establecimiento" if @error_extra.nil?
+    end
+    if contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size == 0
+      @error_extra = "Debe seleccionar una casa matriz" if @error_extra.nil?
+    elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 1
+      @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
+    end
+
+    @contribuyente.attributes = contribuyente_params
+
+    errores = false
+    errores = true unless @error_extra.nil? 
+    errores = true unless @contribuyente.valid?
+
+    @contribuyente.establecimiento_contribuyentes.each{|ec| errores = true unless ec.valid?}
+    @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
+
     respond_to do |format|
-      if casa_matriz_set && @contribuyente.update(contribuyente_params)
-        format.js { flash.now[:success] = 'Institución correctamente actualizada' }
-        format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente actualizada' }
+      unless errores
+        if @contribuyente.temporal
+          @manifestacion_de_interes = @contribuyente.flujo.manifestacion_de_interes
+          if !@contribuyente.contribuyente_id.nil? && @contribuyente.contribuyente_id == @contribuyente.id
+            @contribuyente_temporal = @contribuyente.clonar_con_relaciones
+          else
+            @contribuyente.save
+            @contribuyente_temporal = @contribuyente
+          end
+          format.js {}
+        else
+          @contribuyente.save
+          format.js { flash.now[:success] = 'Institución correctamente actualizada' }
+          format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente actualizada' }
+        end
       else
-        flash[:error] = "Debe seleccionar una casa matriz" unless casa_matriz_set
-        format.html { render :edit }
+        if @contribuyente.temporal
+          @contribuyente_temporal = @contribuyente
+        else
+          flash[:error] = @error_extra unless @error_extra.nil?
+          format.html { render :new }
+        end
         format.js
       end
     end
@@ -173,9 +245,21 @@ class Admin::ContribuyentesController < ApplicationController
     @comunas = Comuna.__select nil, params[:region_id]
   end
 
+  def edit_modal
+    if params[:id].blank?
+      @contribuyente_temporal = Contribuyente.new
+    else
+      @contribuyente_temporal = Contribuyente.unscoped.find_by(contribuyente_id: params[:id], flujo_id: params[:flujo_id]) || Contribuyente.unscoped.find(params[:id])
+    end
+    @contribuyente_temporal.temporal = true
+    @contribuyente_temporal.flujo_id = params[:flujo_id]
+    @contribuyente_temporal.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
+    render layout: false
+  end
+
   private
     def set_contribuyente
-      @contribuyente = Contribuyente.find(params[:id])
+      @contribuyente = Contribuyente.unscoped.find(params[:id])
     end
 
     def contribuyente_params
@@ -183,6 +267,9 @@ class Admin::ContribuyentesController < ApplicationController
         :rut,
         :dv,
         :razon_social,
+        :temporal,
+        :flujo_id,
+        :contribuyente_id,
         fields_visibility: {},
         actividad_economica_contribuyentes_attributes: [ :id, :actividad_economica_id, :_destroy ],
         establecimiento_contribuyentes_attributes: [ :id, :casa_matriz, :direccion, :ciudad, :region_id, :comuna_id, :_destroy ],

@@ -1,21 +1,21 @@
 #!/usr/bin/env puma
 
-directory '/home/ext-binarybag/ascc/staging/current'
-rackup "/home/ext-binarybag/ascc/staging/current/config.ru"
+directory '/home/ext-binary/ascc/staging/current'
+rackup "/home/ext-binary/ascc/staging/current/config.ru"
 environment 'staging'
 
 tag ''
 
-pidfile "/home/ext-binarybag/ascc/staging/shared/tmp/pids/puma.pid"
-state_path "/home/ext-binarybag/ascc/staging/shared/tmp/pids/puma.state"
-stdout_redirect '/home/ext-binarybag/ascc/staging/shared/log/puma_access.log', '/home/ext-binarybag/ascc/staging/shared/log/puma_error.log', true
+pidfile "/home/ext-binary/ascc/staging/shared/tmp/pids/puma.pid"
+state_path "/home/ext-binary/ascc/staging/shared/tmp/pids/puma.state"
+stdout_redirect '/home/ext-binary/ascc/staging/shared/log/puma_access.log', '/home/ext-binary/ascc/staging/shared/log/puma_error.log', true
 
 
 threads 0,16
 
 
 
-bind 'unix:///home/ext-binarybag/ascc/staging/shared/tmp/sockets/puma.sock'
+bind 'unix:///home/ext-binary/ascc/staging/shared/tmp/sockets/puma.sock'
 
 workers 0
 

@@ -1,0 +1,33 @@
+:javascript
+  $(document).ready(function() {
+    $('table.campos-tarea').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:tareas).downcase)
+  .card-body
+    .table-responsive
+      %table.table.campos-tarea.table-striped
+        %thead
+          %tr
+            %th=t(:tarea_id)
+            %th=t(:nombre_tarea)
+            %th=t(:ver_campos)
+        %tbody
+          - @tareas.each do |record|
+            %tr
+              %td
+                =record[:id]
+              %td
+                =record[:nombre]
+              %td
+                =link_to admin_lista_campos_path(record[:id]) do
+                  %i.fa.fa-list

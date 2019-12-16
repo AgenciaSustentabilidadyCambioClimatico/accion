@@ -6,7 +6,7 @@ class ArchivoKmlKmzManifestacionDeInteresUploader < CarrierWave::Uploader::Base
   end
 
   def extension_whitelist
-    %w(kml kmz)
+    %w(kml kmz csv tsv xlsx gpx)
   end
 
 end

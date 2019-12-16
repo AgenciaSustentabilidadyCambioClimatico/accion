@@ -85,7 +85,8 @@ class FlujoTarea < ApplicationRecord
 									tarea_id: sig_tarea.id, 
 									estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
 									user_id: actor.persona.user_id, 
-									data: extra
+									data: extra,
+									persona_id: actor.persona.id
 								})
 								if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
 									rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
@@ -119,13 +120,14 @@ class FlujoTarea < ApplicationRecord
 					(1..repeticiones).each do |r|
 						
 						unless ((sig_tarea.codigo == Tarea::COD_APL_032) && auditorias.blank?)
-							extra = auditorias.blank? ? extra : auditorias.last 
+							extra = auditorias.blank? ? extra : auditorias.last
 							tp = TareaPendiente.find_or_create_by({
 								flujo_id: flujo_id, 
 								tarea_id: sig_tarea.id, 
 								estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
 								user_id: ut.user_id, 
-								data: extra 
+								data: extra,
+								persona_id: ut.id 
 							})
 							# MapaDeActor.find_or_create_by({
 							# 	flujo_id: flujo_id, 

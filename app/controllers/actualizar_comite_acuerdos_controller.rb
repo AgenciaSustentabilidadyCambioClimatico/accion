@@ -123,7 +123,6 @@ class ActualizarComiteAcuerdosController < ApplicationController
 		end
 
 		def set_informe
-			# binding.pry
 			@informe=InformeAcuerdo.find_by(manifestacion_de_interes_id: @manifestacion_de_interes.id)
 			@informe.calcula_fechas #DZC instancia las fechas de los plazos en variables no persistentes para su uso en la vista 
 			if @informe.blank?

@@ -19,11 +19,11 @@ module ApplicationHelper
 
 	def __normalize_as_(string)
 		lowercases = [:del,:de,:en,:y,:o,:e]
-		string.split(/ |\_|\-/).map(&:capitalize).join(" ").split(" ").map{|m| 
+		string.split(/ |\_|\-/).map(&:capitalize).join(" ").split(" ").map{|m|
 			if lowercases.include?(m.downcase.to_sym)
-				m.downcase 
-			else 
-				m 
+				m.downcase
+			else
+				m
 			end
 		}.join(" ")
 		string
@@ -47,7 +47,7 @@ module ApplicationHelper
   def timelapse(start_time, end_time)
     ApplicationHelper.timelapse?(start_time, end_time)
   end
-  
+
   def self.timelapse(start_time, end_time)
 	  seconds_diff = (start_time - end_time).to_i.abs
 	  hours = seconds_diff / 3600
@@ -108,12 +108,12 @@ module ApplicationHelper
 		@tipo_instrumento.present? ? "<b>#{@tipo_instrumento.nombre}</b> <br>" : ""
 	end
 
-	def titulo_proyecto 
+	def titulo_proyecto
 		@proyecto.present? ? "<b>Proyecto: </b> #{@proyecto.flujo.nombre_instrumento} <br><b>Código</b> #{@proyecto.codigo} <br>" : ""
 	end
 
-	def titulo_acuerdo 
-		@manifestacion_de_interes.present? ? "<b>Acuerdo: </b> #{@manifestacion_de_interes.flujo.nombre_instrumento} <br>" : "" 
+	def titulo_acuerdo
+		@manifestacion_de_interes.present? ? "<b>Acuerdo: </b> #{@manifestacion_de_interes.flujo.nombre_instrumento} <br>" : ""
 	end
 
 	def titulo_programa
@@ -126,7 +126,11 @@ module ApplicationHelper
 	#**
 
 	def action_label_of_(model)
-		model.new_record? ? I18n.t(:crear) : I18n.t(:editar)
+		model.new_record? ? 'Crear nueva institución' : 'Editar institución'
+	end
+
+	def action_label_representante(model)
+		model.new_record? ? 'Crear nuevo representante' : "Editar representante"
 	end
 
 	def clase_segun_estado(estado=2)
@@ -144,7 +148,7 @@ module ApplicationHelper
 	def volver_root
 		link_to t(:back), root_path, class: 'btn btn-warning btn-sm'
 	end
-	
+
 	# Genera un árbol con regiones provincias y comunas
 	def selector_de_regiones_provincias_comunas(checked={},wrapper=nil)
 		capture_haml do
@@ -188,17 +192,15 @@ module ApplicationHelper
 	#DZC Helper para el selector de vista TAREA PPF-012
 	def selector_de_actividades_economicas(checked={},wrapper=nil)
 		capture_haml do
-			haml_tag :ul, class: 'ae-group' do
+			haml_tag :div, class: 'ae-group' do
 				ActividadEconomica.agrupadas.each do |acode,agroup|
-					haml_tag :li do
-						__selector_de_actividades_economicas(agroup,checked,wrapper)
-					end
+					__selector_de_actividades_economicas(agroup,checked,wrapper)
 				end
 			end
 		end
 	end
 
-	def __selector_de_actividades_economicas(group,checked={},wrapper=nil)
+	def __selector_de_actividades_economicas(group,checked={},wrapper=nil, child=0)
 		group_id		= group[:id]
 		group_text	= group[:nombre]
 		group.delete(:id)
@@ -207,15 +209,66 @@ module ApplicationHelper
 		group_name 				= wrapper.blank? ? "sectores_economicos[#{group_id}]" : "#{wrapper}[sectores_economicos[#{group_id}]]"
 		group_checked			= ( !checked.blank?&&checked.with_indifferent_access.has_key?(group_id.to_s))
 		group_visibility	= group_checked ? 'group-show' : 'group-hide'
-		haml_tag :input, class: (has_children ? 'parent-checkbox child-checkbox' : 'child-checkbox'), name: group_name, type: :checkbox, value: group_text, checked: group_checked
-		haml_tag :i, class: 'fa fa-chevron-right group-control' if has_children
-		haml_concat group_text
-		if has_children
-			haml_tag :ul, class: "ae-subgroup #{group_visibility}" do
-				group.each do |c,d|
-					haml_tag :li do
-						#sub_checked = !checked.blank?&&checked.has_key?(c) ? checked[c] : {}
-						__selector_de_actividades_economicas(d,checked,wrapper)
+
+	   
+
+
+    haml_tag :div, class: group_name do
+      haml_tag :ul do
+        haml_tag :li do
+        	haml_tag :input, class: (has_children ? 'parent-checkbox child-checkbox' : 'child-checkbox'), name: group_name, type: :checkbox, value: group_text, checked: group_checked
+          haml_tag :div, class: 'p-chevron d-inline' do
+            haml_tag :i, class: 'fa fa-chevron-right group-control', style: child.blank? ? " " : "padding: 0 0 0 "+child.to_s+"px" if has_children
+        		haml_tag :p, group_text, class: 'd-inline', style: has_children ? " " : "padding: 0 0 0 "+child.to_s+"px"
+          end
+        end  
+      end  
+
+
+  		child = child.blank? ? 25 : child + 25
+  		if has_children
+  			haml_tag :div, class: "ae-subgroup #{group_visibility}", style: "padding: 0 0 0 0" do
+  				group.each do |c,d|
+  						#sub_checked = !checked.blank?&&checked.has_key?(c) ? checked[c] : {}
+  						__selector_de_actividades_economicas(d,checked,wrapper, child)
+  				end
+  			end
+  		end
+    end
+
+
+	end
+
+
+	def beauty_tree_selector(tree=[], identifier="default", group="default")
+		capture_haml do
+			haml_tag :input, name: identifier, value: "", type: :hidden
+			haml_tag :div, class: "ae-group #{group}" do
+				_beauty_tree_selector(tree, identifier, false)
+			end
+		end
+	end
+
+	def _beauty_tree_selector(tree=[], identifier="default", hidden=true, level=0)
+		haml_tag :div, class: (hidden ? 'ml-0 d-none' : 'ml-0') do
+			haml_tag :ul, class: 'pl-0' do
+				tree.each do |child|
+					haml_tag :li, class: (level==0 ? 'ml-2 my-1' : 'my-1') do
+						#solo los hijos tienen name, ya que con ellos hacemos la trazabilidad hacia padres
+						nombre = identifier if child[:children].blank?
+						haml_tag :input, class: "tree-parent d-inline", name: nombre, type: :checkbox, value: child[:id], checked: child[:status] == 'checked', "data-indeterminate" => (child[:status] == 'indeterminate').to_s
+						haml_tag :i, class: 'fa fa-chevron-right tree-parent-icon d-inline', style: "cursor: pointer; padding-left: #{level}0px;" unless child[:children].blank?
+						haml_tag :label, class: ' d-inline', style: "#{child[:children].blank? ? "margin-left: #{(level*10)+10}px;" : ''}", title: child[:tooltip].blank? ? nil : "Código CIIUV2: #{child[:tooltip]}".html_safe do
+							haml_concat child[:name]
+							unless child[:data].blank?
+								child[:data].each do |key, value|
+									haml_tag :div, class: "d-none #{key}" do
+										haml_concat value
+									end
+								end
+							end
+						end
+						_beauty_tree_selector(child[:children], identifier, true, level+1) unless child[:children].blank?
 					end
 				end
 			end
@@ -224,9 +277,9 @@ module ApplicationHelper
 
 	def __mostrar_(titulo,con_nombre_proyecto)
 		"#{titulo}<small>#{con_nombre_proyecto.downcase.gsub(/(apl|acuerdo de producción limpia|acuerdo de produccion limpia)/,'APL').capitalize.gsub(/Apl|apl/,'APL')}</small>".html_safe
-	end 
+	end
 
-	def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil)
+	def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil)
 		capture_haml do
 			if descargables.blank? || ! descargables.has_key?(codigo)
 				haml_tag :label, '&nbsp;'.html_safe, class: 'control-label'
@@ -238,15 +291,23 @@ module ApplicationHelper
 				# haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
 				# haml_tag :div, codigo, class: 'form-control'
 			else
+
 				if tarea_pendiente.present?
 					url = ext_descargable_tarea_url(*descargables[codigo][:args], tarea_pendiente: tarea_pendiente)
 				else
 					url = ext_descargable_tarea_url(*descargables[codigo][:args])
 				end
-				haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string'
-				haml_tag :a, href: url, class: 'btn btn-sm btn-outline-secondary btn-block' do
+				if carta_interes.blank?
+					id_descarga = 'mostrar_descargable_id'
+					boton_label = I18n.t(:descargar)
+				else
+					id_descarga = 'manifestacion_de_interes_' + carta_interes
+					boton_label = nombre.blank? ? carta_interes : nombre
+				end
+				haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if carta_interes.blank?
+				haml_tag :a, href: url, class: 'btn btn-sm btn-outline-secondary btn-block', id: id_descarga do
 					haml_tag :i, class: 'fa fa-download'
-					haml_concat I18n.t(:descargar)
+					haml_concat boton_label
 				end
 			end
 		end
@@ -259,11 +320,11 @@ module ApplicationHelper
 				if label
 					haml_tag :label, '&nbsp;'.html_safe, class: 'control-label'
 				end
-				haml_tag :div, class: "form-control p-0" do
-					# 
+				haml_tag :div, class: "form-control p-0 button-height" do
+					#
 					if field.present?
 						if field.class == Array
-							# 
+							#
 							archivos = []
 							field.each do |archivo|
 								split = archivo.current_path.split('/')# DZC genera un array de palabras dentro del path
@@ -274,7 +335,7 @@ module ApplicationHelper
 					   		haml_tag :i, class: 'fa fa-download text-success'
 					   	end
 						else
-							# 
+							#
 							file_name = field.file.filename
 							haml_tag :a, href: field.url, class: 'btn btn-sm btn-outline-light btn-block tooltip-block', download: '', title: file_name, "data-original-title" => file_name do
 								haml_tag :i, class: 'fa fa-download text-success'
@@ -291,7 +352,7 @@ module ApplicationHelper
 	end
 
 	def __upload_status(o,field)
-		# 
+		#
 		error = o.errors.has_key?(field)
 		here_there_a_file = ! o.send(field).blank?
 		capture_haml do
@@ -301,14 +362,14 @@ module ApplicationHelper
 					if here_there_a_file
 						# DZC 2018-10-25 15:16:08 se modifica para contemplar multiples archivos
 						if o.send(field).class == Array
-							# 
+							#
 							file_name = []
 							o.send(field).each do |archivo|
 								file_name << archivo.file.filename
 							end
-					   	# 
+					   	#
 						else
-							# 
+							#
 							file_name = [o.send(field).file.filename]
 						end
 						haml_tag :i, class: "tooltip-block fa fa-check-circle fa-1-4x text-#{error ? 'danger' : 'success'}", title: file_name.to_sentence, "data-original-title" => file_name
@@ -356,9 +417,13 @@ module ApplicationHelper
         stream.put_next_entry(nombre)
         # add file to zip
         stream.write IO.read(archivo_tecnica.current_path)
-      end  
+      end
     end
     file.rewind
     file.sysread
+  end
+
+  def descarga_formato_carta_de_patrocinio()
+  	
   end
 end

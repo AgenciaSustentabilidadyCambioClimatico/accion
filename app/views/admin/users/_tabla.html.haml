@@ -22,10 +22,20 @@
           %th.iconos-acciones=t(:seleccione)
 
       %tbody
-        - @usuarios.each do |u|
-          %tr
-            %td= "#{u.rut}"
-            %td= u.nombre_completo
-            %td.iconos-acciones
-              - data_usuario ={ id: u.id}
-              = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio' }
+        -# DZC 2019-08-23 18:20:14 se corrige error
+        - if @usuarios.is_a?(Array)
+          - @usuarios.each do |u|
+            %tr
+              %td= "#{u.rut}"
+              %td= u.nombre_completo
+              %td.iconos-acciones
+                - data_usuario ={ id: u.id}
+                = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio' }          
+        - else
+          - @usuarios.all.each do |u|
+            %tr
+              %td= "#{u.rut}"
+              %td= u.nombre_completo
+              %td.iconos-acciones
+                - data_usuario ={ id: u.id}
+                = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio' }

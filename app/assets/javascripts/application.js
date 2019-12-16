@@ -26,6 +26,7 @@
 // = require date
 // = require date/es-ES
 // = require_tree .
+// = require select2-full
 
 dataConfirmModal.setDefaults({
   title: 'Confirme antes de continuar',
@@ -57,10 +58,11 @@ $(document).ready(function() {
   checkFieldValidity($('form').find('*').filter(':input:visible:first'));
   initDateTimePicker();
   enableDisabledButton();
-  __tooltip({placement: 'right'});
+  __tooltip({placement: 'top'}); //DZC 2019-07-09 11:58:25 se cambia 'right' por 'top'
   toggleAddLink();
   iniciarAutoNumeric();
-
+  beauty_tree_selector();
+  
   $('body').on('ajax:before','form[data-remote],a[data-remote="true"]',function(){});
   $('body').on('ajax:beforeSend','form[data-remote],a[data-remote="true"]',ajaxBeforeSendAction);
   $('body').on('ajax:send','form[data-remote],a[data-remote="true"]',function(xhr){});
@@ -115,7 +117,7 @@ $(document).ready(function() {
   $('body').on('change','.auto-save', function(e) {
     var submit = $(this.form).find('input[type="submit"]');
     if ( ! $(this).hasClass('basic-datetimepicker') ) {
-      submit.trigger('click');     
+      submit.trigger('click');
     }
   });
 
@@ -143,13 +145,12 @@ $(document).ready(function() {
     resizeLoadingBackground();
   }
   closeAlertMessage();
-  iniciarAutoNumeric();
 
   $('body').on('click','group-control', function(){
     __show_hide_($(this).next('ul'),$(this));
   });
 
-  $('body').on('click','.card-header i[class^="fa fa-chevron-"]', function(){
+  $('body').on('click','.card-header i[class^="fa fa-chevron-"], .display_select_title', function(){
     __show_hide_($(this).closest('.card').find('.card-body'),$(this));
   });
 
@@ -185,6 +186,7 @@ $(document).ready(function() {
       //Para cambiar todos los deselleccionados a flecha derecha.-
       $(this).siblings('ul').find('.fa').removeClass('fa-chevron-down').addClass('fa-chevron-right');
     }
+
   });
 
   //Permite que al eliminar un nested-field, se quiten las clases y se active el boton
@@ -203,12 +205,23 @@ $(document).ready(function() {
     $('.loading-data').hide();
   });
   iniciarSoloLetras();
+
+  $("abbr[title='required']").attr('title', 'Campo requerido');
 });
+
+function iniciarDigitoVerificador() {
+  $('.dv').keypress(function(event){
+    var inputValue = event.which;
+    if(![48,49,50,51,52,53,54,55,56,57,75,107].includes(inputValue) || this.value.length == 1){
+      event.preventDefault(); 
+    }
+
+  });
+}
 
 function iniciarSoloLetras() {
   $('.letras').keypress(function(event){
     var inputValue = event.which;
-    console.log(inputValue);
     if(!(inputValue >= 65 && inputValue <= 90) 
       && !(inputValue >= 97 && inputValue <= 122) 
       && (inputValue != 32 && inputValue != 0 && inputValue != 8)) { 
@@ -228,6 +241,12 @@ function __show_hide_(group,control) {
   } else if(control.hasClass('fa-chevron-down')) {
     control.removeClass('fa-chevron-down').addClass('fa-chevron-right');
   }
+
+  if(control.hasClass('display_select_title') && control.next().children().first().hasClass('fa-chevron-right')) {
+    control.next().children().first().removeClass('fa-chevron-right').addClass('fa-chevron-down');
+  } else if(control.hasClass('display_select_title') && control.next().children().first().hasClass('fa-chevron-down')) {
+    control.next().children().first().removeClass('fa-chevron-down').addClass('fa-chevron-right');
+  }
 }
 
 function closeAlertMessage(seconds) {
@@ -246,7 +265,7 @@ function toggleAddLink() {
 function htmlErrorToTooltip(placement) {
   placement = (placement===undefined) ? 'right' : placement
   $('div.has-error').each(function(k,v) {
-    campo = $(this).find("input.required, input.validado, select.required, input[type='checkbox'], textarea.required, input[type='radio'], .card-body.required");
+    campo = $(this).find("input.required, input.validado, select.required, input[type='checkbox'], input[type='radio'], .card-body.required, .error-mantenedor, textarea");
     error = $(this).find("span.help-block");
     if(campo.hasClass('card-body')) {
       campo = campo.parent('.card');
@@ -274,7 +293,7 @@ function htmlErrorToTooltip(placement) {
 
 function showTooltipError(mensaje, campo, placement){
   campo.addClass('border-error');
-  campo.attr("title", mensaje);
+  //campo.attr("title", mensaje);
   campo.attr("data-original-title", mensaje);
   campo.tooltip({
     template: '<div class="tooltip error" role="tooltip"><div class="arrow"></div><div class="tooltip-inner"></div></div>',
@@ -471,13 +490,15 @@ function __enable_fieds_if_checkbox_is_true(checkbox,true_callback,false_callbac
 {
   if ( $(checkbox).length > 0 ) {
     id  = $(checkbox).attr("id");
-    if(id.indexOf("true")>0) {
-      if ( typeof true_callback === "function" ) {
-        true_callback(checkbox);
-      }
-    } else if (id.indexOf("false")>0) {
-      if ( typeof false_callback === "function" ) {
-        false_callback(checkbox);
+    if(id != undefined){
+      if(id.indexOf("true")>0) {
+        if ( typeof true_callback === "function" ) {
+          true_callback(checkbox);
+        }
+      } else if (id.indexOf("false")>0) {
+        if ( typeof false_callback === "function" ) {
+          false_callback(checkbox);
+        }
       }
     }
   }
@@ -497,17 +518,18 @@ function iniciarAutoNumeric() {
   //$('.numero-cargas').autoNumeric('init', {aSep: '', vMin: 0, vMax: 50, mDec: 0});
   //$('.numero-boleta').autoNumeric('init', {aSep: '', vMin: 0, vMax: 99999, mDec: 0});
   $('.numero').autoNumeric('init', {aSep: '', vMin: 0, mDec: 0});
+  $('.numero-en-miles').autoNumeric('init', {aSep: '.', aDec: ',', vMin: 0, mDec: 0});
   $('.uf').autoNumeric('init', autoNumericUfOptions() );
   $('.porcentaje').autoNumeric('init', autoNumericPorcentajeOptions() );
   $('.decimal').autoNumeric('init', {aSep: '.', aDec: ',',aPad: false, vMin: 0.0});
 }
 
 function autoNumericPorcentajeOptions() {
-  return {aSep: '.', aDec: ',', aPad: false, vMin: 0.0, vMax: 100, mDec: 1};
+  return {aSep: ',', aDec: '.', aPad: false, vMin: 0.0, vMax: 100, mDec: 2, aSign: '%', pSign: 's'};
 }
 
 function autoNumericMonedaOptions() {
-  return {aSep: '.', aDec: ',', aPad: false, vMin: 0.0};
+  return {aSep: '.', aDec: ',', aPad: false, vMin: 0.0, aSign: '$'};
 }
 
 function autoNumericUfOptions() {
@@ -665,6 +687,7 @@ function required_dinamico(clase, requerido){
 
 }
 
+
 function isAValidURL(str) {
   var pattern = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
   if (pattern.test(str)) {
@@ -686,6 +709,102 @@ function verificarModal(){
     });
     seleccionado.prop("checked", true);
     $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+    $('.seleccionar-y-actualizar-contribuyente-button').removeAttr('disabled'); 
   });  
 }
-    
+
+function beauty_tree_selector(){
+  $('.tree-parent-icon').click(function(){
+    if($(this).hasClass('fa-chevron-right')){
+      $(this).parent().children('div').removeClass('d-none');
+      $(this).removeClass('fa-chevron-right');
+      $(this).addClass('fa-chevron-down');
+    }else{
+      $(this).parent().children('div').addClass('d-none');
+      $(this).removeClass('fa-chevron-down');
+      $(this).addClass('fa-chevron-right');
+    }
+  });
+
+  $('.tree-parent-icon').parent("li").children("label").click(function(){
+    var icono = $(this).parent("li").children("i");
+    if(icono.hasClass('fa-chevron-right')){
+      icono.parent().children('div').removeClass('d-none');
+      icono.removeClass('fa-chevron-right');
+      icono.addClass('fa-chevron-down');
+    }else{
+      icono.parent().children('div').addClass('d-none');
+      icono.removeClass('fa-chevron-down');
+      icono.addClass('fa-chevron-right');
+    }
+  });
+
+  $('.tree-parent').change(function(e){
+    var input_padre = $(this).closest("div").parent().children(".tree-parent");
+    var hijos = $(this).parent().children("div").find(".tree-parent");
+    if(this.checked){
+      hijos.prop("checked", true);
+    }else{
+      hijos.prop("checked", false);
+    }
+    hijos.prop("indeterminate", false);
+    if(input_padre.length != 0){
+      beauty_tree_check_children(input_padre);
+    }
+  });
+
+  $('.tree-parent[data-indeterminate="true"]').prop("indeterminate", true);
+
+  $('.tree-parent').change(function(){
+    card_tree = $(this).closest('.card');
+    if(card_tree.hasClass('card-preview-seleccionados')){
+      set_seleccionados_tree(card_tree);
+    }
+  });
+
+  $('.card-preview-seleccionados').each(function(){
+    set_seleccionados_tree($(this));
+  });
+}
+
+function beauty_tree_check_children(parent){
+  var input_padre = parent.closest("div").parent().children(".tree-parent");
+  var hijos = parent.parent().children("div").find(".tree-parent");
+  var hijos_checked = hijos.filter(":checked");
+  if(hijos_checked.length == 0){
+    parent.prop("checked", false);
+    parent.prop("indeterminate", false);
+  }else if(hijos.length == hijos_checked.length){
+    parent.prop("checked", true);
+    parent.prop("indeterminate", false);
+  }else{
+    parent.prop("checked", false);
+    parent.prop("indeterminate", true);
+  }
+  if(input_padre.length != 0){
+    beauty_tree_check_children(input_padre);
+  }
+}
+
+function set_seleccionados_tree(card){
+  lista_html = card.find('.seleccionados_tree');
+  lista_html.html("");
+  lista_elementos = card.children(".card-body").children("div").children("div").children("div").children("div").children("ul").children("li").children(".tree-parent");
+  _set_seleccionados_tree(lista_html,lista_elementos);
+}
+
+function _set_seleccionados_tree(lista_html,lista_elementos){
+  lista_elementos.each(function(index){
+    if($(this).prop("checked")){
+      var nombre = $(this).parent().children("label").html();
+      var data_type = $(this).parent().children("label").children(".type");
+      if(data_type.length > 0){
+        nombre += " ("+data_type.html()+")";
+      }
+      lista_html.append("<li class='list-group-item py-1 letter-size' id='"+this.value+"'>"+nombre+"</li>");
+    }else if($(this).prop("indeterminate")){
+      sub_lista = $(this).parent().children("div").children("ul").children("li").children(".tree-parent");
+      _set_seleccionados_tree(lista_html, sub_lista);
+    }
+  });
+}

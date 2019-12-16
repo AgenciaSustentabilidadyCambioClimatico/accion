@@ -13,6 +13,18 @@ class Flujo < ApplicationRecord
 
 	has_many :auditorias, dependent: :destroy
 
+	has_many :actividad_economica_flujos
+	has_many :actividad_economicas, through: :actividad_economica_flujos
+
+	has_many :comunas_flujos
+	has_many :comunas, through: :comunas_flujos
+
+	has_many :cuencas_flujo
+	has_many :cuencas, through: :cuencas_flujo
+
+	has_many :contribuyente_temporal, class_name: 'Contribuyente'
+	has_many :usuario_temporal, class_name: 'User'
+
 	accepts_nested_attributes_for :manifestacion_de_interes
 	accepts_nested_attributes_for :ppp
 	accepts_nested_attributes_for :proyecto

@@ -1,4 +1,11 @@
 class Tarea < ApplicationRecord
+	# DZC 2019-07-15 11:28:38 se agrega relación con tabla 'campo_tooltips'
+	has_many :campo_tareas, dependent: :delete_all
+	has_many :campos, through: :campo_tareas
+
+	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
+	accepts_nested_attributes_for :campos
+
 	belongs_to :tipo_instrumento, -> { includes :tipo }
 	belongs_to :rol
 	belongs_to :encuesta, optional: true
@@ -26,7 +33,7 @@ class Tarea < ApplicationRecord
 
 	validate :frecuencia
 
-	after_save :update_crontab
+	after_commit :update_crontab
 
 	#DZC se agrega para efecto de determinar si se requiere revisión de la tarea en mapa de actores (y futuros posibles usos)
 	def requiere_revision?
@@ -47,22 +54,30 @@ class Tarea < ApplicationRecord
 	end
 
   def update_crontab
-  	__crontab = "#{Rails.root}/tmp/__#{Time.now.to_i}_tareas_crontab"
-  	%x{crontab -r}
-  	%x{crontab -l > #{__crontab}}
-  	Tarea.all.each do |tarea|
-  		unless tarea.recordatorio_tarea_frecuencia.blank?
-  			comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:notificador_de_tareas_pendientes[#{tarea.id}] --silent'"
-  			%x{echo "#{tarea.recordatorio_tarea_frecuencia} #{comando}" >> #{__crontab} }
-  		end
-  	end
-  	# DZC 2018-11-22 11:37:22 se agrega a crontab la eliminación de los temporales de carrierwave via rake task ascc:limpia_cache_carrierwave
-		# %x{/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:agrega_limpia_cache_carrierwave_a_crontab --silent'}  	
-  	comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:limpia_cache_carrierwave --silent'"
-  	%x{echo "#{'0 3 * * *'} #{comando}" >> #{__crontab} }
+  	##
+		# DZC 2019-08-23 20:16:40
+		# se modifica para el uso de la gema whenever, incluyendo el uso de dockers (pero sin impactar el 
+		# despliegue sin dockers)
+		ambiente = (Rails.env.to_s || "development" )
+  	%x{whenever --update-crontab #{ambiente} --set "environment=#{ambiente}&bundle_command=bundle exec" >> "#{Rails.root}/log/whenever_error_#{ambiente}.log" 2>&1}
 
-  	%x{crontab #{__crontab}}
-  	%x{rm #{__crontab}}
+  # 	__crontab = "#{Rails.root}/tmp/__#{Time.now.to_i}_tareas_crontab"
+  # 	%x{crontab -r}
+  # 	%x{crontab -l > #{__crontab}}
+  # 	Tarea.all.each do |tarea|
+  # 		unless tarea.recordatorio_tarea_frecuencia.blank?
+  # 			ambiente = Rails.env.production? ? "production" : "development"
+  # 			comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{ambiente} bundle exec rails ascc:notificador_de_tareas_pendientes[#{tarea.id}] --silent >> #{Rails.root}/log/crontab_recordatorios.log 2>&1'"
+  # 			%x{echo "#{tarea.recordatorio_tarea_frecuencia} #{comando}" >> #{__crontab} }
+  # 		end
+  # 	end
+  # 	# DZC 2018-11-22 11:37:22 se agrega a crontab la eliminación de los temporales de carrierwave via rake task ascc:limpia_cache_carrierwave
+		# # %x{/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:agrega_limpia_cache_carrierwave_a_crontab --silent'}  	
+  # 	comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:limpia_cache_carrierwave --silent >> #{Rails.root}/log/limpia_cache_carrierwave.log 2>&1'"
+  # 	%x{echo "#{'0 3 * * *'} #{comando}" >> #{__crontab} }
+
+  # 	%x{crontab #{__crontab}}
+  # 	%x{rm #{__crontab}}
   end
 
 	def frecuencia
@@ -74,7 +89,11 @@ class Tarea < ApplicationRecord
 					#self.recordatorio_tarea_frecuencia = (array.size > 5 ? array.slice(0,5) : array ).join(" ")
 					errors.add(:recordatorio_tarea_frecuencia,message_error)
 				else
-					verify_crontab_line(self.recordatorio_tarea_frecuencia+" dummy_command_for_validation")
+					##
+					# DZC 2019-08-23 21:30:43
+					# se corrige caso de que se agregue un espacio al final del string
+					verificado = verify_crontab_line(self.recordatorio_tarea_frecuencia+" dummy_command_for_validation")
+					self.recordatorio_tarea_frecuencia = verificado.split(" dummy_command_for_validation")[0]
 				end
 			rescue
 				errors.add(:recordatorio_tarea_frecuencia,message_error)

@@ -197,7 +197,6 @@ class AuditoriasController < ApplicationController
     end
 
     def set_auditoria
-      # binding.pry
       @auditoria = Auditoria.find_by_id(@tarea_pendiente.data[:auditoria_id])
       # DZC 2019-06-19 12:56:28 se mueve para correcto funcionamiento del algoritmo
       @auditoria_elementos = nil
@@ -210,7 +209,6 @@ class AuditoriasController < ApplicationController
       else #DZC APL-034
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [5]) #DZC elementos a auditar
       end
-      # binding.pry
       # DZC 2019-06-19 12:45:07 se comenta para correcto funcionamiento del algoritmo
       # @auditoria_elementos = nil
     end

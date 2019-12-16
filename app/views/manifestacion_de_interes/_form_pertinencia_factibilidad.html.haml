@@ -92,8 +92,8 @@
 							- obs_req = (@manifestacion_de_interes.resultado_pertinencia != "realiza_observaciones" && @manifestacion_de_interes.resultado_pertinencia != "solicita_condiciones_y_contiene_observaciones")
 							= f.input :observaciones_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:observaciones_y_comentarios), required: !obs_req
 						.col-12.col-lg-6
-							- cond_req = (@manifestacion_de_interes.resultado_pertinencia != "solicita_condiciones" && @manifestacion_de_interes.resultado_pertinencia != "solicita_condiciones_y_contiene_observaciones")
-							= f.input :compromiso_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:compromiso_a_solicitar), required: !cond_req
+							- cond_req = (@manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones")
+							= f.input :compromiso_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:compromiso_a_solicitar), required: cond_req
 						.col-12.col-lg-6
 							= f.input :coordinador_subtipo_instrumento_id, collection: @responsables.map{|p| [p.user.nombre_completo, p.id]}, required: @manifestacion_de_interes.resultado_pertinencia == "aceptada", label: t(:selección_de_coordinadores_subtipo_instrumento), input_html: {class: "chosen-control", type: :string, "data-placeholder"=>"Seleccione un Coordinador"}
 						.col-12.col-lg-6

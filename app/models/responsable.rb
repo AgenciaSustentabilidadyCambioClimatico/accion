@@ -18,6 +18,27 @@ class Responsable < ApplicationRecord
 		self.includes([:contribuyente]).where("rol_id = #{Rol::COGESTOR} AND contribuyente_id IS NOT NULL").all.uniq{|m|m.contribuyente_id}.map{|m|m.contribuyente}
 	end
 
+	def self.responsables_solo_rol_fast(roles_id)
+		personas=[]
+		tipo_instrumentos_ids = TipoInstrumento.all.map{|ti| ti.tipo_instrumento_id || ti.id }
+		self.where(rol_id: roles_id)
+			.where(tipo_instrumento_id: tipo_instrumentos_ids).each do |r|	
+	  	cgid = r.cargo_id
+	  	ctid = r.contribuyente_id
+	  	aeid = r.actividad_economica_id
+	  	tcid = r.tipo_contribuyente_id
+
+  		personas_cargos = PersonaCargo.includes([:persona])
+  		personas_cargos = personas_cargos.where(cargo_id: r.cargo_id) unless r.cargo_id.blank?
+  		personas_cargos.each do |pc|
+  			if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
+  				personas << pc.persona
+  			end
+  		end
+
+	  end
+	  personas.uniq
+	end
 # DZC 2018-10-10 13:06:02 obtiene el array de personas proponentes de determinada institución
 	def self.responsables_por_rol(roles_id, contribuyente_id=nil, tipo_instrumento_id=nil)
 		personas=[]
@@ -101,11 +122,14 @@ class Responsable < ApplicationRecord
 		unless tcid.blank?
 			# datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
 			# DZC 2018-10-03 16:44:07 Se corrige error, permitiendo ahora la obtención del tipo_contribuyente_id para el caso de que el atributo :periodo sea nil
-			datos_contribuyente = []
-			nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
-			datos_contribuyente += nulos
-			unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
-			datos_contribuyente += [unico]
+			
+			# v2
+			datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
+			# datos_contribuyente = []
+			# nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
+			# datos_contribuyente += nulos
+			# unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
+			# datos_contribuyente += [unico]
 			coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid))
 		end
 		coincide

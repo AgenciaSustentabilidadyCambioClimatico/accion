@@ -161,7 +161,6 @@ class CeremoniaCertificacionesController < ApplicationController
 				@convocatoria.accion = "nueva_convocatoria"
 				@tarea_pendiente.update(data: {convocatoria_id: @convocatoria.id})
 			when "edit_convocatoria", "update_convocatoria", "destroy"
-				# binding.pry
 				@convocatoria = Convocatoria.find_by(id: @tarea_pendiente.data[:convocatoria_id])
 				@convocatoria.accion = "update_convocatoria"
 			end

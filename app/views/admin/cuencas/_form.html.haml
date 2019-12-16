@@ -1,0 +1,18 @@
+= simple_form_for @cuenca, url: @url, remote: true do |f|
+  .row
+    .col-lg-12.column
+      .card
+        .card-header
+          %h5.no-margin
+            = action_label_of_(@cuenca)
+        .card-body
+          .row
+            .col-md-4.col-12
+              = f.input :codigo_cuenca,  label: t(:codigo_cuenca), required: true, input_html: { class: 'required-field' }
+            .col-md-4.col-12
+              = f.input :nombre_cuenca,  label: t(:nombre_cuenca), required: true, input_html: { class: 'required-field' }
+            .col-md-4.col-12
+              = f.input :region,  label: t(:region), required: true, input_html: { class: 'required-field' }
+  .float-right
+    = link_to t(:back), admin_cuencas_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

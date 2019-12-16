@@ -174,6 +174,12 @@ Rails.application.routes.draw do
     end
     resources :tipo_aportes, path: "tipo-aportes", except: [:show] do
     end
+
+    # DOSSA 23-07-2019 rutas para mantenedor de campos
+    get 'campos', to: "campos#index", as: :campos
+    get ':id/actualizar_campos', to: "campos#actualizar_campos", as: :actualizar_campos
+    get ':id/lista_campos', to: "campos#lista_campos", as: :lista_campos
+    patch ':id/actualiza_campos', to: "campos#actualiza_campos", as: :actualiza_campos
     
     resources :cargos, except: [:show] do
     end
@@ -182,6 +188,7 @@ Rails.application.routes.draw do
       collection do
         put :privacidad
         get :buscador
+        get :edit_modal
       end
     end
     
@@ -194,6 +201,7 @@ Rails.application.routes.draw do
         post :search_contribuyente
         get :mis_instituciones
         get :region_comunas 
+        get :edit_modal
       end
     end
 
@@ -276,6 +284,10 @@ Rails.application.routes.draw do
     end
 
     resources :actividades_economicas do 
+    end
+
+    # DOSSA 2019-10-09 11:05 se añade para mantenedor de CUENCAS
+    resources :cuencas, except: [:destroy] do
     end
 
     resources :hitos_de_prensa, path: "hitos-de-prensa" do
@@ -427,6 +439,7 @@ Rails.application.routes.draw do
       get ':manifestacion_de_interes_id/documentos-diagnosticos/revision', to: "documento_diagnosticos#revision", as: :revision_documento_diagnosticos
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/enviar-revision', to: "documento_diagnosticos#enviar_revision", as: :enviar_revision_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga', to: "documento_diagnosticos#descarga", as: :descarga_documento_diagnosticos
+      get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga_estandar_acuerdo_informe', to: "documento_diagnosticos#descarga_estandar_acuerdo_informe", as: :descarga_estandar_o_acuerdo_documento_diagnosticos
 
       #APL-013 APL-014 APL-018 APL-020 APL-023
       get 'pdf_set_metas', to: 'set_metas_acciones#pdf_set_metas', as: :pdf_set_metas

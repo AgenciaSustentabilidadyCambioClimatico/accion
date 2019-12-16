@@ -73,7 +73,6 @@ class InformeAcuerdo < ApplicationRecord
   def plazos_correctos? #DZC MODIFICAR PREGUNTANDO VALIDACIONES DE PENDIENTES
     
     flujo = self.manifestacion_de_interes.flujo
-    # binding.pry
     auditoria_intermedia_maxima = self.auditorias.select{|a| a[:final].blank?}.sort_by{|a| a[:plazo]}.reverse.first
     auditoria_final = self.auditorias.select{|a| a[:final].present?}
     unless (auditoria_final.blank? || auditoria_final.size > 1)
@@ -91,7 +90,6 @@ class InformeAcuerdo < ApplicationRecord
       pmn_nombre ="plazo máximo neto para iniciar el proceso de certificación final"
       pmai_nombre ="plazo mas alto entre las auditorías intermedias"
       paf_nombre ="plazo de la auditoría final"
-      # binding.pry
       errors.add(:plazo_maximo_adhesion, "El plazo debe ser mayor a 0") if (pma < 1)
       errors.add(:plazo_finalizacion_implementacion, "El plazo debe ser mayor a 0") if (pfi <1)
       errors.add(:plazo_maximo_neto, "El plazo debe ser mayor a 0") if (pma < 1)

@@ -1,10 +1,12 @@
 class User < ApplicationRecord
-  attr_accessor :is_admin, :updated, :current, :flujo_id
+  attr_accessor :is_admin, :updated, :current
   has_many :personas, dependent: :destroy
   has_many :contribuyentes, through: :personas
   has_many :persona_cargos, through: :personas
   has_many :tarea_pendientes, dependent: :destroy
   has_many :mapa_de_actores, through: :personas
+  has_many :registro_apertura_correos, dependent: :destroy # DZC 2019-08-06 15:57:06 se agrega dependencia para destroy
+  belongs_to :user, optional: true
   accepts_nested_attributes_for :personas, :allow_destroy => true#, reject_if: :all_blank
   serialize :fields_visibility
   serialize :session
@@ -23,8 +25,10 @@ class User < ApplicationRecord
   validates :nombre_completo, presence: true
   validates :telefono, numericality: true, length: {in: 8..11}, allow_blank: false
   validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }  
-  validates_uniqueness_of :email
-  validates_uniqueness_of :rut
+  validates_uniqueness_of :email, on: :create
+  validates_uniqueness_of :rut, on: :create
+
+  default_scope { where(temporal: false) }
 
   def persona_segun_(contribuyente_id)
     self.personas.map{|p|p if (p.contribuyente_id == contribuyente_id) }.compact.first
@@ -139,5 +143,33 @@ class User < ApplicationRecord
       "#{u[:rut]}"+" - "+ "#{u[:nombre_completo]}"
     end
     usuarios.to_sentence
+  end
+
+  def password_required?
+    return false if temporal
+    super
+  end
+
+  def clonar_con_relaciones
+    user_temporal = self.dup
+    user_temporal.user_id = self.id
+    user_temporal.save(validate: false)
+
+    self.personas.each{|reg|
+      rd = reg.dup
+      rd.user_id = user_temporal.id
+      rd.save
+    }
+    self.tarea_pendientes.each{|reg|
+      rd = reg.dup
+      rd.user_id = user_temporal.id
+      rd.save
+    }
+    self.registro_apertura_correos.each{|reg|
+      rd = reg.dup
+      rd.user_id = user_temporal.id
+      rd.save
+    }
+    user_temporal
   end
 end

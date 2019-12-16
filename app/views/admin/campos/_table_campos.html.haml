@@ -1,0 +1,35 @@
+:javascript
+  $(document).ready(function() {
+    $('table.lista-campos').DataTable({
+      responsive: true,
+      lengthMenu: [[20], [20]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:campos).downcase) 
+  .card-body
+    .table-responsive
+      %table.table.lista-campos.table-striped
+        %thead
+          %tr
+            %th=t(:campo_id)
+            %th=t(:campo_nombre)
+            %th=t(:editar_campo)
+        %tbody
+          - @campos.each do |record|
+            %tr
+              %td
+                =record[:id_referencial]
+              %td
+                =record[:nombre]
+              %td
+                =link_to admin_actualizar_campos_path(record[:id]) do
+                  %i.fa.fa-edit
+.float-right
+  = link_to t(:back), admin_campos_path, class: 'btn btn-sm btn-warning'

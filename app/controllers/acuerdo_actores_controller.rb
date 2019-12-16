@@ -30,7 +30,6 @@ class AcuerdoActoresController < ApplicationController
 	end
 
 	def guardar_informe #DZC APL-018
-		# binding.pry
 		# DZC 2018-11-12 18:36:00 se modifica para eliminar archivos seleccionados para su eliminación
 		archivos_por_eliminar = params[:por_eliminar]
 		archivos_previos =[]
@@ -49,7 +48,6 @@ class AcuerdoActoresController < ApplicationController
 				end
 			end
 		end
-		# binding.pry
 		@informe.assign_attributes(informe_params)
 		# DZC 2019-06-19 17:39:50 se modifica para corregir error en asignación de archivos
 		# @informe.assign_attributes(archivos_anexos: archivos_previos+archivos_nuevos)
@@ -68,7 +66,6 @@ class AcuerdoActoresController < ApplicationController
 		# 	@informe.auditorias = []
 		# end
 		respond_to do |format|
-			# binding.pry
 			if @informe.valid?
 				@informe.save
 				audits_ids = []

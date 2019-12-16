@@ -11,29 +11,190 @@
 
 .modal.fade{id: :"buscar-contribuyente#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
-    .modal-content.p-3
-      .modal-body.no-padding
-        .card.no-margin
-          .card-header
-            %h5.no-margin
-              = t(:buscar_, item: t(:institución).downcase)
-          .card-body
-            %div{id: "contribuyentes-remote-filter#{custom_id}"}
-              = render 'admin/contribuyentes/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, custom_id: custom_id, data_table: data_table, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
-        %br
-        -#
-          #resultado-consulta-remote-block
-            = render 'admin/contribuyentes/resultado_consulta'
-
-        .card.no-margin
-          .card-header
-            %h5.no-margin
-              = t(:lista_de_, items: t(:contribuyentes).downcase)
-          .card-body.p-0
-            %div{id: "contribuyentes-remote-table#{custom_id}"}
-              = render 'admin/contribuyentes/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
-      .modal-footer.pr-0
+    .modal-content
+      .modal-body
+        .container-fluid#body-contribuyente-buscador
+          =render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento
+      .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
           Cerrar
-        %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled}
-          Seleccionar
+:javascript
+
+  $(document).on('nested:fieldAdded:actividad_economica_contribuyentes', function(event){
+    __chosen_actecos();
+    nuevo_contribuyente_temporal_validaciones();
+  })
+
+  $(document).on('nested:fieldAdded:establecimiento_contribuyentes', function(){
+    __chosen_actecos();
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('nested:fieldRemoved:actividad_economica_contribuyentes', function(event){
+    nuevo_contribuyente_temporal_validaciones();
+  })
+
+  $(document).on('nested:fieldRemoved:establecimiento_contribuyentes', function(){
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('click','#nuevo-contribuyente-button', function(e){
+    e.preventDefault();
+    $.ajax({
+      url: "#{edit_modal_admin_contribuyentes_path}",
+      type: "GET",
+      data: {
+        id: "",
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+  $(document).on('click','#deshacer-contribuyente-button', function(e){
+    e.preventDefault();    
+    $('#body-contribuyente-buscador').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento}");
+  });
+  //solo es para modal nuevo contribuyente
+  $(document).on('change keyup', '.form-temporal-boton-guardar', function(){
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('change', '.checkbox-casa-matriz', function(){
+    if($(this).prop("checked") == false){
+      $(".checkbox-casa-matriz").prop("checked", false);
+    }else{
+      $(".checkbox-casa-matriz").prop("checked", false);
+      $(this).prop("checked", true);
+    }
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('change', '.contribuyente-establecimiento-region', function(){
+    var codigo = this.id.replace(/\D/g, "");
+    $.ajax({
+      url: "#{region_comunas_admin_contribuyentes_path}",
+      type: "GET",
+      dataType: "script",
+      data: { codigo: codigo, region_id: this.value },
+      beforeSend: function(){
+        loadingParent = $(".loading-data").parent().parent()[0]
+        $('.loading-data').height(loadingParent.scrollHeight).show();
+        //$('.loading-data').show();
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(){
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).on('click', '.seleccionar-y-actualizar-contribuyente-button', function(){
+    data=JSON.parse($('#contribuyentes-remote-table#{custom_id}').find('.contribuyente-radio:checked').val());
+    $.ajax({
+      url: "#{edit_modal_admin_contribuyentes_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        contribuyente_id: data.id
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).ready(function(){
+
+    $('#intitucion_cogestora').click(function(e){
+      e.preventDefault();
+      $('#body-contribuyente-buscador').html("");
+      if(#{!@contribuyente_temporal.nil? && !@contribuyente_temporal.new_record?}){
+        $.ajax({
+          url: "#{edit_modal_admin_contribuyentes_path}",
+          type: "GET",
+          data: {
+            id: "#{@contribuyente_temporal.nil? ? '' : @contribuyente_temporal.id}",
+            flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+          }
+        }).fail(function(a, b, c) {
+          alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+          $('.loading-data').hide();
+
+          $('#buscar-contribuyente').modal("show");
+        }).success(function(data){
+          $('#body-contribuyente-buscador').html(data);
+          $('.loading-data').hide();
+          $('#buscar-contribuyente').modal("show");
+        });
+      }else{
+        $('#body-contribuyente-buscador').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento}");
+        $('#buscar-contribuyente').modal("show");
+      }
+    });
+  });
+
+  function __chosen_actecos() {
+    
+    $('.contribuyente-acteco').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true
+    });
+  }
+
+  function nuevo_contribuyente_temporal_validaciones(){
+    /*
+    var rut = $('#contribuyente_rut').val() != "";
+    var dv = $('#contribuyente_dv').val() != "";
+    var razon_social = $('#contribuyente_razon_social').val() != "";
+    var contribuyente_actetos = true;
+    var contribuyente_establecimientos = true;
+
+    if($('#contribuyente-actecos > tbody > tr[style!="display: none;"]').length > 0){
+      $('#contribuyente-actecos > tbody > tr[style!="display: none;"]').each(function(index){
+        var select = $(this).find('.contribuyente-acteco').first();
+        if(select.val() == ""){
+          contribuyente_actetos = false;
+        }
+      });
+    }else{
+      contribuyente_actetos = false;
+    }
+
+    if($('#establecimiento-actecos > tbody > tr[style!="display: none;"]').length > 0){
+      if($('#establecimiento-actecos > tbody > tr[style!="display: none;"] > td.casa-matriz > div > div > label > input:checked').length != 1){
+        contribuyente_establecimientos = false;
+      }
+      $('#establecimiento-actecos > tbody > tr[style!="display: none;"]').each(function(index){
+        var direccion = $(this).find('.establ-direccion').first();
+        var ciudad = $(this).find('.establ-ciudad').first();
+        var region = $(this).find('.contribuyente-establecimiento-region').first();
+        var comuna = $(this).find('.contribuyente-establecimiento-comuna').first();
+        if(direccion.val() == "" || ciudad.val() == "" || region.val() == "" || comuna.val() == ""){
+          contribuyente_establecimientos = false;
+        }
+      });
+    }else{
+      contribuyente_establecimientos = false;
+    }
+    if(rut && dv && razon_social && contribuyente_actetos && contribuyente_establecimientos){
+      $('.guarda-contribuyente-button').removeAttr("disabled");
+    }else{
+      $('.guarda-contribuyente-button').attr("disabled", true);
+    }
+    */
+    $('.guarda-contribuyente-button').removeAttr("disabled");
+  }
+
+  

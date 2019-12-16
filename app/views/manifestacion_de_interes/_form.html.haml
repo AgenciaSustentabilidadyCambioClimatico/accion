@@ -1,33 +1,33 @@
 :javascript
 	$(document).ready(function(){
 		$('#enviar-manifestacion-button').click(function(){$('#manifestacion_de_interes_temporal').val(false)});
+
 	});
 - titulo t(:manifestación_de_acuerdo)
-- tabs = { "tipo-de-acuerdo": true, "datos-institucion": false, "contexto-sector": false, "datos-proyecto": false, "objetivo-acuerdo": false }
+- tabs = { "objetivo-acuerdo": true, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false }
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
 - mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
 #tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
 	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
 		- tabs.each do |tab,active|
-			%li.nav-item{id: "#{tab}-tab", class: ("d-none" if tab == :"datos-proyecto")}
+			%li.nav-item{id: "#{tab}-tab"}
 				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
 					=t(tab.to_s.gsub('-','_'))
 				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
 					%small.total-error
-						= @total_de_errores_por_tab[tab].size 
-		-
+						= @total_de_errores_por_tab[tab].size
 		- if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
 			- formulario_remote = false
 = simple_form_for [@tarea_pendiente, @manifestacion_de_interes], method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'manifestacion-de-interes-form' } do |f|
 	= f.hidden_field :temporal, as: :boolean, value: formulario_remote
-	= f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
+	= f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'objetivo-acuerdo' : f.object.current_tab) }
 	= f.submit "", class: 'd-none'
 	= render "form_manifestacion_de_interes", tabs: tabs, f: f
 	.float-right
 		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
 		-#
 			= button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary #{formulario_remote ? 'd-none' : nil}"
-		= button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
+		= button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-manifestacion-temporal-button', class: "btn btn-sm btn-primary"
 		= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-manifestacion-button', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
 			%i.fa.fa-arrow-circle-right
 			= t(:enviar_manifestación_de_interés)

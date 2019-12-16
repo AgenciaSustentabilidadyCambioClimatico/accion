@@ -6,7 +6,11 @@ class ArchivoEstudiosSectorialesManifestacionDeInteresUploader < CarrierWave::Up
   end
 
   def extension_whitelist
-    %w(pdf docx png jpg tiff)
+    %w(pdf jpg png tiff zip rar doc docx)
+  end
+
+  def size_range
+    1..200.megabytes
   end
 
 end

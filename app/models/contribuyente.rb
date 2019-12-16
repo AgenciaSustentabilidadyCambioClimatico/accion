@@ -1,13 +1,15 @@
 class Contribuyente < ApplicationRecord
 	attr_accessor :filter_mode, :es_para_seleccion, :buscar_por_actividad_economica, :actividad_economica_id, :resultado_mostrados, :nombre_de_establecimiento, :tipo_de_establecimiento, :from_establecimientos, :custom_id, :data_table, :nombre_maquinaria, :numero_serie, :patente, :es_maquinaria, :seleccion_basica, :tipo_instrumento
 
-	has_many :dato_anual_contribuyentes, foreign_key: :contribuyente_id
-	has_many :establecimiento_contribuyentes, foreign_key: :contribuyente_id, inverse_of: :contribuyente
-	has_many :actividad_economica_contribuyentes, foreign_key: :contribuyente_id
+	has_many :dato_anual_contribuyentes, foreign_key: :contribuyente_id, dependent: :destroy
+	has_many :establecimiento_contribuyentes, foreign_key: :contribuyente_id, inverse_of: :contribuyente, dependent: :destroy
+	has_many :actividad_economica_contribuyentes, foreign_key: :contribuyente_id, dependent: :destroy
 	has_many :actividad_economicas, through: :actividad_economica_contribuyentes
-	has_many :personas
-	has_many :maquinarias
-	has_many :otros
+	has_many :personas, dependent: :destroy
+	has_many :maquinarias, dependent: :destroy
+	has_many :otros, dependent: :destroy
+  belongs_to :contribuyente, optional: true
+  belongs_to :flujo, optional: true
 
 	serialize :fields_visibility
 
@@ -15,15 +17,17 @@ class Contribuyente < ApplicationRecord
 	accepts_nested_attributes_for :establecimiento_contribuyentes, :allow_destroy => true, reject_if: :all_blank
 	accepts_nested_attributes_for :dato_anual_contribuyentes, :allow_destroy => true, reject_if: :all_blank
 
-	validates :rut, presence: true, unless: proc{self.filter_mode==true}
-	validates :dv, presence: true, unless: proc{self.filter_mode==true}
-	validates :razon_social, presence: true, unless: proc{self.filter_mode==true}
-	validates_uniqueness_of :rut, unless: proc{self.filter_mode==true}
+	validates :rut, presence: true, if: proc{!self.filter_mode}
+	validates :dv, presence: true, if: proc{!self.filter_mode}
+	validates :razon_social, presence: true, if: proc{!self.filter_mode}
+	validates_uniqueness_of :rut, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
 
 	validate :filter_data, if: proc{self.filter_mode==true && self.from_establecimientos==false}
-	validate :rut_dv, unless: proc{self.filter_mode==true}
+	validate :rut_dv, if: proc{!self.filter_mode}
 
 	alias_attribute :nombre, :razon_social
+
+	default_scope { where(temporal: false) }
 
 	def filter_data
 		if (self.rut.blank? && self.razon_social.blank? && self.actividad_economica_id.blank? )
@@ -55,16 +59,17 @@ class Contribuyente < ApplicationRecord
 
 	def direccion_casa_matriz(as_string=true,full=false)
 		direccion_hash={ direccion: "Dirección no encontrada", comuna: nil, region: nil, pais: nil }
-		ec=establecimiento_contribuyentes.where(casa_matriz: true).first;
+		ec=establecimiento_contribuyentes.where(casa_matriz: true).first
 		if ec.blank?
-			ec = establecimiento_contribuyentes.first;
+			ec = establecimiento_contribuyentes.first
 		end
 		unless ec.blank?
 			direccion_hash[:direccion] = "#{ec.direccion}"
 			if full
-				direccion_hash[:comuna] = ec.comuna.nombre
-				direccion_hash[:region] = ec.region.nombre
-				direccion_hash[:pais] = ec.pais.nombre
+				direccion_hash[:id] = ec.id
+        direccion_hash[:comuna] = ec.comuna.nombre
+				direccion_hash[:region] = ec.comuna.provincia.region.nombre
+				direccion_hash[:pais] = ec.comuna.provincia.region.pais.nombre
 			end
 		end
 		if as_string
@@ -159,5 +164,42 @@ class Contribuyente < ApplicationRecord
   	da = dato_anual_contribuyentes.where.not(periodo: nil).order(periodo: :desc)
   	da = dato_anual_contribuyentes.order(id: :desc) if da.size == 0
   	da.first
+  end
+
+  def clonar_con_relaciones
+    copia_contribuyente = self.dup
+    copia_contribuyente.contribuyente_id = self.id
+    copia_contribuyente.save(validate: false)
+    self.dato_anual_contribuyentes.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    self.establecimiento_contribuyentes.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    self.actividad_economica_contribuyentes.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    self.personas.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    self.maquinarias.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    self.otros.each{|r| 
+      rc = r.dup
+      rc.contribuyente_id = copia_contribuyente.id
+      rc.save
+    }
+    copia_contribuyente
   end
 end
