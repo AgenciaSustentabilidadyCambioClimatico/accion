@@ -238,7 +238,7 @@ GEM
       fastimage
       rubyzip (~> 1.1)
     quilljs-rails (0.0.4)
-    rack (2.0.4)
+    rack (2.0.8)
     rack-test (1.0.0)
       rack (>= 1.0, < 3)
     rails (5.1.6)
