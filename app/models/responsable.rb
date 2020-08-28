@@ -60,14 +60,14 @@ class Responsable < ApplicationRecord
 		# DZC 2018-10-10 15:31:26 filtra personas por contribuyente o contribuyentes, si no viene nulo
 		unless contribuyente_id.nil?
 			contribuyente_id = [contribuyente_id] if !contribuyente_id.is_a?(Array)
-			personas.map! do |p|	
-					p if contribuyente_id.include?(p[:contribuyente_id])
+			personas.select do |p|	
+				contribuyente_id.include?(p.contribuyente_id)
 			end
 		end
 		personas
 	end
 
-	def self.__personas_responsables(rol_id, instrumento_id)
+	def self.__personas_responsables(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil)
 		personas = []
 		instrumentos_id =[]
 		instrumentos_id << instrumento_id
@@ -82,11 +82,14 @@ class Responsable < ApplicationRecord
 		#DZC TODO: Se debe modificar para contemplar todas las combinaciones de reglas posibles segun valores de tabla responsables
 		#DZC TODO: Se debe leer el tipo de instrumento desde la instancia del proceso (manifestación, ppf, ppp) y no desde la tarea 
 		
-
+		responsables = self.where(rol_id: rol_id)
+												.where(tipo_instrumento_id: instrumentos_id)
+		responsables = responsables.where(contribuyente_id: contribuyente_id) if(!contribuyente_id.nil?)
+		responsables = responsables.where(actividad_economica_id: actividad_economica_id) if(!actividad_economica_id.nil?)
+		responsables = responsables.where(tipo_contribuyente_id: tipo_contribuyente_id) if(!tipo_contribuyente_id.nil?)
 		# self.where(rol_id: rol_id)
 		# 	.where("cargo_id IS NOT NULL")
-		self.where(rol_id: rol_id)
-			.where(tipo_instrumento_id: instrumentos_id).each do |r|	
+		responsables.each do |r|	
 	  	cgid = r.cargo_id
 	  	ctid = r.contribuyente_id
 	  	aeid = r.actividad_economica_id
@@ -172,6 +175,23 @@ class Responsable < ApplicationRecord
 	  	end
 	  end
 	  posee_rol
+	end
+
+	def self.__tipo_instrumento_por_persona_rol(roles_id, personas)
+		tipo_instrumentos = []
+		personas.each do |persona|
+
+			cargos_ids = persona.persona_cargos.pluck(:cargo_id)
+			responsables = self.where(rol_id: roles_id).where(cargo_id: cargos_ids)
+
+			#Dos busquedas
+			#primero los que no tienen contribuyente asociado
+			tipo_instrumentos += responsables.where(contribuyente_id: nil).pluck(:tipo_instrumento_id)
+			#segundo los que si tienen contribuyente y coinciden con el de la persona
+			#la persona no cambia segun activiad economica o tipo contribuyente, asique me lo salto
+			tipo_instrumentos += responsables.where(contribuyente_id: persona.contribuyente_id).pluck(:tipo_instrumento_id)
+		end
+		tipo_instrumentos.uniq
 	end
 
 end

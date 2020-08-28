@@ -281,13 +281,18 @@ module ApplicationHelper
 
 	def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil)
 		capture_haml do
-			if descargables.blank? || ! descargables.has_key?(codigo)
-				haml_tag :label, '&nbsp;'.html_safe, class: 'control-label'
-					haml_tag :div, class: 'form-control p-0' do
-						haml_tag :a, href: '#', class: 'btn btn-sm btn-outline-light btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado) do
-							haml_tag :i, class: 'fa fa-ban text-secondary'
-						end
-					end
+			if carta_interes.blank?
+				id_descarga = 'mostrar_descargable_id'
+				boton_label = I18n.t(:descargar)
+			else
+				id_descarga = 'manifestacion_de_interes_' + carta_interes
+				boton_label = nombre.blank? ? carta_interes : nombre
+			end
+			if descargables.blank? || !descargables.has_key?(codigo)
+				haml_tag :label, nombre, class: 'control-label string pt-06'
+				haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado), id: id_descarga do
+					haml_tag :i, class: 'fa fa-ban'
+				end
 				# haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
 				# haml_tag :div, codigo, class: 'form-control'
 			else
@@ -297,15 +302,8 @@ module ApplicationHelper
 				else
 					url = ext_descargable_tarea_url(*descargables[codigo][:args])
 				end
-				if carta_interes.blank?
-					id_descarga = 'mostrar_descargable_id'
-					boton_label = I18n.t(:descargar)
-				else
-					id_descarga = 'manifestacion_de_interes_' + carta_interes
-					boton_label = nombre.blank? ? carta_interes : nombre
-				end
 				haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if carta_interes.blank?
-				haml_tag :a, href: url, class: 'btn btn-sm btn-outline-secondary btn-block', id: id_descarga do
+				haml_tag :a, href: url, class: 'btn btn-sm btn-descargar btn-block', id: id_descarga do
 					haml_tag :i, class: 'fa fa-download'
 					haml_concat boton_label
 				end
@@ -320,32 +318,85 @@ module ApplicationHelper
 				if label
 					haml_tag :label, '&nbsp;'.html_safe, class: 'control-label'
 				end
-				haml_tag :div, class: "form-control p-0 button-height" do
-					#
-					if field.present?
-						if field.class == Array
-							#
-							archivos = []
-							field.each do |archivo|
-								split = archivo.current_path.split('/')# DZC genera un array de palabras dentro del path
-								archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
-							end
-							# DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
-					   	haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: field[0].mounted_as), class: 'btn btn-sm btn-outline-light btn-block tooltip-block', download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
-					   		haml_tag :i, class: 'fa fa-download text-success'
-					   	end
-						else
-							#
-							file_name = field.file.filename
-							haml_tag :a, href: field.url, class: 'btn btn-sm btn-outline-light btn-block tooltip-block', download: '', title: file_name, "data-original-title" => file_name do
-								haml_tag :i, class: 'fa fa-download text-success'
-							end
+				if field.present?
+					if field.class == Array
+						#
+						archivos = []
+						field.each do |archivo|
+							split = archivo.current_path.split('/')# DZC genera un array de palabras dentro del path
+							archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
 						end
+						# DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
+				   	haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: field[0].mounted_as), class: 'btn btn-sm btn-descargar btn-block tooltip-block px-5', download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
+				   		haml_tag :i, class: 'fa fa-download'
+				   		haml_concat archivos.to_sentence
+				   	end
 					else
-						haml_tag :a, class: 'btn btn-sm btn-outline-light btn-block tooltip-block', "data-original-title" => "Archivo(s) no subido(s)..." do
-							haml_tag :i, class: 'fa fa-ban text-secondary'
+						#
+						file_name = field.file.filename
+						haml_tag :a, href: field.url, class: 'btn btn-sm btn-descargar btn-block tooltip-block px-5', download: '', title: file_name, "data-original-title" => file_name do
+							haml_tag :i, class: 'fa fa-download'
+							haml_concat file_name
 						end
 					end
+				else
+					haml_tag :a, class: 'btn btn-sm btn-descargar btn-block tooltip-block px-5', "data-original-title" => "Archivo(s) no subido(s)..." do
+						haml_tag :i, class: 'fa fa-ban'
+					end
+				end
+			end
+		end
+	end
+
+	def __subida_archivo(nombre, objeto, label=true, solo_lectura=false)
+		field = objeto.send(nombre)
+		filename = "Archivo(s) no subido(s)"
+		url = ""
+		if field.present?
+			if field.class == Array
+				archivos = []
+				field.each do |archivo|
+					split = archivo.current_path.split('/')# DZC genera un array de palabras dentro del path
+					archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
+				end
+				filename = archivos.to_sentence
+				url = desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: field[0].mounted_as)
+			else
+				filename = field.file.filename
+				url = field.url
+			end
+		end
+		tiene_error = ''
+		tooltip_nombre = {title: filename, "data-original-title" => filename}
+		if objeto.errors.messages.has_key?(nombre.to_sym)
+			tiene_error = 'has-error'
+			tooltip_nombre = {}
+		end
+		capture_haml do
+			haml_tag :div, class: 'form-group '+tiene_error do
+				if label
+					haml_tag :label, '&nbsp;'.html_safe, class: 'control-label string'
+				end
+				if !solo_lectura
+					haml_tag :input, class: 'd-none file-seleccione-archivo', type: :file, id: objeto.class.to_s.underscore+"_"+nombre, name: objeto.class.to_s.underscore+"["+nombre+"]"
+				end
+				haml_tag :div, class: 'input-group mb-3' do
+					if !solo_lectura
+						haml_tag :div, class: 'input-group-prepend' do
+							haml_tag :button, "Seleccione Archivo", type: :button, class: 'btn btn-descargar button-seleccione-archivo letter-size', "data-input-file" => objeto.class.to_s.underscore+"_"+nombre
+						end
+					end
+					haml_tag :label, filename, {class: 'form-control texto-cortado label-seleccione-archivo letter-size', disabled: true}.merge(tooltip_nombre)
+					if field.present?
+						haml_tag :div, class: 'input-group-append' do
+							haml_tag :a, href: url, class: 'btn btn-descargar' do
+								haml_tag :i, class: 'fa fa-download'
+							end
+						end
+					end
+				end
+				if objeto.errors.messages.has_key?(nombre.to_sym)
+					haml_tag :span, objeto.errors.messages[nombre.to_sym].first, class: "help-block"
 				end
 			end
 		end
@@ -425,5 +476,225 @@ module ApplicationHelper
 
   def descarga_formato_carta_de_patrocinio()
   	
+  end
+
+  def clave_unica_btn
+  	capture_haml do
+			haml_tag :a, href: ClaveUnica.url_server_auth, class: 'btn btn-claveunica'
+		end
+  end
+
+  def url_segun_tarea pendiente, tarea=nil, flujo=nil, encuesta=nil, proyecto=nil 
+  	tarea = tarea.nil? ? pendiente.tarea : tarea
+  	flujo = flujo.nil? ? pendiente.flujo : flujo
+  	encuesta = encuesta.nil? ? tarea.encuesta : encuesta
+    proyecto = proyecto.nil? ? pendiente.flujo.proyecto : proyecto
+  	data = {url:"", icon: "", recognize: ""}
+  	case tarea.codigo
+  	when Tarea::COD_APL_001
+      data[:url] = manifestacion_de_interes_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_002
+      data[:url] = revisor_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_003_1
+      data[:url] = admisibilidad_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_003_2
+      data[:url] = admisibilidad_juridica_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_004_1
+      data[:url] = observaciones_admisibilidad_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_004_2
+      data[:url] = observaciones_admisibilidad_juridica_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_005
+      data[:url] = pertinencia_factibilidad_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_006
+      data[:url] = responder_pertinencia_factibilidad_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_007
+      data[:url] = tarea_pendiente_hitos_de_prensa_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_008
+      data[:url] = usuario_entregables_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_009
+      data[:url] = actualizacion_mapa_de_actores_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_010
+      data[:url] = revision_mapa_de_actores_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_013
+      data[:url] = cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_014
+      data[:url] = revisar_entregable_diagnostico_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_018
+      data[:url] = acuerdo_actores_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_019 #DZC Encuesta y Set de metas y acciones
+      data[:url] = evaluacion_negociacion_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes, encuesta)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_020
+      data[:url] = actualizar_acuerdos_actores_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_021
+      data[:url] = actores_convocatorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_023
+      data[:url] = actualizar_comite_acuerdos_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_024
+      data[:url] = usuarios_cargo_entregables_manifestacion_de_interes_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_025
+      data[:url] = actualizar_adhesion_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_028
+      data[:url] = revisar_adhesion_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_029
+      data[:url] = dato_productivo_elemento_adheridos_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_032
+      unless flujo.adhesion_elementos.blank?
+        data[:url] = actualizar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+	      data[:icon] = "<i class='fa fa-edit'></i>"
+      else
+        data[:url] = tarea_pendiente_auditoria_sin_elementos_adheridos_path(pendiente),
+	      data[:icon] = "<i class='fa fa-exclamation-triangle' data-toggle='tooltip' title='APL sin elementos adheridos'></i>"
+	    end
+    when Tarea::COD_APL_033
+      data[:url] = revisar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_034
+      data[:url] = validar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_037
+      data[:url] = ceremonia_certificaciones_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_041
+      data[:url] = informe_impactos_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_APL_042
+      data[:url] = informe_impacto_revisar_manifestacion_de_interes_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_001
+      data[:url] = edit_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_002
+      data[:url] = asignar_revisor_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_003
+      data[:url] = revision_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_004
+      data[:url] = resolver_observaciones_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_005
+      data[:url] = carta_de_apoyo_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_006
+      data[:url] = seguimiento_a_terceros_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_007
+      data[:url] = elaboracion_inicial_propuesta_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_008
+      data[:url] = observaciones_tecnicas_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_009
+      data[:url] = datos_postulacion_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_010
+      data[:url] = seguimiento_proyecto_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_011
+      data[:url] = asignar_usuarios_a_cargo_ejecucion_programa_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_012
+      data[:url] = datos_ejecucion_presupuestaria_anual_ppf_tarea_pendiente_programa_proyecto_propuesta_path(pendiente,pendiente.flujo.ppp)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_013
+      data[:url] = ppf_agenda_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_016
+      data[:url] = actualizar_adhesion_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_017
+      data[:url] = revisar_adhesion_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_018
+      data[:url] = ppf_tarea_pendiente_set_metas_acciones_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_019
+      data[:url] = revision_ppf_tarea_pendiente_set_metas_acciones_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_020
+      data[:url] = dato_productivo_elemento_adheridos_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_021
+      data[:url] = ppf_tarea_pendiente_cargar_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PPF_022
+      data[:url] = ppf_tarea_pendiente_aprobar_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_003
+      data[:url] = seguimiento_fpl_proyecto_documento_garantias_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-file-text-o'></i>"
+    when Tarea::COD_FPL_005
+      data[:url] = responsables_seguimiento_fpl_proyecto_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-user-o'></i>"
+    when Tarea::COD_FPL_006
+      data[:url] = new_seguimiento_fpl_proyecto_reunion_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-comments-o'></i>"
+    when Tarea::COD_FPL_007
+      data[:url] = calendario_seguimiento_fpl_proyecto_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-calendar-o'></i>"
+    when Tarea::COD_FPL_008
+      data[:url] = solicitud_pago_seguimiento_fpl_proyecto_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-dollar'></i>"
+    when Tarea::COD_FPL_009
+      data = pendiente.data
+      pago = ProyectoPago.find(data[:pago_id])
+      data[:url] = seguimiento_fpl_proyecto_proyecto_pagos_orden_pago_path(pendiente,proyecto, pago)
+      data[:icon] = "<i class='fa fa-dollar'></i>"
+    when Tarea::COD_FPL_010
+      data = pendiente.data
+      pago = ProyectoPago.find(data[:pago_id])
+      data[:url] = seguimiento_fpl_proyecto_proyecto_pagos_fecha_pago_path(pendiente,proyecto, pago)
+      data[:icon] = "<i class='fa fa-calendar-o'></i>"
+    when Tarea::COD_FPL_011
+      data[:url] = seguimiento_fpl_proyecto_rendicion_actividades_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-file-text-o'></i>"
+    when Tarea::COD_FPL_012
+      data[:url] = seguimiento_fpl_proyecto_rendicion_actividad_rendicion_tecnica_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-file-text-o'></i>"
+    when Tarea::COD_FPL_013
+      data[:url] = seguimiento_fpl_proyecto_rendicion_actividad_rendicion_contable_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-file-text-o'></i>"
+    when Tarea::COD_FPL_014
+      data = pendiente.data
+      encuesta = Encuesta.find(data[:encuesta_id])
+      data[:url] = responder_admin_encuesta_path(pendiente,encuesta)
+      data[:icon] = "<i class='fa fa-file-text-o'></i>"
+    when Tarea::COD_FPL_015
+      data[:url] = seguimiento_fpl_proyecto_proyecto_actividades_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-calendar-o'></i>"
+    when Tarea::COD_FPL_016
+      data[:url] = seguimiento_fpl_proyecto_proyecto_actividades_path(pendiente,proyecto)
+      data[:icon] = "<i class='fa fa-calendar-o'></i>"
+    when Tarea::COD_FPL_017
+      data[:url] = resolucion_contrato_seguimiento_fpl_proyecto_path(pendiente, proyecto)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_018
+      data[:url] = restitucion_seguimiento_fpl_proyecto_path(pendiente, proyecto)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    end
+    data
   end
 end

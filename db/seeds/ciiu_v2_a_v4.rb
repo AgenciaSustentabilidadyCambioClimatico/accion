@@ -1,4 +1,4 @@
-puts "Cargando CIIUV4... DZC"
+puts "Cargando CIIUV4..."
 
 #Primero seteo todo lo v4 a null
 #ActividadEconomica.update_all(codigo_ciiuv4: nil, descripcion_ciiuv4: nil)
@@ -11,11 +11,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -27,11 +32,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -43,11 +53,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -59,11 +74,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -75,11 +95,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -91,11 +116,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -107,11 +137,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -123,11 +158,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -139,11 +179,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -155,11 +200,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -171,11 +221,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -187,11 +242,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -203,11 +263,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -219,11 +284,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -235,11 +305,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -251,11 +326,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -267,11 +347,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -283,11 +368,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -299,11 +389,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -315,11 +410,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -331,11 +431,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -347,11 +452,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -363,11 +473,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -379,11 +494,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -395,11 +515,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -411,11 +536,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -427,11 +557,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -443,11 +578,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -459,11 +599,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -475,11 +620,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -491,11 +641,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -507,11 +662,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -523,11 +683,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -539,11 +704,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -555,11 +725,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -571,11 +746,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -587,11 +767,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -603,11 +788,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -619,11 +809,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -635,11 +830,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -651,11 +851,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -667,11 +872,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -683,11 +893,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -699,11 +914,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -715,11 +935,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -731,11 +956,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -747,11 +977,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -763,11 +998,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -779,11 +1019,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -795,11 +1040,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -811,11 +1061,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -827,11 +1082,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -843,11 +1103,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -859,11 +1124,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -875,11 +1145,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -891,11 +1166,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -907,11 +1187,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -923,11 +1208,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -939,11 +1229,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -955,11 +1250,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -971,11 +1271,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -987,11 +1292,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1003,11 +1313,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1019,11 +1334,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1035,11 +1355,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1051,11 +1376,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1067,11 +1397,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1083,11 +1418,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1099,11 +1439,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1115,11 +1460,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1131,11 +1481,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1147,11 +1502,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1163,11 +1523,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1179,11 +1544,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1195,11 +1565,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1211,11 +1586,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1227,11 +1607,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1243,11 +1628,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1259,11 +1649,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1275,11 +1670,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1291,11 +1691,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1307,11 +1712,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1323,11 +1733,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1339,11 +1754,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1355,11 +1775,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1371,11 +1796,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1387,11 +1817,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1403,11 +1838,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1419,11 +1859,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1435,11 +1880,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1451,11 +1901,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1467,11 +1922,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1483,11 +1943,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1499,11 +1964,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1515,11 +1985,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1531,11 +2006,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1547,11 +2027,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1563,11 +2048,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1579,11 +2069,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1595,11 +2090,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1611,11 +2111,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1627,11 +2132,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1643,11 +2153,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1659,11 +2174,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1675,11 +2195,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1691,11 +2216,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1707,11 +2237,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1723,11 +2258,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1739,11 +2279,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1755,11 +2300,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1771,11 +2321,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1787,11 +2342,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1803,11 +2363,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1819,11 +2384,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1835,11 +2405,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1851,11 +2426,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1867,11 +2447,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1883,11 +2468,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1899,11 +2489,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1915,11 +2510,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1931,11 +2531,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1947,11 +2552,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1963,11 +2573,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1979,11 +2594,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -1995,11 +2615,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2011,11 +2636,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2027,11 +2657,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2043,11 +2678,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2059,11 +2699,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2075,11 +2720,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2091,11 +2741,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2107,11 +2762,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2123,11 +2783,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2139,11 +2804,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2155,11 +2825,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2171,11 +2846,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2187,11 +2867,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2203,11 +2888,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2219,11 +2909,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2235,11 +2930,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2251,11 +2951,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2267,11 +2972,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2283,11 +2993,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2299,11 +3014,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2315,11 +3035,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2331,11 +3056,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2347,11 +3077,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2363,11 +3098,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2379,11 +3119,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2395,11 +3140,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2411,11 +3161,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2427,11 +3182,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2443,11 +3203,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2459,11 +3224,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2475,11 +3245,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2491,11 +3266,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2507,11 +3287,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2523,11 +3308,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2539,11 +3329,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2555,11 +3350,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2571,11 +3371,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2587,11 +3392,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2603,11 +3413,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2619,11 +3434,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2635,11 +3455,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2651,11 +3476,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2667,11 +3497,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2683,11 +3518,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2699,11 +3539,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2715,11 +3560,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2731,11 +3581,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2747,11 +3602,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2763,11 +3623,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2779,11 +3644,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2795,11 +3665,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2811,11 +3686,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2827,11 +3707,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2843,11 +3728,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2859,11 +3749,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2875,11 +3770,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2891,11 +3791,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2907,11 +3812,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2923,11 +3833,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2939,11 +3854,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2955,11 +3875,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2971,11 +3896,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -2987,11 +3917,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3003,11 +3938,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3019,11 +3959,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3035,11 +3980,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3051,11 +4001,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3067,11 +4022,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3083,11 +4043,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3099,11 +4064,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3115,11 +4085,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3131,11 +4106,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3147,11 +4127,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3163,11 +4148,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3179,11 +4169,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3195,11 +4190,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3211,11 +4211,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3227,11 +4232,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3243,11 +4253,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3259,11 +4274,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3275,11 +4295,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3291,11 +4316,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3307,11 +4337,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3323,11 +4358,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3339,11 +4379,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3355,11 +4400,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3371,11 +4421,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3387,11 +4442,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3403,11 +4463,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3419,11 +4484,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3435,11 +4505,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3451,11 +4526,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3467,11 +4547,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3483,11 +4568,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3499,11 +4589,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3515,11 +4610,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3531,11 +4631,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3547,11 +4652,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3563,11 +4673,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3579,11 +4694,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3595,11 +4715,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3611,11 +4736,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3627,11 +4757,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3643,11 +4778,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3659,11 +4799,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3675,11 +4820,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3691,11 +4841,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3707,11 +4862,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3723,11 +4883,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3739,11 +4904,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3755,11 +4925,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3771,11 +4946,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3787,11 +4967,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3803,11 +4988,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3819,11 +5009,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3835,11 +5030,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3851,11 +5051,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3867,11 +5072,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3883,11 +5093,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3899,11 +5114,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3915,11 +5135,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3931,11 +5156,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3947,11 +5177,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3963,11 +5198,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3979,11 +5219,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -3995,11 +5240,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4011,11 +5261,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4027,11 +5282,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4043,11 +5303,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4059,11 +5324,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4075,11 +5345,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4091,11 +5366,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4107,11 +5387,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4123,11 +5408,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4139,11 +5429,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4155,11 +5450,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4171,11 +5471,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4187,11 +5492,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4203,11 +5513,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4219,11 +5534,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4235,11 +5555,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4251,11 +5576,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4267,11 +5597,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4283,11 +5618,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4299,11 +5639,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4315,11 +5660,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4331,11 +5681,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4347,11 +5702,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4363,11 +5723,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4379,11 +5744,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4395,11 +5765,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4411,11 +5786,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4427,11 +5807,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4443,11 +5828,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4459,11 +5849,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4475,11 +5870,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4491,11 +5891,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4507,11 +5912,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4523,11 +5933,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4539,11 +5954,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4555,11 +5975,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4571,11 +5996,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4587,11 +6017,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4603,11 +6038,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4619,11 +6059,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4635,11 +6080,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4651,11 +6101,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4667,11 +6122,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4683,11 +6143,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4699,11 +6164,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4715,11 +6185,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4731,11 +6206,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4747,11 +6227,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4763,11 +6248,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4779,11 +6269,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4795,11 +6290,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4811,11 +6311,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4827,11 +6332,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4843,11 +6353,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4859,11 +6374,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4875,11 +6395,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4891,11 +6416,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4907,11 +6437,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4923,11 +6458,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4939,11 +6479,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4955,11 +6500,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4971,11 +6521,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -4987,11 +6542,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5003,11 +6563,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5019,11 +6584,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5035,11 +6605,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5051,11 +6626,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5067,11 +6647,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5083,11 +6668,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5099,11 +6689,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5115,11 +6710,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5131,11 +6731,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5147,11 +6752,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5163,11 +6773,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5179,11 +6794,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5195,11 +6815,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5211,11 +6836,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5227,11 +6857,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5243,11 +6878,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5259,11 +6899,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5275,11 +6920,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5291,11 +6941,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5307,11 +6962,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5323,11 +6983,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5339,11 +7004,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5355,11 +7025,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5371,11 +7046,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5387,11 +7067,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5403,11 +7088,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5419,11 +7109,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5435,11 +7130,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5451,11 +7151,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5467,11 +7172,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5483,11 +7193,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5499,11 +7214,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5515,11 +7235,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5531,11 +7256,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5547,11 +7277,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5563,11 +7298,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5579,11 +7319,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5595,11 +7340,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5611,11 +7361,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5627,11 +7382,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5643,11 +7403,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5659,11 +7424,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5675,11 +7445,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5691,11 +7466,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5707,11 +7487,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5723,11 +7508,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5739,11 +7529,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5755,11 +7550,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5771,11 +7571,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5787,11 +7592,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5803,11 +7613,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5819,11 +7634,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5835,11 +7655,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5851,11 +7676,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5867,11 +7697,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5883,11 +7718,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5899,11 +7739,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5915,11 +7760,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5931,11 +7781,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5947,11 +7802,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5963,11 +7823,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5979,11 +7844,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -5995,11 +7865,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6011,11 +7886,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6027,11 +7907,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6043,11 +7928,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6059,11 +7949,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6075,11 +7970,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6091,11 +7991,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6107,11 +8012,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6123,11 +8033,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6139,11 +8054,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6155,11 +8075,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6171,11 +8096,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6187,11 +8117,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6203,11 +8138,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6219,11 +8159,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6235,11 +8180,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6251,11 +8201,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6267,11 +8222,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6283,11 +8243,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6299,11 +8264,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6315,11 +8285,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6331,11 +8306,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6347,11 +8327,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6363,11 +8348,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6379,11 +8369,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6395,11 +8390,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6411,11 +8411,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6427,11 +8432,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6443,11 +8453,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6459,11 +8474,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6475,11 +8495,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6491,11 +8516,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6507,11 +8537,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6523,11 +8558,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6539,11 +8579,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6555,11 +8600,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6571,11 +8621,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6587,11 +8642,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6603,11 +8663,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6619,11 +8684,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6635,11 +8705,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6651,11 +8726,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6667,11 +8747,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6683,11 +8768,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6699,11 +8789,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6715,11 +8810,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6731,11 +8831,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6747,11 +8852,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6763,11 +8873,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6779,11 +8894,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6795,11 +8915,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6811,11 +8936,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6827,11 +8957,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6843,11 +8978,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6859,11 +8999,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6875,11 +9020,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6891,11 +9041,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6907,11 +9062,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6923,11 +9083,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6939,11 +9104,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6955,11 +9125,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6971,11 +9146,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -6987,11 +9167,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7003,11 +9188,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7019,11 +9209,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7035,11 +9230,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7051,11 +9251,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7067,11 +9272,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7083,11 +9293,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7099,11 +9314,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7115,11 +9335,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7131,11 +9356,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7147,11 +9377,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7163,11 +9398,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7179,11 +9419,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7195,11 +9440,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7211,11 +9461,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7227,11 +9482,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7243,11 +9503,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7259,11 +9524,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7275,11 +9545,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7291,11 +9566,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7307,11 +9587,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7323,11 +9608,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7339,11 +9629,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7355,11 +9650,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7371,11 +9671,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7387,11 +9692,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7403,11 +9713,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7419,11 +9734,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7435,11 +9755,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7451,11 +9776,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7467,11 +9797,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7483,11 +9818,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7499,11 +9839,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7515,11 +9860,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7531,11 +9881,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7547,11 +9902,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7563,11 +9923,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7579,11 +9944,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7595,11 +9965,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7611,11 +9986,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7627,11 +10007,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7643,11 +10028,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7659,11 +10049,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7675,11 +10070,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7691,11 +10091,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7707,11 +10112,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7723,11 +10133,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7739,11 +10154,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7755,11 +10175,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7771,11 +10196,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7787,11 +10217,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7803,11 +10238,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7819,11 +10259,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7835,11 +10280,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7851,11 +10301,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7867,11 +10322,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7883,11 +10343,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7899,11 +10364,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7915,11 +10385,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7931,11 +10406,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7947,11 +10427,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7963,11 +10448,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7979,11 +10469,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -7995,11 +10490,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8011,11 +10511,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8027,11 +10532,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8043,11 +10553,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8059,11 +10574,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8075,11 +10595,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8091,11 +10616,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8107,11 +10637,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8123,11 +10658,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8139,11 +10679,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8155,11 +10700,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8171,11 +10721,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8187,11 +10742,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8203,11 +10763,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8219,11 +10784,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8235,11 +10805,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8251,11 +10826,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8267,11 +10847,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8283,11 +10868,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8299,11 +10889,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8315,11 +10910,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8331,11 +10931,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8347,11 +10952,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8363,11 +10973,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8379,11 +10994,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8395,11 +11015,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8411,11 +11036,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8427,11 +11057,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8443,11 +11078,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8459,11 +11099,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8475,11 +11120,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8491,11 +11141,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8507,11 +11162,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8523,11 +11183,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8539,11 +11204,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8555,11 +11225,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8571,11 +11246,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8587,11 +11267,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8603,11 +11288,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8619,11 +11309,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8635,11 +11330,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8651,11 +11351,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8667,11 +11372,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8683,11 +11393,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8699,11 +11414,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8715,11 +11435,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8731,11 +11456,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8747,11 +11477,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8763,11 +11498,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8779,11 +11519,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8795,11 +11540,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8811,11 +11561,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8827,11 +11582,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8843,11 +11603,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8859,11 +11624,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8875,11 +11645,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8891,11 +11666,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8907,11 +11687,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8923,11 +11708,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8939,11 +11729,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8955,11 +11750,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8971,11 +11771,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -8987,11 +11792,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9003,11 +11813,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9019,11 +11834,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9035,11 +11855,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9051,11 +11876,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9067,11 +11897,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9083,11 +11918,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9099,11 +11939,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9115,11 +11960,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9131,11 +11981,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9147,11 +12002,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9163,11 +12023,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9179,11 +12044,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9195,11 +12065,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9211,11 +12086,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9227,11 +12107,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9243,11 +12128,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9259,11 +12149,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9275,11 +12170,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9291,11 +12191,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9307,11 +12212,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9323,11 +12233,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9339,11 +12254,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9355,11 +12275,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9371,11 +12296,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9387,11 +12317,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9403,11 +12338,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9419,11 +12359,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9435,11 +12380,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9451,11 +12401,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9467,11 +12422,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9483,11 +12443,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9499,11 +12464,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9515,11 +12485,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9531,11 +12506,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9547,11 +12527,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9563,11 +12548,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9579,11 +12569,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9595,11 +12590,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9611,11 +12611,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9627,11 +12632,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9643,11 +12653,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9659,11 +12674,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9675,11 +12695,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9691,11 +12716,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9707,11 +12737,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9723,11 +12758,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9739,11 +12779,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9755,11 +12800,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9771,11 +12821,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9787,11 +12842,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9803,11 +12863,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9819,11 +12884,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9835,11 +12905,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9851,11 +12926,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9867,11 +12947,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9883,11 +12968,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9899,11 +12989,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9915,11 +13010,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9931,11 +13031,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9947,11 +13052,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9963,11 +13073,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9979,11 +13094,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -9995,11 +13115,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10011,11 +13136,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10027,11 +13157,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10043,11 +13178,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10059,11 +13199,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10075,11 +13220,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10091,11 +13241,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10107,11 +13262,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10123,11 +13283,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10139,11 +13304,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10155,11 +13325,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10171,11 +13346,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10187,11 +13367,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10203,11 +13388,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10219,11 +13409,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10235,11 +13430,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10251,11 +13451,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10267,11 +13472,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10283,11 +13493,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10299,11 +13514,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10315,11 +13535,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10331,11 +13556,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10347,11 +13577,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10363,11 +13598,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10379,11 +13619,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10395,11 +13640,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10411,11 +13661,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10427,11 +13682,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10443,11 +13703,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10459,11 +13724,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10475,11 +13745,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10491,11 +13766,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10507,11 +13787,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10523,11 +13808,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10539,11 +13829,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10555,11 +13850,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10571,11 +13871,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10587,11 +13892,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10603,11 +13913,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10619,11 +13934,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10635,11 +13955,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10651,11 +13976,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10667,11 +13997,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10683,11 +14018,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10699,11 +14039,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10715,11 +14060,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10731,11 +14081,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10747,11 +14102,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10763,11 +14123,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10779,11 +14144,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10795,11 +14165,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10811,11 +14186,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10827,11 +14207,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10843,11 +14228,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10859,11 +14249,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10875,11 +14270,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10891,11 +14291,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10907,11 +14312,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10923,11 +14333,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10939,11 +14354,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10955,11 +14375,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10971,11 +14396,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -10987,11 +14417,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11003,11 +14438,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11019,11 +14459,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11035,11 +14480,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11051,11 +14501,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11067,11 +14522,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11083,11 +14543,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11099,11 +14564,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11115,11 +14585,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11131,11 +14606,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11147,11 +14627,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11163,11 +14648,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11179,11 +14669,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11195,11 +14690,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11211,11 +14711,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11227,11 +14732,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11243,11 +14753,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11259,11 +14774,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11275,11 +14795,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11291,11 +14816,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11307,11 +14837,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11323,11 +14858,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11339,11 +14879,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11355,11 +14900,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11371,11 +14921,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11387,11 +14942,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11403,11 +14963,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11419,11 +14984,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11435,11 +15005,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11451,11 +15026,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11467,11 +15047,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11483,11 +15068,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11499,11 +15089,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11515,11 +15110,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11531,11 +15131,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11547,11 +15152,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11563,11 +15173,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11579,11 +15194,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11595,11 +15215,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11611,11 +15236,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11627,11 +15257,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11643,11 +15278,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11659,11 +15299,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11675,11 +15320,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11691,11 +15341,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11707,11 +15362,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11723,11 +15383,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11739,11 +15404,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11755,11 +15425,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11771,11 +15446,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11787,11 +15467,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11803,11 +15488,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11819,11 +15509,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11835,11 +15530,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11851,11 +15551,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11867,11 +15572,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11883,11 +15593,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11899,11 +15614,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11915,11 +15635,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11931,11 +15656,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11947,11 +15677,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11963,11 +15698,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11979,11 +15719,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -11995,11 +15740,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12011,11 +15761,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12027,11 +15782,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12043,11 +15803,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12059,11 +15824,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12075,11 +15845,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12091,11 +15866,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12107,11 +15887,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12123,11 +15908,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12139,11 +15929,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12155,11 +15950,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12171,11 +15971,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12187,11 +15992,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12203,11 +16013,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12219,11 +16034,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12235,11 +16055,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12251,11 +16076,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12267,11 +16097,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12283,11 +16118,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12299,11 +16139,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12315,11 +16160,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12331,11 +16181,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12347,11 +16202,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12363,11 +16223,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12379,11 +16244,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12395,11 +16265,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12411,11 +16286,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12427,11 +16307,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12443,11 +16328,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12459,11 +16349,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12475,11 +16370,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12491,11 +16391,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12507,11 +16412,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12523,11 +16433,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12539,11 +16454,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12555,11 +16475,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12571,11 +16496,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12587,11 +16517,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12603,11 +16538,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12619,11 +16559,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12635,11 +16580,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12651,11 +16601,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12667,11 +16622,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12683,11 +16643,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12699,11 +16664,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12715,11 +16685,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12731,11 +16706,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12747,11 +16727,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12763,11 +16748,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12779,11 +16769,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12795,11 +16790,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12811,11 +16811,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12827,11 +16832,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12843,11 +16853,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12859,11 +16874,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12875,11 +16895,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12891,11 +16916,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12907,11 +16937,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12923,11 +16958,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12939,11 +16979,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12955,11 +17000,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12971,11 +17021,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -12987,11 +17042,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13003,11 +17063,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13019,11 +17084,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13035,11 +17105,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13051,11 +17126,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13067,11 +17147,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13083,11 +17168,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13099,11 +17189,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13115,11 +17210,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13131,11 +17231,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13147,11 +17252,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13163,11 +17273,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13179,11 +17294,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13195,11 +17315,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13211,11 +17336,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13227,11 +17357,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13243,11 +17378,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13259,11 +17399,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13275,11 +17420,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13291,11 +17441,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13307,11 +17462,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13323,11 +17483,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13339,11 +17504,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13355,11 +17525,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13371,11 +17546,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13387,11 +17567,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13403,11 +17588,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13419,11 +17609,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13435,11 +17630,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13451,11 +17651,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13467,11 +17672,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13483,11 +17693,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13499,11 +17714,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13515,11 +17735,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13531,11 +17756,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13547,11 +17777,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13563,11 +17798,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13579,11 +17819,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13595,11 +17840,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13611,11 +17861,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13627,11 +17882,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13643,11 +17903,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13659,11 +17924,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13675,11 +17945,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13691,11 +17966,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13707,11 +17987,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13723,11 +18008,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13739,11 +18029,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13755,11 +18050,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13771,11 +18071,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13787,11 +18092,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13803,11 +18113,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13819,11 +18134,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13835,11 +18155,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13851,11 +18176,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13867,11 +18197,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13883,11 +18218,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13899,11 +18239,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13915,11 +18260,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13931,11 +18281,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13947,11 +18302,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13963,11 +18323,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13979,11 +18344,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -13995,11 +18365,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14011,11 +18386,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14027,11 +18407,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14043,11 +18428,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14059,11 +18449,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14075,11 +18470,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14091,11 +18491,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14107,11 +18512,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14123,11 +18533,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14139,11 +18554,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14155,11 +18575,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14171,11 +18596,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14187,11 +18617,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14203,11 +18638,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14219,11 +18659,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14235,11 +18680,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14251,11 +18701,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14267,11 +18722,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14283,11 +18743,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14299,11 +18764,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14315,11 +18785,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14331,11 +18806,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14347,11 +18827,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14363,11 +18848,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14379,11 +18869,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14395,11 +18890,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14411,11 +18911,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14427,11 +18932,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14443,11 +18953,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14459,11 +18974,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14475,11 +18995,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14491,11 +19016,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14507,11 +19037,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14523,11 +19058,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14539,11 +19079,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14555,11 +19100,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14571,11 +19121,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14587,11 +19142,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14603,11 +19163,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14619,11 +19184,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14635,11 +19205,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14651,11 +19226,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14667,11 +19247,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14683,11 +19268,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14699,11 +19289,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14715,11 +19310,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14731,11 +19331,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14747,11 +19352,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14763,11 +19373,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14779,11 +19394,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14795,11 +19415,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14811,11 +19436,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14827,11 +19457,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14843,11 +19478,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14859,11 +19499,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14875,11 +19520,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14891,11 +19541,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14907,11 +19562,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14923,11 +19583,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14939,11 +19604,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14955,11 +19625,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14971,11 +19646,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -14987,11 +19667,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15003,11 +19688,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15019,11 +19709,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15035,11 +19730,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15051,11 +19751,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15067,11 +19772,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15083,11 +19793,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15099,11 +19814,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15115,11 +19835,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15131,11 +19856,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15147,11 +19877,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15163,11 +19898,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15179,11 +19919,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15195,11 +19940,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15211,11 +19961,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15227,11 +19982,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15243,11 +20003,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15259,11 +20024,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15275,11 +20045,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15291,11 +20066,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15307,11 +20087,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15323,11 +20108,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15339,11 +20129,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15355,11 +20150,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15371,11 +20171,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15387,11 +20192,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15403,11 +20213,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15419,11 +20234,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15435,11 +20255,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15451,11 +20276,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15467,11 +20297,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15483,11 +20318,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15499,11 +20339,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15515,11 +20360,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15531,11 +20381,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15547,11 +20402,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15563,11 +20423,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15579,11 +20444,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15595,11 +20465,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15611,11 +20486,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15627,11 +20507,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15643,11 +20528,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15659,11 +20549,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15675,11 +20570,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15691,11 +20591,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15707,11 +20612,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15723,11 +20633,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15739,11 +20654,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15755,11 +20675,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15771,11 +20696,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15787,11 +20717,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15803,11 +20738,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15819,11 +20759,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15835,11 +20780,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15851,11 +20801,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15867,11 +20822,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15883,11 +20843,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15899,11 +20864,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15915,11 +20885,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15931,11 +20906,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15947,11 +20927,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)
@@ -15963,11 +20948,16 @@ act = {
 }
 _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2],codigo_ciiuv4: act[:codigo_ciiuv4])
 if _act.nil?
-  _act = ActividadEconomica.find_by(codigo_ciiuv2: act[:codigo_ciiuv2])
-  if _act.nil?
+  _act = ActividadEconomica.where(codigo_ciiuv2: act[:codigo_ciiuv2])
+  if _act.size == 0
     _act = ActividadEconomica.new(codigo_ciiuv4: act[:codigo_ciiuv4])
   else
-    _act = _act.dup
+    _act_v4 = _act.where(codigo_ciiuv4: nil).first
+    if _act_v4.nil?
+      _act = _act.first.dup
+    else
+      _act = _act_v4
+    end
   end
 end
 _act.assign_attributes(act)

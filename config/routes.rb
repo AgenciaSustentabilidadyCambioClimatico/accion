@@ -24,6 +24,8 @@ Rails.application.routes.draw do
   #################################################################################################
   devise_for :users, :controllers => { sessions: 'admin/sessions', invitations: 'admin/invitations' }, path_names: { sign_in: 'login', sign_out: 'logout' }, :skip => [:registrations]
 
+
+
   as :user do
     get 'account' => 'admin/registrations#edit', :as => 'edit_user_registration'    
     patch 'users' => 'admin/registrations#update', :as => 'user_registration'
@@ -32,6 +34,10 @@ Rails.application.routes.draw do
     end
     root to: 'devise/sessions#new'
   end
+
+  #Clave única
+  get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
+
 
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
@@ -325,6 +331,8 @@ Rails.application.routes.draw do
     resources :historial_instrumentos, path: "historial_instrumentos" do
       collection do
         get 'cargar_instrumento'
+        get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
+        post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
       end
     end     
 
@@ -398,7 +406,7 @@ Rails.application.routes.draw do
       resources :informe_impactos, except: [:show,:new,:edit]
 
       #DZC Tarea APL-001
-      post '', to: "manifestacion_de_interes#create", as: :create_from_tarea_pendiente #DZC Iniciar proceso APL
+      match '', to: "manifestacion_de_interes#create", as: :create_from_tarea_pendiente, via: [:get, :post] #DZC Iniciar proceso APL
       get ':id/edit(.:format)', to: "manifestacion_de_interes#edit", as: :edit #DZC Manifestacion instanciada
       match ':id/edit(.:format)', to: "manifestacion_de_interes#update", as: :tarea_pendiente, via: [:get, :post, :patch]
 
@@ -406,13 +414,21 @@ Rails.application.routes.draw do
       get ':id/revisor', to: "manifestacion_de_interes#revisor", as: :revisor
       patch ':id/revisor', to: "manifestacion_de_interes#asignar_revisor"
 
-      #DZC TAREA APL-003
+      #DZC TAREA APL-003.1
       get ':id/admisibilidad', to: "manifestacion_de_interes#admisibilidad", as: :admisibilidad
       patch ':id/admisibilidad', to: "manifestacion_de_interes#revisar_admisibilidad"
 
-      #DZC TAREA APL-004
+      #DZC TAREA APL-003.2
+      get ':id/admisibilidad-juridica', to: "manifestacion_de_interes#admisibilidad_juridica", as: :admisibilidad_juridica
+      patch ':id/admisibilidad-juridica', to: "manifestacion_de_interes#revisar_admisibilidad_juridica"
+
+      #DZC TAREA APL-004.1
       get ':id/observaciones-admisibilidad', to: "manifestacion_de_interes#observaciones_admisibilidad", as: :observaciones_admisibilidad
       patch ':id/observaciones-admisibilidad', to: "manifestacion_de_interes#resolver_observaciones_admisibilidad"
+
+      #DZC TAREA APL-004.2
+      get ':id/observaciones-admisibilidad-juridica', to: "manifestacion_de_interes#observaciones_admisibilidad_juridica", as: :observaciones_admisibilidad_juridica
+      patch ':id/observaciones-admisibilidad-juridica', to: "manifestacion_de_interes#resolver_observaciones_admisibilidad_juridica"
 
       #DZC TAREA APL-005
       get ':id/pertinencia-factibilidad', to: "manifestacion_de_interes#pertinencia_factibilidad", as: :pertinencia_factibilidad

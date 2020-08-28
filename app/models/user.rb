@@ -172,4 +172,24 @@ class User < ApplicationRecord
     }
     user_temporal
   end
+
+  def confirmar_temporal
+    if(self.user_id.nil?)
+      #Es nuevo
+      user_final = self
+      user_final.temporal = false
+      user_final.flujo_id = nil
+      user_final.save
+    else
+      #Se edito uno existente
+      user_final = User.find(self.user_id)
+
+      #Primero los valores del padre
+      user_final.telefono = self.telefono
+      user_final.email = self.email
+      user_final.nombre_completo = self.nombre_completo
+      user_final.save(validate: false)
+    end
+    user_final
+  end
 end

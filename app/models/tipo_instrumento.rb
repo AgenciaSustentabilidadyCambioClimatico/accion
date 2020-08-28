@@ -113,7 +113,7 @@ class TipoInstrumento < ApplicationRecord
 	end
 
 	def nombre_subtipo
-		self.es_subtipo? ? self.nombre : "No fue definido"
+		self.es_subtipo? ? self.nombre : "Pendiente de aprobación"
 	end
 
 end

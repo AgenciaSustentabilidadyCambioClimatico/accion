@@ -1,7 +1,7 @@
 class DocumentoDiagnosticosController < ApplicationController
 	before_action :authenticate_user!
-	before_action :set_tarea_pendiente
-	before_action :set_manifestacion_de_interes
+	before_action :set_tarea_pendiente, except: [:descarga, :descarga_estandar_acuerdo_informe]
+	before_action :set_manifestacion_de_interes, except: [:descarga_estandar_acuerdo_informe]
 	before_action :set_documento_diagnostico, only: [:actualizacion,:actualizar,:revision,:enviar_revision]
 
 	def actualizacion

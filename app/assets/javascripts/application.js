@@ -48,6 +48,25 @@ $(document).on('nested:fieldAdded:hito_de_prensa_instrumentos', function(e) {
   e.field.find('label').text( $('#instrumento-added-text').val() );
   e.field.find('input').first().val( $('#instrumento-added').val() );
 });
+
+$(document).on('click', '.button-seleccione-archivo', function(){
+  $("#"+$(this).data('input-file')).trigger("click");
+});
+
+$(document).on('change', ".file-seleccione-archivo", function(){
+  input_cantidad_archivos = $(this)[0].files.length;
+  nombre_input = "Archivo(s) no subido(s)";
+  if(input_cantidad_archivos == 1){
+    nombre_input = $(this)[0].files[0].name;
+  }
+  if(input_cantidad_archivos > 1){
+    nombre_input = input_cantidad_archivos+" seleccionados";
+  }
+  $(this).siblings(".input-group").find(".label-seleccione-archivo").html(nombre_input);
+  $(this).siblings(".input-group").find(".label-seleccione-archivo").attr('title', nombre_input);
+  $(this).siblings(".input-group").find(".label-seleccione-archivo").data('original-title', nombre_input);
+});
+
 var editor;
 var chosenOptions = {
   allow_single_deselect: true,
@@ -265,7 +284,7 @@ function toggleAddLink() {
 function htmlErrorToTooltip(placement) {
   placement = (placement===undefined) ? 'right' : placement
   $('div.has-error').each(function(k,v) {
-    campo = $(this).find("input.required, input.validado, select.required, input[type='checkbox'], input[type='radio'], .card-body.required, .error-mantenedor, textarea");
+    campo = $(this).find("input.required, input.validado, select.required, input[type='checkbox'], input[type='radio'], .card-body.required, .error-mantenedor, textarea, .input-group");
     error = $(this).find("span.help-block");
     if(campo.hasClass('card-body')) {
       campo = campo.parent('.card');
@@ -788,12 +807,17 @@ function beauty_tree_check_children(parent){
 
 function set_seleccionados_tree(card){
   lista_html = card.find('.seleccionados_tree');
+  solo_lectura = false;
+  if(lista_html.length == 0){
+    lista_html = card.find('.seleccionados_tree_solo_lectura');
+    solo_lectura = true;
+  }
   lista_html.html("");
   lista_elementos = card.children(".card-body").children("div").children("div").children("div").children("div").children("ul").children("li").children(".tree-parent");
-  _set_seleccionados_tree(lista_html,lista_elementos);
+  _set_seleccionados_tree(lista_html,lista_elementos, solo_lectura);
 }
 
-function _set_seleccionados_tree(lista_html,lista_elementos){
+function _set_seleccionados_tree(lista_html,lista_elementos, solo_lectura){
   lista_elementos.each(function(index){
     if($(this).prop("checked")){
       var nombre = $(this).parent().children("label").html();
@@ -801,10 +825,14 @@ function _set_seleccionados_tree(lista_html,lista_elementos){
       if(data_type.length > 0){
         nombre += " ("+data_type.html()+")";
       }
-      lista_html.append("<li class='list-group-item py-1 letter-size' id='"+this.value+"'>"+nombre+"</li>");
+      clase_li = "list-group-item py-1 ";
+      if(solo_lectura){
+        clase_li = "";
+      }
+      lista_html.append("<li class='"+clase_li+" letter-size' id='"+this.value+"'>"+nombre+"</li>");
     }else if($(this).prop("indeterminate")){
       sub_lista = $(this).parent().children("div").children("ul").children("li").children(".tree-parent");
-      _set_seleccionados_tree(lista_html, sub_lista);
+      _set_seleccionados_tree(lista_html, sub_lista, solo_lectura);
     }
   });
 }

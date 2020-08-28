@@ -20,7 +20,7 @@ class EstablecimientoContribuyente < ApplicationRecord
 
   serialize :fields_visibility
 
-	validates_uniqueness_of :casa_matriz, scope: [:contribuyente_id], if: proc{ !self.casa_matriz.blank? && !contribuyente.temporal}
+	#validates_uniqueness_of :casa_matriz, scope: [:contribuyente_id], if: proc{ !self.casa_matriz.blank? && !contribuyente.temporal}
 
   default_scope { where("fecha_eliminacion IS NULL") }
   

@@ -5,7 +5,7 @@
         %h5.no-margin=t(:mis_instrumentos)
         %h5.m-0.float-right
           = link_to t(:volver_a_cargar), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-primary m-1 btn-sm float-right'
-      .card-body        
+      .card-body.pb-0
         .row.justify-content-left       
           .col-md-4
             = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
@@ -14,7 +14,7 @@
           .col-md-4
             = select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }           
       .card-body.p-0
-        .table-responsive
+        .table-responsive.mis-instrumentos
           %table.table.table-bordered.table-striped
             %thead
               %tr
@@ -23,9 +23,9 @@
                 %th=t(:id)                  
                 %th=t(:instrumento_nombre)
                 %th=t(:roles)
-                %th=t(:historial)
                 %th=t(:acciones_actividades_comprometidas)
                 %th=t(:auditorias_rendiciones)
+                %th=t(:historial)
             %tbody
               - @instancias.each do |ins|
                 %tr.accion
@@ -34,15 +34,24 @@
                   %td=ins[:id_instrumento]                  
                   %td=ins[:nombre_instrumento]
                   %td=ins[:roles]
-                  %td=link_to t(:ver), cargar_instrumento_admin_historial_instrumentos_path(instrumento: ins[:id_instrumento]) #, target: :_blank
                   - if ins[:acciones_actividades][:url].blank?
                     %td=ins[:acciones_actividades][:texto]
                   - else
-                    %td=link_to ins[:acciones_actividades][:texto], public_send(ins[:acciones_actividades][:url], ins[:acciones_actividades][:objeto_uno],ins[:acciones_actividades][:objeto_dos])
+                    %td
+                      =link_to public_send(ins[:acciones_actividades][:url], ins[:acciones_actividades][:objeto_uno],ins[:acciones_actividades][:objeto_dos]), class: "btn-tabla-instrumentos" do
+                        =fa_icon 'eye'
+                        =ins[:acciones_actividades][:texto]
                   - if ins[:auditorias_rendiciones][:url].blank?
                     %td=ins[:auditorias_rendiciones][:texto]
                   - else
-                    %td=link_to ins[:auditorias_rendiciones][:texto], public_send(ins[:auditorias_rendiciones][:url], ins[:auditorias_rendiciones][:objeto_uno],ins[:auditorias_rendiciones][:objeto_dos])
+                    %td
+                      =link_to public_send(ins[:auditorias_rendiciones][:url], ins[:auditorias_rendiciones][:objeto_uno],ins[:auditorias_rendiciones][:objeto_dos]), class: "btn-tabla-instrumentos" do
+                        =fa_icon 'eye'
+                        =ins[:auditorias_rendiciones][:texto]
+                  %td
+                    =link_to cargar_instrumento_admin_historial_instrumentos_path(instrumento: ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                      =fa_icon 'eye'
+                      =t(:ver)
 .float-right
   = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
   -#

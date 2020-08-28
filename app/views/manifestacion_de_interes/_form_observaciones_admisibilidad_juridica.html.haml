@@ -1,25 +1,18 @@
 :javascript
   $(document).ready(function(){
-    $('#enviar-obs-admisibilidad-button').click(function(e){
-      $('#manifestacion_de_interes_update_obs_admisibilidad').val(true);
-      $('#manifestacion_de_interes_temporal').val(false);
-      console.log($('#manifestacion_de_interes_update_obs_admisibilidad').val());
-    });
-
-
 
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
       tab_selected = e.target;
       $('.accordionTabs .card-body a').removeClass('hide');
-      if($(tab_selected).prop('id') != 'admisibilidad-tab'){
+      if($(tab_selected).prop('id') != 'admisibilidad-juridica-tab'){
 
-        if($(tab_selected).prop('id') == 'admisibilidad-externo'){
+        if($(tab_selected).prop('id') == 'admisibilidad-juridica-externo'){
           $('#collapseTabs').removeClass("show");
-          $('a.nav-link#admisibilidad-tab').tab('show');
+          $('a.nav-link#admisibilidad-juridica-tab').tab('show');
           $('.accordionTabs .card-header a').removeClass('active');
           $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
         }else{
-          $('#admisibilidad-externo').removeClass('active');
+          $('#admisibilidad-juridica-externo').removeClass('active');
           $('.accordionTabs .card-header a').addClass('active');
           $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
           if($('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"] span').length == 0){
@@ -30,7 +23,7 @@
           $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
         }
       }else{
-        $('#admisibilidad-externo').addClass('active');
+        $('#admisibilidad-juridica-externo').addClass('active');
         $('.accordionTabs .card-header a').removeClass('active');
         $('.accordionTabs .card-header a .titulo-accordion').html('Información de acuerdo');
         $('.accordionTabs .card-header a span').removeClass('d-none');
@@ -48,7 +41,7 @@
     $('#collapseTabs').on('show.bs.collapse', function () {
       $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
 
-      $('#admisibilidad-externo').removeClass('active');
+      $('#admisibilidad-juridica-externo').removeClass('active');
       $('.accordionTabs .card-header a').addClass('active');
     });
 
@@ -56,19 +49,19 @@
       $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
 
       if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de acuerdo'){
-        $('#admisibilidad-externo').addClass('active');
+        $('#admisibilidad-juridica-externo').addClass('active');
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
-- titulo t(:observaciones_admisibilidad)
-= simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: true, html: { autocomplete: :off, multipart: true } do |f|
+- titulo t(:observaciones_admisibilidad_juridica)
+= simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: true, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: false
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
   = f.submit "", class: 'd-none'
   =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
-  = f.input :update_obs_admisibilidad, as: :hidden, wrapper: false, input_html: { value: "" }
+  = f.input :update_obs_admisibilidad_juridica, as: :hidden, wrapper: false, input_html: { value: true }
   .row
     .col-12
       .card
@@ -79,18 +72,18 @@
           #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
               %li.nav-item
-                %a.nav-link{id: "admisibilidad-externo", class: 'active', "aria-controls" => 'admisibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-externo", :role => "tab"}
-                  =t('admisibilidad')
-                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(:admisibilidad) && @total_de_errores_por_tab[:admisibilidad].size > 0
+                %a.nav-link{id: "admisibilidad-juridica-externo", class: 'active', "aria-controls" => 'admisibilidad-juridica-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-juridica-externo", :role => "tab"}
+                  =t('admisibilidad_juridica')
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(:"admisibilidad-juridica") && @total_de_errores_por_tab[:"admisibilidad-juridica"].size > 0
                   %small.total-error
                     %i.fa.fa-exclamation
         .card-body.border-tabs.px-2.pt-3
-          - tabs = { "objetivo-acuerdo": false, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false, 'admisibilidad': true }
+          - tabs = { "objetivo-acuerdo": false, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false, 'admisibilidad-juridica': true }
           -# formulario_remote = true #flag para mostrar/ocultar el botón de guardado
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
               - tabs.each do |tab,active|
-                %li.nav-item{class: (tab.to_s == 'admisibilidad' ? 'd-none' : '')}
+                %li.nav-item{class: (tab.to_s == 'admisibilidad-juridica' ? 'd-none' : '')}
                   %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
                     =t(tab.to_s.gsub('-','_'))
                   - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
@@ -112,7 +105,7 @@
                   .card-body.p-0
                     .list-group.list-group-flush
                       - tabs.each do |tab,active|
-                        -if tab.to_s != 'admisibilidad'
+                        -if tab.to_s != 'admisibilidad-juridica'
                           %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
                             =t(tab.to_s.gsub('-','_'))
                             - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
@@ -120,45 +113,43 @@
                                 %i.fa.fa-exclamation
 
             = render "form_manifestacion_de_interes", tabs: tabs, f: f, solo_lectura: solo_lectura do
-              #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
+              #admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-juridica"])}
                 .card
                   .card-body
                     .row
                       .col-12
                         -if !solo_lectura
-                          = f.input :observaciones_admisibilidad, as: :text, input_html: {rows: 5}, label: t(:observaciones_y_comentarios), disabled: true
+                          = f.input :observaciones_admisibilidad_juridica, as: :text, input_html: {rows: 5}, label: t(:observaciones_y_comentarios), disabled: true
                         -else
                           .form-group
-                            -no_data = f.object.observaciones_admisibilidad.blank?
+                            -no_data = f.object.observaciones_admisibilidad_juridica.blank?
                             %label.control-label.string=t(:observaciones_y_comentarios)
-                            %p#manifestacion_de_interes_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_admisibilidad)
+                            %p#manifestacion_de_interes_observaciones_admisibilidad_juridica.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_admisibilidad_juridica)
                       .col-12
                         -if !solo_lectura
-                          = f.input :respuesta_observaciones_admisibilidad, as: :text, input_html: {rows: 5}, required: true
+                          =  f.input :respuesta_observaciones_admisibilidad_juridica, as: :text, input_html: {rows: 5}, required: true
                         -else
                           .form-group
-                            -no_data = f.object.respuesta_observaciones_admisibilidad.blank?
-                            %label.control-label.string=t(:respuesta_observaciones_admisibilidad)
-                            %p#manifestacion_de_interes_respuesta_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_admisibilidad)
+                            -no_data = f.object.respuesta_observaciones_admisibilidad_juridica.blank?
+                            %label.control-label.string=t(:respuesta_observaciones_admisibilidad_juridica)
+                            %p#manifestacion_de_interes_respuesta_observaciones_admisibilidad_juridica.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_admisibilidad_juridica)
                       -if !solo_lectura
                         .col-12.col-md-10
-                          = f.input :archivo_admisibilidad, as: :file, input_html: {class: 'form-control'}, label: t(:adjuntar_archivo)
+                          = f.input :archivo_admisibilidad_juridica, as: :file, input_html: {class: 'form-control'}, label: t(:adjuntar_archivo)
                         .col-12.col-md-2
                           -#
                             = __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad)
-                          = __descargar_archivo(f.object.archivo_admisibilidad,f.object)
+                          = __descargar_archivo(f.object.archivo_admisibilidad_juridica,f.object)
                       -else
                         .col-12
                           = label_tag 'Archivo admisibilidad', nil, class: 'string mb-0'
-                          = __descargar_archivo(f.object.archivo_admisibilidad,f.object, false)
-    -if !solo_lectura
-      .col-12
-        .float-right
-          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'enviar-obs-admisibilidad-button'
--if !solo_lectura
-  = render 'admin/users/buscador'
-  - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
-  = render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
+                          = __descargar_archivo(f.object.archivo_admisibilidad_juridica,f.object, false)
+    .col-12
+      .float-right
+        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'enviar-obs-admisibilidad-button'
+= render 'admin/users/buscador'
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+= render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento

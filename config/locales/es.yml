@@ -378,13 +378,20 @@ es:
   enviar_manifestación_de_interés: Enviar manifestación de interés
   asignar_revisor: Asignar revisor
   revisor: Revisor
-  revisar_admisibilidad: Revisar admisibilidad
-  admisibilidad: Admisibilidad
-  resultado_admisibilidad: Resultado admisibilidad
+  revisor_tecnico: Revisor técnico
+  revisor_juridico: Revisor jurídico
+  revisar_admisibilidad: Revisar admisibilidad técnica
+  admisibilidad: Admisibilidad técnica
+  resultado_admisibilidad: Resultado admisibilidad técnica
+  revisar_admisibilidad_juridica: Revisar admisibilidad jurídica
+  admisibilidad_juridica: Admisibilidad jurídica
+  resultado_admisibilidad_juridica: Resultado admisibilidad jurídica
   comentario_jefe_de_línea: Comentario jefe de línea
   observaciones_y_comentarios: Observaciones y comentarios
   observaciones_admisibilidad: Observaciones admisibilidad
   observación_admisibilidad: Observación admisibilidad
+  observaciones_admisibilidad_juridica: Observaciones admisibilidad jurídica
+  observación_admisibilidad_juridica: Observación admisibilidad jurídica
   pertinencia_factibilidad: Pertinencia factibilidad
   revisar_pertinencia_factibilidad: Revisar pertinencia y factibilidad
   resultado_de_la_pertinencia: Resultado de la revision de pertinencia y factibilidad
@@ -1236,6 +1243,13 @@ es:
   nuevo_usuario: Nuevo usuario
   nuevo_representante: Nuevo representante
 
+  tipo_instrumento_propuesto: Tipo de instrumento propuesto
+  selección_de_encargado_de_hitos_de_prensa: Seleccion de encargado de hitos de prensa
+  comentarios_sobre_condiciones_y_compromisos: Comentarios sobre condiciones y compromisos
+  tarea_documentos_asociados: Documentos asociados
+  respuesta_observaciones_admisibilidad: Respuesta observaciones
+  respuesta_observaciones_admisibilidad_juridica: Respuesta observaciones
+
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
@@ -1380,6 +1394,10 @@ es:
               blank: Indique las secciones que tienen observaciones
             revisor_id:
               blank: Indique el nombre del revisor
+            revisor_tecnico_id:
+              blank: Indique el nombre del revisor técnico
+            revisor_juridico_id:
+              blank: Indique el nombre del revisor jurídico
             proponente:
               blank: Indique el nombre del proponente
             tipo_instrumento_id:

@@ -1,77 +1,196 @@
 :javascript
-	$(document).ready(function(){
+  $(document).ready(function(){
 
-		$(".disabled *").prop('disabled',true);
-		//Habilita el desplegar los mapa dentro de contexto sector.
-		$(".fa").prop('disabled',false);
-		observacion_obligatoria();
-		htmlErrorToTooltip('top');
-		$('#manifestacion_de_interes_resultado_admisibilidad').change( function(){observacion_obligatoria()});
+    //$(".disabled *:not('.fa')").prop('disabled',true);
+    //$(".disabled *:not('.fa')").off();
 
-		function observacion_obligatoria(){
-			resultado = $('#manifestacion_de_interes_resultado_admisibilidad').val()
-			if(resultado=="rechazado" || resultado=="en_observación"){
-				$('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').show();
-				$('#manifestacion_de_interes_observaciones_admisibilidad').addClass('required');
-				
-			}else{
-				$('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').hide();
-				$('#manifestacion_de_interes_observaciones_admisibilidad').removeClass('required border-error').removeAttr('data-original-title');
-			}
-		}
-		
-	});
+    error_soa = '#{@manifestacion_de_interes.errors.messages[:secciones_observadas_admisibilidad].first}';
 
-- formulario_remote = true #flag para mostrar/ocultar el botón de guardado
+    observacion_obligatoria();
+    htmlErrorToTooltip('top');
+    if(error_soa != ''){
+      showTooltipError(error_soa, $('.manifestacion_de_interes_secciones_observadas_admisibilidad'), 'top');
+    }
+    $('#manifestacion_de_interes_resultado_admisibilidad').change( function(){observacion_obligatoria()});
+
+    function observacion_obligatoria(){
+      resultado = $('#manifestacion_de_interes_resultado_admisibilidad').val()
+      if(resultado=="rechazado" || resultado=="en_observación"){
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').show();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad"] > abbr').show();
+        $('#manifestacion_de_interes_observaciones_admisibilidad').addClass('required');
+        
+      }else{
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').hide();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad"] > abbr').hide();
+        $('#manifestacion_de_interes_observaciones_admisibilidad').removeClass('required border-error').removeAttr('data-original-title');
+        $('.manifestacion_de_interes_secciones_observadas_admisibilidad').removeClass('border-error');
+      }
+    }
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'admisibilidad-tab'){
+
+        if($(tab_selected).prop('id') == 'admisibilidad-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#admisibilidad-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#admisibilidad-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#admisibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de acuerdo');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#admisibilidad-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de acuerdo'){
+        $('#admisibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+    
+  });
+
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:revisar_admisibilidad)
-- tabs = { "tipo-de-acuerdo": false, "datos-institucion": false, "contexto-sector": false, "datos-proyecto": false, "objetivo-acuerdo": false, "admisibilidad": true }
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-		- tabs.each do |tab,active|
-			%li.nav-item
-				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-					=t(tab.to_s.gsub('-','_'))
-				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-					%small.total-error
-						= @total_de_errores_por_tab[tab].size 
-		- if @manifestacion_de_interes.errors.messages.size < 1
-			- formulario_remote = false
 = simple_form_for @manifestacion_de_interes, url: admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
-	= f.hidden_field :temporal, as: :boolean, value: formulario_remote
-	= f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
-	= f.submit "", class: 'd-none'
-	=# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
-	= f.input :update_admisibilidad, as: :hidden, wrapper: false, input_html: { value: true }
-	= render "form_manifestacion_de_interes", tabs: tabs, f: f do
-		#admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
-			.card
-				.card-body
-					.row
-						.col-12.col-lg-6
-							= f.label t(:observaciones)
-							%br
-							-if @manifestacion_de_interes.tipo_instrumento_id == 6
-								- checks = tabs.map{|l,v| l.to_s != "admisibilidad" ? [I18n.t(l.to_s.gsub('-','_')), l.to_s] : nil}.compact
-							-else
-								- checks = tabs.map{|l,v| (l.to_s == "datos-proyecto" || l.to_s == "admisibilidad") ? nil : [I18n.t(l.to_s.gsub('-','_')), l.to_s]}.compact
-							= f.collection_check_boxes :secciones_observadas_admisibilidad, checks, :last, :first, item_wrapper_tag: false, boolean_style: :inline, checked: @manifestacion_de_interes.secciones_observadas_admisibilidad do |cb|
-								= cb.check_box 
-								= cb.label
-								%br
-						.col-12.col-lg-6
-							= f.input :respuesta_observaciones_admisibilidad, as: :text, input_html: {rows: 7}, disabled: true
-						.col-12.col-lg-6.offset-lg-6
-							= label_tag 'Archivo admisibilidad', nil, class: 'string mb-0'
-							-#
-								= __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad, false)
-							= __descargar_archivo(f.object.archivo_admisibilidad, f.object, false)
-						.col-12.col-lg-6
-							= f.input :resultado_admisibilidad, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [w.humanize, w] }, required: true, label: t(:resultado_admisibilidad)
-						.col-12.col-lg-6
-							= f.input :comentario_jefe_de_linea, as: :text, input_html: {rows: 3}, label: t(:comentario_jefe_de_línea), disabled: true
-						.col-12
-							= f.input :observaciones_admisibilidad, as: :text, input_html: {rows: 5}, required: true, label: t(:observaciones_y_comentarios)
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
+  = f.submit "", class: 'd-none'
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento.html_safe
+            %h5.no-margin=datos_beneficiario.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "admisibilidad-externo", class: 'active', "aria-controls" => 'admisibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-externo", :role => "tab"}
+                  =t('admisibilidad')
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "objetivo-acuerdo": false, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false, 'admisibilidad': true }
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{class: (tab.to_s == 'admisibilidad' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de acuerdo
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'admisibilidad'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            -#%span.badge.badge-danger.badge-pill 1
 
-	.float-right
-		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
+            =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+            = f.input :update_admisibilidad, as: :hidden, wrapper: false, input_html: { value: true }
+            = render "form_manifestacion_de_interes", tabs: tabs, f: f, solo_lectura: true do
+              #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
+                .card
+                  .card-body
+                    .row
+                      .col-12.col-lg-6
+                        = f.label :secciones_observadas_admisibilidad do
+                          %abbr{title: 'Requerido', style: 'display: none;'} *
+                          =t(:observaciones)
+                        %br
+                        - checks = tabs.map{|l,v| l.to_s != "admisibilidad" ? [I18n.t(l.to_s.gsub('-','_')), l.to_s] : nil}.compact
+                        -error_soa = ''
+                        -#error_soa = 'border-error' if f.object.errors.messages[:secciones_observadas_admisibilidad].size > 0
+                        %div.form-group.required.manifestacion_de_interes_secciones_observadas_admisibilidad{class: error_soa}
+                          = f.collection_check_boxes :secciones_observadas_admisibilidad, checks, :last, :first, item_wrapper_tag: false, boolean_style: :inline, checked: @manifestacion_de_interes.secciones_observadas_admisibilidad, required: true do |cb|
+                            = cb.check_box(disabled: solo_lectura)
+                            = cb.label
+                            %br
+                      .col-12.col-lg-6
+                        -if !solo_lectura
+                          = f.input :respuesta_observaciones_admisibilidad, as: :text, input_html: {rows: 7}, disabled: true
+                        -else
+                          .form-group
+                            -no_data = f.object.respuesta_observaciones_admisibilidad.blank?
+                            %label.control-label.string=t(:respuesta_observaciones_admisibilidad)
+                            %p#manifestacion_de_interes_respuesta_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_admisibilidad)
+                      .col-12.col-lg-6
+                        -if !solo_lectura
+                          = f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, label: t(:tipo_instrumento_propuesto), required: true
+                        -else
+                          .form-group
+                            -no_data = f.object.tipo_instrumento_id.blank?
+                            %label.control-label.string=t(:tipo_instrumento)
+                            %p#manifestacion_de_interes_tipo_instrumento_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.tipo_instrumento.nombre)
+                      .col-12.col-lg-6
+                        = label_tag 'Archivo admisibilidad', nil, class: 'string mb-0'
+                        -#
+                          = __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad, false)
+                        = __descargar_archivo(f.object.archivo_admisibilidad, f.object, false)
+                      .col-12.col-lg-6
+                        -if !solo_lectura
+                          = f.input :resultado_admisibilidad, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [w.humanize, w] }, required: true, label: t(:resultado_admisibilidad)
+                        -else
+                          .form-group
+                            -no_data = f.object.resultado_admisibilidad.blank?
+                            %label.control-label.string=t(:resultado_admisibilidad)
+                            %p#manifestacion_de_interes_resultado_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.resultado_admisibilidad.humanize)
+                      .col-12.col-lg-6
+                        -if !solo_lectura
+                          = f.input :comentario_jefe_de_linea, as: :text, input_html: {rows: 3}, label: t(:comentario_jefe_de_línea), disabled: true
+                        -else
+                          .form-group
+                            -no_data = f.object.comentario_jefe_de_linea.blank?
+                            %label.control-label.string=t(:comentario_jefe_de_línea)
+                            %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.comentario_jefe_de_linea)
+                      .col-12
+                        -if !solo_lectura
+                          = f.input :observaciones_admisibilidad, as: :text, input_html: {rows: 5}, required: true, label: t(:observaciones_y_comentarios)
+                        -else
+                          .form-group
+                            -no_data = f.object.observaciones_admisibilidad.blank?
+                            %label.control-label.string=t(:observaciones_y_comentarios)
+                            %p#manifestacion_de_interes_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_admisibilidad)
+    -if !solo_lectura
+      .col-12
+        .float-right
+          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"

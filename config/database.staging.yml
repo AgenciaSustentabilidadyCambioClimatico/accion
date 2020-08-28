@@ -11,7 +11,7 @@ default: &default
 
 development:
   <<: *default
-  database: ascc_development
+  database: bd_dev_accion
 
 test:
   <<: *default
@@ -19,10 +19,11 @@ test:
 
 staging:
   <<: *default
-  database: ascc_staging
-  # database: ascc_20180608
-  #database: ascc_201810011204
-  #database: ascc_20180705
+  database: bd_dev_accion
+
+production:
+  <<: *default
+  database: bd_accion  
 
 external_fpl_db:
   <<: *default

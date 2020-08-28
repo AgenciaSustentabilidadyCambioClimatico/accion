@@ -233,7 +233,9 @@ class ApplicationController < ActionController::Base
         @acceso = :jefe_de_linea
       elsif current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO)
         @acceso = :revisor_tecnico
-      elsif params[:buscador][:flujo_id].present? && current_user.is_proponente?(params[:buscador][:flujo_id].to_i)
+      elsif params[:buscador].present? && params[:buscador][:flujo_id].present? && current_user.is_proponente?(params[:buscador][:flujo_id].to_i)
+        @acceso = :proponente
+      elsif params[:user].present? && params[:user][:flujo_id].present? && current_user.is_proponente?(params[:user][:flujo_id].to_i)
         @acceso = :proponente     
       else
         @acceso = :user

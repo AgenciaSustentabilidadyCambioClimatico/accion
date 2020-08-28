@@ -38,7 +38,7 @@
 # DZC 2019-07-17 13:51:46 resetea las tablas. COMENTAR CUANDO SE HAYA PROGRAMADO CORRECTAMENTE EL POBLAMIENTO
 # DZC 2019-07-25 17:08:49 destruye las tablas
 
-puts "Cargando campos para el mantenedor... DZC"
+puts "Cargando campos para el mantenedor..."
 CampoTarea.destroy_all
 Campo.destroy_all
 # DZC 2019-07-25 17:08:37 resetea el sequencer de las tablas
@@ -1107,7 +1107,7 @@ atributos_obligatorios = {
 atributos_opcionales = {
    nombre: "Recursos que se podrían comprometer",
    validacion_contenido_obligatorio: true,
-   validaciones_activas: true,
+   validaciones_activas: false,
     validacion_vacio_mensaje: "Campo no puede estar vacío",
    validacion_min: 100,
    validacion_max: 5000,

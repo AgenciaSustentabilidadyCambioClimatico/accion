@@ -6,9 +6,9 @@
 - ti_collection = TipoInstrumento.por_padre
 - r_collection = Rol.__select
 - c_collection = Cargo.__select
-- ae_collection_all = ActividadEconomica.__select(false)
+- ae_collection_all = ActividadEconomica.__select
 - tc_collection_all = TipoContribuyente.__select
-- ae_collection = contribuyente ? contribuyente.actividad_economica_contribuyentes.map{|m|f=m.actividad_economica;["<label>#{f.codigo_ciiuv2}</label> - #{f.descripcion}".html_safe,f.id]}.uniq : ae_collection_all
+- ae_collection = contribuyente ? contribuyente.actividad_economica_contribuyentes.map{|m|f=m.actividad_economica;["<label>#{f.codigo_ciiuv4}</label> - #{f.descripcion_ciiuv4}".html_safe,f.id]}.uniq : ae_collection_all
 - tc_collection = contribuyente ? contribuyente.dato_anual_contribuyentes.order(periodo: :desc).map{|m|[m.tipo_contribuyente.nombre,m.tipo_contribuyente_id]}.uniq : tc_collection_all
 
 - titulo t(:responsables)

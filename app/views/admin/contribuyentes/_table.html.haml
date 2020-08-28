@@ -23,7 +23,7 @@
     %tr
       %th.rut=t(:rut)
       %th.razon-social=t(:razón_social)
-      - if es_para_seleccion
+      - if es_para_seleccion || seleccion_basica
         %th.iconos-acciones=t(:seleccione)
       - elsif current_user.is_admin? || current_user.posee_rol_ascc?([Rol::JEFE_DE_LINEA, Rol::REVISOR_TECNICO]) || @mis_instituciones
         %th.dos.iconos-acciones=t(:acciones)

@@ -20,14 +20,24 @@ class Contribuyente < ApplicationRecord
 	validates :rut, presence: true, if: proc{!self.filter_mode}
 	validates :dv, presence: true, if: proc{!self.filter_mode}
 	validates :razon_social, presence: true, if: proc{!self.filter_mode}
-	validates_uniqueness_of :rut, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
+	#validates_uniqueness_of :rut, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
 
 	validate :filter_data, if: proc{self.filter_mode==true && self.from_establecimientos==false}
 	validate :rut_dv, if: proc{!self.filter_mode}
 
+	#Se añade ya que se deben excluir las insituciones temporales
+	validate :rut_unico, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
+
 	alias_attribute :nombre, :razon_social
 
 	default_scope { where(temporal: false) }
+
+	def rut_unico
+		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first
+		if !busqueda_identico.blank? && busqueda_identico.id != self.id
+			errors.add(:rut, "Este RUT ya está siendo utilizado")
+		end
+	end
 
 	def filter_data
 		if (self.rut.blank? && self.razon_social.blank? && self.actividad_economica_id.blank? )
@@ -177,6 +187,7 @@ class Contribuyente < ApplicationRecord
     }
     self.establecimiento_contribuyentes.each{|r| 
       rc = r.dup
+      rc.establecimiento_contribuyente_id = r.id
       rc.contribuyente_id = copia_contribuyente.id
       rc.save
     }
@@ -201,5 +212,57 @@ class Contribuyente < ApplicationRecord
       rc.save
     }
     copia_contribuyente
+  end
+
+  def confirmar_temporal
+  	if(self.contribuyente_id.nil?)
+  		#Es nuevo
+  		contribuyente_final = self
+  		contribuyente_final.temporal = false
+  		contribuyente_final.flujo_id = nil
+  		contribuyente_final.save
+  	else
+  		#Se edito uno existente
+	  	contribuyente_final = Contribuyente.find(self.contribuyente_id)
+
+	  	#Primero los valores del padre
+	  	contribuyente_final.razon_social = self.razon_social
+	  	contribuyente_final.save(validate: false)
+
+	  	#Despues los hijos
+	  	#actividades economicas se reemplaza completo
+	  	contribuyente_final.actividad_economica_contribuyentes.destroy_all
+	  	self.actividad_economica_contribuyentes.each{|r| 
+	      rc = r.dup
+	      rc.contribuyente_id = self.contribuyente_id
+	      rc.save
+	    }
+
+	  	#establecimientos se reemplazan los datos de originales
+	  	#primero elimino los que en temporal se eliminaron
+	  	establecimientos_ids = self.establecimiento_contribuyentes.pluck(:establecimiento_contribuyente_id)
+	  	contribuyente_final.establecimiento_contribuyentes.where(contribuyente_id: self.contribuyente_id).where.not(id: establecimientos_ids).destroy_all
+	  	#despues actualizo los valoresde los originales
+	  	self.establecimiento_contribuyentes.each do |ect|
+	  		if ect.establecimiento_contribuyente_id.nil?
+	  			#Si es nulo es porque es nuevo
+	  			ect.contribuyente_id = self.contribuyente_id
+	  			ect.save
+	  		else
+	  			#Si no es nulo se actualiza el original
+	  			ec = EstablecimientoContribuyente.find(ect.establecimiento_contribuyente_id)
+	  			ec.casa_matriz = ect.casa_matriz
+	  			ec.direccion = ect.direccion
+	  			ec.ciudad = ect.ciudad
+	  			ec.pais_id = ect.pais_id
+	  			ec.region_id = ect.region_id
+	  			ec.comuna_id = ect.comuna_id
+	  			ec.save
+	  		end
+	  	end
+	  	contribuyente_final.reload
+	  end
+
+  	contribuyente_final
   end
 end

@@ -9,6 +9,30 @@ class Admin::HistorialInstrumentosController < ApplicationController
   def cargar_instrumento    
   end
 
+  def descargar_manifestacion_pdf
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+  end
+
+  def descargar_manifestacion_pdf_archivo
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    pdf = @manifestacion_de_interes.generar_pdf(params[:url_territorio],params[:url_area_influencia],params[:url_alternativas])
+    send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "Manifestacion de interes.pdf"
+  end
+
+
+  #def ejecutada
+  #  require 'open-uri'
+  #  url = URI.parse("http://localhost:3999"+params[:uri])
+  #  open(url, "Cookie" => request.headers["Cookie"]) do |http|
+  #    view_string = http.read
+  #  end
+  #  start_marker = Regexp.escape('<div id="contenido_principal">')
+  #  end_marker = Regexp.escape('</div><div id="fin_contenido_principal">')
+  #
+  #  @view_content = view_string[/#{start_marker}(.*?)#{end_marker}/m, 1]
+  #
+  #end
+
   private
 
     #DZC define las variables a instanciar para el usuario específico. Determina el flujo dependiendo de los flujos de los contribuyentes a los que esta asociado el usuario. Si el usuario tiene el rol Rol::ADMIN de la ASCC, entonces accede a todos los instrumentos
@@ -30,11 +54,12 @@ class Admin::HistorialInstrumentosController < ApplicationController
       @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
       @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
       @fpls = @instrumentos.where.not(proyecto_id: nil)
-      @instancias = []
-      @instrumentos.each do |i|
-        @instancias += i.instancias_del_flujo        
-      end
-      @instancias = @instancias.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}      
+
+      #@instancias = []
+      #@instrumentos.each do |i|
+      #  @instancias += i.instancias_del_flujo(current_user)
+      #end
+      #@instancias = @instancias.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}      
     end
 
     def set_cargar_instrumento
@@ -52,7 +77,7 @@ class Admin::HistorialInstrumentosController < ApplicationController
       end
       @instrumento = Flujo.find_by(id: instrumento_id)
       if @instrumentos.include?(@instrumento) #DZC 2018-10-17 16:49:01 evita que se muestren instrumentos a los que no se debería tener acceso
-        @instancias = @instrumento.instancias_del_flujo.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
+        @instancias = @instrumento.instancias_del_flujo(current_user).sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
       else
         @instancias = {}
         flash.now[:warning] = "Usted no tiene permiso para acceder al historial del instrumento '#{instrumento_id}'."

@@ -60,7 +60,7 @@ class Flujo < ApplicationRecord
 	end
 
 	def subtipo_de_instrumento
-		no_hay = 'No fue definido'
+		no_hay = 'Pendiente de aprobación'
 		case self.tipo_de_flujo
 			when 'APL'
 				self.manifestacion_de_interes.tipo_instrumento.present? ? self.manifestacion_de_interes.tipo_instrumento.nombre_subtipo : no_hay
@@ -69,7 +69,7 @@ class Flujo < ApplicationRecord
 			when 'PPL'
 				self.proyecto.tipo_instrumento.present? ? self.proyecto.tipo_instrumento.nombre_subtipo : no_hay
 			else
-				"Tipo de instrumento aún no definido"
+				no_hay
 		end
 	end
 
@@ -123,12 +123,12 @@ class Flujo < ApplicationRecord
 
 	# DZC 2018-10-17 13:03:17 devuelve la matriz de datos para la vista 'gestionar mis instumentos', para el array de personas_id del mismo usuario
 	def datos_para_gestionar(personas_id)
-		personas_id = [personas_id] if personas_id.is_a?(Array)
+		personas_id = [personas_id] if !personas_id.is_a?(Array)
 		datos = []
 		roles = []
-		accion_texto = "Set de metas y acciones / Actividades aún no creadas"
+		accion_texto = "Aún no creadas"
 		accion_url = nil
-		auditoria_texto = "Auditorías/Rendiciones sin resultados"
+		auditoria_texto = "Sin resultados"
 		auditoria_url = nil
 		usuario = nil
 		tarea_pendiente = nil 
@@ -151,13 +151,13 @@ class Flujo < ApplicationRecord
 					tareas_pendientes = self.tarea_pendientes.where(user_id: usuario.id, tarea_id: Tarea::ID_APL_013, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
 					tarea_pendiente = tareas_pendientes.blank? ? nil : tareas_pendientes.first
 					if tarea_pendiente.present? #DZC 2018-10-18 15:44:19 (1) usuario tiene la APL-013 pendiente
-						accion_texto = "Acuerdo"
+						accion_texto = "Acciones acordadas"
 						accion_url = "cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path"
 						objeto_uno = tarea_pendiente
 						objeto_dos = self
 					else #DZC 2018-10-18 15:44:51 usuario NO tiene la APL-013 como pendiente
 						if self.set_metas_acciones.present? #DZC 2018-10-18 15:45:50 (2) pero hay un set de metas y acciones para mostrar
-							accion_texto = "Acuerdo"
+							accion_texto = "Acciones acordadas"
 							accion_url = "apl_set_metas_acciones_admin_gestionar_mis_instrumentos_path"
 							objeto_uno = self
 						end
@@ -277,10 +277,34 @@ class Flujo < ApplicationRecord
 	end
 
 	#DZC devuelve la matriz de instancias históricas por flujo
-	def instancias_del_flujo
+	def instancias_del_flujo current_user
 		instancias = []
+		#Si es admin veo todo
+		puedo_ver_tareas = current_user.is_admin?
+		if !puedo_ver_tareas
+			personas = current_user.personas
+	    personas_id = personas.pluck(:id)
+	    #jefe de linea ve todo lo relacionado a los tipos de instrumento donde es responsable
+	    #consulto directo a responsables
+			jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, self.tipo_instrumento_id)
+			puedo_ver_tareas = (personas_id & jefes_de_linea.map{|jl| jl.id}).size > 0
+
+			if !puedo_ver_tareas
+				#los roles descritos abajo ven todo lo relacionado al flujo
+				#por eso consulto al mapa de actores, para saber cual fue su rol de participacion en el flujo
+	    	roles = self.mapa_de_actores.where(persona_id: personas.pluck(:id)).pluck(:rol_id)
+	    	puedo_ver_tareas = (roles & [Rol::COORDINADOR, Rol::RESPONSABLE_ENTREGABLES, Rol::REVISOR_TECNICO]).size > 0
+	    end
+	  end
+
 		self.tareas_del_flujo.each do |t|
-			estado = self.tarea_pendientes.where(tarea_id: t.id).pluck(:estado_tarea_pendiente_id).uniq.include?(EstadoTareaPendiente::NO_INICIADA)? "En curso" : "Ejecutada"
+			documentos_asociados = {nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}
+			tarea_pend = self.tarea_pendientes.where(tarea_id: t.id)
+			estado = tarea_pend.pluck(:estado_tarea_pendiente_id).uniq.include?(EstadoTareaPendiente::NO_INICIADA)? "En curso" : "Ejecutada"
+			pendiente = tarea_pend.where(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA).last
+			#finalmente solo puede ver la tarea en especifico si es el que la respondio
+			puedo_ver_tarea = puedo_ver_tareas
+			puedo_ver_tarea = tarea_pend.where(user_id: current_user.id).size > 0 if !puedo_ver_tarea
 			if t.es_convocatoria?
 				instancia = Convocatoria.where(flujo_id: self.id, tarea_codigo: t.codigo).pluck(:nombre)
 			elsif t.es_minuta?
@@ -302,14 +326,26 @@ class Flujo < ApplicationRecord
 			else
 				instancia = ["Única"]
 			end
+			if t.codigo == Tarea::COD_APL_005
+				#documentos_asociados = {nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
+				documentos_asociados = {nombre: "Manifestación de Interés", url: nil, parametros: [], metodo: false}
+			elsif t.codigo == Tarea::COD_APL_018 && estado == "Ejecutada"
+				informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
+				documentos_asociados = {nombre: "Documento de Acuerdo", url: (informe_acuerdo.nil? ? 'root_path' : informe_acuerdo.archivos_anexos.first.url), parametros: [], metodo: false }
+			end
 			instancias << {
 				tipo_instrumento: self.tipo_instrumento.nombre,
 				id_instrumento: self.id,
 				nombre_instrumento: self.nombre_instrumento,
+				tarea: t,
 				nombre_tarea: t.nombre,
 				responsables: t.responsables_de_la_tarea(self.id),
+				documentos_asociados: documentos_asociados,
 				instancia: instancia,
-				estado: estado}	
+				estado: estado,
+				pendiente: pendiente,
+				puedo_ver_tarea: puedo_ver_tarea
+			}	
 		end
 		instancias
 	end

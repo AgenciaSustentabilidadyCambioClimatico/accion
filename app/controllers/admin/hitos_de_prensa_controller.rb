@@ -1,6 +1,7 @@
 class Admin::HitosDePrensaController < ApplicationController
   before_action :authenticate_user!, except: [:index]
   before_action :set_hito_de_prensa, only: [:show, :edit, :update, :destroy]
+  before_action :set_new_hito_de_prensa, only: [:index, :new, :create, :search, :search_instrumentos]
   before_action :__set_commons, only: [:new, :create,:update,:edit]
   # before_action :set_tarea_pendiente, if: -> {params[:tarea_pendiente_id].present?}
   before_action :set_tarea_pendiente
@@ -12,7 +13,6 @@ class Admin::HitosDePrensaController < ApplicationController
     if !@tarea_pendiente.nil?
       @hitos_de_prensa=@hitos_de_prensa.where(flujo_id: @flujo.id)
     end
-    @hito_de_prensa = HitoDePrensa.new
   end
 
   def search
@@ -47,13 +47,23 @@ class Admin::HitosDePrensaController < ApplicationController
   end
 
   def new
-    @hito_de_prensa = HitoDePrensa.new
     if current_user.is_coordinador? || current_user.is_cogestor?
       @hito_de_prensa.hito_de_prensa_responsables << HitoDePrensaResponsable.new({persona_id: current_user.id})
+    end
+    if !@flujo.nil? && @hito_de_prensa.hito_de_prensa_instrumentos.where(flujo_id: @flujo.id).first.nil?
+      @hito_de_prensa.hito_de_prensa_instrumentos.new({
+        flujo_id: @flujo.id
+      })
     end
   end
 
   def edit
+
+    if !@flujo.nil? && @hito_de_prensa.hito_de_prensa_instrumentos.where(flujo_id: @flujo.id).first.nil?
+      @hito_de_prensa.hito_de_prensa_instrumentos.new({
+        flujo_id: @flujo.id
+      })
+    end
   end
 
   def create
@@ -62,14 +72,15 @@ class Admin::HitosDePrensaController < ApplicationController
     respond_to do |format|
       if @hito_de_prensa.save
         #Para que en el caso de crear un hito desde tarea, se agregue su flujo como instrumento relacionado.-
-        if @flujo.present?
-          HitoDePrensaInstrumento.find_or_create_by(flujo_id: @flujo.id, hitos_de_prensa_id: @hito_de_prensa.id)
-        end
+        #Lo haremos en vista para mejorar funcionalidad
+        #if @flujo.present?
+        #  HitoDePrensaInstrumento.find_or_create_by(flujo_id: @flujo.id, hitos_de_prensa_id: @hito_de_prensa.id)
+        #end
         format.js { 
           flash.now[:success] = 'Hito de prensa correctamente creado.'
           @hito_de_prensa = HitoDePrensa.new
         }
-        format.html { redirect_to edit_admin_hito_de_prensa_url(@hito_de_prensa), notice: 'Hito de prensa correctamente creado.' }
+        format.html { redirect_to @ruta_nuevo, notice: 'Hito de prensa correctamente creado.' }
       else
         format.html { render :new }
         format.js
@@ -81,7 +92,7 @@ class Admin::HitosDePrensaController < ApplicationController
     respond_to do |format|
       if @hito_de_prensa.update(hito_de_prensa_params)
         format.js { flash.now[:success] = 'Hito de prensa correctamente actualizado.' }
-        format.html { redirect_to edit_admin_hito_de_prensa_url(@hito_de_prensa), notice: 'Hito de prensa correctamente actualizado.' }
+        format.html { redirect_to @ruta_editar, notice: 'Hito de prensa correctamente actualizado.' }
       else
         format.html { render :edit }
         format.js
@@ -110,6 +121,10 @@ class Admin::HitosDePrensaController < ApplicationController
       end
     end
 
+    def set_new_hito_de_prensa
+      @hito_de_prensa = HitoDePrensa.new
+    end
+
     def set_tarea_pendiente #DZC setea objetos relativos a la tarea pendiente y al flujo
       
       @tarea_pendiente=nil
@@ -133,11 +148,21 @@ class Admin::HitosDePrensaController < ApplicationController
 
     def set_rutas #DZC setea las rutas dependiendo de si se accede como administrador o como tarea pendiente
       if @tarea_pendiente.nil?
-        @ruta_index=admin_hitos_de_prensa_path
-        @ruta_new=new_admin_hito_de_prensa_path
+        @ruta_index = admin_hitos_de_prensa_path
+        @ruta_nuevo = new_admin_hito_de_prensa_path
+        @ruta_guardar = create_admin_hitos_de_prensa_path
+        if(!@hito_de_prensa.new_record?)
+          @ruta_editar = edit_admin_hito_de_prensa_path(@hito_de_prensa)
+          @ruta_guardar = admin_hito_de_prensa_path(@hito_de_prensa)
+        end
       else
-        @ruta_index=tarea_pendiente_hitos_de_prensa_path(@tarea_pendiente)
-        @ruta_new=new_tarea_pendiente_hito_de_prensa_path(@tarea_pendiente)
+        @ruta_index = tarea_pendiente_hitos_de_prensa_path(@tarea_pendiente)
+        @ruta_nuevo = new_tarea_pendiente_hito_de_prensa_path(@tarea_pendiente)
+        @ruta_guardar = create_tarea_pendiente_hito_de_prensa_path(@tarea_pendiente)
+        if(!@hito_de_prensa.new_record?)
+          @ruta_editar = edit_tarea_pendiente_hito_de_prensa_path(@tarea_pendiente, @hito_de_prensa)
+          @ruta_guardar = tarea_pendiente_hito_de_prensa_path(@tarea_pendiente, @hito_de_prensa)
+        end
       end
     end
 
@@ -145,6 +170,7 @@ class Admin::HitosDePrensaController < ApplicationController
     def hito_de_prensa_params
       params.require(:hito_de_prensa).permit(
         :flujo_id,
+        :tarea_pendiente_id,
       	:nombre,
       	:medio,
       	:tipo_de_medio_id,

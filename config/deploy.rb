@@ -17,7 +17,7 @@ set :branch, deploy["repo"]["branch"] # master
 set :git_http_username, deploy["git_http_username"]
 set :git_http_password, deploy["git_http_password"]
 
-set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml', 'config/email.yml', 'config/puma.rb') 
+set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml', 'config/email.yml', 'config/puma.rb', 'config/clave_unica.yml') 
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system', 'public/uploads')
 set :keep_releases, 7
 set :ssl_header_forwarded, true
@@ -34,6 +34,7 @@ namespace :deploy do
       within release_path do
         with rails_env: fetch(:rails_env) do
           execute :rake, "db:seed"
+          # execute :rake, "jobs:work"
         end
       end
     end

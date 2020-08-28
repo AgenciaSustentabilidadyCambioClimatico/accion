@@ -31,7 +31,7 @@
 						%td=record.rol.nombre
 						%td=record.cargo.nombre
 						%td=record.contribuyente.blank? ? '--' : record.contribuyente.nombre
-						%td=record.actividad_economica.blank? ? '--' : record.actividad_economica.nombre
+						%td=record.actividad_economica.blank? ? '--' : record.actividad_economica.descripcion_ciiuv4
 						%td=record.tipo_contribuyente.blank? ? '--' : record.tipo_contribuyente.nombre
 						%td.dos.iconos-acciones
 							= link_to edit_admin_responsable_path(record) do

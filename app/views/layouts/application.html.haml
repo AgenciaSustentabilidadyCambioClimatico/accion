@@ -1,60 +1,77 @@
 !!!
 %html
-	%head
-		%meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-		%meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
-		%title
-			= t(:ascc)
-			- if content_for?(:head_title)
-				= "-"
-				= strip_tags yield(:head_title)
-		= csrf_meta_tags
-		= stylesheet_link_tag    'application', media: 'all'
-		= javascript_include_tag 'application'
-		= javascript_include_tag 'ckeditor/config.js', async: true
-	%body
-		- if user_signed_in?
-			= render 'layouts/navigation'
-		.container.fix-width#-fluid
-			- if content_for?(:titulo)
-				.col-12
-					%h1.titulo
-						= yield(:titulo)
-			.col-12
-				#messages-remote-block
-					= render 'layouts/messages'
-			.col-12
-				= yield				
-			- if user_signed_in?
-				- session[:original_url] = request.original_url
-				= link_to '#', "data-toggle"=>:modal, "data-target"=>"#site-comments", class: 'show-comments' do
-					%i.fa.fa-commenting.fa-4x
-			.modal.fade{id: :"site-comments", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
-				.modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
-					.modal-content#modal-comentario-remote-form
-						= render 'comentarios/form_modal'
-			:javascript
-				$(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
-		.loading-data
-			.spinner
-				= image_tag("loading.gif", class: :spinner)                      
-		- unless Rails.env.production?
-			.traducciones-faltantes
-				%span
-					= "#{t(:traducciones_faltantes)}: ";
-				%ul
-			:javascript
-				$(document).ready(function() {
-					result = dameTraduccionesFaltantes();
-					c = 0;
-					for (var i in result) {
-						c++;
-					}
-					if ( c > 0 ) {
-						$('.traducciones-faltantes').show();
-						$.each(result,function(k,v) {
-							$('.traducciones-faltantes ul').append("<li>"+k+": "+v+"</li>");
-						});
-					}
-				});
-		.clearfix
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
+    %title
+      = t(:ascc)
+      - if content_for?(:head_title)
+        = "-"
+        = strip_tags yield(:head_title)
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all'
+    = javascript_include_tag 'application'
+    = javascript_include_tag 'ckeditor/config.js', async: true
+
+  %body
+    - if user_signed_in?
+      = render 'layouts/navigation'
+    .container.fix-width#-fluid
+      - if content_for?(:titulo)
+        .col-12
+          %h1.titulo
+            = yield(:titulo)
+      .col-12
+        #messages-remote-block
+          = render 'layouts/messages'
+      .col-12
+        #contenido_principal
+          = yield
+        #fin_contenido_principal  
+      - if user_signed_in?
+        - session[:original_url] = request.original_url
+        = link_to '#', "data-toggle"=>:modal, "data-target"=>"#site-comments", class: 'show-comments' do
+          %i.fa.fa-commenting.fa-4x
+      .modal.fade{id: :"site-comments", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
+        .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+          .modal-content#modal-comentario-remote-form
+            = render 'comentarios/form_modal'
+      :javascript
+        $(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
+    .loading-data
+      .spinner
+        = image_tag("loading.gif", class: :spinner)                      
+    - unless Rails.env.production?
+      .traducciones-faltantes
+        %span
+          = "#{t(:traducciones_faltantes)}: ";
+        %ul
+      :javascript
+        $(document).ready(function() {
+          result = dameTraduccionesFaltantes();
+          c = 0;
+          for (var i in result) {
+            c++;
+          }
+          if ( c > 0 ) {
+            $('.traducciones-faltantes').show();
+            $.each(result,function(k,v) {
+              $('.traducciones-faltantes ul').append("<li>"+k+": "+v+"</li>");
+            });
+          }
+
+          tarea_terminada = #{!@tarea_pendiente.nil? && @tarea_pendiente.no_esta_pendiente?};
+          if(tarea_terminada){
+            //bloqueo de inputs generales
+            $("#contenido_principal ").find("input, select, textarea").prop('disabled',true);
+            $("#contenido_principal ").find("input, select, textarea").off();
+            //elimino boton de enviar
+            $("#contenido_principal button[type='submit']").remove();
+            //elimino boton de eliminar en tablas
+            $("#contenido_principal i.fa-trash").closest('a').remove();
+            //elimino botones de agregar y editar de nested fields
+            $("#contenido_principal .add_nested_fields").remove();
+            $("#contenido_principal .remove_nested_fields").remove();
+          }
+        });
+    .clearfix

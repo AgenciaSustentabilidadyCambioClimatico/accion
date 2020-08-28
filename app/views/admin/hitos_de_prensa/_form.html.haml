@@ -24,7 +24,7 @@
 
 - titulo t(:hito_de_prensa)
 
-- url = (@hito_de_prensa.nil? or @hito_de_prensa.id.nil?) ? @ruta_index : admin_hito_de_prensa_path #DZC corregido para los casos que permita ediciones singulares (plural es para la tabla)
+- url = @ruta_guardar #DZC corregido para los casos que permita ediciones singulares (plural es para la tabla)
 
 - @persona_para_select = Persona.responsables_select#([current_user.is_coordinador? ? current_user.id : nil])
 - # simple_form_for @hito_de_prensa, url: url, remote: true, html: { autocomplete: :off, multipart: true } do |f|
@@ -148,7 +148,7 @@
 						.card-header
 							%h5.no-margin
 								=t(:instrumentos)
-								= link_to '#', "data-toggle"=>:modal, "data-target"=>"#agregar-instrumentos", class: 'float-right agregar-instrumentos add-data-target' do
+								= link_to '#', "data-toggle"=>:modal, "data-target"=>"#agregar-instrumentos", class: 'float-right agregar-instrumentos add-data-target add_nested_fields' do
 									%i.fa.fa-plus-circle
 									=t(:agregar)
 								= snf.link_to_add :hito_de_prensa_instrumentos, data: { target: "#hito-de-prensa-instrumentos" }, class: 'float-right d-none' do
@@ -161,18 +161,15 @@
 									%input#instrumento-added.d-none
 									%table#hito-de-prensa-instrumentos.table.table-striped.mb-0
 										%tbody
-											- unless @flujo.nil?
-												%tr.fields
-													%td.pl-4
-														= label_tag @flujo.nombre_instrumento,nil, class: "string"
 											= snf.fields_for :hito_de_prensa_instrumentos, :wrapper => false  do |instrumento|
 												%tr.fields
 													%td.pl-4
 														= instrumento.label instrumento.object.flujo.present? ? instrumento.object.flujo.nombre_instrumento : " "
 														= instrumento.input :flujo_id, as: :hidden, disabled: false
 													%td.accion.no-padding.remove-row.p-0
-														= instrumento.link_to_remove do
-															%i.fa.fa-times-circle.left.link-to-remove-row
+														- if @flujo.nil? || !instrumento.object.flujo.present? || instrumento.object.flujo.id != @flujo.id
+															= instrumento.link_to_remove do
+																%i.fa.fa-times-circle.left.link-to-remove-row
 	.float-right
 		= link_to t(:back), @ruta_index, class: 'btn btn-sm btn-warning'
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

@@ -10,6 +10,7 @@ class Admin::DescargableTareasController < ApplicationController
 #DZC Gino 
  before_action :usar_metodos_del_instrumento
 #DZC
+  before_action :posee_permisos_administracion_admin, only: [:index, :new, :edit, :create, :update, :destroy]
 
   def index
     @descargable_tareas = DescargableTarea.where(tarea_id: @tarea.id).order(id: :asc).all
@@ -59,12 +60,12 @@ class Admin::DescargableTareasController < ApplicationController
       case tipo_flujo
       when "APL"
         manifestacion_de_interes = tarea_pendiente.flujo.manifestacion_de_interes
-        if manifestacion_de_interes.representante.present?
+        if !manifestacion_de_interes.representante_institucion_para_solicitud_id.blank?
           representante = manifestacion_de_interes.representante.nombre_completo
         else
           representante = "No definido"
         end 
-        if manifestacion_de_interes.institucion_gestora.present?
+        if !manifestacion_de_interes.contribuyente_id.blank?
           entidad_cogestora = manifestacion_de_interes.institucion_gestora.razon_social
         else
           entidad_cogestora = "No definido"

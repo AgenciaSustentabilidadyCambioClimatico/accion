@@ -19,6 +19,59 @@
       $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
     }
 
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'pertinencia-factibilidad-tab'){
+
+        if($(tab_selected).prop('id') == 'pertinencia-factibilidad-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#pertinencia-factibilidad-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#pertinencia-factibilidad-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          if($('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"] span').length == 0){
+            $('.accordionTabs .card-header a span').addClass('d-none');
+          }else{
+            $('.accordionTabs .card-header a span').removeClass('d-none');
+          }
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#pertinencia-factibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de acuerdo');
+        $('.accordionTabs .card-header a span').removeClass('d-none');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#pertinencia-factibilidad-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de acuerdo'){
+        $('#pertinencia-factibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+
   });
 
   function carga_por_resultado(val){
@@ -45,51 +98,154 @@
     }
   }
 
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:responder_pertinencia_factibilidad)
-- tabs = { "tipo-de-acuerdo": false, "datos-institucion": false, "contexto-sector": false, "datos-proyecto": false, "objetivo-acuerdo": false, "pertinencia-factibilidad": true }
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-    - tabs.each do |tab,active|
-      %li.nav-item
-        %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-          =t(tab.to_s.gsub('-','_'))
-        - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-          %small.total-error
-            %i.fa.fa-exclamation
-
 = simple_form_for @manifestacion_de_interes, url: responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: 'tipo-de-acuerdo-tab' }
   = f.submit "", class: 'd-none'
   = f.input :update_respuesta_pertinencia, as: :hidden, wrapper: false, input_html: { value: "" }
-  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
-  = render "form_manifestacion_de_interes", tabs: tabs, f: f do
-    #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
+  .row
+    .col-12
       .card
-        .card-body
-          .row
-            .col-12
-              = f.input :dato_temporal, input_html: { autocomnplete: 'off', value: @manifestacion_de_interes.resultado_pertinencia.humanize }, readonly: true, required: false, label: t(:resultado_de_la_pertinencia)
-            -# .col-12
-            -#   = f.input :respuesta_resultado_pertinencia, collection: ManifestacionDeInteres.respuesta_resultado_pertinencia.keys.map { |w| [w.humanize, w] }, required: true, label: t(:respuesta_a_observaciones_pertinencia_factibilidad)
-            -if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
-              .col-12.col-lg-6
-                = f.label t(:acepta_condiciones), required: true
-                = f.input :acepta_condiciones_pertinencia, as: :radio_buttons, collection: [["Si", true],["No", false]], label: false, required: true, item_wrapper_class: :radio, item_wrapper_tag: :div
-              .col-12.col-lg-6
-                = f.input :compromiso_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
-            .col-12.col-lg-6
-              = f.input :observaciones_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
-            .col-12.col-lg-6
-              =f.input :respuesta_observaciones_pertinencia_factibilidad, as: :text, required: true, input_html: {rows: 4}, label: t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase)
-            .col-12.col-lg-6
-              =f.input :respuesta_otros_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:respuesta_a_otros_pertinencia_factibilidad)
-            .col-5
-              = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}
-            .col-1
-              -#
-                = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,:archivo_respuesta_pertinencia_factibilidad)
-              = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object)
-  .float-right
-    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "enviar-pertinencia-button"
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento.html_safe
+            %h5.no-margin=datos_beneficiario.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "pertinencia-factibilidad-externo", class: 'active', "aria-controls" => 'pertinencia-factibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#pertinencia-factibilidad-externo", :role => "tab"}
+                  =t('pertinencia_factibilidad')
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(:"pertinencia-factibilidad") && @total_de_errores_por_tab[:"pertinencia-factibilidad"].size > 0
+                  %small.total-error
+                    %i.fa.fa-exclamation
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "objetivo-acuerdo": false, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false, 'pertinencia-factibilidad': true }
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{class: (tab.to_s == 'pertinencia-factibilidad' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+                  - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                    %small.total-error
+                      %i.fa.fa-exclamation
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de acuerdo
+                    -# if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.select{|error_tab, error_data| error_tab.to_s != 'pertinencia-factibilidad' && error_data.size > 0}.size > 0
+                    %span.badge.badge-danger.badge-pill.ml-auto
+                      %i.fa.fa-exclamation
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'pertinencia-factibilidad'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                              %span.badge.badge-danger.badge-pill
+                                %i.fa.fa-exclamation
+
+
+            =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+            = render "form_manifestacion_de_interes", tabs: tabs, f: f, solo_lectura: solo_lectura do
+              #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
+                .card
+                  .card-body
+                    .row
+                      .col-12
+                        .row
+                          .col-12.col-lg-6
+                            -if !solo_lectura
+                              = f.input :dato_temporal, input_html: { autocomnplete: 'off', value: @manifestacion_de_interes.resultado_pertinencia.humanize }, readonly: true, required: false, label: t(:resultado_de_la_pertinencia)
+                            -else
+                              .form-group
+                                -no_data = f.object.resultado_pertinencia.blank?
+                                %label.control-label.string=t(:resultado_de_la_pertinencia)
+                                %p#manifestacion_de_interes_resultado_pertinencia.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                  =(no_data ? 'No se ingresó respuesta' : f.object.resultado_pertinencia.humanize)
+                          -if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
+                            .col-12.col-lg-6
+                              -if !solo_lectura
+                                = f.label t(:acepta_condiciones), required: true
+                                = f.input :acepta_condiciones_pertinencia, as: :radio_buttons, collection: [["Si", true],["No", false]], label: false, required: true, item_wrapper_class: :radio, item_wrapper_tag: :div
+                              -else
+                                .form-group
+                                  -no_data = f.object.acepta_condiciones_pertinencia.blank?
+                                  %label.control-label.string=t(:acepta_condiciones)
+                                  %p#manifestacion_de_interes_acepta_condiciones_pertinencia.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                    =(no_data ? 'No se ingresó respuesta' : (f.object.acepta_condiciones_pertinencia ? "Si" : "No"))
+                      -if @manifestacion_de_interes.resultado_pertinencia == "realiza_observaciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
+                        .col-12
+                          .row
+                            .col-12.col-lg-6
+                              -if !solo_lectura
+                                = f.input :observaciones_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
+                              -else
+                                .form-group
+                                  -no_data = f.object.observaciones_pertinencia_factibilidad.blank?
+                                  %label.control-label.string=t(:observaciones_y_comentarios)
+                                  %p#manifestacion_de_interes_observaciones_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                    =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_pertinencia_factibilidad)
+                            .col-12.col-lg-6
+                              -if !solo_lectura
+                                =f.input :respuesta_observaciones_pertinencia_factibilidad, as: :text, required: true, input_html: {rows: 4}, label: t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase)
+                              -else
+                                .form-group
+                                  -no_data = f.object.respuesta_observaciones_pertinencia_factibilidad.blank?
+                                  %label.control-label.string=t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase)
+                                  %p#manifestacion_de_interes_respuesta_observaciones_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                    =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_pertinencia_factibilidad)
+                      -if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
+                        .col-12
+                          .row
+                            .col-12.col-lg-6
+                              -if !solo_lectura
+                                = f.input :compromiso_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
+                              -else
+                                .form-group
+                                  -no_data = f.object.compromiso_pertinencia_factibilidad.blank?
+                                  %label.control-label.string=t(:compromiso_a_solicitar)
+                                  %p#manifestacion_de_interes_compromiso_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                    =(no_data ? 'No se ingresó respuesta' : f.object.compromiso_pertinencia_factibilidad)
+                            .col-12.col-lg-6
+                              -if !solo_lectura
+                                =f.input :respuesta_otros_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:comentarios_sobre_condiciones_y_compromisos)
+                              -else
+                                .form-group
+                                  -no_data = f.object.respuesta_otros_pertinencia_factibilidad.blank?
+                                  %label.control-label.string=t(:comentarios_sobre_condiciones_y_compromisos)
+                                  %p#manifestacion_de_interes_respuesta_otros_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                    =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_otros_pertinencia_factibilidad)
+                      .col-12.col-lg-6
+                        -if !solo_lectura
+                          .row
+                            .col-12.col-lg-6
+                              = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}
+                            .col-12.col-lg-6
+                              .form-group
+                                = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object)
+                        -else
+                          .form-group
+                            %label.string.control-label Archivo respuesta pertinencia factibilidad
+                            = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object, false)
+
+                      .col-12.col-lg-6
+                        .form-group
+                          %label.string.control-label Archivo pertinencia factibilidad
+                          = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
+    -if !solo_lectura
+      .col-12
+        .float-right
+          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "enviar-pertinencia-button"
+-if !solo_lectura
+  = render 'admin/users/buscador'
+  - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+  = render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento

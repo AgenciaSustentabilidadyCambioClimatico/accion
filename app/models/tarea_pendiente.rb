@@ -101,8 +101,9 @@ class TareaPendiente < ApplicationRecord
     descargables = {}
     tarea = self.tarea
     tarea.descargable_tareas.each do |desc|
-
-      descargables[desc.codigo] = { nombre: desc.nombre, args: [id,tarea,desc] }
+      if ((desc.archivo.path.present? && File.exist?(desc.archivo.path)) || (!desc.subido && desc.contenido.present?))
+        descargables[desc.codigo] = { nombre: desc.nombre, args: [id,tarea,desc] } 
+      end
     end
     descargables
   end
@@ -123,6 +124,8 @@ class TareaPendiente < ApplicationRecord
 
     #DZC tareas que finalizarán todas las tareas pendientes del flujo
     tareas_finalizan_flujo = []
+    tareas_finalizan_flujo += [Tarea::COD_APL_004_1, Tarea::COD_APL_004_2] if !condicion_de_salida.blank? && condicion_de_salida.include?('B')
+    tareas_finalizan_flujo += [Tarea::COD_APL_006] if !condicion_de_salida.blank? && condicion_de_salida.include?('C')
     tareas_finalizan_flujo += [Tarea::COD_PPF_003] if !condicion_de_salida.blank? && condicion_de_salida.include?('A')
     tareas_finalizan_flujo += [Tarea::COD_PPF_006] if !condicion_de_salida.blank? && condicion_de_salida.include?('A')
     tareas_finalizan_flujo += [Tarea::COD_PPF_008, Tarea::COD_PPF_009] if !condicion_de_salida.blank? && condicion_de_salida.include?('C')
@@ -208,16 +211,21 @@ class TareaPendiente < ApplicationRecord
     tareas_pendientes= self.todas_del_(user_id).all
     tareas_pendientes.each do |pend|
       case pend.tarea.codigo
-      when Tarea::COD_APL_004 #resolver observaciones de admisibilidad, 25 dias
-        manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
-        if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_admisibilidad, 25
-          pend.pasar_a_siguiente_tarea 'B'
-        end
-      when Tarea::COD_APL_006 #resolver observaciones de pertinencia, 60 dias
-        manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
-        if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_pertinencia, 60
-          pend.pasar_a_siguiente_tarea 'B'
-        end
+      #when Tarea::COD_APL_004_1 #resolver observaciones de admisibilidad, 45 dias
+      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
+      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_admisibilidad, 45
+      #    pend.pasar_a_siguiente_tarea 'B'
+      #  end
+      #when Tarea::COD_APL_004_2 #resolver observaciones de admisibilidad, 45 dias
+      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
+      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_admisibilidad, 45
+      #    pend.pasar_a_siguiente_tarea 'B'
+      #  end
+      #when Tarea::COD_APL_006 #resolver observaciones de pertinencia, 60 dias
+      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
+      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_pertinencia, 60
+      #    pend.pasar_a_siguiente_tarea 'B'
+      #  end
       when Tarea::COD_APL_012 #ingresar acta minutas, 25 dias
 
         conv = pend.determina_convocatoria

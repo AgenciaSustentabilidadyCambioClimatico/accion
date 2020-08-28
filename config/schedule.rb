@@ -36,6 +36,9 @@
 
 set :environment, ENV["RAILS_ENV"]
 
+#Evita errores de variables de ambiente en docker
+#ENV.each { |k, v| env(k, v) }
+
 
 ##
 # DZC 2019-08-23 19:36:11
@@ -55,4 +58,9 @@ end
 # se agrega a crontab la eliminación de los temporales de carrierwave via rake task ascc:limpia_cache_carrierwave
 every '0 3 * * *' do
   rake "ascc:limpia_cache_carrierwave", :enviroment => ambiente.to_s, :output => "#{Rails.root}/log/limpia_cache_carrierwave_#{ambiente}.log"
+end
+
+#todos los dias a las 6 elimina las tareas pendientes registradas y finaliza los flujos asociados
+every '0 6 * * *' do
+  rake "ascc:terminar_tareas_programadas", :enviroment => ambiente.to_s
 end

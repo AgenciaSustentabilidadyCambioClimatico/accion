@@ -193,5 +193,26 @@ namespace :ascc do
     end
   end
 
+  desc "Terminar tareas despues de x dias"
+  task :terminar_tareas_programadas => :environment do |task, args|
+		tareas_a_finalizar = {
+			"45" => {
+				Tarea::COD_APL_004_1 => 'B',
+				Tarea::COD_APL_004_2 => 'B',
+				Tarea::COD_APL_006 => 'C',
+			}
+		}
+
+		tareas_a_finalizar.each do |dia, tareas|
+			tareas_codigos = tareas.keys
+			tareas_filtradas = TareaPendiente.includes(:tarea).where("((now() AT TIME ZONE 'UTC')::date - (tarea_pendientes.created_at AT TIME ZONE 'UTC')::date) > "+dia)
+																					.where(tareas: {codigo: tareas_codigos})
+																					.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
+			tareas_filtradas.each do |tarea_pendiente|
+        tarea_pendiente.pasar_a_siguiente_tarea tareas[tarea_pendiente.tarea.codigo]
+			end
+		end
+  end
+
 
 end

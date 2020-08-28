@@ -1,4 +1,4 @@
-puts "Cargando cuencas y subcuencas... DZC"
+puts "Cargando cuencas y subcuencas..."
 cuencas_y_subcuencas = [
   { codigo_cuenca: "010" , nombre_cuenca: "Altiplanicas" , region: "XV - I" },
     { codigo_cuenca: "0100" , nombre_cuenca: "Entre Limite Peru-Bolivia y Rio Lauca" , region: "XV - I" },
