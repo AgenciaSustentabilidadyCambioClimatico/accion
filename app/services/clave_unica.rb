@@ -5,6 +5,7 @@ class ClaveUnica
 	SERVER_AUTH 			= self::CLAVE_UNICA_URL+'/openid/authorize'
 	ACCESS_TOKEN_AUTH = self::CLAVE_UNICA_URL+'/openid/token'
 	USER_INFO 				= self::CLAVE_UNICA_URL+'/openid/userinfo'
+	LOGOUT 						= self::CLAVE_UNICA_URL+'/api/v1/accounts/app/logout'
 
 	def self.variables
 		YAML.load(ERB.new(File.read("#{Dir.pwd}/config/clave_unica.yml")).result)
