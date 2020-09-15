@@ -492,7 +492,7 @@
                         %a.btn.show-ayuda.py-0{campo: "9995"}
                           %i.fa.fa-info-circle{style: "color: #0c5460;"}
                   .ayuda-campo-div-9995.alert.ayuda-div.small{style: "display: none"}
-                    =@validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:ayuda]
+                    =@validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:ayuda].html_safe
                   - tlt_search_inst = @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:tooltip_activo]
                   = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', "data-original-title": "#{tlt_search_inst ? @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:tooltip] : '' }", id: "intitucion_cogestora" do
                     %i.fa.fa-search-plus
@@ -643,7 +643,7 @@
                       %a.btn.show-ayuda.py-0{campo: "9994"}
                         %i.fa.fa-info-circle{style: "color: #0c5460;"}
                 .ayuda-campo-div-9994.alert.ayuda-div.small{style: "display: none"}
-                  =@validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:ayuda]
+                  =@validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:ayuda].html_safe
                 - tlt_search_repr = @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:tooltip_activo]
                 = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', flujo_id: (@flujo.present? ? @flujo.id : nil), "data-original-title": "#{tlt_search_repr ? @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:tooltip] : '' }", id: 'usuario_representante' do
                   %i.fa.fa-search-plus
@@ -788,7 +788,7 @@
                 %a.btn.show-ayuda{campo: "9997"}
                   %i.fa.fa-info-circle{style: "color: #0c5460;"}
             .ayuda-campo-div-9997.alert.ayuda-div.small{style: "display: none"}
-              =@validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:ayuda]
+              =@validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:ayuda].html_safe
 
           .col-12.col-md
             -if !solo_lectura
@@ -907,7 +907,7 @@
               %i.fa.fa-info-circle{style: "color: #0c5460;"}
           .col-12
             .ayuda-campo-div-9996.alert.ayuda-div.small{style: "display: none"}
-              =@validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:ayuda]
+              =@validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:ayuda].html_safe
           #si_acuerdo_alcance.col-12.p-0{style: "display: #{(f.object.acuerdo_de_alcance_nacional || f.object.acuerdo_de_alcance_nacional.nil?) ? 'none' : 'block'};"}
             .col-12
               -if solo_lectura
@@ -1212,7 +1212,7 @@
                         %i.fa.fa-info-circle{style: "color: #0c5460;"}
                   .col-12
                     .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9998'}
-                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda]
+                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda].html_safe
                   .col-12.tooltip-block{"data-original-title": "#{tlt_influencia ? @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip] : '' }"}
                     #area-influencia-proyecto-mapa
                 .row.mt-3
@@ -1244,7 +1244,7 @@
                         %i.fa.fa-info-circle{style: "color: #0c5460;"}
                   .col-12
                     .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9999'}
-                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda]
+                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda].html_safe
                   .col-12.tooltip-block{"data-original-title": "#{tlt_alt ? @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip] : '' }"}
                     #alternativas-instalacion-mapa
                 .row.mt-3
