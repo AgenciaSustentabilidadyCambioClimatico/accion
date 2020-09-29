@@ -1,4 +1,5 @@
-#resultado-consulta-remote-block
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+.resultado-consulta-remote-block
   - if @filtro_utilizado
     .alert.alert-dismissible.fade.show.mb-3{class: @usuarios.size == 0 ? 'alert-danger' : 'alert-success' }
       = "<b>Resultados:</b> #{@usuarios.size}</b> - <b>Filtro:</b> #{@filtro_utilizado}.".html_safe
@@ -10,6 +11,7 @@
     %div{id: "usuarios-remote-filter"}
       = simple_form_for :buscador, url: buscador_admin_users_path, method: :get, class: 'filter', autocomplete: :off, remote: true do |f|
         =f.hidden_field :flujo_id, value: (@flujo_id.present? ? @flujo_id : nil)
+        =f.hidden_field :modal_id, value: modal_id
         .row
           .col-lg-4.pr-lg-0.col-12
             = f.input :rut, label: false, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0' }, placeholder: "R.U.T", as: :string, required: true

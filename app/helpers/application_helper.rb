@@ -125,8 +125,16 @@ module ApplicationHelper
 	end
 	#**
 
-	def action_label_of_(model)
-		model.new_record? ? 'Crear nueva institución' : 'Editar institución'
+	def action_label_of_(model,use_model_name=false)
+		# AON: debería ser algo así, pero habria que traducir todos los modelos en cuestion
+		if use_model_name
+			prefijo = model.new_record? ? "Crear" : "Editar"
+			nombre_clase = I18n.t(model.class.name).downcase
+			# retornamos el nombre
+			return "#{prefijo} #{nombre_clase}"
+		else
+			model.new_record? ? 'Crear nueva institución' : 'Editar institución'
+		end
 	end
 
 	def action_label_representante(model)
@@ -279,11 +287,11 @@ module ApplicationHelper
 		"#{titulo}<small>#{con_nombre_proyecto.downcase.gsub(/(apl|acuerdo de producción limpia|acuerdo de produccion limpia)/,'APL').capitalize.gsub(/Apl|apl/,'APL')}</small>".html_safe
 	end
 
-	def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil)
+	def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil, nombre_boton:'')
 		capture_haml do
 			if carta_interes.blank?
 				id_descarga = 'mostrar_descargable_id'
-				boton_label = I18n.t(:descargar)
+				boton_label = nombre_boton.blank? ? I18n.t(:descargar) : nombre_boton
 			else
 				id_descarga = 'manifestacion_de_interes_' + carta_interes
 				boton_label = nombre.blank? ? carta_interes : nombre

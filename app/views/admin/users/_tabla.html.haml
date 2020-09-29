@@ -1,6 +1,7 @@
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
 :javascript
   $(document).ready(function() {
-    $('table.usuarios').DataTable({
+    $('#tabla_usuarios_#{modal_id}').DataTable({
       lengthMenu: [[10], [10]],
       pageLength: 10,
       columnDefs: [ { targets: [2], orderable: false } ],
@@ -14,7 +15,7 @@
     %h5.no-margin
       = t(:lista_de_, items: t(:usuarios).downcase)
   %div.my-2 
-    %table.table.usuarios.table-striped
+    %table.table.usuarios.table-striped{id: 'tabla_usuarios_'+modal_id}
       %thead
         %tr
           %th.rut=t(:rut)
@@ -29,7 +30,7 @@
               %td= "#{u.rut}"
               %td= u.nombre_completo
               %td.iconos-acciones
-                - data_usuario ={ id: u.id}
+                - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
                 = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio' }          
         - else
           - @usuarios.all.each do |u|
@@ -37,5 +38,5 @@
               %td= "#{u.rut}"
               %td= u.nombre_completo
               %td.iconos-acciones
-                - data_usuario ={ id: u.id}
+                - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
                 = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio' }

@@ -186,9 +186,9 @@ class Admin::ContribuyentesController < ApplicationController
     if contribuyente_params[:establecimiento_contribuyentes_attributes].nil? || contribuyente_params[:establecimiento_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
       @error_extra = "Debe ingresar al menos un establecimiento" if @error_extra.nil?
     end
-    if contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size == 0
+    if contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1" && v["_destroy"] == "false"}.size == 0
       @error_extra = "Debe seleccionar una casa matriz" if @error_extra.nil?
-    elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 1
+    elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1" && v["_destroy"] == "false"}.size > 1
       @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
     end
 

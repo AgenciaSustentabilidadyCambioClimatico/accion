@@ -3,6 +3,8 @@
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
+    = favicon_link_tag asset_path('favicon.ico')
+
     %title
       = t(:ascc)
       - if content_for?(:head_title)

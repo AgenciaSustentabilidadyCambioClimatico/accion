@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200810223907) do
+ActiveRecord::Schema.define(version: 20200915141554) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -930,6 +930,9 @@ ActiveRecord::Schema.define(version: 20200810223907) do
     t.text "respuesta_observaciones_admisibilidad_juridica"
     t.string "archivo_admisibilidad_juridica"
     t.datetime "fecha_observaciones_admisibilidad_juridica"
+    t.integer "institucion_entregables_id"
+    t.string "institucion_entregables_name"
+    t.string "usuario_entregable_name"
   end
 
   create_table "mapa_de_actores", force: :cascade do |t|
@@ -1520,6 +1523,19 @@ ActiveRecord::Schema.define(version: 20200810223907) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "traspaso_instrumentos", force: :cascade do |t|
+    t.bigint "origen_id"
+    t.bigint "flujo_id"
+    t.bigint "destino_id"
+    t.integer "tipo_traspaso"
+    t.date "fecha_retorno"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["destino_id"], name: "index_traspaso_instrumentos_on_destino_id"
+    t.index ["flujo_id"], name: "index_traspaso_instrumentos_on_flujo_id"
+    t.index ["origen_id"], name: "index_traspaso_instrumentos_on_origen_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "rut", null: false
     t.string "telefono", null: false
@@ -1736,6 +1752,9 @@ ActiveRecord::Schema.define(version: 20200810223907) do
   add_foreign_key "tareas", "tipo_instrumentos"
   add_foreign_key "tipo_contribuyentes", "tipo_contribuyentes"
   add_foreign_key "tipo_instrumentos", "tipo_instrumentos"
+  add_foreign_key "traspaso_instrumentos", "flujos"
+  add_foreign_key "traspaso_instrumentos", "users", column: "destino_id"
+  add_foreign_key "traspaso_instrumentos", "users", column: "origen_id"
   add_foreign_key "users", "flujos"
   add_foreign_key "users", "users"
 end

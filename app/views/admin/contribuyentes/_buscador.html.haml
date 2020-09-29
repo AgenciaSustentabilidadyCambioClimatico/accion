@@ -8,13 +8,14 @@
 - buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
 - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
 - tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
 
 .modal.fade{id: :"buscar-contribuyente#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
     .modal-content
       .modal-body
         .container-fluid#body-contribuyente-buscador
-          =render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento
+          =render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla
       .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
           Cerrar

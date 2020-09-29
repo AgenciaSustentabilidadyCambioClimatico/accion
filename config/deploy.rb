@@ -39,7 +39,7 @@ namespace :deploy do
       end
     end
   end
-  after 'deploy:migrate', 'deploy:ejecuta_seed'    
+  #after 'deploy:migrate', 'deploy:ejecuta_seed'    
 end
 after 'deploy:publishing', 'deploy:restart'
 

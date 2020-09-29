@@ -2,144 +2,155 @@
 - case "#{params["controller"]}_#{params["action"]}".to_sym
 - when :main_index
   - home_active = :active
+-#obtengo los tipos de instrumentos en responsables a traves de los roles de la tarea 1 y las personas del usuario actual
+- tipos_instrumentos_apl = Responsable.__tipo_instrumento_por_persona_rol(Tarea.find(Tarea::ID_APL_001).rol_id, current_user.personas)
+- tipos_instrumentos_fpl = Responsable.__tipo_instrumento_por_persona_rol(Tarea.find(Tarea::ID_FPL_001).rol_id, current_user.personas)
+- tipos_instrumentos_ppf = Responsable.__tipo_instrumento_por_persona_rol(Tarea.find(Tarea::ID_PPF_001).rol_id, current_user.personas)
 
-- puede_crear_manifestacion     = true #policy(ManifestacionDeInteres).create?
-- puede_crear_programa_regional = true #current_user.is_admin? #ToDo: reemplazar con lógica de permiso cuando esta se cree
-- puede_crear_seguimiento_fpl   = true #current_user.is_admin? #ToDo: reemplazar con lógica de permiso cuando esta se cree
+-#si los intrumentos devueltos incluyen al tipo instrumento en cuestion a inicar es porque tengo permiso
+- puede_crear_manifestacion     = tipos_instrumentos_apl.include?(TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+- puede_crear_programa_regional = tipos_instrumentos_ppf.include?(TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES)
+- puede_crear_seguimiento_fpl   = tipos_instrumentos_fpl.include?(TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA)
+
 - es_encargado_institucion      = current_user.is_encargado_institucion? #verifica si posee el cargo
 - es_administador               = current_user.is_admin_no_agencia? #verifica si posee el cargo administrador fuera de la agencia
-%nav.navbar.navbar-expand-lg.navbar-dark
-  .container.fix-width#-fluid
-    #navbar-nav-dropdown.collapse.navbar-collapse.pl-0
-      %ul.navbar-nav
-        %li.nav-item.dropdown
-          %a#dropdown-account.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
-            ="#{current_user.nombre_completo}"
-          .dropdown-menu{"aria-labelledby" => "dropdown-account"}
-            = link_to t(:editar_cuenta), edit_user_registration_path, class: 'dropdown-item'
-            = link_to t(:gestionar_mis_instrumentos), admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
-            -if es_encargado_institucion
-              = link_to t(:mis_instituciones), admin_contribuyentes_path, class: 'dropdown-item'
-              = link_to t(:mis_establecimientos), admin_establecimientos_path, class: 'dropdown-item'
-              = link_to t(:mis_maquinarias), admin_maquinarias_path, class: 'dropdown-item'
-              = link_to t(:mis_otros_elementos), admin_otros_path, class: 'dropdown-item'
-              = link_to t(:mis_elementos_certificados), admin_elementos_certificados_path, class: 'dropdown-item'
-            - if es_administador
-              = link_to t(:mis_usuarios), admin_users_path, class: 'dropdown-item'
-            = link_to t(:salir), '#', class: 'dropdown-item', id: 'logout'
-        - if current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO) && !(current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA))
-          %li.nav-item.dropdown
-            %a#dropdown-administracion.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
-              = t(:administración)
-            %ul.dropdown-menu{"aria-labelledby" => "dropdown-administracion"}
-              %li= link_to t(:usuarios), admin_users_path, class: 'dropdown-item'
-              %li= link_to t(:instituciones), admin_contribuyentes_path, class: 'dropdown-item'
-              %li= link_to t(:establecimientos), admin_establecimientos_path, class: 'dropdown-item'
-              %li= link_to t(:maquinarias), admin_maquinarias_path, class: 'dropdown-item'
-              %li= link_to t(:otros), admin_otros_path, class: 'dropdown-item'
-        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
-          %li.nav-item.dropdown
-            %a#dropdown-administracion.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
-              = t(:administración)
-            %ul.dropdown-menu{"aria-labelledby" => "dropdown-administracion"}
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:entidades)
-                %ul.dropdown-menu
+%nav.navbar.navbar-expand-lg.navbar-dark.p-0
+  .col-12.p-0
+    .row.align-items-center.mx-auto
+      .col-12.col-lg-auto.order-1.order-lg-2.px-0
+        .container.fix-width#-fluid.px-0.pt-2.d-flex.justify-content-between
+          %button.navbar-toggler.custom-toggler{"aria-controls" => "navbar-nav-dropdown", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbar-nav-dropdown", "data-toggle" => "collapse", :type => "button"}
+            %span.navbar-toggler-icon
+          = link_to root_path, class: 'navbar-brand' do
+            = image_tag ("logo-ascc.png")
+      .col-12.col-lg.order-2.order-lg-1.px-0
+        #navbar-nav-dropdown.collapse.navbar-collapse
+          %ul.navbar-nav
+            %li.nav-item.dropdown
+              %a#dropdown-account.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
+                ="#{current_user.nombre_completo}"
+              .dropdown-menu{"aria-labelledby" => "dropdown-account"}
+                = link_to t(:editar_cuenta), edit_user_registration_path, class: 'dropdown-item'
+                = link_to t(:gestionar_mis_instrumentos), admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
+                = link_to t(:traspaso_de_instrumentos), new_traspaso_instrumento_path, class: 'dropdown-item'
+                -if es_encargado_institucion
+                  = link_to t(:mis_instituciones), admin_contribuyentes_path, class: 'dropdown-item'
+                  = link_to t(:mis_establecimientos), admin_establecimientos_path, class: 'dropdown-item'
+                  = link_to t(:mis_maquinarias), admin_maquinarias_path, class: 'dropdown-item'
+                  = link_to t(:mis_otros_elementos), admin_otros_path, class: 'dropdown-item'
+                  = link_to t(:mis_elementos_certificados), admin_elementos_certificados_path, class: 'dropdown-item'
+                - if es_administador
+                  = link_to t(:mis_usuarios), admin_users_path, class: 'dropdown-item'
+                = link_to t(:salir), '#', class: 'dropdown-item', id: "logout"
+            - if current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO) && !(current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA))
+              %li.nav-item.dropdown
+                %a#dropdown-administracion.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
+                  = t(:administración)
+                %ul.dropdown-menu{"aria-labelledby" => "dropdown-administracion"}
                   %li= link_to t(:usuarios), admin_users_path, class: 'dropdown-item'
                   %li= link_to t(:instituciones), admin_contribuyentes_path, class: 'dropdown-item'
                   %li= link_to t(:establecimientos), admin_establecimientos_path, class: 'dropdown-item'
                   %li= link_to t(:maquinarias), admin_maquinarias_path, class: 'dropdown-item'
                   %li= link_to t(:otros), admin_otros_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:descriptores)
-                %ul.dropdown-menu
-                  %li= link_to t(:cargos), admin_cargos_path, class: 'dropdown-item'
-                  %li= link_to t(:tipos_contribuyentes), admin_tipos_contribuyentes_path, class: 'dropdown-item'
-                  %li= link_to t(:actividades_económicas), admin_actividades_economicas_path, class: 'dropdown-item'
-                  %li= link_to t(:lugares), admin_lugares_path, class: 'dropdown-item'
-                  %li= link_to t(:cuencas_subcuencas), admin_cuencas_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:configuración_tipo_instrumento)
-                %ul.dropdown-menu
-                  %li= link_to t(:tipos_intrumentos), admin_tipos_instrumentos_path, class: 'dropdown-item'
-                  %li= link_to t(:tareas), admin_tareas_path, class: 'dropdown-item'
-                  %li= link_to t(:flujo_tareas), admin_flujo_tareas_path, class: 'dropdown-item'
-                  %li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
-                  %li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
-                  %li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:diccionario_de_acciones)
-                %ul.dropdown-menu
-                  %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
-                  %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
-                  %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
-                  %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
-                  %li= link_to t(:estándares_homologación), admin_estandar_homologaciones_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:proveedores)
-                %ul.dropdown-menu
-                  %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
-                  %li= link_to t(:tipos_proveedores), admin_tipos_proveedores_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:presupuesto)
-                %ul.dropdown-menu
-                  %li= link_to t(:centro_de_costo), admin_centro_de_costos_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:actividades_fpl)
-                %ul.dropdown-menu
-                  %li= link_to t(:actividades), admin_actividades_path, class: 'dropdown-item'
-                  %li= link_to t(:actividades_por_líneas), admin_actividades_por_lineas_path, class: 'dropdown-item'
-                  %li= link_to t(:tipos_aportes), admin_tipo_aportes_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:evaluación)
-                %ul.dropdown-menu
-                  %li= link_to t(:encuestas), admin_encuestas_path, class: 'dropdown-item'
-                  %li= link_to t(:preguntas), admin_preguntas_path, class: 'dropdown-item'
-              %li.dropdown-submenu
-                %a.dropdown-item.dropdown-toggle
-                  = t(:configuracion_datos_productivos)
-                %ul.dropdown-menu
-                  %li= link_to t(:propiedades_datos), admin_dato_recolectados_path, class: 'dropdown-item'
-                  %li= link_to t(:dato_levantar), admin_materia_rubro_relacions_path, class: 'dropdown-item'
-              %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
-              %li= link_to t(:historial_instrumentos), admin_historial_instrumentos_path, class: 'dropdown-item'                    
-              %li= link_to t(:carga_datos_históricos), admin_cargas_historicas_index_path, class: 'dropdown-item'
-              -#
-                %li= link_to t(:historial_logs), '#', class: 'dropdown-item disable'
-              %li= link_to t(:comentarios), comentarios_path, class: 'dropdown-item'
-              %li= link_to t(:prensa), admin_hitos_de_prensa_path, class: 'dropdown-item'
-        - if true
-          %li.nav-item.dropdown
-            %a#dropdown-tareas-pendientes.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
-              = t(:tareas_pendientes)
-            %ul.dropdown-menu{"aria-labelledby" => "dropdown-tareas-pendientes"}
-              %li= link_to t(:acuerdos), acuerdos_tarea_pendientes_path, class: 'dropdown-item'
-              %li= link_to t(:programa_regional), proyectos_ppf_tarea_pendientes_path, class: 'dropdown-item'
-              %li= link_to t(:seguimiento_fpl), seguimientos_fpl_tarea_pendientes_path, class: 'dropdown-item'
+            - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+              %li.nav-item.dropdown
+                %a#dropdown-administracion.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
+                  = t(:administración)
+                %ul.dropdown-menu{"aria-labelledby" => "dropdown-administracion"}
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:entidades)
+                    %ul.dropdown-menu
+                      %li= link_to t(:usuarios), admin_users_path, class: 'dropdown-item'
+                      %li= link_to t(:instituciones), admin_contribuyentes_path, class: 'dropdown-item'
+                      %li= link_to t(:establecimientos), admin_establecimientos_path, class: 'dropdown-item'
+                      %li= link_to t(:maquinarias), admin_maquinarias_path, class: 'dropdown-item'
+                      %li= link_to t(:otros), admin_otros_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:descriptores)
+                    %ul.dropdown-menu
+                      %li= link_to t(:cargos), admin_cargos_path, class: 'dropdown-item'
+                      %li= link_to t(:tipos_contribuyentes), admin_tipos_contribuyentes_path, class: 'dropdown-item'
+                      %li= link_to t(:actividades_económicas), admin_actividades_economicas_path, class: 'dropdown-item'
+                      %li= link_to t(:lugares), admin_lugares_path, class: 'dropdown-item'
+                      %li= link_to t(:cuencas_subcuencas), admin_cuencas_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:configuración_tipo_instrumento)
+                    %ul.dropdown-menu
+                      %li= link_to t(:tipos_intrumentos), admin_tipos_instrumentos_path, class: 'dropdown-item'
+                      %li= link_to t(:tareas), admin_tareas_path, class: 'dropdown-item'
+                      %li= link_to t(:flujo_tareas), admin_flujo_tareas_path, class: 'dropdown-item'
+                      %li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
+                      %li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
+                      %li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:diccionario_de_acciones)
+                    %ul.dropdown-menu
+                      %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
+                      %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
+                      %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
+                      %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
+                      %li= link_to t(:estándares_homologación), admin_estandar_homologaciones_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:proveedores)
+                    %ul.dropdown-menu
+                      %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
+                      %li= link_to t(:tipos_proveedores), admin_tipos_proveedores_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:presupuesto)
+                    %ul.dropdown-menu
+                      %li= link_to t(:centro_de_costo), admin_centro_de_costos_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:actividades_fpl)
+                    %ul.dropdown-menu
+                      %li= link_to t(:actividades), admin_actividades_path, class: 'dropdown-item'
+                      %li= link_to t(:actividades_por_líneas), admin_actividades_por_lineas_path, class: 'dropdown-item'
+                      %li= link_to t(:tipos_aportes), admin_tipo_aportes_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:evaluación)
+                    %ul.dropdown-menu
+                      %li= link_to t(:encuestas), admin_encuestas_path, class: 'dropdown-item'
+                      %li= link_to t(:preguntas), admin_preguntas_path, class: 'dropdown-item'
+                  %li.dropdown-submenu
+                    %a.dropdown-item.dropdown-toggle
+                      = t(:configuracion_datos_productivos)
+                    %ul.dropdown-menu
+                      %li= link_to t(:propiedades_datos), admin_dato_recolectados_path, class: 'dropdown-item'
+                      %li= link_to t(:dato_levantar), admin_materia_rubro_relacions_path, class: 'dropdown-item'
+                  %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
+                  %li= link_to t(:historial_instrumentos), admin_historial_instrumentos_path, class: 'dropdown-item'                    
+                  %li= link_to t(:carga_datos_históricos), admin_cargas_historicas_index_path, class: 'dropdown-item'
+                  -#
+                    %li= link_to t(:historial_logs), '#', class: 'dropdown-item disable'
+                  %li= link_to t(:comentarios), comentarios_path, class: 'dropdown-item'
+                  %li= link_to t(:prensa), admin_hitos_de_prensa_path, class: 'dropdown-item'
+            - if true
+              %li.nav-item.dropdown
+                %a#dropdown-tareas-pendientes.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
+                  = t(:tareas_pendientes)
+                %ul.dropdown-menu{"aria-labelledby" => "dropdown-tareas-pendientes"}
+                  %li= link_to t(:acuerdos), acuerdos_tarea_pendientes_path, class: 'dropdown-item'
+                  %li= link_to t(:programa_regional), proyectos_ppf_tarea_pendientes_path, class: 'dropdown-item'
+                  %li= link_to t(:seguimiento_fpl), seguimientos_fpl_tarea_pendientes_path, class: 'dropdown-item'
 
-        - if puede_crear_manifestacion || puede_crear_programa_regional || puede_crear_seguimiento_fpl
-          %li.nav-item.dropdown
-            %a#dropdown-iniciar-proceso.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
-              = t(:iniciar_proceso)
-            %ul.dropdown-menu{"aria-labelledby" => "dropdown-iniciar-proceso"}
-              - if puede_crear_manifestacion
-                %li= link_to t(:acuerdos), iniciar_flujo_manifestacion_de_interes_index_path, method: :patch, class: 'dropdown-item'
-              - if puede_crear_programa_regional
-                %li= link_to t(:programa_regional), ppf_programa_proyecto_propuestas_path, method: :post, class: 'dropdown-item'
-              - if puede_crear_seguimiento_fpl
-                %li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
-    = link_to root_path, class: 'navbar-brand' do
-      = image_tag ("logo-ascc.png")
-    %button.navbar-toggler.custom-toggler{"aria-controls" => "navbar-nav-dropdown", "aria-expanded" => "false", "aria-label" => "Toggle navigation", "data-target" => "#navbar-nav-dropdown", "data-toggle" => "collapse", :type => "button"}
-      %span.navbar-toggler-icon
+            - if puede_crear_manifestacion || puede_crear_programa_regional || puede_crear_seguimiento_fpl
+              %li.nav-item.dropdown
+                %a#dropdown-iniciar-proceso.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
+                  = t(:iniciar_proceso)
+                %ul.dropdown-menu{"aria-labelledby" => "dropdown-iniciar-proceso"}
+                  - if puede_crear_manifestacion
+                    %li= link_to t(:acuerdos), iniciar_flujo_manifestacion_de_interes_index_path, method: :patch, class: 'dropdown-item'
+                  - if puede_crear_programa_regional
+                    %li= link_to t(:programa_regional), ppf_programa_proyecto_propuestas_path, method: :post, class: 'dropdown-item'
+                  - if puede_crear_seguimiento_fpl
+                    %li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
 :javascript
   $('#logout').click(function(e){
     e.preventDefault();

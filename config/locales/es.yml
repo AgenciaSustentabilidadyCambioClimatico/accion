@@ -247,15 +247,15 @@ es:
   cargar_actualizar_miembros_comité_y_acuerdos: Cargar actualizar miembros comité y acuerdos
   miembros_comite: Miembros comité
   actores_con_observaciones: Actores con observaciones
-  revisar_mapa_de_actores: Revisar mapa de actores
+  revisar_mapa_de_actores: Revisar listado de actores
   con_extension: ¿Con extensión?
-  actualizar_mapa_de_actores: Actualizar mapa de actores
+  actualizar_mapa_de_actores: Actualizar listado de actores
   contestar_evaluación_y_consultar_proceso_de_negociación: Contestar evaluación y consultar proceso de negociación
   evaluacion: Evaluación
   actualizar_mapa_de_actores_convocar_ceremonia_certificacion: Actualizar mapa de actores y convocar ceremonia de certificación
-  mapa_de_actores_correctamente_construido: "¿Se aprueba el Mapa de Actores?"
-  comentarios_y_observaciones_actualización_mapa_de_actores: Comentarios y observaciones en la actualización de mapa de actores
-  subir_mapa_de_actores_actualizado: Subir mapa de actores actualizado
+  mapa_de_actores_correctamente_construido: "¿Se aprueba el Listado de Actores?"
+  comentarios_y_observaciones_actualización_mapa_de_actores: Comentarios y observaciones en la actualización de listado de actores
+  subir_mapa_de_actores_actualizado: Subir listado de actores actualizado
   responder_encuesta: Responder encuesta
   es_una_encuesta: Es una encuesta
   tiempo_para_contestar: Tiempo para contestar
@@ -857,7 +857,7 @@ es:
   razon_social_contribuyente: Razón social Institución
   terminar_actualizacion: Terminar actualización
   terminar_diagnostico: Terminar proceso de diagnóstico
-  descargar_mapa_de_actores: Descargar mapa de actores
+  descargar_mapa_de_actores: Descargar listado de actores
   listado_convocatorias: Listado de convocatorias
   actualizar_actores_resolver_comentarios_set_metas_acciones: Actualizar mapa de actores y resolver comentarios en set de metas y acciones
   terminar_carga_actualizacion_actores_en_acuerdo: Terminar actualizacion de mapa de actores y resolucíon de comentarios en propuestas de acuerdo
@@ -1071,6 +1071,12 @@ es:
 
 
   #  ADAN
+  editar_tipo_instrumento: Editar tipo de instrumento
+  TipoInstrumento: Tipo de instrumento
+  observaciones_comentarios_anteriores: Observaciones y comentarios anteriores
+  descargar_guia_de_actualizacion: Descargar guía de actualización
+  comentarios_coordinador_acuerdo: Comentarios del Coordinador del Acuerdo
+  observaciones_del_revisor: Observaciones del revisor
   asignar_usuarios_a_cargo_de_entregables_certificación: Asignar usuarios a cargo de entregables certificación
   institución_entregables: Institución entregables
   institución_carga_datos: Institución carga datos
@@ -1250,8 +1256,24 @@ es:
   respuesta_observaciones_admisibilidad: Respuesta observaciones
   respuesta_observaciones_admisibilidad_juridica: Respuesta observaciones
 
+  cumplimientos_por_meta: Cumplimientos por meta
+  traspaso_de_instrumentos: Traspaso de instrumentos
+  new_traspaso_instrumento: Configurar nuevo traspaso de instrumentos
+  fuera_de_oficina: Fuera de oficina
+  heredado: Heredado
+  nombre_usuario_origen: Nombre usuario origen
+  nombre_usuario_destino: Nombre usuario destino
+  datos_de_traspaso: Datos de traspaso
+  listado_de_actores: Listado de actores
+
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
+
+  # ALONSO 15-09-2020
+  elegir_institucion_entregables: Elegir Institución Gestora
+  elegir_encargado_entregables: Elegir encargado entregables
+  comentarios_encargado: Comentarios a encargado de entregable
+
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:

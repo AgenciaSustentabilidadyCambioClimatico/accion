@@ -10,8 +10,8 @@
 				.card-body
 					.row
 						.col-12
-							- desactivado = (action_name == "edit") ? true : false
-							= f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre del rol", input_html: { class: 'required-field' }, required: true, readonly: desactivado #DZC 2018-10-18 18:29:17 se indisponibiliza para evitar perdida de coherencia en el sistema
+							-# desactivado = (action_name == "edit") ? true : false
+							= f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre del rol", input_html: { class: 'required-field' }, required: true
 						.col-12
 							= f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Ingrese una descripción para este rol"
 	.float-right

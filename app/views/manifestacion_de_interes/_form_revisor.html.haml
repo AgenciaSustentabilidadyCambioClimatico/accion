@@ -110,7 +110,7 @@
                           = f.input :revisor_tecnico_id, collection: @manifestacion_de_interes.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico"}, label: t(:revisor_tecnico)
                         -else
                           .form-group
-                            -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol.find_by(nombre: 'Revisor Técnico').id).first
+                            -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
                             -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
                             -no_data = rev_tecnico.nil?
                             %label.control-label.string=t(:revisor_tecnico)
@@ -121,7 +121,7 @@
                           = f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico"}, label: t(:revisor_juridico)
                         -else
                           .form-group
-                            -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol.find_by(nombre: 'Revisor Jurídico').id).first
+                            -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_JURIDICO).first
                             -rev_juridico = mapa_juridico.nil? ? nil : mapa_juridico.persona.user.nombre_completo
                             -no_data = rev_juridico.nil?
                             %label.control-label.string=t(:revisor_juridico)

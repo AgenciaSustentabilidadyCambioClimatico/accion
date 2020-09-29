@@ -1,0 +1,12 @@
+- if @manifestacion_de_interes.usuario_entregables_comentario.present?
+	.card.mb-0
+		.card-header
+			%h5.no-margin
+		.card-body
+			.row
+				.col-12
+					.form-group
+						-no_data = @manifestacion_de_interes.usuario_entregables_comentario.blank?
+						%label.control-label.string.w-100=t(:comentarios_coordinador_acuerdo)
+						%p#manifestacion_de_interes_principales_mercados.fs-14.form-control{align: :justify, style: "background-color: #EFEFEF;"}
+							=@manifestacion_de_interes.usuario_entregables_comentario

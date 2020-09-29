@@ -1,0 +1,196 @@
+- titulo t(:traspaso_de_instrumentos)
+:javascript
+  var data_destino;
+  var mensaje_confirmado = false;
+  $(document).on('click', '.seleccionar-usuario-button', function(){
+    modal_id = $(this).data('modal-id');
+    usuario = modal_id.split("_")[2];
+    try {
+      data=JSON.parse($('#tabla_usuarios_'+modal_id).DataTable().$('.usuario-radio:checked').val());
+      $("#traspaso_instrumento_"+usuario+"_id").val(data.id);
+      $("#traspaso_instrumento_usuario_"+usuario).val(data.nombre);
+
+      if(usuario == "origen"){
+        $("#traspaso_instrumento_destino_id").val("");
+        $("#traspaso_instrumento_usuario_destino").val("");
+        checkFieldValidity('#traspaso_instrumento_usuario_origen');
+        $('.loading-data').show();
+        $.ajax({
+          url: "#{usuario_flujos_traspaso_instrumentos_path}",
+          type: "GET",
+          data: {
+            user_id: data.id
+          }
+        }).fail(function(a, b, c) {
+          alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+          $('.loading-data').hide();
+        }).success(function(data){
+          $('.loading-data').hide();
+        });
+      }else{
+        checkFieldValidity('#traspaso_instrumento_usuario_destino');
+        data_destino = data;
+      }
+
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+  $(document).ready(function() {
+
+    $('#traspaso_instrumento_flujo_id').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+
+    $('#traspaso_instrumento_flujo_id').change(function(e){
+      checkFieldValidity(e);
+    });
+
+    $('input[name="traspaso_instrumento[tipo_traspaso]"]').change(function(){
+      if($('input[name="traspaso_instrumento[tipo_traspaso]"]:checked').val() == 'heredado'){
+        $('#fecha_retorno_campo').addClass('d-none');
+        $('#traspaso_instrumento_no_fecha_retorno').val("1");
+        $('#traspaso_instrumento_fecha_retorno').val("");
+      }else{
+        $('#fecha_retorno_campo').removeClass('d-none');
+        $('#traspaso_instrumento_no_fecha_retorno').val("");
+
+      }
+    });
+
+    $('#confirmar_traspaso').click(function(e){
+      if(!mensaje_confirmado){
+        e.preventDefault(); 
+        traspaso = 'por su periodo fuera de la oficina';
+        instrumento = $('#traspaso_instrumento_flujo_id option:selected').text();
+        if($('input[name="traspaso_instrumento[tipo_traspaso]"]:checked').val() == 'heredado'){
+          traspaso = 'definitivamente';
+        }
+
+        dataConfirmModal.confirm({
+          title: 'Confirme antes de continuar',
+          text: "Está a punto de traspasar "+traspaso+" el instrumento "+instrumento+" al usuario "+data_destino.nombre+" ("+data.rut+").",
+          commit: 'Confirmar',
+          cancel: 'Cancelar',
+          zIindex: 10099,
+          onConfirm: function() { 
+            mensaje_confirmado = true;
+            $('#confirmar_traspaso').trigger("click");
+          },
+          onCancel:  function() {
+          },
+          onHide:    function() {
+          }
+        });
+
+      }
+
+    });
+
+    htmlErrorToTooltip('top');
+  });
+
+
+
+= simple_form_for @traspaso_instrumento, remote: true, html: { autocomplete: :off } do |f|
+  .row
+    .col-12
+      .alert.alert-danger.text-center
+        %div
+          %i.fa.fa-exclamation-circle.fa-2x
+        Antes de realizar un traspaso, infórmese y contacte al Coordinador del Instrumento o su contacto de la Agencia de Sustentabilidad y Cambio Climático.
+
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            =t(:datos_de_traspaso)
+        .card-body
+          -if current_user.is_admin?
+            .row
+              .col-12.col-lg-4
+                .form-group.required.traspaso_instrumento_usuario_origen{class: (f.object.errors.has_key?(:usuario_origen) ? 'has-error' : '')}
+                  %label.string.control-label.required
+                    %abbr{title: "Requerido"} *
+                    Usuario origen
+                  .row
+                    .col-12.col-lg-3.pr-lg-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar_usuario_origen", class: 'form-control btn btn-primary btn-sm btn-block' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-9.pl-lg-1.pt-2.pt-lg-0
+                      = f.input :origen_id, as: :hidden, wrapper: false
+                      = f.input :usuario_origen, input_html: {class: "form-control required-field"}, readonly: true, label: false, wrapper: false
+              .col-12.col-lg-4
+                -flujos_select = [['Seleccione un instrumento', '']]+@flujos.map{|f|[f.id.to_s+" - "+f.nombre_instrumento, f.id]}
+                = f.input :flujo_id, collection: flujos_select, input_html: {class: "form-control required-field chosen-control", "data-placeholder"=>"Seleccione un instrumento"}, label: t(:instrumento), required: true
+              .col-12.col-lg-4
+                .form-group.required.traspaso_instrumento_usuario_destino{class: (f.object.errors.has_key?(:usuario_destino) ? 'has-error' : '')}
+                  %label.string.control-label.required
+                    %abbr{title: "Requerido"} *
+                    Usuario destino
+                  .row
+                    .col-12.col-lg-3.pr-lg-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar_usuario_destino", class: 'form-control btn btn-primary btn-sm btn-block' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-9.pl-lg-1.pt-2.pt-lg-0
+                      = f.input :destino_id, as: :hidden, wrapper: false
+                      = f.input :usuario_destino, input_html: {class: "form-control required-field"}, readonly: true, label: false, wrapper: false
+              .col-12.col-lg-4.mt-4
+                .row
+                  .col-12.col-lg-5.pr-1
+                    .form-group.required.traspaso_instrumento_tipo_traspaso{class: (f.object.errors.has_key?(:tipo_traspaso) ? 'has-error' : '')}
+                      %label.string.control-label.required
+                        %abbr{title: "Requerido"} *
+                        Tipo de traspaso
+                      .d-flex.flex-column
+                        =f.collection_radio_buttons :tipo_traspaso, TraspasoInstrumento.tipo_traspasos.map{|tt, idx| [t(tt), tt]}, :second, :first do |rb|
+                          =rb.radio_button(class: 'not-required-if-other-like-me-is-present-2')
+                          =rb.label(class: 'fs-14') { rb.text }
+                  .col-12.col-lg-7.pl-lg-0.d-none#fecha_retorno_campo
+                    =f.hidden_field :no_fecha_retorno, class: "not-required-if-other-like-me-is-present"
+                    =f.input :fecha_retorno, as: :string, input_html: {class: "form-control basic-datetimepicker-min-today not-required-if-other-like-me-is-present"}, required: true
+          -else
+            =f.hidden_field :origen_id, value: current_user.id
+            =f.hidden_field :usuario_origen, value: current_user.nombre_completo
+            .row
+              .col-12.col-lg-6
+                .form-group.required.traspaso_instrumento_usuario_destino{class: (f.object.errors.has_key?(:usuario_destino) ? 'has-error' : '')}
+                  %label.string.control-label.required
+                    %abbr{title: "Requerido"} *
+                    Usuario destino
+                  .row
+                    .col-12.col-lg-3.pr-lg-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar_usuario_destino", class: 'form-control btn btn-primary btn-sm btn-block' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-9.pl-lg-1.pt-2.pt-lg-0
+                      = f.input :destino_id, as: :hidden, wrapper: false
+                      = f.input :usuario_destino, input_html: {class: "form-control required-field"}, readonly: true, label: false, wrapper: false
+              .col-12.col-lg-6
+                -flujos_select = [['Seleccione un instrumento', '']]+@flujos.map{|f|[f.id.to_s+" - "+f.nombre_instrumento, f.id]}
+                = f.input :flujo_id, collection: flujos_select, input_html: {class: "form-control required-field chosen-control", "data-placeholder"=>"Seleccione un instrumento"}, label: t(:instrumento), required: true
+              .col-12.col-lg-6.mt-4
+                .row
+                  .col-12.col-lg-4.pr-1
+                    .form-group.required.traspaso_instrumento_tipo_traspaso{class: (f.object.errors.has_key?(:tipo_traspaso) ? 'has-error' : '')}
+                      %label.string.control-label.required
+                        %abbr{title: "Requerido"} *
+                        Tipo de traspaso
+                      .d-flex.flex-column
+                        =f.collection_radio_buttons :tipo_traspaso, TraspasoInstrumento.tipo_traspasos.map{|tt, idx| [t(tt), tt]}, :second, :first do |rb|
+                          =rb.radio_button(class: 'not-required-if-other-like-me-is-present-2')
+                          =rb.label(class: 'fs-14') { rb.text }
+                  .col-12.col-lg-8.pl-lg-0.d-none#fecha_retorno_campo
+                    =f.hidden_field :no_fecha_retorno, class: "not-required-if-other-like-me-is-present"
+                    =f.input :fecha_retorno, as: :string, input_html: {class: "form-control basic-datetimepicker-min-today not-required-if-other-like-me-is-present"}, required: true
+            
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled, id: "confirmar_traspaso"
+
+= render 'admin/users/buscador', modal_id: "buscar_usuario_origen"
+= render 'admin/users/buscador', modal_id: "buscar_usuario_destino", solo_tabla: true

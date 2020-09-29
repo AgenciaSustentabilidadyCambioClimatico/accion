@@ -98,6 +98,10 @@ class User < ApplicationRecord
     lo_es
   end
 
+  def mis_instituciones
+    personas.map{|p| p[:contribuyente_id]}
+  end
+
   def is_encargado_institucion?
     #se asume que el cargo de encarga de institucion es siempre 14
     persona_cargos.pluck(:cargo_id).include?(Cargo::ENCARGADO_INS)
@@ -154,22 +158,6 @@ class User < ApplicationRecord
     user_temporal = self.dup
     user_temporal.user_id = self.id
     user_temporal.save(validate: false)
-
-    self.personas.each{|reg|
-      rd = reg.dup
-      rd.user_id = user_temporal.id
-      rd.save
-    }
-    self.tarea_pendientes.each{|reg|
-      rd = reg.dup
-      rd.user_id = user_temporal.id
-      rd.save
-    }
-    self.registro_apertura_correos.each{|reg|
-      rd = reg.dup
-      rd.user_id = user_temporal.id
-      rd.save
-    }
     user_temporal
   end
 

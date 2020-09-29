@@ -73,55 +73,65 @@
         .card-body
           .row
             -if @tarea.requiere_revision?
-              .col-lg-4.col-12
-                .row
-                  .col-12
-                    .form-group
-                      %label.string.control-label
-                        = t(:descargar_mapa_de_actores)
-                      -if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-                        - url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes) 
-                      -else
-                        - url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
-                      = link_to url, class: 'btn btn-sm btn-outline-secondary btn-block' do
-                        %i.fa.fa-download
-                        = t(:descargar)
-                  
-                  - if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
-                    .pr-0.col-10
-                      = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control auto-save border-right-0 required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
+              - if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+                .col-12
+                  .row
+                    .col-12.col-md-3
+                      .form-group
+                        = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:descargar_guia_de_actualizacion), tarea_pendiente: @tarea_pendiente, nombre_boton: "Guía de actualización")
+                    .col-12.col-md-3
+                      .form-group
+                        %label.string.control-label
+                          = t(:descargar_mapa_de_actores)
+                        -if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                          - url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes) 
+                        -else
+                          - url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+                        = link_to url, class: 'btn btn-sm btn-descargar btn-block' do
+                          %i.fa.fa-download
+                          = t(:listado_de_actores)
+                    .col-12.col-md-3
+                      = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control auto-save required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
                       = f.hidden_field :mapa_de_actores_archivo_cache
-                    .pl-0.col-2
+                    .col-12.col-md-3
                       = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
                       -#
                         = __upload_status(f.object,:mapa_de_actores_archivo)
-                  - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-                    .form-group.boolean.required.manifestacion_de_interes_mapa_de_actores_correctamente_construido{class: ('has-error' if f.object.errors.messages.has_key?(:mapa_de_actores_correctamente_construido))}
-                      %label.boolean.required{for: :manifestacion_de_interes_mapa_de_actores_correctamente_construido}
-                        %abbr{:title => "required"} *
-                        = t(:mapa_de_actores_correctamente_construido)
-                      .radio-buttons.form-control
-                        = f.collection_radio_buttons :mapa_de_actores_correctamente_construido, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
-              .col-lg-8.col-12
-                - if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-                  = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required
-                - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion 
-                  - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+                    .col-12.mt-2
+                      = render 'table_comentarios_anteriores'
+              - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                .col-12.col-md-3
                   .form-group
-                    %label.string
-                      = t(:comentarios)
-                  %table.table.table-striped
-                    %thead
-                      %tr
-                        %th=t(:fecha_y_hora)
-                        %th=t(:usuario)
-                        %th=t(:texto)
-                    %tbody
-                      - comentarios.each do |c|
-                        %tr
-                          %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
-                          %td=c[:user]
-                          %td=c[:texto]
+                    %label.string.control-label
+                      = t(:descargar_mapa_de_actores)
+                    -if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                      - url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes) 
+                    -else
+                      - url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+                    = link_to url, class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      = t(:listado_de_actores)
+                - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+                - clase_comentarios = comentarios.blank? ? 'col-md-6' : 'col-md-9'
+                - unless comentarios.blank?
+                  .col-12.col-md-9
+                    = render 'table_comentarios_anteriores'
+                .col-12.col-md-3
+                  .form-group.boolean.required.manifestacion_de_interes_mapa_de_actores_correctamente_construido{class: ('has-error' if f.object.errors.messages.has_key?(:mapa_de_actores_correctamente_construido))}
+                    %label.boolean.required.control-label{for: :manifestacion_de_interes_mapa_de_actores_correctamente_construido}
+                      %abbr{:title => "required"} *
+                      = t(:mapa_de_actores_correctamente_construido)
+                    -#.radio-buttons.form-control
+                      = f.collection_radio_buttons :mapa_de_actores_correctamente_construido, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
+                    .d-flex.flex-column.mt-1
+                      =f.collection_radio_buttons :mapa_de_actores_correctamente_construido, [[t(:no), false], [t(:yes), true]], :second, :first do |rb|
+                        =rb.radio_button(class: 'not-required-if-other-like-me-is-present-2', checked: !rb.value)
+                        =rb.label(class: 'fs-14') { rb.text }
+                .col-12{class: clase_comentarios}
+                  - if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+                    = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required, input_html: {value: nil}
+                  -# elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion 
+                  
             - else
               .col-lg-12.col-12
                 .row

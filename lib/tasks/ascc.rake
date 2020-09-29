@@ -214,5 +214,14 @@ namespace :ascc do
 		end
   end
 
+  desc "Retornar traspasos programados para hoy"
+  task :retornar_traspasos => :environment do |task, args|
+  	traspasos = TraspasoInstrumento.where("(now() AT TIME ZONE 'UTC')::date = fecha_retorno")
+  	traspasos.each do |traspaso|
+  		p "Retornando "+traspaso.id.to_s
+  		traspaso.retornar_traspaso
+  	end
+  end
+
 
 end

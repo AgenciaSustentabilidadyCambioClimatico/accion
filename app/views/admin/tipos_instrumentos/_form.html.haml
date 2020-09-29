@@ -1,5 +1,5 @@
 - titulo t(:tipo_instrumento)
-- desactivado = (action_name == "edit") ? true : false
+- desactivado = ['update','edit'].include?(action_name) ? true : false
 - url = (@tipo_instrumento.nil? or @tipo_instrumento.id.nil?) ? admin_tipos_instrumentos_path : admin_tipos_instrumento_path
 = simple_form_for(@tipo_instrumento, url: url, html: { autocomplete: :off }, remote: true) do |f|
 	.row
@@ -7,13 +7,13 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@tipo_instrumento)
+						= action_label_of_(@tipo_instrumento, true)
 				.card-body
 					.row
 						.col-lg-6.col-12
 							= f.input :tipo_instrumento_id, collection: TipoInstrumento.where(tipo_instrumento_id: nil).all.map{|p|[p.nombre,p.id]}, label: t(:instrumento_padre), readonly: desactivado, disabled: desactivado
 						.col-lg-6.col-12
-							= f.input :nombre, required: true, label: t(:nombre), hint: false, input_html: { class: 'required-field' }, readonly: desactivado, disabled: desactivado
+							= f.input :nombre, required: true, label: t(:nombre), hint: false, input_html: { class: 'required-field' }
 						.col-12
 							= f.input :descripcion, label: t(:descripción), required: true, as: :text, input_html: { class: 'required-field', rows: 5 }
 	.float-right

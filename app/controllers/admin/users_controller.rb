@@ -78,7 +78,11 @@ class Admin::UsersController < ApplicationController
             @user.save
             @usuario_temporal = @user
           end
-          format.js {}
+          if !@user.temporal
+    				format.js { flash.now[:success] = t(:m_successfully_updated, m: t(:user))  }
+    			else
+          	format.js {}
+          end
         else
           if @user.temporal
             @usuario_temporal = @user
@@ -129,6 +133,7 @@ class Admin::UsersController < ApplicationController
         @filtro_utilizado += " Y #{filtro}"
       end
     end
+    @modal_id = buscador_params[:modal_id]
 	end
 
   def edit_modal
@@ -203,7 +208,8 @@ class Admin::UsersController < ApplicationController
 			params.require(:buscador).permit(
 				:rut,
 				:nombre_completo,
-				:flujo_id)
+				:flujo_id,
+				:modal_id)
 		end
 
 		def acceso_permitido

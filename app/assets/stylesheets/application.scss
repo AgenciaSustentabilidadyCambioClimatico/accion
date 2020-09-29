@@ -11,6 +11,7 @@
 @import 'bootstrap-multiselect';
 @import 'datatables';
 @import 'select2';
+@import 'fixedHeader.dataTables.min';
 
 .container.fix-width { max-width: 1366px!important; }
 body { margin-bottom: 30px;  background: #EFEFEF; }
@@ -79,7 +80,12 @@ form .card-body.table table { margin-bottom: 3px; }
 .text-left, tr.text-left *  { text-align: left!important; }
 .text-justify, tr.text-ustify *  { text-align: justify!important; }
 .text-right, tr.text-right *  { text-align: right!important; }
-.navbar .container, .navbar .container-fluid { padding: 0; }
+.navbar .container, .navbar .container-fluid { 
+  padding-left: 2rem;
+  padding-right: 2rem;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
+}
 form.filter .card-header { background: #d1ecf1; border-color: #bee5eb; }
 .card-header.table-grafico { background: #d1ecf1; border-color: #bee5eb; }
 .navbar-brand { display: block; }
@@ -96,6 +102,15 @@ form.filter .card-header { background: #d1ecf1; border-color: #bee5eb; }
   .navbar-expand-lg .navbar-nav .nav-link {
     padding-right: 0.2rem;
     padding-left: 0.2rem;
+  }
+
+  #navbar-nav-dropdown{
+    padding-left: 1rem;
+    padding-right: 2rem;
+  }
+
+  nav.navbar.navbar-expand-lg.navbar-dark > div > div{
+    max-width: 1366px;
   }
 }
 .secciones-observadas-revision-checkbox-group .border-error { border: none; }
@@ -233,6 +248,82 @@ td.fecha-publicacion  { text-align: center; }
     border-top-left-radius: 5px !important;
     border-top-right-radius: 5px !important;
   }
+
+  #navbar-nav-dropdown{
+    background-color: white;
+  }
+
+
+  .navbar .container, .navbar .container-fluid { 
+    border-bottom: 5px solid #003da6; 
+  }
+
+  .navbar-dark{
+    border-bottom: 0;
+  }
+
+  #navbar-nav-dropdown > ul > li.nav-item{
+    margin: 0;
+    border-radius: 0;
+    background: none;
+  }
+  #navbar-nav-dropdown > ul > li.nav-item:last-child,
+  #navbar-nav-dropdown > ul > li.nav-item:last-child > a,
+  #navbar-nav-dropdown > ul > li.nav-item:last-child > a + .dropdown-menu,
+  #navbar-nav-dropdown > ul > li.nav-item.show,
+  #navbar-nav-dropdown > ul > li.nav-item.show > a{
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+  }
+
+  #navbar-nav-dropdown > ul > li.nav-item > a{
+    background: #ea3b44;
+  }
+
+  #navbar-nav-dropdown a{
+    font-size: 13px;
+  }
+
+  #navbar-nav-dropdown .dropdown-menu{
+    border: 0;
+    border-radius: 0;
+  }
+
+  .dropdown-toggle::after{
+    display: block;
+    float: right;
+  }
+
+  .nav-link.dropdown-toggle::after{
+    margin-top: 0.75rem;
+  }
+
+  .dropdown-item.dropdown-toggle::after{
+    margin-right: 0.1rem;
+  }
+
+  .dropdown-menu > li > .dropdown-item,
+  .dropdown-submenu > .dropdown-item{
+    padding: 0.25rem 0.5rem;
+  }
+
+  .dropdown-submenu .dropdown-menu{
+    border-top: 1px solid #D9D9D9 !important;
+    border-bottom: 1px solid #D9D9D9 !important;
+    border-radius: 0;
+    margin-left: 1rem;
+    margin-right: 1rem;
+    border-radius: 0px !important;
+  }
+
+  .dropdown-submenu .dropdown-menu .dropdown-item{
+    padding: 0.25rem 0;
+  }
+
+  #actores-remote-table.mb-5, #comentarios-coordinador-acuerdo.mb-5{
+    margin-bottom: 1rem!important;
+  }
+
 }
 @media (min-width: 991px) {
  .show-comments { top: 115px; right: 50px; }
@@ -986,4 +1077,7 @@ ul.seleccionados_tree li:only-child{
   margin-top: 0.5 !important;
   margin-bottom: 0.5 !important;
 
+}
+.input-xs{
+  height: auto !important;
 }

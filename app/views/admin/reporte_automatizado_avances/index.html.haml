@@ -23,16 +23,12 @@
 		});	
 	});
 - titulo t(:resultados_de_auditorias)
-.card
-	.card-body
-		- if @disponible 
+- if @disponible 
+	.card
+		.card-body
 			.row.justify-content-center			
 				.col-md-5
 					= select_tag :instrumento, options_from_collection_for_select(@instrumentos, "id", "nombre_para_raa", :selected=>@instrumento), { class: 'form-control',:prompt => 'Seleccione un APL o PPF'}
-		- else
-			.row.justify-content-left
-				.col-md-5
-					%h5.no-margin= @instrumento.nombre_para_raa
 
 #filtro_cargar
 	-#

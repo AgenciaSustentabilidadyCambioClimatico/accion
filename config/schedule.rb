@@ -64,3 +64,8 @@ end
 every '0 6 * * *' do
   rake "ascc:terminar_tareas_programadas", :enviroment => ambiente.to_s
 end
+
+#todos los dias a las 1 retorna traspasos de instrumentos programados para hoy
+every '0 1 * * *' do
+  rake "ascc:retornar_traspasos", :enviroment => ambiente.to_s
+end

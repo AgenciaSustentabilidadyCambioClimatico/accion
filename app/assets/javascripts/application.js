@@ -25,6 +25,7 @@
 // = require ckeditor/init
 // = require date
 // = require date/es-ES
+// = require dataTables.fixedHeader.min
 // = require_tree .
 // = require select2-full
 

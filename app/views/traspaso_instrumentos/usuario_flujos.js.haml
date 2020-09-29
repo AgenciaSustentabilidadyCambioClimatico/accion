@@ -1,0 +1,8 @@
+$('#traspaso_instrumento_flujo_id option').remove();
+$('#traspaso_instrumento_flujo_id').append('<option value="">Seleccione un instrumento</option>');
+flujos_data = #{raw @flujos_data.to_json};
+flujos_data.forEach(function(object, index, array){
+$('#traspaso_instrumento_flujo_id').append('<option value="'+object[1]+'">'+object[0]+'</option>');
+});
+$('#traspaso_instrumento_flujo_id').val("").trigger("chosen:updated");
+$('#buscar_usuario_destino .usuarios-remote-table').html("#{j render('admin/users/tabla',modal_id: 'buscar_usuario_destino')}");

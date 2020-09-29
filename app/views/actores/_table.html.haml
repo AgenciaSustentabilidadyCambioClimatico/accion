@@ -1,9 +1,17 @@
 :javascript
   $(document).ready(function() {
+    columnas_ = [
+      { targets: [-1], orderable: false },
+      { responsivePriority: 1, targets: 0 },
+      { responsivePriority: 2, targets: -1 }
+    ];
+    /*if ("#{@tarea.requiere_revision?}" == 'true' ){
+      columnas_.push({ responsivePriority: 3, targets: -1 });
+    }*/
     $('table.actores').DataTable({
       responsive: true,
       lengthMenu: [[30], [30]],
-      columnDefs: [ { targets: [-1], orderable: false } ],
+      columnDefs: columnas_,
       language: {
         url: "#{asset_path('spanish.json')}"
       },
@@ -24,9 +32,6 @@
 .card.mb-0
   .card-header
     %h5.no-margin
-    %b
-      = t(:lista_de_, items: t(:actores).downcase)
-    %h5.no-margin
       =titulo_instrumento.html_safe
     - if @proyecto.blank?
       %h5.no-margin
@@ -36,6 +41,8 @@
         =titulo_proyecto.html_safe
     %h5.no-margin
       =datos_beneficiario.html_safe
+  .card-header
+    %h5.no-margin= t(:lista_de_, items: t(:actores).downcase)
   .card-body
     .table-responsive
       %table.table.actores.table-striped

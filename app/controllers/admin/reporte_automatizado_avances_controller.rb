@@ -20,9 +20,11 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
     def set_variables_del_usuario
       
       personas = current_user.personas
+      @tipo_vista = 2
       # contribuyentes = Contribuyente.where(id: personas.pluck(:contribuyente_id))
       if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) ||  current_user.is_admin? #DZC se trata del jefe de línea de la ASCC
         @instrumentos = Flujo.where(proyecto_id: nil).where("manifestacion_de_interes_id IS NOT NULL OR programa_proyecto_propuesta_id IS NOT NULL").order(id: :asc).all 
+        @tipo_vista = 1
       else
         # DZC 2018-11-16 11:20:11 se modifica para contemplar todos los flujos en los que el usuario es actor
         @actores = MapaDeActor.where(persona_id: personas)
@@ -31,6 +33,7 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
         # @instrumentos = Flujo.where(proyecto_id: nil, contribuyente_id: contribuyentes.pluck(:id), terminado: [false, nil]).order(id: :asc).all
         # @adhesion_elementos = AdhesionElemento.where(persona_id: persona.id).all
       end
+
     end
 
     def set_cargar_instrumento
@@ -42,8 +45,9 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
       if params[:instrumento].present? 
         @instrumento = Flujo.find_by_id(params[:instrumento])
         if @instrumento.present?
-          @auditorias = Auditoria.where(flujo_id: @instrumento.id).all
-          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditorias.pluck(:id)).all
+          @auditorias = Auditoria.where(flujo_id: @instrumento.id).order(id: :desc).all
+          @auditoria = @auditorias.first
+          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).all
           @adhesion_elementos = AdhesionElemento.where(id: @auditoria_elementos.pluck(:adhesion_elemento_id)).all.uniq
           @set_metas_acciones = @instrumento.set_metas_acciones
 
@@ -75,8 +79,45 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
 
           # DZC 2018-11-14 11:14:26 se agrega para el correcto funcionamiento de los filtros seleccionados
           @adhesion_elementos_tabla = @adhesion_elementos
-          @auditoria = nil
           @adhesion_elemento = nil
+          @auditoria_elementos_total = @auditoria_elementos.size
+          @auditoria_elementos_aplica = @auditoria_elementos.select{|ae| ae.aplica }.size
+          @auditoria_elementos_cumple = @auditoria_elementos.select{|ae| ae.cumple }.size
+
+          if(@tipo_vista == 2)
+            #responsabilidad y pertenencia (responsables y mapa de actores)
+            if(Responsable.includes([:contribuyente]).where(rol_id: @actores.pluck(:rol_id)).where("contribuyentes.rut" => 75980060).size > 0)
+              #En su responsabilidad y pertinencia contiene a ascc
+              @tipo_vista = 1
+            else
+              roles_persona = Responsable.__roles_por_persona(current_user.personas)
+              if(([Rol::COGESTOR, Rol::VALIDADOR, Rol::COMITE_COORDINADOR, Rol::CARGADOR_DATOS_ACUERDO, Rol::RESPONSABLE_ENTREGABLES] & roles_persona).size > 0)
+                #Tiene cualquiera de esos roles
+                @tipo_vista = 1
+              else
+                #Si llego aca es porque definitivamente ve la vista 2, y hay que filtrar los elementos
+                #para mostrar solo los que en su institucion tengan a una de las del usuario
+
+                mis_instituciones = current_user.mis_instituciones
+                #Primero auditoria elementos
+                @auditoria_elementos = @auditoria_elementos.select do |ae|
+                  mis_instituciones.include?(ae.adhesion_elemento.persona.contribuyente_id)
+                end
+                #Segundo contribuyentes
+                @contribuyentes = @contribuyentes.where(id: mis_instituciones)
+                #Por ultimo adhesion elementos
+                @adhesion_elementos = @adhesion_elementos.select do |ae|
+                  mis_instituciones.include?(ae.persona.contribuyente_id)
+                end
+                @adhesion_elementos_tabla = @adhesion_elementos
+
+                
+                @auditoria_elementos_total = @auditoria_elementos.size
+                @auditoria_elementos_aplica = @auditoria_elementos.select{|ae| ae.aplica }.size
+                @auditoria_elementos_cumple = @auditoria_elementos.select{|ae| ae.cumple }.size
+              end
+            end
+          end
         else
           flash[:warning] = "El instrumento ID #{params[:instrumento]} no fue encontrado."
           redirect_to admin_reporte_automatizado_avances_path
@@ -128,6 +169,10 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
         # DZC 2018-11-14 11:22:25 se filtran los ids de los contribuyentes por el correspondiente al elemento adherido escogido
         contribuyentes_id = [@adhesion_elemento.persona.contribuyente.id]
       end
+
+      @auditoria_elementos_total = @auditoria_elementos.size
+      @auditoria_elementos_aplica = @auditoria_elementos.select{|ae| ae.aplica }.size
+      @auditoria_elementos_cumple = @auditoria_elementos.select{|ae| ae.cumple }.size
       # DZC 2018-11-14 11:21:14 se filtran los contribuyentes correspondientes
       @contribuyentes = @contribuyentes.select do |c|
         contribuyentes_id.include?(c[:id])

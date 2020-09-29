@@ -2,17 +2,24 @@
 - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
 - @usuarios = @usuarios.nil? ? [] : @usuarios
 - @flujo_id = @flujo.present? ? @flujo.id : nil
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
 
-.modal.fade{id: :"buscar-usuario", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+.modal.fade{id: modal_id, tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
     .modal-content
       .modal-body
-        .container-fluid#body-usuario-buscador
-          =render 'admin/users/buscador_form'
+        .container-fluid.body-usuario-buscador
+          =render 'admin/users/buscador_form', modal_id: modal_id, solo_tabla: solo_tabla
       .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
           Cerrar
 :javascript
+
+  $(document).on('change','#tabla_usuarios_#{modal_id} .usuario-radio',function() {
+    $('##{modal_id} .seleccionar-usuario-button').removeAttr('disabled');
+    $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
+  });
 
   $(document).on('click','#nuevo-usuario-button', function(e){
     e.preventDefault();
@@ -27,13 +34,13 @@
       alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
       $('.loading-data').hide();
     }).success(function(data){
-      $('#body-usuario-buscador').html(data);
+      $('##{modal_id} .body-usuario-buscador').html(data);
       $('.loading-data').hide();
     });
   });
   $(document).on('click','#deshacer-usuario-button', function(e){
     e.preventDefault();    
-    $('#body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
+    $('##{modal_id} .body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
   });
   $(document).on('change keyup', '.form-temporal-boton-guardar-usuario', function(){
     nuevo_usuario_temporal_validaciones();
@@ -53,7 +60,7 @@
       alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
       $('.loading-data').hide();
     }).success(function(data){
-      $('#body-usuario-buscador').html(data);
+      $('##{modal_id} .body-usuario-buscador').html(data);
       $('.loading-data').hide();
     });
   });
@@ -64,7 +71,7 @@
 
     $('#usuario_representante').click(function(e){
       e.preventDefault();
-      $('#body-usuario-buscador').html("");
+      $('##{modal_id} .body-usuario-buscador').html("");
       if(#{!@usuario_temporal.nil? && !@usuario_temporal.new_record?}){
         $.ajax({
           url: "#{edit_modal_admin_users_path}",
@@ -76,15 +83,15 @@
         }).fail(function(a, b, c) {
           alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
           $('.loading-data').hide();
-          $('#buscar-usuario').modal("show");
+          $('##{modal_id}').modal("show");
         }).success(function(data){
-          $('#body-usuario-buscador').html(data);
+          $('##{modal_id} .body-usuario-buscador').html(data);
           $('.loading-data').hide();
-          $('#buscar-usuario').modal("show");
+          $('##{modal_id}').modal("show");
         });
       }else{
-        $('#body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
-        $('#buscar-usuario').modal("show");
+        $('##{modal_id} .body-usuario-buscador').html("#{j render('admin/users/buscador_form', modal_id: modal_id)}");
+        $('##{modal_id}').modal("show");
       }
     });
   });

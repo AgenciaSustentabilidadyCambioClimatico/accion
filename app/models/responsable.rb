@@ -194,4 +194,21 @@ class Responsable < ApplicationRecord
 		tipo_instrumentos.uniq
 	end
 
+	def self.__roles_por_persona(personas)
+		roles = []
+		personas.each do |persona|
+
+			cargos_ids = persona.persona_cargos.pluck(:cargo_id)
+			responsables = self.where(cargo_id: cargos_ids)
+
+			#Dos busquedas
+			#primero los que no tienen contribuyente asociado
+			roles += responsables.where(contribuyente_id: nil).pluck(:rol_id)
+			#segundo los que si tienen contribuyente y coinciden con el de la persona
+			#la persona no cambia segun activiad economica o tipo contribuyente, asique me lo salto
+			roles += responsables.where(contribuyente_id: persona.contribuyente_id).pluck(:rol_id)
+		end
+		roles.uniq
+	end
+
 end

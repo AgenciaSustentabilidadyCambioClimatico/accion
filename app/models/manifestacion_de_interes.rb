@@ -30,6 +30,8 @@ class ManifestacionDeInteres < ApplicationRecord
   #titulos, como no se necesita registrar un texto del usuario solo lo usamos para mostrar
   attr_accessor :titulo_cifras_sectores_economicos, :titulo_caracterizacion_actividades_economicas
 
+  attr_accessor :revisar_y_actualizar_mapa_de_actores
+
   belongs_to :tipo_instrumento, optional: true
   #belongs_to :contribuyente, optional: true
   belongs_to :estandar_homologacion, optional: true, foreign_key: :estandar_de_certificacion_id
@@ -209,14 +211,17 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia.present? && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones")}
   validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, on: :update, if: -> { update_respuesta_pertinencia.present? && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones")}
 
+  validates :institucion_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
+  validates :institucion_entregables_name, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
   validates :usuario_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
-  validates :usuario_entregables_comentario, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
+  validates :usuario_entregable_name, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
+  #validates :usuario_entregables_comentario, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
 
   validates :comentarios_y_observaciones_actualizacion_mapa_de_actores, presence: true, if: -> { temporal.to_s == "true" && mapa_de_actores_correctamente_construido.present? && mapa_de_actores_correctamente_construido == 'false' }
   validates :comentarios_y_observaciones_documento_diagnosticos, presence: true, if: -> { temporal.to_s == "true" && aprueba_documentos_diagnostico.present? && aprueba_documentos_diagnostico == 'false' }
   validates :comentarios_y_observaciones_set_metas_acciones, presence: true, if: -> { temporal.to_s == "true" && aprueba_set_metas_accion.present? && aprueba_set_metas_accion == 'false' }
 
-  validate :data_mapa_de_actores, on: :update, if: -> { self.mapa_de_actores_archivo.present? }
+  validate :data_mapa_de_actores, on: :update, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   #apl-003 
   validates :observaciones_admisibilidad,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad)}
@@ -230,7 +235,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
   before_save :procesar_archivos_google_maps
   
-  after_save :data_mapa_de_actores, if: -> { self.mapa_de_actores_archivo.present? }
+  after_save :data_mapa_de_actores, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   # DZC 2019-07-09 16:39:51 prueba de validación genérica de tamaños minimos y maximos contenido de campos
   validate :valida_largo_campos, on: :update, unless: -> { temporal.to_s == "true" }
@@ -451,7 +456,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ruts_que_quedaran_en_mapa = (ruts_no_eliminables_en_mapa + ruts_en_archivo).uniq
 
         # DZC 2018-11-19 20:59:40 se corrige error en revisión de las tareas pendientes del revisor designado en APL-002
-        unless ((ruts_con_tareas_pendientes & ruts_que_quedaran_en_mapa) == ruts_con_tareas_pendientes) || self.tarea_codigo == Tarea::COD_APL_001 || self.tarea_codigo == Tarea::COD_APL_002 || self.tarea_codigo == Tarea::COD_APL_003_1 || self.tarea_codigo == Tarea::COD_APL_003_2 || self.tarea_codigo == Tarea::COD_APL_004_1 || self.tarea_codigo == Tarea::COD_APL_004_2 || self.tarea_codigo == Tarea::COD_APL_005 || self.tarea_codigo == Tarea::COD_APL_006
+        unless ((ruts_con_tareas_pendientes & ruts_que_quedaran_en_mapa) == ruts_con_tareas_pendientes) || self.tarea_codigo == Tarea::COD_APL_001 || self.tarea_codigo == Tarea::COD_APL_002 || self.tarea_codigo == Tarea::COD_APL_003_1 || self.tarea_codigo == Tarea::COD_APL_003_2 || self.tarea_codigo == Tarea::COD_APL_004_1 || self.tarea_codigo == Tarea::COD_APL_004_2 || self.tarea_codigo == Tarea::COD_APL_005 || self.tarea_codigo == Tarea::COD_APL_006 || self.tarea_codigo == Tarea::COD_APL_008
 
           ruts_eliminados = ruts_con_tareas_pendientes - (ruts_con_tareas_pendientes & ruts_que_quedaran_en_mapa)
           ##
@@ -818,13 +823,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def revisores_select
     # DZC 2018-10-03 17:41:49 se corrige la búsqueda de responsables según el tipo de instrumento de la instancia
     tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
-    Responsable.__personas_responsables(Rol.find_by(nombre: 'Revisor Técnico').id, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}     
+    Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}     
   end
 
   def usuarios_entregables_select
     # DZC 2018-10-03 17:41:49 se corrige la búsqueda de responsables según el tipo de instrumento de la instancia
     tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id   
-    Responsable.__personas_responsables(Rol.find_by(nombre: 'Responsable Entregables').id, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}
+    Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}
   end
 
   def is_observaciones_pertinencia_factibilidad

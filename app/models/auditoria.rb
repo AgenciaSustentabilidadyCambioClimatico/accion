@@ -34,7 +34,7 @@ class Auditoria < ApplicationRecord
 
   #DZC se obtienen label para reporte automatizado de avances
   def nombre_para_raa
-    return "ID #{self.id} - #{(self.nombre.blank? ? 'Auditoria sin nombre': self.nombre)} - #{self.flujo.tipo_de_flujo} - #{self.flujo.nombre_instrumento}"
+    return "ID #{self.id} - #{(self.nombre.blank? ? 'Auditoria sin nombre': self.nombre)}"
   end
 
   def valid_extensions

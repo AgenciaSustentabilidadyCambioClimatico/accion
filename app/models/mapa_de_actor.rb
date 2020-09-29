@@ -119,6 +119,25 @@ class MapaDeActor < ApplicationRecord
 		actores
 	end
 
+	def self.adecua_actores_unidos_rut_persona_institucion(data)
+		actores_unidos = {}
+		# agrupamos los actores por rut persona y rut_institucion
+		data.each do |fila|
+			llave = fila[:rut_persona]+fila[:rut_institucion]
+			if actores_unidos.has_key?(llave)
+				# agregamos los roles para luego compararlos y dejarlos unicos
+				actores_unidos[llave][:roles_en_acuerdo] << fila[:rol_en_acuerdo]
+			else
+				# inicializamos el arreglo donde guardaremos los roles
+				fila[:roles_en_acuerdo] = [fila[:rol_en_acuerdo]]
+				actores_unidos[llave] = fila
+			end
+		end
+		# descomprimimos y nos quedamos solo con una fila por actor repetido pero agregamos los otros roles
+		actores = actores_unidos.map{|llave,fila| fila[:rol_en_acuerdo] = fila[:roles_en_acuerdo].uniq.join(', '); fila}
+		actores
+	end
+
 	def self.dominios
 		{
 			roles: Rol.all.order(nombre: :asc).map {|r| r.nombre}.compact,

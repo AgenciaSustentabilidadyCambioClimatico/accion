@@ -1,16 +1,18 @@
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
 .row
-  .col-12
-    .card.no-margin
-      .card-header
-        %h5.no-margin
-          = t(:buscar_, item: t(:institución).downcase)
-      .card-body
-        %div{id: "contribuyentes-remote-filter#{custom_id}"}
-          = render 'admin/contribuyentes/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, custom_id: custom_id, data_table: data_table, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
-  -unless @contribuyente_temporal.nil?
-    .col-12.mt-2.text-right
-      %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
-        =t(:nueva_institución)
+  -if !solo_tabla
+    .col-12
+      .card.no-margin
+        .card-header
+          %h5.no-margin
+            = t(:buscar_, item: t(:institución).downcase)
+        .card-body
+          %div{id: "contribuyentes-remote-filter#{custom_id}"}
+            = render 'admin/contribuyentes/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, custom_id: custom_id, data_table: data_table, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
+    -unless @contribuyente_temporal.nil?
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
+          =t(:nueva_institución)
   .col-12.mt-2
     .card.no-margin
       .card-header

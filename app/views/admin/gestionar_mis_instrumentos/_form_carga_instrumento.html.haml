@@ -15,7 +15,7 @@
             = select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }           
       .card-body.p-0
         .table-responsive.mis-instrumentos
-          %table.table.table-bordered.table-striped
+          %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
             %thead
               %tr
                 %th=t(:instrumento_tipo)
@@ -65,7 +65,8 @@
       columnDefs: [ { targets: [-1], orderable: true } ],
       language: {
         url: "#{asset_path('spanish.json')}"
-      }, 
+      },
+      fixedHeader: true
     });
 
     $('.chosen-control').chosen({

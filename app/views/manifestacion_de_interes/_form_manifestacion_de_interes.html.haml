@@ -32,7 +32,6 @@
       //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
       //data=JSON.parse($('.contribuyente-radio:checked').val());
       data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-      console.log(data);
       $("#manifestacion_de_interes_contribuyente_id").val(data.id);
       $("#manifestacion_de_interes_contribuyente_id").change();
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
@@ -714,7 +713,6 @@
             .col-12.col-md-4
               = __mostrar_descargable(@descargables,'APL-001-DES-001', tarea_pendiente: @tarea_pendiente, carta_interes: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:atributo], nombre: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:nombre])
 
-
   #contexto-sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"contexto-sector"] ? 'true' : 'false'), "aria-labelledby" => "contexto-sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"contexto-sector"])}
     .card
       .card-body
@@ -810,7 +808,7 @@
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:produccion][:nombre]
               %p#manifestacion_de_interes_produccion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.produccion)
-          .col-12.col-md-1{style: (!solo_lectura ? "align-self: center; " : '')}
+          .col-12.col-md-1
             -if !solo_lectura
               = f.input :unidad_de_medida_volumen, collection: ManifestacionDeInteres.unidades_de_medida_para_volumen, input_html: { class: ''}, label: false, required: true
             -else
@@ -1653,7 +1651,7 @@
                     = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-descargar btn-block informe_impacto_id_descarga' do
                       %i.fa.fa-download
               -else
-                -no_data = f.object.estandar_homologacion.nil?
+                -no_data = f.object.acuerdo_previo_con_informe_id.nil?
                 -if no_data
                   .col-12.col-md-8
                     %label.control-label.string=@validaciones[:manifestacion_de_interes][:acuerdo_previo_con_informe_id][:nombre]

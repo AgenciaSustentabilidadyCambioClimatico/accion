@@ -1,0 +1,35 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: 5
+  host: localhost
+  username: postgres
+  password: postgres
+  template: template0
+  schema_search_path: "public, admin"
+
+development:
+  <<: *default
+  database: ascc_qa_cliente
+
+test:
+  <<: *default
+  database: ascc_test
+
+staging:
+  <<: *default
+  database: bd_dev_accion
+
+production:
+  <<: *default
+  database: bd_accion
+
+external_fpl_db:
+  <<: *default
+  host: localhost
+  username: postgres
+  password: postgres
+  template: template0
+  schema_search_path: "public"
+  database: cpl_desarrollo_dbfpl

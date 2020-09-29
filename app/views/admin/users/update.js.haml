@@ -1,5 +1,5 @@
 -if @user.temporal
-  $('#body-usuario-buscador').html("#{j render 'admin/users/form_temporal', usuario_temporal: @usuario_temporal}");
+  $('#buscar-usuario .body-usuario-buscador').html("#{j render 'admin/users/form_temporal', usuario_temporal: @usuario_temporal}");
   -if @usuario_temporal.errors.blank?
     $('#buscar-usuario').modal("hide");
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(#{@usuario_temporal.id});

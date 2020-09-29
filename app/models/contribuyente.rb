@@ -196,21 +196,6 @@ class Contribuyente < ApplicationRecord
       rc.contribuyente_id = copia_contribuyente.id
       rc.save
     }
-    self.personas.each{|r| 
-      rc = r.dup
-      rc.contribuyente_id = copia_contribuyente.id
-      rc.save
-    }
-    self.maquinarias.each{|r| 
-      rc = r.dup
-      rc.contribuyente_id = copia_contribuyente.id
-      rc.save
-    }
-    self.otros.each{|r| 
-      rc = r.dup
-      rc.contribuyente_id = copia_contribuyente.id
-      rc.save
-    }
     copia_contribuyente
   end
 

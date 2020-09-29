@@ -1,7 +1,7 @@
 class ManifestacionDeInteresController < ApplicationController
   before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
-  before_action :set_tarea_pendiente, except: [:iniciar_flujo]
-  before_action :set_flujo, except: [:iniciar_flujo]
+  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables]
+  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables]
   before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
                                       :admisibilidad_juridica, :revisar_admisibilidad_juridica,
@@ -263,6 +263,7 @@ class ManifestacionDeInteresController < ApplicationController
 
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.valid?
         if @manifestacion_de_interes.save
           # DZC 2018-10-10 16:47:12 se modifica cambiando el contribuyente en el flujo en concordancia al que se seleccionó en la manifestación
@@ -448,20 +449,20 @@ class ManifestacionDeInteresController < ApplicationController
         @manifestacion_de_interes.save
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
-          # rol_id: Rol::REVISOR_TECNICO,
-          rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+          rol_id: Rol::REVISOR_TECNICO, #se vuelve a usar el id
+          #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
           persona_id: manifestacion_revisor_params[:revisor_tecnico_id]
         })
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
-          # rol_id: Rol::REVISOR_TECNICO,
-          rol_id: Rol.find_by(nombre: 'Revisor Jurídico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+          rol_id: Rol::REVISOR_JURIDICO, #se vuelve a usar el id
+          #rol_id: Rol.find_by(nombre: 'Revisor Jurídico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
           persona_id: manifestacion_revisor_params[:revisor_juridico_id]
         })
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
-          # rol_id: Rol::REVISOR_TECNICO,
-          rol_id: Rol.find_by(nombre: 'Jefe de Línea').id, 
+          rol_id: Rol::JEFE_DE_LINEA, #se vuelve a usar el id
+          #rol_id: Rol.find_by(nombre: 'Jefe de Línea').id, 
           persona_id: @tarea_pendiente.persona_id
         })
         continua_flujo_segun_tipo_tarea
@@ -939,6 +940,7 @@ class ManifestacionDeInteresController < ApplicationController
 
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.valid?
       #DZC verifica la vigencia del plazo de 25 días corridos para evacuar las observaciones (condición 'B')
       #se quita validacion,ahora muere en background
@@ -1176,6 +1178,7 @@ class ManifestacionDeInteresController < ApplicationController
 
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.valid?
       #DZC verifica la vigencia del plazo de 25 días corridos para evacuar las observaciones (condición 'B')
       #se quita validacion, ahora muere en background
@@ -1278,8 +1281,8 @@ class ManifestacionDeInteresController < ApplicationController
   def pertinencia_factibilidad #DZC TAREA APL-005
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
     # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
-    @responsables_coordinador = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-    @responsables_prensa = Responsable.__personas_responsables(Rol.find_by(nombre: Rol::STR_PRENSA).id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+    @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+    @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
     @manifestacion_de_interes.seleccion_de_radios
 
     unless @manifestacion_de_interes.contribuyente_id.nil?
@@ -1375,8 +1378,8 @@ class ManifestacionDeInteresController < ApplicationController
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-        @responsables_coordinador = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
-        @responsables_prensa = Responsable.__personas_responsables(Rol.find_by(nombre: Rol::STR_PRENSA).id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
+        @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
+        @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
 
         @manifestacion_de_interes.seleccion_de_radios
 
@@ -1561,6 +1564,7 @@ class ManifestacionDeInteresController < ApplicationController
     end
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.valid?
         #DZC verifica la vigencia del plazo de 60 días corridos para evacuar las observaciones (condición 'C')
         #se quita validacion, ahora muere en background
@@ -1643,7 +1647,7 @@ class ManifestacionDeInteresController < ApplicationController
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
-        @responsables = Responsable.__personas_responsables(Rol.find_by(nombre: 'Coordinador').id, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+        @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
         @total_de_errores_por_tab = [] if @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
         @total_de_errores_por_tab[:"pertinencia-factibilidad"] = [""]
         carga_de_representantes
@@ -1660,6 +1664,11 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def usuario_entregables #DZC APL-008
+    @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA).map{|r| r.contribuyente}
+  end
+
+  def lista_usuarios_entregables
+    @usuarios = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, params[:contribuyente_id]).map { |e| e.user  }
   end
 
   def guardar_usuario_entregables #DZC APL-008
@@ -1671,11 +1680,12 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.tarea_codigo = @tarea.codigo
         @manifestacion_de_interes.save
+        persona_by_user = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
           rol_id: Rol::RESPONSABLE_ENTREGABLES,
           # rol_id: Rol.find_by(nombre: 'Responsable Entregables').id,
-          persona_id: manifestacion_usuario_entregables_params[:usuario_entregables_id]
+          persona_id: persona_by_user.id
         })
         @manifestacion_de_interes.temporal = true
         @manifestacion_de_interes.update(mapa_de_actores_data: nil) #DZC resetea el valor del campo, para que se contruyan archivos desde las tablas
@@ -1684,6 +1694,10 @@ class ManifestacionDeInteresController < ApplicationController
         format.html { redirect_to root_path, flash: {notice: 'Usuario encargado de entregables asignado correctamente' }}
       else
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
+        @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA).map{|r| r.contribuyente}
+        if @manifestacion_de_interes.institucion_entregables_id.present?
+          @usuarios = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).map { |e| e.user  }
+        end
         format.js { }
         format.html { render :usuario_entregables}
       end
@@ -1994,8 +2008,8 @@ class ManifestacionDeInteresController < ApplicationController
     when Tarea::COD_APL_001
       @tarea_pendiente.pasar_a_siguiente_tarea
     when Tarea::COD_APL_002
-      @manifestacion_de_interes.temporal = true
-      @manifestacion_de_interes.update(mapa_de_actores_data: nil) #DZC resetea el valor del campo, para que se contruyan archivos desde las tablas
+      #@manifestacion_de_interes.temporal = true
+      #@manifestacion_de_interes.update(mapa_de_actores_data: nil) #DZC resetea el valor del campo, para que se contruyan archivos desde las tablas
       @tarea_pendiente.pasar_a_siguiente_tarea ['A','B']
     when Tarea::COD_APL_003_1
       case @manifestacion_de_interes.resultado_admisibilidad
@@ -2157,7 +2171,10 @@ class ManifestacionDeInteresController < ApplicationController
 
     def manifestacion_usuario_entregables_params
       params.require(:manifestacion_de_interes).permit(
+        :institucion_entregables_id,
+        :institucion_entregables_name,
         :usuario_entregables_id,
+        :usuario_entregable_name,
         :archivo_usuario_entregables,
         :usuario_entregables_comentario,
         :usuario_entregables_otros
