@@ -1689,6 +1689,9 @@ class ManifestacionDeInteresController < ApplicationController
         })
         @manifestacion_de_interes.temporal = true
         @manifestacion_de_interes.update(mapa_de_actores_data: nil) #DZC resetea el valor del campo, para que se contruyan archivos desde las tablas
+        # borramos el archivo mapa de actores
+        @manifestacion_de_interes.remove_mapa_de_actores_archivo!
+        @manifestacion_de_interes.save!
         @tarea_pendiente.pasar_a_siguiente_tarea 'A', {primera_ejecucion: true}
         format.js { flash.now[:success] = 'Usuario encargado de entregables asignado correctamente' }
         format.html { redirect_to root_path, flash: {notice: 'Usuario encargado de entregables asignado correctamente' }}

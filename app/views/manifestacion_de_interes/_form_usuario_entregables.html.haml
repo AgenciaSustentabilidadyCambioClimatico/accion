@@ -100,10 +100,11 @@
                       = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
             .col-12.col-lg-6.mb-2
               = f.input :usuario_entregables_comentario,  as: :text, label: t(:comentarios_encargado)
-            .col-12.col-lg-6.mb-2
-              = f.input :usuario_entregables_otros, as: :text, label: t(:otros)
-            .col-12
-              = f.input :archivo_usuario_entregables, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
+            -#
+              .col-12.col-lg-6.mb-2
+                = f.input :usuario_entregables_otros, as: :text, label: t(:otros)
+              .col-12
+                = f.input :archivo_usuario_entregables, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
     = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary "

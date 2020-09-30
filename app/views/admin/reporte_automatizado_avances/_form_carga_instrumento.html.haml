@@ -69,15 +69,15 @@
           %br
           %b ID
           =@instrumento.id
+        .row.justify-content-left       
+          .col-md-6
+            - recargar = 'SELECCIONE ESTA OPCION PARA RECARGAR EL LISTADO'
+            = select_tag :auditoria, options_from_collection_for_select(@auditorias, "id", "nombre_para_raa", :selected=>(@auditoria.blank? ? nil : @auditoria.id)), { class: 'form-control',:prompt => (@auditoria.present? ? recargar : 'Seleccione una Auditoría')}  
+          .col-md-6
+            = select_tag :elemento_adherido, options_from_collection_for_select(@adhesion_elementos, "id", "nombre_para_raa", :selected=>(@adhesion_elemento.blank? ? nil : @adhesion_elemento.id)), { class: 'form-control',:prompt => (@adhesion_elemento.present? ? recargar : 'Seleccione un Elemento Adherido')}
       .card-header
         %h5.no-margin=t(:resultado_por_accion_auditada)
       .card-body        
-        .row.justify-content-left       
-          .col-md-5
-            - recargar = 'SELECCIONE ESTA OPCION PARA RECARGAR EL LISTADO'
-            = select_tag :auditoria, options_from_collection_for_select(@auditorias, "id", "nombre_para_raa", :selected=>(@auditoria.blank? ? nil : @auditoria.id)), { class: 'form-control',:prompt => (@auditoria.present? ? recargar : 'Seleccione una Auditoría')}  
-          .col-md-5
-            = select_tag :elemento_adherido, options_from_collection_for_select(@adhesion_elementos, "id", "nombre_para_raa", :selected=>(@adhesion_elemento.blank? ? nil : @adhesion_elemento.id)), { class: 'form-control',:prompt => (@adhesion_elemento.present? ? recargar : 'Seleccione un Elemento Adherido')}
 
       - unless @auditoria_elementos.blank?
         - if @tipo_vista == 1

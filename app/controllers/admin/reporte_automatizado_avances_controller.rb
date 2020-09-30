@@ -86,7 +86,16 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
 
           if(@tipo_vista == 2)
             #responsabilidad y pertenencia (responsables y mapa de actores)
-            if(Responsable.includes([:contribuyente]).where(rol_id: @actores.pluck(:rol_id)).where("contribuyentes.rut" => 75980060).size > 0)
+            responsabilidad = Responsable.includes([:contribuyente]).where(rol_id: @actores.pluck(:rol_id)).where("contribuyentes.rut" => 75980060)
+            pertenencia = false
+            responsabilidad.each do |resp|
+              persona_pertenencia = current_user.personas.where(contribuyente_id: resp.contribuyente_id)
+              persona_pertenencia.each do |persona_pert|
+                pertenencia = true if persona_pert.persona_cargos.where(cargo_id: resp.cargo_id)
+              end
+            end
+            
+            if(responsabilidad.size > 0 && pertenencia)
               #En su responsabilidad y pertinencia contiene a ascc
               @tipo_vista = 1
             else
