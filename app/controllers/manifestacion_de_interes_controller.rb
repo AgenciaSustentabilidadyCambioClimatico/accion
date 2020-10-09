@@ -1671,14 +1671,19 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def usuario_entregables #DZC APL-008
-    rol_tarea = @tarea_pendiente.tarea.rol_id
-    @contribuyentes = Responsable.__contribuyentes_por_rol(rol_tarea, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+    tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
+    rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+    responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
+    contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
+    @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
   end
 
   def lista_usuarios_entregables
-    tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
-    rol_tarea = tarea_pendiente.tarea.rol_id
-    @usuarios = Responsable.__personas_responsables(rol_tarea, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, params[:contribuyente_id]).map { |e| e.user  }
+    manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
+    tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
+    rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+    personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
+    @usuarios = personas_responsables.map { |e| e.user  }
   end
 
   def guardar_usuario_entregables #DZC APL-008
@@ -1690,7 +1695,11 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.tarea_codigo = @tarea.codigo
         @manifestacion_de_interes.save
-        persona_by_user = Responsable.__personas_responsables(@tarea_pendiente.tarea.rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
+
+        tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
+        rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+        persona_by_user = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
+
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
           rol_id: Rol::RESPONSABLE_ENTREGABLES,

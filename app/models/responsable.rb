@@ -113,14 +113,54 @@ class Responsable < ApplicationRecord
     personas.uniq
   end
 
-  def self.__info_contribuyente(cpo,ctid,aeid,tcid)
+  def self.__personas_responsables_v2(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil)
+    personas = []
+    instrumentos_id =[]
+    instrumentos_id << instrumento_id
     
+    instrumentos_id << TipoInstrumento.where(id: instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega instrumento_id padre, en caso de que instrumento_id sea hijo
+    
+    
+    # instrumentos_id += TipoInstrumento.where(tipo_instrumento_id: instrumento_id).all.pluck(:id) if TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega todos los instrumentos hijos
+    
+    instrumentos_id.uniq #DZC elimina repetidos
+    
+    #DZC TODO: Se debe modificar para contemplar todas las combinaciones de reglas posibles segun valores de tabla responsables
+    #DZC TODO: Se debe leer el tipo de instrumento desde la instancia del proceso (manifestación, ppf, ppp) y no desde la tarea 
+    
+    responsables = self.where(rol_id: rol_id).where(tipo_instrumento_id: instrumentos_id)
+    # self.where(rol_id: rol_id)
+    #   .where("cargo_id IS NOT NULL")
+    responsables.each do |r|  
+      cgid = r.cargo_id
+      ctid = r.contribuyente_id
+      aeid = r.actividad_economica_id
+      tcid = r.tipo_contribuyente_id
+      if r.cargo_id.blank? == false
+        PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
+          if self.__info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid,contribuyente_id,actividad_economica_id,tipo_contribuyente_id)
+            personas << pc.persona
+          end
+        end
+      else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
+        
+        personas = PersonaCargo.includes([:persona]).each do |pc|
+          if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid,contribuyente_id,actividad_economica_id,tipo_contribuyente_id)
+            personas << pc.persona
+          end
+        end
+      end
+    end
+    personas.uniq
+  end
+
+  def self.__info_contribuyente(cpo,ctid,aeid,tcid,c_extra=nil,ae_extra=nil,tc_extra=nil)
     coincide = true
     unless ctid.blank?
-      coincide = !coincide ? coincide : ( ctid == cpo.id )
+      coincide = !coincide ? coincide : ( ctid.to_i == cpo.id.to_i )
     end
     unless aeid.blank?
-      coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id}.include?(aeid))
+      coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(aeid.to_i))
     end
     unless tcid.blank?
       # datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
@@ -133,7 +173,26 @@ class Responsable < ApplicationRecord
       # datos_contribuyente += nulos
       # unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
       # datos_contribuyente += [unico]
-      coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid))
+      coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid.to_i))
+    end
+    unless c_extra.blank?
+      coincide = !coincide ? coincide : ( c_extra.to_i == cpo.id.to_i )
+    end
+    unless ae_extra.blank?
+      coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(ae_extra.to_i))
+    end
+    unless tc_extra.blank?
+      # datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
+      # DZC 2018-10-03 16:44:07 Se corrige error, permitiendo ahora la obtención del tipo_contribuyente_id para el caso de que el atributo :periodo sea nil
+      
+      # v2
+      datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
+      # datos_contribuyente = []
+      # nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
+      # datos_contribuyente += nulos
+      # unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
+      # datos_contribuyente += [unico]
+      coincide = !coincide ? coincide : (datos_contribuyente.include?(tc_extra.to_i))
     end
     coincide
   end

@@ -9,8 +9,8 @@
 
 -#si los intrumentos devueltos incluyen al tipo instrumento en cuestion a inicar es porque tengo permiso
 - puede_crear_manifestacion     = !(current_user.personas & Responsable.responsables_por_rol(Tarea.find(Tarea::ID_APL_001).rol_id,nil,TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)).blank?#tipos_instrumentos_apl.include?(TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
-- puede_crear_programa_regional = !(current_user.personas & Responsable.responsables_por_rol(Tarea.find(Tarea::ID_FPL_002).rol_id,nil,TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES)).blank?#tipos_instrumentos_ppf.include?(TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES)
-- puede_crear_seguimiento_fpl   = !(current_user.personas & Responsable.responsables_por_rol(Tarea.find(Tarea::ID_PPF_001).rol_id,nil,TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA)).blank?#tipos_instrumentos_fpl.include?(TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA)
+- puede_crear_programa_regional = !(current_user.personas & Responsable.responsables_por_rol(Tarea.find(Tarea::ID_PPF_001).rol_id,nil,TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES)).blank?#tipos_instrumentos_ppf.include?(TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES)
+- puede_crear_seguimiento_fpl   = !(current_user.personas & Responsable.responsables_por_rol(Tarea.find(Tarea::ID_FPL_002).rol_id,nil,TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA)).blank?#tipos_instrumentos_fpl.include?(TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA)
 
 - es_encargado_institucion      = current_user.is_encargado_institucion? #verifica si posee el cargo
 - es_administador               = current_user.is_admin_no_agencia? #verifica si posee el cargo administrador fuera de la agencia
