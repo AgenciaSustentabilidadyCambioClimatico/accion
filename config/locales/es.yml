@@ -1271,7 +1271,7 @@ es:
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
 
   # ALONSO 15-09-2020
-  elegir_institucion_entregables: Elegir Institución Gestora
+  elegir_institucion_entregables: Elegir Institución encargada entregables
   elegir_encargado_entregables: Elegir encargado entregables
   comentarios_encargado: Comentarios a encargado de entregable
 
