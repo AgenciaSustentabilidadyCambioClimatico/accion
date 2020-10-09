@@ -26,7 +26,8 @@
         url: "#{lista_usuarios_entregables_manifestacion_de_interes_index_path}",
         type: "GET",
         data: {
-          contribuyente_id: data.id
+          contribuyente_id: data.id,
+          tarea_pendiente_id: #{@tarea_pendiente.id}
         }
       });
     } catch(e) {

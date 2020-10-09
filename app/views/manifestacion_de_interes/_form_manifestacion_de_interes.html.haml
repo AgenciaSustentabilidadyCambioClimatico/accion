@@ -1216,7 +1216,7 @@
                 .row.mt-3
                   -if !solo_lectura
                     .col-12.col-lg-6
-                      = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form-control' }, label: false, required: false
+                      = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form- validado' }, label: false
                       = f.hidden_field :area_influencia_proyecto_archivo_cache
                     .col-lg-6.col-12.mt-auto
                       = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object,false)
@@ -1248,7 +1248,7 @@
                 .row.mt-3
                   -if !solo_lectura
                     .col-12.col-lg-6
-                      = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control' }, label: false, required: false
+                      = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control validado' }, label: false
                       = f.hidden_field :alternativas_instalacion_archivo_cache
                     .col-lg-6.col-12.mt-auto
                       = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object,false)
@@ -1319,22 +1319,22 @@
                   =(no_data ? 'No se ingresó respuesta' : f.object.otro_datos_proyecto)
           -if !solo_lectura
             .col-lg-4.col-12
-              = f.input :gantt_proyecto, as: :file, input_html: { class: 'form-control' }
+              = f.input :gantt_proyecto, as: :file, input_html: { class: 'form-control validado' }
               = f.hidden_field :gantt_proyecto_cache
             .col-lg-2.col-12.mt-auto
               = __descargar_archivo(f.object.gantt_proyecto,f.object,false)
             .col-lg-4.col-12
-              = f.input :estudio_de_mercado, as: :file, input_html: { class: 'form-control' }
+              = f.input :estudio_de_mercado, as: :file, input_html: { class: 'form-control validado' }
               = f.hidden_field :estudio_de_mercado_cache
             .col-lg-2.col-12.mt-auto
               = __descargar_archivo(f.object.estudio_de_mercado, f.object,false)
             .col-lg-4.col-12
-              = f.input :anteproyecto, as: :file, input_html: { class: 'form-control' }
+              = f.input :anteproyecto, as: :file, input_html: { class: 'form-control validado' }
               = f.hidden_field :anteproyecto_cache
             .col-lg-2.col-12.mt-auto
               = __descargar_archivo(f.object.anteproyecto, f.object,false)
             .col-lg-4.col-12
-              = f.input :otros_estudios, as: :file, input_html: { class: 'form-control' }
+              = f.input :otros_estudios, as: :file, input_html: { class: 'form-control validado' }
               = f.hidden_field :otros_estudios_cache
             .col-lg-2.col-12.mt-auto
               = __descargar_archivo(f.object.otros_estudios,f.object,false)

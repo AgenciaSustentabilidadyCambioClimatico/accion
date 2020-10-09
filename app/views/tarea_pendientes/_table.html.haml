@@ -47,7 +47,7 @@
               %td=flujo.id
               - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
                 %td=pendiente.id
-              %td=flujo.nombre_instrumento
+              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
               %td=tipo_instrumento
               %td=subtipo_instrumento              
               %td

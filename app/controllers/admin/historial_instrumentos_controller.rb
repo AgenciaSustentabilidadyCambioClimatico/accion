@@ -19,6 +19,27 @@ class Admin::HistorialInstrumentosController < ApplicationController
     send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "Manifestacion de interes.pdf"
   end
 
+  def descargar_informe_acuerdo_pdf
+
+    manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    informe_acuerdo = manifestacion_de_interes.informe_acuerdo
+    auditorias = Auditoria.where(flujo_id: manifestacion_de_interes.flujo.id).all
+    actores_mapa = MapaDeActor.where(flujo_id: manifestacion_de_interes.flujo.id, rol_id: Rol::FIRMANTE).includes([:rol, persona: [:user,:contribuyente, persona_cargos: [:cargo]]]).all
+
+    pdf = WickedPdf.new.pdf_from_string(
+      render_to_string(
+        template: 'acuerdo_actores/_informe', 
+        layout: 'layouts/wicked_pdf',
+        locals: {
+          datos: informe_acuerdo._a_datos(auditorias),
+          actores_mapa: actores_mapa,
+          es_descargable: true
+        }
+      )
+    )
+    send_data pdf, type: "application/pdf", disposition: "inline", filename: "Informe acuerdo.pdf"
+  end
+
 
   #def ejecutada
   #  require 'open-uri'
@@ -45,17 +66,17 @@ class Admin::HistorialInstrumentosController < ApplicationController
 
       # contribuyentes = Contribuyente.where(id: personas.pluck(:contribuyente_id))
       if current_user.is_admin? #DZC se trata del admin de la ASCC
-        @instrumentos = Flujo.where(terminado: [false, nil]).where("manifestacion_de_interes_id IS NOT NULL OR programa_proyecto_propuesta_id IS NOT NULL OR proyecto_id IS NOT NULL").order(id: :asc).all
+        @instrumentos = Flujo.order(id: :asc)
       else
         # @instrumentos = Flujo.where(contribuyente_id: contribuyentes.pluck(:id), terminado: [false, nil]).order(id: :asc).all
-        @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq, terminado: [false, nil]).order(id: :asc).all
+        @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :asc)
       end
       # @tareas_pendientes = TareaPendiente.where(flujo_id: @instrumentos.pluck(:id))
       @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
       @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
       @fpls = @instrumentos.where.not(proyecto_id: nil)
 
-      #@instancias = []
+      @instancias = []
       #@instrumentos.each do |i|
       #  @instancias += i.instancias_del_flujo(current_user)
       #end
@@ -76,10 +97,10 @@ class Admin::HistorialInstrumentosController < ApplicationController
         instrumento_id = nil
       end
       @instrumento = Flujo.find_by(id: instrumento_id)
-      if @instrumentos.include?(@instrumento) #DZC 2018-10-17 16:49:01 evita que se muestren instrumentos a los que no se debería tener acceso
+      if @instrumentos.pluck(:id).include?(instrumento_id) #DZC 2018-10-17 16:49:01 evita que se muestren instrumentos a los que no se debería tener acceso
         @instancias = @instrumento.instancias_del_flujo(current_user).sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
       else
-        @instancias = {}
+        @instancias = []
         flash.now[:warning] = "Usted no tiene permiso para acceder al historial del instrumento '#{instrumento_id}'."
       end
       # 

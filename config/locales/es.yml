@@ -1265,6 +1265,7 @@ es:
   nombre_usuario_destino: Nombre usuario destino
   datos_de_traspaso: Datos de traspaso
   listado_de_actores: Listado de actores
+  cumplimiento_de_acuerdo: Cumplimiento de acuerdo
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio

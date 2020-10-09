@@ -76,12 +76,14 @@
           .col-md-6
             = select_tag :elemento_adherido, options_from_collection_for_select(@adhesion_elementos, "id", "nombre_para_raa", :selected=>(@adhesion_elemento.blank? ? nil : @adhesion_elemento.id)), { class: 'form-control',:prompt => (@adhesion_elemento.present? ? recargar : 'Seleccione un Elemento Adherido')}
       .card-header
-        %h5.no-margin=t(:resultado_por_accion_auditada)
-      .card-body        
+        - if @tipo_vista == 1
+          %h5.no-margin=t(:resultado_por_accion_auditada)
+        - else
+          %h5.no-margin=t(:cumplimiento_de_acuerdo)
 
       - unless @auditoria_elementos.blank?
         - if @tipo_vista == 1
-          .card-body.p-0
+          .card-body.px-0
             %table.table.table-bordered.table-striped.mb-0.tabla
               %thead
                 %tr
@@ -119,14 +121,15 @@
                     %td=elemento.aplica ? "Si" : "No"
                     %td=elemento.motivo
                     %td=elemento.cumple ? "Si" : "No"
-        - else
-          .card-footer
-            %hr
-            .row
-              .col-12
-                %label.fs-14="Porcentaje cumplimiento: "+((@auditoria_elementos_aplica.to_f*100)/@auditoria_elementos_total.to_f).round().to_s+"%"
-              .col-12
-                %label.fs-14="Porcentaje avance: "+((@auditoria_elementos_cumple.to_f*100)/@auditoria_elementos_total.to_f).round().to_s+"%"
+          .card-header
+            %h5.no-margin=t(:cumplimiento_de_acuerdo)
+        .card-footer
+          %hr
+          .row
+            .col-12
+              %label.fs-14="Porcentaje cumplimiento: "+((@auditoria_elementos_aplica.to_f*100)/@auditoria_elementos_total.to_f).round().to_s+"%"
+            .col-12
+              %label.fs-14="Porcentaje avance: "+((@auditoria_elementos_cumple.to_f*100)/@auditoria_elementos_total.to_f).round().to_s+"%"
       - else
         .card-footer.px-0
           .col-md-12

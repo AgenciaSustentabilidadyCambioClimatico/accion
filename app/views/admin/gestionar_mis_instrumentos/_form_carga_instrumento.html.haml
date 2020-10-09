@@ -32,7 +32,7 @@
                   %td=ins[:tipo_instrumento]
                   %td=ins[:subtipo_instrumento]
                   %td=ins[:id_instrumento]                  
-                  %td=ins[:nombre_instrumento]
+                  %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=ins[:nombre_instrumento]
                   %td=ins[:roles]
                   - if ins[:acciones_actividades][:url].blank?
                     %td=ins[:acciones_actividades][:texto]

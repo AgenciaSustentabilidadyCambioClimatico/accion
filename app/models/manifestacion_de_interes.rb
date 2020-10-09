@@ -122,7 +122,7 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" } 
   validates :contribuyente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :descripcion_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :carta_de_interes_institucion_gestora_firmada, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :carta_de_interes_institucion_gestora_firmada, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :proponente_institucion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }

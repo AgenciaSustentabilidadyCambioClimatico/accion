@@ -1,0 +1,8 @@
+!!!
+%html
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
+    = wicked_pdf_stylesheet_link_tag    'application', media: 'all'
+  %body{style: "background-color: white !important;"}
+    =yield

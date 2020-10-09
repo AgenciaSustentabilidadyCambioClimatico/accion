@@ -98,7 +98,7 @@
                       -#
                         = __upload_status(f.object,:mapa_de_actores_archivo)
                     .col-12.mt-2
-                      = render 'table_comentarios_anteriores'
+                      = render 'actores/table_comentarios_anteriores'
               - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
                 .col-12.col-md-3
                   .form-group
@@ -115,7 +115,7 @@
                 - clase_comentarios = comentarios.blank? ? 'col-md-6' : 'col-md-9'
                 - unless comentarios.blank?
                   .col-12.col-md-9
-                    = render 'table_comentarios_anteriores'
+                    = render 'actores/table_comentarios_anteriores'
                 .col-12.col-md-3
                   .form-group.boolean.required.manifestacion_de_interes_mapa_de_actores_correctamente_construido{class: ('has-error' if f.object.errors.messages.has_key?(:mapa_de_actores_correctamente_construido))}
                     %label.boolean.required.control-label{for: :manifestacion_de_interes_mapa_de_actores_correctamente_construido}

@@ -333,6 +333,7 @@ Rails.application.routes.draw do
         get 'cargar_instrumento'
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
         post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
+        get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
       end
     end     
 
@@ -532,7 +533,6 @@ Rails.application.routes.draw do
       post ':id/reload-informe', to: "acuerdo_actores#reload_informe", as: :reload_informe
       post ':id/mostrar-informe', to: "acuerdo_actores#mostrar_informe", as: :mostrar_informe
       patch ':id/guardar-informe', to: "acuerdo_actores#guardar_informe", as: :guardar_informe
-
     end
 
   end

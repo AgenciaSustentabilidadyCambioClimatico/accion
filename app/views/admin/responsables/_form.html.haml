@@ -33,10 +33,11 @@
 			$("select#responsable_contribuyente_id option:not([value=''])").remove();
 
 			//DZC 2018-10-25 11:56:43 agrega la opción contribuyente eliminado a la lista
-			$("select#responsable_contribuyente_id").append('<option value="0">Contribuyente eliminado</option>');
+			$("select#responsable_contribuyente_id").append('<option value="">Contribuyente eliminado</option>');
 	
 			//DZC 2018-10-25 11:57:22 selecciona la opción de contribuyente eliminado
-			$("select#responsable_contribuyente_id option:selected").val(0);
+			$("select#responsable_contribuyente_id option:selected").val("");
+			$("input#responsable_contribuyente_id").val("");
 
 			//DZC 2018-10-25 11:55:58 asigna el valor null al contribuyente para la tabla
 			$('.contribuyente-valor').val(null);

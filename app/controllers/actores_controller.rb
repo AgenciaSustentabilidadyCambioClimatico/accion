@@ -155,7 +155,8 @@ class ActoresController < ApplicationController
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
       end
     when Tarea::COD_APL_013 #DZC Actualiza con posible revisión
-      @tarea_pendiente.pasar_a_siguiente_tarea 'A' #DZC 2018-10-05 11:42:42 se elimina el mantener la tarea pendiente como no terminada
+      @tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A',{},false #DZC 2018-10-05 11:42:42 se elimina el mantener la tarea pendiente como no terminada
     when Tarea::COD_APL_014 #DZC Revisor envia la vista
       # DZC 2018-10-29 12:08:47 se corrige error que evitaba que se instaciara la tarea pendiente al responsable de APL-013 si no se aprobaba el mapa de actores y no se observaba ningún actor.
       if !@actores_con_observaciones.blank? ||  (@manifestacion_de_interes.mapa_de_actores_correctamente_construido == "false") #DZC No termina pero envia correos, dada la estructura multipestañas (y tareas) asociadas a esta tarea específica

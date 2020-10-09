@@ -54,6 +54,8 @@ gem 'uglifier', '>= 1.3.0'
 gem 'whenever', require: false # DZC 2019-08-23 18:41:54 se agrega para manejar cron
 gem 'zip-zip'
 gem 'select2-rails'
+gem 'wicked_pdf'  
+gem 'wkhtmltopdf-binary' 
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

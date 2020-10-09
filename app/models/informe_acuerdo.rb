@@ -143,6 +143,23 @@ class InformeAcuerdo < ApplicationRecord
     datos["archivos_anexos_posteriores_firmas"] = datos["archivos_anexos_posteriores_firmas"].join(",")
     datos
   end
+
+  #convierte la data a html usando un partial
+  def _a_html_string
+    flujo_id = self.manifestacion_de_interes.flujo.id
+    auditorias = Auditoria.where(flujo_id: flujo_id).all
+    actores_mapa = MapaDeActor.where(flujo_id: flujo_id, rol_id: Rol::FIRMANTE).includes([:rol, persona: [:user,:contribuyente, persona_cargos: [:cargo]]]).all
+
+    ActionView::Base.new(
+      Rails.configuration.paths["app/views"]).render(
+      :partial => 'acuerdo_actores/informe', :format => :txt, 
+      :locals => {
+        datos: self::_a_datos(auditorias),
+        actores_mapa: actores_mapa,
+        es_descargable: true
+      }
+    )
+  end
     
   #DZC calcula fechas
   def calcula_fechas
@@ -205,6 +222,124 @@ class InformeAcuerdo < ApplicationRecord
   def plazo_maximo_neto_pendiente?
     self.calcula_fecha_plazo_maximo_neto
     Time.now <= self.fecha_plazo_maximo_neto
+  end
+
+  def descargar
+    pdf = WickedPdf.new.pdf_from_string(self._a_html_string)
+
+    #pdf = Prawn::Document.new
+    #sizes = { small: 10, normal: 13, large: 20, huge: 32 }
+    #data = self.__contenido(self._a_html_string.as_hash,130,:justify,sizes)
+    #data.each do |line|
+    #  value = line[:value]
+    #  attributes = line[:attributes].blank? ? {} : line[:attributes]
+    #  pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+    #  if line[:image] == true
+    #    pdf.image(line[:value],attributes)
+    #  else
+    #    if attributes.has_key?(:color) && attributes[:color].present?
+    #      pdf.fill_color attributes[:color]
+    #      attributes.delete(:color)
+    #    end
+    #    if attributes.has_key?(:style)
+    #      attributes[:style].each do |style|
+    #        pdf.font "Helvetica", style: style.to_sym
+    #      end
+    #      attributes.delete(:style)
+    #    end
+    #    attributes[:align] = :left unless [:right,:center,:justify].include?(attributes[:align])
+    #    pdf.text(value,attributes)
+    #  end
+    #end
+    pdf
+  end
+
+  def __contenido(editor_hash,image_width,justify,sizes)
+    data  = []
+    # Cabecera fija con el logo de la agencia
+    data  << { value: Rails.root.join('app','assets','images','logo-ascc.jpg').to_s, attributes: { width: image_width, in_header: true }, image: true }
+    data  << { value: "\n"}
+    editor_hash.each do |k,lines|
+      skip_to_next = nil
+      lines.each_with_index do |line,i|
+        attributes = line["attributes"]
+        style = []
+        size  = sizes[:normal]
+        align = :left
+        color = '000000'
+        nxti  = lines[i+1]
+        
+        # Ignoramos los saltos de líneas continuos
+        unless skip_to_next
+          # Normalizamos attributos cuando esto existen
+          unless attributes.blank?
+            bold    = ( attributes["bold"]==true ? :bold : nil )
+            italic  = ( attributes["italic"]==true ? :italic : nil )
+            color   = ( attributes["color"]==true ? attributes["color"] : nil )
+            style   = [bold,italic].compact
+            size    = attributes["size"].blank? ? sizes[:normal] : sizes[attributes["size"].to_sym]
+            color   = attributes["color"].to_s.upcase.sub(/[^0-9A-Z]/,'') unless attributes["color"].blank?
+          end
+          
+          # Si la línea siguiente es un salto de línea y posee los atributos de alineación de la línea actual, entonces se presume que no es
+          # un salto de línea deseado. Es por esto que nos "robamos" su atributo de centrado y la ignoramos.
+          if ! nxti.blank? && nxti["insert"].gsub(/\n/,'').blank? && nxti.has_key?("attributes") && nxti["attributes"].has_key?("align")
+            align = ( (nxti["attributes"]["align"]=="justify") ? justify : nxti["attributes"]["align"].to_sym )
+            # A veces vienen dos saltos de líneas seguidos. Si la línea subsiguiente es un salto de línea sin atributo,
+            # entonces quiere decir que el salto es deseado en este caso.
+            if ( nxti["insert"].match(/\n{2,}/).blank? && ! lines[i+2].blank? )
+              skip_to_next = true
+            end
+          elsif ! attributes.blank? && ! attributes["align"].blank?
+            align = ( (attributes["align"]=="justify") ? justify : attributes["align"].to_sym )
+          end
+
+          attributes = { style: style, size: size, align: align, color: color }
+          
+          # Procesamos de forma disntas las líneas que empiezan con uno o más salto de línea
+          if line["insert"].match(/^[\n]{2,}$/).blank?
+            values = []
+            # Dividimos por salto de línea y aprovechamos de hacer el reemplazo de etiquetas
+            line["insert"].to_s.gsub(/^\n+/,'').split("\n").each do |s|
+              values << s
+            end
+
+            # Si values es cero, es porque esta línea posee solo salto de líneas
+            if values.size == 0
+              # No queremos saltos de líneas pero lo aceptamos si la anterior línea también lo era.
+              data << { value: "\n" } if skip_to_next == false
+            else
+              # Agregamos cada parte encontrada como una línea nueva
+              values.each do |value|
+                data << { value: value, attributes: attributes }
+              end
+            end
+          else
+            splited_line=line["insert"].gsub(/\n{2}/,"\n").split("")
+            chars_between_new_lines=""
+            # Dividimos por palabra para evitar que saltos de líneas entre palabras
+            splited_line.each_with_index do |new_line,i|
+              if new_line == "\n"
+                data << { value: new_line }
+              else
+                # juntamos las palabras en una línea hasta nos encontramos con un salto de línea
+                chars_between_new_lines+=new_line
+                if splited_line[i+1].blank?
+                  data << { value: chars_between_new_lines, attributes: attributes }
+                  chars_between_new_lines = ""
+                end
+              end
+            end
+          end
+          # Reiniciamos su valor a nil, mientras no sea true
+          skip_to_next = nil unless skip_to_next
+        else
+          # Al estar ignorado, este valor pasa de nil a false
+          skip_to_next = false
+        end
+      end
+    end
+    data
   end
 
 end

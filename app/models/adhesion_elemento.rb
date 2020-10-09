@@ -40,7 +40,7 @@ class AdhesionElemento < ApplicationRecord
     when 'Maquinaria'
       nombre = self.maquinaria.nombre_maquinaria.blank? ? '' : self.maquinaria.nombre_maquinaria
     end
-    return "ID #{self.id} - #{self.adhesion.flujo.contribuyente.razon_social} - #{self.alcance.nombre}"
+    return "ID #{self.id} - #{self.persona.contribuyente.razon_social} - #{self.nombre_segun_alcance}"
   end
 
   def nombre_segun_alcance

@@ -3,15 +3,16 @@
     .card
       .card-header
         .d-flex.flex-column.flex-md-row.justify-content-md-between.align-items-start.align-items-md-end
-          %h5
-            %b=@instrumento.tipo_instrumento.nombre_tipo
-            %br
-            %b=@instrumento.subtipo_de_instrumento
-            %br
-            =@instrumento.nombre_instrumento
-            %br
-            %b ID
-            =@instrumento.id
+          -if !@instrumento.nil?
+            %h5
+              %b=@instrumento.tipo_instrumento.nombre_tipo
+              %br
+              %b=@instrumento.subtipo_de_instrumento
+              %br
+              =@instrumento.nombre_instrumento
+              %br
+              %b ID
+              =@instrumento.id
           %h5
             = link_to t(:volver_a_cargar), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-primary btn-sm float-right'
       -if current_user.is_admin?

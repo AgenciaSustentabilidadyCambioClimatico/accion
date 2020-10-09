@@ -188,165 +188,187 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def update #DZC TAREA APL-001 una vez instanciada la manifestación
-    unless @manifestacion_de_interes.contribuyente_id.nil?
-      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-      if @contribuyente_temporal.contribuyente_id.nil?
-        @contribuyente_nuevo = @contribuyente_temporal
-        @contribuyente_editado = Contribuyente.new
+    
+      unless @manifestacion_de_interes.contribuyente_id.nil?
+        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+        if @contribuyente_temporal.contribuyente_id.nil?
+          @contribuyente_nuevo = @contribuyente_temporal
+          @contribuyente_editado = Contribuyente.new
+        else
+          @contribuyente_nuevo = Contribuyente.new
+          @contribuyente_editado = @contribuyente_temporal
+        end
       else
-        @contribuyente_nuevo = Contribuyente.new
-        @contribuyente_editado = @contribuyente_temporal
+        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
       end
-    else
-      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-    end
-    @contribuyente_nuevo.temporal = true
-    @contribuyente_editado.temporal = true
-    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+      @contribuyente_nuevo.temporal = true
+      @contribuyente_editado.temporal = true
+      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
-    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-      if @usuario_temporal.user_id.nil?
-        @usuario_nuevo = @usuario_temporal
-        @usuario_editado = User.new
+      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+        if @usuario_temporal.user_id.nil?
+          @usuario_nuevo = @usuario_temporal
+          @usuario_editado = User.new
+        else
+          @usuario_nuevo = User.new
+          @usuario_editado = @usuario_temporal
+        end
       else
-        @usuario_nuevo = User.new
-        @usuario_editado = @usuario_temporal
+        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
       end
-    else
-      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-    end
-    @usuario_nuevo.temporal = true
-    @usuario_editado.temporal = true
-    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
+      @usuario_nuevo.temporal = true
+      @usuario_editado.temporal = true
+      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
-    @manifestacion_de_interes.assign_attributes(manifestacion_params)
-    @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_params[:carta_de_apoyo_y_compromiso] if manifestacion_params[:carta_de_apoyo_y_compromiso].present?
-    @manifestacion_de_interes[:estandar_certificable] = manifestacion_params[:estandar_certificable] if manifestacion_params[:estandar_certificable].present?
-    @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = manifestacion_params[:diagnostico_de_acuerdo_anterior] if  manifestacion_params[:diagnostico_de_acuerdo_anterior].present?
-    @manifestacion_de_interes[:informe_de_acuerdo_anterior] = manifestacion_params[:informe_de_acuerdo_anterior] if manifestacion_params[:informe_de_acuerdo_anterior].present?
-    @manifestacion_de_interes[:estudios_sectoriales_territoriales_relevantes] = manifestacion_params[:estudios_sectoriales_territoriales_relevantes] if manifestacion_params[:estudios_sectoriales_territoriales_relevantes].present?
-    @manifestacion_de_interes[:mapa_de_actores_archivo] = manifestacion_params[:mapa_de_actores_archivo] if manifestacion_params[:mapa_de_actores_archivo].present?
-    @manifestacion_de_interes[:carta_de_interes_institucion_gestora_firmada] = manifestacion_params[:carta_de_interes_institucion_gestora_firmada] if manifestacion_params[:carta_de_interes_institucion_gestora_firmada].present?
-    @manifestacion_de_interes[:area_influencia_proyecto_archivo] = manifestacion_params[:area_influencia_proyecto_archivo] if manifestacion_params[:area_influencia_proyecto_archivo].present?
-    @manifestacion_de_interes[:alternativas_instalacion_archivo] = manifestacion_params[:alternativas_instalacion_archivo] if manifestacion_params[:alternativas_instalacion_archivo].present?
-    @manifestacion_de_interes[:gantt_proyecto] = manifestacion_params[:gantt_proyecto] if manifestacion_params[:gantt_proyecto].present?
-    @manifestacion_de_interes[:estudio_de_mercado] = manifestacion_params[:estudio_de_mercado] if manifestacion_params[:estudio_de_mercado].present?
-    @manifestacion_de_interes[:anteproyecto] = manifestacion_params[:anteproyecto] if manifestacion_params[:anteproyecto].present?
-    @manifestacion_de_interes[:otros_estudios] = manifestacion_params[:otros_estudios] if manifestacion_params[:otros_estudios].present?
-    @manifestacion_de_interes.completar_informacion!
-    set_representantes
+      @manifestacion_de_interes.assign_attributes(manifestacion_params)
+      @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_params[:carta_de_apoyo_y_compromiso] if manifestacion_params[:carta_de_apoyo_y_compromiso].present?
+      @manifestacion_de_interes[:estandar_certificable] = manifestacion_params[:estandar_certificable] if manifestacion_params[:estandar_certificable].present?
+      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = manifestacion_params[:diagnostico_de_acuerdo_anterior] if  manifestacion_params[:diagnostico_de_acuerdo_anterior].present?
+      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = manifestacion_params[:informe_de_acuerdo_anterior] if manifestacion_params[:informe_de_acuerdo_anterior].present?
+      @manifestacion_de_interes[:estudios_sectoriales_territoriales_relevantes] = manifestacion_params[:estudios_sectoriales_territoriales_relevantes] if manifestacion_params[:estudios_sectoriales_territoriales_relevantes].present?
+      @manifestacion_de_interes[:mapa_de_actores_archivo] = manifestacion_params[:mapa_de_actores_archivo] if manifestacion_params[:mapa_de_actores_archivo].present?
+      @manifestacion_de_interes[:carta_de_interes_institucion_gestora_firmada] = manifestacion_params[:carta_de_interes_institucion_gestora_firmada] if manifestacion_params[:carta_de_interes_institucion_gestora_firmada].present?
+      @manifestacion_de_interes[:area_influencia_proyecto_archivo] = manifestacion_params[:area_influencia_proyecto_archivo] if manifestacion_params[:area_influencia_proyecto_archivo].present?
+      @manifestacion_de_interes[:alternativas_instalacion_archivo] = manifestacion_params[:alternativas_instalacion_archivo] if manifestacion_params[:alternativas_instalacion_archivo].present?
+      @manifestacion_de_interes[:gantt_proyecto] = manifestacion_params[:gantt_proyecto] if manifestacion_params[:gantt_proyecto].present?
+      @manifestacion_de_interes[:estudio_de_mercado] = manifestacion_params[:estudio_de_mercado] if manifestacion_params[:estudio_de_mercado].present?
+      @manifestacion_de_interes[:anteproyecto] = manifestacion_params[:anteproyecto] if manifestacion_params[:anteproyecto].present?
+      @manifestacion_de_interes[:otros_estudios] = manifestacion_params[:otros_estudios] if manifestacion_params[:otros_estudios].present?
+      @manifestacion_de_interes.completar_informacion!
+      set_representantes
 
-    unless @manifestacion_de_interes.tipo_instrumento.blank?
-      @manifestacion_de_interes.descripcion_acuerdo = @manifestacion_de_interes.tipo_instrumento.descripcion
-    end
+      unless @manifestacion_de_interes.tipo_instrumento.blank?
+        @manifestacion_de_interes.descripcion_acuerdo = @manifestacion_de_interes.tipo_instrumento.descripcion
+      end
 
-    checked = @manifestacion_de_interes.set_checked
-    @rpc_checked = checked[:rpc_checked]
-    @actecos_checked = checked[:actecos_checked]
+      checked = @manifestacion_de_interes.set_checked
+      @rpc_checked = checked[:rpc_checked]
+      @actecos_checked = checked[:actecos_checked]
 
-    @manifestacion_de_interes[:estandar_certificable] = nil if manifestacion_params[:radio_estandar] == "1"
-    @manifestacion_de_interes[:estandar_de_certificacion_id] = nil if manifestacion_params[:radio_estandar] == "0"
+      @manifestacion_de_interes[:estandar_certificable] = nil if manifestacion_params[:radio_estandar] == "1"
+      @manifestacion_de_interes[:estandar_de_certificacion_id] = nil if manifestacion_params[:radio_estandar] == "0"
 
-    @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = nil if manifestacion_params[:radio_diagnostico] == "1"
-    @manifestacion_de_interes[:diagnostico_id] = nil if manifestacion_params[:radio_diagnostico] == "0"
+      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = nil if manifestacion_params[:radio_diagnostico] == "1"
+      @manifestacion_de_interes[:diagnostico_id] = nil if manifestacion_params[:radio_diagnostico] == "0"
 
-    @manifestacion_de_interes[:informe_de_acuerdo_anterior] = nil if manifestacion_params[:radio_informe] == "1"
-    @manifestacion_de_interes[:acuerdo_previo_con_informe_id] = nil if manifestacion_params[:radio_informe] == "0" 
+      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = nil if manifestacion_params[:radio_informe] == "1"
+      @manifestacion_de_interes[:acuerdo_previo_con_informe_id] = nil if manifestacion_params[:radio_informe] == "0" 
 
-    @flujo.actividad_economica_ids = manifestacion_params[:actividad_economicas_ids]
-    @flujo.comuna_ids = manifestacion_params[:comunas_ids]
-    @flujo.cuenca_ids = manifestacion_params[:cuencas_ids]
-    @flujo.save
+      @flujo.actividad_economica_ids = manifestacion_params[:actividad_economicas_ids]
+      @flujo.comuna_ids = manifestacion_params[:comunas_ids]
+      @flujo.cuenca_ids = manifestacion_params[:cuencas_ids]
+      @flujo.save
 
-    respond_to do |format|
-      @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
-      if @manifestacion_de_interes.valid?
-        if @manifestacion_de_interes.save
-          # DZC 2018-10-10 16:47:12 se modifica cambiando el contribuyente en el flujo en concordancia al que se seleccionó en la manifestación
-          #@flujo.update(contribuyente_id: @manifestacion_de_interes.contribuyente_id) if !@manifestacion_de_interes.contribuyente_id.blank?
-          #Asocia actividades economicas a flujo
-          #@flujo.actividad_economica_ids = manifestacion_params[:actividad_economicas_ids]
-          #@flujo.comuna_ids = manifestacion_params[:comunas_ids]
-          #@flujo.cuenca_ids = manifestacion_params[:cuencas_ids]
-          @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
-          @flujo.save
+      respond_to do |format|
+        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+        @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
+        if @manifestacion_de_interes.valid?
+          if @manifestacion_de_interes.save
+            # DZC 2018-10-10 16:47:12 se modifica cambiando el contribuyente en el flujo en concordancia al que se seleccionó en la manifestación
+            #@flujo.update(contribuyente_id: @manifestacion_de_interes.contribuyente_id) if !@manifestacion_de_interes.contribuyente_id.blank?
+            #Asocia actividades economicas a flujo
+            #@flujo.actividad_economica_ids = manifestacion_params[:actividad_economicas_ids]
+            #@flujo.comuna_ids = manifestacion_params[:comunas_ids]
+            #@flujo.cuenca_ids = manifestacion_params[:cuencas_ids]
+            @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
+            @flujo.save
 
-          unless @manifestacion_de_interes.contribuyente_id.nil?
-            #Elimino todos los que no sean el id guardado
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-            #Ahora segun si tiene contribuyente_id lo paso a variable
-            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-            if @contribuyente_temporal.contribuyente_id.nil?
-              @contribuyente_nuevo = @contribuyente_temporal
-              @contribuyente_editado = Contribuyente.new
+            unless @manifestacion_de_interes.contribuyente_id.nil?
+              #Elimino todos los que no sean el id guardado
+              Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+              #Ahora segun si tiene contribuyente_id lo paso a variable
+              @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+              if @contribuyente_temporal.contribuyente_id.nil?
+                @contribuyente_nuevo = @contribuyente_temporal
+                @contribuyente_editado = Contribuyente.new
+              else
+                @contribuyente_nuevo = Contribuyente.new
+                @contribuyente_editado = @contribuyente_temporal
+              end
             else
-              @contribuyente_nuevo = Contribuyente.new
-              @contribuyente_editado = @contribuyente_temporal
+              @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
             end
-          else
-            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-          end
-          @contribuyente_nuevo.temporal = true
-          @contribuyente_editado.temporal = true
-          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+            @contribuyente_nuevo.temporal = true
+            @contribuyente_editado.temporal = true
+            @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+            @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
-          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-            if @usuario_temporal.user_id.nil?
-              @usuario_nuevo = @usuario_temporal
-              @usuario_editado = User.new
+            unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+              #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+              @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+              if @usuario_temporal.user_id.nil?
+                @usuario_nuevo = @usuario_temporal
+                @usuario_editado = User.new
+              else
+                @usuario_nuevo = User.new
+                @usuario_editado = @usuario_temporal
+              end
             else
-              @usuario_nuevo = User.new
-              @usuario_editado = @usuario_temporal
+              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+              @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
             end
-          else
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-          end
 
-          @usuario_nuevo.temporal = true
-          @usuario_editado.temporal = true
-          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-          
-          @manifestacion_de_interes.flujo.reload
-          carga_de_representantes
-          if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
-            @tarea_pendiente.pasar_a_siguiente_tarea
-            # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            #revisar para optimizar con método de Adan en modelo tarea_pendiente
-            # if @tarea_pendiente.save
-            #   flujo_tareas = FlujoTarea.where(tarea_entrada_id: @tarea_pendiente.tarea_id).all
-            #   flujo_tareas.each do |ft|
-            #     ft.continuar_flujo @tarea_pendiente.flujo_id
+            @usuario_nuevo.temporal = true
+            @usuario_editado.temporal = true
+            @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+            @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
+            
+            @manifestacion_de_interes.flujo.reload
+            carga_de_representantes
+            if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
+              @tarea_pendiente.pasar_a_siguiente_tarea
+              # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+              #revisar para optimizar con método de Adan en modelo tarea_pendiente
+              # if @tarea_pendiente.save
+              #   flujo_tareas = FlujoTarea.where(tarea_entrada_id: @tarea_pendiente.tarea_id).all
+              #   flujo_tareas.each do |ft|
+              #     ft.continuar_flujo @tarea_pendiente.flujo_id
+              #   end
+              # end
+              mapa = MapaDeActor.find_or_create_by({
+                flujo_id: @tarea_pendiente.flujo_id,
+                rol_id: Rol::COGESTOR, #se vuelve a usar el id
+                #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+                persona_id: @usuario_temporal.user_id
+              })
+              success = 'Manifestación Enviada'
+              format.js {
+                flash[:success] = success
+                render js: "window.location='#{root_path}'"
+              }
+              format.html { redirect_to root_path, notice: success }
+            else
+              # DZC 2019-02-28 18:03:15 se setean las varibles relativas al mensaje "Recuerde gradar sus cambios"
+              @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
+
+              @mantener_temporal = manifestacion_params[:temporal]
+              success = 'Manifestación correctamente actualizada.'
+              format.js { flash.now[:success] = success }
+              format.html { redirect_to root_path, notice: success }
+            end
+            # if @manifestacion_de_interes.save
+            #   procesa_mapa_actores
+            # end
+
+            # if @manifestacion_de_interes.save
+            #   #DZC pobla las tablas con los datos del excel
+            #   #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
+            #   actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+            #   if !actores_desde_campo.nil?
+            #     MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
             #   end
             # end
-            success = 'Manifestación Enviada'
-            format.js {
-              flash[:success] = success
-              render js: "window.location='#{root_path}'"
-            }
-            format.html { redirect_to root_path, notice: success }
-          else
-            # DZC 2019-02-28 18:03:15 se setean las varibles relativas al mensaje "Recuerde gradar sus cambios"
-            @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
-
-            @mantener_temporal = manifestacion_params[:temporal]
-            success = 'Manifestación correctamente actualizada.'
-            format.js { flash.now[:success] = success }
-            format.html { redirect_to root_path, notice: success }
+            # format.js { flash.now[:success] = success }
+            # format.html { redirect_to root_path, notice: success }
           end
           # if @manifestacion_de_interes.save
-          #   procesa_mapa_actores
+          #   # procesa_mapa_actores
+          #   # @manifestacion_de_interes.data_mapa_de_actores #DZC no es necesario, por que el modelo lo ejecuta como after_save
           # end
-
           # if @manifestacion_de_interes.save
           #   #DZC pobla las tablas con los datos del excel
           #   #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
@@ -355,39 +377,24 @@ class ManifestacionDeInteresController < ApplicationController
           #     MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
           #   end
           # end
-          # format.js { flash.now[:success] = success }
-          # format.html { redirect_to root_path, notice: success }
+          format.js { flash.now[:success] = success }
+          format.html { redirect_to root_path, notice: success }
+        else
+          @total_de_errores_por_tab = @manifestacion_de_interes.errores_agrupados
+          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
+          carga_de_representantes
+          if @manifestacion_de_interes.temporal.blank?
+            flash.now[:error] = "Antes de enviar la manifestación debe completar todos los campos requeridos"
+          end
+          if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
+            @manifestacion_de_interes.mapa_de_actores_data = nil
+            @manifestacion_de_interes.mapa_de_actores_archivo.remove!
+            @manifestacion_de_interes.mapa_de_actores_archivo = nil
+          end
+          format.js { }
+          format.html { render :edit }
         end
-        # if @manifestacion_de_interes.save
-        #   # procesa_mapa_actores
-        #   # @manifestacion_de_interes.data_mapa_de_actores #DZC no es necesario, por que el modelo lo ejecuta como after_save
-        # end
-        # if @manifestacion_de_interes.save
-        #   #DZC pobla las tablas con los datos del excel
-        #   #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
-        #   actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-        #   if !actores_desde_campo.nil?
-        #     MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
-        #   end
-        # end
-        format.js { flash.now[:success] = success }
-        format.html { redirect_to root_path, notice: success }
-      else
-        @total_de_errores_por_tab = @manifestacion_de_interes.errores_agrupados
-        @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
-        carga_de_representantes
-        if @manifestacion_de_interes.temporal.blank?
-          flash.now[:error] = "Antes de enviar la manifestación debe completar todos los campos requeridos"
-        end
-        if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
-          @manifestacion_de_interes.mapa_de_actores_data = nil
-          @manifestacion_de_interes.mapa_de_actores_archivo.remove!
-          @manifestacion_de_interes.mapa_de_actores_archivo = nil
-        end
-        format.js { }
-        format.html { render :edit }
       end
-    end
   end
 
   def revisor #DZC TAREA APL-002
@@ -1664,11 +1671,14 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def usuario_entregables #DZC APL-008
-    @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA).map{|r| r.contribuyente}
+    rol_tarea = @tarea_pendiente.tarea.rol_id
+    @contribuyentes = Responsable.__contribuyentes_por_rol(rol_tarea, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
   end
 
   def lista_usuarios_entregables
-    @usuarios = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, params[:contribuyente_id]).map { |e| e.user  }
+    tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
+    rol_tarea = tarea_pendiente.tarea.rol_id
+    @usuarios = Responsable.__personas_responsables(rol_tarea, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, params[:contribuyente_id]).map { |e| e.user  }
   end
 
   def guardar_usuario_entregables #DZC APL-008
@@ -1680,7 +1690,7 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.tarea_codigo = @tarea.codigo
         @manifestacion_de_interes.save
-        persona_by_user = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
+        persona_by_user = Responsable.__personas_responsables(@tarea_pendiente.tarea.rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
           rol_id: Rol::RESPONSABLE_ENTREGABLES,
@@ -2148,6 +2158,7 @@ class ManifestacionDeInteresController < ApplicationController
         :detalle_de_localizacion, :detalle_de_alternativa_de_instalacion,
 	      :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
+        :anulado,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},

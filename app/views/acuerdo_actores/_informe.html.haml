@@ -1,91 +1,99 @@
-= image_tag('logo-ascc.png', width:130, class: '')
+-actores_mapa = (@actores_mapa.nil? ? actores_mapa : @actores_mapa)
+-datos = (@datos.nil? ? datos : @datos)
+-es_descargable = es_descargable.blank? ? false : es_descargable
+-if !es_descargable
+  = image_tag('logo-ascc.png', width:130, class: '')
+-else
+  = wicked_pdf_stylesheet_link_tag    'application', media: 'all'
+  =# wicked_pdf_javascript_include_tag 'application'
+  = wicked_pdf_image_tag image_url('logo-ascc.png'), width: 180
 %p.h4.text-center="Informe"
 %p.h5="Partes que suscriben el acuerdo:"
-- @partes = "En [INGRESAR COMUNA], a [INGRESAR FECHA FIRMA], comparecen, por una parte, "
--@actores_mapa.each do |firmante|
-	-cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
-	-@partes += "#{firmante.persona.user.nombre_completo}, #{cargos}, en representación de #{firmante.persona.contribuyente.razon_social}, "
-= @partes
+- partes = "En [INGRESAR COMUNA], a [INGRESAR FECHA FIRMA], comparecen, por una parte, "
+-actores_mapa.each do |firmante|
+  -cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
+  -partes += "#{firmante.persona.user.nombre_completo}, #{cargos}, en representación de #{firmante.persona.contribuyente.razon_social}, "
+= partes
 #previsualizacion
-	%p.h5=t(:fundamentos)
-	=@datos["fundamentos"].html_safe
-	%p.h5=t(:antecedentes)
-	=@datos["antecedentes"].html_safe
-	%p.h5=t(:normativas_aplicables)
-	=@datos["normativas_aplicables"].html_safe
-	%p.h5=t(:alcance)
-	=@datos["alcance"].html_safe
-	%p.h5=t(:campo_de_aplicación)
-	=@datos["campo_de_aplicacion"].html_safe
-	%p.h5=t(:definiciones)
-	=@datos["definiciones"].html_safe
-	%p.h5=t(:objetivo_general)
-	=@datos["objetivo_general"].html_safe
-	%p.h5=t(:objetivo_específico)
-	=@datos["objetivo_especifico"].html_safe
-	%p.h5=t(:mecanismo_de_implementación)
-	- format_mi = @datos["mecanismo_de_implementacion"]
-	- InformeAcuerdo.mecanismo_implementacion_palabras_claves.keys.each do |mi|
-		- valor = @datos[mi.to_s].to_s
-		- if valor == "true"
-			- valor = "Si"
-		- if valor == "false"
-			- valor = "No"
-		- format_mi = format_mi.gsub("[#{mi}]", valor)
-	=format_mi.html_safe
-	%p.h6=t(:auditorías)
-	%ul
-		- @datos["auditorias"].each do |aud|
-			%li=aud["nombre"]
-	%p.h5=t(:mecanismo_de_evaluación_de_cumplimiento)
-	- format_me = @datos["mecanismo_evaluacion_cumplimiento"]
-	- InformeAcuerdo.mecanismo_evaluacion_palabras_claves.keys.each do |me|
-		- valor = @datos[me.to_s].to_s
-		- if valor == "true"
-			- valor = "Si"
-		- if valor == "false"
-			- valor = "No"
-		- format_me = format_me.gsub("[#{me}]", valor)
-	=format_me.html_safe
-	%p.h5=t(:derechos)
-	=@datos["derechos"].html_safe
-	%p.h5=t(:obligaciones)
-	=@datos["obligaciones"].html_safe
-	%p.h5=t(:difusión)
-	=@datos["difusion"].html_safe
-	%p.h5=t(:promoción)
-	=@datos["promocion"].html_safe
-	%p.h5=t(:incentivos)
-	=@datos["incentivos"].html_safe
-	%p.h5=t(:sanciones)
-	=@datos["sanciones"].html_safe
-	%p.h5=t(:personerías)
-	-@personeria = ""
-	-@actores_mapa.each do |firmante|
-		-cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
-		-@personeria += "#{firmante.persona.user.nombre_completo}, #{cargos}, de #{firmante.persona.contribuyente.razon_social}; "
-	=@personeria
-	%p.h5=t(:ejemplares)
-	=@datos["ejemplares"].html_safe
-	%p.h5=t(:firmas)
-	-@firmas = []
-	-@actores_mapa.each do |firmante|
-		-cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
-		-@firmas << [firmante.persona.user.nombre_completo, cargos, firmante.persona.contribuyente.razon_social]
-	-@firmas.each do |firma|
-		%div
-		%div
-		%div
-			%div=  "______________________________"
-			%div= firma[0]
-			%div= firma[1]
-			%div= firma[2]
-		%div
-		%div
-		%div
-	%p.h5=t(:anexos)
-	%ul
-		- @datos["archivos_anexos"].split(",").each do |f|
-			%li=f
-	%br
-	%br
+  %p.h5=t(:fundamentos)
+  =datos["fundamentos"].html_safe
+  %p.h5=t(:antecedentes)
+  =datos["antecedentes"].html_safe
+  %p.h5=t(:normativas_aplicables)
+  =datos["normativas_aplicables"].html_safe
+  %p.h5=t(:alcance)
+  =datos["alcance"].html_safe
+  %p.h5=t(:campo_de_aplicación)
+  =datos["campo_de_aplicacion"].html_safe
+  %p.h5=t(:definiciones)
+  =datos["definiciones"].html_safe
+  %p.h5=t(:objetivo_general)
+  =datos["objetivo_general"].html_safe
+  %p.h5=t(:objetivo_específico)
+  =datos["objetivo_especifico"].html_safe
+  %p.h5=t(:mecanismo_de_implementación)
+  - format_mi = datos["mecanismo_de_implementacion"]
+  - InformeAcuerdo.mecanismo_implementacion_palabras_claves.keys.each do |mi|
+    - valor = datos[mi.to_s].to_s
+    - if valor == "true"
+      - valor = "Si"
+    - if valor == "false"
+      - valor = "No"
+    - format_mi = format_mi.gsub("[#{mi}]", valor)
+  =format_mi.html_safe
+  %p.h6=t(:auditorías)
+  %ul
+    - datos["auditorias"].each do |aud|
+      %li=aud["nombre"]
+  %p.h5=t(:mecanismo_de_evaluación_de_cumplimiento)
+  - format_me = datos["mecanismo_evaluacion_cumplimiento"]
+  - InformeAcuerdo.mecanismo_evaluacion_palabras_claves.keys.each do |me|
+    - valor = datos[me.to_s].to_s
+    - if valor == "true"
+      - valor = "Si"
+    - if valor == "false"
+      - valor = "No"
+    - format_me = format_me.gsub("[#{me}]", valor)
+  =format_me.html_safe
+  %p.h5=t(:derechos)
+  =datos["derechos"].html_safe
+  %p.h5=t(:obligaciones)
+  =datos["obligaciones"].html_safe
+  %p.h5=t(:difusión)
+  =datos["difusion"].html_safe
+  %p.h5=t(:promoción)
+  =datos["promocion"].html_safe
+  %p.h5=t(:incentivos)
+  =datos["incentivos"].html_safe
+  %p.h5=t(:sanciones)
+  =datos["sanciones"].html_safe
+  %p.h5=t(:personerías)
+  -personeria = ""
+  -actores_mapa.each do |firmante|
+    -cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
+    -personeria += "#{firmante.persona.user.nombre_completo}, #{cargos}, de #{firmante.persona.contribuyente.razon_social}; "
+  =personeria
+  %p.h5=t(:ejemplares)
+  =datos["ejemplares"].html_safe
+  %p.h5=t(:firmas)
+  -firmas = []
+  -actores_mapa.each do |firmante|
+    -cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
+    -firmas << [firmante.persona.user.nombre_completo, cargos, firmante.persona.contribuyente.razon_social]
+  -firmas.each do |firma|
+    %div
+    %div
+    %div
+      %div=  "______________________________"
+      %div= firma[0]
+      %div= firma[1]
+      %div= firma[2]
+    %div
+    %div
+    %div
+  %p.h5=t(:anexos)
+  %ul
+    - datos["archivos_anexos"].split(",").each do |f|
+      %li=f
+  %br
+  %br

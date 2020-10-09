@@ -75,6 +75,7 @@ class DocumentoDiagnosticosController < ApplicationController
 	def continua_flujo_segun_tipo_tarea #DZC generalización de condiciones de continuación de flujo
 		case @tarea.codigo
 		when Tarea::COD_APL_013
+			@tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
 			@tarea_pendiente.pasar_a_siguiente_tarea 'A',{},false
 		when Tarea::COD_APL_014
 			@tarea_pendiente.pasar_a_siguiente_tarea 'B',{},false
