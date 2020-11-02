@@ -15,26 +15,51 @@ class Admin::EstandarHomologacionesController < ApplicationController
   end
 
   def create
-    @estandar = EstandarHomologacion.new(estandar_params)
+    params = estandar_params.to_hash
+    if !params["estandar_set_metas_acciones_attributes"].blank?
+      params["estandar_set_metas_acciones_attributes"].each do |esma|
+        nivel_id = esma.last["obligatorio_para_nivel"]
+        if !nivel_id.blank?
+          obligatorio_para_nivel = params["estandar_niveles_attributes"][nivel_id]["numero"]
+          #reescribo valor
+          params["estandar_set_metas_acciones_attributes"][esma.first]["obligatorio_para_nivel"] = obligatorio_para_nivel
+        end
+      end
+    end
+    @estandar = EstandarHomologacion.new(params)
     respond_to do |format|
       if @estandar.save
       	@estandar = EstandarHomologacion.new()
+        @estandar.estandar_set_metas_acciones.build
       	format.js { flash.now[:success] = 'Estandar de homologacion correctamente creado.'}
         format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de homologacion correctamente creado.' }
       else
+        mensaje = "Error al crear."
+        mensaje = @estandar.errors[:base].first if @estandar.errors.key?(:base)
         format.html { render :new }
-        format.js { flash[:error] = "Error al crear." }
+        format.js { flash[:error] = mensaje }
       end
     end
   end
 
   def update
+    params = estandar_params.to_hash
+    if !params["estandar_set_metas_acciones_attributes"].blank?
+      params["estandar_set_metas_acciones_attributes"].each do |esma|
+        nivel_id = esma.last["obligatorio_para_nivel"]
+        if !nivel_id.blank?
+          obligatorio_para_nivel = params["estandar_niveles_attributes"].select{|f,l| l["id"].to_s == nivel_id.to_s}.values.first["numero"]
+          #reescribo valor
+          params["estandar_set_metas_acciones_attributes"][esma.first]["obligatorio_para_nivel"] = obligatorio_para_nivel
+        end
+      end
+    end
     respond_to do |format|
-      if @estandar.update(estandar_params)
+      if @estandar.update(params)
       	format.js { flash[:success] = 'Estandar de homologacion correctamente actualizado'}
         format.html { redirect_to edit_admin_estandar_homologacion_path(@estandar), notice: 'Estandar de homologacion correctamente actualizado' }
       else
-        format.html { render :edit }
+        format.html { render :new }
         format.js { flash[:error] = "Error al actualizar." }
       end
     end
@@ -61,7 +86,34 @@ class Admin::EstandarHomologacionesController < ApplicationController
     end
 
     def estandar_params
-      params.require(:estandar_homologacion).permit(:nombre, {referencias: []},estandar_set_metas_acciones_attributes: [:id, :accion_id, :materia_sustancia_id, :meta_id, :alcance_id, :criterio_inclusion_exclusion, :descripcion_accion, :detalle_medio_verificacion, :_destroy])
+      params.require(:estandar_homologacion).permit(
+        :nombre,
+        :descripcion,
+        :url_referencia,
+        referencias: [],
+        estandar_niveles_attributes: [
+          :id,
+          :numero,
+          :nombre,
+          :porcentaje,
+          :archivo,
+          :_destroy
+        ],
+        estandar_set_metas_acciones_attributes: [
+          :id, 
+          :accion_id, 
+          :materia_sustancia_id, 
+          :meta_id, 
+          :alcance_id, 
+          :criterio_inclusion_exclusion, 
+          :descripcion_accion, 
+          :detalle_medio_verificacion,
+          :puntaje,
+          :obligatorio_para_nivel,
+          :estandar_nivel_id,
+          :_destroy
+        ]
+      )
     end
 end
 

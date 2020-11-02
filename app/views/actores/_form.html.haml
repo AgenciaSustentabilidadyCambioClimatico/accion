@@ -6,8 +6,8 @@
     };
     $('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]').click(function(){
       if ($('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:checked').val() == "true"){
-        $('.fila_de_actores').each(function(){
-          $(this).find('.actor_observado').prop('checked', false);
+        $('.actor_observado').each(function(){
+          $(this).prop('checked', false);
         });
       };
       debeComentar(this,true);
@@ -16,7 +16,7 @@
     $('.actor_observado').click(function(){
       if (actores_requieren_correcciones()){
         // DZC 2018-10-09 14:55:49 cambia la opción seleccionada en "se aprueba el mapa de actores" acorde a si se ha o no elegido la opción "requiere correcciones"
-        $('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:last').prop('checked', true);
+        $('#manifestacion_de_interes_mapa_de_actores_correctamente_construido_false').prop('checked', true);
         debeComentar($('input[name="manifestacion_de_interes[mapa_de_actores_correctamente_construido]"]:checked'),true);
       };
     });
@@ -38,16 +38,10 @@
     //DZC revisa si se encuentra seleccionado para corrección a lo menos un actor 
     function actores_requieren_correcciones(){
       var cantidad_que_requiere = 0;
-      requieren = false;
-      $('.fila_de_actores').each(function(){      
-        if ($(this).find('.actor_observado').is(':checked')){
-          cantidad_que_requiere += 1;
-        };
+      $('.actor_observado:checked').each(function(){      
+        cantidad_que_requiere += 1;
       });
-      if (cantidad_que_requiere >0){
-        requieren = true;
-      };
-      return requieren;
+      return (cantidad_que_requiere > 0);
     };
   });
 - externo = externo.nil? ? false : externo
@@ -154,6 +148,6 @@
                     -#
                       = __upload_status(f.object,:mapa_de_actores_archivo)
             
-  .float-right
+  .float-right.mr-3.mb-3
     = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
     = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled

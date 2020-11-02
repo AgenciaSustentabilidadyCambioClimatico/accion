@@ -92,7 +92,7 @@ class Flujo < ApplicationRecord
 
   def set_metas_acciones_by_estandar estandar_id
     estandar = EstandarHomologacion.find(estandar_id)
-    self.set_metas_acciones.clear
+    #self.set_metas_acciones.clear
     estandar.estandar_set_metas_acciones.each do |set|      
       nuevo_set = self.set_metas_acciones.create
       nuevo_set.accion_id = set.accion_id
@@ -102,17 +102,19 @@ class Flujo < ApplicationRecord
       nuevo_set.descripcion_accion = set.descripcion_accion
       nuevo_set.detalle_medio_verificacion = set.detalle_medio_verificacion
       nuevo_set.alcance_id = set.alcance_id
+      nuevo_set.id_referencia = set.id
+      nuevo_set.modelo_referencia = 'EstandarSetMetasAccion'
       nuevo_set.save(validate: false)
     end
-    self.manifestacion_de_interes.documento_diagnosticos.clear
-    estandar.referencias.each do |documento|
-      nuevo_documento = DocumentoDiagnostico.new
-      nuevo_documento.archivo = File.open(documento.file.file) if documento.present?
-      nuevo_documento.nombre = documento.file.basename if documento.present?
-      nuevo_documento.manifestacion_de_interes_id = self.manifestacion_de_interes.id
-      nuevo_documento.desde_estandar = true
-      nuevo_documento.save
-    end
+    #self.manifestacion_de_interes.documento_diagnosticos.clear
+    #estandar.referencias.each do |documento|
+    #  nuevo_documento = DocumentoDiagnostico.new
+    #  nuevo_documento.archivo = File.open(documento.file.file) if documento.present?
+    #  nuevo_documento.nombre = documento.file.basename if documento.present?
+    #  nuevo_documento.manifestacion_de_interes_id = self.manifestacion_de_interes.id
+    #  nuevo_documento.desde_estandar = true
+    #  nuevo_documento.save
+    #end
   end
 
   def elementos_adheridos
@@ -300,7 +302,7 @@ class Flujo < ApplicationRecord
     self.tareas_del_flujo.each do |t|
       documentos_asociados = {nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}
       tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
-      estado = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? 'Ejecutada' : 'En curso'
+      estado = tarea_pend.estado_tarea_pendiente.nombre_historial
       pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : nil
       #finalmente solo puede ver la tarea en especifico si es el que la respondio
       puedo_ver_tarea = puedo_ver_tareas
@@ -328,6 +330,12 @@ class Flujo < ApplicationRecord
       end
       if t.codigo == Tarea::COD_APL_005
         documentos_asociados = {nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
+      elsif t.codigo == Tarea::COD_APL_015
+        #solo si es admin puede descargar el documento
+        if current_user.is_admin?
+          #agregamos documento personalizado para tarea APL-015
+          documentos_asociados = {nombre: "Encuesta diagnóstico general", url: 'descargar_respuesta_encuesta_diagnostico_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
+        end
       elsif t.codigo == Tarea::COD_APL_018 && estado == "Ejecutada"
         informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
         if informe_acuerdo.nil?

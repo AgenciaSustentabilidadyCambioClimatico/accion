@@ -44,6 +44,21 @@ class SetMetasAccionesController < ApplicationController
       @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
       success = "Set de metas y acciones correctamente actualizada"
     end
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
     respond_to do |format|
       format.js {
         flash.now[:success] = success
@@ -205,18 +220,18 @@ class SetMetasAccionesController < ApplicationController
     if tipo == '1' #DZC 2018-10-08 17:20:33 se selecciona el propio set de metas y acciones
       @manifestacion_de_interes.estandar_de_certificacion_id = nil
       @manifestacion_de_interes.diagnostico_id = nil
-      @flujo.set_metas_acciones.clear
+      #@flujo.set_metas_acciones.clear
       # @manifestacion_de_interes.documento_diagnosticos.clear
       
     elsif tipo == '2' #DZC 2018-10-08 17:20:33 se selecciona un standar de homologación
-      @manifestacion_de_interes.estandar_de_certificacion_id = params[:estandar_adherido]
+      @manifestacion_de_interes.estandar_de_certificacion_id = nil#params[:estandar_adherido]
       @manifestacion_de_interes.diagnostico_id = nil
       @flujo.set_metas_acciones_by_estandar params[:estandar_adherido]
     elsif tipo == '3' #DZC 2018-10-08 17:20:33 se seleccionan metas y acciones de otro acuerdo
       
       @manifestacion_de_interes.estandar_de_certificacion_id = nil
-      @manifestacion_de_interes.diagnostico_id = params[:diagnostico_adherido]
-      @flujo.set_metas_acciones.clear
+      @manifestacion_de_interes.diagnostico_id = nil#params[:diagnostico_adherido]
+      @flujo.set_metas_acciones.where(modelo_referencia: "SetMetasAccion").destroy_all
       set_metas_by_antiguo_acuerdo params[:diagnostico_adherido], @flujo
     end
     @manifestacion_de_interes.temporal = true
@@ -254,6 +269,23 @@ class SetMetasAccionesController < ApplicationController
     end
     pdf.render_file(filename)
     send_data(File.read(filename), :type => "application/pdf", :filename => "SetMetasAcciones.pdf")
+  end
+
+  def metas_acciones_tipo_meta
+    if params[:tipo] == "2"
+      @estandar = EstandarHomologacion.find(params[:id])
+    elsif params[:tipo] == "3"
+      @metas_acciones = ManifestacionDeInteres.find(params[:id]).flujo.set_metas_acciones.order(id: :asc)
+    end
+  end
+
+  def eliminar_grupo_combi
+    @set_metas_acciones.each do |sma|
+      sma.destroy if sma.llave_origen == params[:combi]
+    end
+    respond_to do |format|
+      format.html { redirect_to cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true), notice: 'Modificación correcta.' }
+    end
   end
 
   private

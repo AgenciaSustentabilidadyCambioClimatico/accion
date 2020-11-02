@@ -73,7 +73,7 @@
                   - convocatoria = pendiente.determina_convocatoria
                   = link_to edit_tarea_pendiente_convocatoria_minuta_path(pendiente, convocatoria) do
                     %i.fa.fa-edit
-                - elsif tarea.es_una_encuesta && !Tarea::COD_APL_019#DZC Común para todas las encuestas, salvo APL-019
+                - elsif tarea.es_una_encuesta && tarea.codigo != Tarea::COD_APL_019#DZC Común para todas las encuestas, salvo APL-019
                   = link_to responder_admin_encuesta_path(pendiente,encuesta) do
                     %i.fa.fa-edit
                 - else

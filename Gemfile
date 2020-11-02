@@ -55,7 +55,8 @@ gem 'whenever', require: false # DZC 2019-08-23 18:41:54 se agrega para manejar 
 gem 'zip-zip'
 gem 'select2-rails'
 gem 'wicked_pdf'  
-gem 'wkhtmltopdf-binary' 
+gem 'wkhtmltopdf-binary'
+gem 'mini_magick'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

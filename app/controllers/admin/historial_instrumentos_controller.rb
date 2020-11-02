@@ -2,6 +2,7 @@ class Admin::HistorialInstrumentosController < ApplicationController
   before_action :authenticate_user!
   before_action :set_variables_del_usuario
   before_action :set_cargar_instrumento, only: [:cargar_instrumento]
+  before_action :set_crear_excel_respuesta_encuesta_diagnostico, only: [:descargar_respuesta_encuesta_diagnostico]
 
   def index
   end
@@ -38,6 +39,11 @@ class Admin::HistorialInstrumentosController < ApplicationController
       )
     )
     send_data pdf, type: "application/pdf", disposition: "inline", filename: "Informe acuerdo.pdf"
+  end
+
+  def descargar_respuesta_encuesta_diagnostico
+    #enviamos el archivo para ser descargado
+    send_data File.open(@ruta_encuesta_diagnostico).read, type: 'application/xslx', charset: "iso-8859-1", filename: "respuesta_encuesta_diagnostico_general.xlsx"
   end
 
 
@@ -104,5 +110,21 @@ class Admin::HistorialInstrumentosController < ApplicationController
         flash.now[:warning] = "Usted no tiene permiso para acceder al historial del instrumento '#{instrumento_id}'."
       end
       # 
+    end
+
+    def set_crear_excel_respuesta_encuesta_diagnostico
+      #nos traemos la encuesta que queremos obtener
+      @encuesta = Encuesta.find(Encuesta::ENCUESTA_DIAGNOSTICO_GENERAL)
+      #identificamos manifestacion para obtener flujo_id
+      @manifestacion_de_interes = ManifestacionDeInteres.includes(:flujo).find(params[:manifestacion_de_interes_id])
+      #obtenemos las partes para el excel
+      titulos = @encuesta.preguntas_cabecera_excel
+      datos = @encuesta.respuestas_por_usuario_excel(@manifestacion_de_interes.flujo.id)
+      #creamos una ruta para guardar el excel
+      @ruta_encuesta_diagnostico = "#{Rails.root}/public/uploads/manifestacion_de_interes/respuesta_encuesta_diagnostico_general/#{@manifestacion_de_interes.id}/"
+      FileUtils.mkdir_p(@ruta_encuesta_diagnostico) unless File.exist?(@ruta_encuesta_diagnostico) 
+      @ruta_encuesta_diagnostico += "respuesta_encuesta_diagnostico_general.xlsx"
+      #llamamos el servicio para crear excel entregandole los parametros necesarios
+      salida = CrearExcel.new({titulos: titulos,datos: datos, nombre_hoja: 'Respuestas',ruta: @ruta_encuesta_diagnostico}).crear_libro
     end
 end

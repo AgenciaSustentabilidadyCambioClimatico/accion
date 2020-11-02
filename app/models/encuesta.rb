@@ -1,5 +1,7 @@
 class Encuesta < ApplicationRecord
   has_many :encuesta_preguntas, -> { includes :pregunta }, foreign_key: :encuesta_id, dependent: :destroy
+  has_many :preguntas, through: :encuesta_preguntas
+  has_many :encuesta_user_respuestas, foreign_key: :encuesta_id, dependent: :destroy
   accepts_nested_attributes_for :encuesta_preguntas, allow_destroy: true #, update_only: true
 
   enum unidad_tiempo_para_contestar: [:hours,:days,:weeks]
@@ -8,6 +10,8 @@ class Encuesta < ApplicationRecord
   validates :valor_tiempo_para_contestar, presence: true, numericality: { greater_than: 0 }
   validates :unidad_tiempo_para_contestar, presence: true
   validates :solo_dias_habiles, presence: true, unless: -> { solo_dias_habiles == false }
+
+  ENCUESTA_DIAGNOSTICO_GENERAL = 1
 
   def initialize(attributes = {})
     super(attributes)
@@ -48,5 +52,24 @@ class Encuesta < ApplicationRecord
     #   fecha_expiracion = Feriado.encontrar_el_dia_habil(vt,ut,fecha_creacion)
     # end
     fecha_expiracion
+  end
+
+  #obtenemos las preguntas ordenadas para armar la cabecera
+  def preguntas_cabecera_excel
+    salida = []
+    salida = self.preguntas.order('orden').map{|e| e.texto}
+    salida
+  end
+
+  def respuestas_por_usuario_excel(flujo_id)
+    respuestas = {}
+    #buscamos las respuestas ordenadas
+    self.encuesta_user_respuestas.where(flujo_id: flujo_id).order(:id).each do |respuesta|
+      #agrupamos por usuario
+      respuestas[respuesta.user_id] = [] unless respuestas.has_key?(respuesta.user_id)
+      respuestas[respuesta.user_id] << respuesta.respuesta
+    end
+    #mostramos solo las respuestas, no el id del usuario
+    respuestas.map{|k,v| v}
   end
 end

@@ -34,10 +34,10 @@
                 - unidad_tiempo = t("_#{record.unidad_tiempo_para_contestar}")
                 ="#{record.valor_tiempo_para_contestar} #{unidad_tiempo}"
               %td=record.encuesta_preguntas.size
-              %td.dos.iconos-acciones
-                %div
-                  = link_to edit_admin_encuesta_path(record) do
+              %td
+                .d-flex
+                  = link_to edit_admin_encuesta_path(record),class: "btn btn-tabla-sm" do
                     %i.fa.fa-edit
                   - unless record.base #sDZC se indispobiliza la eliminación de las encuentas base 
-                    = link_to admin_encuesta_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:encuesta).downcase), remote: false } do
+                    = link_to admin_encuesta_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:encuesta).downcase), remote: false },class: "btn btn-tabla-sm" do
                       %i.fa.fa-trash

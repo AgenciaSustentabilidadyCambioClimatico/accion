@@ -22,7 +22,7 @@ class SetMetasAccion < ApplicationRecord
 	validates :alcance_id, presence: true , if: -> { ppf_metas_establecimiento_id.blank? }
 	validates :criterio_inclusion_exclusion, presence: true
 	validates :descripcion_accion, presence: true
-	validates :detalle_medio_verificacion, presence: true
+	#validates :detalle_medio_verificacion, presence: true
 	validates :plazo_valor, presence: true
 	validates :plazo_unidad_tiempo, presence: true
 
@@ -101,6 +101,20 @@ class SetMetasAccion < ApplicationRecord
 			es = "Conflicto"
 		end
 		es
+	end
+
+	def llave_origen
+		if !self.id_referencia.blank?
+			if self.modelo_referencia == "EstandarSetMetasAccion"
+	      eh = EstandarSetMetasAccion.find(self.id_referencia).estandar_homologacion
+	      return eh.id.to_s+"-EstandarHomologacion"
+	    else
+	      mi = SetMetasAccion.find(self.id_referencia).flujo.manifestacion_de_interes
+	      return mi.id.to_s+"-ManifestacionDeInteres"
+	    end
+	  else
+	  	return ""
+	  end
 	end
 
 end

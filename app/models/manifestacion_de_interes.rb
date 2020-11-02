@@ -31,6 +31,7 @@ class ManifestacionDeInteres < ApplicationRecord
   attr_accessor :titulo_cifras_sectores_economicos, :titulo_caracterizacion_actividades_economicas
 
   attr_accessor :revisar_y_actualizar_mapa_de_actores
+  attr_accessor :anulado
 
   belongs_to :tipo_instrumento, optional: true
   #belongs_to :contribuyente, optional: true
@@ -349,7 +350,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :cargo_en_institucion,
         :rut_institucion,
         :razon_social,
-        :codigo_ciiuv2,
+        :codigo_ciiuv4,
         :tipo_de_institucion,
         :direccion_institucion,
         :comuna_institucion,
@@ -532,7 +533,7 @@ class ManifestacionDeInteres < ApplicationRecord
     valores = {
       rol_en_acuerdo: :roles,
       cargo_en_institucion: :cargos,
-      codigo_ciiuv2: :sectores,
+      codigo_ciiuv4: :sectores,
       tipo_de_institucion: :tipo_instituciones,
       comuna_institucion: :comunas
     }
@@ -543,7 +544,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :nombre_completo_persona,
         :cargo_en_institucion,
         :rut_institucion,
-        :codigo_ciiuv2,
+        :codigo_ciiuv4,
         :tipo_de_institucion,
         :direccion_institucion,
         :comuna_institucion,
@@ -557,7 +558,7 @@ class ManifestacionDeInteres < ApplicationRecord
           roles_invalidos << valor
         elsif campo == :cargo_en_institucion
           cargos_invalidos << valor
-        elsif campo == :codigo_ciiuv2
+        elsif campo == :codigo_ciiuv4
           sectores_invalidos << valor
         elsif campo == :tipo_de_institucion
           tipo_instituciones_invalidos << valor

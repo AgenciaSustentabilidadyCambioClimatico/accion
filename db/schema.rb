@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20200915141554) do
+ActiveRecord::Schema.define(version: 20201015140928) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -599,6 +599,17 @@ ActiveRecord::Schema.define(version: 20200915141554) do
     t.json "referencias"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "descripcion"
+    t.string "url_referencia"
+  end
+
+  create_table "estandar_niveles", force: :cascade do |t|
+    t.integer "numero"
+    t.string "nombre"
+    t.decimal "porcentaje", precision: 5, scale: 2
+    t.string "archivo"
+    t.bigint "estandar_homologacion_id"
+    t.index ["estandar_homologacion_id"], name: "index_estandar_niveles_on_estandar_homologacion_id"
   end
 
   create_table "estandar_set_metas_acciones", force: :cascade do |t|
@@ -612,9 +623,12 @@ ActiveRecord::Schema.define(version: 20200915141554) do
     t.string "detalle_medio_verificacion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "puntaje"
+    t.bigint "estandar_nivel_id"
     t.index ["accion_id"], name: "index_estandar_set_metas_acciones_on_accion_id"
     t.index ["alcance_id"], name: "index_estandar_set_metas_acciones_on_alcance_id"
     t.index ["estandar_homologacion_id"], name: "index_estandar_set_metas_acciones_on_estandar_homologacion_id"
+    t.index ["estandar_nivel_id"], name: "index_estandar_set_metas_acciones_on_estandar_nivel_id"
     t.index ["materia_sustancia_id"], name: "index_estandar_set_metas_acciones_on_materia_sustancia_id"
   end
 
@@ -1422,6 +1436,11 @@ ActiveRecord::Schema.define(version: 20200915141554) do
     t.integer "estado", limit: 2, default: 1
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "puntaje"
+    t.bigint "estandar_nivel_id"
+    t.bigint "id_referencia"
+    t.string "modelo_referencia"
+    t.index ["estandar_nivel_id"], name: "index_set_metas_acciones_on_estandar_nivel_id"
     t.index ["flujo_id"], name: "index_set_metas_acciones_on_flujo_id"
     t.index ["ppf_metas_establecimiento_id"], name: "index_set_metas_acciones_on_ppf_metas_establecimiento_id"
   end
@@ -1657,10 +1676,12 @@ ActiveRecord::Schema.define(version: 20200915141554) do
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"
   add_foreign_key "establecimiento_contribuyentes", "paises"
+  add_foreign_key "estandar_niveles", "estandar_homologaciones"
   add_foreign_key "estandar_set_metas_acciones", "acciones"
   add_foreign_key "estandar_set_metas_acciones", "alcances"
   add_foreign_key "estandar_set_metas_acciones", "clasificaciones", column: "meta_id"
   add_foreign_key "estandar_set_metas_acciones", "estandar_homologaciones"
+  add_foreign_key "estandar_set_metas_acciones", "estandar_niveles"
   add_foreign_key "estandar_set_metas_acciones", "materia_sustancias"
   add_foreign_key "etapas", "etapas"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
@@ -1738,6 +1759,7 @@ ActiveRecord::Schema.define(version: 20200915141554) do
   add_foreign_key "set_metas_acciones", "acciones"
   add_foreign_key "set_metas_acciones", "alcances"
   add_foreign_key "set_metas_acciones", "clasificaciones", column: "meta_id"
+  add_foreign_key "set_metas_acciones", "estandar_niveles"
   add_foreign_key "set_metas_acciones", "flujos"
   add_foreign_key "set_metas_acciones", "materia_sustancias"
   add_foreign_key "set_metas_acciones", "ppf_metas_establecimientos"

@@ -188,7 +188,18 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def update #DZC TAREA APL-001 una vez instanciada la manifestación
-    
+    if manifestacion_params[:anulado]=="true"
+      respond_to do |format|
+        @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ANULADA)
+
+        format.js { 
+          flash[:success] = "Acuerdo anulado correctamente"
+          render js: "window.location='#{root_path}'"
+        }
+        format.html { redirect_to root_path, notice: success }
+      end
+    else
       unless @manifestacion_de_interes.contribuyente_id.nil?
         @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
         if @contribuyente_temporal.contribuyente_id.nil?
@@ -320,7 +331,7 @@ class ManifestacionDeInteresController < ApplicationController
             @manifestacion_de_interes.flujo.reload
             carga_de_representantes
             if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
-              @tarea_pendiente.pasar_a_siguiente_tarea
+              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
               # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
               #revisar para optimizar con método de Adan en modelo tarea_pendiente
               # if @tarea_pendiente.save
@@ -329,11 +340,13 @@ class ManifestacionDeInteresController < ApplicationController
               #     ft.continuar_flujo @tarea_pendiente.flujo_id
               #   end
               # end
+              cargo_ids = Responsable.where(rol_id: Rol::PROPONENTE, tipo_instrumento_id: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente_id: [nil, @contribuyente_temporal.contribuyente_id]).pluck(:cargo_id)
+              persona_cogestora = Persona.includes(:persona_cargos).where(personas: {contribuyente_id: @contribuyente_temporal.contribuyente_id}).where(persona_cargos: {cargo_id: cargo_ids}).select{|p| p.user_id == @usuario_temporal.user_id}.first
               mapa = MapaDeActor.find_or_create_by({
                 flujo_id: @tarea_pendiente.flujo_id,
                 rol_id: Rol::COGESTOR, #se vuelve a usar el id
                 #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-                persona_id: @usuario_temporal.user_id
+                persona_id: persona_cogestora.id
               })
               success = 'Manifestación Enviada'
               format.js {
@@ -395,6 +408,7 @@ class ManifestacionDeInteresController < ApplicationController
           format.html { render :edit }
         end
       end
+    end
   end
 
   def revisor #DZC TAREA APL-002
@@ -1690,15 +1704,17 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.assign_attributes(manifestacion_usuario_entregables_params)
     @manifestacion_de_interes.temporal = true
     @manifestacion_de_interes.update_usuario_entregables = true
+
+    tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
+    rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
     respond_to do |format|
 
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.tarea_codigo = @tarea.codigo
         @manifestacion_de_interes.save
 
-        tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
-        rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-        persona_by_user = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id = manifestacion_usuario_entregables_params[:usuario_entregables_id] }.first
+        
+        persona_by_user = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id == @manifestacion_de_interes.usuario_entregables_id }.first
 
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
@@ -1716,9 +1732,12 @@ class ManifestacionDeInteresController < ApplicationController
         format.html { redirect_to root_path, flash: {notice: 'Usuario encargado de entregables asignado correctamente' }}
       else
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-        @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA).map{|r| r.contribuyente}
+        responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
+        contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
+        @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
         if @manifestacion_de_interes.institucion_entregables_id.present?
-          @usuarios = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, @manifestacion_de_interes.institucion_entregables_id).map { |e| e.user  }
+          personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id)
+          @usuarios = personas_responsables.map { |e| e.user  }
         end
         format.js { }
         format.html { render :usuario_entregables}
@@ -1760,12 +1779,33 @@ class ManifestacionDeInteresController < ApplicationController
       comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
       @propuestas_con_observaciones = comentarios[:requiere_correcciones]
     end
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
+    @total_de_errores_por_tab = {}
+    @total_de_errores_por_tab[:"listado-de-actores"] = @actores_con_observaciones.uniq if !@actores_con_observaciones.blank?
+    @total_de_errores_por_tab[:"cargar-documentos-diagnostico"] = @manifestacion_de_interes.documento_diagnosticos.where(requiere_correcciones: true).pluck(:id) if @manifestacion_de_interes.documento_diagnosticos.where(requiere_correcciones: true).count > 0
+    @total_de_errores_por_tab[:"set-metas-accion"] = @propuestas_con_observaciones.uniq if !@propuestas_con_observaciones.blank?
+
   end
 
   def revisar_entregable_diagnostico #DZC APL-014
-   #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
-   actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-   @actores = (!actores_desde_campo.nil? ? MapaDeActor.adecua_actores_para_vista(actores_desde_campo) : {})
+    #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
+    @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+    @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+    @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     # if @manifestacion_de_interes.mapa_de_actores_data.blank?
     #   @actores = []
     # else
@@ -1792,6 +1832,21 @@ class ManifestacionDeInteresController < ApplicationController
       comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
       @propuestas_con_observaciones = comentarios[:requiere_correcciones]
       @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
+    end
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
     end
   end
 
@@ -2135,7 +2190,6 @@ class ManifestacionDeInteresController < ApplicationController
       else
         @contribuyentes_del_proponente = [@manifestacion_de_interes.proponente_institucion]
       end
-
 
       #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
     	@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all

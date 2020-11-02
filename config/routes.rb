@@ -22,7 +22,7 @@ Rails.application.routes.draw do
   #################################################################################################
   # Configuración relativa al sistema base y no ha verifact (excepto root_to)
   #################################################################################################
-  devise_for :users, :controllers => { sessions: 'admin/sessions', invitations: 'admin/invitations' }, path_names: { sign_in: 'login', sign_out: 'logout' }, :skip => [:registrations]
+  devise_for :users, :controllers => { sessions: 'admin/sessions', invitations: 'admin/invitations', passwords: 'admin/passwords' }, path_names: { sign_in: 'login', sign_out: 'logout' }, :skip => [:registrations]
 
 
 
@@ -296,6 +296,8 @@ Rails.application.routes.draw do
     resources :cuencas, except: [:destroy] do
     end
 
+    resources :tipo_documento_diagnosticos
+
     resources :hitos_de_prensa, path: "hitos-de-prensa" do
       collection do
         put :search
@@ -331,6 +333,7 @@ Rails.application.routes.draw do
     resources :historial_instrumentos, path: "historial_instrumentos" do
       collection do
         get 'cargar_instrumento'
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_diagnostico', to: "historial_instrumentos#descargar_respuesta_encuesta_diagnostico", as: :descargar_respuesta_encuesta_diagnostico
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
         post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
         get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
@@ -552,6 +555,8 @@ Rails.application.routes.draw do
     end
       patch 'set-metas-acciones/enviar-revision', to: "set_metas_acciones#enviar_revision", as: :enviar_revision
       post 'set-metas-acciones/establecer_tipo_meta', to: "set_metas_acciones#establecer_tipo_meta", as: :establecer_tipo_meta
+      post 'metas_acciones_tipo_meta', to: "set_metas_acciones#metas_acciones_tipo_meta", as: :metas_acciones_tipo_meta
+      get 'eliminar_grupo_combi', to: "set_metas_acciones#eliminar_grupo_combi", as: :eliminar_grupo_combi
   end
 
   resources :instrumentos do

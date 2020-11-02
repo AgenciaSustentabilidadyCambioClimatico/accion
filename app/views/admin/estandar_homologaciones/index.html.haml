@@ -22,14 +22,14 @@
 		  });
 		});
 	});
-- titulo t(:estándar_homologación)
+- titulo t(:estándar_de_certificación)
 - if user_signed_in?
-	= link_to t(:agregar_, item: t(:estándar_homologación).downcase), new_admin_estandar_homologacion_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+	= link_to t(:crear_, item: t(:estándar_de_certificación).downcase), new_admin_estandar_homologacion_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
 .card
 	.card-body
 		.row.justify-content-center
 			.col-md-5
-				= select_tag :estandar, options_from_collection_for_select(@estandares, "id", "nombre", :selected=>@estandar), { class: 'form-control',:prompt => 'Seleccione un Estándar de homologación'}
+				= select_tag :estandar, options_from_collection_for_select(@estandares, "id", "nombre", :selected=>@estandar), { class: 'form-control',:prompt => 'Seleccione un Estándar de certificación'}
 #auditoria_aprobar
 	-if @estandar.present?
 		= render "buscador"

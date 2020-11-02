@@ -1,49 +1,80 @@
+-editable = editable.nil? ? true : editable
 .row.justify-content-center
-	.col-lg-12
-		.row
-			.col-12
-				.card
-					.card-body.table
-						.row
-							.col-12
-								%table#estandares-homologacion.table.table-striped.mb-0
-									%thead
-										%tr
-											%th= t(:estándar)
-											%th= t(:archivos_referencia)
-											%th= t(:acción)
-									%tbody
-										%tr
-											%td= @estandar.nombre
-											%td
-												- @estandar.referencias.each do |referencia|
-													= link_to referencia.url, download: ''  do
-														%i.fa.fa-download.p-1  #{referencia.file.filename}
-											%td.dos.iconos-acciones
-												= link_to edit_admin_estandar_homologacion_path(@estandar) do
-													%i.fa.fa-edit
-												-if current_user.is_admin?
-													= link_to admin_estandar_homologacion_path(@estandar), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:estándar)), remote: false } do
-														%i.fa.fa-trash
-						.row.mt-4
-							.col-12
-								%table#estandares-metas.table.table-striped.mb-0
-									%thead
-										%tr
-											%th= t(:accion)
-											%th= t(:materia)
-											%th= t(:meta)
-											%th= t(:alcance)
-											%th= t(:criterio)
-											%th= t(:descripcion)
-											%th= t(:detalle)
-									%tbody
-										- @estandar.estandar_set_metas_acciones.each do |meta|
-											%tr.fields
-												%td.align-bottom= meta.accion.nombre
-												%td.align-bottom= meta.materia_sustancia.present? ? meta.materia_sustancia.nombre : ""
-												%td.align-bottom= meta.meta.nombre
-												%td.align-bottom= meta.alcance.nombre
-												%td.align-bottom= meta.criterio_inclusion_exclusion
-												%td.align-bottom= meta.descripcion_accion
-												%td.align-bottom= meta.detalle_medio_verificacion	
+  .col-lg-12
+    .row
+      .col-12
+        .card
+          .card-body.table
+            .row
+              .col-12
+                .table-responsive
+                  %table#estandares-homologacion.table.table-striped.mb-0
+                    %thead
+                      %tr
+                        %th= t(:estándar)
+                        %th= t(:archivos_referencia)
+                        -if editable
+                          %th= t(:acción)
+                    %tbody
+                      %tr
+                        %td= @estandar.nombre
+                        %td
+                          - @estandar.referencias.each do |referencia|
+                            = link_to referencia.url, download: '', class: "btn btn-tabla" do
+                              %i.fa.fa-download.p-1
+                              #{referencia.file.filename}
+                        -if editable
+                          %td
+                            .d-flex.align-items-start
+                              = link_to edit_admin_estandar_homologacion_path(@estandar), class: "btn btn-tabla-sm" do
+                                %i.fa.fa-edit
+                              -if current_user.is_admin?
+                                = link_to admin_estandar_homologacion_path(@estandar), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:estándar)), remote: false }, class: "btn btn-tabla-sm" do
+                                  %i.fa.fa-trash
+            .row.mt-4
+              .col-12
+                .table-responsive
+                  %table#estandares-metas.table.table-striped.mb-0
+                    %thead
+                      %tr
+                        %th= t(:numero_nivel)
+                        %th= t(:nombre)
+                        %th= t(:porcentaje)
+                        %th= t(:archivo)
+                    %tbody
+                      - @estandar.estandar_niveles.order(numero: :asc).each do |nivel|
+                        %tr.fields
+                          %td= nivel.numero
+                          %td= nivel.nombre
+                          %td=nivel.porcentaje.to_s+"%"
+                          %td
+                            -if !nivel.archivo.blank?
+                              = link_to nivel.archivo.url, download: '', class: "btn btn-tabla"  do
+                                %i.fa.fa-download.p-1  #{nivel.archivo.file.filename}
+            .row.mt-4
+              .col-12
+                .table-responsive
+                  %table#estandares-metas.table.table-striped.mb-0
+                    %thead
+                      %tr
+                        %th= t(:accion)
+                        %th= t(:materia)
+                        %th= t(:meta)
+                        %th= t(:alcance)
+                        %th= t(:criterio)
+                        %th= t(:descripcion)
+                        %th= t(:detalle)
+                        %th= t(:puntaje)
+                        %th= t(:obligatorio_para_nivel)
+                    %tbody
+                      - @estandar.estandar_set_metas_acciones.order(id: :asc).each do |meta|
+                        %tr.fields
+                          %td= meta.accion.nombre
+                          %td= meta.materia_sustancia.present? ? meta.materia_sustancia.nombre : ""
+                          %td= meta.meta.nombre
+                          %td= meta.alcance.nombre
+                          %td= meta.criterio_inclusion_exclusion
+                          %td= meta.descripcion_accion
+                          %td= meta.detalle_medio_verificacion 
+                          %td= meta.puntaje
+                          %td=(meta.estandar_nivel_id.nil? ? '' : meta.estandar_nivel.nombre)

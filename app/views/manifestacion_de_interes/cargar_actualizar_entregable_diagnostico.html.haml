@@ -1,79 +1,156 @@
 :javascript
-	$(document).ready(function() {
-		var tipo_manifestacion = "#{@manifestacion_de_interes.tipo_manifestacion_metas}"
-		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
-		$('#tipo_metas').change(function(){
-			var tipo =  $(this).val();
-			$('#advertencia-cambio').modal('toggle');
-			$('#advertencia-cambio #tipo').val(tipo);
-			if(tipo == 1){
-				$('#advertencia-cambio #tipo-vista-1').show();
-				$('#advertencia-cambio #tipo-vista-2, #tipo-vista-3').hide();
-				$('#advertencia-cambio #estandar_adherido, #diagnostico_adherido').prop('required', false).removeClass('required-field');
-				$('#advertencia-cambio form').find('.btn-disabled').removeAttr('disabled');
-			}else if(tipo == 2){
-				$('#advertencia-cambio #tipo-vista-2').show();
-				$('#advertencia-cambio #tipo-vista-1, #tipo-vista-3').hide();
-				$('#advertencia-cambio #diagnostico_adherido').prop('required', false).removeClass('required-field');
-				$('#advertencia-cambio #estandar_adherido').prop('required', true).addClass('required-field');
-				$('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
-			}else if(tipo == 3){
-				$('#advertencia-cambio #tipo-vista-3').show();
-				$('#advertencia-cambio #tipo-vista-2, #tipo-vista-1').hide();
-				$('#advertencia-cambio #estandar_adherido').prop('required', false).removeClass('required-field');
-				$('#advertencia-cambio #diagnostico_adherido').prop('required', true).addClass('required-field');
-				$('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
-			}
-		});
-		$('#advertencia-cambio').on('hide.bs.modal', function(){
-			$('#tipo_metas').val(tipo_manifestacion);
-		});
-	});
-= render 'modal_advertencia_set_metas'
+  confirmar_cambio_acuerdo = false;
+  $(document).ready(function() {
+    var tipo_manifestacion = "#{@manifestacion_de_interes.tipo_manifestacion_metas}"
+    $('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+    $('#tipo_metas').change(function(){
+      var tipo =  $(this).val();
+      show_modal_tipo(tipo);
+    });
+    $('#advertencia-cambio').on('hide.bs.modal', function(){
+      $('#tipo_metas').val(tipo_manifestacion);
+    });
+
+    $('.btn-show-modal-tipo').click(function(){
+      show_modal_tipo($(this).data('tipo'));
+    });
+
+    $('.selector-tipo-meta').change(function(){
+      valor = this.value;
+      $('.loading-data').show();
+      $.ajax({
+        url: "#{tarea_pendiente_manifestacion_de_interes_metas_acciones_tipo_meta_path(@tarea_pendiente, @manifestacion_de_interes)}",
+        type: "POST",
+        data: {
+          id: valor,
+          tipo: $('#advertencia-cambio #tipo').val()
+        }
+      }).success(function() {
+        $('.loading-data').hide();
+      }).error(function(jqXHR, textStatus, errorThrown){
+        $('.loading-data').hide();
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+    });
+
+    $('.agregar-metas-acciones-relacionados').click(function(e){
+      if($('#advertencia-cambio #tipo').val() == "3"){
+        e.preventDefault();
+
+        dataConfirmModal.confirm({
+          title: 'Confirme antes de continuar',
+          text: "Al elegir Metas y Acciones de otro acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
+          commit: 'Quitar',
+          cancel: 'Volver',
+          zIindex: 10099,
+          onConfirm: function() {
+            $('#advertencia-cambio form').submit();
+            $('#advertencia-cambio').modal('hide');
+            $('.loading-data').show();
+          },
+          onCancel:  function() {
+          },
+          onHide:    function() {
+          }
+        });
+      }
+    });
+  });
+
+  function show_modal_tipo(tipo){
+    $('#advertencia-cambio').modal('toggle');
+    $('#advertencia-cambio #tipo').val(tipo);
+    $('#advertencia-cambio #modal-tipo-meta-tabla').empty();
+    if(tipo == 2){
+      $('#advertencia-cambio .tipo-vista-2').show();
+      $('#advertencia-cambio .tipo-vista-3').hide();
+      $('#advertencia-cambio #diagnostico_adherido').val("").removeClass('required-field');
+      $('#advertencia-cambio #estandar_adherido').val("").addClass('required-field');
+      $('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
+    }else if(tipo == 3){
+      $('#advertencia-cambio .tipo-vista-3').show();
+      $('#advertencia-cambio .tipo-vista-2').hide();
+      $('#advertencia-cambio #estandar_adherido').val("").removeClass('required-field');
+      $('#advertencia-cambio #diagnostico_adherido').val("").addClass('required-field');
+      $('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
+    }
+  }
 - titulo t(:cargar_actualizar_entregable_diagnóstico)
-.float-right
-	= link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
-- tabs = { "mapa-de-actores": true, "cargar-documentos-diagnostico": false, "set-metas-accion": false }
-- (@tab_metas.present? && @tab_metas) ? tabs = { "mapa-de-actores": false, "cargar-documentos-diagnostico": false, "set-metas-accion": true } : ""
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-		- tabs.each do |tab,active|
-			%li.nav-item
-				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-					=t(tab.to_s.gsub('-','_'))
-				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-					%small.total-error
-						= @total_de_errores_por_tab[tab].size
-	#manifestacionContent.tab-content
-		#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
-			.card
-				.card-body.p-0
-					#actores-remote-table
-						= render 'actores/table'
-					#actualizar-remote-form
-						= render 'actores/form', externo: true
-		#cargar-documentos-diagnostico.tab-pane.fade{"aria-expanded" => tabs[:"cargar-documentos-diagnostico"], "aria-labelledby" => "cargar-documentos-diagnostico-tab", :role => "tabpanel", class: ("show active" if tabs[:"cargar-documentos-diagnostico"])}
-			.card
-				.card-body.p-0
-					#documento-diagnostico-remote-form
-					#documento-diagnostico-actualizar-remote-form
-						= render 'documento_diagnosticos/form', externo: true
-		#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
-			.card
-				.card-body.p-0
-					.row.justify-content-end.form-group.my-3            
-						-if  @manifestacion_de_interes.tipo_manifestacion_metas == 2
-							.col-6
-								%h5.titulo-body.m-2
-									= "<b>Estandar: </b> #{@manifestacion_de_interes.estandar_homologacion.nombre} <br>".html_safe
-						-if  @manifestacion_de_interes.tipo_manifestacion_metas == 3
-							.col-6
-								%h5.titulo-body.m-2
-									= "<b>Acuerdo antiguo: </b> #{@manifestacion_de_interes.antiguo.nombre_acuerdo} <br>".html_safe
-						.col-5
-							= select_tag :tipo_metas, options_for_select([ ["Crear propio Set de Metas y Acciones", 1], ["Elegir Estándar de Homologación", 2], ["Elegir Metas y Acciones de otro acuerdo", 3] ], @manifestacion_de_interes.tipo_manifestacion_metas), { class: 'form-control chosen-control m2',:prompt => false}
-						.col-1
-					#propuestas-de-acuerdo-remote-table
-						= render 'set_metas_acciones/table', externo: true
-					-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores					
-					= render 'set_metas_acciones/modal'
+= render 'modal_advertencia_set_metas'
+.card
+  .card-header.p-0
+    .p-3
+      %h5.no-margin
+        =titulo_instrumento.html_safe
+      - if @proyecto.blank?
+        %h5.no-margin
+          =titulo_acuerdo.html_safe
+      - else
+        %h5.no-margin
+          =titulo_proyecto.html_safe
+      %h5.no-margin
+        =datos_beneficiario.html_safe
+
+    .d-block.d-lg-none.d-flex.justify-content-end.pb-3.pr-3
+      = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+    .d-flex.justify-content-between
+      - tabs = { "listado-de-actores": true, "cargar-documentos-diagnostico": false, "set-metas-accion": false }
+      - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "cargar-documentos-diagnostico": false, "set-metas-accion": true } : ""
+      #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
+        %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
+          - tabs.each do |tab,active|
+            %li.nav-item.tab-block{id: "#{tab}-tab"}
+              %a.nav-link.tab-block.d-flex{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                %div{style: "flex-grow:1 !important;"}
+                  =t(tab.to_s.gsub('-','_'))
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                  .d-block.d-lg-none.d-flex.align-items-center
+                    %span.badge.badge-danger.badge-pill
+                      = @total_de_errores_por_tab[tab].size
+              - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                .d-none.d-lg-block
+                  %small.total-error
+                    = @total_de_errores_por_tab[tab].size
+      .d-none.d-lg-block.mr-2
+        = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+  .card-body.p-0.with-top
+    #manifestacionContent.tab-content
+      #listado-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"listado-de-actores"], "aria-labelledby" => "listado-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"listado-de-actores"])}
+        .card.m-0
+          .card-body.p-0
+            #actores-remote-table
+              = render 'actores/table', externo: true
+            #actualizar-remote-form
+              = render 'actores/form', externo: true
+      #cargar-documentos-diagnostico.tab-pane.fade{"aria-expanded" => tabs[:"cargar-documentos-diagnostico"], "aria-labelledby" => "cargar-documentos-diagnostico-tab", :role => "tabpanel", class: ("show active" if tabs[:"cargar-documentos-diagnostico"])}
+        .card.m-0
+          .card-body.p-0
+            #documento-diagnostico-remote-form
+            #documento-diagnostico-actualizar-remote-form
+              = render 'documento_diagnosticos/form', externo: true
+      #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
+        .card.m-0
+          .card-body.p-0
+            .row.form-group.my-3
+              -#       
+                -if  @manifestacion_de_interes.tipo_manifestacion_metas == 2
+                  .col-6
+                    %h5.titulo-body.m-2
+                      = "<b>Estandar: </b> #{@manifestacion_de_interes.estandar_homologacion.nombre} <br>".html_safe
+                -if  @manifestacion_de_interes.tipo_manifestacion_metas == 3
+                  .col-6
+                    %h5.titulo-body.m-2
+                      = "<b>Acuerdo antiguo: </b> #{@manifestacion_de_interes.antiguo.nombre_acuerdo} <br>".html_safe
+              .col-12
+                .d-flex.justify-content-lg-end.flex-lg-row.flex-column.align-items-start
+                  =# select_tag :tipo_metas, options_for_select([ ["Crear propio Set de Metas y Acciones", 1], ["Elegir Estándar de Homologación", 2], ["Elegir Metas y Acciones de otro acuerdo", 3] ], @manifestacion_de_interes.tipo_manifestacion_metas), { class: 'form-control chosen-control m2',:prompt => false}
+                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo{"data-tipo" => 2} Desde estándar de certificación
+                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo.text-left{"data-tipo" => 3, style: "white-space: normal;"} Desde metas y acciones de otro acuerdo
+                  - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: false)
+                  = link_to "Nueva acción", new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary my-1 mx-2 btn-sm'
+            #propuestas-de-acuerdo-remote-table
+              = render 'set_metas_acciones/table', externo: false
+            -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores          
+            = render 'set_metas_acciones/modal'

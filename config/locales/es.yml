@@ -1071,6 +1071,8 @@ es:
 
 
   #  ADAN
+  Encuesta: Encuesta
+  Pregunta: Pregunta
   editar_tipo_instrumento: Editar tipo de instrumento
   TipoInstrumento: Tipo de instrumento
   observaciones_comentarios_anteriores: Observaciones y comentarios anteriores
@@ -1265,7 +1267,31 @@ es:
   nombre_usuario_destino: Nombre usuario destino
   datos_de_traspaso: Datos de traspaso
   listado_de_actores: Listado de actores
+  anular_y_eliminar: Anular y Eliminar
   cumplimiento_de_acuerdo: Cumplimiento de acuerdo
+  Responsable: Responsable
+  estándares_de_certificación: Estándares de certificación
+  estándar_de_certificación: Estándar de certificación
+  EstandarHomologacion: Estándar de Certificación
+  adjuntar_archivo_de_referencia_del_estándar: Adjuntar archivo de referencia del Estándar
+  añadir_url_de_referencia_del_estándar: Añadir url de referencia del Estándar
+  niveles_de_certificación: Niveles de certificación
+  agregar_nivel: Agregar nivel
+  porcentaje: Porcentaje
+  puntaje: Puntaje
+  obligatorio_para_nivel: Obligatorio para nivel
+  numero_nivel: Número nivel
+  tipo_documento_diagnostico: Tipo documento diagnóstico
+  tipos_documento_diagnostico: Tipos documento diagnóstico
+  TipoDocumentoDiagnostico: Tipo documento diagnóstico
+  documentos_diagnostico: Documentos diagnóstico
+  lista_de_actores: Lista de actores
+  criterio: Criterio
+  detalle: Detalle
+  SetMetasAccion: Acción
+  anadir: Añadir
+
+  crear_: Crear %{item}
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio

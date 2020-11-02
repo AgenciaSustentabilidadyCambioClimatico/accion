@@ -538,6 +538,7 @@ function iniciarAutoNumeric() {
   //$('.numero-cargas').autoNumeric('init', {aSep: '', vMin: 0, vMax: 50, mDec: 0});
   //$('.numero-boleta').autoNumeric('init', {aSep: '', vMin: 0, vMax: 99999, mDec: 0});
   $('.numero').autoNumeric('init', {aSep: '', vMin: 0, mDec: 0});
+  $('.numero-1-100').autoNumeric('init', {aSep: '', vMin: 0, vMax: 100, mDec: 0, wEmpty: 'empty'});
   $('.numero-en-miles').autoNumeric('init', {aSep: '.', aDec: ',', vMin: 0, mDec: 0});
   $('.uf').autoNumeric('init', autoNumericUfOptions() );
   $('.porcentaje').autoNumeric('init', autoNumericPorcentajeOptions() );

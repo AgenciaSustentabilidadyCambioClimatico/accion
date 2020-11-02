@@ -19,7 +19,7 @@ class MapaDeActor < ApplicationRecord
 
 	def self.columnas_excel
 		["ROL EN ACUERDO", "RUT PERSONA", "NOMBRE COMPLETO PERSONA", "CARGO EN INSTITUCION", 
-            "RUT INSTITUCION", "RAZON SOCIAL", "CODIGO CIIUv2", "TIPO DE INSTITUCION", "DIRECCION INSTITUCION", 
+            "RUT INSTITUCION", "RAZON SOCIAL", "CODIGO CIIUv4", "TIPO DE INSTITUCION", "DIRECCION INSTITUCION", 
             "COMUNA INSTITUCION", "EMAIL INSTITUCIONAL", "TELEFONO INSTITUCIONAL"]
 		{
 			rol_en_acuerdo: 'roles', #0
@@ -28,7 +28,7 @@ class MapaDeActor < ApplicationRecord
 			cargo_en_institucion: "cargos", #3
 			rut_institucion: nil, #4
 			razon_social: nil,
-			codigo_ciiuv2: 'sectores', #5
+			codigo_ciiuv4: 'sectores', #5
 			tipo_de_institucion: 'tipo_instituciones', #6
 			direccion_institucion: nil, #7
 			comuna_institucion: 'comunas', #8
@@ -73,7 +73,7 @@ class MapaDeActor < ApplicationRecord
 				cargo_en_institucion = p.cargo.nombre
 				institucion = persona.contribuyente
 				rut_institucion = institucion.rut.to_s+'-'+institucion.dv.to_s
-				codigo_ciiuv2 = acteco.present? ? acteco.codigo_ciiuv2 : ""
+				codigo_ciiuv4 = acteco.present? ? acteco.codigo_ciiuv4 : ""
 				tipo_institucion = dato_anual.present? ? dato_anual.tipo_contribuyente.nombre : ""
 				direccion = establecimiento.present? ? establecimiento.direccion : ""
 				comuna = establecimiento.present? ? establecimiento.comuna.nombre : ""
@@ -88,7 +88,7 @@ class MapaDeActor < ApplicationRecord
 					cargo_en_institucion: cargo_en_institucion,
 					rut_institucion: rut_institucion,
 					razon_social: razon_social,
-					codigo_ciiuv2: codigo_ciiuv2,
+					codigo_ciiuv4: codigo_ciiuv4,
 					tipo_de_institucion: tipo_institucion,
 					direccion_institucion: direccion,
 					comuna_institucion: comuna,
@@ -109,8 +109,8 @@ class MapaDeActor < ApplicationRecord
 	def self.adecua_actores_para_vista (data)
 		actores = data
 		actores.each do |fila|
-			ae = ActividadEconomica.where(codigo_ciiuv2: fila[:codigo_ciiuv2].to_s)
-			sector_productivo = ae.first.descripcion if ae.present?
+			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].to_s)
+			sector_productivo = ae.first.descripcion_ciiuv4 if ae.present?
 			# DZC 2018-10-10 16:09:11 se prevee el caso de que el contribuyente se este creando mediante el archivo excel
 			razon_social = Contribuyente.where(rut: fila[:rut_institucion]).blank? ? nil : Contribuyente.where(rut: fila[:rut_institucion]).first.razon_social
 			if !fila.has_key?(:sector_productivo) then fila[:sector_productivo] = sector_productivo end
@@ -142,7 +142,7 @@ class MapaDeActor < ApplicationRecord
 		{
 			roles: Rol.all.order(nombre: :asc).map {|r| r.nombre}.compact,
 			cargos: Cargo.all.order(nombre: :asc).map {|c| c.nombre}.compact,
-			sectores: ActividadEconomica.order(codigo_ciiuv2: :asc).all.map {|ac| ac.codigo_ciiuv2}.compact,
+			sectores: ActividadEconomica.where.not(codigo_ciiuv4: nil).order(codigo_ciiuv4: :asc).all.map {|ac| ac.codigo_ciiuv4}.compact,
 			comunas: Comuna.order(nombre: :asc).all.map {|c| c.nombre}.compact,
 			# comunas: Comuna.order(nombre: :asc).vigente?.all.map {|c| c.nombre}.compact, #REEMPLAZAR CUANDO SE HAGA MERGE CON RAMA DE RICARDO
 			tipo_instituciones: TipoContribuyente.order(nombre: :asc).all.map {|ti| ti.nombre}.compact
@@ -235,8 +235,8 @@ class MapaDeActor < ApplicationRecord
 			end
 
 			#DZC (2) verifica la existencia de las actividades económicas y en caso de ausencia las crea.
-			actividad_economica = ActividadEconomica.find_by(codigo_ciiuv2: fila[:codigo_ciiuv2])
-			aaeec = contribuyente.actividad_economica_contribuyentes.includes(:actividad_economica).where({"actividad_economicas.codigo_ciiuv2" => fila[:codigo_ciiuv2].to_s}).first # realiza un select join
+			actividad_economica = ActividadEconomica.find_by(codigo_ciiuv4: fila[:codigo_ciiuv4])
+			aaeec = contribuyente.actividad_economica_contribuyentes.includes(:actividad_economica).where({"actividad_economicas.codigo_ciiuv4" => fila[:codigo_ciiuv4].to_s}).first # realiza un select join
 			if aaeec.blank? 
 				aaeec = ActividadEconomicaContribuyente.new(
 					actividad_economica_id: actividad_economica.id,

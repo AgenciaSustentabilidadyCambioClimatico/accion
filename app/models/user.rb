@@ -58,8 +58,12 @@ class User < ApplicationRecord
 
   #Se concidera administrador solo a aquel que posea el cargo adminsitrado dentro de la agencia
   def is_admin?
+    cargos = []
+    self.personas.each do |p|
+      cargos += p.persona_cargos.map{|cp| cp.cargo_id}
+    end
     # DZC 2018-11-19 14:28:39 se agrega como administrador al root, para efectos de control y acceso a solución de problemas
-    if session[:cargos].include?(Cargo::ROOT)# || session[:cargos].include?(Cargo::ADMIN)
+    if cargos.include?(Cargo::ROOT)# || session[:cargos].include?(Cargo::ADMIN)
       true
     else
       ascc = Contribuyente.find_by_rut(75980060)
@@ -86,8 +90,11 @@ class User < ApplicationRecord
     #DZC si se ingresa un rol como simple numero, lo transforma en Array 
     (roles = (roles.class == Array)? roles : [roles]) if (roles.class == Integer) 
     lo_es = false
-    personas = session[:personas]
-    cargos = session[:cargos]
+    personas = self.personas
+    cargos = []
+    self.personas.each do |p|
+      cargos += p.persona_cargos.map{|cp| cp.cargo_id}
+    end
     contribuyentes_de_usuario_id = []
     contribuyentes_de_usuario_id = personas.map{|p| p[:contribuyente_id]}
     contribuyentes_de_usuario_rut = Contribuyente.where(id: contribuyentes_de_usuario_id).pluck(:rut)
@@ -157,6 +164,7 @@ class User < ApplicationRecord
   def clonar_con_relaciones
     user_temporal = self.dup
     user_temporal.user_id = self.id
+    user_temporal.reset_password_token = nil
     user_temporal.save(validate: false)
     user_temporal
   end

@@ -1,1 +1,7 @@
 = render 'layouts/remote_form', block: 'estandar'
+chosen_elementos();
+setear_numero_niveles();
+iniciarAutoNumeric();
+setear_obligatorio_nivel($('tr[style!="display: none;"] .accion-estandar-nivel'));
+htmlErrorToTooltip('top');
+checkFieldValidity($('#estandar_homologacion_nombre'));

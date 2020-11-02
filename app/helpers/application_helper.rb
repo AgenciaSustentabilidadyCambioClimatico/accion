@@ -320,7 +320,7 @@ module ApplicationHelper
 	end
 
 	# DZC 2018-10-26 10:23:18 modifica el método para que, tratándose de un atributo que contenga múltiples archivos, se permita la descarga de un archivo ZIP que contenga todos esos  archivos
-	def __descargar_archivo(field,objeto, label = true)
+	def __descargar_archivo(field,objeto, label = true, nombre_boton=true)
 		capture_haml do
 			haml_tag :div, class: 'form-group' do
 				if label
@@ -337,14 +337,14 @@ module ApplicationHelper
 						# DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
 				   	haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: field[0].mounted_as), class: 'btn btn-sm btn-descargar btn-block tooltip-block px-5', download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
 				   		haml_tag :i, class: 'fa fa-download'
-				   		haml_concat archivos.to_sentence
+				   		haml_concat archivos.to_sentence if nombre_boton
 				   	end
 					else
 						#
 						file_name = field.file.filename
 						haml_tag :a, href: field.url, class: 'btn btn-sm btn-descargar btn-block tooltip-block px-5', download: '', title: file_name, "data-original-title" => file_name do
 							haml_tag :i, class: 'fa fa-download'
-							haml_concat file_name
+							haml_concat file_name if nombre_boton
 						end
 					end
 				else

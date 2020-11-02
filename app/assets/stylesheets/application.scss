@@ -112,6 +112,24 @@ form.filter .card-header { background: #d1ecf1; border-color: #bee5eb; }
   nav.navbar.navbar-expand-lg.navbar-dark > div > div{
     max-width: 1366px;
   }
+
+  .modal-xl {
+    max-width: 70% !important;
+  }
+
+  .modal-xxl {
+    max-width: 80% !important;
+  }
+}
+@media (min-width: 576px) and (max-width: 991px) {
+
+  .modal-xl {
+    max-width: 95% !important;
+  }
+
+  .modal-xxl {
+    max-width: 95% !important;
+  }
 }
 .secciones-observadas-revision-checkbox-group .border-error { border: none; }
 .messages-content ul, .messages-content ul ul { margin: 0; padding: 0; text-align: center; list-style-type: none; }
@@ -324,6 +342,12 @@ td.fecha-publicacion  { text-align: center; }
     margin-bottom: 1rem!important;
   }
 
+  .btn-tabla-sm{
+    width: auto !important;
+    height: auto !important;
+    padding: 1px 9px;
+  }
+
 }
 @media (min-width: 991px) {
  .show-comments { top: 115px; right: 50px; }
@@ -496,7 +520,7 @@ hr:last-of-type { display: none; }
 #tarea_recordatorio_previsualizacion { min-height: 301px; padding: 0.75rem; border: 1px solid #CED4DA; }
 table#establecimiento-dato-anual tr td div,
 table#establecimiento-actecos tr td div { margin: 0; }
-table tr td div input { height: calc(2.25rem + 2px); }
+table:not(.estandar-tabla) tr td div input { height: calc(2.25rem + 2px); }
 td.id, th.id, td.si-no, th.si-no, td.doc-type, th.doc-type { text-align: center; }
 td.doc-type, th.doc-type, th.archivo-descargable-tarea, td.archivo-descargable-tarea { width: 100px; }
 #flujo_tarea_condicion_de_salida { resize: none; height: 100px; }
@@ -687,13 +711,7 @@ div.form-control { font-size: 13px; }
 #set-metas-accion-remote-modal-form .modal-body div.loading-wrapper { padding: 50px 0 40px 0; }
 #set-metas-accion-remote-modal-form .modal-body div.loading-wrapper img { width: 50px; }
 
-.modal-xl {
-  max-width: 70% !important;
-}
 
-.modal-xxl {
-  max-width: 80% !important;
-}
 
 .archivo {
   width: 0.1px;
@@ -979,6 +997,9 @@ ul.seleccionados_tree li:only-child{
   border: 1px solid #5d759e;
   border-top: 0;
 }
+.with-top{
+  border-top: 1px solid #5d759e !important;
+}
 .btn-tabla-instrumentos{
   background-color: #FFFFFF;
   border: 1px solid #E5E5E5;
@@ -1080,4 +1101,46 @@ ul.seleccionados_tree li:only-child{
 }
 .input-xs{
   height: auto !important;
+}
+
+.caja-borde-azul{
+  border: 1px solid #5D759E;
+  border-radius: 2px;
+  padding: 0.2rem 0.5rem;
+  color: #5D759E;
+}
+
+.btn-tabla{
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 3px;
+  padding: 1px 9px;
+  display: inline-block;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.btn-tabla-sm{
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5E5;
+  border-radius: 3px;
+  white-space: nowrap;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-eliminar-acciones{
+  background-color: #FFFFFF;
+  color: #c4c4c4 !important;
+  border: 1px solid #c4c4c4;
+  border-radius: 3px;
+  white-space: nowrap;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

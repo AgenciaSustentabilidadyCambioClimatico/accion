@@ -64,6 +64,7 @@ ActiveSupport::Inflector.inflections do |inflect|
 	inflect.irregular 'campo', 'campos'
 	inflect.irregular 'campo_tooltip', 'campo_tooltips'
 	inflect.irregular 'campo_tarea', 'campo_tareas'
+	inflect.irregular 'nivel', 'niveles'
 	inflect.uncountable %w(unidad_tiempo_para_contestar)
 	#inflect.uncountable %w( interes )
 	#inflect.irregular 'actividad', 'actividades'

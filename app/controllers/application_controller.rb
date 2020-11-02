@@ -174,20 +174,22 @@ class ApplicationController < ActionController::Base
         nuevo_set = set.dup
         nuevo_set.flujo_id = flujo_actual.id
         nuevo_set.estado = 1
+        nuevo_set.id_referencia = set.id
+        nuevo_set.modelo_referencia = 'SetMetasAccion'
         
         nuevo_set.save
       end
       
-      manifestacion_actual.documento_diagnosticos.clear
-      documentos_diagnosticos = manifestacion.documento_diagnosticos 
-      documentos_diagnosticos.each do |documento| 
-        nuevo_documento = documento.dup
-        nuevo_documento.archivo = File.open(documento.archivo.file.file) if documento.archivo.present?
-        nuevo_documento.manifestacion_de_interes_id = manifestacion_actual.id
-        
-        nuevo_documento.desde_set_antiguo = true # DZC 2018-10-11 10:50:03 se modifica a efecto de que permita cargar documentos con tipo_diagnóstico nil
-        nuevo_documento.save
-      end
+      #manifestacion_actual.documento_diagnosticos.clear
+      #documentos_diagnosticos = manifestacion.documento_diagnosticos 
+      #documentos_diagnosticos.each do |documento| 
+      #  nuevo_documento = documento.dup
+      #  nuevo_documento.archivo = File.open(documento.archivo.file.file) if documento.archivo.present?
+      #  nuevo_documento.manifestacion_de_interes_id = manifestacion_actual.id
+      #  
+      #  nuevo_documento.desde_set_antiguo = true # DZC 2018-10-11 10:50:03 se modifica a efecto de que permita cargar documentos con tipo_diagnóstico nil
+      #  nuevo_documento.save
+      #end
     end
 
     #variable para determinar si posee el cargo encargado de institucion

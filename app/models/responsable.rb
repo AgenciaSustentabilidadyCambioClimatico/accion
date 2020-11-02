@@ -25,8 +25,16 @@ class Responsable < ApplicationRecord
       .where(tipo_instrumento_id: tipo_instrumentos_ids).each do |r|  
       cgid = r.cargo_id
       ctid = r.contribuyente_id
-      aeid = r.actividad_economica_id
-      tcid = r.tipo_contribuyente_id
+      aeid = []
+      if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
+      end
+      tcid = []
+      if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
+      end
 
       personas_cargos = PersonaCargo.includes([:persona])
       personas_cargos = personas_cargos.where(cargo_id: r.cargo_id) unless r.cargo_id.blank?
@@ -92,8 +100,16 @@ class Responsable < ApplicationRecord
     responsables.each do |r|  
       cgid = r.cargo_id
       ctid = r.contribuyente_id
-      aeid = r.actividad_economica_id
-      tcid = r.tipo_contribuyente_id
+      aeid = []
+      if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
+      end
+      tcid = []
+      if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
+      end
       if r.cargo_id.blank? == false       
         PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
           
@@ -134,8 +150,16 @@ class Responsable < ApplicationRecord
     responsables.each do |r|  
       cgid = r.cargo_id
       ctid = r.contribuyente_id
-      aeid = r.actividad_economica_id
-      tcid = r.tipo_contribuyente_id
+      aeid = []
+      if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
+      end
+      tcid = []
+      if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
+      end
       if r.cargo_id.blank? == false
         PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
           if self.__info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid,contribuyente_id,actividad_economica_id,tipo_contribuyente_id)
@@ -159,40 +183,34 @@ class Responsable < ApplicationRecord
     unless ctid.blank?
       coincide = !coincide ? coincide : ( ctid.to_i == cpo.id.to_i )
     end
-    unless aeid.blank?
-      coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(aeid.to_i))
+    if !aeid.blank? && coincide
+      coincide = !(cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id) & aeid).blank?
+      #coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(aeid.to_i))
     end
-    unless tcid.blank?
+    if !tcid.blank? && coincide
       # datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
       # DZC 2018-10-03 16:44:07 Se corrige error, permitiendo ahora la obtención del tipo_contribuyente_id para el caso de que el atributo :periodo sea nil
       
       # v2
-      datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
+      #datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
       # datos_contribuyente = []
       # nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
       # datos_contribuyente += nulos
       # unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
       # datos_contribuyente += [unico]
-      coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid.to_i))
+      #coincide = !coincide ? coincide : (datos_contribuyente.include?(tcid.to_i))
+      #v3
+      coincide = !(cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id) & tcid).blank?
+
     end
-    unless c_extra.blank?
-      coincide = !coincide ? coincide : ( c_extra.to_i == cpo.id.to_i )
+    if !c_extra.blank? && coincide
+      coincide = ( c_extra.to_i == cpo.id.to_i )
     end
-    unless ae_extra.blank?
-      coincide = !coincide ? coincide : (cpo.actividad_economica_contribuyentes.map{|aec|aec.actividad_economica_id.to_i}.include?(ae_extra.to_i))
+    if !ae_extra.blank? && coincide
+      coincide = cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id).include?(ae_extra.to_i)
     end
-    unless tc_extra.blank?
-      # datos_contribuyente = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id}
-      # DZC 2018-10-03 16:44:07 Se corrige error, permitiendo ahora la obtención del tipo_contribuyente_id para el caso de que el atributo :periodo sea nil
-      
-      # v2
-      datos_contribuyente = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
-      # datos_contribuyente = []
-      # nulos = cpo.dato_anual_contribuyentes.where(periodo: nil).map{|dac|dac.tipo_contribuyente_id if dac.periodo.blank?}
-      # datos_contribuyente += nulos
-      # unico = cpo.dato_anual_contribuyentes.order(periodo: :desc).map{|dac|dac.tipo_contribuyente_id if dac.periodo.present?}.compact.first
-      # datos_contribuyente += [unico]
-      coincide = !coincide ? coincide : (datos_contribuyente.include?(tc_extra.to_i))
+    if !tc_extra.blank? && coincide
+      coincide = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id).include?(tc_extra.to_i)
     end
     coincide
   end
@@ -214,12 +232,20 @@ class Responsable < ApplicationRecord
     responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
     responsables.each do |r|
       ct_id = r.contribuyente_id
-      ae_id = r.actividad_economica_id
-      tc_id = r.tipo_contribuyente_id     
+      aeid = []
+      if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
+      end
+      tcid = []
+      if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
+      end
       if ct_id.present?
         if contribuyente_id == ct_id          
           #Se verifica que la institucion posea la actividad economica de la relacion       
-          if contribuyente.actividad_economica_ids.include?(ae_id)
+          if !(contribuyente.actividad_economica_ids & aeid).blank?
             posee_rol = true
           end
         end
@@ -228,7 +254,7 @@ class Responsable < ApplicationRecord
         tipo_contribuyente = []
         tipo_contribuyente << contribuyente.dato_anual_contribuyentes.order(periodo: :desc).first.tipo_contribuyente_id if contribuyente.dato_anual_contribuyentes.order(periodo: :desc).size > 0
         tipo_contribuyente += contribuyente.dato_anual_contribuyentes.where(periodo: nil).pluck('tipo_contribuyente_id')
-        if tipo_contribuyente.include?(tc_id)
+        if tipo_contribuyente & tcid
           posee_rol = true
         end
       end

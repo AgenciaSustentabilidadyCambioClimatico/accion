@@ -6,6 +6,35 @@ class ActividadEconomica < ApplicationRecord
 	#validates :codigo_ciiuv4, presence: true
 	#validates :descripcion_ciiuv4, presence: true
 	alias_attribute :nombre, :descripcion
+
+	def get_children
+		codigo_ciu = "nada"
+		codigo_ciu = self.codigo_ciiuv4 if !self.codigo_ciiuv4.blank?
+		ActividadEconomica.where("codigo_ciiuv4 LIKE '"+codigo_ciu+"%'").where.not(id: self.id)
+	end
+
+	def self.__select_arbol(lowest_only=true)
+
+		#acteco = ActividadEconomica
+		#if lowest_only
+		#	acteco = acteco.where("length(codigo_ciiuv4) = 6").order(codigo_ciiuv4: :asc)
+		#end
+		#list = [["",""]]
+    #list += acteco.all.map {|acteco| [acteco.as_label, acteco.id, {class: "sub"}]}
+    #list
+    list = [["",""]]
+    beauty_tree_selector_v2.each do |ae|
+    	list << [ae[:name], ae[:id]]
+    	ae[:children].each do |subae|
+    		list << ["&nbsp;&nbsp;"+subae[:name], subae[:id]]
+    		subae[:children].each do |subsubae|
+    			list << ["&nbsp;&nbsp;&nbsp;&nbsp;"+subsubae[:name], subsubae[:id]]
+    		end
+    	end
+    end
+    list
+  end
+
 	def self.__select(lowest_only=true)
 		acteco = ActividadEconomica
 		if lowest_only

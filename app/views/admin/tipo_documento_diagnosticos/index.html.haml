@@ -1,0 +1,38 @@
+:javascript
+	$(document).ready(function() {
+		$('table.tipo_documento_diagnosticos').DataTable({
+			responsive: true,
+			lengthMenu: [[30], [30]],
+			columnDefs: [ { targets: [3], orderable: false } ],
+			order: [0,'asc'],
+			language: {
+				url: "#{asset_path('spanish.json')}"
+			},
+		});
+	});
+- titulo t(:tipos_documento_diagnostico)
+= link_to t(:agregar_, item: t(:tipo_documento_diagnostico).downcase), new_admin_tipo_documento_diagnostico_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.card
+	.card-header
+		%h5.no-margin
+			= t(:lista_de_, items: t(:tipos_documento_diagnostico).downcase)
+	.card-body
+		%table.table.tipo_documento_diagnosticos.table-striped
+			%thead
+				%tr
+					%th.id=t(:id)
+					%th.cargo-nombre=t(:name)
+					%th.cargo-descripcion=t(:description)
+					%th.dos.iconos-acciones=t(:acciones)
+			%tbody
+				- @tipo_documento_diagnosticos.each do |tdd|
+					%tr
+						%td=tdd.id
+						%td=tdd.nombre
+						%td=tdd.descripcion
+						%td.dos.iconos-acciones
+							%div
+								= link_to edit_admin_tipo_documento_diagnostico_path(tdd) do
+									%i.fa.fa-edit
+								= link_to admin_tipo_documento_diagnostico_path(tdd), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:tipo_documento_diagnostico)), remote: false } do
+									%i.fa.fa-trash

@@ -51,11 +51,11 @@
 				}
 				if(ac.debe_asociar_materia_sustancia == true){
 					msSelector.removeAttr('disabled').addClass('required-field');
-					$('label[for="set_metas_accion_materia_sustancia_ud"] > abbr').show();
+					$('label[for="set_metas_accion_materia_sustancia_id"] > abbr').show();
 					$('#set_metas_accion_clasificacion_para_filtro.cpf-materia-sustancia').removeAttr('disabled');
 				} else {
 					msSelector.attr('disabled','disabled').removeClass('required-field').val("");
-					$('label[for="set_metas_accion_materia_sustancia_ud"] > abbr').hide();
+					$('label[for="set_metas_accion_materia_sustancia_id"] > abbr').hide();
 					$('#set_metas_accion_clasificacion_para_filtro.cpf-materia-sustancia').attr('disabled','disabled');
 				}
 			} else {
@@ -148,7 +148,7 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@set_metas_accion)
+						= action_label_of_(@set_metas_accion, true)
 				.card-body
 					#messages-in-modal-remote-block
 					.row

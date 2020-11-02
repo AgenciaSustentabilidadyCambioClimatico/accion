@@ -147,7 +147,21 @@ class AcuerdoActoresController < ApplicationController
       @actores_con_observaciones = comentarios[:actores_con_observaciones]
     end
     @actores_mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::FIRMANTE).includes([:rol, persona: [:user,:contribuyente, persona_cargos: [:cargo]]]).all
-    
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
   end
 
 

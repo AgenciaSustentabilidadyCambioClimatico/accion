@@ -88,6 +88,7 @@ class ActoresController < ApplicationController
       # (3) antes de guardar, volvemos a dejar la variable como un array
       @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = comentarios_anteriores
       if @manifestacion_de_interes.valid?
+        @manifestacion_de_interes.remove_mapa_de_actores_archivo!
         @manifestacion_de_interes.save
         success = "Mapa de actores correctamente actualizado"
         continua_flujo_segun_tipo_tarea
@@ -162,8 +163,10 @@ class ActoresController < ApplicationController
       if !@actores_con_observaciones.blank? ||  (@manifestacion_de_interes.mapa_de_actores_correctamente_construido == "false") #DZC No termina pero envia correos, dada la estructura multipestañas (y tareas) asociadas a esta tarea específica
         @tarea_pendiente.pasar_a_siguiente_tarea 'B',{},false
       else
-        MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
-        @manifestacion_de_interes.update(mapa_de_actores_data: nil) 
+        if @manifestacion_de_interes.mapa_de_actores_data.present?
+          MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
+          @manifestacion_de_interes.update(mapa_de_actores_data: nil)
+        end
         #DZC el término de la tarea depende del ḿetodo termina_etapa_diagnostico en el controlador manifestacion_de_interes_controller
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
