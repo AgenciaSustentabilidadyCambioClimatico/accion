@@ -1290,6 +1290,7 @@ es:
   detalle: Detalle
   SetMetasAccion: Acción
   anadir: Añadir
+  url_referencia: Url referencia
 
   crear_: Crear %{item}
 

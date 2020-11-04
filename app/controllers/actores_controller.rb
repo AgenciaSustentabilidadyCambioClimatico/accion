@@ -36,6 +36,8 @@ class ActoresController < ApplicationController
       end
       @tarea_pendiente.update(data: {primera_ejecucion: false})
       continua_flujo_segun_tipo_tarea
+    else
+      @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     end
     respond_to do |format|
       format.html { redirect_to current_path, notice: success }
@@ -111,6 +113,7 @@ class ActoresController < ApplicationController
         error = error.gsub(',',';')
         error = error.gsub('.',',')
         error = error.gsub(';','.')
+        @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
       end
     end
     # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario

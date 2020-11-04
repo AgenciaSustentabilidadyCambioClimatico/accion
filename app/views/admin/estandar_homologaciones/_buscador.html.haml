@@ -12,17 +12,22 @@
                     %thead
                       %tr
                         %th= t(:estándar)
+                        %th= t(:descripción)
                         %th= t(:archivos_referencia)
+                        %th= t(:url_referencia)
                         -if editable
                           %th= t(:acción)
                     %tbody
                       %tr
-                        %td= @estandar.nombre
+                        %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}= @estandar.nombre
+                        %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}= @estandar.descripcion
                         %td
                           - @estandar.referencias.each do |referencia|
                             = link_to referencia.url, download: '', class: "btn btn-tabla" do
                               %i.fa.fa-download.p-1
                               #{referencia.file.filename}
+                        %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}
+                          %a{href: @estandar.url_referencia}=@estandar.url_referencia
                         -if editable
                           %td
                             .d-flex.align-items-start

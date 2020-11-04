@@ -34,9 +34,9 @@
                   %td.py-0.align-middle
                     = dd.input :nombre, label: false, input_html: { class: 'required-field p-0 form-control', style: "height: calc(2.25rem + 2px);" }, wrapper_class: 'm-0'
                   %td.py-0.text-center.align-middle
-                    = dd.input :publico, label: false, input_html: { class: 'im-not-required-check-the-others p-0 form-control' }, wrapper_class: 'm-0 chk-m-0'
+                    = dd.input :publico, label: false, input_html: { class: 'im-not-required-check-the-others p-0 form-control m-2' }, wrapper_class: 'm-0 chk-m-0'
                   %td.py-0.text-center.align-middle
-                    .d-flex.align.items-center.mb-1
+                    .d-flex.align-items-center.mb-1
                       = dd.input :archivo, label: false, input_html: { class: "#{dd.object.archivo.blank? ? 'required-field' : ''}" }, wrapper_class: 'text-left'
                       = dd.hidden_field :archivo_cache
                       - unless dd.object.archivo.blank?
@@ -72,25 +72,25 @@
                 = f.collection_radio_buttons :aprueba_documentos_diagnostico, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
           .col-lg-8.col-12
             = f.input :comentarios_y_observaciones_documento_diagnosticos, disabled: true, label: t(:comentarios_y_observaciones_documento_diagnosticos), required: true, input_html: {value: @manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos}
-        -# elsif @manifestacion_de_interes.accion_en_documento_diagnostico == :actualizacion
-        .col-12
-          .form-group
-            %label.string
-              = t(:comentarios)
-          .table-responsive
-            %table.table.table-striped
-              %thead
-                %tr
-                  %th=t(:fecha_y_hora)
-                  %th=t(:usuario)
-                  %th=t(:texto)
-              %tbody
-                -
-                - @comentarios.each do |c|
+        -if @comentarios.size > 0
+          .col-12
+            .form-group
+              %label.string
+                = t(:comentarios)
+            .table-responsive
+              %table.table.table-striped
+                %thead
                   %tr
-                    %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
-                    %td=c[:user]
-                    %td=c[:texto]
+                    %th=t(:fecha_y_hora)
+                    %th=t(:usuario)
+                    %th=t(:texto)
+                %tbody
+                  -
+                  - @comentarios.each do |c|
+                    %tr
+                      %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
+                      %td=c[:user]
+                      %td=c[:texto]
           
   .float-right.mr-3.mb-3
     - unless externo

@@ -198,7 +198,9 @@
               %td=record.criterio_inclusion_exclusion
               %td=record.descripcion_accion
               %td=record.detalle_medio_verificacion
-              %td="#{record.plazo_valor} #{t(record.plazo_unidad_tiempo)}"
+              %td
+                -if !record.plazo_unidad_tiempo.blank?
+                  ="#{record.plazo_valor} #{t(record.plazo_unidad_tiempo)}"
               - if  @tarea.codigo != Tarea::COD_APL_018
                 - if indicar_propuestas_con_observaciones
                   %td.text-center=check_box_tag "manifestacion_de_interes[propuestas][]",record[:id], propuestas_con_observaciones.include?(record[:id].to_s), class: "meta_observada"
@@ -243,29 +245,30 @@
               .radio-buttons
                 = f.collection_radio_buttons :aprueba_set_metas_accion, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
           .col-12.col-lg-8
-            = f.input :comentarios_y_observaciones_set_metas_acciones, as: :text,label: t(:comentarios_y_observaciones_set_metas_acciones), required: true, disabled: true
+            = f.input :comentarios_y_observaciones_set_metas_acciones, as: :text,label: t(:comentarios_y_observaciones_set_metas_acciones), required: true
         .float-right
           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
           = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
       -elsif @manifestacion_de_interes.accion_en_set_metas_accion == :actualizacion && @tarea.codigo != Tarea::COD_APL_018
-        .col-12
-          - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
-          .form-group
-            %label.string
-              = t(:comentarios)
-          .table-responsive
-            %table.table.table-striped
-              %thead
-                %tr
-                  %th=t(:fecha_y_hora)
-                  %th=t(:usuario)
-                  %th=t(:texto)
-              %tbody
-                - comentarios.each do |c|
+        - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
+        -if comentarios.size > 0
+          .col-12
+            .form-group
+              %label.string
+                = t(:comentarios)
+            .table-responsive
+              %table.table.table-striped
+                %thead
                   %tr
-                    %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
-                    %td=c[:user]
-                    %td=c[:texto]
+                    %th=t(:fecha_y_hora)
+                    %th=t(:usuario)
+                    %th=t(:texto)
+                %tbody
+                  - comentarios.each do |c|
+                    %tr
+                      %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
+                      %td=c[:user]
+                      %td=c[:texto]
 - if comite_propuestas
   .card.mb-0
     .card-header

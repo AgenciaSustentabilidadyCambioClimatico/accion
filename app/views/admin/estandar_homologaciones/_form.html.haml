@@ -216,7 +216,7 @@
                 .col-12.col-lg-3.pl-lg-2
                   =__descargar_archivo(f.object.referencias, f.object, true, false)
                 .col-12.col-lg-6
-                  = f.input :url_referencia, label: t(:añadir_url_de_referencia_del_estándar), placeholder: "Ingrese url de referencia del Estándar"
+                  = f.input :url_referencia, as: :string, label: t(:añadir_url_de_referencia_del_estándar), placeholder: "Ingrese url de referencia del Estándar"
     .col-lg-12
       .row
         .col-12

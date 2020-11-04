@@ -1757,6 +1757,7 @@ class ManifestacionDeInteresController < ApplicationController
     else
       @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     end
+    @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
 
     @manifestacion_de_interes.accion_en_mapa_de_actores = :actualizacion
     @manifestacion_de_interes.accion_en_documento_diagnostico = :actualizacion
@@ -1806,6 +1807,7 @@ class ManifestacionDeInteresController < ApplicationController
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
     @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
+    @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     # if @manifestacion_de_interes.mapa_de_actores_data.blank?
     #   @actores = []
     # else

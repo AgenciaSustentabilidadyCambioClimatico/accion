@@ -31,8 +31,8 @@ class Admin::EstandarHomologacionesController < ApplicationController
       if @estandar.save
       	@estandar = EstandarHomologacion.new()
         @estandar.estandar_set_metas_acciones.build
-      	format.js { flash.now[:success] = 'Estandar de homologacion correctamente creado.'}
-        format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de homologacion correctamente creado.' }
+      	format.js { flash.now[:success] = 'Estandar de certificación correctamente creado.'}
+        format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de certificación correctamente creado.' }
       else
         mensaje = "Error al crear."
         mensaje = @estandar.errors[:base].first if @estandar.errors.key?(:base)
@@ -56,8 +56,8 @@ class Admin::EstandarHomologacionesController < ApplicationController
     end
     respond_to do |format|
       if @estandar.update(params)
-      	format.js { flash[:success] = 'Estandar de homologacion correctamente actualizado'}
-        format.html { redirect_to edit_admin_estandar_homologacion_path(@estandar), notice: 'Estandar de homologacion correctamente actualizado' }
+      	format.js { flash[:success] = 'Estandar de certificación correctamente actualizado'}
+        format.html { redirect_to edit_admin_estandar_homologacion_path(@estandar), notice: 'Estandar de certificación correctamente actualizado' }
       else
         format.html { render :new }
         format.js { flash[:error] = "Error al actualizar." }
@@ -68,7 +68,7 @@ class Admin::EstandarHomologacionesController < ApplicationController
   def destroy
     @estandar.destroy
     respond_to do |format|
-      format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de homologación correctamente eliminado.' }
+      format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de certificación correctamente eliminado.' }
       format.json { head :no_content }
     end
   end
