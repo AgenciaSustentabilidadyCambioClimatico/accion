@@ -105,11 +105,6 @@
                     = link_to url, class: 'btn btn-sm btn-descargar btn-block' do
                       %i.fa.fa-download
                       = t(:listado_de_actores)
-                - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
-                - clase_comentarios = comentarios.blank? ? 'col-md-6' : 'col-md-9'
-                - unless comentarios.blank?
-                  .col-12.col-md-9
-                    = render 'actores/table_comentarios_anteriores'
                 .col-12.col-md-3
                   .form-group.boolean.required.manifestacion_de_interes_mapa_de_actores_correctamente_construido{class: ('has-error' if f.object.errors.messages.has_key?(:mapa_de_actores_correctamente_construido))}
                     %label.boolean.required.control-label{for: :manifestacion_de_interes_mapa_de_actores_correctamente_construido}
@@ -121,10 +116,12 @@
                       =f.collection_radio_buttons :mapa_de_actores_correctamente_construido, [[t(:no), false], [t(:yes), true]], :second, :first do |rb|
                         =rb.radio_button(class: 'not-required-if-other-like-me-is-present-2', checked: !rb.value)
                         =rb.label(class: 'fs-14') { rb.text }
-                .col-12{class: clase_comentarios}
+                .col-12.col-md-6
                   - if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-                    = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required, input_html: {value: nil}
-                  -# elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion 
+                    = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required, input_html: {value: nil, class: "required-field"}
+                  -# elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+                .col-12
+                  = render 'actores/table_comentarios_anteriores'
                   
             - else
               .col-lg-12.col-12

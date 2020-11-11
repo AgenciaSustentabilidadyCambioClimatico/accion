@@ -17,15 +17,21 @@
       },
     });
     $('.actor_observado[type="checkbox"]').click(function(){
-      checked=[]
-      $.each($('.actor_observado[type="checkbox"]'),function(k,v){
-        if ( $(this).is(':checked') ) {
-          checked.push($(v).val());
-        }
-      });
-      $('.actores-con-observaciones').val(JSON.stringify(checked));
+      load_actores_checkeados();
     });
+
+    load_actores_checkeados();
   });
+
+  function load_actores_checkeados(){
+    checked=[]
+    $.each($('.actor_observado[type="checkbox"]'),function(k,v){
+      if ( $(this).is(':checked') ) {
+        checked.push($(v).val());
+      }
+    });
+    $('.actores-con-observaciones').val(JSON.stringify(checked));
+  }
 - actores_con_observaciones = @actores_con_observaciones.blank? || ! @actores_con_observaciones.is_a?(Array) ? [] : @actores_con_observaciones
 - indicar_actores_con_observaciones = ( ! @manifestacion_de_interes.blank? && @manifestacion_de_interes.accion_en_mapa_de_actores == :revision )
 - ver_actores_con_observaciones = ( ! @manifestacion_de_interes.blank? && @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion )

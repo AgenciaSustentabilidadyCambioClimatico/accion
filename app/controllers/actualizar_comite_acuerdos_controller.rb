@@ -7,6 +7,22 @@ class ActualizarComiteAcuerdosController < ApplicationController
 	before_action :set_manifestacion_de_interes
 
 	def index
+
+		@origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
 	end
 
 	def guardar_archivos_anexos_posteriores_firmas

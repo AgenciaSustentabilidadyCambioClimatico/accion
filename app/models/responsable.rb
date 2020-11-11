@@ -231,31 +231,38 @@ class Responsable < ApplicationRecord
     instrumentos_id << TipoInstrumento.where(id: tipo_instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: tipo_instrumento_id).tipo_instrumento_id.blank? 
     responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
     responsables.each do |r|
-      ct_id = r.contribuyente_id
-      aeid = []
-      if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-      end
-      tcid = []
-      if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-      end
-      if ct_id.present?
-        if contribuyente_id == ct_id          
-          #Se verifica que la institucion posea la actividad economica de la relacion       
-          if !(contribuyente.actividad_economica_ids & aeid).blank?
-            posee_rol = true
-          end
+      if !posee_rol
+        ct_id = r.contribuyente_id
+        aeid = []
+        if !r.actividad_economica_id.blank?
+          aeid = [r.actividad_economica_id]
+          aeid += r.actividad_economica.get_children.pluck(:id)
         end
-      else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
-        # 
-        tipo_contribuyente = []
-        tipo_contribuyente << contribuyente.dato_anual_contribuyentes.order(periodo: :desc).first.tipo_contribuyente_id if contribuyente.dato_anual_contribuyentes.order(periodo: :desc).size > 0
-        tipo_contribuyente += contribuyente.dato_anual_contribuyentes.where(periodo: nil).pluck('tipo_contribuyente_id')
-        if tipo_contribuyente & tcid
+        tcid = []
+        if !r.tipo_contribuyente_id.blank?
+          tcid = [r.tipo_contribuyente_id]
+          tcid += r.tipo_contribuyente.get_children_id
+        end
+        if ct_id.present?
+          if contribuyente_id == ct_id          
+            #Se verifica que la institucion posea la actividad economica de la relacion       
+            if !(contribuyente.actividad_economica_ids & aeid).blank?
+              posee_rol = true
+            end
+          end
+        else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
+          # por defecto es true y si uno no cumple lo mato
           posee_rol = true
+          
+          if !aeid.blank?
+            actividades_economicas_contribuyente = contribuyente.actividad_economica_contribuyentes.pluck(:actividad_economica_id)
+            posee_rol = false if (actividades_economicas_contribuyente & aeid).blank?
+          end
+
+          if !tcid.blank?
+            tipo_contribuyentes = contribuyente.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
+            posee_rol = false if (tipo_contribuyentes & tcid).blank?
+          end
         end
       end
     end

@@ -286,7 +286,7 @@
                           %td.align-bottom= meta.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field chosen-control', "data-placeholder" => "Seleccione un alcance" }, required: true
                           %td.align-bottom= meta.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión)
                           %td.align-bottom.descripcion= meta.input :descripcion_accion, label: t(:descripción_acción), input_html: { class: 'required-field' }, required: true
-                          %td.align-bottom= meta.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), required: false
+                          %td.align-bottom.medio_verif= meta.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), required: false
                           %td.align-bottom= meta.input :puntaje, as: :string, input_html: { class: 'numero-1-100' },label: t(:puntaje)
                           %td.align-bottom{"data-nivel-id" => meta.object.estandar_nivel_id}= meta.input :obligatorio_para_nivel, collection: [], label: t(:obligatorio_para_nivel), input_html: {class: 'chosen-control accion-estandar-nivel', "data-placeholder" => "Seleccione un nivel"}
                           %td.align-middle.accion.no-padding.remove-row.p-0

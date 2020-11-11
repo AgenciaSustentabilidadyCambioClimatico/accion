@@ -44,8 +44,20 @@ class Admin::MateriaSustanciasController < ApplicationController
   end
 
   def destroy
-    @materia_sustancia.destroy
-    redirect_to admin_materia_sustancias_url, notice: 'Materia/Sustancia correctamente eliminada.'
+
+    #como no se en cuantas partes se usa evalaure la caida
+
+    respond_to do |format|
+      begin
+        
+        @materia_sustancia.destroy
+        format.js { flash.now[:success] = 'Materia/Sustancia correctamente eliminada.'  }
+        format.html { redirect_to admin_materia_sustancias_url, notice: 'Materia/Sustancia correctamente eliminada.' }
+      rescue
+        format.html { redirect_to admin_materia_sustancias_url, alert: 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un acuerdo.' }
+        format.js { flash.now[:alert] = 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un acuerdo.'  }
+      end
+    end
   end
 
   private

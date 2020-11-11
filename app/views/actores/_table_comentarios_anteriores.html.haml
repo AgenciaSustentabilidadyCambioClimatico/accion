@@ -1,4 +1,5 @@
 - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+- comentarios = comentarios.blank? && !@comentarios_mapa_de_actores.blank? ? @comentarios_mapa_de_actores : []
 -# = comentarios.size
 - unless comentarios.blank?
   .form-group

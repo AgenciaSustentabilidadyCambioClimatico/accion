@@ -36,9 +36,8 @@ class ActoresController < ApplicationController
       end
       @tarea_pendiente.update(data: {primera_ejecucion: false})
       continua_flujo_segun_tipo_tarea
-    else
-      @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     end
+    @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     respond_to do |format|
       format.html { redirect_to current_path, notice: success }
       format.js { 
@@ -72,14 +71,14 @@ class ActoresController < ApplicationController
       @manifestacion_de_interes.actores_con_observaciones = @actores_con_observaciones
       # (1) Se asume que la primera vez, no habrá comentarios de este tipo, si los hay guardamos los comentarios anteriores
       # y dejamos la variable con el valor que viene del formulario (sólo string)
-      comentarios_anteriores = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+      @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
       # @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = parameters[:comentarios_y_observaciones_actualizacion_mapa_de_actores]
       texto_observaciones = parameters[:comentarios_y_observaciones_actualizacion_mapa_de_actores]
       
       # (2) creamos un comentario de tipo array, para agregar más información, solo en caso de que existan comentarios
       #DZC 2018-10-02 se corrige error en ingreso de comentarios en blanco
       if texto_observaciones.present? 
-        comentarios_anteriores << {
+        @comentarios_mapa_de_actores << {
           datetime: DateTime.now,
           user: current_user.nombre_completo,
           actores_con_observaciones: @actores_con_observaciones,
@@ -88,7 +87,7 @@ class ActoresController < ApplicationController
       end
       # DZC 2018-10-09 19:59:32 Se corrigió un error por el cual si no existían comentarios anteriores los actuales se consideraban en blanco
       # (3) antes de guardar, volvemos a dejar la variable como un array
-      @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = comentarios_anteriores
+      @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = @comentarios_mapa_de_actores
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.remove_mapa_de_actores_archivo!
         @manifestacion_de_interes.save
@@ -97,6 +96,8 @@ class ActoresController < ApplicationController
       else
         error = @manifestacion_de_interes.errors.messages.first.last
       end
+
+      @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_mapa_de_actores_ordenados
     else
               
       # DZC Verificamos el tipo de tarea y continuamos el flujo
@@ -113,7 +114,6 @@ class ActoresController < ApplicationController
         error = error.gsub(',',';')
         error = error.gsub('.',',')
         error = error.gsub(';','.')
-        @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
       end
     end
     # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
@@ -127,6 +127,7 @@ class ActoresController < ApplicationController
         @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = nil
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
+        @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_010].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
       }

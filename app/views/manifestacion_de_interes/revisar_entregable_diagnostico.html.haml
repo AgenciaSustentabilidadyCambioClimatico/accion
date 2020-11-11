@@ -54,7 +54,7 @@
         #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
           .card.m-0
             .card-body.p-0
-              #propuestas-de-acuerdo-remote-table
+              #propuestas-de-acuerdo-remote-form
                 = render 'set_metas_acciones/table', externo: true
               -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
               = render 'set_metas_acciones/modal'

@@ -1819,8 +1819,8 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.mapa_de_actores_correctamente_construido = true
     @manifestacion_de_interes.temporal = true
     unless @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank?
-      comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.last
-      @actores_con_observaciones = comentarios[:actores_con_observaciones]
+      @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_mapa_de_actores_ordenados
+      @actores_con_observaciones = @comentarios_mapa_de_actores.first[:actores_con_observaciones]
       @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = nil
     end
 
@@ -1831,8 +1831,8 @@ class ManifestacionDeInteresController < ApplicationController
     @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
     @set_metas_accion = SetMetasAccion.new
     unless @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank?
-      comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
-      @propuestas_con_observaciones = comentarios[:requiere_correcciones]
+      @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_set_metas_acciones_ordenados
+      @propuestas_con_observaciones = @comentarios_set_metas_acciones.first[:requiere_correcciones]
       @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
     end
     @origenes = {}
@@ -2173,11 +2173,13 @@ class ManifestacionDeInteresController < ApplicationController
 
     def set_archivo_mapa_actores
       @manifestacion_de_interes.update(tarea_codigo: Tarea::COD_APL_001)
-      MapaDeActor.find_or_create_by(
-          flujo_id: @flujo.id,
-          persona_id: current_user.personas.first.id,
-          rol_id: 1
-      )
+      if @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
+        MapaDeActor.find_or_create_by(
+            flujo_id: @flujo.id,
+            persona_id: current_user.personas.first.id,
+            rol_id: Rol::PROPONENTE
+        )
+      end
     end
 
     def set_contribuyentes

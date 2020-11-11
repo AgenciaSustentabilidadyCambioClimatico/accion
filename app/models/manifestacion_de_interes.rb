@@ -959,6 +959,16 @@ class ManifestacionDeInteres < ApplicationRecord
       self.comentarios_y_observaciones_documento_diagnosticos.sort_by{|c| c[:datetime]}.reverse : []
   end
 
+  def comentarios_mapa_de_actores_ordenados
+    self.comentarios_y_observaciones_actualizacion_mapa_de_actores.present? ? 
+      self.comentarios_y_observaciones_actualizacion_mapa_de_actores.sort_by{|c| c[:datetime]}.reverse : []
+  end
+
+  def comentarios_set_metas_acciones_ordenados
+    self.comentarios_y_observaciones_set_metas_acciones.present? ? 
+      self.comentarios_y_observaciones_set_metas_acciones.sort_by{|c| c[:datetime]}.reverse : []
+  end
+
   # DZC 2018-11-02 15:48:33 devuelve el listado de personas para seleccion.
   def usuarios_para_lista(rol, contribuyente_id=nil)
     # DZC 2018-10-03 18:28:31 se modifica lectura de tipo_instrumento_id al flujo correspondiente, para evitar valores nulos

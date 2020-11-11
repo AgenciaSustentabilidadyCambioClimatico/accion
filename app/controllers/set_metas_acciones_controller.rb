@@ -20,11 +20,11 @@ class SetMetasAccionesController < ApplicationController
     success = nil
     # (1) Se asume que la primera vez, no habrá comentarios de este tipo, si los hay guardamos los comentarios anteriores
     # y dejamos la variable con el valor que viene del formulario (sólo string)
-    comentarios_anteriores = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
+    @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
     @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = parameters[:comentarios_y_observaciones_set_metas_acciones]
     if @manifestacion_de_interes.valid?
       # (2) creamos un comentario de tipo array, para agregar más información
-      comentarios_anteriores << {
+      @comentarios_set_metas_acciones << {
         datetime: DateTime.now,
         # user: current_user.nombre_completo(),
         user: current_user.nombre_completo,
@@ -33,12 +33,15 @@ class SetMetasAccionesController < ApplicationController
       }
       # (3) antes de guardar, volvemos a dejar la variable como un array
 
-      @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = comentarios_anteriores
+      @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = @comentarios_set_metas_acciones
 
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
       @manifestacion_de_interes.save
 
       continua_flujo_segun_tipo_tarea #DZC agregamos nuevamente la tarea pendiente para el revisado 
+
+
+      @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_set_metas_acciones_ordenados
 
       # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
       @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
@@ -247,14 +250,14 @@ class SetMetasAccionesController < ApplicationController
   end
 
   def pdf_set_metas
-    filename = "public/SetMetasAcciones.pdf"
+    #filename = "public/SetMetasAcciones.pdf"
     pdf = Prawn::Document.new
     pdf.text('Metas, acciones y plazos de cumplimiento:')
     set_metas = @set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
     set_metas.each_with_index do  |(key, value), posicion|
     pdf.text("Meta #{ posicion+1 }: #{key} ", indent_paragraphs: 20)
       value.each_with_index do  |val, pos|
-        if val.plazo_unidad_tiempo == 1
+        if val.plazo_unidad_tiempo_before_type_cast == 1
           medida_singular = 'mes'
           medida_plural = 'meses'
         else
@@ -267,8 +270,8 @@ class SetMetasAccionesController < ApplicationController
         pdf.text("Método de verificación:  #{val.detalle_medio_verificacion}", indent_paragraphs: 40)
       end
     end
-    pdf.render_file(filename)
-    send_data(File.read(filename), :type => "application/pdf", :filename => "SetMetasAcciones.pdf")
+    #pdf.render_file(filename)
+    send_data(pdf.render, :type => "application/pdf", :filename => "SetMetasAcciones.pdf")
   end
 
   def metas_acciones_tipo_meta

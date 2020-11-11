@@ -36,7 +36,7 @@
               -
               - meta = record.meta.blank? ?  nil : record.meta
               - clasificaciones = record.accion_clasificaciones
-              - acciones_relacionadas = record.accion_relacionadas.map{|a|a.accion}
+              - acciones_relacionadas = record.accion_relacionadas.map{|a|a.accion_relacionada}
               %tr
                 %td=record.nombre
                 %td=record.descripcion

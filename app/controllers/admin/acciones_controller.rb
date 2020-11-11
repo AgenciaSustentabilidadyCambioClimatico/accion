@@ -44,8 +44,19 @@ class Admin::AccionesController < ApplicationController
   end
 
   def destroy
-    @accion.destroy
-    redirect_to admin_acciones_url, notice: 'Acción correctamente eliminada.'
+    #redirect_to admin_acciones_url, notice: 'Acción correctamente eliminada.'
+    #como no se en cuantas partes se usa evalaure la caida
+
+    respond_to do |format|
+      begin
+        @accion.destroy
+        format.js { flash.now[:success] = 'Acción correctamente eliminada.'  }
+        format.html { redirect_to admin_acciones_url, notice: 'Acción correctamente eliminada.' }
+      rescue
+        format.html { redirect_to admin_acciones_url, alert: 'Accion no puede ser eliminada ya que está siendo ocupada en un acuerdo.' }
+        format.js { flash.now[:alert] = 'Accion no puede ser eliminada ya que está siendo ocupada en un acuerdo.'  }
+      end
+    end
   end
 
   private
