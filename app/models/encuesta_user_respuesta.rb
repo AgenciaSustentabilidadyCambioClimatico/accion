@@ -1,5 +1,7 @@
 class EncuestaUserRespuesta < ApplicationRecord
 	self.table_name = :encuesta_user_respuestas
+
+	belongs_to :user
 	attr_accessor :errores, :preguntas_y_respuestas
 
 	def initialize(attributes={})

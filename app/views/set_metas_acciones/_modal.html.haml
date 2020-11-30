@@ -5,5 +5,5 @@
 				.text-center.loading-wrapper
 					= image_tag("loading.gif", class: :spinner)
 			.modal-footer
-				%button.btn.btn-sm.btn-secondary.float-left{type: :button, "data-dismiss"=>:modal}
-					Cerrar
+				%button.btn.btn-sm.btn-warning.float-left{type: :button, "data-dismiss"=>:modal}
+					=t(:volver)

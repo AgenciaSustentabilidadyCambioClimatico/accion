@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201015140928) do
+ActiveRecord::Schema.define(version: 20201126213050) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -172,6 +172,14 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.index ["manifestacion_de_interes_id"], name: "index_auditoria_historicos_on_manifestacion_de_interes_id"
   end
 
+  create_table "auditoria_niveles", force: :cascade do |t|
+    t.bigint "auditoria_id"
+    t.bigint "estandar_nivel_id"
+    t.integer "plazo"
+    t.index ["auditoria_id"], name: "index_auditoria_niveles_on_auditoria_id"
+    t.index ["estandar_nivel_id"], name: "index_auditoria_niveles_on_estandar_nivel_id"
+  end
+
   create_table "auditorias", force: :cascade do |t|
     t.bigint "manifestacion_de_interes_id"
     t.string "nombre"
@@ -191,6 +199,9 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.text "ceremonia_certificacion_firmantes"
     t.json "ceremonia_certificacion_archivo"
     t.boolean "archivo_correcto"
+    t.integer "plazo_apertura"
+    t.integer "plazo_cierre"
+    t.boolean "con_mantencion", default: false
     t.index ["flujo_id"], name: "index_auditorias_on_flujo_id"
   end
 
@@ -300,6 +311,32 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.boolean "resuelto"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "comentarios_informe_acuerdos", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "informe_acuerdo_id", null: false
+    t.string "nombre", null: false
+    t.string "rut", null: false
+    t.string "email"
+    t.text "comentario", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["informe_acuerdo_id"], name: "index_comentarios_informe_acuerdos_on_informe_acuerdo_id"
+    t.index ["user_id"], name: "index_comentarios_informe_acuerdos_on_user_id"
+  end
+
+  create_table "comentarios_metas_acciones", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "set_metas_accion_id", null: false
+    t.string "nombre", null: false
+    t.string "rut", null: false
+    t.string "email"
+    t.text "comentario", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["set_metas_accion_id"], name: "index_comentarios_metas_acciones_on_set_metas_accion_id"
+    t.index ["user_id"], name: "index_comentarios_metas_acciones_on_user_id"
   end
 
   create_table "comunas", id: :serial, force: :cascade do |t|
@@ -747,6 +784,11 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.boolean "necesita_evidencia", default: false
     t.integer "plazo_maximo_neto"
     t.integer "plazo_maximo"
+    t.text "vigencia_acuerdo"
+    t.integer "plazo_vigencia_acuerdo"
+    t.text "vigencia_certificacion"
+    t.integer "vigencia_certificacion_final"
+    t.text "respuesta_observaciones"
     t.index ["manifestacion_de_interes_id"], name: "index_informe_acuerdos_on_manifestacion_de_interes_id"
   end
 
@@ -947,6 +989,7 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.integer "institucion_entregables_id"
     t.string "institucion_entregables_name"
     t.string "usuario_entregable_name"
+    t.text "observaciones_propuesta_acuerdo"
   end
 
   create_table "mapa_de_actores", force: :cascade do |t|
@@ -1455,7 +1498,7 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.integer "flujo_id", null: false
     t.integer "tarea_id", null: false
     t.integer "estado_tarea_pendiente_id", null: false
-    t.integer "user_id", null: false
+    t.integer "user_id"
     t.text "data"
     t.text "resultado"
     t.datetime "created_at", default: -> { "now()" }, null: false
@@ -1482,6 +1525,7 @@ ActiveRecord::Schema.define(version: 20201015140928) do
     t.string "codigo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "duracion"
     t.index ["codigo"], name: "index_tareas_on_codigo"
   end
 
@@ -1635,6 +1679,8 @@ ActiveRecord::Schema.define(version: 20201015140928) do
   add_foreign_key "auditoria_elementos", "auditorias"
   add_foreign_key "auditoria_elementos", "set_metas_acciones"
   add_foreign_key "auditoria_historicos", "manifestacion_de_intereses"
+  add_foreign_key "auditoria_niveles", "auditorias"
+  add_foreign_key "auditoria_niveles", "estandar_niveles"
   add_foreign_key "auditorias", "convocatorias"
   add_foreign_key "auditorias", "flujos"
   add_foreign_key "auditorias", "manifestacion_de_intereses"
@@ -1644,6 +1690,10 @@ ActiveRecord::Schema.define(version: 20201015140928) do
   add_foreign_key "clasificaciones", "clasificaciones"
   add_foreign_key "comentario_archivos", "comentarios"
   add_foreign_key "comentarios", "tipo_comentarios"
+  add_foreign_key "comentarios_informe_acuerdos", "informe_acuerdos"
+  add_foreign_key "comentarios_informe_acuerdos", "users"
+  add_foreign_key "comentarios_metas_acciones", "set_metas_acciones"
+  add_foreign_key "comentarios_metas_acciones", "users"
   add_foreign_key "comunas", "provincias"
   add_foreign_key "comunas_flujos", "comunas"
   add_foreign_key "comunas_flujos", "flujos"

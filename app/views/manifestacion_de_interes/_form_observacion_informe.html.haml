@@ -1,0 +1,59 @@
+- modelo = [@tarea_pendiente]
+- if apl == :apl_019
+	- url = observaciones_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes,@encuesta,@informe)
+	- modelo = [@tarea_pendiente,@manifestacion_de_interes,@encuesta,@informe,@comentarios_informe_acuerdo]
+- elsif apl == :apl_020
+	- url = responder_observaciones_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes,@informe)
+	- modelo = [@tarea_pendiente,@manifestacion_de_interes,@informe]
+= simple_nested_form_for modelo, url: url, remote: true, html: { autocomplete: :off } do |f|
+	.card.mb-0
+		.card-body
+			.row
+				.col-12.col-lg-6
+					.card
+						.card-header
+							%h5.no-margin.float-left
+								= t(:previsualización)
+						.card-body.table-responsive
+							#previsualizacion_base{style: "font-size: 11px; min-width: 450px; height: 600px"}
+								= render 'manifestacion_de_interes/informe'
+				.col-12.col-lg-6
+					.row
+						- if @informe.archivos_anexos.size > 0
+							.col-12
+								%label.control-label= "Anexos"
+							- @informe.archivos_anexos.each do |arc|
+								.col-12
+									= __descargar_archivo_anexo_informe(arc)
+									-#= link_to arc.url, class: 'btn-tabla mb-1', target: :_blank do
+										%i.fas.fa.fa-download
+										= arc.file.filename
+						- if apl == :apl_019
+							- if @tarea_20_finalizada && @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+								- @informe.comentarios_informe_acuerdos.each_with_index do |comentario,index|
+									.col-12
+										= label_tag "comentario_#{index}", t(:observaciones_informe), class: 'control-label'
+										= text_area_tag "comentario_#{index}", comentario.comentario, {class: 'form-control ', required: false, disabled: true, rows: 3 }
+								.col-12
+									= label_tag "respuesta_observaciones", t(:respuesta_a_observaciones), class: 'control-label'
+									= text_area_tag "respuesta_observaciones", @informe.respuesta_observaciones, {class: 'form-control ', required: false, disabled: true, rows: 3 }
+							- else
+								.col-12
+									= f.input :user_id, as: :hidden, wrapper: false, input_html: { value: @current_user.id}
+									= f.input :informe_acuerdo_id, as: :hidden, wrapper: false, input_html: { value: @informe.id}
+									= f.input :nombre, as: :hidden, wrapper: false, input_html: { value: @current_user.nombre_completo}
+									= f.input :rut, as: :hidden, wrapper: false, input_html: { value: @current_user.rut}
+									= f.input :email, as: :hidden, wrapper: false, input_html: { value: @current_user.email}
+									= f.input :comentario, as: :text, input_html: { class: "", rows: 3 }, label: t(:observaciones_informe)
+						- if apl == :apl_020
+							-#mostramos los comentarios
+							- @informe.comentarios_informe_acuerdos.each_with_index do |comentario,index|
+								.col-12
+									= label_tag "comentario_#{index}", t(:observaciones_informe), class: 'control-label'
+									= text_area_tag "comentario_#{index}", comentario.comentario, {class: 'form-control ', required: false, disabled: true, rows: 3 }
+							.col-12.mt-3
+								= f.input :respuesta_observaciones, as: :text, input_html: { class: "", rows: 3 }, label: t(:responder_observaciones_informe)
+						.col-12.mt-4
+							.float-right
+								= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'enviar-obs-admisibilidad-button'
+							= f.submit "", class: 'd-none'

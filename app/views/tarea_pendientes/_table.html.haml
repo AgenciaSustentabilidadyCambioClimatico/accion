@@ -66,17 +66,6 @@
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
                 =tarea_nombre
               %td.dos.iconos-acciones
-                - if pendiente.es_convocatoria?
-                  = link_to tarea_pendiente_convocatorias_path(pendiente) do #DZC Común para todas las convocatorias
-                    %i.fa.fa-edit
-                - elsif pendiente.es_minuta? && !pendiente.data.nil? #DZC Común para todas las minutas
-                  - convocatoria = pendiente.determina_convocatoria
-                  = link_to edit_tarea_pendiente_convocatoria_minuta_path(pendiente, convocatoria) do
-                    %i.fa.fa-edit
-                - elsif tarea.es_una_encuesta && tarea.codigo != Tarea::COD_APL_019#DZC Común para todas las encuestas, salvo APL-019
-                  = link_to responder_admin_encuesta_path(pendiente,encuesta) do
-                    %i.fa.fa-edit
-                - else
-                  -#Enlaces segun cod tarea
-                  -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
-                  =link_to data_url[:icon].html_safe, data_url[:url]
+                -#Enlaces segun cod tarea
+                -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
+                =link_to data_url[:icon].html_safe, data_url[:url]

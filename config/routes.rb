@@ -35,6 +35,8 @@ Rails.application.routes.draw do
     root to: 'devise/sessions#new'
   end
 
+  get 'consulta-publica-propuestas-acuerdo', to: "home#consulta_publica_propuestas_acuerdo", as: :consulta_publica_propuestas_acuerdo
+
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 
@@ -333,7 +335,9 @@ Rails.application.routes.draw do
     resources :historial_instrumentos, path: "historial_instrumentos" do
       collection do
         get 'cargar_instrumento'
+        get ':manifestacion_de_interes_id/descargar_observaciones_informe_metas_acciones', to: "historial_instrumentos#descargar_observaciones_informe_metas_acciones", as: :descargar_observaciones_informe_metas_acciones
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_diagnostico', to: "historial_instrumentos#descargar_respuesta_encuesta_diagnostico", as: :descargar_respuesta_encuesta_diagnostico
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta/:tarea_id', to: "historial_instrumentos#descargar_respuesta_encuesta", as: :descargar_respuesta_encuesta
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
         post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
         get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
@@ -391,6 +395,7 @@ Rails.application.routes.draw do
   resources :manifestacion_de_interes, param: :tarea_pendiente_id, path: "manifestacion-de-interes", except: [:show,:index,:create,:edit,:update] do
     collection do
       get :lista_usuarios_entregables
+      get :lista_usuarios_carga_datos
       patch 'iniciar-flujo', to: "manifestacion_de_interes#iniciar_flujo", as: :iniciar_flujo
       get ':tarea_pendiente_id/:descargable_tarea_id/descargable', to: "manifestacion_de_interes#descargable", as: :descargable
       get ':tarea_pendiente_id/descargar/mapa-de-actores', to: "manifestacion_de_interes#descargar_mapa_de_actores", as: :descargar_mapa_de_actores
@@ -475,7 +480,7 @@ Rails.application.routes.draw do
 
       #APL-013 APL-014 APL-018 APL-020 APL-023
       get 'pdf_set_metas', to: 'set_metas_acciones#pdf_set_metas', as: :pdf_set_metas
-      #DZC TAREA APL-013
+      #DZC TAREA 3
       get ':id/cargar-actualizar-entregable-diagnostico', to: "manifestacion_de_interes#cargar_actualizar_entregable_diagnostico", as: :cargar_actualizar_entregable_diagnostico
 
       #DZC TAREA APL-014
@@ -488,8 +493,11 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-019 
       get ':id/evaluacion-negociacion/:encuesta_id', to: 'manifestacion_de_interes#evaluacion_negociacion', as: :evaluacion_negociacion
-
+      post ':id/evaluacion-negociacion/:encuesta_id/enviar-observaciones/:informe_id', to: 'manifestacion_de_interes#observaciones_informe', as: :observaciones_informe
+      patch ':tarea_pendiente_id/envia-observaciones-metas-acciones-informe(.:format)', to: 'manifestacion_de_interes#envia_observaciones_metas_acciones_informe', as: :envia_observaciones_metas_acciones_informe
+      
       #DZC TAREA APL-020
+      patch ':id/actualizar-acuerdos-actores/responder-observaciones/:informe_id', to: 'manifestacion_de_interes#responder_observaciones_informe', as: :responder_observaciones_informe
       get ':id/actualizar-acuerdos-actores', to: 'manifestacion_de_interes#actualizar_acuerdos_actores', as: :actualizar_acuerdos_actores
       
       #DZC TAREA APL-023
@@ -670,6 +678,7 @@ Rails.application.routes.draw do
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   # Obtener el archivo del acuerdo para APL-022
   get ":tarea_pendiente_id/:flujo/archivo-apl-022", to: "minutas#archivo", as: :obtener_archivo_apl_022, format: 'docx'
+  get ":flujo/archivo-acuerdo-anexos-zip", to: "minutas#archivo_acuerdo_anexos_zip", as: :obtener_archivo_acuerdo_anexos_zip
 
 
   #DZC APL-020 termina tarea y continúa el flujo

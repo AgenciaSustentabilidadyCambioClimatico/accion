@@ -4,6 +4,7 @@ class Auditoria < ApplicationRecord
   belongs_to :flujo
   has_many :auditoria_elementos, foreign_key: :auditoria_id, dependent: :destroy
   has_many :convocatoria, dependent: :destroy #DZC 2018-11-07 06:55:59 se agrega para las convocatorias de la ceremonia de certificación
+  has_many :auditoria_niveles, dependent: :destroy
 
   accepts_nested_attributes_for :auditoria_elementos
 

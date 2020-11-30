@@ -148,54 +148,91 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@set_metas_accion, true)
+						- if observar_propuesta
+							- if (@tarea_20_finalizada && @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) || @tarea_20_no_enviada
+								= t(:comentarios_enviados)
+							- else
+								= t(:enviar_comentarios)
+						- else
+							- if responder_propuesta
+								= t(:responder_comentarios)
+							- else
+								= action_label_of_(@set_metas_accion, true)
 				.card-body
 					#messages-in-modal-remote-block
 					.row
-						.col-lg-6.pr-lg-0.col-12.desactivado
-							= f.input :clasificacion_para_filtro, label: t(:filtrar_modelo_por_clasificación, m: t(:acción).downcase), collection: Clasificacion.where(es_meta: false).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'clasificacion_para_filtro cpf-accion im-not-required-check-the-others' }
-						.col-lg-6.desactivado
-							= f.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
-						.col-lg-6.pr-lg-0.col-12.desactivado
-							= f.input :clasificacion_para_filtro, label: t(:filtrar_modelo_por_clasificación, m: t(:materia_sustancia).downcase), collection: Clasificacion.where(es_meta: false).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'clasificacion_para_filtro cpf-materia-sustancia' }, disabled: true
-						.col-lg-6.col-12.desactivado
-							= f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, required: true, disabled: true
-						.col-lg-6.pr-lg-0.col-12.desactivado
+						-# se quita segun req 5 hito 4
+							.col-lg-6.pr-lg-0.col-12.desactivado
+								= f.input :clasificacion_para_filtro, label: t(:filtrar_modelo_por_clasificación, m: t(:acción).downcase), collection: Clasificacion.where(es_meta: false).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'clasificacion_para_filtro cpf-accion im-not-required-check-the-others' }
+							.col-lg-6.pr-lg-0.col-12.desactivado
+								= f.input :clasificacion_para_filtro, label: t(:filtrar_modelo_por_clasificación, m: t(:materia_sustancia).downcase), collection: Clasificacion.where(es_meta: false).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'clasificacion_para_filtro cpf-materia-sustancia' }, disabled: true
+						.col-lg-4.pr-lg-0.col-12.desactivado
 							= f.input :meta_id, label: t(:meta), collection: [], input_html: { class: "#{requerido}" }, required: true, disabled: true
-						.col-lg-3.pr-lg-0.col-12.desactivado
+						.col-lg-4.pr-lg-0.col-12.desactivado
+							= f.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
+						.col-lg-4.col-12.desactivado
+							= f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, required: true, disabled: true
+						.col-lg-4.pr-lg-0.col-12.desactivado
 							= f.input :valor_referencia, label: t(:valor_referencia), input_html: { class: "#{requerido}" }, required: true
-						.col-lg-3.col-12.desactivado
-							-#
+						.col-lg-4.pr-lg-0.col-12.desactivado
+							= f.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
+						.col-lg-2.col-12.desactivado
+							= f.input :plazo_valor, as: :integer, label: t(:plazo_valor), input_html: { class: "#{requerido} mayor-igual-a-cero", min: (0) }, required: true
+						.col-lg-2.col-12.desactivado
+							= f.input :plazo_unidad_tiempo, collection: SetMetasAccion.plazo_unidad_tiempos.map{|u,i|[t("#{u}"),u]}, label: t(:plazo_unidad_tiempo), input_html: { class: "#{requerido}" }, required: true
+						-#
+							.col-lg-3.col-12.desactivado
 								= f.input :tipo_cuantitativa, label: t(:tipo_cuantitativa), input_html: { type: :range }, wrapper_class: 'range-slider'
 						.col-lg-4.pr-lg-0.col-12.desactivado
 							= f.input :descripcion_accion, label: t(:descripción_acción), input_html: { class: "#{requerido}" }, required: true
 						-
 						- if comite_propuestas 
 							.col-lg-4.pr-lg-0.col-12
-								= f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: '' }, required: true
-							.col-lg-4
-								= f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: '' }, required: false
+								= f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: '' }, required: false
+							.col-lg-4.col-12
+								= f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: '' }, required: true
 						- else
 							.col-lg-4.pr-lg-0.col-12.desactivado
 								= f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: "#{requerido}" }, required: true
 							.col-lg-4.desactivado
 								= f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: "#{requerido}" }, required: true
-						.col-lg-6.pr-lg-0.col-12.desactivado
-							= f.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
-						.col-lg-3.pr-lg-0.col-12.desactivado
-							= f.input :plazo_valor, as: :integer, label: t(:plazo_valor), input_html: { class: "#{requerido} mayor-igual-a-cero", min: (0) }, required: true
-						.col-lg-3.col-12.desactivado
-							= f.input :plazo_unidad_tiempo, collection: SetMetasAccion.plazo_unidad_tiempos.map{|u,i|[t("#{u}"),u]}, label: t(:plazo_unidad_tiempo), input_html: { class: "#{requerido}" }, required: true
-						- if observar_propuesta || responder_propuesta 
-							.col-lg-6.col-12
-								= f.input :comentario, as: :text, input_html: { class: "#{requerido}", rows: 3 }, disabled: (!observar_propuesta || responder_propuesta)
-							.col-lg-6.col-12
-								= f.input :comentario_respuesta, as: :text, input_html: { rows: 3 }, label: t(:respuesta_de_comentarios), disabled: (observar_propuesta || !responder_propuesta)
+						-# si es observar, mostramos 1 comentario, para escribir
+						- if observar_propuesta
+							-# si tarea 20 fue finalizada mostramos la respuesta
+							- if @tarea_20_finalizada && @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+								- f.object.comentarios_metas_acciones.each_with_index do |comentario,index|
+									- unless comentario.id.nil?
+										.col-12.col-lg-6
+											= label_tag "comentario_#{index}", t(:observaciones_metas_acciones), class: 'control-label'
+											= text_area_tag "comentario_#{index}", comentario.comentario, {class: 'form-control ', required: false, disabled: true, rows: 3 }
+								.col-lg-12.col-12
+									= label_tag :comentario_respuesta, t(:respuesta_observaciones), class: 'control-label'
+									= text_area_tag :comentario_respuesta,  f.object.comentario_respuesta, {class: 'form-control ', required: false, disabled: true, rows: 3 }
+							- else
+								.col-12.col-lg-12
+									= f.fields_for :comentarios_metas_acciones, {} do |comentario|
+										- if comentario.object.id.nil?
+											= comentario.input :user_id, as: :hidden, wrapper: false, input_html: { value: @current_user.id}
+											= comentario.input :nombre, as: :hidden, wrapper: false, input_html: { value: @current_user.nombre_completo}
+											= comentario.input :rut, as: :hidden, wrapper: false, input_html: { value: @current_user.rut}
+											= comentario.input :email, as: :hidden, wrapper: false, input_html: { value: @current_user.email}
+											= comentario.input :comentario, as: :text, input_html: { class: "#{requerido}", rows: 3 }, disabled: !observar_propuesta, label: t(:observaciones_metas_acciones)
+						-# ocultamos el campo respuesta si no le toca responder, mostramos todos los comentarios bloqueados
+						- if responder_propuesta
+							= f.fields_for :comentarios_metas_acciones, wrapper: false do |comentario|
+								.col-12.col-lg-6.fields
+									= comentario.input :user_id, as: :hidden, wrapper: false, disabled: true
+									= comentario.input :nombre, as: :hidden, wrapper: false, disabled: true
+									= comentario.input :rut, as: :hidden, wrapper: false, disabled: true
+									= comentario.input :email, as: :hidden, wrapper: false, disabled: true
+									= comentario.input :comentario, as: :text, input_html: { class: "#{requerido}", rows: 3 }, disabled: true, label: t(:observaciones_metas_acciones)
+							.col-lg-12.col-12
+								= f.input :comentario_respuesta, as: :text, input_html: { rows: 3 }, label: t(:respuesta_observacion_meta_accion), disabled: (observar_propuesta || !responder_propuesta)
 	.float-right
-		-
+		- texto_guardar = (responder_propuesta || observar_propuesta) ? 'Enviar' : t(:save)
+		= button_tag texto_guardar, 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary #{((observar_propuesta || responder_propuesta) ? '' : 'btn-disabled')} button-send", disabled: ((observar_propuesta || responder_propuesta) ? false : :disabled)
 		- if @tarea_pendiente.tarea.codigo == Tarea::COD_APL_013
 			= link_to t(:back), cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-warning'
 		- else
 			= link_to t(:back), tarea_pendiente_manifestacion_de_interes_set_metas_acciones_path(@tarea_pendiente,@manifestacion_de_interes), class: 'btn btn-sm btn-warning'
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary #{((observar_propuesta || responder_propuesta) ? '' : 'btn-disabled')} button-send", disabled: ((observar_propuesta || responder_propuesta) ? false : :disabled)
 

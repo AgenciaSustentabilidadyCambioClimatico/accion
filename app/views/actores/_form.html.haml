@@ -126,7 +126,10 @@
             - else
               .col-lg-12.col-12
                 .row
-                  .col-12
+                  .col-12.col-lg-3
+                    .form-group
+                      = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:descargar_guia_de_actualizacion), tarea_pendiente: @tarea_pendiente, nombre_boton: "Guía de actualización")
+                  .col-12.col-lg-3
                     .form-group
                       %label.string.control-label
                         = t(:descargar_mapa_de_actores)
@@ -134,13 +137,13 @@
                       = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
                         %i.fa.fa-download
                         = t(:descargar)
-                  .pr-0.col-10
-                    = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control auto-save border-right-0 required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
+                  .col-12.col-lg-4
+                    = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control required-field' }, label: t(:subir_mapa_de_actores_actualizado), required: true
                     = f.hidden_field :mapa_de_actores_archivo_cache
                     = f.hidden_field :actores_con_observaciones, value: nil 
                     = f.hidden_field :mapa_de_actores_correctamente_construido, value: true 
                     = f.hidden_field :comentarios_y_observaciones_actualizacion_mapa_de_actores, value: nil
-                  .pl-0.col-2
+                  .col-12.col-lg-2
                     = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
                     -#
                       = __upload_status(f.object,:mapa_de_actores_archivo)

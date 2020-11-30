@@ -12,7 +12,9 @@
       },
       lengthMenu: [[30], [30]],
       columnDefs: [
-        { targets: [-1], orderable: false }
+        { targets: [-1], orderable: false },
+        { responsivePriority: 1, targets: 0 },
+        { responsivePriority: 2, targets: -1 }
       ],
       language: {
         url: "#{asset_path('spanish.json')}"
@@ -70,10 +72,9 @@
       //$('#archivos_cargados').find(".parciales").remove();
       $.each(this.files,function(index, value){
         li = "<li class='list-group-item d-flex justify-content-between align-items-center parciales'>";
-        li += "<input name='por_eliminar[]' type='checkbox' value='";
-        li += this.name;
-        li += "' />";
-        li += this.name;
+        li += "<input name='por_eliminar[]' type='checkbox' value='"+this.name+"' />";
+        li += "<span>"+this.name+"</span>";
+        li += "<span>"+this.name+"</span>";
         li += "<span class='badge badge-pill'>";
         li += "<i class='fa fa-circle-o-notch fa-spin fa-2x'>";
         li += "</span></li>";
@@ -129,47 +130,46 @@
 - observar_propuestas = ( ! @manifestacion_de_interes.blank? && @manifestacion_de_interes.accion_en_set_metas_accion == :observacion )
 - responder_propuestas = ( ! @manifestacion_de_interes.blank? && @manifestacion_de_interes.accion_en_set_metas_accion == :respuesta )
 - comite_propuestas = ( ! @manifestacion_de_interes.blank? && @manifestacion_de_interes.accion_en_set_metas_accion == :comite )
-
+-# AON: no sabia si era ocupada en otra parte esta tabla, así que pasandole la variable apl, oculta elementos
+- apl = defined?(apl).nil? ? nil : apl
 = simple_form_for @manifestacion_de_interes, url: tarea_pendiente_manifestacion_de_interes_enviar_revision_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true do |f|
-  .card
-    .card-header
-      %h5.m-0.float-left
-        = t(:lista_de_, items: t(:acciones).downcase)
-      -unless @manifestacion_de_interes.tipo_manifestacion_metas == 2
-        - if ((externo && ver_propuestas_con_observaciones))
-          - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: false)
-          = link_to t(:agregar_, item: t(:acción).downcase), new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary m-0 btn-sm float-right'   
+  .card{class: (@tarea.codigo == Tarea::COD_APL_019 ? 'mb-0' : '')}
     .card-body
-      .row
-        -@origenes.each do |combi, origen|
-          .col-12.col-lg-3.mb-1
-            .form-control.caja-borde-azul.d-flex.align-items-center
-              %div{style:"border-radius: 2px;padding: 6px;background-color: #"+origen[:color].to_s}
-              %label.control-label.mb-0.px-1.text-truncate.flex-grow-1{title: origen[:nombre].gsub("<b>","").gsub("</b>","")}=origen[:nombre].html_safe
-              -if (ver_propuestas_con_observaciones || comite_propuestas) && ![Tarea::COD_APL_023].include?(@tarea.codigo) 
-                -alerta = "Se quitarán todas las acciones relacionadas a este estándar. ¿Está seguro que desea continuar?"
-                -if combi.split('-').last == "ManifestacionDeInteres"
-                  -alerta = "Se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?"
-                =link_to tarea_pendiente_manifestacion_de_interes_eliminar_grupo_combi_path(@tarea_pendiente, @manifestacion_de_interes, combi: combi), class: "btn btn-eliminar-acciones ml-auto text-secondary btn-eliminar-grupo", "data-alerta" => alerta do
-                  &times;
       -#DZC boton para ejecutar modal
       - if comite_propuestas
-        .col-lg-4
-          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma", class: 'btn btn-sm btn-primary m-0 btn-sm float-left' do
-            Agregar archivos anexos posteriores a la firma
+        .row
+          .col-12
+            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma", class: 'btn btn-sm btn-primary m-0 btn-sm float-right', style: "white-space: normal;" do
+              Agregar archivos anexos posteriores a la firma
         -#
           .col-lg-9.ml-auto
             = link_to '#', "data-toggle"=>:modal, "data-target"=>"#DESCARGAR-SET-METAS", class: 'btn btn-sm btn-primary m-0 btn-sm float-left' do
-              Descargar Set de Metas y Acciones   
+              Descargar Set de Metas y Acciones
+
+      - if apl.nil?
+        .row.mt-2
+          -@origenes.each do |combi, origen|
+            .col-12.col-lg-3.mb-1
+              .form-control.caja-borde-azul.d-flex.align-items-center
+                %div{style:"border-radius: 2px;padding: 6px;background-color: #"+origen[:color].to_s}
+                %label.control-label.mb-0.px-1.text-truncate.flex-grow-1{title: origen[:nombre].gsub("<b>","").gsub("</b>","")}=origen[:nombre].html_safe
+                -if (ver_propuestas_con_observaciones || comite_propuestas) && ![Tarea::COD_APL_023].include?(@tarea.codigo) 
+                  -alerta = "Se quitarán todas las acciones relacionadas a este estándar. ¿Está seguro que desea continuar?"
+                  -if combi.split('-').last == "ManifestacionDeInteres"
+                    -alerta = "Se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?"
+                  =link_to tarea_pendiente_manifestacion_de_interes_eliminar_grupo_combi_path(@tarea_pendiente, @manifestacion_de_interes, combi: combi), class: "btn btn-eliminar-acciones ml-auto text-secondary btn-eliminar-grupo", "data-alerta" => alerta do
+                    &times;
       %table.table.entregables.table-striped
         %thead
           %tr
-            %th
+            - if apl.nil?
+              %th
             %th=t(:meta)
             %th=t(:acción)
             %th=t(:materia)
             /%th=t(:tipo_cuantitativa)
-            %th=t(:valor_referencia)
+            - if apl.nil?
+              %th=t(:valor_referencia)
             %th=t(:alcance)
             %th=t(:criterio_inclusión_exclusión)
             %th=t(:descripción_acción)
@@ -184,17 +184,19 @@
           - @set_metas_acciones.each do |record|
             - ms = record.materia_sustancia
             %tr.fila_de_metas
-              %td.pt-3
-                -if !record.modelo_referencia.blank?
-                  -origen = @origenes[record.llave_origen]
-                  %div{style:"border-radius: 2px;width: 12px;height: 12px;background-color: #"+origen[:color].to_s, title: origen[:nombre].gsub("<b>","").gsub("</b>","")}
+              - if apl.nil?
+                %td.pt-3
+                  -if !record.modelo_referencia.blank?
+                    -origen = @origenes[record.llave_origen]
+                    %div{style:"border-radius: 2px;width: 12px;height: 12px;background-color: #"+origen[:color].to_s, title: origen[:nombre].gsub("<b>","").gsub("</b>","")}
               -if observar_propuestas
                 = hidden_field_tag "comentarios[#{record[:id]}]", nil
               %td=record.meta.nombre
               %td=record.accion.nombre
               %td=ms.blank? ? '--' : ms.nombre
               /%td=record.tipo_cuantitativa
-              %td=record.valor_referencia
+              - if apl.nil?
+                %td=record.valor_referencia
               %td=record.alcance.nombre
               %td=record.criterio_inclusion_exclusion
               %td=record.descripcion_accion
@@ -224,14 +226,21 @@
                         %i.fa.fa-edit
                         .d-inline.d-lg-none Editar
                     - if observar_propuestas || responder_propuestas
-                      = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Comentar", class: "btn btn-tabla-sm my-1" do
-                        %i.fa.fa-comment
-                        .d-inline.d-lg-none Comentar
+                      - if (@tarea_20_finalizada || @tarea_20_no_enviada)
+                        - texto_boton =  " Ver"
+                        - clase_boton = 'fa-eye'
+                      - else
+                        - texto_boton = " Comentar"
+                        - clase_boton = 'fa-comment'
+                      = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: texto_boton, class: "btn btn-tabla my-1" do
+                        %i.fa{class: clase_boton}
+                        .d-inline
+                          = texto_boton
                     -if @manifestacion_de_interes.tipo_manifestacion_metas != 2 && !observar_propuestas && !responder_propuestas && (@tarea.codigo != Tarea::COD_APL_023) && record.es_borrable?(@tarea.codigo) # DZC 2018-10-29 09:17:29 se elimina condición de que el usuario sea administrador, y mantiene condifició de que no se trate de un un estandar de certificación. DZC 2018-11-02 15:06:26 se agrega la condición de que no se trate de una tarea que consista en la mera observación del set de metas y acciones 
                       = link_to tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente, @manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:set_metas_accion)), remote: false }, class: "btn btn-tabla-sm my-1" do
                         %i.fa.fa-trash
                         .d-inline.d-lg-none Eliminar
-      -if @tarea_pendiente.tarea.codigo == Tarea::COD_APL_013 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_014 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_023
+      -if @tarea_pendiente.tarea.codigo == Tarea::COD_APL_013 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_014 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_018 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_023
         .col-md-8.mx-auto.p-2.my-4
           = link_to pdf_set_metas_manifestacion_de_interes_path , download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
             %i.fa.fa-download
@@ -269,75 +278,78 @@
                         %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
                         %td=c[:user]
                         %td=c[:texto]
-  .float-right.mr-3.mb-3
-    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
-- if comite_propuestas
-  .card.mb-0
-    .card-header
-      %h5.m-0.float-left
-        = t(:metas_acciones_definidas_posterioridad_firma)
-      - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: true)
-      = link_to t(:agregar_, item: t(:acción).downcase), new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary m-0 btn-sm float-right'
-    .card-body
-      .table-responsive
-        %table.table.entregables.table-striped
-          %thead
-            %tr
-              %th=t(:meta)
-              %th=t(:acción)
-              %th=t(:materia)
-              /%th=t(:tipo_cuantitativa)
-              %th=t(:valor_referencia)
-              %th=t(:alcance)
-              %th=t(:criterio_inclusión_exclusión)
-              %th=t(:descripción_acción)
-              %th=t(:detalle_medio_verificación)
-              %th=t(:plazo)
-              - if indicar_propuestas_con_observaciones || ver_propuestas_con_observaciones
-                %th=t(:requiere_correcciones)
-              %th
-
-          %tbody
-            - @set_metas_acciones_anexas.each do |record|
-              - ms = record.materia_sustancia
+  - if comite_propuestas
+    .card.mb-0
+      .card-header
+        %h5.m-0.float-left
+          = t(:metas_acciones_definidas_posterioridad_firma_parentesis)
+        - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: true)
+        = link_to t(:agregar_, item: t(:acción).downcase), new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary m-0 btn-sm float-right'
+      .card-body
+        .table-responsive
+          %table.table.entregables.table-striped
+            %thead
               %tr
-                -if observar_propuestas
-                  = hidden_field_tag "comentarios[#{record[:id]}]", nil
-                %td=record.meta.nombre
-                %td=record.accion.nombre
-                %td=ms.blank? ? '--' : ms.nombre
-                /%td=record.tipo_cuantitativa
-                %td=record.valor_referencia
-                %td=record.alcance.nombre
-                %td=record.criterio_inclusion_exclusion
-                %td=record.descripcion_accion
-                %td=record.detalle_medio_verificacion
-                %td="#{record.plazo_valor} #{t(record.plazo_unidad_tiempo)}"
-                - if indicar_propuestas_con_observaciones
-                  %td.text-center=check_box_tag("manifestacion_de_interes[propuestas][]",record[:id], propuestas_con_observaciones.include?(record[:id].to_s))
-                - elsif ver_propuestas_con_observaciones
-                  %td.text-center
-                    = propuestas_con_observaciones.include?(record[:id].to_s) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
-                %td
-                  .d-flex.align-items-start.flex-column.flex-lg-row
-                    - edit_link_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion)
-                    - aa_link_to = acciones_relacionadas_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
-                    -
-                    - if record.es_editable(@tarea.codigo) == 'total' || comite_propuestas
-                      = link_to aa_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Acciones relacionadas", class: "btn btn-tabla-sm my-1" do
-                        %i.fa.fa-pagelines
-                        .d-inline.d-lg-none Acciones relacionadas
-                      = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Editar", class: "btn btn-tabla-sm my-1" do
-                        %i.fa.fa-edit
-                        .d-inline.d-lg-none Editar
-                    - if observar_propuestas
-                      = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Comentar", class: "btn btn-tabla-sm my-1" do
-                        %i.fa.fa-comment
-                        .d-inline.d-lg-none Comentar
-                    - if comite_propuestas
-                      = link_to tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente, @manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:set_metas_accion)), remote: false }, class: "btn btn-tabla-sm my-1" do
-                        %i.fa.fa-trash
-                        .d-inline.d-lg-none Eliminar
+                %th=t(:meta)
+                %th=t(:acción)
+                %th=t(:materia)
+                /%th=t(:tipo_cuantitativa)
+                %th=t(:valor_referencia)
+                %th=t(:alcance)
+                %th=t(:criterio_inclusión_exclusión)
+                %th=t(:descripción_acción)
+                %th=t(:detalle_medio_verificación)
+                %th=t(:plazo)
+                - if indicar_propuestas_con_observaciones || ver_propuestas_con_observaciones
+                  %th=t(:requiere_correcciones)
+                %th
+
+            %tbody
+              - @set_metas_acciones_anexas.each do |record|
+                - ms = record.materia_sustancia
+                %tr
+                  -if observar_propuestas
+                    = hidden_field_tag "comentarios[#{record[:id]}]", nil
+                  %td=record.meta.nombre
+                  %td=record.accion.nombre
+                  %td=ms.blank? ? '--' : ms.nombre
+                  /%td=record.tipo_cuantitativa
+                  %td=record.valor_referencia
+                  %td=record.alcance.nombre
+                  %td=record.criterio_inclusion_exclusion
+                  %td=record.descripcion_accion
+                  %td=record.detalle_medio_verificacion
+                  %td="#{record.plazo_valor} #{t(record.plazo_unidad_tiempo)}"
+                  - if indicar_propuestas_con_observaciones
+                    %td.text-center=check_box_tag("manifestacion_de_interes[propuestas][]",record[:id], propuestas_con_observaciones.include?(record[:id].to_s))
+                  - elsif ver_propuestas_con_observaciones
+                    %td.text-center
+                      = propuestas_con_observaciones.include?(record[:id].to_s) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
+                  %td
+                    .d-flex.align-items-start.flex-column.flex-lg-row
+                      - edit_link_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion)
+                      - aa_link_to = acciones_relacionadas_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
+                      -
+                      - if record.es_editable(@tarea.codigo) == 'total' || comite_propuestas
+                        = link_to aa_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Acciones relacionadas", class: "btn btn-tabla-sm my-1" do
+                          %i.fa.fa-pagelines
+                          .d-inline.d-lg-none Acciones relacionadas
+                        = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Editar", class: "btn btn-tabla-sm my-1" do
+                          %i.fa.fa-edit
+                          .d-inline.d-lg-none Editar
+                      - if observar_propuestas
+                        = link_to edit_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Comentar", class: "btn btn-tabla-sm my-1" do
+                          %i.fa.fa-comment
+                          .d-inline.d-lg-none Comentar
+                      - if comite_propuestas
+                        = link_to tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente, @manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:set_metas_accion)), remote: false }, class: "btn btn-tabla-sm my-1" do
+                          %i.fa.fa-trash
+                          .d-inline.d-lg-none Eliminar
+
+  - if !comite_propuestas && @tarea.codigo != Tarea::COD_APL_019
+    .float-right.mr-3.mb-3.mt-3
+      -if !externo
+        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
 - if comite_propuestas                      
   = render 'actualizar_comite_acuerdos/modal_archivos_anexos_posteriores_firmas', remote: true

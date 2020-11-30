@@ -1,6 +1,7 @@
 
 - modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
 - solo_tabla = solo_tabla.nil? ? false : solo_tabla
+- lista_usuarios = lista_usuarios.nil? ? @usuarios : lista_usuarios
 .row
   - if !solo_tabla
     .col-12
@@ -12,7 +13,7 @@
           =t(:nuevo_representante)
   .col-12.mt-2
     .usuarios-remote-table
-      = render "admin/users/tabla", modal_id: modal_id
+      = render "admin/users/tabla", modal_id: modal_id, lista_usuarios: lista_usuarios
   .col-12.mt-2.text-right
     -unless @contribuyente_temporal.nil?
       %button.btn.btn-primary.seleccionar-y-actualizar-usuario-button{type: :button, disabled: :disabled }

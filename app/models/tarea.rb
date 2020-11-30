@@ -35,6 +35,18 @@ class Tarea < ApplicationRecord
 
 	after_commit :update_crontab
 
+	# AON: no se sabe si será obligatorio
+	# validate :dias_duracion, if: -> { posee_formulario == true}
+
+	def dias_duracion
+		if(self.duracion == '' || self.duracion.nil?)
+			# por ahora no es obligatorio
+			# errors.add(:duracion,'Debe indicar cantidad de días de duracion')
+		elsif(self.duracion < 10 || self.duracion > 70)
+			errors.add(:duracion,'Debe ser entre 10 y 70 días')
+		end
+	end
+
 	#DZC se agrega para efecto de determinar si se requiere revisión de la tarea en mapa de actores (y futuros posibles usos)
 	def requiere_revision?
 		![Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023].include?(self.codigo)
@@ -134,9 +146,11 @@ class Tarea < ApplicationRecord
 	def responsables_de_la_tarea flujo_id
 		responsables_id = [] 
 		TareaPendiente.where(flujo_id: flujo_id, tarea_id: self.id).each do |tp|
-			responsables_id << tp.user.id
+			responsables_id << tp.user_id if !tp.user_id.blank?
 		end
-		User.where(id: responsables_id.uniq).pluck(:nombre_completo).sort
+		responsables = []
+		responsables = User.where(id: responsables_id.uniq).pluck(:nombre_completo).sort if !responsables_id.blank?
+		responsables
 	end
 
 	#DZC para determinacion de historial de instrumentos
@@ -151,7 +165,7 @@ class Tarea < ApplicationRecord
 
 	#DZC para determinacion de historial de instrumentos
 	def es_encuesta?
-		[Tarea::ID_APL_015, Tarea::ID_APL_019, Tarea::ID_APL_039, Tarea::ID_APL_043, Tarea::ID_PPF_023, Tarea::ID_PPF_024].include? self.id 
+		[Tarea::ID_APL_015, Tarea::ID_APL_039, Tarea::ID_APL_043, Tarea::ID_PPF_023, Tarea::ID_PPF_024].include? self.id 
 	end
 
 	#DZC para determinacion de historial de instrumentos
@@ -201,6 +215,7 @@ class Tarea < ApplicationRecord
 	ID_APL_041  	= 33  # - APL-041-Elaborar informe de impacto
 	ID_APL_042  	= 31  # - APL-042-Revisar informe de impacto
 	ID_APL_043  	= 32  # - APL-043- Contestar Evaluación y Consulta Proceso Implementación
+	ID_APL_044  	= 96  # - APL-043- Contestar Evaluación y Consulta Proceso Implementación
 
 	COD_APL_001		=	'APL-001'	 #[1}		-	APL-001-Completar Manifestación de Interés
 	COD_APL_002		=	'APL-002'	 #[30}	-	APL-002-Asignar Revisor
@@ -244,6 +259,7 @@ class Tarea < ApplicationRecord
 	COD_APL_041		=	'APL-041'	 #[33}	-	APL-041- Elaborar Informe de Impacto
 	COD_APL_042		=	'APL-042'	 #[31}	-	APL-042- Revisar Informe de Impacto
 	COD_APL_043		=	'APL-043'	 #[32}	-	APL-043- Contestar Evaluación y Consulta Proceso Implementación
+	COD_APL_044		=	'APL-044'	 #[32}	-	APL-043- Contestar Evaluación y Consulta Proceso Implementación
 	
 	#DZC FPLs
  	ID_FPL_001	=	2		# -	FPL-001-Revisar registro postulaciones y cargar nuevos proyectos 

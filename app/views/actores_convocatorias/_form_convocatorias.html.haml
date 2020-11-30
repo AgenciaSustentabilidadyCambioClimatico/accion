@@ -138,13 +138,14 @@
       .row
         .col-12
           .card
-            .card-header
-              %h5.no-margin=titulo_instrumento.html_safe
-              -if @proyecto.blank?
-                %h5.no-margin=titulo_acuerdo.html_safe
-              -else
-                %h5.no-margin=titulo_proyecto.html_safe
-              %h5.no-margin=datos_beneficiario.html_safe
+            -#
+              .card-header
+                %h5.no-margin=titulo_instrumento.html_safe
+                -if @proyecto.blank?
+                  %h5.no-margin=titulo_acuerdo.html_safe
+                -else
+                  %h5.no-margin=titulo_proyecto.html_safe
+                %h5.no-margin=datos_beneficiario.html_safe
             .card-body
               .row
                 .col-lg-6.col-12
@@ -168,7 +169,7 @@
                     .col-12
                       = render 'convocatorias/table_descargables'# se debe colocar la url absoluta respecto de la ruta, para que pueda ser leida desde otro controlador/vista
                     .col-12
-                      = f.input :archivo_adjunto, as: :file, input_html: {class: "form-control", multiple: true}, label: t(:adjuntar_archivos)
+                      = f.input :archivo_adjunto, as: :file, input_html: {class: "form-control text-truncate", multiple: true}, label: t(:adjuntar_archivos)
 
                 .col-lg-6.col-12.mt-3
                   %div#map{style: "height: 300px;"}
@@ -209,7 +210,7 @@
                       %td=dest[:institucion]
                       %td=dest[:rut_institucion]
                       %td=dest[:rol]
-      .float-right
+      .float-right.mr-4
         - if @tarea.codigo == Tarea::COD_APL_021
           = volver_root
         - else

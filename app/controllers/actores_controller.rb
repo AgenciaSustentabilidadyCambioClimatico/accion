@@ -77,14 +77,14 @@ class ActoresController < ApplicationController
       
       # (2) creamos un comentario de tipo array, para agregar más información, solo en caso de que existan comentarios
       #DZC 2018-10-02 se corrige error en ingreso de comentarios en blanco
-      if texto_observaciones.present? 
-        @comentarios_mapa_de_actores << {
-          datetime: DateTime.now,
-          user: current_user.nombre_completo,
-          actores_con_observaciones: @actores_con_observaciones,
-          texto: texto_observaciones
-        }
-      end
+      #if texto_observaciones.present? 
+      @comentarios_mapa_de_actores << {
+        datetime: DateTime.now,
+        user: current_user.nombre_completo,
+        actores_con_observaciones: @actores_con_observaciones,
+        texto: texto_observaciones
+      }
+      #end
       # DZC 2018-10-09 19:59:32 Se corrigió un error por el cual si no existían comentarios anteriores los actuales se consideraban en blanco
       # (3) antes de guardar, volvemos a dejar la variable como un array
       @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = @comentarios_mapa_de_actores
@@ -104,6 +104,7 @@ class ActoresController < ApplicationController
       atributos_conjuntos_params = actualizar_mapa_de_actores_manifestacion_de_interes_params.merge(enviar_revision_mapa_de_actores_manifestacion_de_interes_params)
       @manifestacion_de_interes.assign_attributes(atributos_conjuntos_params)
       @manifestacion_de_interes.tarea_codigo=@tarea.codigo
+      @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.save
         
         success = "Mapa de actores correctamente actualizado"
@@ -175,8 +176,9 @@ class ActoresController < ApplicationController
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
       # DZC 2018-11-02 13:14:12 se corrige error en actualización de variable @actores_desde_campo
-      @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-      MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
+      set_obtiene_mapa_actual_y_actores
+      @lista_actores = @actores_desde_campo.nil? ? @actores_desde_tablas : @actores_desde_campo
+      MapaDeActor.actualiza_tablas_mapa_actores(@lista_actores, @flujo, @tarea_pendiente)
       @manifestacion_de_interes.update(mapa_de_actores_data: nil)
       #DZC el término de la tarea depdende de otros controladores
     end

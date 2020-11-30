@@ -60,8 +60,8 @@ every '0 3 * * *' do
   rake "ascc:limpia_cache_carrierwave", :enviroment => ambiente.to_s, :output => "#{Rails.root}/log/limpia_cache_carrierwave_#{ambiente}.log"
 end
 
-#todos los dias a las 6 elimina las tareas pendientes registradas y finaliza los flujos asociados
-every '0 6 * * *' do
+#todos los dias a las 2 elimina las tareas pendientes registradas y finaliza los flujos asociados
+every '0 2 * * *' do
   rake "ascc:terminar_tareas_programadas", :enviroment => ambiente.to_s
 end
 

@@ -3,27 +3,46 @@
 		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
 	});
 
-- titulo t(:contestar_evaluación_y_consultar_proceso_de_negociación)
-- (@tab_metas.present? && @tab_metas) ? tabs = { "evaluacion": false, "set-metas-accion": true } : tabs = { "evaluacion": true, "set-metas-accion": false } # DZC 2018-11-02 18:54:52 se agrega para posicionar la vista en la pestaña set de metas y acciones
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-		- tabs.each do |tab,active|
-			%li.nav-item
-				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-					=t(tab.to_s.gsub('-','_'))
-				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-					%small.total-error
-						= @total_de_errores_por_tab[tab].size
-	#manifestacionContent.tab-content
-		#evaluacion.tab-pane.fade{"aria-expanded" => tabs[:"evaluacion"], "aria-labelledby" => "evaluacion-tab", :role => "tabpanel", class: ("show active" if tabs[:"evaluacion"])}
-			.card
-				.card-body
-					#responder-encuesta-remote-form
-						= render 'admin/encuestas/responder_encuesta_form', externo: true
-		#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
-			.card
-				.card-body.p-0
-					#propuestas-de-acuerdo-remote-table
-						= render 'set_metas_acciones/table', externo: true
-					-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
-					= render 'set_metas_acciones/modal'
+- titulo t(:consulta_publica_borrador_final_propuesta_acuerdo)
+- metas_activas = (@tab_metas.present? && @tab_metas)
+- tabs = { "metas-accion": metas_activas, "informe": !metas_activas } # DZC 2018-11-02 18:54:52 se agrega para posicionar la vista en la pestaña set de metas y acciones
+.card.mb-0
+	.card-header.border-bottom-0
+		%h5.no-margin
+			=titulo_instrumento.html_safe
+		- if @proyecto.blank?
+			%h5.no-margin
+				=titulo_acuerdo.html_safe
+		- else
+			%h5.no-margin
+				=titulo_proyecto.html_safe
+		%h5.no-margin
+			=datos_beneficiario.html_safe
+	.card-header.px-0.pb-0
+		#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+			%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+				- tabs.each do |tab,active|
+					%li.nav-item
+						%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+							=t(tab.to_s.gsub('-','_'))
+						- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+							%small.total-error
+								= @total_de_errores_por_tab[tab].size
+			#manifestacionContent.tab-content
+				#metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"metas-accion"], "aria-labelledby" => "metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"metas-accion"])}
+					.card.mb-0
+						.card-body.p-0
+							#propuestas-de-acuerdo-remote-table
+								= render 'set_metas_acciones/table', externo: true, apl: 20
+							-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+							= render 'set_metas_acciones/modal'
+				#informe.tab-pane.fade{"aria-expanded" => tabs[:"informe"], "aria-labelledby" => "informe-tab", :role => "tabpanel", class: ("show active" if tabs[:"informe"])}
+					= render 'manifestacion_de_interes/form_observacion_informe', apl: :apl_019
+		-# enviamos la tarea para ser finalizada?
+		- url = envia_observaciones_metas_acciones_informe_manifestacion_de_interes_path(@tarea_pendiente)
+		= simple_form_for @tarea_pendiente, url: url, remote: true, html: { autocomplete: :off } do |f|
+			= render 'manifestacion_de_interes/modal_enviar_observaciones_informe', f: f
+		.float-right.my-3.mr-2
+			= button_tag t(:enviar_comentarios), 'data-toggle' => :modal, "data-target"=>"#enviar-observaciones-informe", class: 'btn btn-sm btn-primary btn-sm text-break', style: "white-space: normal;"
+			- ruta = params[:consulta_publica] == '1' ? consulta_publica_propuestas_acuerdo_path : root_path
+			= link_to t(:back), ruta, class: 'btn btn-sm btn-warning ml-1'

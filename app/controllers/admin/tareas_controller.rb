@@ -70,7 +70,8 @@ class Admin::TareasController < ApplicationController
         :cualquiera_con_rol_o_usuario_asignado,
         :condicion_de_acceso,
         :es_una_encuesta,
-        :encuesta_id
+        :encuesta_id,
+        :duracion
       )
     end
 end

@@ -1,21 +1,24 @@
 class MapaDeActor < ApplicationRecord
-	belongs_to :flujo
-	belongs_to :persona
-	belongs_to :rol
+	belongs_to :flujo, optional: true
+	belongs_to :persona, optional: true
+	belongs_to :rol, optional: true
 	belongs_to :persona_cargo, optional: true
 
 	# validaciones creados para la vista asignar usuarios cargo de entregables certificacion
 	# validates :institucion_entregables, presence: true, if: -> { [:entregables_carga_datos,:entregables].include?(self.tipo) &&  }
-	validates :usuario_entregables, presence: true, if: -> { [:entregables_carga_datos,:entregables].include?(self.tipo) }
+	#validates :usuario_entregables, presence: true, if: -> { [:entregables_carga_datos,:entregables].include?(self.tipo) }
 	# validates :observacion_entregables, presence: true, if: -> { [:entregables_carga_datos,:entregables].include?(self.tipo) }
 	# validates :institucion_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
-	validates :usuario_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
+	#validates :usuario_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
 	# validates :observacion_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
+	validates :institucion_entregables, :institucion_entregables_name, :usuario_entregables, :usuario_entregables_name, presence: true, if: -> { validar_apl_024 }
+	validates :institucion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos, :usuario_carga_datos_name, presence: true, if: -> { validar_apl_024 }
+	validates :flujo, :persona, :rol, presence: true, if: -> { !validar_apl_024 }
 
 	# campos creados para la vista asignar usuarios cargo de entregables certificacion
-	attr_accessor :tipo
-	attr_accessor :institucion_entregables, :usuario_entregables, :observacion_entregables
-	attr_accessor :institucion_carga_datos, :usuario_carga_datos, :observacion_carga_datos
+	attr_accessor :tipo, :validar_apl_024
+	attr_accessor :institucion_entregables, :usuario_entregables, :observacion_entregables, :institucion_entregables_name, :usuario_entregables_name
+	attr_accessor :institucion_carga_datos, :usuario_carga_datos, :observacion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos_name
 
 	def self.columnas_excel
 		["ROL EN ACUERDO", "RUT PERSONA", "NOMBRE COMPLETO PERSONA", "CARGO EN INSTITUCION", 
@@ -40,7 +43,7 @@ class MapaDeActor < ApplicationRecord
 	def campos_invalidos_asignar_cargo
 		campo_errores = []
 		# DZC 2018-11-06 14:34:29 se eliminan :institucion_entregables,y:institucion_carga_datos, :observacion_entregables y :observacion_carga_datos de la obligatoriedad
-		[:usuario_entregables, :usuario_carga_datos].each do |field|
+		[:institucion_entregables, :institucion_entregables_name,:institucion_carga_datos,:institucion_carga_datos_name,:usuario_entregables, :usuario_entregables_name, :usuario_carga_datos, :usuario_carga_datos_name].each do |field|
 			campo_errores << field if self.send(field).blank?
 		end
 		campo_errores
@@ -190,7 +193,7 @@ class MapaDeActor < ApplicationRecord
 		when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021
 			roles = {Rol.find(Rol::FIRMANTE).nombre => 2, Rol.find(Rol::NEGOCIADOR).nombre => 2}
 		when Tarea::COD_APL_023
-			roles = {Rol.find(Rol::COMITE_COORDINADOR).nombre => 2, Rol.find(Rol::RESPONSABLE_ENTREGABLES).nombre => 1}
+			roles = {Rol.find(Rol::COMITE_COORDINADOR).nombre => 2}
 		end
 		roles
 	end

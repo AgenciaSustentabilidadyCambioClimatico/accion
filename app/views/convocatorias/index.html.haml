@@ -8,7 +8,7 @@
 			/%i.fa.fa-file-signature
 			%i.fa.fa-file-text-o
 
-			Terminar proceso de negociación
+			=t(:iniciar_proceso_de_consulta_pública)
 		= render 'terminar_negociacion_acuerdo', f: f, comentarios_y_observaciones_negociacion_acuerdo: @comentarios
 = link_to t(:agregar_, item: t(:convocatoria).downcase), new_tarea_pendiente_convocatoria_path(@tarea_pendiente), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
 #convocatorias-remote-table

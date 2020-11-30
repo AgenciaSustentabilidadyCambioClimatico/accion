@@ -41,7 +41,7 @@
 
         dataConfirmModal.confirm({
           title: 'Confirme antes de continuar',
-          text: "Al elegir Metas y Acciones de otro acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
+          text: "Al elegir Metas y Acciones de otro Acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
           commit: 'Quitar',
           cancel: 'Volver',
           zIindex: 10099,
@@ -147,10 +147,10 @@
                 .d-flex.justify-content-lg-end.flex-lg-row.flex-column.align-items-start
                   =# select_tag :tipo_metas, options_for_select([ ["Crear propio Set de Metas y Acciones", 1], ["Elegir Estándar de Homologación", 2], ["Elegir Metas y Acciones de otro acuerdo", 3] ], @manifestacion_de_interes.tipo_manifestacion_metas), { class: 'form-control chosen-control m2',:prompt => false}
                   %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo{"data-tipo" => 2} Desde estándar de certificación
-                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo.text-left{"data-tipo" => 3, style: "white-space: normal;"} Desde metas y acciones de otro acuerdo
+                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo.text-left{"data-tipo" => 3, style: "white-space: normal;"} Desde metas y acciones de otro Acuerdo
                   - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: false)
                   = link_to "Nueva acción", new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary my-1 mx-2 btn-sm'
             #propuestas-de-acuerdo-remote-table
-              = render 'set_metas_acciones/table', externo: false
+              = render 'set_metas_acciones/table', externo: true
             -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores          
             = render 'set_metas_acciones/modal'

@@ -176,8 +176,7 @@ class ApplicationController < ActionController::Base
         nuevo_set.estado = 1
         nuevo_set.id_referencia = set.id
         nuevo_set.modelo_referencia = 'SetMetasAccion'
-        
-        nuevo_set.save
+        #nuevo_set.save
       end
       
       #manifestacion_actual.documento_diagnosticos.clear

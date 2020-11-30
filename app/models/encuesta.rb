@@ -61,6 +61,23 @@ class Encuesta < ApplicationRecord
     salida
   end
 
+  def cabecera_respuestas_excel
+    ["Nombre", "RUT", "Correo", "Fecha/Hora"] + self.preguntas_cabecera_excel
+  end
+
+  def respuestas_por_usuario_con_datos_excel(flujo_id)
+    respuestas = {}
+    #buscamos las respuestas ordenadas
+    self.encuesta_user_respuestas.where(flujo_id: flujo_id).order(:id).each do |respuesta|
+      #agrupamos por usuario
+      
+      respuestas[respuesta.user_id] = [respuesta.user.nombre_completo, respuesta.user.rut, respuesta.user.email, respuesta.created_at.strftime("%F %T")] unless respuestas.has_key?(respuesta.user_id)
+      respuestas[respuesta.user_id] << respuesta.respuesta
+    end
+    #mostramos solo las respuestas, no el id del usuario
+    respuestas.map{|k,v| v}
+  end
+
   def respuestas_por_usuario_excel(flujo_id)
     respuestas = {}
     #buscamos las respuestas ordenadas

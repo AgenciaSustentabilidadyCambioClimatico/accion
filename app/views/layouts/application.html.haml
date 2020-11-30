@@ -42,13 +42,44 @@
         $(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
     .loading-data
       .spinner
-        = image_tag("loading.gif", class: :spinner)                      
+        = image_tag("loading.gif", class: :spinner)
+    :javascript
+      tarea_terminada = #{!@tarea_pendiente.nil? && @tarea_pendiente.no_esta_pendiente?};
+      if(tarea_terminada){
+        $(document).ajaxStop(function() {
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").prop('disabled',true);
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").off();
+          //elimino boton de enviar
+          $("#contenido_principal button[type='submit']").remove();
+          //elimino boton de eliminar en tablas
+          $("#contenido_principal i.fa-trash").closest('a').remove();
+          //elimino botones de agregar y editar de nested fields
+          $("#contenido_principal .add_nested_fields").remove();
+          $("#contenido_principal .remove_nested_fields").remove();
+        });
+      }
+      $(document).ready(function() {
+
+        if(tarea_terminada){
+          //bloqueo de inputs generales
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").prop('disabled',true);
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").off();
+          //elimino boton de enviar
+          $("#contenido_principal button[type='submit']").remove();
+          //elimino boton de eliminar en tablas
+          $("#contenido_principal i.fa-trash").closest('a').remove();
+          //elimino botones de agregar y editar de nested fields
+          $("#contenido_principal .add_nested_fields").remove();
+          $("#contenido_principal .remove_nested_fields").remove();
+        }
+      });
     - unless Rails.env.production?
       .traducciones-faltantes
         %span
           = "#{t(:traducciones_faltantes)}: ";
         %ul
       :javascript
+
         $(document).ready(function() {
           result = dameTraduccionesFaltantes();
           c = 0;
@@ -60,20 +91,6 @@
             $.each(result,function(k,v) {
               $('.traducciones-faltantes ul').append("<li>"+k+": "+v+"</li>");
             });
-          }
-
-          tarea_terminada = #{!@tarea_pendiente.nil? && @tarea_pendiente.no_esta_pendiente?};
-          if(tarea_terminada){
-            //bloqueo de inputs generales
-            $("#contenido_principal ").find("input, select, textarea").prop('disabled',true);
-            $("#contenido_principal ").find("input, select, textarea").off();
-            //elimino boton de enviar
-            $("#contenido_principal button[type='submit']").remove();
-            //elimino boton de eliminar en tablas
-            $("#contenido_principal i.fa-trash").closest('a').remove();
-            //elimino botones de agregar y editar de nested fields
-            $("#contenido_principal .add_nested_fields").remove();
-            $("#contenido_principal .remove_nested_fields").remove();
           }
         });
     .clearfix

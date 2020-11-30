@@ -33,6 +33,8 @@ class ManifestacionDeInteres < ApplicationRecord
   attr_accessor :revisar_y_actualizar_mapa_de_actores
   attr_accessor :anulado
 
+  attr_accessor :envia_termino_proceso
+
   belongs_to :tipo_instrumento, optional: true
   #belongs_to :contribuyente, optional: true
   belongs_to :estandar_homologacion, optional: true, foreign_key: :estandar_de_certificacion_id
@@ -221,6 +223,7 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :comentarios_y_observaciones_actualizacion_mapa_de_actores, presence: true, if: -> { temporal.to_s == "true" && mapa_de_actores_correctamente_construido.present? && mapa_de_actores_correctamente_construido == 'false' }
   validates :comentarios_y_observaciones_documento_diagnosticos, presence: true, if: -> { temporal.to_s == "true" && aprueba_documentos_diagnostico.present? && aprueba_documentos_diagnostico == 'false' }
   validates :comentarios_y_observaciones_set_metas_acciones, presence: true, if: -> { temporal.to_s == "true" && aprueba_set_metas_accion.present? && aprueba_set_metas_accion == 'false' }
+  validates :observaciones_propuesta_acuerdo, presence: true, if: -> { temporal.to_s == "true" && envia_termino_proceso === true }
 
   validate :data_mapa_de_actores, on: :update, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
@@ -379,7 +382,15 @@ class ManifestacionDeInteres < ApplicationRecord
         roles_correctos = true
         roles_minimos.each {|k, v|
           # DZC 2018-11-02 12:49:22 se corrige error en comparación de cantidad de roles mínimos
-          roles_correctos = (data.select{|d| d[:rol_en_acuerdo]==k.to_s}.count < v) ? false : roles_correctos
+          #roles_correctos = (data.select{|d| d[:rol_en_acuerdo]==k.to_s}.count < v) ? false : roles_correctos
+          #si rol existe, comprobar que no sea la misma persona (llave rut persona - rut institucion)
+          personas_unicas = []
+          filas_con_rol_requerido = data.select{|d| d[:rol_en_acuerdo]==k.to_s}
+          filas_con_rol_requerido.each do |persona|
+            personas_unicas << persona[:rut_persona]+"/"+persona[:rut_institucion] if !personas_unicas.include?(persona[:rut_persona]+"/"+persona[:rut_institucion])
+          end
+
+          roles_correctos = (personas_unicas.count < v) ? false : roles_correctos
         } 
         if !roles_correctos 
           ##
@@ -878,6 +889,7 @@ class ManifestacionDeInteres < ApplicationRecord
     firma_fecha.blank? ? nil : (I18n.localize firma_fecha, format: :long)
     # I18n.localize firma_fecha, format: :long
   end
+
   def completar_informacion!
     #Completa la información de la institución cogestora cuando está cambia
     completar_institucion_cogestora

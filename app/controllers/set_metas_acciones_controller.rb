@@ -14,38 +14,42 @@ class SetMetasAccionesController < ApplicationController
   end
 
   def enviar_revision
-    parameters = enviar_revision_set_metas_accion_params()
-    @manifestacion_de_interes.aprueba_set_metas_accion = parameters[:aprueba_set_metas_accion]
-    @propuestas_con_observaciones = parameters[:propuestas]
-    success = nil
-    # (1) Se asume que la primera vez, no habrá comentarios de este tipo, si los hay guardamos los comentarios anteriores
-    # y dejamos la variable con el valor que viene del formulario (sólo string)
-    @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
-    @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = parameters[:comentarios_y_observaciones_set_metas_acciones]
-    if @manifestacion_de_interes.valid?
-      # (2) creamos un comentario de tipo array, para agregar más información
-      @comentarios_set_metas_acciones << {
-        datetime: DateTime.now,
-        # user: current_user.nombre_completo(),
-        user: current_user.nombre_completo,
-        requiere_correcciones: @propuestas_con_observaciones,
-        texto: @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
-      }
-      # (3) antes de guardar, volvemos a dejar la variable como un array
-
-      @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = @comentarios_set_metas_acciones
-
-      @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-      @manifestacion_de_interes.save
-
-      continua_flujo_segun_tipo_tarea #DZC agregamos nuevamente la tarea pendiente para el revisado 
-
-
-      @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_set_metas_acciones_ordenados
-
-      # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
-      @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
+    if @tarea.codigo == Tarea::COD_APL_018
       success = "Set de metas y acciones correctamente actualizada"
+    else
+      parameters = enviar_revision_set_metas_accion_params()
+      @manifestacion_de_interes.aprueba_set_metas_accion = parameters[:aprueba_set_metas_accion]
+      @propuestas_con_observaciones = parameters[:propuestas]
+      success = nil
+      # (1) Se asume que la primera vez, no habrá comentarios de este tipo, si los hay guardamos los comentarios anteriores
+      # y dejamos la variable con el valor que viene del formulario (sólo string)
+      @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
+      @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = parameters[:comentarios_y_observaciones_set_metas_acciones]
+      if @manifestacion_de_interes.valid?
+        # (2) creamos un comentario de tipo array, para agregar más información
+        @comentarios_set_metas_acciones << {
+          datetime: DateTime.now,
+          # user: current_user.nombre_completo(),
+          user: current_user.nombre_completo,
+          requiere_correcciones: @propuestas_con_observaciones,
+          texto: @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
+        }
+        # (3) antes de guardar, volvemos a dejar la variable como un array
+
+        @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = @comentarios_set_metas_acciones
+
+        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+        @manifestacion_de_interes.save
+
+        continua_flujo_segun_tipo_tarea #DZC agregamos nuevamente la tarea pendiente para el revisado 
+
+
+        @comentarios_set_metas_acciones = @manifestacion_de_interes.comentarios_set_metas_acciones_ordenados
+
+        # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
+        @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones = nil
+        success = "Set de metas y acciones correctamente actualizada"
+      end
     end
     @origenes = {}
     @set_metas_acciones.each do |sma|
@@ -85,7 +89,10 @@ class SetMetasAccionesController < ApplicationController
     @set_metas_accion.anexo = (@tarea.codigo == Tarea::COD_APL_023) ? true : false 
     respond_to do |format|
       if @set_metas_accion.save
-        @informe.update(necesita_evidencia: true) if (@tarea.codigo == Tarea::COD_APL_023)
+        if (@tarea.codigo == Tarea::COD_APL_023)
+          @informe.necesita_evidencia = true
+          @informe.save(validate: false)
+        end
         continua_flujo_segun_tipo_tarea #DZC agregamos la tarea pendiente para el revisor
         case @tarea.codigo
           when Tarea::COD_APL_013
@@ -120,10 +127,20 @@ class SetMetasAccionesController < ApplicationController
 
   def edit    
     @manifestacion_de_interes.accion_en_set_metas_accion = params[:accion].to_sym if (@manifestacion_de_interes.present? && params[:accion].present?)
+    
+    # identificamos si tarea 20 se envio o no, para mostrar respuestas
+    tarea_20 = TareaPendiente.where(flujo_id: @flujo.id, tarea_id: Tarea::ID_APL_020).first
+    @tarea_20_finalizada = !tarea_20.nil? && tarea_20.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+    @tarea_20_no_enviada = !tarea_20.nil? && tarea_20.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
+     
+    if(params[:accion].present? and params[:accion] == 'observacion')
+      # inicializamos comentarios como nested
+      @set_metas_accion.comentarios_metas_acciones.build
+    end
     render layout: false 
   end
 
-  def update 
+  def update
     set_metas_accion_anterior = @set_metas_accion
     # @manifestacion_de_interes.accion_en_set_metas_accion = params[:accion].to_sym
     respond_to do |format|
@@ -132,50 +149,86 @@ class SetMetasAccionesController < ApplicationController
       if set_metas_accion_params["materia_sustancia_id"].blank? && ![Tarea::COD_APL_019, Tarea::COD_APL_020].include?(@tarea.codigo)
         @set_metas_accion.materia_sustancia_id = nil
       end
-      if @set_metas_accion.save
-        if (@tarea.codigo == Tarea::COD_APL_023) && (set_metas_accion_anterior.detalle_medio_verificacion == @set_metas_accion.detalle_medio_verificacion) && (set_metas_accion_anterior.criterio_inclusion_exclusion == @set_metas_accion.criterio_inclusion_exclusion)
-          @informe.update(necesita_evidencia: true)
-        end
-        # ToDo: hacer sólo esto cuando sea enviado desde un modal, ver contribuyentes/buscador para posible solución
-        # @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
-        set_metas_acciones
-        continua_flujo_segun_tipo_tarea
-        
+      if @tarea.codigo == Tarea::COD_APL_019 || @tarea.codigo == Tarea::COD_APL_020 #no valido campos, solo envio comentarios
+        @set_metas_accion.solo_comentar = true
+        mensaje_alert = nil
         case @tarea.codigo
-          when Tarea::COD_APL_013
-             r_to = cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, tab_metas: true )
-          when Tarea::COD_APL_014
-            r_to = root_path
-          when Tarea::COD_APL_018
-            r_to = acuerdo_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) #DZC 2018-11-05 12:40:05 se agrega para posicionar la vista en la pestaña set metas y acciones
           when Tarea::COD_APL_019
             r_to = evaluacion_negociacion_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, @tarea_pendiente.tarea.encuesta, tab_metas: true) #DZC 2018-11-02 18:57:01 se agrega para posicionar la vista en la pestaña set metas y acciones
+            mensaje_alert = "Observaciones agregadas correctamente"
           when Tarea::COD_APL_020
             r_to = actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) #DZC 2018-11-02 18:57:44 se agrega para posicionar la vista en la pestaña set metas y acciones        
-          when Tarea::COD_APL_023
-            r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, tab_metas: true) #DZC 2018-11-05 12:40:05 se agrega para posicionar la vista en la pestaña set metas y acciones
           else 
             r_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_url(@tarea_pendiente, @manifestacion_de_interes, @set_metas_accion) #DZC agregamos la tarea pendiente para el revisor
         end
-        # if @tarea.codigo ==Tarea::COD_APL_023
-        #   r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
-        # else 
-        #  r_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_url(
-        #     @tarea_pendiente,
-        #     @manifestacion_de_interes,
-        #     @set_metas_accion #DZC agregamos la tarea pendiente para el revisor
-        #   )
-        # end 
-        format.js { flash.now[:success] = 'Metas y acción correctamente actualizada.'
-          render js: "window.location='#{r_to}'"
-        }
-        format.html {
-          redirect_to r_to, notice: 'Metas y acción correctamente actualizada.' 
-        }
+        if @set_metas_accion.save
+          set_metas_acciones
+          format.js { 
+            flash[:success] = mensaje_alert if !mensaje_alert.nil?
+            render js: "window.location='#{r_to}'"
+          }
+          format.html {
+            redirect_to r_to 
+          }
+        else
+          # le asignamos el tipo para saber que bloquear
+          @manifestacion_de_interes.accion_en_set_metas_accion = params[:accion].to_sym if (@manifestacion_de_interes.present? && params[:accion].present?)
+          @errors = true
+          format.html { render :edit }
+          format.js
+        end
       else
-        @errors = true
-        format.html { render :edit }
-        format.js
+        detalle_medio_verificacion_cambio = @set_metas_accion.detalle_medio_verificacion_changed?
+        criterio_inclusion_exclusion_cambio = @set_metas_accion.criterio_inclusion_exclusion_changed?
+        @set_metas_accion.solo_ultimos_2_campos = true
+        if @set_metas_accion.save
+          if (@tarea.codigo == Tarea::COD_APL_023) && (detalle_medio_verificacion_cambio || criterio_inclusion_exclusion_cambio)
+            @informe.necesita_evidencia = true
+            @informe.save(validate: false)
+          end
+          # ToDo: hacer sólo esto cuando sea enviado desde un modal, ver contribuyentes/buscador para posible solución
+          # @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+          set_metas_acciones
+          continua_flujo_segun_tipo_tarea
+          
+          case @tarea.codigo
+            when Tarea::COD_APL_013
+               r_to = cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, tab_metas: true )
+            when Tarea::COD_APL_014
+              r_to = root_path
+            when Tarea::COD_APL_018
+              r_to = acuerdo_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) #DZC 2018-11-05 12:40:05 se agrega para posicionar la vista en la pestaña set metas y acciones
+            when Tarea::COD_APL_019
+              r_to = evaluacion_negociacion_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, @tarea_pendiente.tarea.encuesta, tab_metas: true) #DZC 2018-11-02 18:57:01 se agrega para posicionar la vista en la pestaña set metas y acciones
+            when Tarea::COD_APL_020
+              r_to = actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) #DZC 2018-11-02 18:57:44 se agrega para posicionar la vista en la pestaña set metas y acciones        
+            when Tarea::COD_APL_023
+              r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, tab_metas: true) #DZC 2018-11-05 12:40:05 se agrega para posicionar la vista en la pestaña set metas y acciones
+            else 
+              r_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_url(@tarea_pendiente, @manifestacion_de_interes, @set_metas_accion) #DZC agregamos la tarea pendiente para el revisor
+          end
+          # if @tarea.codigo ==Tarea::COD_APL_023
+          #   r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
+          # else 
+          #  r_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_url(
+          #     @tarea_pendiente,
+          #     @manifestacion_de_interes,
+          #     @set_metas_accion #DZC agregamos la tarea pendiente para el revisor
+          #   )
+          # end 
+          format.js { flash.now[:success] = 'Metas y acción correctamente actualizada.'
+            render js: "window.location='#{r_to}'"
+          }
+          format.html {
+            redirect_to r_to, notice: 'Metas y acción correctamente actualizada.' 
+          }
+        else
+          # le asignamos el tipo para saber que bloquear
+          @manifestacion_de_interes.accion_en_set_metas_accion = params[:accion].to_sym if (@manifestacion_de_interes.present? && params[:accion].present?)
+          @errors = true
+          format.html { render :edit }
+          format.js
+        end
       end
     end
   end
@@ -238,13 +291,15 @@ class SetMetasAccionesController < ApplicationController
       set_metas_by_antiguo_acuerdo params[:diagnostico_adherido], @flujo
     end
     @manifestacion_de_interes.temporal = true
+    url = cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true)
+    url = acuerdo_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) if @tarea.codigo == Tarea::COD_APL_018
     respond_to do |format|
       
       if @manifestacion_de_interes.save
-        format.html { redirect_to cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true), notice: 'Modificación correcta.' }
+        format.html { redirect_to url, notice: 'Modificación correcta.' }
       else
         @errors = true
-        format.html { redirect_to cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true), notice: 'Conflicto al generar el cambio.' }
+        format.html { redirect_to url, notice: 'Conflicto al generar el cambio.' }
       end
     end
   end
@@ -286,16 +341,19 @@ class SetMetasAccionesController < ApplicationController
     @set_metas_acciones.each do |sma|
       sma.destroy if sma.llave_origen == params[:combi]
     end
+    url = cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true)
+    url = acuerdo_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true) if @tarea.codigo == Tarea::COD_APL_018
     respond_to do |format|
-      format.html { redirect_to cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, tab_metas: true), notice: 'Modificación correcta.' }
+      format.html { redirect_to url, notice: 'Modificación correcta.' }
     end
   end
 
   private
   def set_tarea_pendiente
     @tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
-    autorizado? @tarea_pendiente
     @tarea = @tarea_pendiente.tarea
+
+    autorizado? @tarea_pendiente if @tarea.codigo != Tarea::COD_APL_019
   end
 
   #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
@@ -373,7 +431,16 @@ class SetMetasAccionesController < ApplicationController
       :plazo_unidad_tiempo,
       :comentario,
       :comentario_respuesta,
-      :archivo_acta_comite
+      :archivo_acta_comite,
+      comentarios_metas_acciones_attributes: [
+        :id,
+        :user_id,
+        :nombre,
+        :rut,
+        :email,
+        :comentario,
+        :_destroy
+      ]
     )
     parameters[:manifestacion_de_interes_id] = @manifestacion_de_interes.id
     parameters

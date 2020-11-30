@@ -3,36 +3,49 @@
 		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
 	});
 
-- titulo t(:actualizar_actores_resolver_comentarios_set_metas_acciones)
+- titulo t(:resolver_observaciones_consulta_publica_borrador_final)
 - url = tarea_pendiente_termina_actualizacion_actores_resuelve_comentarios_propuestas_path(@tarea_pendiente)
 = simple_form_for @tarea_pendiente, url: url, remote: true, html: { autocomplete: :off } do |f|
-	= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-actualizar-acuerdo-actores", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
+	= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-actualizar-acuerdo-actores", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm text-break', style: "white-space: normal;" do
 		/%i.fa.fa-file-signature
 		%i.fa.fa-file-text-o
-		Terminar actualización mapa de actores y resolución de comentarios en propuestas de acuerdo
+		=t(:terminar_proceso_negociacion_y_resolucion_de_observaciones)
 	= render 'modal_terminar_actualizar_acuerdo_actores', f: f
-- (@tab_metas.present? && @tab_metas) ? tabs = { "mapa-de-actores": false, "set-metas-accion": true } : tabs = { "mapa-de-actores": true, "set-metas-accion": false } # DZC 2018-11-02 18:02:00 se agrega para posicionar la vista en la pestaña set de metas y acciones
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-		- tabs.each do |tab,active|
-			%li.nav-item
-				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-					=t(tab.to_s.gsub('-','_'))
-				- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-					%small.total-error
-						= @total_de_errores_por_tab[tab].size
-	#manifestacionContent.tab-content
-		#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
-			.card
-				.card-body.p-0
-					#actores-remote-table
-						= render 'actores/table'
-					#actualizar-remote-form
-						= render 'actores/form', externo: true
-		#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
-			.card
-				.card-body.p-0
-					#propuestas-de-acuerdo-remote-table
-						= render 'set_metas_acciones/table', externo: true
-					-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
-					= render 'set_metas_acciones/modal'
+- metas_activa = (@tab_metas.present? && @tab_metas)
+- tabs =  {"metas-accion": metas_activa,  "informe": !metas_activa } # DZC 2018-11-02 18:02:00 se agrega para posicionar la vista en la pestaña set de metas y acciones
+.card.mb-0
+	.card-header.border-bottom-0
+		%h5.no-margin
+			=titulo_instrumento.html_safe
+		- if @proyecto.blank?
+			%h5.no-margin
+				=titulo_acuerdo.html_safe
+		- else
+			%h5.no-margin
+				=titulo_proyecto.html_safe
+		%h5.no-margin
+			=datos_beneficiario.html_safe
+	.card-header.px-0.pb-0
+		#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+			%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+				- tabs.each do |tab,active|
+					%li.nav-item
+						%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+							=t(tab.to_s.gsub('-','_'))
+						- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+							%small.total-error
+								= @total_de_errores_por_tab[tab].size
+			#manifestacionContent.tab-content
+				#metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"metas-accion"], "aria-labelledby" => "metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"metas-accion"])}
+					.card
+						.card-body.p-0
+							#propuestas-de-acuerdo-remote-table
+								= render 'set_metas_acciones/table', externo: true, apl: :apl_020
+							-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+							= render 'set_metas_acciones/modal'
+					-# ToDo: falta el contenido
+				#informe.tab-pane.fade{"aria-expanded" => tabs[:"informe"], "aria-labelledby" => "informe-tab", :role => "tabpanel", class: ("show active" if tabs[:"informe"])}
+					= render 'manifestacion_de_interes/form_observacion_informe', apl: :apl_020
+				
+		.float-right.my-3.mr-2
+			= volver_root

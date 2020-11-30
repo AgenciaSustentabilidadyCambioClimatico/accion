@@ -7,14 +7,14 @@
           .card.m-0
             .card-header
               %h5.control-label.tipo-vista-2 Agregar desde estándar de certificación
-              %h5.control-label.tipo-vista-3 Agregar desde otro acuerdo
+              %h5.control-label.tipo-vista-3 Agregar desde otro Acuerdo
             .card-body
               .row
                 .col-12.col-lg-6
                   .tipo-vista-2
                     = select_tag :estandar_adherido, options_from_collection_for_select(EstandarHomologacion.all, "id", "nombre"), { class: 'form-control selector-tipo-meta required-field',:prompt => "Seleccionar un Estándar de certificación"}
                   .tipo-vista-3
-                    = select_tag :diagnostico_adherido, options_from_collection_for_select( ManifestacionDeInteres.where.not(diagnostico_fecha_termino: nil), "id", "nombre_acuerdo"), { class: 'form-control selector-tipo-meta required-field',:prompt => "Seleccionar un acuerdo"}
+                    = select_tag :diagnostico_adherido, options_from_collection_for_select( ManifestacionDeInteres.where.not(diagnostico_fecha_termino: nil), "id", "nombre_acuerdo"), { class: 'form-control selector-tipo-meta required-field',:prompt => "Seleccionar un Acuerdo"}
                 .col-12
                   %hr.my-3
                   %hr

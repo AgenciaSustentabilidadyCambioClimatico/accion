@@ -186,6 +186,7 @@ table.dataTable { width: 100%!important; }
 .codigo-ciiu { width: 170px; }
 .descripcion-codigo { width: 220px; }
 .card-header h5 { color: #5d759e; font-weight: 400; font-size: 15px; }
+.fw-400{ font-weight: 400!important;}
 .no-form.label.string,
 form label.string,
 form label.select,
@@ -1143,4 +1144,20 @@ ul.seleccionados_tree li:only-child{
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.borde-tabla{
+  border: 1px solid #E2E2E2;
+  border-radius: 4px;
+}
+
+.bg-gris{
+  background-color: #F7F7F7;
+}
+.texto-hasta{
+  color: #767676;
+}
+
+.form-group.radio_buttons > span.radio:first-of-type{
+  margin-left: 0;
 }

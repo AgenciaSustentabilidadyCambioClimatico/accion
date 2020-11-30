@@ -352,11 +352,31 @@ var basicOptions = {
     }
   }
 }
+var anotherDateFormatOption = {
+  i18n:{
+    es:{
+     months:[ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",],
+     dayOfWeek:[ "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb" ]
+    }
+  },
+  dayOfWeekStart: 1,
+  timepicker:false,
+  format:'d/m/Y',
+  onSelectDate:function(ct,$i){
+    if ( $i.val() != currentDateSelected ) {
+      currentDateSelected = $i.val();
+      if ( $i.hasClass('auto-save') && $($i[0].form).attr('data-remote') == 'true'  ) {
+        $($i[0].form).find('input[type="submit"]').trigger('click');
+      }
+    }
+  }
+}
 
 function initDateTimePicker() {
   jQuery.datetimepicker.setLocale('es');
 
   $('.basic-datetimepicker').datetimepicker(basicOptions);
+  $('.alternative-datetimepicker').datetimepicker(anotherDateFormatOption);
   $('.basic-datetimepicker-max-year-this').datetimepicker($.extend({},basicOptions,{yearEnd: (new Date).getFullYear()}));
   $('.basic-datetimepicker-max-today').datetimepicker($.extend({},basicOptions,{maxDate: 0}));
   $('.basic-datetimepicker-min-today').datetimepicker($.extend({},basicOptions,{minDate: 0}));
@@ -539,6 +559,8 @@ function iniciarAutoNumeric() {
   //$('.numero-boleta').autoNumeric('init', {aSep: '', vMin: 0, vMax: 99999, mDec: 0});
   $('.numero').autoNumeric('init', {aSep: '', vMin: 0, mDec: 0});
   $('.numero-1-100').autoNumeric('init', {aSep: '', vMin: 0, vMax: 100, mDec: 0, wEmpty: 'empty'});
+  $('.numero-dias-duracion').autoNumeric('init', {aSep: '', vMin: 0, vMax: 70, mDec: 0, wEmpty: 'empty'});
+  $('.numero-1-7').autoNumeric('init', {aSep: '', vMin: 0, vMax: 7, mDec: 0, wEmpty: 'empty'});
   $('.numero-en-miles').autoNumeric('init', {aSep: '.', aDec: ',', vMin: 0, mDec: 0});
   $('.uf').autoNumeric('init', autoNumericUfOptions() );
   $('.porcentaje').autoNumeric('init', autoNumericPorcentajeOptions() );

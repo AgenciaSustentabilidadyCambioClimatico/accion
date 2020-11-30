@@ -34,6 +34,16 @@ class Flujo < ApplicationRecord
   PPF = 'Programas y Proyectos de Financiamiento'
 
 
+
+  def plazo_maximo_acciones_meses
+    accion_plazo_mayor = self.set_metas_acciones.order('plazo_unidad_tiempo ASC', 'plazo_valor DESC').first
+    # si no hay accion pone plazo 0
+    plazo = accion_plazo_mayor&.plazo_valor.nil? ? 0 : accion_plazo_mayor.plazo_valor
+    plazo = plazo*12 if accion_plazo_mayor&.plazo_unidad_tiempo == "years"
+    plazo
+  end
+
+
   def nombre_instrumento
     nombre = "ACUERDO, PROYECTO O PROGRAMA NO INICIADO"
     if !self.proyecto.blank? 
@@ -283,9 +293,9 @@ class Flujo < ApplicationRecord
     instancias = []
     #Si es admin veo todo
     puedo_ver_tareas = current_user.is_admin?
+    personas = current_user.personas
+    personas_id = personas.pluck(:id)
     if !puedo_ver_tareas
-      personas = current_user.personas
-      personas_id = personas.pluck(:id)
       #jefe de linea ve todo lo relacionado a los tipos de instrumento donde es responsable
       #consulto directo a responsables
       jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, self.tipo_instrumento_id)
@@ -298,6 +308,9 @@ class Flujo < ApplicationRecord
         puedo_ver_tareas = (roles & [Rol::COORDINADOR, Rol::RESPONSABLE_ENTREGABLES, Rol::REVISOR_TECNICO]).size > 0
       end
     end
+
+    jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
+    puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
 
     self.tareas_del_flujo.each do |t|
       documentos_asociados = {nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}
@@ -330,19 +343,26 @@ class Flujo < ApplicationRecord
       end
       if t.codigo == Tarea::COD_APL_005
         documentos_asociados = {nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
-      elsif t.codigo == Tarea::COD_APL_015
+      elsif t.codigo == Tarea::COD_APL_018# && estado == "Ejecutada"
+        informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
+        if !informe_acuerdo.nil? && (tarea_pend.user_id == current_user.id || puedo_ver_descargable_apl_018)
+          documentos_asociados = {nombre: "Documento de Acuerdo", url: 'obtener_archivo_acuerdo_anexos_zip_path', parametros: [self.id], metodo: true }
+        end
+      elsif t.es_una_encuesta
         #solo si es admin puede descargar el documento
         if current_user.is_admin?
-          #agregamos documento personalizado para tarea APL-015
-          documentos_asociados = {nombre: "Encuesta diagnóstico general", url: 'descargar_respuesta_encuesta_diagnostico_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
+          nombre_boton = "Resultado encuesta"
+          nombre_boton = "Encuesta diagnóstico general" if t.codigo == Tarea::COD_APL_015
+
+          documentos_asociados = {nombre: nombre_boton, url: 'descargar_respuesta_encuesta_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id, t.id], metodo: true}
         end
-      elsif t.codigo == Tarea::COD_APL_018 && estado == "Ejecutada"
-        informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
-        if informe_acuerdo.nil?
-          documentos_asociados = {nombre: "Documento de Acuerdo", url: 'root_path', parametros: [], metodo: false }
-        else
-          documentos_asociados = {nombre: "Documento de Acuerdo", url: 'descargar_informe_acuerdo_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true }
+      elsif t.codigo == Tarea::COD_APL_019
+        #solo si es admin puede descargar el documento
+        if current_user.is_admin?
+          #agregamos documento personalizado para tarea APL-019
+          documentos_asociados = {nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
         end
+      
       end
       instancias << {
         tipo_instrumento: self.tipo_instrumento.nombre,

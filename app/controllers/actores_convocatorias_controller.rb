@@ -11,6 +11,7 @@ class ActoresConvocatoriasController < ApplicationController
 	#DZC TAREA APL-021
 	def index
 		@convocatoria_existe = !@tarea_pendiente.data.blank? && @tarea_pendiente.data.has_key?(:convocatoria_id)
+		@actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
 	end
 
 	def reset_convocatoria

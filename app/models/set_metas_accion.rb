@@ -11,20 +11,25 @@ class SetMetasAccion < ApplicationRecord
 	# serialize :comentarios_y_observaciones_set_metas_acciones
 	has_many :dato_productivo_elemento_adherido, dependent: :destroy
 	has_many :auditoria_elementos, dependent: :destroy
+	# agregamos los comentarios
+	has_many :comentarios_metas_acciones, dependent: :destroy
+	accepts_nested_attributes_for :comentarios_metas_acciones, allow_destroy: true
 
 	mount_uploader :archivo_acta_comite, ArchivoActaComiteSetMetasAccionUploader
 
 	enum plazo_unidad_tiempo: [ :years, :months ]
+
+	attr_accessor :solo_comentar, :solo_ultimos_2_campos
 	
-	validates :accion_id, presence: true
-	validates :meta_id, presence: true
-	validates :valor_referencia, presence: true
-	validates :alcance_id, presence: true , if: -> { ppf_metas_establecimiento_id.blank? }
-	validates :criterio_inclusion_exclusion, presence: true
-	validates :descripcion_accion, presence: true
+	validates :accion_id, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
+	validates :meta_id, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
+	validates :valor_referencia, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
+	validates :alcance_id, presence: true , if: -> { ppf_metas_establecimiento_id.blank? && !solo_comentar && !solo_ultimos_2_campos }
+	validates :criterio_inclusion_exclusion, presence: true, if: -> { !solo_comentar }
+	validates :descripcion_accion, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
 	#validates :detalle_medio_verificacion, presence: true
-	validates :plazo_valor, presence: true
-	validates :plazo_unidad_tiempo, presence: true
+	validates :plazo_valor, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
+	validates :plazo_unidad_tiempo, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
 
 	def self.de_la_manifestacion_de_interes_(id, anexo=false)
 		anexo_array = []
@@ -115,6 +120,59 @@ class SetMetasAccion < ApplicationRecord
 	  else
 	  	return ""
 	  end
+	end
+
+	def self.observaciones_agrupadas_para_excel(set_metas_acciones)
+		agrupadas = set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
+		salida = {}
+		agrupadas.each do |nombre_meta,acciones|
+			salida[nombre_meta] = {rowspan: 1, acciones: {}} unless salida[nombre_meta].is_a?(Hash)
+			acciones.each_with_index do |meta,index_meta|
+				unless salida[nombre_meta][:acciones][meta.accion.nombre].is_a?(Hash)
+					salida[nombre_meta][:acciones][meta.accion.nombre] = {rowspan: 1, datos: []} 
+				end
+				# por cada accion aumentamos el rowspan de la meta
+				salida[nombre_meta][:rowspan] += 1 if index_meta > 0
+				meta.comentarios_metas_acciones.each_with_index do |comentario, index|
+					comentario_hashed = {
+						nombre: comentario.nombre,
+						rut: comentario.rut,
+						email: comentario.email,
+						comentario: comentario.comentario
+					}
+					# agregamos el comentario
+					salida[nombre_meta][:acciones][meta.accion.nombre][:datos] << comentario_hashed
+					# aumentamos la cantidad de rowspan por accion
+					salida[nombre_meta][:acciones][meta.accion.nombre][:rowspan] += 1 if index > 0 
+					# por cada comentario aumentamos el rowspan de la meta
+					salida[nombre_meta][:rowspan] += 1 if index > 0 
+				end
+			end
+		end
+		## Estructura usada en excel
+			# salida_ejemplo = {
+			# 	"Nombre meta" => {
+			# 		rowspan: 6,
+			# 		acciones: {
+			# 			"Nombre accion 1" => {
+			# 				rowspan: 5,
+			# 				datos: [
+			# 					{ nombre: "nombre persona1", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum" },
+			# 					{ nombre: "nombre persona2", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum" },
+			# 					{ nombre: "nombre persona3", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum" },
+			# 					{ nombre: "nombre persona4", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum" },
+			# 					{ nombre: "nombre persona5", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum" }
+			# 				]
+			# 			},
+			# 			"nombre accion 2" => {
+			# 				rowspan: 1,
+			# 				datos: [ {} ]
+			# 			}
+			# 		}
+			# 	}
+			# }
+
+		salida
 	end
 
 end

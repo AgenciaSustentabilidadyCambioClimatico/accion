@@ -25,7 +25,7 @@
       }else{
         $('#admisibilidad-juridica-externo').addClass('active');
         $('.accordionTabs .card-header a').removeClass('active');
-        $('.accordionTabs .card-header a .titulo-accordion').html('Información de acuerdo');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Acuerdo');
         $('.accordionTabs .card-header a span').removeClass('d-none');
       }
     });
@@ -48,7 +48,7 @@
     $('#collapseTabs').on('hide.bs.collapse', function () {
       $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
 
-      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de acuerdo'){
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Acuerdo'){
         $('#admisibilidad-juridica-externo').addClass('active');
         $('.accordionTabs .card-header a').removeClass('active');
       }
@@ -97,7 +97,7 @@
                   %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
                     .accordion-icon.text-center
                       =fa_icon "ellipsis-h"
-                    .titulo-accordion.font-weight-bold Información de acuerdo
+                    .titulo-accordion.font-weight-bold Información de Acuerdo
                     -# if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.select{|error_tab, error_data| error_tab.to_s != 'admisibilidad' && error_data.size > 0}.size > 0
                     %span.badge.badge-danger.badge-pill.ml-auto
                       %i.fa.fa-exclamation

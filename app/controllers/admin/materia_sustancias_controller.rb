@@ -54,8 +54,8 @@ class Admin::MateriaSustanciasController < ApplicationController
         format.js { flash.now[:success] = 'Materia/Sustancia correctamente eliminada.'  }
         format.html { redirect_to admin_materia_sustancias_url, notice: 'Materia/Sustancia correctamente eliminada.' }
       rescue
-        format.html { redirect_to admin_materia_sustancias_url, alert: 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un acuerdo.' }
-        format.js { flash.now[:alert] = 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un acuerdo.'  }
+        format.html { redirect_to admin_materia_sustancias_url, alert: 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un Acuerdo.' }
+        format.js { flash.now[:alert] = 'Materia/Sustancia no puede ser eliminada ya que está siendo ocupada en un Acuerdo.'  }
       end
     end
   end

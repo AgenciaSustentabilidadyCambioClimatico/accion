@@ -14,7 +14,7 @@ class ManifestacionDeInteresController < ApplicationController
                                       :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico,
                                       :revisar_entregable_diagnostico,
                                       :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
-                                      :eliminar_contribuyente_temporal]
+                                      :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe]
   before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
                                       :admisibilidad_juridica, :revisar_admisibilidad_juridica,
@@ -50,6 +50,8 @@ class ManifestacionDeInteresController < ApplicationController
                                       :firma, :actualizar_firma,
                                       :carga_auditoria, :enviar_carga_auditoria]
   before_action :set_archivo_mapa_actores, only: [:edit]
+  before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
+  before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
 
   def iniciar_flujo #DZC TAREA APL-001 al iniciar proceso
     warning   = nil
@@ -1700,6 +1702,14 @@ class ManifestacionDeInteresController < ApplicationController
     @usuarios = personas_responsables.map { |e| e.user  }
   end
 
+  def lista_usuarios_carga_datos
+    manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
+    tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
+    rol_tarea = Rol::CARGADOR_DATOS_ACUERDO
+    personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
+    @usuarios = personas_responsables.map { |e| e.user  }
+  end
+
   def guardar_usuario_entregables #DZC APL-008
     @manifestacion_de_interes.assign_attributes(manifestacion_usuario_entregables_params)
     @manifestacion_de_interes.temporal = true
@@ -1718,7 +1728,7 @@ class ManifestacionDeInteresController < ApplicationController
 
         mapa = MapaDeActor.find_or_create_by({
           flujo_id: @tarea_pendiente.flujo_id,
-          rol_id: Rol::RESPONSABLE_ENTREGABLES,
+          rol_id: rol_tarea,
           # rol_id: Rol.find_by(nombre: 'Responsable Entregables').id,
           persona_id: persona_by_user.id
         })
@@ -1867,7 +1877,7 @@ class ManifestacionDeInteresController < ApplicationController
           datetime: DateTime.now,
           user: current_user.nombre_completo,
           actores_con_observaciones: nil,
-          texto: "Mapa de actores aprobado por #{current_user.nombre_completo}"
+          texto: "Listado de actores aprobado por #{current_user.nombre_completo}"
         }
       @manifestacion.comentarios_y_observaciones_actualizacion_mapa_de_actores = comentarios_anteriores
 
@@ -1883,6 +1893,19 @@ class ManifestacionDeInteresController < ApplicationController
         requiere_correcciones: nil,
         texto: "Set de metas y acciones aprobado por #{current_user.nombre_completo}"
       }
+      @manifestacion.comentarios_y_observaciones_set_metas_acciones = comentarios_anteriores
+
+      # DZC 2018-10-11 13:16:27 Set de metas y acciones:
+      comentarios_anteriores = @manifestacion.comentarios_y_observaciones_documento_diagnosticos.blank? ? [] : @manifestacion.comentarios_y_observaciones_documento_diagnosticos
+      comentarios_anteriores << {
+        datetime: DateTime.now,
+        # user: current_user.nombre_completo(),
+        user: current_user.nombre_completo,
+        requiere_correcciones: nil,
+        texto: "Documentos diagóstico aprobado por #{current_user.nombre_completo}"
+      }
+      @manifestacion.comentarios_y_observaciones_documento_diagnosticos = comentarios_anteriores
+      
       @manifestacion.diagnostico_fecha_termino = Time.now.utc
       @manifestacion.tarea_codigo = @tarea.codigo
       # DZC 2018-10-30 10:23:33 se agrega poblamiento de tablas en virtud del contenido del campo mapa_de_actores_data
@@ -1930,8 +1953,10 @@ class ManifestacionDeInteresController < ApplicationController
   def evaluacion_negociacion #DZC APL-019 Encuesta y Set de metas y acciones
     @manifestacion_de_interes.temporal = true
     @encuesta = Encuesta.find(params[:encuesta_id])
-    if @tarea_pendiente.blank? || @tarea_pendiente.user_id != current_user.id || @tarea_pendiente.no_esta_pendiente?
-      encuesta_no_encontrada
+    if @tarea_pendiente.blank? || @tarea_pendiente.no_esta_pendiente?
+      #encuesta_no_encontrada
+      @desactivado = true
+      @encuesta_user_respuesta = EncuestaUserRespuesta.new
     else
       @desactivado = (EncuestaUserRespuesta.where(flujo_id: @flujo.id, encuesta_id: @encuesta.id, user_id: current_user.id).size >= @encuesta.encuesta_preguntas.where(obligatorio: true).size)
       @encuesta_user_respuesta = EncuestaUserRespuesta.new
@@ -1941,6 +1966,8 @@ class ManifestacionDeInteresController < ApplicationController
     # DZC 2018-11-02 18:01:16 se agrega para posicionar la vista en la pestaña "set metas y acciones"
     if params[:tab_metas].present?
       @tab_metas = params[:tab_metas]
+    else
+      @tab_metas = true
     end
     # @set_metas_accion = SetMetasAccion.new
     # unless @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank?
@@ -1948,11 +1975,62 @@ class ManifestacionDeInteresController < ApplicationController
     #   @propuestas_con_observaciones = comentarios[:requiere_correcciones]
     # end
 
+    # identificamos si tarea 20 se envio o no, para mostrar respuestas
+    tarea_20 = TareaPendiente.where(flujo_id: @flujo.id, tarea_id: Tarea::ID_APL_020).first
+    @tarea_20_finalizada = !tarea_20.nil? && tarea_20.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+    @tarea_20_no_enviada = !tarea_20.nil? && tarea_20.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
+    
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
+
+  end
+  # APL-019 agregar comentarios al informe
+  def observaciones_informe 
+    @comentarios_informe_acuerdo = ComentariosInformeAcuerdo.new(observaciones_informe_params)
+    @encuesta = Encuesta.find(params[:encuesta_id])
+    respond_to do |format|
+      r_to = evaluacion_negociacion_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, @tarea_pendiente.tarea.encuesta)
+      if @comentarios_informe_acuerdo.save
+        tipo_flash = :success
+        mensaje_flash = 'Observación agregada correctamente'
+        set_comentario_informe
+      else
+        tipo_flash = :error
+        mensaje_flash = 'No se pudo agregar observaciones al informe'
+      end
+      format.js { flash.now[tipo_flash] = mensaje_flash
+        # render js: "window.location='#{r_to}'"
+      }
+    end
+  end
+  # APL-019 envia observaciones
+  def envia_observaciones_metas_acciones_informe # APL-019 TERMINA TAREA APL-019
+    respond_to do |format|
+      continua_flujo_segun_tipo_tarea #'A', {primera_ejecucion: true}
+      mensaje = "Muchas gracias por tus observaciones. Las observaciones serán compartidas con los miembros del Comité Negociador, quienes elaborarán una nueva propuesta de Acuerdo que recoja las observaciones que consideren pertinentes, dando además respuesta a las observaciones recogidas. Una vez acordada la versión definitiva del Acuerdo, esta se publicará junto a las respuestas respectivas que podrás ver en el menú <a href='#'>\"Consulta Pública Propuestas de Acuerdo\"</a>"
+      format.js { flash[:success] = mensaje; render js: "window.location='#{root_path}'" }
+      format.html { redirect_to root_path, flash: { notice: mensaje } }
+    end
   end
 
   def actualizar_acuerdos_actores #DZC APL-020
+    #ToDo: revisar si quitar eso o no
     actores_desde_tablas = MapaDeActor.construye_data_para_apl (@flujo)
     @actores = (!MapaDeActor.adecua_actores_para_vista(actores_desde_tablas).blank? ? MapaDeActor.adecua_actores_para_vista(actores_desde_tablas) : [])#DZC se cambia la lectura de actores a la tabla
+    
     @manifestacion_de_interes.temporal = true
     @manifestacion_de_interes.accion_en_mapa_de_actores = :revision #DZC consultar con Stefano y/o cambiar a :actualizacion
     @manifestacion_de_interes.accion_en_set_metas_accion = :respuesta
@@ -1960,6 +2038,8 @@ class ManifestacionDeInteresController < ApplicationController
     # DZC 2018-11-02 18:54:37 se agrega para posicionar la vista en la pestaña "set metas y acciones"
     if params[:tab_metas].present?
       @tab_metas = params[:tab_metas]
+    else
+      @tab_metas = true
     end
     # @set_metas_accion = SetMetasAccion.new
     unless @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank?
@@ -1970,13 +2050,64 @@ class ManifestacionDeInteresController < ApplicationController
     #   comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
     #   @propuestas_con_observaciones = comentarios[:requiere_correcciones]
     # end
+
+    
+    @origenes = {}
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank? && !@origenes.key?(sma.llave_origen)
+        nombre = ""
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          nombre = "<b>Estándar:</b> "+EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion.nombre
+        else
+          nombre = "<b>Acuerdo:</b> "+SetMetasAccion.find(sma.id_referencia).flujo.manifestacion_de_interes.nombre_acuerdo
+        end
+        @origenes[sma.llave_origen] = {
+          nombre: nombre,
+          color: "%06x" % (rand * 0xffffff)
+        }
+      end
+    end
+  end
+
+  # APL-020 agregar responder comentarios al informe
+  def responder_observaciones_informe 
+    #llenamos variables para saltar otras validaciones
+    @informe.solo_respuesta_observaciones = true
+    @informe.tarea_codigo = Tarea::COD_APL_020
+    @informe.respuesta_observaciones = informe_acuerdo_params[:respuesta_observaciones]
+    
+    respond_to do |format|
+      r_to = actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+      if @informe.save
+        tipo_flash = :success
+        mensaje_flash = 'Respuesta agregada correctamente'
+        set_comentario_informe
+      else
+        tipo_flash = :error
+        mensaje_flash = 'No se pudo agregar respuesta.'
+      end
+      format.js { flash.now[tipo_flash] = mensaje_flash
+        # render js: "window.location='#{r_to}'"
+      }
+    end
   end
 
   def termina_actualizacion_actores_resuelve_comentarios_propuestas #DZC APL-020 TERMINA TAREA APL-020
+    # tratamos de actualizar la manifestacion de interes
+    @manifestacion = @flujo.manifestacion_de_interes
+    @manifestacion.temporal = true
+    @manifestacion.envia_termino_proceso = true
+    @manifestacion.observaciones_propuesta_acuerdo = observaciones_propuesta_acuerdo_params[:observaciones_propuesta_acuerdo]
     respond_to do |format|
-      continua_flujo_segun_tipo_tarea# 'A', {primera_ejecucion: true}
-      format.js { flash.now[:success] = 'Se terminó actualización de mapa de actores y resolución de comentarios en propuestas de acuerdo'; render js: "window.location='#{root_path}'" }
-      format.html { redirect_to root_path, flash: {notice: 'Se terminó actualización de mapa de actores y resolución de comentarios en propuestas de acuerdo' }}
+      # si envia comentario dejamos continuar flujo
+      if @manifestacion.save
+        continua_flujo_segun_tipo_tarea# 'A', {primera_ejecucion: true}
+        format.js { flash.now[:success] = 'Se terminó actualización de mapa de actores y resolución de comentarios en propuestas de Acuerdo'; render js: "window.location='#{root_path}'" }
+        format.html { redirect_to root_path, flash: {notice: 'Se terminó actualización de mapa de actores y resolución de comentarios en propuestas de Acuerdo' }}
+      else
+        # do nothing
+        format.js {}
+      end
     end
   end
 
@@ -1991,8 +2122,8 @@ class ManifestacionDeInteresController < ApplicationController
       #DZC da por terminadas TODAS las tareas tareas del flujo
       TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).all.update(estado_tarea_pendiente_id: 2)
       @flujo.update(terminado: true) #DZC termina el flujo
-      format.js { flash.now[:success] = 'Se puso término al acuerdo'; render js: "window.location='#{root_path}'" }
-      format.html { redirect_to root_path, flash: {notice: 'Se puso término al acuerdo' }}
+      format.js { flash.now[:success] = 'Se puso término al Acuerdo'; render js: "window.location='#{root_path}'" }
+      format.html { redirect_to root_path, flash: {notice: 'Se puso término al Acuerdo' }}
     end
   end
 
@@ -2121,7 +2252,9 @@ class ManifestacionDeInteresController < ApplicationController
     when Tarea::COD_APL_014 # corresponde a la pestaña "Cargar documentos diagnóstico" de la APL-014
       @tarea_pendiente.pasar_a_siguiente_tarea 'A', {primera_ejecucion: true}
     when Tarea::COD_APL_016
-      @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+      @tarea_pendiente.pasar_a_siguiente_tarea 'B', {}, true, true
+    when Tarea::COD_APL_019
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
     when Tarea::COD_APL_020
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
     end
@@ -2131,9 +2264,9 @@ class ManifestacionDeInteresController < ApplicationController
 
     def set_tarea_pendiente
       @tarea_pendiente = TareaPendiente.includes([:flujo]).find(params[:tarea_pendiente_id])
-
-      autorizado? @tarea_pendiente
       @tarea = @tarea_pendiente.tarea
+
+      autorizado? @tarea_pendiente if @tarea.codigo != Tarea::COD_APL_019
     end
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
     def set_flujo
@@ -2474,5 +2607,43 @@ class ManifestacionDeInteresController < ApplicationController
         cargo_ids = Responsable.where(rol_id: Rol::PROPONENTE, tipo_instrumento_id: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente_id: [nil, contribuyente_temp.contribuyente_id]).pluck(:cargo_id)
         @usuarios = User.includes(personas: :persona_cargos).where(personas: {contribuyente_id: contribuyente_temp.contribuyente_id}).where(persona_cargos: {cargo_id: cargo_ids})
       end
+    end
+
+    def set_informe
+      # cargamos el informe
+      @informe = @manifestacion_de_interes.informe_acuerdo
+      if @informe.nil?
+        @informe = InformeAcuerdo.new({manifestacion_de_interes_id: @manifestacion_de_interes.id})
+        @informe.save(validate: false)
+      end
+      @auditorias = Auditoria.where(flujo_id: @flujo.id).all
+      @datos = @informe.nil? ? {} : @informe._a_datos(@auditorias)
+    end
+
+    def set_comentario_informe
+      # inicializamos el comentarios_informe_acuerdo
+      parametros_comentario = {
+        user_id: @current_user.id,
+        nombre: @current_user.nombre_completo,
+        rut: @current_user.rut,
+        email: @current_user.email,
+        informe_acuerdo_id: @informe.id
+      }
+      @comentarios_informe_acuerdo = ComentariosInformeAcuerdo.new(parametros_comentario)
+    end
+    def observaciones_informe_params
+      parametros = params.require(:comentarios_informe_acuerdo).permit(
+        :id, :user_id, :informe_acuerdo_id, :nombre, :rut, :email, :comentario
+      )
+      parametros
+    end
+
+    def observaciones_propuesta_acuerdo_params
+      parametros = params.require(:tarea_pendiente).permit(:observaciones_propuesta_acuerdo)
+      parametros
+    end
+    def informe_acuerdo_params
+      parametros = params.require(:informe_acuerdo).permit(:respuesta_observaciones)
+      parametros
     end
 end

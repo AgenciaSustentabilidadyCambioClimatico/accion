@@ -1,6 +1,6 @@
 class TareaPendiente < ApplicationRecord
   belongs_to :tarea, -> { includes :tipo_instrumento }
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :flujo, -> { includes :contribuyente }
   belongs_to :estado_tarea_pendiente
   belongs_to :persona, optional: true # DZC 2019-08-16 19:20:19 se agrega opcionalidad para permitir que el campo sea nil.
@@ -9,9 +9,11 @@ class TareaPendiente < ApplicationRecord
   serialize :data
 
   validates :tarea_id, presence: true
-  validates :user_id, presence: true
+  #validates :user_id, presence: true
   validates :flujo_id , presence: true
   validates :estado_tarea_pendiente_id, presence: true
+
+  attr_accessor :observaciones_propuesta_acuerdo # para pasarlo a manifestacion de interes
 
   def user
     User.unscoped.find(self.user_id)
@@ -113,14 +115,15 @@ class TareaPendiente < ApplicationRecord
   # puede recibir una condicion de salida, para acotar la busqueda, condicion salida puede ser un string 'a' o un arreglo (['a','b'])
   # TODO: agregar una variable de salida para corroborar en los controladores donde se use, que en realidad se realizo correctamente todo,
   # al tener un save, puede fallar por algun motivo, entonces es mejor saberlo.
-  def pasar_a_siguiente_tarea condicion_de_salida=nil, extra={}, finaliza=true
+  # Se agrega valor sin destinatario, caso específico tarea APL-019, pero podrian ser mas
+  def pasar_a_siguiente_tarea condicion_de_salida=nil, extra={}, finaliza=true, sin_destinatario=false
 
     #DZC tareas que terminan para un único actor
     tareas_unico_actor = []
     tareas_unico_actor += [Tarea::COD_APL_011, Tarea::COD_APL_016, Tarea::COD_APL_030, Tarea::COD_PPF_014] #DZC Convocatorias, salvo APL-021
     tareas_unico_actor += [Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_APL_031, Tarea::COD_PPF_015] #DZC Minutas
     tareas_unico_actor += [Tarea::COD_APL_022] if !condicion_de_salida.blank? && (!condicion_de_salida.include?('A')) #DZC APL-022 que no finalizan la tarea
-    tareas_unico_actor += [Tarea::COD_APL_015, Tarea::COD_APL_019, Tarea::COD_APL_039, Tarea::COD_APL_043, Tarea::COD_PPF_023, Tarea::COD_PPF_024] #DZC Encuestas
+    tareas_unico_actor += [Tarea::COD_APL_015, Tarea::COD_APL_039, Tarea::COD_APL_043, Tarea::COD_PPF_023, Tarea::COD_PPF_024] #DZC Encuestas
 
     #DZC tareas que finalizarán todas las tareas pendientes del flujo
     tareas_finalizan_flujo = []
@@ -131,6 +134,10 @@ class TareaPendiente < ApplicationRecord
     tareas_finalizan_flujo += [Tarea::COD_PPF_008, Tarea::COD_PPF_009] if !condicion_de_salida.blank? && condicion_de_salida.include?('C')
     tareas_finalizan_flujo += [Tarea::COD_PPF_010] if !condicion_de_salida.blank? && condicion_de_salida.include?('B')
 
+    # cuando se envia tarea 20, cierra todas las tareas 19
+    if ([Tarea::COD_APL_020].include?(self.tarea.codigo))
+      TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: Tarea::ID_APL_019).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+    end
     if ([Tarea::COD_APL_023].include?(self.tarea.codigo))
       TareaPendiente.finaliza_pendientes_por_auditoria(self.flujo_id)
     end
@@ -180,10 +187,9 @@ class TareaPendiente < ApplicationRecord
       filtro_condicion_salida = condicion_de_salida.blank? ? {} : {condicion_de_salida: condicion_de_salida}
       # se recorren todos los flujos de tareas que cumplen con la condicion y se agregan las tareas pedientes,
       # si el flujo lo dicta (revisar metodo continuar flujo)
-
       FlujoTarea.where(tarea_entrada_id: self.tarea_id).where(filtro_condicion_salida).each do |ft|
 
-        ft.continuar_flujo self.flujo.id, extra
+        ft.continuar_flujo self.flujo.id, extra, sin_destinatario
       end
     end
   end
@@ -207,25 +213,20 @@ class TareaPendiente < ApplicationRecord
   end
 
   #DZC médodo para continuar con el flujo de las tareas que tienen plazo vencido
-  def self.continua_flujo_tareas_plazo_vencido(user_id)
-    tareas_pendientes= self.todas_del_(user_id).all
+  def self.continua_flujo_tareas_plazo_vencido(user_id=nil)
+    if user_id.nil?
+      tareas_pendientes = self.includes([:tarea,:flujo]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).all
+    else
+      tareas_pendientes= self.todas_del_(user_id).all
+    end
     tareas_pendientes.each do |pend|
       case pend.tarea.codigo
-      #when Tarea::COD_APL_004_1 #resolver observaciones de admisibilidad, 45 dias
-      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
-      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_admisibilidad, 45
-      #    pend.pasar_a_siguiente_tarea 'B'
-      #  end
-      #when Tarea::COD_APL_004_2 #resolver observaciones de admisibilidad, 45 dias
-      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
-      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_admisibilidad, 45
-      #    pend.pasar_a_siguiente_tarea 'B'
-      #  end
-      #when Tarea::COD_APL_006 #resolver observaciones de pertinencia, 60 dias
-      #  manifestacion=ManifestacionDeInteres.find(pend.flujo.manifestacion_de_interes_id)
-      #  if !manifestacion.plazo_vigente? manifestacion.fecha_observaciones_pertinencia, 60
-      #    pend.pasar_a_siguiente_tarea 'B'
-      #  end
+      when Tarea::COD_APL_004_1
+        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, 45)
+      when Tarea::COD_APL_004_2
+        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, 45)
+      when Tarea::COD_APL_006
+        pend.pasar_a_siguiente_tarea 'C' if !pend.plazo_vigente?(pend.created_at, 45)
       when Tarea::COD_APL_012 #ingresar acta minutas, 25 dias
 
         conv = pend.determina_convocatoria
@@ -249,17 +250,11 @@ class TareaPendiente < ApplicationRecord
             pend.pasar_a_siguiente_tarea 'B'
           end
         end
-      when Tarea::COD_APL_019 #DZC Encuesta con comportamiento distinto, pues obedece a una pestaña no única en una vista
-
-        encuesta=Encuesta.find(pend.tarea.encuesta_id)
-        if encuesta.expirada?(pend.created_at)
+      when Tarea::COD_APL_019 # tarea apl-019 ocupa la duracion si la tiene seteada
+        # si la tarea fue vencida por duracion
+        if pend.tarea_vencida_duracion?
           pend.pasar_a_siguiente_tarea 'A', {primera_ejecucion: true}
         end
-        # manifestacion=pend.flujo.manifestacion_de_interes
-        # if !manifestacion.plazo_vigente? manifestacion.fecha_termino_negociacion, 25
-        #   pend.pasar_a_siguiente_tarea
-        #DZC SE PRESIONO EL BOTON DE TERMINO DE PROCESO DE NEGOCIACION, Y COMIENZAN A CONTARSE 20 DIAS. Se lee la fecha de inicio desde el campo fecha_termino_negociacion de la manifestación de interés
-        # end
       when Tarea::COD_APL_022, Tarea::COD_APL_038  #ingresar acta minutas, 25 dias
         conv = pend.determina_convocatoria
         minuta = conv.minuta
@@ -317,6 +312,19 @@ class TareaPendiente < ApplicationRecord
         end
       end
     end
+  end
+
+  def tarea_vencida_duracion?
+    duracion_tarea = self.tarea.duracion
+    salida = false
+    # si tiene duracion asignada vemos si venció
+    unless duracion_tarea.nil?
+      # definimos fecha fin segun duracion
+      fecha_limite = self.created_at + duracion_tarea.days
+      # indicamos si esta vencida, para cerrarla
+      salida = fecha_limite < Date.today
+    end
+    salida
   end
 
   #DZC

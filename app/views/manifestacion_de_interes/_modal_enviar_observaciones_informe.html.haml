@@ -1,0 +1,13 @@
+.modal.fade{id: :"enviar-observaciones-informe", tabindex: "-1", role: :dialog, "aria-labelledby": :terminarActualizarAcuerdoActoresModalLabel, "aria-hidden": true}
+	.modal-dialog.modal-dialog-centered.larger-please.animated{role: :document}
+		.modal-content
+			.modal-header
+				%div.m-auto
+					%h5.no-margin
+						= t(:enviar_observaciones_informe_metas_acciones)
+			.modal-footer
+				.w-100.d-flex.flex-column.flex-lg-row.align-items-end.justify-content-center
+					-#= f.submit t(:enviar), class: 'btn btn-sm btn-primary btn-sm m-1 d-block d-lg-inline-block', style: "white-space: normal;", data: { confirm: t(:confirma_poner_termino_proceso_negociacion_y_resolucion_de_observaciones), remote: false }
+					= f.submit t(:enviar), class: 'btn btn-sm btn-primary btn-sm m-1 d-block d-lg-inline-block', style: "white-space: normal;", data: { remote: false }
+					%button.btn.btn-sm.btn-warning.m-1{type: :button, "data-dismiss"=>:modal}
+						Volver

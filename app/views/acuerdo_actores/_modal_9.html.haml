@@ -1,22 +1,26 @@
-.modal.fade{id: :"modal-9", tabindex: "-1", role: :dialog, "aria-labelledby": :modal9Label, "aria-hidden": true}
+.modal.fade.reload-previsualizar{id: :"modal-9", tabindex: "-1", role: :dialog, "aria-labelledby": :modal9Label, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
     .modal-content
       .modal-header
         =t(:anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo)
       .modal-body
-        %ul.list-group#archivos_cargados
-          %li.list-group-item.d-flex.justify-content-between.align-items-center
-            %b=t(:para_eliminar)
-            %b=t(:nombre_archivo)
-            %span.badge.badge-pill.align-right
-              %b=t(:descargar)
-          - @informe.archivos_anexos.each do |f|
-            %li.list-group-item.d-flex.justify-content-between.align-items-center
-              = check_box_tag "por_eliminar[]", f.file.filename, false, class: "not-required-if-other-like-me-is-present"  
-              =f.file.filename
-              %span.badge.badge-pill
-                = link_to f.url do
-                  %i.fa.fa-download.fa-2x                                          
+        %table.table.table-condensed.border#archivos_cargados{style: "table-layout: fixed;"}
+          %thead
+            %tr
+              %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                %b=t(:para_eliminar)
+              %td.text-center{style: 'width: 25%;min-width: 25%;max-width: 25%'}
+                %b=t(:nombre_archivo)
+              %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                %b=t(:descargar)
+          %tbody
+            - @informe.archivos_anexos.each do |f|
+              %tr
+                %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}= check_box_tag "por_eliminar[]", f.file.filename, false, class: "not-required-if-other-like-me-is-present archivo-anexo-por-eliminar"
+                %td.text-center{style: "overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 25%;min-width: 25%;max-width: 25%", title: f.file.filename}=f.file.filename
+                %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                  = link_to f.url do
+                    %i.fa.fa-download.fa-2x
         .row
           .col-12
             = f.input :archivos_anexos, as: :file, input_html: { class: "form-control", multiple: true}

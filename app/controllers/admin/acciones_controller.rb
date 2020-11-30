@@ -53,8 +53,8 @@ class Admin::AccionesController < ApplicationController
         format.js { flash.now[:success] = 'Acción correctamente eliminada.'  }
         format.html { redirect_to admin_acciones_url, notice: 'Acción correctamente eliminada.' }
       rescue
-        format.html { redirect_to admin_acciones_url, alert: 'Accion no puede ser eliminada ya que está siendo ocupada en un acuerdo.' }
-        format.js { flash.now[:alert] = 'Accion no puede ser eliminada ya que está siendo ocupada en un acuerdo.'  }
+        format.html { redirect_to admin_acciones_url, alert: 'Accion no puede ser eliminada ya que está siendo ocupada en un Acuerdo.' }
+        format.js { flash.now[:alert] = 'Accion no puede ser eliminada ya que está siendo ocupada en un Acuerdo.'  }
       end
     end
   end

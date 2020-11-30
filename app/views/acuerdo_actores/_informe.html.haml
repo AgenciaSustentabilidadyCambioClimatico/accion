@@ -8,7 +8,7 @@
   =# wicked_pdf_javascript_include_tag 'application'
   = wicked_pdf_image_tag image_url('logo-ascc.png'), width: 180
 %p.h4.text-center="Informe"
-%p.h5="Partes que suscriben el acuerdo:"
+%p.h5="Partes que suscriben el Acuerdo:"
 - partes = "En [INGRESAR COMUNA], a [INGRESAR FECHA FIRMA], comparecen, por una parte, "
 -actores_mapa.each do |firmante|
   -cargos = Cargo.where(id: firmante.persona.persona_cargos.select(:cargo_id)).pluck(:nombre).to_sentence
@@ -31,30 +31,45 @@
   =datos["objetivo_general"].html_safe
   %p.h5=t(:objetivo_específico)
   =datos["objetivo_especifico"].html_safe
-  %p.h5=t(:mecanismo_de_implementación)
+  %p.h5=t(:vigencia_del_acuerdo_de_producción_limpia)
+  - format_va = datos["vigencia_acuerdo"]
+  - InformeAcuerdo.palabras_claves("vigencia_acuerdo").each do |key, val|
+    - valor = datos[val.to_s].to_s
+    - format_va = format_va.gsub("[#{key.to_s}]", valor)
+  =format_va.html_safe
+  %p.h5=t(:mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento)
   - format_mi = datos["mecanismo_de_implementacion"]
-  - InformeAcuerdo.mecanismo_implementacion_palabras_claves.keys.each do |mi|
-    - valor = datos[mi.to_s].to_s
+  - InformeAcuerdo.palabras_claves("mecanismo_de_implementacion").each do |key, val|
+    - valor = datos[val.to_s].to_s
     - if valor == "true"
       - valor = "Si"
     - if valor == "false"
       - valor = "No"
-    - format_mi = format_mi.gsub("[#{mi}]", valor)
+    - if valor.include?("_")
+      - valor = t(valor)
+    - format_mi = format_mi.gsub("[#{key.to_s}]", valor)
   =format_mi.html_safe
   %p.h6=t(:auditorías)
   %ul
     - datos["auditorias"].each do |aud|
       %li=aud["nombre"]
-  %p.h5=t(:mecanismo_de_evaluación_de_cumplimiento)
-  - format_me = datos["mecanismo_evaluacion_cumplimiento"]
-  - InformeAcuerdo.mecanismo_evaluacion_palabras_claves.keys.each do |me|
-    - valor = datos[me.to_s].to_s
-    - if valor == "true"
-      - valor = "Si"
-    - if valor == "false"
-      - valor = "No"
-    - format_me = format_me.gsub("[#{me}]", valor)
-  =format_me.html_safe
+  -#
+    %p.h5=t(:mecanismo_de_evaluación_de_cumplimiento)
+    - format_me = datos["mecanismo_evaluacion_cumplimiento"]
+    - InformeAcuerdo.mecanismo_evaluacion_palabras_claves.keys.each do |me|
+      - valor = datos[me.to_s].to_s
+      - if valor == "true"
+        - valor = "Si"
+      - if valor == "false"
+        - valor = "No"
+      - format_me = format_me.gsub("[#{me}]", valor)
+    =format_me.html_safe
+  %p.h5=t(:vigencia_certificación)
+  - format_vc = datos["vigencia_certificacion"]
+  - InformeAcuerdo.palabras_claves("vigencia_certificacion").each do |key, val|
+    - valor = datos[val.to_s].to_s
+    - format_vc = format_vc.gsub("[#{key.to_s}]", valor)
+  =format_vc.html_safe
   %p.h5=t(:derechos)
   =datos["derechos"].html_safe
   %p.h5=t(:obligaciones)

@@ -193,7 +193,7 @@
 					.card.mb-2
 						.card-header
 							%h5.no-margin.float-left.btn.btn-sm
-								= action_label_of_(@descargable)
+								= action_label_of_(@descargable, true)
 							= link_to t(:descargar), "#",class: 'float-right btn-sm btn btn-secondary', id: "descargar-archivo"
 							= link_to t(:previsualizar), "#",class: 'float-right btn-sm btn btn-secondary mr-2', id: "previsualizar-archivo"
 						.card-body.pt-2

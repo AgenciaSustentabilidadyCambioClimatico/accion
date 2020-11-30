@@ -20,7 +20,7 @@
         - if @desactivado
           = "Encuesta resuelta".html_safe
         -else
-          = "Recuerde que tiene hasta el <b>#{@encuesta.dia_de_expiracion(@tarea_pendiente.created_at).strftime('%d %b de %Y')}</b> para contestar esta encuesta".html_safe
+          = "Recuerde que tiene hasta el <b>#{l(@encuesta.dia_de_expiracion(@tarea_pendiente.created_at), format: :short_year)}</b> para contestar esta encuesta".html_safe
 
   - @encuesta.encuesta_preguntas.sort_by{|ep|ep.orden}.each do |ep|
     - pregunta        = ep.pregunta

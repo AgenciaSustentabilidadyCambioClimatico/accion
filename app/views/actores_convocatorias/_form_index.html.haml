@@ -20,19 +20,32 @@
 		});
 	});
 - titulo t(:actualizar_mapa_actores_convocatoria_firma)
-- tabs = { "mapa-de-actores": true, "convocatoria-remote-form": false }
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-		- tabs.each do |tab,active|
-			%li.nav-item
-				%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-					=t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
-#manifestacionContent.tab-content
-	#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
-		.card
-			.card-body.p-0
-				#actores-remote-table
-					= render 'actores/table'
-				#actualizar-remote-form
-					= render 'actores/form', externo: true
-	#convocatoria-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"convocatoria-remote-form"], "aria-labelledby" => "convocatoria-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"convocatoria-remote-form"])}
+- tabs = { "listado-de-actores": true, "convocatoria-remote-form": false }
+.card.mb-0
+	.card-header.border-bottom-0
+		%h5.no-margin
+			=titulo_instrumento.html_safe
+		- if @proyecto.blank?
+			%h5.no-margin
+				=titulo_acuerdo.html_safe
+		- else
+			%h5.no-margin
+				=titulo_proyecto.html_safe
+		%h5.no-margin
+			=datos_beneficiario.html_safe
+	.card-header.px-0.pb-0
+		#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
+			%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+				- tabs.each do |tab,active|
+					%li.nav-item
+						%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+							=t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
+		#manifestacionContent.tab-content
+			#listado-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"listado-de-actores"], "aria-labelledby" => "listado-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"listado-de-actores"])}
+				.card
+					.card-body.p-0
+						#actores-remote-table
+							= render 'actores/table', externo: true
+						#actualizar-remote-form
+							= render 'actores/form', externo: true
+			#convocatoria-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"convocatoria-remote-form"], "aria-labelledby" => "convocatoria-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"convocatoria-remote-form"])}

@@ -13,6 +13,22 @@ class AcuerdoActoresController < ApplicationController
   def reload_informe
     @auditorias = Auditoria.where(flujo_id: @flujo.id).all
     @datos = @informe._a_datos(@auditorias)
+
+    @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+    @estandares_certificacion = []
+    estandares_certificacion_ids = []
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank?
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          estandar_cert = EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion
+          if !estandares_certificacion_ids.include?(estandar_cert.id)
+            @estandares_certificacion << estandar_cert
+            estandares_certificacion_ids << estandar_cert.id
+          end
+        end
+      end
+    end
+
     respond_to do |format|
       format.js
     end
@@ -65,6 +81,21 @@ class AcuerdoActoresController < ApplicationController
     # else
     #   @informe.auditorias = []
     # end
+
+    @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+    @estandares_certificacion = []
+    estandares_certificacion_ids = []
+    @set_metas_acciones.each do |sma|
+      if !sma.modelo_referencia.blank?
+        if sma.modelo_referencia == "EstandarSetMetasAccion"
+          estandar_cert = EstandarSetMetasAccion.find(sma.id_referencia).estandar_homologacion
+          if !estandares_certificacion_ids.include?(estandar_cert.id)
+            @estandares_certificacion << estandar_cert
+            estandares_certificacion_ids << estandar_cert.id
+          end
+        end
+      end
+    end
     respond_to do |format|
       if @informe.valid?
         @informe.save
@@ -78,12 +109,34 @@ class AcuerdoActoresController < ApplicationController
           aud.assign_attributes({
             flujo_id: @flujo.id,
             nombre: aud_data[:nombre],
-            plazo: aud_data[:plazo],
+            plazo_apertura: aud_data[:plazo_apertura],
+            plazo_cierre: aud_data[:plazo_cierre],
             con_certificacion: aud_data[:con_certificacion],
             con_validacion: aud_data[:con_validacion],
-            final: aud_data[:final]
+            final: aud_data[:final],
+            con_mantencion: aud_data[:con_mantencion],
+            plazo: aud_data[:plazo] #viene de modal vigencia certificacion
           })
           audits_ids << aud.id if aud.save
+
+          #relacionar niveles
+          #si no esta en la lista es porque fue eliminado
+          if aud.con_certificacion && !aud.final
+            niveles = aud_data[:auditoria_niveles].nil? ? [] : aud_data[:auditoria_niveles].keys
+            AuditoriaNivel.where(auditoria_id: aud.id).where.not(estandar_nivel_id: niveles).delete_all
+
+            if !aud_data[:auditoria_niveles].nil?
+              aud_data[:auditoria_niveles].values.each do |nivel|
+                niv = AuditoriaNivel.find_or_initialize_by({
+                  auditoria_id: aud.id,
+                  estandar_nivel_id: nivel[:id]
+                })
+                niv.plazo = nivel[:plazo]
+                niv.save
+              end
+            end
+          end
+
         end
 
         # Auditoria.where("id NOT IN (?)", audits_ids).delete_all
@@ -129,6 +182,10 @@ class AcuerdoActoresController < ApplicationController
     # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
     @informe = @manifestacion_de_interes.informe_acuerdo.nil? ? @manifestacion_de_interes.build_informe_acuerdo : @manifestacion_de_interes.informe_acuerdo
     #@informe = @manifestacion_de_interes.build_informe_acuerdo if @infome.nil?
+    if @informe.nil?
+      @informe = InformeAcuerdo.new({manifestacion_de_interes_id: @manifestacion_de_interes.id})
+      @informe.save(validate: false)
+    end
     @manifestacion_de_interes.temporal = true
     @manifestacion_de_interes.mapa_de_actores_correctamente_construido = true
     @manifestacion_de_interes.accion_en_mapa_de_actores = :revision
@@ -175,6 +232,7 @@ class AcuerdoActoresController < ApplicationController
     else
       @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     end
+    @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
 
   end
 
@@ -190,6 +248,8 @@ class AcuerdoActoresController < ApplicationController
       :fundamentos,:antecedentes, :normativas_aplicables, :alcance, :campo_de_aplicacion, :definiciones, 
       :objetivo_general, :objetivo_especifico, :mecanismo_de_implementacion, :tipo_acuerdo, :plazo_maximo_adhesion, 
       :plazo_finalizacion_implementacion, :mecanismo_evaluacion_cumplimiento, :plazo_maximo, :plazo_maximo_neto, :adhesiones,
+      :vigencia_acuerdo, :plazo_vigencia_acuerdo,
+      :vigencia_certificacion, :vigencia_certificacion_final,
       :derechos, :obligaciones, :difusion, :promocion, :incentivos, :sanciones, :personerias, :ejemplares, :firmas,
       :archivos_anexos_cache, archivos_anexos: []
     )

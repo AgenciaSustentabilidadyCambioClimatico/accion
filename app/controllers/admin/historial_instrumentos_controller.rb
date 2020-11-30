@@ -3,6 +3,7 @@ class Admin::HistorialInstrumentosController < ApplicationController
   before_action :set_variables_del_usuario
   before_action :set_cargar_instrumento, only: [:cargar_instrumento]
   before_action :set_crear_excel_respuesta_encuesta_diagnostico, only: [:descargar_respuesta_encuesta_diagnostico]
+  before_action :set_crear_excel_observaciones_informe_metas_acciones, only: [:descargar_observaciones_informe_metas_acciones]
 
   def index
   end
@@ -38,12 +39,31 @@ class Admin::HistorialInstrumentosController < ApplicationController
         }
       )
     )
-    send_data pdf, type: "application/pdf", disposition: "inline", filename: "Informe acuerdo.pdf"
+    send_data pdf, type: "application/pdf", disposition: "inline", filename: "Informe Acuerdo.pdf"
   end
 
   def descargar_respuesta_encuesta_diagnostico
     #enviamos el archivo para ser descargado
     send_data File.open(@ruta_encuesta_diagnostico).read, type: 'application/xslx', charset: "iso-8859-1", filename: "respuesta_encuesta_diagnostico_general.xlsx"
+  end
+
+  def descargar_respuesta_encuesta
+    @encuesta = Tarea.find(params[:tarea_id]).encuesta
+    #identificamos manifestacion para obtener flujo_id
+    @manifestacion_de_interes = ManifestacionDeInteres.includes(:flujo).find(params[:manifestacion_de_interes_id])
+    #obtenemos las partes para el excel
+    titulos = @encuesta.cabecera_respuestas_excel
+    datos = @encuesta.respuestas_por_usuario_con_datos_excel(@manifestacion_de_interes.flujo.id)
+    #obtenemos el modelo axlsx
+    excel = CrearExcel.new({titulos: titulos,datos: datos, nombre_hoja: 'Respuestas'}).crear_libro
+
+    #enviamos el archivo para ser descargado
+    send_data excel.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "respuestas_encuesta.xlsx"
+  end
+
+  def descargar_observaciones_informe_metas_acciones
+    #enviamos el archivo para ser descargado
+    send_data File.open(@ruta_observaciones_informe_metas_acciones).read, type: 'application/xslx', charset: "iso-8859-1", filename: "observaciones_informe_metas_acciones.xlsx"
   end
 
 
@@ -126,5 +146,28 @@ class Admin::HistorialInstrumentosController < ApplicationController
       @ruta_encuesta_diagnostico += "respuesta_encuesta_diagnostico_general.xlsx"
       #llamamos el servicio para crear excel entregandole los parametros necesarios
       salida = CrearExcel.new({titulos: titulos,datos: datos, nombre_hoja: 'Respuestas',ruta: @ruta_encuesta_diagnostico}).crear_libro
+    end
+
+    def set_crear_excel_observaciones_informe_metas_acciones
+      #identificamos manifestacion para obtener flujo_id
+      @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+      # nos traemos el set de metas
+      @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+      #obtenemos las partes para el excel
+      titulos = ["Meta","Acción","Nombre","Rut","Email","Observación"]
+      # se arma los datos para el excel
+      datos = SetMetasAccion.observaciones_agrupadas_para_excel(@set_metas_acciones)
+      #creamos una ruta para guardar el excel
+      @ruta_observaciones_informe_metas_acciones = "#{Rails.root}/public/uploads/manifestacion_de_interes/observaciones_metas_acciones_informe/#{@manifestacion_de_interes.id}/"
+      FileUtils.mkdir_p(@ruta_observaciones_informe_metas_acciones) unless File.exist?(@ruta_observaciones_informe_metas_acciones) 
+      @ruta_observaciones_informe_metas_acciones += "observaciones_metas_acciones_informe.xlsx"
+      #llamamos el servicio para crear excel entregandole los parametros necesarios
+      parametros_excel = {
+        titulos: titulos,
+        datos: datos,
+        nombre_hoja: 'Observaciones metas acciones',
+        ruta: @ruta_observaciones_informe_metas_acciones
+      }
+      salida = CrearExcel.new(parametros_excel).crear_libro_observaciones
     end
 end
