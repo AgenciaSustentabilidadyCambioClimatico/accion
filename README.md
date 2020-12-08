@@ -17,13 +17,17 @@
 
 ## **Quiénes Somos**
 
-La ***Agencia de Sustentabilidad*** y ***Cambio Climático*** es un comité de la ***Corporación de Fomento de la Producción (CORFO)*** y tenemos como misión fomentar la producción sustentable en las empresas chilenas, con énfasis en las ***PYME***, en un marco de diálogo y participación público privado, con una perspectiva de ***desarrollo territorial y regional***, para lograr ***prosperidad, cooperación y confianza***. Esto, a través de acuerdos voluntarios, coordinación con otras instituciones públicas, iniciativas de fomento y la ejecución de programas y proyectos que aporten a la construcción de una economía sustentable, resiliente y baja en carbono. Al mismo tiempo apoyar el cumplimiento de los compromisos internacionales de Chile en estas materias.
+La ***Agencia de Sustentabilidad*** y ***Cambio Climático*** es un comité de la ***Corporación de Fomento de la Producción (CORFO)*** cuya misión institucional es Fomentar la producción sustentable y la mitigación y adaptación al cambio climático en las empresas, con énfasis en las PYME y en los territorios, a través del diálogo y la colaboración público privada.
+
+Aspiramos a ser referente en materia de cooperación público privada en el desarrollo de una economía sustentable, resiliente y baja en carbono, y en el cumplimiento de los compromisos internacionales asumidos por Chile en estas materias.
 
 ## **Descripción de la Aplicación**
 
-Esta plataforma nace para reforzar el compromiso de Chile con la Agenda 2030 para el Desarrollo Sustentable, con la lucha contra el cambio climático mediante el Acuerdo de París, con la alianza del pacífico y con la imagen país y promoción de exportaciones. Además, esta plataforma permite cumplir compromisos de reporte a Convención Marco de Naciones Unidas como resultado del registro de los Acuerdos de Producción Limpia como primera u de mitigación chilena registrada.
+Esta plataforma de código libre tiene como fin último permtir el reporte de las contribuciones realizadas por las empresas en conjunto con la agencia y otras organizaciones a la Agenda 2030 para el Desarrollo Sustentable y a la lucha contra el cambio climático.
 
-Esta aplicación tiene como objetivo general Apoyar la gestión de los Instrumentos de la Agencia de Sustentabilidad y Cambio Climático. Dentro de estos Instrumentos se encuentran los Acuerdos Voluntarios, Programas y Proyectos de Financiamiento, Certificaciones de Estándares y Seguimientos a los Fondos de Producción Limpia. En este sistema se permite la gestión completa de los instrumentos previamente mencionados, desde el inicio de cada proceso, hasta el final de ellos. También admite la modificación y administración de la información utilizada de manera transversal en estos instrumentos, facilitando la actualización de los parámetros y variables utilizados en ellos. 
+Si bien esa es la visión última de su desarrollo, en su estado actual tiene como productos operables el sistema de postulación de ideas de acuerdo, la generación, auditoría y certificación de cumplimiento de las metas y acciones comprometidas por organizaciones, incluyendo funcionalidades de notificacion, recordatorios, encuestas, consultas públicas, inventarios de datos productivo-ambientales, generación dinámica de documentos, un sistema de gestión de permisos bastante configurable, un sistema de reporte y seguimiento de sugerencias y errores, así como otras funcionalidades que otorgan bastante libertad para adaptar su uso.
+
+Existen aún varias funcionalidades en curso, por desarrollar, por pulir y por profundizar. Nuestra intención al disponer esta plataforma de manera libre, es permitir que usuarios institucionales la puedan modificar y adaptar a sus propios fines, fortaleciendo al mismo tiempo las funcionalidades base de la misma. Lo único importante es que esas versiones sigan siendo libres,  decir, se distribuyan y/o modifiquen bajo los términos de la licencia GNU General Public License publicados por la Free Software Foundation en su versión 3 (GNU GPLv3).
 
 ## **Tecnologías Utilizadas**
 
