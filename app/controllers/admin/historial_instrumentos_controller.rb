@@ -61,6 +61,25 @@ class Admin::HistorialInstrumentosController < ApplicationController
     send_data excel.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "respuestas_encuesta.xlsx"
   end
 
+  def descargar_respuesta_encuesta_auditoria
+    tarea = Tarea.find(params[:tarea_id])
+    @encuesta = tarea.encuesta
+    #identificamos manifestacion para obtener flujo_id
+    @manifestacion_de_interes = ManifestacionDeInteres.includes(:flujo).find(params[:manifestacion_de_interes_id])
+    tareas_pendientes_ids = []
+    TareaPendiente.where(flujo_id: @manifestacion_de_interes.flujo.id).where(tarea_id: tarea.id).each do |tarea_pendiente|
+      tareas_pendientes_ids << tarea_pendiente.id if tarea_pendiente.data.present? && tarea_pendiente.data[:auditoria_id].to_i == params[:auditoria_id].to_i
+    end
+    #obtenemos las partes para el excel
+    titulos = @encuesta.cabecera_respuestas_excel
+    datos = @encuesta.respuestas_por_usuario_con_datos_excel(@manifestacion_de_interes.flujo.id, tareas_pendientes_ids)
+    #obtenemos el modelo axlsx
+    excel = CrearExcel.new({titulos: titulos,datos: datos, nombre_hoja: 'Respuestas'}).crear_libro
+
+    #enviamos el archivo para ser descargado
+    send_data excel.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "respuestas_encuesta.xlsx"
+  end
+
   def descargar_observaciones_informe_metas_acciones
     #enviamos el archivo para ser descargado
     send_data File.open(@ruta_observaciones_informe_metas_acciones).read, type: 'application/xslx', charset: "iso-8859-1", filename: "observaciones_informe_metas_acciones.xlsx"

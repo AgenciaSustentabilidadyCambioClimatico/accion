@@ -8,7 +8,8 @@ class DatoProductivoElementoAdheridosController < ApplicationController
   #DZC Accesso a Tarea PPF-020
   def edit
     if @datos_productivos.blank?
-      redirect_to root_path, notice: 'No posee datos productivos que revisar' 
+      flash[:warning] = 'No posee datos productivos que revisar' 
+      redirect_to root_path
     end
   end
 
@@ -67,7 +68,10 @@ class DatoProductivoElementoAdheridosController < ApplicationController
     
     respond_to do |format|
       if @resultados.blank?     
-        format.js { flash[:success] = 'Datos productivos correctamente actualizados'}
+        format.js { 
+          flash[:success] = 'Datos productivos correctamente actualizados' 
+          render js: "window.location.href='#{root_path}'"
+        }
         format.html { redirect_to dato_productivo_elemento_adheridos_path(), notice: 'Datos productivos correctamente actualizada' }
         continua_flujo_segun_tipo_tarea
       else
@@ -92,10 +96,38 @@ class DatoProductivoElementoAdheridosController < ApplicationController
 
     def set_flujo
       @flujo = @tarea_pendiente.flujo
+      @tipo_instrumento = @flujo.tipo_instrumento
+      @manifestacion_de_interes = @flujo.manifestacion_de_interes
     end
 
     def set_datos_productivos
       set_metas_acciones = @flujo.set_metas_acciones.where.not('materia_sustancia_id' => nil)
       @datos_productivos = DatoProductivoElementoAdherido.where(set_metas_accion_id: set_metas_acciones.pluck(:id))
+
+      @archivos_evidencia = []
+      @archivo_excel = nil
+
+      ruta = "uploads/dato_productivo_elemento_adherido/formato/#{@flujo.id}/subido/"
+
+      ruta_pdf = "#{Rails.root}/public/"+ruta+"archivos_evidencia/"
+      if File.exist?(ruta_pdf)
+        Dir.entries(ruta_pdf).each do |filename|
+          @archivos_evidencia << Pathname.new(ruta_pdf+filename).open if !['.','..'].include?(filename)
+        end
+      end
+
+      ruta_excel = "#{Rails.root}/public/"+ruta+"datos_productivos/"
+      if File.exist?(ruta_excel)
+        Dir.entries(ruta_excel).each do |filename|
+          @archivo_excel = Pathname.new(ruta_excel+filename).open if !['.','..'].include?(filename)
+        end
+      end
+
+      @dato_productivo = @datos_productivos.first
+
+      @descargables = @tarea_pendiente.get_descargables
+      @comentario_coordinador = nil
+      data_tarea_025 = TareaPendiente.where(tarea_id: Tarea::ID_APL_025, flujo_id: @flujo.id).order(id: :asc).first.data
+      @comentario_coordinador = data_tarea_025[:observacion_tarea_anterior][Rol::CARGADOR_DATOS_ACUERDO] if data_tarea_025.has_key?(:observacion_tarea_anterior)
     end
 end

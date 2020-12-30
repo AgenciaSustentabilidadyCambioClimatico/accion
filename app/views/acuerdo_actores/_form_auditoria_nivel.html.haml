@@ -1,14 +1,18 @@
 -puede_editar = puede_editar.nil? ? true : puede_editar
--nivel_id = nivel.nil? ? 'nivel_id_temp' : nivel.id
--nombre_estandar = nivel.nil? ? 'nombre_estandar_temp' : nivel.estandar_homologacion.nombre
--nombre_nivel = nivel.nil? ? 'nombre_nivel_temp' : nivel.nombre
+-nivel_id = nivel_id.nil? ? 'nivel_id_temp' : nivel_id
+-nombre_estandar = nombre_estandar.nil? ? 'nombre_estandar_temp' : nombre_estandar
+-nombre_nivel = nombre_nivel.nil? ? 'nombre_nivel_temp' : nombre_nivel
 -plazo = plazo.nil? ? nil : plazo
 -aud_id = aud_id.nil? ? 'aud_id_temp' : aud_id
 %li.list-group-item.py-1.auditoria-nivel-row.bg-gris{"data-id" => nivel_id}
   = hidden_field_tag "informe_acuerdo[auditorias][#{aud_id}][auditoria_niveles][#{nivel_id}][id]", nivel_id
   .d-flex.justify-content-between.align-items-center
-    %label.control-label.mr-2{style: "width: 30%;"}=nombre_estandar
-    %label.control-label.mr-2{style: "width: 30%;"}=nombre_nivel
+    %label.control-label.mr-2{style: "width: 30%;"}
+      = hidden_field_tag "informe_acuerdo[auditorias][#{aud_id}][auditoria_niveles][#{nivel_id}][nombre_estandar]", nombre_estandar
+      =nombre_estandar
+    %label.control-label.mr-2{style: "width: 30%;"}
+      = hidden_field_tag "informe_acuerdo[auditorias][#{aud_id}][auditoria_niveles][#{nivel_id}][nombre_nivel]", nombre_nivel
+      =nombre_nivel
     .d-flex.align-items-center.mr-2{style: "width: 30%;"}
       = text_field_tag "informe_acuerdo[auditorias][#{aud_id}][auditoria_niveles][#{nivel_id}][plazo]", plazo, {class: "form-control numero vigencia-cert-intermedia-plazo", style: "width: 50px;", readonly: !puede_editar}
       %label.control-label.ml-2 años

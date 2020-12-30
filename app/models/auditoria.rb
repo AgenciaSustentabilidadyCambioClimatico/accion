@@ -9,6 +9,7 @@ class Auditoria < ApplicationRecord
   accepts_nested_attributes_for :auditoria_elementos
 
   mount_uploaders :ceremonia_certificacion_archivo, ArchivoCeremoniaCertificacionAuditoriaUploader
+  mount_uploader :archivo_revision, ArchivoRevisionAuditoriasUploader
 
   attr_accessor :archivo_auditorias, :archivos_informe, :archivos_evidencia, :archivo_carga_auditoria
 

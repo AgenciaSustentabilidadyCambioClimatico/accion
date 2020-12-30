@@ -49,19 +49,41 @@
                   - if ins[:documentos_asociados][:url].blank?
                     %td=ins[:documentos_asociados][:nombre]
                   - else
-                    %td
-                      -enlace = ins[:documentos_asociados][:metodo] ? public_send(ins[:documentos_asociados][:url], *ins[:documentos_asociados][:parametros]) : ins[:documentos_asociados][:url]
-                      =link_to enlace, class: "btn-tabla-instrumentos" do
-                        =fa_icon 'download'
-                        =ins[:documentos_asociados][:nombre]
+                    -if ins[:documentos_asociados][:url] == "modal"
+                      =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:documentos_asociados][:lista]
+                      %td
+                        =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'download'
+                          =ins[:documentos_asociados][:nombre]
+                    -else
+                      %td
+                        -enlace = ins[:documentos_asociados][:metodo] ? public_send(ins[:documentos_asociados][:url], *ins[:documentos_asociados][:parametros]) : ins[:documentos_asociados][:url]
+                        =link_to enlace, class: "btn-tabla-instrumentos" do
+                          =fa_icon 'download'
+                          =ins[:documentos_asociados][:nombre]
                   %td
-                    -if ins[:estado] == "Ejecutada" && ins[:puedo_ver_tarea]
-                      -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
-                      =link_to data_url[:url], class: "btn-tabla-instrumentos" do
-                        =fa_icon 'eye'
-                        =ins[:estado]
+                    - if ins[:puedo_ver_tarea]
+                      -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
+                        -if ins[:estado] == "Ejecutada"
+                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                          =link_to data_url[:url], class: "btn-tabla-instrumentos" do
+                            =fa_icon 'eye'
+                            =ins[:estado]
+                        -else
+                          =ins[:estado]
+                      -elsif !ins[:auditorias_tarea_033].blank?
+                        =render 'modal_auditorias_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:auditorias_tarea_033]
+                        =link_to '#', "data-target" => "#modal_auditorias_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'eye'
+                          =ins[:estado]
+                      -elsif !ins[:validaciones_tarea_034].blank?
+                        =render 'modal_validaciones_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:validaciones_tarea_034]
+                        =link_to '#', "data-target" => "#modal_validaciones_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'eye'
+                          =ins[:estado]
                     -else
                       =ins[:estado]
+
 .float-right
   = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
   -#

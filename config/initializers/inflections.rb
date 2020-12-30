@@ -67,6 +67,8 @@ ActiveSupport::Inflector.inflections do |inflect|
 	inflect.irregular 'nivel', 'niveles'
 	inflect.irregular 'estandar_nivel', 'estandar_niveles'
 	inflect.irregular 'auditoria_nivel', 'auditoria_niveles'
+	inflect.irregular 'validacion', 'alidaciones'
+	inflect.irregular 'auditoria_validacion', 'auditoria_validaciones'
 	inflect.uncountable %w(unidad_tiempo_para_contestar)
 	#inflect.uncountable %w( interes )
 	#inflect.irregular 'actividad', 'actividades'

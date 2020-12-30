@@ -17,7 +17,11 @@ class ApplicationController < ActionController::Base
     clase = params[:clase].to_s.constantize
     objeto_id = params[:objeto_id].to_i
     objeto = clase.find_by(id: objeto_id)
-    atributo = objeto.send(params[:atributo].to_sym)
+    if params[:atributo].is_a?(Array)
+      atributo = params[:atributo]
+    else
+      atributo = objeto.send(params[:atributo].to_sym)
+    end
     send_data(objeto.genera_zip(atributo), type: 'application/zip',filename: "archivos_adjuntos.zip")
   end
   

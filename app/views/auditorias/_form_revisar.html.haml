@@ -3,8 +3,78 @@
     htmlErrorToTooltip('top');
     $('.estado').change(function(){
       debeComentar(this,true);
-    });    
+    });
+
+
+    $('.seleccionar-elemento-auditoria').click(function(){
+      $('#boton_clasificar').prop('disabled', ($('.seleccionar-elemento-auditoria:checked').length == 0));
+    });
+
+    $('#auditoria_estado_elementos').change(function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#auditoria_justificacion_elementos').on('input paste', function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#enviar_modal_clasificar').click(function(){
+      estado = $('#auditoria_estado_elementos option:selected');
+      estado_val = estado.prop("value");
+      estado_nombre = estado.text();
+      justificacion = $('#auditoria_justificacion_elementos').val();
+
+      $('.seleccionar-elemento-auditoria:checked').each(function(index, elem){
+        posicion = elem.value;
+        tr = $('#auditorias_pendientes tr[data-id="'+posicion+'"]');
+        tr.find(".estado-elem").html(estado_nombre);
+        tr.find(".estado-auditoria-elemento").val(estado_val);
+        tr.find(".observacion-auditoria-elemento").val(justificacion);
+      });
+
+      $('.seleccionar-elemento-auditoria').attr("checked", false);
+      $('#boton_clasificar').prop('disabled', true);
+      $('#modal_clasificar_elementos').modal("hide");
+      $('#auditoria_estado_elementos').val("");
+      $('#auditoria_justificacion_elementos').val("");
+      $('#enviar_modal_clasificar').prop("disabled", true);
+      $('#enviar_button').prop("disabled", false);
+    });
+
+    $('#auditorias_pendientes').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
   });
+
+  function activar_guardar_modal_clasificar(){
+    $('#enviar_modal_clasificar').prop('disabled', true);
+    estado_val = $('#auditoria_estado_elementos').val();
+    if(estado_val != ""){
+      if( estado_val == "5"){
+        $('#enviar_modal_clasificar').prop('disabled', false);
+      }else{
+        if($('#auditoria_justificacion_elementos').val() != ""){
+          $('#enviar_modal_clasificar').prop('disabled', false);
+        }
+      }
+    }
+  }
+
   function debeComentar(elemento,checkValidity) {
     campo = $(elemento).closest("tr").children('td.comentario').find('textarea');
     var num = $(elemento).val();
@@ -19,23 +89,27 @@
     }
   }
 - titulo t(:auditoria_revisa_, item: "#{@auditoria.nombre.upcase}")
-= simple_form_for @auditoria, url: guardar_revisar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true do |f|
+= simple_form_for @auditoria, url: guardar_revisar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
+  =render 'modal_clasificar_elementos'
   .row
     .col-12
       .card
         .card-header
-          %h5.no-margin=titulo_instrumento.html_safe
-          -if @proyecto.blank?
-            %h5.no-margin=titulo_acuerdo.html_safe
-          -else
-            %h5.no-margin=titulo_proyecto.html_safe
-          %h5.no-margin=datos_beneficiario.html_safe    
-          %h5
-          %h5   
-          %h5.no-margin
-            %b=t(:elementos_a_revisar)        
+          %div
+            %h5.no-margin=titulo_instrumento.html_safe
+            -if !@manifestacion_de_interes.blank?
+              %h5.no-margin=titulo_acuerdo.html_safe
+            -elsif !@proyecto.blank?
+              %h5.no-margin=titulo_proyecto.html_safe
+            -elsif !@ppp.blank?
+              %h5.no-margin=titulo_programa.html_safe
+            %h5.no-margin=datos_beneficiario.html_safe
+        .card-header
+          .d-flex.justify-content-between.align-items-center
+            %h5.no-margin=t(:elementos_a_revisar)
+            %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Clasificar
         .card-body.p-0
-          %table.table.table-striped.table-bordered#adhesiones_rechazadas
+          %table.table.table-striped.table-bordered#auditorias_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
             %thead
               %tr
                 %th=t(:rut_institucion)
@@ -49,15 +123,14 @@
                 %th=t(:cumple)
                 %th=t(:archivo_evidencia)
                 %th=t(:archivo_informe)
-                %th.direccion=t(:estado_revisión)
-                %th=t(:observaciones)
+                %th=t(:estado_revisión)
+                %th=t(:seleccionar)
             %tbody
-              - if @auditoria.auditoria_elementos.blank?
-                %tr
-                  %td.text-center{colspan: 13} No hay elementos de auditoría
+              - estado = [2]
+              - estado = [3,4,5] if @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
               = f.fields_for :auditoria_elementos do |ae|
-                - if [2].include? (ae.object.estado) 
-                  %tr
+                - if estado.include? (ae.object.estado) 
+                  %tr{"data-id" => ae.object.id}
                     %td=ae.object.adhesion_elemento.persona.contribuyente.rut_completo
                     %td=ae.object.auditoria.nombre
                     %td=ae.object.auditoria.id
@@ -69,14 +142,38 @@
                     %td=ae.object.cumple ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
                     %td.text-center
                       -
-                      = link_to ae.object.archivo_evidencia.url, target: :_blank do
+                      = link_to ae.object.archivo_evidencia.url, target: :_blank, class: "btn btn-tabla" do
                         %i.fa.fa-file
                     %td.text-center
-                      = link_to ae.object.archivo_informe.url, target: :_blank do
+                      = link_to ae.object.archivo_informe.url, target: :_blank, class: "btn btn-tabla" do
                         %i.fa.fa-file
-                    %td= ae.input :estado, collection: [['Revisión', 2], ['Observaciones', 3], ['Rechazado', 4], ['Aprobado', 5]], label: false, include_blank: false, include_hidden: false, input_html: {class: 'not-required-if-other-like-me-is-present estado'}
-                    %td.comentario= ae.input :observacion, label: false, input_html: {readonly: false, value: nil}
+                    %td
+                      %label.estado-elem
+                        - if ae.object.estado.blank? || ae.object.estado == 2
+                          ="Revisión"
+                        - elsif ae.object.estado == 3
+                          ="Observaciones"
+                        - elsif ae.object.estado == 4
+                          ="Rechazado"
+                        - elsif ae.object.estado == 5
+                          ="Aprobado"
+                      = ae.input :id, as: :hidden, wrapper: false
+                      = ae.input :estado, as: :hidden, wrapper: false, input_html: {class: "estado-auditoria-elemento", value: 2}
+                      = ae.input :observacion, as: :hidden, wrapper: false, input_html: {class: "observacion-auditoria-elemento"}
+                    %td.text-center
+                      %input.form-control.seleccionar-elemento-auditoria.mt-2{type: :checkbox, value: ae.object.id}
+    .col-12
+      .card
+        .card-header
+          %h5.m-0=t(:adjuntar_informes_o_documentos_de_revision)
+        .card-body
+          .row
+            .col-12.col-lg-3
+              =f.input :archivo_revision, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_documento_opcional)
+              =f.input :archivo_revision_cache, as: :hidden
+            .col-12.col-lg-3
+              =__descargar_archivo(f.object.archivo_revision, f.object)
   .float-right
     = volver_root
     - unless @auditoria.auditoria_elementos.blank?
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary button-send, btn-disabled", disabled: true
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true

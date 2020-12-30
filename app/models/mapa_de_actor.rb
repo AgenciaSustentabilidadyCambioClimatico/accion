@@ -12,11 +12,11 @@ class MapaDeActor < ApplicationRecord
 	#validates :usuario_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
 	# validates :observacion_carga_datos, presence: true, if: -> { [:entregables_carga_datos,:carga_datos].include?(self.tipo) }
 	validates :institucion_entregables, :institucion_entregables_name, :usuario_entregables, :usuario_entregables_name, presence: true, if: -> { validar_apl_024 }
-	validates :institucion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos, :usuario_carga_datos_name, presence: true, if: -> { validar_apl_024 }
-	validates :flujo, :persona, :rol, presence: true, if: -> { !validar_apl_024 }
+	validates :institucion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos, :usuario_carga_datos_name, presence: true, if: -> { validar_apl_024 || validar_apl_040 }
+	validates :flujo, :persona, :rol, presence: true, if: -> { !validar_apl_024 && !validar_apl_040}
 
 	# campos creados para la vista asignar usuarios cargo de entregables certificacion
-	attr_accessor :tipo, :validar_apl_024
+	attr_accessor :tipo, :validar_apl_024, :validar_apl_040
 	attr_accessor :institucion_entregables, :usuario_entregables, :observacion_entregables, :institucion_entregables_name, :usuario_entregables_name
 	attr_accessor :institucion_carga_datos, :usuario_carga_datos, :observacion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos_name
 

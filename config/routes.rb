@@ -338,6 +338,7 @@ Rails.application.routes.draw do
         get ':manifestacion_de_interes_id/descargar_observaciones_informe_metas_acciones', to: "historial_instrumentos#descargar_observaciones_informe_metas_acciones", as: :descargar_observaciones_informe_metas_acciones
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_diagnostico', to: "historial_instrumentos#descargar_respuesta_encuesta_diagnostico", as: :descargar_respuesta_encuesta_diagnostico
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta/:tarea_id', to: "historial_instrumentos#descargar_respuesta_encuesta", as: :descargar_respuesta_encuesta
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_auditoria/:tarea_id/:auditoria_id', to: "historial_instrumentos#descargar_respuesta_encuesta_auditoria", as: :descargar_respuesta_encuesta_auditoria
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
         post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
         get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
@@ -415,11 +416,10 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-040
       # usuarios cargo_informe CERTIFICACION
-      post 'usuarios_cargo_informe/entregables', to: "usuarios_cargo_informe#filtro_entregables", as: :usuarios_cargo_informe_entregables
       post 'usuarios_cargo_informe/carga_datos', to: "usuarios_cargo_informe#filtro_carga_datos", as: :usuarios_cargo_informe_carga_datos
       match 'usuarios_cargo_informe/update', to: 'usuarios_cargo_informe#update', as: :update_usuarios_cargo_informe, via: [:post,:patch]
-      #DZC TAREA APL-024 propiamente tal
-      get 'usuarios_cargo_informe', to: 'usuarios_cargo_informe#index', as: :usuarios_cargo_informe      
+      #DZC TAREA APL-040 propiamente tal
+      get 'usuarios_cargo_informe', to: 'usuarios_cargo_informe#index', as: :usuarios_cargo_informe 
       
       #DZC TAREA APL-041, TAREA APL-042 
       get 'informe_impacto/revisar', to: 'informe_impactos#revisar'
@@ -732,6 +732,7 @@ Rails.application.routes.draw do
   get ':tarea_pendiente_id/adhesion/revisar', to: "adhesiones#revisar", as: :revisar_adhesion #DZC APL-028, PPF-017
   patch ':tarea_pendiente_id/adhesion/actualizar_guardar', to: "adhesiones#actualizar_guardar", as: :guardar_actualizar_adhesion
   patch ':tarea_pendiente_id/adhesion/actualizar_revisar', to: "adhesiones#revisar_guardar", as: :guardar_revisar_adhesion
+  post ':tarea_pendiente_id/auditoria/retirar_elemento', to: "adhesiones#retirar_elemento", as: :retirar_elemento_adhesion
   get ':tarea_pendiente_id/adhesion/descargar', to: "adhesiones#descargar", as: :descargar_adhesion
 
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada

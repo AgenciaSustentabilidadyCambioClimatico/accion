@@ -1,0 +1,23 @@
+.modal.fade#modal_clasificar_elementos{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label=t(:clasificar_elementos)
+      .modal-body
+        .row
+          .col-12
+            .form-group
+              %select.form-control.validado#auditoria_estado_elementos
+                %option{value: ""} Seleccione un estado de revisión
+                %option{value: "3"} Observaciones
+                %option{value: "4"} Rechazado
+                %option{value: "5"} Aprobado
+          .col-12
+            .form-group
+              %label.control-label=t(:justificacion_elementos)
+              %textarea.form-control.validado#auditoria_justificacion_elementos
+      .modal-footer
+        %button.btn.btn-primary.btn-sm#enviar_modal_clasificar{type: :button, disabled: true}
+          Guardar
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

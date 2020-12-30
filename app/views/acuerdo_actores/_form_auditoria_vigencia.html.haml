@@ -20,4 +20,14 @@
     .card-footer.p-0
       %ul.list-group.list-group-flush.p-0.m-0.auditoria-niveles
         -auditoria_niveles.each do |auditoria_nivel|
-          =render 'acuerdo_actores/form_auditoria_nivel', aud_id: aud_id, nivel: auditoria_nivel.estandar_nivel, plazo: auditoria_nivel.plazo, puede_editar: puede_editar
+          -begin
+            -nivel_id = auditoria_nivel.estandar_nivel.id
+            -nombre_estandar = auditoria_nivel.estandar_nivel.estandar_homologacion.nombre
+            -nombre_nivel = auditoria_nivel.estandar_nivel.nombre
+            -plazo = auditoria_nivel.plazo
+          -rescue
+            -nivel_id = auditoria_nivel[:id]
+            -nombre_estandar = auditoria_nivel[:nombre_estandar]
+            -nombre_nivel = auditoria_nivel[:nombre_nivel]
+            -plazo = auditoria_nivel[:plazo]
+          =render 'acuerdo_actores/form_auditoria_nivel', aud_id: aud_id, nivel_id: nivel_id, nombre_estandar: nombre_estandar, nombre_nivel: nombre_nivel, plazo: plazo, puede_editar: puede_editar

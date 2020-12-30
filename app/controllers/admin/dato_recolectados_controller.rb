@@ -99,6 +99,7 @@ class Admin::DatoRecolectadosController < ApplicationController
     def set_unidades
     	@unidades = Unit.definitions.values
 			@unidades.reject! { |k| k.prefix?}
-			@unidades = @unidades.map{|k| [k.name.gsub(/[<>]/, '').upcase, k.display_name] }    	
+			@unidades = @unidades.map{|k| [k.name.gsub(/[<>]/, '').upcase, k.display_name] } 
+      @unidades += DatoRecolectado.unidades_extras.map{|u| [u[:name], u[:prefix]]}
     end
 end

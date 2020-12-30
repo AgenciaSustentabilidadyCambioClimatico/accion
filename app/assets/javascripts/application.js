@@ -285,7 +285,7 @@ function toggleAddLink() {
 function htmlErrorToTooltip(placement) {
   placement = (placement===undefined) ? 'right' : placement
   $('div.has-error').each(function(k,v) {
-    campo = $(this).find("input.required, input.validado, select.required, input[type='checkbox'], input[type='radio'], .card-body.required, .error-mantenedor, textarea, .input-group");
+    campo = $(this).find("input.required, input.validado, select.required, select.validado, input[type='checkbox'], input[type='radio'], .card-body.required, .error-mantenedor, textarea, .input-group");
     error = $(this).find("span.help-block");
     if(campo.hasClass('card-body')) {
       campo = campo.parent('.card');

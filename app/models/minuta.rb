@@ -5,6 +5,7 @@ class Minuta < ApplicationRecord
 	validates :fecha, :direccion, :lat, :lng,  :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
 	validate :direccion_en_mapa
 	validate :acta, :lista_asistencia, on: :update, unless: -> {self.convocatoria.tarea_codigo == Tarea::COD_APL_021} #DZC necesario para condiciones de flujo 'A' y 'B' en APL-022
+	#validate :acta, on: :update, if: -> {self.convocatoria.tarea_codigo != Tarea::COD_APL_021 && self.convocatoria.tarea_codigo == Tarea::COD_APL_022}
 
 	mount_uploader :lista_asistencia, ArchivoListaAsistenciaMinutaUploader
 	mount_uploader :acta, ArchivoActaMinutaUploader

@@ -55,6 +55,13 @@ class AuditoriasController < ApplicationController
   def revisar_guardar
     
     respond_to do |format|
+
+      #si viene archivo lo guardo
+      if params[:auditoria].has_key?(:archivo_revision)
+        @auditoria.archivo_revision = params[:auditoria][:archivo_revision]
+        @auditoria.save!
+      end
+
       auditoria_elementos_form=[]
       auditoria_elementos_params[:auditoria_elementos_attributes].each do |k,v|
         auditoria_elementos_form +=[
@@ -83,29 +90,23 @@ class AuditoriasController < ApplicationController
   #DZC TAREA APL-034
   def validar_guardar
     respond_to do |format|
-      auditoria_elementos_form=[]
-      auditoria_elementos_validar_params[:auditoria_elementos_attributes].each do |k,v|
-        auditoria_elementos_form +=[
-          v.each do|k2,v2| 
-            [k2.to_sym => v2]
-          end
-        ]
+      @auditoria_validacion.validaciones = params[:validacion]
+      @auditoria_validacion.archivo = params[:auditoria_validacion][:archivo]
+      if @auditoria_validacion.save
+        continua_flujo_segun_tipo_tarea
+        set_auditoria
+        format.html { redirect_to validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes), notice: "Auditorías revisadas correctamente" }
+        format.js {
+          flash.now[:success] = "Elementos revisados correctamente"
+          render js: "window.location='#{validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes)}'"
+        } 
+      else
+        #en teoria no deberia caer aca, salvo que cargue un archivo con extension malo, si fuera el caso
+        set_estado_validaciones(params[:validacion])
+        format.js {
+          flash.now[:danger] = "Error al revisar elementos"
+        } 
       end
-      auditoria_elementos_form.each do |ae|
-        
-        ae[:validacion_fecha] = ae[:validacion_aceptada]? Time.now : nil
-        AuditoriaElemento.find_by_id(ae[:id]).update(validacion_aceptada: ae[:validacion_aceptada], validacion_observaciones: ae[:validacion_observaciones],validacion_fecha: ae[:validacion_fecha]) 
-      end
-      continua_flujo_segun_tipo_tarea
-      format.html { redirect_to validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes), notice: "Auditorías revisadas correctamente" }
-      format.js {
-        
-        flash.now[:success] = "Auditorías revisadas correctamente"
-        # DZC 2018-11-06 20:45:34 se agrega para filtrar auditorias que ya han sido aceptadas o rechazadas
-        @auditoria = Auditoria.find_by_id(@tarea_pendiente.data[:auditoria_id])
-          
-        # render js: "window.location='#{validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes)}'"
-      }
     end
 
   end
@@ -153,13 +154,29 @@ class AuditoriasController < ApplicationController
       enviar_correos_revisar_reportes(@flujo) #DZC 2018-11-15 16:42:43 envia correos suguiriendo la revision de los reportes de auditoría
     when Tarea::COD_APL_034
       condicion_de_salida = !@auditoria.final ? 'A' : 'B'
-      auditoria_elementos = @auditoria.auditoria_elementos
-      adhesion_elementos_id = auditoria_elementos.pluck(:adhesion_elemento_id).uniq
+      #obtengo todas las validaciones de todas las personas
+      #si la cantidad de auditoriavalidaciones no coincide con la cantidad de tareaspendientes es porque no tiene el 100 porque a alguien le falta revisar
+      auditoria_validaciones = AuditoriaValidacion.where(auditoria_id: @auditoria.id)
+      tareas_pendientes_validacion = TareaPendiente.where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: @tarea_pendiente.tarea_id).select{|tp| tp.data == {auditoria_id: @auditoria.id}}
+      auditoria_elementos_ids = @auditoria.auditoria_elementos.where(estado: [5]).pluck(:id)
       cumple_elemento_al_100 = false
       se_revisaron_todos = true
-      adhesion_elementos_id.each do |adel|
-        cumple_elemento_al_100 = (AuditoriaElemento.where(adhesion_elemento_id: adel, aplica: true, cumple: true, estado: 5).pluck(:validacion_aceptada).include?([false, nil]) && !cumple_elemento_al_100)? false : true #DZC se encuentra al menos un elemento que cumple con todas las condiciones
-        se_revisaron_todos = (!AuditoriaElemento.where(adhesion_elemento_id: adel, aplica: true, cumple: true, estado: 5).pluck(:validacion_aceptada).include?([nil]) && se_revisaron_todos)? true : false #DZC se encuentra al menos un elemento que no cumple con todas las condiciones
+      auditoria_elementos_ids.each do |ae_id|
+        cumple_este_elemento_al_100 = true
+        if !@auditoria_validacion.validaciones.has_key?(ae_id.to_s) || @auditoria_validacion.validaciones[ae_id.to_s][:estado_valor].nil? || @auditoria_validacion.validaciones[ae_id.to_s][:estado_valor] == ""
+          se_revisaron_todos = false
+        end
+
+        if auditoria_validaciones.length == tareas_pendientes_validacion.length
+          auditoria_validaciones.each do |auditoria_validacion|
+            if !auditoria_validacion.validaciones.blank?
+              if !auditoria_validacion.validaciones.has_key?(ae_id.to_s) || auditoria_validacion.validaciones[ae_id.to_s][:estado_valor] != "true"
+                cumple_este_elemento_al_100 = false
+              end
+            end
+          end
+          cumple_elemento_al_100 = true if cumple_este_elemento_al_100
+        end
       end
       if cumple_elemento_al_100
         @tarea_pendiente.pasar_a_siguiente_tarea condicion_de_salida, {auditoria_id: @auditoria.id}, false
@@ -208,9 +225,54 @@ class AuditoriasController < ApplicationController
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [2]) #DZC elementos a auditar
       else #DZC APL-034
         @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [5]) #DZC elementos a auditar
+
+        @auditoria_validacion = AuditoriaValidacion.find_or_create_by({auditoria_id: @auditoria.id, user_id: @tarea_pendiente.user_id})
+        set_estado_validaciones(@auditoria_validacion.validaciones)
       end
       # DZC 2019-06-19 12:45:07 se comenta para correcto funcionamiento del algoritmo
       # @auditoria_elementos = nil
+    end
+
+    def set_estado_validaciones validaciones_data
+      @elementos = []
+      @auditoria_validacion_sin_guardar = AuditoriaValidacion.find_by({auditoria_id: @auditoria.id, user_id: @tarea_pendiente.user_id})
+      @auditoria_elementos.each do |ae|
+        validacion_estado_nombre = 'Por validar'
+        validacion_estado_valor = nil
+        validacion_justificacion = nil
+        persiste = false
+        if !validaciones_data.blank?
+          validacion = validaciones_data[ae.id.to_s]
+          if !validacion.nil?
+            validacion_estado_nombre = validacion[:estado_nombre]
+            validacion_estado_valor = validacion[:estado_valor]
+            validacion_justificacion = validacion[:justificacion]
+          end
+          if !@auditoria_validacion_sin_guardar.nil? && !@auditoria_validacion_sin_guardar.validaciones.blank?
+            validacion_bd = @auditoria_validacion_sin_guardar.validaciones[ae.id.to_s]
+            persiste = (!validacion_bd.nil? && !validacion_bd[:estado_valor].nil? && validacion_bd[:estado_valor] != "" )
+          end
+        end
+
+        @elementos << {
+          contribuyente_rut_completo: ae.adhesion_elemento.persona.contribuyente.rut_completo,
+          auditoria_nombre: ae.auditoria.nombre,
+          auditoria_id: ae.auditoria.id,
+          alcance_nombre: ae.adhesion_elemento.alcance.nombre,
+          id: ae.id,
+          descripcion_accion: ae.set_metas_accion.descripcion_accion,
+          aplica: ae.aplica,
+          motivo: ae.motivo,
+          cumple: ae.cumple,
+          estado_detalle: ae.estado_detalle,
+          archivo_evidencia_url: ae.archivo_evidencia.url,
+          archivo_informe_url: ae.archivo_informe.url,
+          validacion_estado_nombre: validacion_estado_nombre,
+          validacion_estado_valor: validacion_estado_valor,
+          validacion_justificacion: validacion_justificacion,
+          persiste: persiste
+        }
+      end
     end
 
     def set_datos

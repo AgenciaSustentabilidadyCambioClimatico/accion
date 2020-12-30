@@ -172,7 +172,7 @@ class InformeAcuerdo < ApplicationRecord
     datos = self.attributes
     datos.each{ |k,v| datos[k] = "" if v.nil? }
     datos["archivos_anexos"] = datos["archivos_anexos"].join(",")
-    datos["auditorias"] = auditorias.map{|aud| {"nombre" => aud.nombre}}
+    datos["auditorias"] = auditorias.map{|aud| {"nombre" => (aud.nombre rescue aud[:nombre])}}
     datos
   end
 
@@ -199,6 +199,29 @@ class InformeAcuerdo < ApplicationRecord
         es_descargable: true
       }
     )
+  end
+
+  def fecha_desde_tipo_acuerdo
+    fecha_comparativa = nil
+    begin
+      #dentro de begin porque puede darse el caso que algo no exista, si es asi no se puede obtener fecha nomas
+      if self.tipo_acuerdo == "desde_firma_acuerdo"
+        #si es desde firma tomo la fecha firma
+        fecha_comparativa = self.manifestacion_de_interes.firma_fecha
+      else
+        #si es desde fecha aprobacion de adhesion
+        #apl-028 es la que dice si fue aprobada la adhesion ¿y como?, si al menos un elemento fue aprobado
+        #¿y como se si un elemento fue aprobado?, porque se agrega a la tabla adhesion elementos
+        #tonce si tiene al menos un elemento en tabla adhesion_elementos ya tenemos fecha
+        #debemos ordenar por fecha y tomar la primera, ya que se pueden seguir aprobando elementos post envio
+        flujo = self.manifestacion_de_interes.flujo
+        if flujo.adhesion_elementos.length > 0
+          fecha_comparativa = flujo.adhesion_elementos.order(created_at: :asc).first.created_at.to_date
+        end
+      end
+    rescue
+    end
+    fecha_comparativa
   end
     
   #DZC calcula fechas

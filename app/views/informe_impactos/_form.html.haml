@@ -1,32 +1,40 @@
+-titulo t(:cargar_informe_de_impactos)
 - url = @informe_impacto.new_record? ? informe_impactos_path(@tarea) : informe_impacto_path(@tarea,@informe_impacto)
 = simple_form_for(@informe_impacto, remote: true, url: url) do |f|
   .card
     .card-header
-      %h5.no-margin=t(:cargar_informe_de_impactos)
+      .p-1
+        %h5.no-margin
+          =titulo_instrumento.html_safe
+        - if @proyecto.blank?
+          %h5.no-margin
+            =titulo_acuerdo.html_safe
+        - else
+          %h5.no-margin
+            =titulo_proyecto.html_safe
+        %h5.no-margin
+          =datos_beneficiario.html_safe
     .card-body
       .row
-        - class_documento = @informe_impacto.documento.url.blank? ? 'col-md-6 col-sm-12' : 'col-md-5 col-sm-10'
+        - class_documento = @informe_impacto.documento.url.blank? ? '' : 'col-lg-5'
         - unless @informe_impacto.observacion.blank?
           .col-12
-            = f.input :observacion, disabled: :disabled, input_html: { disabled: :disabled }
-        %div{class: class_documento}
-          = f.label :documento
-          = f.input :documento, as: :file, label: false, input_html: { class: 'form-control' }
+            = f.input :observacion, disabled: :disabled, input_html: { disabled: :disabled }, label: t(:observaciones_realizadas_por_revisor_del_informe)
+        .col-12{class: class_documento}
+          = f.input :documento, as: :file, input_html: { class: 'form-control' }
           = f.hidden_field :documento_cache
         - unless @informe_impacto.documento.url.blank?
-          .col-md-1.col-sm-2.col-xs-2
-            = link_to @informe_impacto.documento.url, target: :_blank do
-              %i.fa.fa-download.margin-top-35{title: "Descargar #{@informe_impacto.nombre_documento}"}
-        .col-md-1
+          .col-12.col-lg-1
+            =__descargar_archivo(f.object.documento, f.object, true, false)
+        .col-12.col-lg-1.text-lg-center
           %label.string.control-label= t(:público)
           = f.input :publico,label: false, input_html: {class: 'margin-top-10'}
-          = f.hidden_field :manifestacion_de_interes_id, input_html: {value: @manifestacion.id}
-        .col-md-3
+          = f.hidden_field :manifestacion_de_interes_id, input_html: {value: @manifestacion_de_interes.id}
+        .col-12.col-lg-3
           = f.hidden_field :subida_parcial,value: false
           = f.input :nombre_documento, input_html: { class: 'required-field' }
-        .col-md-2
-          = link_to  t(:subir_documento),'#', 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Subiendo...".html_safe, class: "btn btn-sm btn-primary margin-top-25 upload-document"
-        .col-md-12
+        .col-12.col-lg-2.text-right
+          = link_to  t(:subir_documento),'#', 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Subiendo...".html_safe, class: "btn btn-sm btn-primary margin-top-25 upload-document ml-auto ml-0"
   .row
     .col-12
       .float-right
@@ -35,15 +43,15 @@
   .row.pt-2
     .col-sm-12
       = render 'convocatorias/table_descargables'
-    - texto_observacion = @tarea.data[:observacion_tarea_anterior].blank? ? nil : @tarea.data[:observacion_tarea_anterior][Rol::RESPONSABLE_ENTREGABLES]
+    - texto_observacion = @tarea.data[:observacion_tarea_anterior].blank? ? nil : @tarea.data[:observacion_tarea_anterior][@tarea.tarea.rol_id]
     - col_siguiente = texto_observacion.blank? ? 'col-md-4 col-sm-12' : 'col-12'
     - unless texto_observacion.blank?
-      .col-md-4.col-sm-12
+      .col-12
         .card
           .card-header
             %h5.no-margin= t(:observaciones_coordinador)
           .card-body
-            = text_area_tag :obs_coordinador, texto_observacion, class: 'form-control disabled min-height-170', readonly: true
+            = text_area_tag :obs_coordinador, texto_observacion, class: 'form-control disabled', rows: 5, readonly: true
 
     
 
@@ -53,4 +61,6 @@
       $('#informe_impacto_subida_parcial').val('true');
       $('#consultar-button').attr('disabled',false).trigger('click')
     });
+
+    checkFieldValidity($('#consultar-button'));
   });

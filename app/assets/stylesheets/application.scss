@@ -1161,3 +1161,31 @@ ul.seleccionados_tree li:only-child{
 .form-group.radio_buttons > span.radio:first-of-type{
   margin-left: 0;
 }
+
+.alert-blue{
+  background-color: #CCE5FF;
+  border: 1px solid #B8DAFF;
+  border-radius: 6px;
+  color: #004085;
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.alert-blue i{
+  font-size: 18px;
+}
+
+.btn-ascc,
+.btn-ascc:hover,
+.btn-ascc:focus{
+  background-color: #5D759E;
+  color: #FFFFFF;
+  border: 1px solid #5D759E;
+  border-radius: 3px;
+}
+
+input.form-control.file{
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

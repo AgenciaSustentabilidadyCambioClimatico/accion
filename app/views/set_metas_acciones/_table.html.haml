@@ -71,13 +71,13 @@
     $('#informe_acuerdo_archivos_anexos_posteriores_firmas').change(function (){
       //$('#archivos_cargados').find(".parciales").remove();
       $.each(this.files,function(index, value){
-        li = "<li class='list-group-item d-flex justify-content-between align-items-center parciales'>";
-        li += "<input name='por_eliminar[]' type='checkbox' value='"+this.name+"' />";
-        li += "<span>"+this.name+"</span>";
-        li += "<span>"+this.name+"</span>";
-        li += "<span class='badge badge-pill'>";
+        li = "<tr>";
+        li += "<td class='text-center' style='width: 15%;min-width: 15%;max-width: 15%'><input name='por_eliminar[]' type='checkbox' value='"+this.name+"' /></td>";
+        li += "<td class='text-center' style='overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 25%;min-width: 25%;max-width: 25%' title='"+this.name+"'>"+this.name+"</td>";
+        li += "<td class='text-center' style='width: 15%;min-width: 15%;max-width: 15%'>";
         li += "<i class='fa fa-circle-o-notch fa-spin fa-2x'>";
-        li += "</span></li>";
+        li += "</td>";
+        li += "</tr>";
         $('#archivos_cargados').append(li);
       });
     });

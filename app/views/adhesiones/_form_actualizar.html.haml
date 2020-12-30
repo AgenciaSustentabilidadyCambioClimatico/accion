@@ -36,11 +36,11 @@
               %tr
                 %th=t(:rut_institucion)
                 %th=t(:nombre_institución)
+                %th=t(:alcance)
+                %th=t(:nombre_elemento)
                 %th=t(:comuna_establecimiento)
                 %th=t(:direccion_establecimiento)
-                %th=t(:nombre_encargado)
-                %th=t(:fono_encargado)
-                %th=t(:mail_encargado)
+                %th=t(:datos_encargado)
                 %th=t(:observaciones)
                 %th=t(:estado)
             %tbody
@@ -49,16 +49,19 @@
                   %tr
                     %td=fila[:rut_institucion]
                     %td=fila[:nombre_institucion]
+                    %td=fila[:alcance]
+                    %td=fila[:nombre_elemento]
                     %td=fila[:comuna_instalacion]
                     %td=fila[:direccion_instalacion]
-                    %td=fila[:nombre_encargado]
-                    %td=fila[:fono_encargado]
-                    %td=fila[:email_encargado]
+                    %td
+                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td=fila[:observaciones]
                     %td=k.upcase
   
   .row
-    -if @flujo.apl?
+    -if @flujo.apl? && @tarea_pendiente.data.has_key?(:observacion_tarea_anterior) && @tarea_pendiente.data[:observacion_tarea_anterior].has_key?(Rol::RESPONSABLE_ENTREGABLES)
       .col-12.col-lg-6
         .card
           .card-header

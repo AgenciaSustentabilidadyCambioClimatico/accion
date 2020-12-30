@@ -34,12 +34,32 @@ class MinutasController < ApplicationController #crea la depencia con convocator
         end
         @minuta.establece_mensaje_encabezado
         @minuta.establece_mensaje_cuerpo
-        # 
-        @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
-          rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
-           ConvocatoriaMailer.delay.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
+
+        if @tarea.codigo==Tarea::COD_APL_022
+
+          if(!@tarea_pendiente.data.has_key?(:ejecutada))
+
+            # 
+            @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
+              rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
+               ConvocatoriaMailer.delay.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
+            end
+
+            data = @tarea_pendiente.data
+            data[:ejecutada] = true
+            @tarea_pendiente.update(data: data)
+
+            continua_flujo_segun_tipo_tarea
+          end
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if !@minuta.acta.blank?
+        else
+          # 
+          @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
+            rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
+             ConvocatoriaMailer.delay.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
+          end
+          continua_flujo_segun_tipo_tarea
         end
-        continua_flujo_segun_tipo_tarea
         format.html { redirect_to root_path, notice: "Minuta enviada" }#redirecciona a donde debe volver. 
         format.js { 
           flash[:success] = "Minuta enviada"; render js: "window.location='#{root_path}'"   

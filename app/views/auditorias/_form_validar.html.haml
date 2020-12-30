@@ -1,20 +1,104 @@
+:javascript
+  $(document).ready(function() {
+    htmlErrorToTooltip('top');
+    $('.estado').change(function(){
+      debeComentar(this,true);
+    });
+
+
+    $('.seleccionar-elemento-auditoria').click(function(){
+      $('#boton_clasificar').prop('disabled', ($('.seleccionar-elemento-auditoria:checked').length == 0));
+    });
+
+    $('#auditoria_estado_elementos').change(function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#auditoria_justificacion_elementos').on('input paste', function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#enviar_modal_clasificar').click(function(){
+      estado = $('#auditoria_estado_elementos option:selected');
+      estado_val = estado.prop("value");
+      estado_nombre = estado.text();
+      justificacion = $('#auditoria_justificacion_elementos').val();
+
+      $('.seleccionar-elemento-auditoria:checked').each(function(index, elem){
+        posicion = elem.value;
+        tr = $('#auditorias_por_validar tr[data-id="'+posicion+'"]');
+        tr.find(".estado-elem").html(estado_nombre);
+        tr.find(".estado-auditoria-elemento").val(estado_val);
+        tr.find(".estado-auditoria-elemento-nombre").val(estado_nombre);
+        tr.find(".observacion-auditoria-elemento").val(justificacion);
+      });
+
+      $('.seleccionar-elemento-auditoria').attr("checked", false);
+      $('#boton_clasificar').prop('disabled', true);
+      $('#modal_clasificar_elementos').modal("hide");
+      $('#auditoria_estado_elementos').val("");
+      $('#auditoria_justificacion_elementos').val("");
+      $('#enviar_modal_clasificar').prop("disabled", true);
+      $('#enviar_button').prop("disabled", false);
+    });
+
+    $('#auditorias_por_validar').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 },
+        { targets: [-3,-4], orderable: false },
+
+      ]
+    });
+  });
+
+  function activar_guardar_modal_clasificar(){
+    $('#enviar_modal_clasificar').prop('disabled', true);
+    estado_val = $('#auditoria_estado_elementos').val();
+    if(estado_val != ""){
+      if( estado_val == "true"){
+        $('#enviar_modal_clasificar').prop('disabled', false);
+      }else{
+        if($('#auditoria_justificacion_elementos').val() != ""){
+          $('#enviar_modal_clasificar').prop('disabled', false);
+        }
+      }
+    }
+  }
 - titulo t(:elementos_por_validar_, item: "#{@auditoria.nombre.upcase}")
-= simple_form_for @auditoria, url: guardar_validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true do |f|
+= simple_form_for @auditoria_validacion, url: guardar_validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
+  =render 'modal_clasificar_elementos_validar'
   .row
     .col-12
-      .card
+      .card     
         .card-header
-          %h5.no-margin=titulo_instrumento.html_safe
-          -if @proyecto.blank?
-            %h5.no-margin=titulo_acuerdo.html_safe
-          -else
-            %h5.no-margin=titulo_proyecto.html_safe
-          %h5.no-margin=datos_beneficiario.html_safe    
-          %h5
-          %h5   
-          %h5.no-margin=t(:elementos_observados_o_rechazados)        
+          %div
+            %h5.no-margin=titulo_instrumento.html_safe
+            -if !@manifestacion_de_interes.blank?
+              %h5.no-margin=titulo_acuerdo.html_safe
+            -elsif !@proyecto.blank?
+              %h5.no-margin=titulo_proyecto.html_safe
+            -elsif !@ppp.blank?
+              %h5.no-margin=titulo_programa.html_safe
+            %h5.no-margin=datos_beneficiario.html_safe
+        .card-header
+          .d-flex.justify-content-between.align-items-center
+            %h5.no-margin=t(:elementos_observados_o_rechazados)
+            %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Validar
         .card-body.p-0
-          %table.table.table-striped.table-bordered#adhesiones_rechazadas
+          %table.table.table-striped.table-bordered.m-0#auditorias_por_validar{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
             %thead
               %tr
                 %th=t(:rut_institucion)
@@ -29,30 +113,46 @@
                 %th=t(:estado)
                 %th=t(:evidencial)
                 %th=t(:archivo_informe)
-                %th=t(:validar)
-                %th=t(:observaciones)
+                %th=t(:validacion_otorgada)
+                %th=t(:seleccionar)
             %tbody
-              = f.fields_for :auditoria_elementos do |ae|
-                - if @auditoria.con_validacion && ([5].include?(ae.object.estado)) && (ae.object.validacion_fecha.nil?)
-                  %tr
-                    %td=ae.object.adhesion_elemento.persona.contribuyente.rut_completo
-                    %td=ae.object.auditoria.nombre
-                    %td=ae.object.auditoria.id
-                    %td=ae.object.adhesion_elemento.alcance.nombre
-                    %td=ae.object.id
-                    %td=ae.object.set_metas_accion.descripcion_accion
-                    %td=ae.object.aplica ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
-                    %td=ae.object.motivo
-                    %td=ae.object.cumple ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
-                    %td=ae.object.estado_detalle
-                    %td.text-center
-                      = link_to ae.object.archivo_evidencia.url, target: :_blank do
-                        %i.fa.fa-file
-                    %td.text-center
-                      = link_to ae.object.archivo_informe.url, target: :_blank do
-                        %i.fa.fa-file
-                    %td= ae.input :validacion_aceptada, collection: [['Otorga Validación', true], ['Rechaza otorgar Validación', false]], label: false, include_blank: false, include_hidden: false, input_html: {class: 'not-required-if-other-like-me-is-present estado'}
-                    %td.comentario= ae.input :validacion_observaciones, label: false, input_html: {readonly: false}
+              -@elementos.each do |ae|
+                -oculto = (!ae[:validacion_estado_valor].blank? && @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA && ae[:persiste])
+                %tr{"data-id" => ae[:id], class: (oculto ? 'd-none' : '')}
+                  %td=ae[:contribuyente_rut_completo]
+                  %td=ae[:auditoria_nombre]
+                  %td=ae[:auditoria_id]
+                  %td=ae[:alcance_nombre]
+                  %td=ae[:id]
+                  %td=ae[:descripcion_accion]
+                  %td=ae[:aplica] ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
+                  %td=ae[:motivo]
+                  %td=ae[:cumple] ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
+                  %td=ae[:estado_detalle]
+                  %td.text-center
+                    = link_to ae[:archivo_evidencia_url], target: :_blank, class: "btn btn-tabla" do
+                      %i.fa.fa-file
+                  %td.text-center
+                    = link_to ae[:archivo_informe_url], target: :_blank, class: "btn btn-tabla" do
+                      %i.fa.fa-file
+                  %td
+                    %label.estado-elem=ae[:validacion_estado_nombre]
+                    %input.estado-auditoria-elemento{type: :hidden, name: "validacion[#{ae[:id]}][estado_valor]", value: ae[:validacion_estado_valor]}
+                    %input.estado-auditoria-elemento-nombre{type: :hidden, name: "validacion[#{ae[:id]}][estado_nombre]", value: ae[:validacion_estado_nombre]}
+                    %input.observacion-auditoria-elemento{type: :hidden, name: "validacion[#{ae[:id]}][justificacion]", value: ae[:validacion_justificacion]}
+                  %td.text-center
+                    %input.form-control.seleccionar-elemento-auditoria.mt-2{type: :checkbox, value: ae[:id]}
+    .col-12
+      .card
+        .card-header
+          %h5.m-0=t(:adjuntar_oficio_y_o_informe_de_validacion)
+        .card-body
+          .row
+            .col-12.col-lg-3
+              =f.input :archivo, as: :file, input_html: {class: "form-control validado"}, label: t(:adjuntar_documento)
+              =f.input :archivo_cache, as: :hidden
+            .col-12.col-lg-3
+              =__descargar_archivo(f.object.archivo, f.object)
   .float-right
     = volver_root
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary button-send"
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true

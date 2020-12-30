@@ -124,6 +124,7 @@ class TareaPendiente < ApplicationRecord
     tareas_unico_actor += [Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_APL_031, Tarea::COD_PPF_015] #DZC Minutas
     tareas_unico_actor += [Tarea::COD_APL_022] if !condicion_de_salida.blank? && (!condicion_de_salida.include?('A')) #DZC APL-022 que no finalizan la tarea
     tareas_unico_actor += [Tarea::COD_APL_015, Tarea::COD_APL_039, Tarea::COD_APL_043, Tarea::COD_PPF_023, Tarea::COD_PPF_024] #DZC Encuestas
+    tareas_unico_actor += [Tarea::COD_APL_034] #validacion
 
     #DZC tareas que finalizarán todas las tareas pendientes del flujo
     tareas_finalizan_flujo = []
@@ -174,8 +175,8 @@ class TareaPendiente < ApplicationRecord
           TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
 
         # DZC 2018-11-07 06:01:00 se agregar continuación de flujo para condición de término de APL-034
-        elsif ([Tarea::COD_APL_034].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('C'))
-          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+        #elsif ([Tarea::COD_APL_034].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('C'))
+          #TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
         #DZC se finalizan las demás tareas del mismo tipo
         else
           TareaPendiente.where(flujo_id: self.flujo_id).where(tarea_id: self.tarea_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)

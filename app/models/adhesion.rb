@@ -1,6 +1,7 @@
 class Adhesion < ApplicationRecord
 
 	has_many :adhesion_elementos, dependent: :destroy
+	has_many :adhesion_elemento_retirados, dependent: :destroy
 	# belongs_to :manifestacion_de_interes
 	belongs_to :flujo
 
@@ -8,10 +9,17 @@ class Adhesion < ApplicationRecord
 	mount_uploader :archivo_elementos, ArchivoElementosAdhesionesUploader
 
 	validate :data_adhesiones, unless: -> { tipo.present? }
+	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
+	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
 
 	serialize :adhesiones_data
 
 	attr_accessor :aceptado, :observacion, :tipo, :is_ppf
+	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
+	attr_accessor :documento_justificacion, :elemento_retirado_id, :validar_retirar
+
+	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
+
 
 	def self.columnas_excel
 		{
@@ -119,7 +127,7 @@ class Adhesion < ApplicationRecord
 							elsif fila[:nombre_institucion].blank?
 								errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"
 							else
-								if ActividadEconomica.where(codigo_ciiuv2: fila[:sector_productivo]).first.nil?
+								if ActividadEconomica.where(codigo_ciiuv4: fila[:sector_productivo]).first.nil?
 									errores[:sector_productivo] << fila[:sector_productivo]
 								end
 								if TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
@@ -356,7 +364,7 @@ class Adhesion < ApplicationRecord
 	def self.dominios(is_ppf=false)
 		if is_ppf
 			{			
-				sectores: ActividadEconomica.order(codigo_ciiuv2: :asc).map {|ac| ac.codigo_ciiuv2.to_s}.compact,
+				sectores: ActividadEconomica.order(codigo_ciiuv4: :asc).map {|ac| ac.codigo_ciiuv4.to_s}.compact,
 				tipo_instituciones: TipoContribuyente.order(nombre: :asc).map {|ti| ti.nombre}.compact,
 				comunas: Comuna.order(nombre: :asc).map {|c| c.nombre}.compact,
 				cargos: Cargo.order(nombre: :asc).map {|c| c.nombre}.compact,
@@ -365,7 +373,7 @@ class Adhesion < ApplicationRecord
 			}
 		else
 			{			
-				sectores: ActividadEconomica.order(codigo_ciiuv2: :asc).map {|ac| ac.codigo_ciiuv2.to_s}.compact,
+				sectores: ActividadEconomica.order(codigo_ciiuv4: :asc).map {|ac| ac.codigo_ciiuv4.to_s}.compact,
 				tipo_instituciones: TipoContribuyente.order(nombre: :asc).map {|ti| ti.nombre}.compact,
 				comunas: Comuna.order(nombre: :asc).map {|c| c.nombre}.compact,
 				cargos: Cargo.order(nombre: :asc).map {|c| c.nombre}.compact,
@@ -412,7 +420,23 @@ class Adhesion < ApplicationRecord
 
 	def adhesiones_aceptadas
 		if self.persisted?
-			self.adhesion_elementos.pluck('fila')
+			self.adhesion_elementos.map{ |a|
+				fila = a.fila
+				fila[:id] = a.id
+				fila
+			}
+		else
+			[]
+		end
+	end
+
+	def adhesiones_retiradas
+		if self.persisted?
+			self.adhesion_elemento_retirados.map{|a| 
+				fila = a.fila
+				fila[:documento_justificacion] = a.archivo_retiro
+				fila
+			}
 		else
 			[]
 		end
@@ -449,7 +473,7 @@ class Adhesion < ApplicationRecord
 			contribuyente.save(validate: false)
 		end
 
-		actividad_economica = ActividadEconomica.find_by(codigo_ciiuv2: fila[:sector_productivo])
+		actividad_economica = ActividadEconomica.find_by(codigo_ciiuv4: fila[:sector_productivo])
 		aaeec = contribuyente.actividad_economica_contribuyentes.where(actividad_economica_id: actividad_economica.id).first
 		if aaeec.blank? 
 			aaeec = ActividadEconomicaContribuyente.new(

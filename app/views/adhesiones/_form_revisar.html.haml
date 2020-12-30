@@ -1,70 +1,213 @@
 :javascript
+  retirar_confirmado = false;
+
+  $(document).on('click', '#enviar_modal_retirar_elemento', function(e){
+    if(!retirar_confirmado){
+      e.preventDefault();
+      dataConfirmModal.confirm({
+        title: 'Confirmar acción',
+        text: "¿Seguro que desea retirar del Acuerdo el elemento adherido?",
+        commit: 'Confirmar',
+        cancel: 'Volver',
+        zIindex: 10099,
+        onConfirm: function() {
+          retirar_confirmado = true;
+          $('#enviar_modal_retirar_elemento').trigger("click");
+        },
+        onCancel:  function() {
+        },
+        onHide:    function() {
+        }
+      });
+    }else{
+      retirar_confirmado = false;
+    }
+  });
+
+  function activar_guardar_modal_clasificar(){
+    $('#enviar_modal_clasificar').prop('disabled', true);
+    if($('#adhesion_estado_elementos').val() != ""){
+      if($('#adhesion_estado_elementos').val() == "true"){
+        $('#enviar_modal_clasificar').prop('disabled', false);
+      }else{
+        if($('#adhesion_justificacion_elementos').val() != ""){
+          $('#enviar_modal_clasificar').prop('disabled', false);
+        }
+      }
+    }
+  }
+
   $(document).ready(function(){
-    $(".aceptado").change(function(){
-      valor = $(this).val()
-      if(valor==""){
-        $(this).closest("tr").find($('.observacion')).attr("disabled", true);
-      }else if(valor=="true"){
-        $(this).closest("tr").find($('.observacion')).attr("disabled", false).removeClass('required-field');
-      }else if(valor=="false"){
-        $(this).closest("tr").find($('.observacion')).attr("disabled", false).addClass('required-field');
-      }      
-    })
+
+    $('.seleccionar-elemento-adhesion').click(function(){
+      $('#boton_clasificar').prop('disabled', ($('.seleccionar-elemento-adhesion:checked').length == 0));
+    });
+
+    $('#adhesion_estado_elementos').change(function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#adhesion_justificacion_elementos').on('input paste', function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#enviar_modal_clasificar').click(function(){
+      estado = $('#adhesion_estado_elementos option:selected');
+      estado_val = estado.prop("value");
+      estado_nombre = estado.text();
+      justificacion = $('#adhesion_justificacion_elementos').val();
+
+      $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
+        posicion = elem.value;
+        tr = $('#adhesiones_pendientes tr[data-id="'+posicion+'"]');
+        console.log(tr);
+        tr.find(".estado-elem").html(estado_nombre);
+        tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
+        tr.find("input[name='observacion["+posicion+"]']").val(justificacion);
+      });
+
+      $('.seleccionar-elemento-adhesion').attr("checked", false);
+      $('#boton_clasificar').prop('disabled', true);
+      $('#modal_clasificar_elementos').modal("hide");
+      $('#adhesion_estado_elementos').val("");
+      $('#adhesion_justificacion_elementos').val("");
+      $('#enviar_modal_clasificar').prop("disabled", true);
+      $('#enviar_button').prop("disabled", false);
+    });
+
+    $('.retirar-elemento').click(function(){
+      $('#adhesion_elemento_retirado_id').val($(this).data('id'));
+    });
+
+    $('#adhesiones_pendientes').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
+    $('#adhesiones_revisadas').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1 },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
+    $('#adhesiones_retiradas').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1 },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
+    enableDisabledButton();
   })
 
 -if @flujo.apl?
   - titulo t(:revision_adhesiones)
 -if @flujo.ppf?
   - titulo t(:revision_adhesion)
-
+=render 'modal_retirar_elemento'
 = simple_form_for @adhesion, url: guardar_revisar_adhesion_path(@tarea_pendiente), method: :patch, remote: true do |f|
+  =render 'modal_clasificar_elementos'
   .row
     .col-12
       .card
         .card-header
-          %h5.no-margin
-          %b
-            =t(:estado_adhesiones)
-          %h5.no-margin=titulo_instrumento.html_safe
-          -if !@manifestacion_de_interes.blank?
-            %h5.no-margin=titulo_acuerdo.html_safe
-          -elsif !@proyecto.blank?
-            %h5.no-margin=titulo_proyecto.html_safe
-          -elsif !@ppp.blank?
-            %h5.no-margin=titulo_programa.html_safe
-          %h5.no-margin=datos_beneficiario.html_safe
+          .d-flex.justify-content-between.flex-column.flex-lg-row
+            %div
+              %h5.no-margin=titulo_instrumento.html_safe
+              -if !@manifestacion_de_interes.blank?
+                %h5.no-margin=titulo_acuerdo.html_safe
+              -elsif !@proyecto.blank?
+                %h5.no-margin=titulo_proyecto.html_safe
+              -elsif !@ppp.blank?
+                %h5.no-margin=titulo_programa.html_safe
+              %h5.no-margin=datos_beneficiario.html_safe
+            .card.mb-0.mt-3.mt-lg-0
+              .card-body.px-3.py-2
+                .form-group
+                  =__descargar_archivo(f.object.archivo_elementos, f.object, true, true, t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones), t(:descargar_documentación))
+
+
+        .card-header
+          .d-flex.justify-content-between.align-items-center
+            %h5.no-margin=t(:estado_adhesiones)
+            %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Clasificar
         .card-body.p-0
-          %table.table.table-striped.table-bordered#adhesiones_rechazadas
+          %table.table.table-striped.table-bordered#adhesiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
             %thead
               %tr
                 %th=t(:rut_institucion)
                 %th=t(:nombre_institución)
+                %th=t(:alcance)
+                %th=t(:nombre_elemento)
                 %th=t(:comuna_establecimiento)
                 %th=t(:direccion_establecimiento)
-                %th=t(:nombre_encargado)
-                %th=t(:fono_encargado)
-                %th=t(:mail_encargado)
-                %th.estado=t(:estado)
-                %th=t(:observaciones)
+                %th=t(:datos_encargado)
+                %th=t(:estado)
+                %th=t(:seleccionar)
             %tbody
               - @pendientes.each_with_index do |fila, posicion|
-                %tr
+                %tr{"data-id" => posicion}
                   %td=fila[:rut_institucion]
                   %td=fila[:nombre_institucion]
+                  %td=fila[:alcance]
+                  %td=fila[:nombre_elemento]
                   %td=fila[:comuna_instalacion]
                   %td=fila[:direccion_instalacion]
-                  %td=fila[:nombre_encargado]
-                  %td=fila[:fono_encargado]
-                  %td=fila[:email_encargado]
-                  %td.estado
-                    = f.input :aceptado, collection: { Aceptado: true, Observado: false}, label: false, input_html: { name: "aceptado[#{posicion}]", class: "aceptado not-required-if-other-like-me-is-present"}
                   %td
-                    = f.input :observacion, as: :text, label: false, input_html: { name: "observacion[#{posicion}]", class: "observacion"}, disabled: true
-  .row
-    .col-12
+                    %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                    %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                    %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                  %td
+                    %label.estado-elem Pendiente
+                    = f.input :aceptado, as: :hidden, input_html: { name: "aceptado[#{posicion}]", class: "elemento-estado"}, wrapper: false
+                    = f.input :observacion, as: :hidden, input_html: { name: "observacion[#{posicion}]"}, wrapper: false
+                  %td.text-center
+                    %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: posicion}
+    .col-12.mb-2
       .float-right
         = volver_root
         - unless @pendientes.blank?
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary button-send, btn-disabled", disabled: true
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
 #aceptadas.mt-2
   =render "aceptados"
+#retiradas.mt-2
+  =render "retirados"

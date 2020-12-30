@@ -1350,6 +1350,37 @@ es:
   desde_aprobación_de_la_adhesión_apl_023: Aprobación Adhesión
   vigencia_acuerdo: Vigencia Acuerdo
   plazos_de_implementación_y_certificación_se_miden_desde: Plazos de implementación y certificación se miden desde
+  datos_encargado: Datos Encargado
+  observaciones_realizadas_por_revisor_del_informe: Observaciones realizadas por Revisor del informe
+  observaciones_sobre_el_documento_para_encargado_de_entregar_informe: Observaciones sobre el documento para Encargado de entregar informe
+  adjuntar_acuerdo_con_todas_las_firmas: Adjuntar Acuerdo con todas las firmas
+  asignar_responsable_elaborar_informe_impacto: Asignar Responsable Elaborar Informe de Impacto
+  comentarios_a_encargado_de_entregar_informe_de_impacto: Comentarios a encargado de entregar informe de impacto
+  elegir_institucion_encargada_de_entregar_informe_de_impacto: Elegir Institución encargada de entregar informe de impacto
+  elegir_encargado_de_entregar_informe_de_impacto: Elegir encargado de entregar informe de impacto
+  opciones_de_descarga: Opciones de descarga
+  archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones: Archivos de Adhesión y Documentación entregada por solicitante de Adhesiones
+  descargar_documentación: Descargar Documentación
+  clasificar_elementos: Clasificar elementos
+  justificacion_elementos: Justificación
+  retirar_del_acuerdo: Retirar del acuerdo
+  documento_de_justificacion: Documentos de justificación
+  subir_documento_de_justificación: Subir documentos de justificación
+  adhesiones_retiradas: Adhesiones retiradas
+  fecha_retiro: Fecha retiro
+  adjuntar_informes_o_documentos_de_revision: Adjuntar informes o documentos de revisión
+  adjuntar_documento_opcional: Adjuntar documento opcional
+  auditorias_ejecutadas: Auditorías ejecutadas
+  validar_elementos: Validar elementos
+  validacion_otorgada: Validación otorgada
+  adjuntar_oficio_y_o_informe_de_validacion: Adjuntar oficio y/o informe de validación
+  adjuntar_documento: Adjuntar documento
+  tareas_ejecutadas: Tareas ejecutadas
+  formato_de_datos_productivos: Formato de datos productivos
+  indicaciones_de_llenado: Indicaciones de llenado
+  descargar_indicaciones: Descargar indicaciones
+  nombre_acuerdo_que_requiere_informe_impacto: Nombre de Acuerdo que requiere informe de impacto
+  unidad: Unidad
 
   crear_: Crear %{item}
 

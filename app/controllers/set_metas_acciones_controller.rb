@@ -216,7 +216,7 @@ class SetMetasAccionesController < ApplicationController
           #     @set_metas_accion #DZC agregamos la tarea pendiente para el revisor
           #   )
           # end 
-          format.js { flash.now[:success] = 'Metas y acción correctamente actualizada.'
+          format.js { flash[:success] = 'Metas y acción correctamente actualizada.'
             render js: "window.location='#{r_to}'"
           }
           format.html {

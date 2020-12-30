@@ -69,3 +69,8 @@ end
 every '0 1 * * *' do
   rake "ascc:retornar_traspasos", :enviroment => ambiente.to_s
 end
+
+#todos los dias a las 3 envia correos de aviso de plazos acuerdo y certificaciones
+every '0 4 * * *' do
+  rake "ascc:envia_correos_aviso", :enviroment => ambiente.to_s
+end

@@ -150,7 +150,7 @@ class AcuerdoActoresController < ApplicationController
         }
       else
         
-        @auditorias = Auditoria.where(flujo_id: @flujo.id).all
+        @auditorias = @informe.auditorias
         @datos = @informe._a_datos(@auditorias)
         format.js{ 
           flash[:error] = "Se han detectado los siguientes errores:\n #{@informe.errors.full_messages.to_sentence}"

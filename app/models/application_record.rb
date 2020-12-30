@@ -259,13 +259,25 @@ class ApplicationRecord < ActiveRecord::Base
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       archivos.each do |archivo|
-        if File.exists?(archivo.path)
-          split = archivo.current_path.split('/') # genera un array de palabras dentro del path
-          nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-          # rename the file
-          stream.put_next_entry(nombre)
-          # add file to zip
-          stream.write IO.read(archivo.current_path)
+        if archivo.is_a?(String)
+          archivo_path = "#{Rails.root}/public#{archivo}"
+          if File.exists?(archivo_path)
+            split = archivo_path.split('/')
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read(archivo_path)
+          end
+        else
+          if File.exists?(archivo.path)
+            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
         end
       end
     end

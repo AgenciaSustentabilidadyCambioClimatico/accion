@@ -144,8 +144,9 @@ class ActoresController < ApplicationController
       
       if @manifestacion_de_interes.mapa_de_actores_correctamente_construido =="true"    
         MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
-        @manifestacion_de_interes.update(mapa_de_actores_data: nil)
-        @manifestacion_de_interes.update(comentarios_y_observaciones_actualizacion_mapa_de_actores: nil)
+        @manifestacion_de_interes.mapa_de_actores_data = nil
+        @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = nil
+        @manifestacion_de_interes.save(validate: false)
         #DZC 2018-10-02 Se programa la revisión de la adherencia a un diagnóstico y/o estandar
         diagnostico = @manifestacion_de_interes.diagnostico_id.blank? ? nil : @manifestacion_de_interes.diagnostico_id
         estandar = @manifestacion_de_interes.estandar_de_certificacion_id.blank? ? nil : @manifestacion_de_interes.estandar_de_certificacion_id
@@ -170,7 +171,8 @@ class ActoresController < ApplicationController
       else
         if @manifestacion_de_interes.mapa_de_actores_data.present?
           MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
-          @manifestacion_de_interes.update(mapa_de_actores_data: nil)
+          @manifestacion_de_interes.mapa_de_actores_data = nil
+          @manifestacion_de_interes.save(validate: false)
         end
         #DZC el término de la tarea depende del ḿetodo termina_etapa_diagnostico en el controlador manifestacion_de_interes_controller
       end
@@ -179,7 +181,8 @@ class ActoresController < ApplicationController
       set_obtiene_mapa_actual_y_actores
       @lista_actores = @actores_desde_campo.nil? ? @actores_desde_tablas : @actores_desde_campo
       MapaDeActor.actualiza_tablas_mapa_actores(@lista_actores, @flujo, @tarea_pendiente)
-      @manifestacion_de_interes.update(mapa_de_actores_data: nil)
+      @manifestacion_de_interes.mapa_de_actores_data = nil
+      @manifestacion_de_interes.save(validate: false)
       #DZC el término de la tarea depdende de otros controladores
     end
   end

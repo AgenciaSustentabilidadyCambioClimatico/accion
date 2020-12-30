@@ -1,34 +1,59 @@
 = titulo t(:cargar_datos_productivos_asociados_elementos_certificar)
 -if @datos_productivos.present?
-  = form_tag dato_productivo_elemento_adherido_formato_path, method: "patch" , multipart: true, remote: true  do
+  = form_tag dato_productivo_elemento_adherido_formato_path, method: "patch" , multipart: true, remote: true  do |f|
     .row
-      .col-12.col-md-4
-        .card
+      .col-12
+        .card     
+          .card-header
+            %div
+              %h5.no-margin=titulo_instrumento.html_safe
+              -if !@manifestacion_de_interes.blank?
+                %h5.no-margin=titulo_acuerdo.html_safe
+              -elsif !@proyecto.blank?
+                %h5.no-margin=titulo_proyecto.html_safe
+              -elsif !@ppp.blank?
+                %h5.no-margin=titulo_programa.html_safe
+              %h5.no-margin=datos_beneficiario.html_safe
+          .card-body
+            .form-group
+              %label.control-label=t(:comentarios_del_coordinador_del_acuerdo)
+              %textarea.form-control{rows: 4, disabled: true}=@comentario_coordinador
+      .col-12.col-lg-5
+        .card     
           .card-header
             %h5.no-margin=t(:descargar_formato)
           .card-body
-            .row
-              .col
-                = link_to dato_productivo_elemento_adheridos_formato_path, class: 'btn btn-sm btn-outline-secondary btn-block' do
-                  %i.fa.fa-download
-                  = t(:descargar)
-      .col-12.col-md-8
+            .row.d-flex.align-items-end
+              .col-12.col-lg-6
+                .form-group
+                  %label.control-label=t(:formato_de_datos_productivos)
+                  = link_to dato_productivo_elemento_adheridos_formato_path, class: 'btn btn-sm btn-descargar btn-block' do
+                    %i.fa.fa-download
+                    = t(:descargar_formato)
+              .col-12.col-lg-6
+                .form-group
+                  =__mostrar_descargable(@descargables, "#{@tarea.codigo}-DES-001", t(:indicaciones_de_llenado), nombre_boton: t(:descargar_indicaciones))
+      .col-12.col-lg-7
         .card
           .card-header
             %h5.no-margin=t(:subir_datos)
           .card-body        
-            .row
-              .col-6
-                = label_tag 'archivos[]', 'Archivos de evidencia', class: "string"
-                = file_field_tag 'archivos[]', :multiple => true
-              .col-5
-                = label_tag 'excell', 'Subir archivo con datos productivos', class: "string"
-                = file_field_tag 'excell', :multiple => true
-
-    %br
-
-    .float-right
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled"
-      = link_to t(:volver), root_path, class: 'btn btn-sm btn-warning'
+            .row.d-flex.align-items-end
+              .col-12.col-lg-5
+                .form-group.file
+                  = label_tag 'archivos[]', 'Archivos de evidencia', class: "control-label"
+                  = file_field_tag 'archivos[]', :multiple => true, class: "form-control file"
+              .col-12.col-lg-1.pl-lg-0
+                =__descargar_archivo(@archivos_evidencia, @dato_productivo, true, false)
+              .col-12.col-lg-5
+                .form-group.file
+                  = label_tag 'excell', 'Subir archivo con datos productivos', class: "control-label"
+                  = file_field_tag 'excell', :multiple => true, class: "form-control file"
+              .col-12.col-lg-1.pl-lg-0
+                =__descargar_archivo(@archivo_excel, @dato_productivo, true, false)
+      .col-12
+        .float-right
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled"
+          = link_to t(:volver), root_path, class: 'btn btn-sm btn-warning'
 -else
   = t(:no_posee_datos_productivos)

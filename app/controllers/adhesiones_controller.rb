@@ -22,6 +22,11 @@ class AdhesionesController < ApplicationController
           format.js { flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{root_url}'" 
           }
+        elsif @tarea.codigo == Tarea::COD_APL_025
+          format.js { 
+            flash[:success] = "Adhesión solicitada correctamente"
+            render js: "window.location='#{actualizar_adhesion_path(@tarea_pendiente)}'" 
+          }
         else
           format.js { flash[:success] = "Adhesión solicitada correctamente" }
         end
@@ -33,8 +38,53 @@ class AdhesionesController < ApplicationController
 	end
 
   def revisar #DZC APL-028
-
   end
+
+  # def revisar_guardar #DZC APL-028 PPF-017
+  #   # @al_menos_se_acepto_uno = false
+  #   seleccionados = params[:adhesion][:elementos_seleccionados]
+  #   estado = params[:adhesion][:estado_elementos]
+  #   justificacion = params[:adhesion][:justificacion_elementos]
+  #   @adhesion.estado_elementos = estado
+  #   @adhesion.justificacion_elementos = justificacion
+  #   @adhesion.validar_clasificar = true
+
+  #   respond_to do |format|
+  #     if @adhesion.valid?
+  #       data = @pendientes
+
+  #       seleccionados.each do |seleccionado|
+          
+  #         datos = data[seleccionado.to_i]
+  #         if estado == "true"
+  #           # @al_menos_se_acepto_uno = true
+  #           #Ademas se pobla la tabla dato_productivo_elemento_adheridos
+  #           data[seleccionado.to_i][:revisado] = true
+  #           data[seleccionado.to_i][:observaciones] = justificacion
+  #           @adhesion.poblar_data(datos, @flujo)
+  #         elsif estado == "false"
+  #           data[seleccionado.to_i][:revisado] = false
+  #           data[seleccionado.to_i][:observaciones] = justificacion
+  #         else
+  #           data[seleccionado.to_i][:revisado] = false
+  #           data[seleccionado.to_i][:observaciones] = nil
+  #         end
+          
+  #       end
+  #       @adhesion.adhesiones_data = data
+  #       # @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
+  #       @adhesion.flujo_id = @flujo.id
+  #       @adhesion.tipo = "revision"
+  #       @adhesion.save
+  #       set_datos
+        
+  #       continua_flujo_segun_tipo_tarea 
+  #       format.js { flash[:success] = "Adhesiones revisadas correctamente" }
+  #     else
+  #       format.js { }
+  #     end
+  #   end
+  # end
 
   def revisar_guardar #DZC APL-028 PPF-017
     
@@ -49,9 +99,9 @@ class AdhesionesController < ApplicationController
       if v == "true"
         # @al_menos_se_acepto_uno = true
         #Ademas se pobla la tabla dato_productivo_elemento_adheridos
-        @adhesion.poblar_data(datos, @flujo)
         data[k.to_i][:revisado] = true
         data[k.to_i][:observaciones] = observaciones[k]
+        @adhesion.poblar_data(datos, @flujo)
       elsif v == "false"
         data[k.to_i][:revisado] = false
         data[k.to_i][:observaciones] = observaciones[k]
@@ -77,8 +127,51 @@ class AdhesionesController < ApplicationController
     end
   end
 
-  def descargar 
-    send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "formato_adhesion.xlsx"
+  def retirar_elemento
+
+    ae = AdhesionElemento.find(params[:adhesion][:elemento_retirado_id])
+    @adhesion = ae.adhesion
+    @adhesion.elemento_retirado_id = params[:adhesion][:elemento_retirado_id]
+
+    aer = AdhesionElementoRetirado.new
+
+    fila = ae.fila
+    fila[:fecha_retiro] = Date.today
+
+    aer.adhesion_id = ae.adhesion_id
+    aer.persona_id = ae.persona_id
+    aer.alcance_id = ae.alcance_id
+    aer.establecimiento_contribuyente_id = ae.establecimiento_contribuyente_id
+    aer.maquinaria_id = ae.maquinaria_id
+    aer.otro_id = ae.otro_id
+    aer.fila = fila
+    #copiar archivos
+    aer.archivo_adhesion = File.open(ae.archivo_adhesion.file.file) if ae.archivo_adhesion.present?
+    aer.archivo_respaldo = File.open(ae.archivo_respaldo.file.file) if ae.archivo_respaldo.present?
+    aer.archivo_retiro = params[:adhesion][:documento_justificacion]
+
+    respond_to do |format|
+
+      if aer.valid?
+        aer.save
+        AuditoriaElemento.where(adhesion_elemento_id: ae.id).update_all(adhesion_elemento_id: nil)
+        ae.destroy
+        set_datos
+
+        format.js { 
+          flash[:success] = "Elemento retirado correctamente"
+        }
+      else
+        #pasamos error de archivo a adhesion
+        @adhesion.errors.add(:documento_justificacion, aer.errors[:archivo_retiro].first)
+        format.js {}
+      end
+    end
+  end
+
+  def descargar
+    #enviamos el archivo para ser descargado
+    send_data @archivo.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "formato_adhesion.xlsx"
   end
 
   #DZC agrega al campo data de la tarea_pendiente 
@@ -138,6 +231,7 @@ class AdhesionesController < ApplicationController
       @rechazadas = @adhesion.adhesiones_rechazadas
       @pendientes = @adhesion.adhesiones_pendientes
       @no_pendientes = @adhesion.adhesiones_aceptadas_y_observadas
+      @retiradas = @adhesion.adhesiones_retiradas
       @todas = @adhesion.adhesiones_todas
 		end
 
@@ -155,10 +249,7 @@ class AdhesionesController < ApplicationController
       datos = []
       datos = @adhesion.desparseas_adhesiones_rechazadas unless @adhesion.new_record?
       dominios = Adhesion.dominios(@ppp.present?)
-      @ruta = "#{Rails.root}/public/uploads/adhesion/"
-      FileUtils.mkdir_p(@ruta) unless File.exist?(@ruta) #DZC crea las carpetas pertinentes para la ruta
-      @ruta += "formato_adhesion.xlsx"
-      ExportaExcel.formato(@ruta, titulos, dominios, datos, "Adhesiones" )
+      @archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "Adhesiones" )
     end
 
 end

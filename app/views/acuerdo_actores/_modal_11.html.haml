@@ -42,26 +42,50 @@
                             %th=t(:mantención)
                             %th
                         %tbody
-                          - @auditorias.each do |aud|
-                            %tr.auditoria-row{"data-id" => aud.id}
+                          - @auditorias.each_with_index do |aud, index|
+                            -begin
+                              -id = aud.id
+                              -id_real = id
+                              -nombre = aud.nombre
+                              -plazo_apertura = aud.plazo_apertura
+                              -plazo_cierre = aud.plazo_cierre
+                              -con_cert = aud.con_certificacion?
+                              -con_val = aud.con_validacion?
+                              -final = aud.final?
+                              -con_man = aud.con_mantencion?
+                            -rescue
+                              -id = 'id_temporal_'+index.to_s
+                              -id_real = 'no'
+                              -nombre = aud[:nombre]
+                              -plazo_apertura = aud[:plazo_apertura]
+                              -plazo_cierre = aud[:plazo_cierre]
+                              -con_cert = aud[:con_certificacion] == "true"
+                              -con_val = aud[:con_validacion] == "true"
+                              -final = aud[:final] == "true"
+                              -con_man = aud[:con_mantencion] == "true"
+
+                            %tr.auditoria-row{"data-id" => id}
                               %td
-                                = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][nombre]", aud.nombre, {class: "form-control informe_acuerdo_auditoria_nombre", onchange: "cambio_nombre_auditoria('#{aud.id}');"}
+                                = text_field_tag "informe_acuerdo[auditorias][#{id}][nombre]", nombre, {class: "form-control informe_acuerdo_auditoria_nombre", onchange: "cambio_nombre_auditoria('#{id}');"}
                               %td{style: "width:70px;min-width:70px;max-width:70px;"}
-                                = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_apertura]", aud.plazo_apertura, class: "form-control numero"
+                                = text_field_tag "informe_acuerdo[auditorias][#{id}][plazo_apertura]", plazo_apertura, class: "form-control numero"
                               %td{style: "width:70px;min-width:70px;max-width:70px;"}
-                                = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_cierre]", aud.plazo_cierre, class: "form-control numero"
+                                = text_field_tag "informe_acuerdo[auditorias][#{id}][plazo_cierre]", plazo_cierre, class: "form-control numero"
                               %td
-                                = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, {class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('#{aud.id}');"}
+                                = hidden_field_tag "informe_acuerdo[auditorias][#{id}][con_certificacion]", false
+                                = check_box_tag "informe_acuerdo[auditorias][#{id}][con_certificacion]", true, con_cert, {class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('#{id}');"}
                               %td
-                                = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", false
-                                = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", true, aud.con_validacion?, class: "form-control con-validacion", disabled: !aud.con_certificacion?
+                                = hidden_field_tag "informe_acuerdo[auditorias][#{id}][con_validacion]", false
+                                = check_box_tag "informe_acuerdo[auditorias][#{id}][con_validacion]", true, con_val, class: "form-control con-validacion", disabled: !con_cert
                               %td
-                                = radio_button_tag "informe_acuerdo[auditorias][#{aud.id}][final]", true, aud.final?, {class: "form-control auditoria-final", onclick: "solo_una_auditoria_final('#{aud.id}');"}
+                                = hidden_field_tag "informe_acuerdo[auditorias][#{id}][final]", false
+                                = radio_button_tag "informe_acuerdo[auditorias][#{id}][final]", true, final, {class: "form-control auditoria-final", onclick: "solo_una_auditoria_final('#{id}');"}
                               %td
-                                = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_mantencion]", true, aud.con_mantencion?, {class: "form-control auditoria-final con-mantencion", readonly: !aud.final?}
+                                = hidden_field_tag "informe_acuerdo[auditorias][#{id}][con_mantencion]", false
+                                = check_box_tag "informe_acuerdo[auditorias][#{id}][con_mantencion]", true, con_man, {class: "form-control auditoria-final con-mantencion", readonly: !final}
                               %td
-                                = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][id]", aud.id, class: 'auditoria-id'
-                                = link_to '#', {class: 'remove-auditoria', onclick: "remover_auditoria('#{aud.id}');"} do
+                                = hidden_field_tag "informe_acuerdo[auditorias][#{id}][id]", id_real, class: 'auditoria-id'
+                                = link_to '#', {class: 'remove-auditoria', onclick: "remover_auditoria('#{id}');"} do
                                   %i.fa.fa-times-circle.link-to-remove-row
       .modal-footer
         %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}

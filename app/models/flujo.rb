@@ -348,7 +348,27 @@ class Flujo < ApplicationRecord
         if !informe_acuerdo.nil? && (tarea_pend.user_id == current_user.id || puedo_ver_descargable_apl_018)
           documentos_asociados = {nombre: "Documento de Acuerdo", url: 'obtener_archivo_acuerdo_anexos_zip_path', parametros: [self.id], metodo: true }
         end
-      elsif t.es_una_encuesta
+      elsif t.codigo == Tarea::COD_APL_019
+        #solo si es admin puede descargar el documento
+        if current_user.is_admin?
+          #agregamos documento personalizado para tarea APL-019
+          documentos_asociados = {nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
+        end
+      elsif t.codigo == Tarea::COD_APL_042
+        if self.tarea_pendientes.where(tarea_id: [Tarea::ID_APL_041, Tarea::ID_APL_042]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).length == 0
+          documentos_asociados = {nombre: 'Informe de Impacto', url: self.manifestacion_de_interes.informe_impacto.documento.url}
+        end
+      elsif t.codigo == Tarea::COD_APL_039
+        if current_user.is_admin?
+          documentos_asociados = {nombre: 'Encuestas diagnóstico general', url: "modal"}
+          lista = {}
+          self.tarea_pendientes.where(tarea_id: t.id).each do |tp|
+            auditoria = tp.determina_auditoria
+            lista[auditoria.id] = {nombre: auditoria.nombre, id: auditoria.id} if !lista.has_key?(auditoria.id)
+          end
+          documentos_asociados[:lista] = lista.values
+        end
+      elsif t.es_una_encuesta && t.codigo != Tarea::COD_APL_039
         #solo si es admin puede descargar el documento
         if current_user.is_admin?
           nombre_boton = "Resultado encuesta"
@@ -356,26 +376,41 @@ class Flujo < ApplicationRecord
 
           documentos_asociados = {nombre: nombre_boton, url: 'descargar_respuesta_encuesta_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id, t.id], metodo: true}
         end
-      elsif t.codigo == Tarea::COD_APL_019
-        #solo si es admin puede descargar el documento
-        if current_user.is_admin?
-          #agregamos documento personalizado para tarea APL-019
-          documentos_asociados = {nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
-        end
       
+      end
+      tareas_auditoria = {}
+      if t.codigo == Tarea::COD_APL_033
+        self.tarea_pendientes.where(tarea_id: t.id).each do |tp|
+          auditoria = tp.determina_auditoria
+          tareas_auditoria[auditoria.id] = {nombre: auditoria.nombre, id: auditoria.id, tarea_pendiente_id: tp.id} if !tareas_auditoria.has_key?(auditoria.id)
+        end
+        tareas_auditoria = tareas_auditoria.values
+      end
+      tareas_validaciones = {}
+      if t.codigo == Tarea::COD_APL_034
+        self.tarea_pendientes.where(tarea_id: t.id).order(data: :asc).each do |tp|
+          auditoria = tp.determina_auditoria
+          tareas_validaciones[tp.user_id] = {nombre: tp.user.nombre_completo, validaciones: []} if !tareas_validaciones.has_key?(tp.user_id)
+          tareas_validaciones[tp.user_id][:validaciones] << {nombre: auditoria.nombre, tarea_pendiente_id: tp.id, finalizada: tp.no_esta_pendiente?}
+        end
+        tareas_validaciones = tareas_validaciones.values
+        estado = "Ejecutada"
       end
       instancias << {
         tipo_instrumento: self.tipo_instrumento.nombre,
         id_instrumento: self.id,
         nombre_instrumento: self.nombre_instrumento,
         tarea: t,
+        manifestacion_de_interes: self.manifestacion_de_interes,
         nombre_tarea: t.nombre,
         responsables: t.responsables_de_la_tarea(self.id),
         documentos_asociados: documentos_asociados,
         instancia: instancia,
         estado: estado,
         pendiente: pendiente,
-        puedo_ver_tarea: puedo_ver_tarea
+        puedo_ver_tarea: puedo_ver_tarea,
+        auditorias_tarea_033: tareas_auditoria,
+        validaciones_tarea_034: tareas_validaciones
       } 
     end
     instancias

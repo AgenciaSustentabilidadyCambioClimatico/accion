@@ -1,0 +1,4 @@
+- unless @correcto
+  = render 'layouts/remote_form', block: 'usuarios-cargo-informe', form_partial: 'form'
+- else 
+  window.location.href= "#{root_url}"

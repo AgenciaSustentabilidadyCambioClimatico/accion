@@ -171,7 +171,7 @@ class AuditoriaElemento < ApplicationRecord
 					unless fila[:fecha_auditoria].to_s.date_valid?
 						errores[:fecha_auditoria] << fila[:fecha_auditoria]
 					else            
-						fecha_adhesion = auditoria_elemento.adhesion_elemento.created_at
+						fecha_adhesion = auditoria_elemento.adhesion_elemento.created_at.to_date
 						if fecha_adhesion > Date.parse(fila[:fecha_auditoria])
 							fecha_format = fecha_adhesion.strftime("%F")
 							auditoria.errors.add(:archivo_auditorias, "La Fecha auditoria (#{fila[:fecha_auditoria]}) es menor a la fecha de adhesion (#{fecha_format}) para fila #{(posicion+1)}")

@@ -69,7 +69,7 @@ class Admin::EncuestasController < ApplicationController
     else
       #DZC se determina si la encuesta fue correctamente llenada
       
-      @desactivado = (EncuestaUserRespuesta.where(flujo_id: @flujo.id, encuesta_id: @encuesta.id, user_id: current_user.id).size >= @encuesta.encuesta_preguntas.where(obligatorio: true).size)
+      @desactivado = (EncuestaUserRespuesta.where(flujo_id: @flujo.id, encuesta_id: @encuesta.id, user_id: current_user.id, tarea_pendiente_id: @tarea_pendiente.id).size >= @encuesta.encuesta_preguntas.where(obligatorio: true).size)
       @encuesta_user_respuesta = EncuestaUserRespuesta.new
     end
   end
@@ -80,14 +80,17 @@ class Admin::EncuestasController < ApplicationController
     parametros = params.require(:encuesta_user_respuesta).permit(preguntas_y_respuestas: {})
     parametros[:encuesta_id] = @encuesta.id
     parametros[:flujo_id] = @flujo.id
+    parametros[:tarea_pendiente_id] = @tarea_pendiente.id
     #DZC agrega a la encuesta la institución del proveedor (responsable de entregables del flujo actual)
     proveedor = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::RESPONSABLE_ENTREGABLES).includes([flujo: [:contribuyente]]).first
     @encuesta_user_respuesta = EncuestaUserRespuesta.new(parametros)
     respond_to do |format|
       unless @encuesta_user_respuesta.tiene_errores? || proveedor.blank?
         
-        if @encuesta_user_respuesta.cerrar(current_user.id, @flujo.id, proveedor.persona.contribuyente.id) # DZC 2018-10-22 15:29:43 se corrige el contribuyente por el del responsable entregable como actor del mapa de actores
-          @tarea_pendiente.data = :encuesta_completada
+        if @encuesta_user_respuesta.cerrar(current_user.id, @flujo.id, proveedor.persona.contribuyente.id, @tarea_pendiente.id) # DZC 2018-10-22 15:29:43 se corrige el contribuyente por el del responsable entregable como actor del mapa de actores
+          data = @tarea_pendiente.data
+          data[:encuesta_completada] = true
+          @tarea_pendiente.data = data
           # DZC 2018-10-22 15:05:53 se modifica estado de tareas PPF-023 y PPF-024
           if [Tarea::COD_PPF_023, Tarea::COD_PPF_024].include? (@tarea.codigo)
             @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA

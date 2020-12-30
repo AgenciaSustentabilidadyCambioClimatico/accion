@@ -23,9 +23,23 @@
                   .col-12
                     .table-responsive-sm
                       .row#auditorias-vigencia
-                        - @auditorias.each do |aud|
-                          -if aud.con_certificacion && !aud.final
-                            =render 'form_auditoria_vigencia', aud_id: aud.id, nombre: aud.nombre, plazo: aud.plazo, auditoria_niveles: aud.auditoria_niveles
+                        - @auditorias.each_with_index do |aud, index|
+                          -begin
+                            -id = aud.id
+                            -nombre = aud.nombre
+                            -plazo = aud.plazo
+                            -auditoria_niveles = aud.auditoria_niveles
+                            -con_cert = aud.con_certificacion?
+                            -final = aud.final?
+                          -rescue
+                            -id = 'id_temporal_'+index.to_s
+                            -nombre = aud[:nombre]
+                            -plazo = aud[:plazo]
+                            -auditoria_niveles = (aud[:auditoria_niveles].values rescue [])
+                            -con_cert = aud[:con_certificacion] == "true"
+                            -final = aud[:final] == "true"
+                          -if con_cert && !final
+                            =render 'form_auditoria_vigencia', aud_id: id, nombre: nombre, plazo: plazo, auditoria_niveles: auditoria_niveles
 
       .modal-footer
         %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}

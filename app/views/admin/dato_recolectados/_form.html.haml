@@ -35,7 +35,7 @@
 							= f.input :medios_verificacion, label: t(:medios_verificacion), input_html: { class: 'required-field' }, placeholder: "Ingrese el medio de verificación"
 						.col-12.col-md-6
 							%abbr{title: :required}*
-							= label :unidad_base, t(:unidad_base), class: "string"
+							= label :unidad_base, t(:unidad), class: "string"
 							= f.select :unidad_base, @unidades, {:include_blank => ''}, { class: 'form-control contribuyente-establecimiento mt-2 select-form required-field', "data-placeholder" => "Seleccione una unidad base..."}
 						.col-12.col-md-6
 							%abbr{title: :required}*

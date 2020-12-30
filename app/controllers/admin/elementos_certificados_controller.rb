@@ -49,6 +49,7 @@ class Admin::ElementosCertificadosController < ApplicationController
               adh_elem[:id] == ear[:adhesion_elemento_id]
             end
             adhesion_elemento = adhesion_elemento.first
+
             cumplimiento = adhesion_elemento.calcula_porcentaje_cumplimiento(auditoria, true)
             if cumplimiento == 1
               # DZC 2018-11-14 18:21:24 obtenemos la fecha de certificación en función a la fecha del acta de la ceremonia
@@ -57,9 +58,11 @@ class Admin::ElementosCertificadosController < ApplicationController
               if (minuta_ceremonia.present? && minuta_ceremonia.fecha_acta.present?)
                 flujo = auditoria.flujo
                 # DZC 2018-11-15 15:15:22 contemplamos el caso de que el plazo de certificación sea "con_e"
-                tiene_extension = (flujo.manifestacion_de_interes.present? && flujo.manifestacion_de_interes.informe_acuerdo.present? && flujo.manifestacion_de_interes.informe_acuerdo.con_extension)
+                #tiene_extension = (flujo.manifestacion_de_interes.present? && flujo.manifestacion_de_interes.informe_acuerdo.present? && flujo.manifestacion_de_interes.informe_acuerdo.con_extension)
                 fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
-                tiempo = tiene_extension ? 6 : 3
+                #tiempo = tiene_extension ? 6 : 3
+                #ToDo: definir cuando es con nivel y tomar plazo de nivel
+                tiempo = auditoria.plazo
                 vigencia_certificacion = (minuta_ceremonia.fecha_acta + tiempo.years).strftime("%F")
               else
                 fecha_certificacion = "Pendiente"
@@ -73,7 +76,7 @@ class Admin::ElementosCertificadosController < ApplicationController
                 id_elemento: adhesion_elemento.id,
                 nombre_elemento: adhesion_elemento.nombre_segun_alcance,
                 fecha_certificacion: fecha_certificacion,
-                con_extension: (tiene_extension ? "Si" : "No"),
+                con_extension: "No",
                 vigencia_certificacion: vigencia_certificacion, 
                 nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento
               }

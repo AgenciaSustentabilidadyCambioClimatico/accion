@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201126213050) do
+ActiveRecord::Schema.define(version: 20201210172813) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -98,6 +98,27 @@ ActiveRecord::Schema.define(version: 20201126213050) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "adhesion_elemento_retirados", force: :cascade do |t|
+    t.bigint "adhesion_id"
+    t.bigint "persona_id"
+    t.bigint "alcance_id"
+    t.bigint "establecimiento_contribuyente_id"
+    t.bigint "maquinaria_id"
+    t.bigint "otro_id"
+    t.string "archivo_adhesion"
+    t.string "archivo_respaldo"
+    t.string "archivo_retiro"
+    t.text "fila"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adhesion_id"], name: "index_adhesion_elemento_retirados_on_adhesion_id"
+    t.index ["alcance_id"], name: "index_adhesion_elemento_retirados_on_alcance_id"
+    t.index ["establecimiento_contribuyente_id"], name: "idx_aer_ec"
+    t.index ["maquinaria_id"], name: "index_adhesion_elemento_retirados_on_maquinaria_id"
+    t.index ["otro_id"], name: "index_adhesion_elemento_retirados_on_otro_id"
+    t.index ["persona_id"], name: "index_adhesion_elemento_retirados_on_persona_id"
+  end
+
   create_table "adhesion_elementos", force: :cascade do |t|
     t.bigint "adhesion_id"
     t.bigint "persona_id"
@@ -180,6 +201,17 @@ ActiveRecord::Schema.define(version: 20201126213050) do
     t.index ["estandar_nivel_id"], name: "index_auditoria_niveles_on_estandar_nivel_id"
   end
 
+  create_table "auditoria_validaciones", force: :cascade do |t|
+    t.bigint "auditoria_id"
+    t.bigint "user_id"
+    t.text "validaciones"
+    t.string "archivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auditoria_id"], name: "index_auditoria_validaciones_on_auditoria_id"
+    t.index ["user_id"], name: "index_auditoria_validaciones_on_user_id"
+  end
+
   create_table "auditorias", force: :cascade do |t|
     t.bigint "manifestacion_de_interes_id"
     t.string "nombre"
@@ -202,6 +234,7 @@ ActiveRecord::Schema.define(version: 20201126213050) do
     t.integer "plazo_apertura"
     t.integer "plazo_cierre"
     t.boolean "con_mantencion", default: false
+    t.string "archivo_revision"
     t.index ["flujo_id"], name: "index_auditorias_on_flujo_id"
   end
 
@@ -574,6 +607,8 @@ ActiveRecord::Schema.define(version: 20201126213050) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "institucion_proveedor_id"
+    t.bigint "tarea_pendiente_id"
+    t.index ["tarea_pendiente_id"], name: "index_encuesta_user_respuestas_on_tarea_pendiente_id"
   end
 
   create_table "encuestas", force: :cascade do |t|
@@ -1668,6 +1703,12 @@ ActiveRecord::Schema.define(version: 20201126213050) do
   add_foreign_key "actividad_economica_flujos", "flujos"
   add_foreign_key "actividad_por_lineas", "actividades"
   add_foreign_key "actividad_por_lineas", "tipo_instrumentos"
+  add_foreign_key "adhesion_elemento_retirados", "adhesiones"
+  add_foreign_key "adhesion_elemento_retirados", "alcances"
+  add_foreign_key "adhesion_elemento_retirados", "establecimiento_contribuyentes"
+  add_foreign_key "adhesion_elemento_retirados", "maquinarias"
+  add_foreign_key "adhesion_elemento_retirados", "otros"
+  add_foreign_key "adhesion_elemento_retirados", "personas"
   add_foreign_key "adhesion_elementos", "adhesiones"
   add_foreign_key "adhesion_elementos", "alcances"
   add_foreign_key "adhesion_elementos", "establecimiento_contribuyentes"
@@ -1681,6 +1722,8 @@ ActiveRecord::Schema.define(version: 20201126213050) do
   add_foreign_key "auditoria_historicos", "manifestacion_de_intereses"
   add_foreign_key "auditoria_niveles", "auditorias"
   add_foreign_key "auditoria_niveles", "estandar_niveles"
+  add_foreign_key "auditoria_validaciones", "auditorias"
+  add_foreign_key "auditoria_validaciones", "users"
   add_foreign_key "auditorias", "convocatorias"
   add_foreign_key "auditorias", "flujos"
   add_foreign_key "auditorias", "manifestacion_de_intereses"
@@ -1722,6 +1765,7 @@ ActiveRecord::Schema.define(version: 20201126213050) do
   add_foreign_key "encuesta_preguntas", "preguntas"
   add_foreign_key "encuesta_user_respuestas", "encuestas"
   add_foreign_key "encuesta_user_respuestas", "preguntas"
+  add_foreign_key "encuesta_user_respuestas", "tarea_pendientes"
   add_foreign_key "encuesta_user_respuestas", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"

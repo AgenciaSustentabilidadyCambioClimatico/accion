@@ -136,7 +136,11 @@ class ExportaExcel
       end
     end
     # creo el archivo de salida
-    p.serialize ("#{ruta}")
+    if ruta.blank?
+      return p
+    else
+      return p.serialize ("#{ruta}")
+    end
   end
 
 
