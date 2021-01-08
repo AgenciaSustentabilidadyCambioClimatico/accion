@@ -140,7 +140,7 @@ class Admin::HitosDePrensaController < ApplicationController
       if !@flujo.nil?
         @tipo_instrumento=@flujo.tipo_instrumento
         @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
-        @manifestacion_de_interes.update(tarea_codigo: @tarea.codigo) unless @manifestacion_de_interes.blank?
+        @manifestacion_de_interes.update(tarea_codigo: @tarea.codigo) if !@manifestacion_de_interes.blank? && !@tarea.blank?
         @proyecto = @flujo.proyecto_id.blank? ? nil : Proyecto.find(@flujo.proyecto_id)
         @ppp = @flujo.programa_proyecto_propuesta_id.blank? ? nil : ProgramaProyectoPropuesta.find(@flujo.programa_proyecto_propuesta_id)
       end
@@ -150,7 +150,7 @@ class Admin::HitosDePrensaController < ApplicationController
       if @tarea_pendiente.nil?
         @ruta_index = admin_hitos_de_prensa_path
         @ruta_nuevo = new_admin_hito_de_prensa_path
-        @ruta_guardar = create_admin_hitos_de_prensa_path
+        @ruta_guardar = admin_hitos_de_prensa_path
         if(!@hito_de_prensa.new_record?)
           @ruta_editar = edit_admin_hito_de_prensa_path(@hito_de_prensa)
           @ruta_guardar = admin_hito_de_prensa_path(@hito_de_prensa)

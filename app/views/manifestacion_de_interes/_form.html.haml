@@ -42,6 +42,7 @@
         });
       }
     });
+    $('body').on('ajax:complete','#manifestacion-de-interes-form',function(xhr,status){ $('.loading-data').show()});
 
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
