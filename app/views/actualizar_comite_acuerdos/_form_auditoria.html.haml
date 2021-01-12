@@ -1,12 +1,17 @@
+-puede_ver_fecha = puede_ver_fecha.nil? ? false : puede_ver_fecha
 %tr.auditoria-row{"data-id" => 'id_temporal'}
   %td{style: "width:70px;min-width:70px;max-width:70px;"}
     %input.form-control.auditoria-orden{type: :text, disabled: true}
   %td
     = text_field_tag "informe_acuerdo[auditorias][id_temporal][nombre]", nil, {class: "form-control informe_acuerdo_auditoria_nombre", onkeyup: "cambio_nombre_auditoria('id_temporal');"}
-  %td{style: "width:70px;min-width:70px;max-width:70px;"}
-    = text_field_tag "informe_acuerdo[auditorias][id_temporal][plazo_apertura]", nil, class: "form-control numero"
-  %td{style: "width:70px;min-width:70px;max-width:70px;"}
-    = text_field_tag "informe_acuerdo[auditorias][id_temporal][plazo_cierre]", nil, class: "form-control numero"
+  %td{style: "width:90px;min-width:90px;max-width:90px;"}
+    = text_field_tag "informe_acuerdo[auditorias][id_temporal][plazo_apertura]", nil, class: "form-control numero", onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_apertura_fecha', this);"
+    -if puede_ver_fecha
+      .plazo_apertura_fecha.mt-2{style: "white-space: nowrap;"}
+  %td{style: "width:90px;min-width:90px;max-width:90px;"}
+    = text_field_tag "informe_acuerdo[auditorias][id_temporal][plazo_cierre]", nil, class: "form-control numero", onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_cierre_fecha', this);"
+    -if puede_ver_fecha
+      .plazo_cierre_fecha.mt-2{style: "white-space: nowrap;"}
   %td
     = check_box_tag "informe_acuerdo[auditorias][id_temporal][con_certificacion]", true, false, {class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('id_temporal');"}
   %td

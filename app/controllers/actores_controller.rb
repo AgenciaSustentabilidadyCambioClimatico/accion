@@ -100,17 +100,16 @@ class ActoresController < ApplicationController
       @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_mapa_de_actores_ordenados
     else
               
-      # DZC Verificamos el tipo de tarea y continuamos el flujo
-      atributos_conjuntos_params = actualizar_mapa_de_actores_manifestacion_de_interes_params.merge(enviar_revision_mapa_de_actores_manifestacion_de_interes_params)
-      @manifestacion_de_interes.assign_attributes(atributos_conjuntos_params)
+      @manifestacion_de_interes.assign_attributes(enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params)
       @manifestacion_de_interes.tarea_codigo=@tarea.codigo
       @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
-      if @manifestacion_de_interes.save
-        
+      if @manifestacion_de_interes.valid?
+        @manifestacion_de_interes.save
         success = "Mapa de actores correctamente actualizado"
         continua_flujo_segun_tipo_tarea
       else
-        
+        #@manifestacion_de_interes.mapa_de_actores_archivo = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo]
+        #@manifestacion_de_interes.mapa_de_actores_archivo_cache = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo_cache]
         error = "Errores en el archivo:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
         error = error.gsub(',',';')
         error = error.gsub('.',',')
@@ -182,6 +181,7 @@ class ActoresController < ApplicationController
       @lista_actores = @actores_desde_campo.nil? ? @actores_desde_tablas : @actores_desde_campo
       MapaDeActor.actualiza_tablas_mapa_actores(@lista_actores, @flujo, @tarea_pendiente)
       @manifestacion_de_interes.mapa_de_actores_data = nil
+      @manifestacion_de_interes.temporal = true
       @manifestacion_de_interes.save(validate: false)
       #DZC el término de la tarea depdende de otros controladores
     end
@@ -267,6 +267,16 @@ class ActoresController < ApplicationController
 
   def enviar_revision_mapa_de_actores_manifestacion_de_interes_params
     params.require(:manifestacion_de_interes).permit(
+      :actores_con_observaciones,
+      :mapa_de_actores_correctamente_construido,
+      :comentarios_y_observaciones_actualizacion_mapa_de_actores
+    )
+  end
+
+  def enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params
+    params.require(:manifestacion_de_interes).permit(
+      :mapa_de_actores_archivo,
+      :mapa_de_actores_archivo_cache,
       :actores_con_observaciones,
       :mapa_de_actores_correctamente_construido,
       :comentarios_y_observaciones_actualizacion_mapa_de_actores

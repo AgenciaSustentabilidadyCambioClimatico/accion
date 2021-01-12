@@ -1,4 +1,4 @@
-= render 'layouts/remote_form', block: 'revisar', remote: true
+= render 'layouts/remote_form', block: 'revisar', local_assigns: {remote: true}
 - unless @actores.blank?
 	$('#actores-remote-table').html("#{j render 'table', remote: true}");
 clearTimeout(cierreAlerta);

@@ -3,7 +3,6 @@ class Admin::HistorialInstrumentosController < ApplicationController
   before_action :set_variables_del_usuario
   before_action :set_cargar_instrumento, only: [:cargar_instrumento]
   before_action :set_crear_excel_respuesta_encuesta_diagnostico, only: [:descargar_respuesta_encuesta_diagnostico]
-  before_action :set_crear_excel_observaciones_informe_metas_acciones, only: [:descargar_observaciones_informe_metas_acciones]
 
   def index
   end
@@ -81,8 +80,40 @@ class Admin::HistorialInstrumentosController < ApplicationController
   end
 
   def descargar_observaciones_informe_metas_acciones
+
+    #identificamos manifestacion para obtener flujo_id
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    # nos traemos el set de metas
+    @set_metas_acciones = SetMetasAccion.de_la_manifestacion_de_interes_(@manifestacion_de_interes.id)
+    #obtenemos las partes para el excel
+    titulos = ["Meta","Acción","Materia","Alcance","Nombre","Rut","Email","Fecha/Hora","Observación"]
+    titulos_informe = ["Nombre","Rut","Email","Fecha/Hora","Observación"]
+    # se arma los datos para el excel
+    datos = SetMetasAccion.observaciones_agrupadas_para_excel_v2(@set_metas_acciones)
+    datos_informe = @manifestacion_de_interes.informe_acuerdo.comentarios_informe_acuerdos.map{|comentario| 
+      [
+        comentario.nombre,
+        comentario.rut,
+        comentario.email,
+        comentario.created_at.strftime("%F %T"),
+        comentario.comentario
+      ]
+    }
+
+    #llamamos el servicio para crear excel entregandole los parametros necesarios
+    parametros_excel = {
+      titulos: titulos,
+      datos: datos,
+      nombre_hoja: 'Observaciones metas acciones',
+      titulos_informe: titulos_informe,
+      datos_informe: datos_informe,
+      nombre_hoja_informe: 'Observaciones informe'
+    }
+    excel = CrearExcel.new(parametros_excel).crear_libro_observaciones
+
+
     #enviamos el archivo para ser descargado
-    send_data File.open(@ruta_observaciones_informe_metas_acciones).read, type: 'application/xslx', charset: "iso-8859-1", filename: "observaciones_informe_metas_acciones.xlsx"
+    send_data excel.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "observaciones_informe_metas_acciones.xlsx"
   end
 
 

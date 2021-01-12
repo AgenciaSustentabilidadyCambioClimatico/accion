@@ -34,6 +34,7 @@ es:
   compartir: Compartir
   plazo_máximo_adhesión_en_meses: Plazo máximo adhesión (en meses)
   plazo_finalización_implementación: Plazo finalización implementación
+  plazo_finalización_implementación_meses: Plazo finalización implementación (meses)
   finalización_de_contrato_debe_ser_mayor_a_finalización_actividad: La fecha de finalización de contrato debe ser mayor a la fecha de finalización de la última actividad [ <b>%{fecha}</b> ]
   descargar_archivos_formatos: Descargar archivos formatos
   aceptar_cambios: Aceptar cambios
@@ -972,6 +973,7 @@ es:
   anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo: Archivos que se pueden subir y que se anexan al final del texto completo del Acuerdo
   descargar_archivos_anexos: Descargar archivos anexos
   plazo_máximo_adhesión_desde_firma_acuerdo: Plazo máximo adhesión desde firma Acuerdo
+  plazo_máximo_adhesión_desde_firma_acuerdo_meses: Plazo máximo adhesión desde firma Acuerdo (meses)
   auditoría: Auditoría
   plazo_apertura_meses: Plazo Apertura (meses)
   plazo_cierre_meses: Plazo Cierre (meses)
@@ -1349,6 +1351,7 @@ es:
   desde_firma_acuerdo_apl_023: Firma Acuerdo
   desde_aprobación_de_la_adhesión_apl_023: Aprobación Adhesión
   vigencia_acuerdo: Vigencia Acuerdo
+  vigencia_acuerdo_anios: Vigencia Acuerdo (años)
   plazos_de_implementación_y_certificación_se_miden_desde: Plazos de implementación y certificación se miden desde
   datos_encargado: Datos Encargado
   observaciones_realizadas_por_revisor_del_informe: Observaciones realizadas por Revisor del informe

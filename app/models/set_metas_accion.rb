@@ -175,4 +175,60 @@ class SetMetasAccion < ApplicationRecord
 		salida
 	end
 
+
+
+  def self.observaciones_agrupadas_para_excel_v2(set_metas_acciones)
+    agrupadas = set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
+    salida = {}
+
+    #estructura a lograr: meta > accion > materia > alcance
+    set_metas_acciones.each do |set|
+      #primero creo la meta si aun no se agrega
+      salida[set.meta_id] = {nombre: (set.meta.nombre rescue ""), acciones: {}} if salida[set.meta_id].blank?
+      #despues defino la accion si esque aun no se agrega
+      salida[set.meta_id][:acciones][set.accion_id] = {nombre: (set.accion.nombre rescue ""), materias: {}} if salida[set.meta_id][:acciones][set.accion_id].blank?
+      #despues defino la materia si esque aun no se agrega
+      salida[set.meta_id][:acciones][set.accion_id][:materias][set.materia_sustancia_id] = {nombre: (set.materia_sustancia.nombre rescue ""), alcances: {}} if salida[set.meta_id][:acciones][set.accion_id][:materias][set.materia_sustancia_id].blank?
+      #finalmente el alcance si aun no se agrega
+      salida[set.meta_id][:acciones][set.accion_id][:materias][set.materia_sustancia_id][:alcances][set.alcance_id] = {nombre: (set.alcance.nombre rescue ""), data: []} if salida[set.meta_id][:acciones][set.accion_id][:materias][set.materia_sustancia_id][:alcances][set.alcance_id].blank?
+      #al final agrego el comentario en la estructura anterior
+      set.comentarios_metas_acciones.each do |comentario|
+        comentario_hashed = {
+          nombre: comentario.nombre,
+          rut: comentario.rut,
+          email: comentario.email,
+          comentario: comentario.comentario,
+          fecha_hora: comentario.created_at.strftime("%F %T")
+        }
+        salida[set.meta_id][:acciones][set.accion_id][:materias][set.materia_sustancia_id][:alcances][set.alcance_id][:data] << comentario_hashed
+      end
+    end
+    ## Estructura usada en excel
+      #{
+      #  "meta_id": {
+      #    nombre: "nombre meta",
+      #    acciones: {
+      #      "accion_id": {
+      #        nombre: "nombre accion",
+      #        materias: {
+      #          "materia_id": {
+      #            nombre: "nombre materia",
+      #            alcances: {
+      #              "alcance_id": {
+      #                nombre: "nombre alcance",
+      #                data: [
+      #                  { nombre: "nombre persona1", rut: "1-9", email: "aaaa@aaa.com", comentario: "Lorem ipsum", fecha_hora: '2020-12-31 00:00:00' },
+      #                ]
+      #              }
+      #            }
+      #          }
+      #        }
+      #      }
+      #    }
+      #  }
+      #}
+
+    salida
+  end
+
 end

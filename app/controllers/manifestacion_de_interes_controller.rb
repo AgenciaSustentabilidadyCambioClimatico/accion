@@ -2020,7 +2020,7 @@ class ManifestacionDeInteresController < ApplicationController
   def envia_observaciones_metas_acciones_informe # APL-019 TERMINA TAREA APL-019
     respond_to do |format|
       continua_flujo_segun_tipo_tarea #'A', {primera_ejecucion: true}
-      mensaje = "Muchas gracias por tus observaciones. Las observaciones serán compartidas con los miembros del Comité Negociador, quienes elaborarán una nueva propuesta de Acuerdo que recoja las observaciones que consideren pertinentes, dando además respuesta a las observaciones recogidas. Una vez acordada la versión definitiva del Acuerdo, esta se publicará junto a las respuestas respectivas que podrás ver en el menú <a href='#'>\"Consulta Pública Propuestas de Acuerdo\"</a>"
+      mensaje = "Muchas gracias por tus observaciones. Las observaciones serán compartidas con los miembros del Comité Negociador, quienes elaborarán una nueva propuesta de Acuerdo que recoja las observaciones que consideren pertinentes, dando además respuesta a las observaciones recogidas. Una vez acordada la versión definitiva del Acuerdo, esta se publicará junto a las respuestas respectivas que podrás ver en el menú <a href='#{consulta_publica_propuestas_acuerdo_path}'>\"Consulta Pública Propuestas de Acuerdo\"</a>"
       format.js { flash[:success] = mensaje; render js: "window.location='#{root_path}'" }
       format.html { redirect_to root_path, flash: { notice: mensaje } }
     end
@@ -2618,6 +2618,7 @@ class ManifestacionDeInteresController < ApplicationController
       end
       @auditorias = Auditoria.where(flujo_id: @flujo.id).all
       @datos = @informe.nil? ? {} : @informe._a_datos(@auditorias)
+      @actores_mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::FIRMANTE).includes([:rol, persona: [:user,:contribuyente, persona_cargos: [:cargo]]]).all
     end
 
     def set_comentario_informe

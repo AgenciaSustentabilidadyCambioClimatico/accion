@@ -1,6 +1,6 @@
 class CrearExcel
   require 'axlsx'
-  attr_accessor :titulos, :datos, :nombre_hoja, :ruta, :salida
+  attr_accessor :titulos, :datos, :nombre_hoja, :ruta, :salida, :titulos_informe, :datos_informe, :nombre_hoja_informe
 
   ## metodo inicializador
   # titulos => ['campo1','campo2',...'campoN']
@@ -9,8 +9,11 @@ class CrearExcel
   # ruta => "fake_path/mis_documentos/archivo.xlsx"
   def initialize(params)
     @titulos = params[:titulos]
+    @titulos_informe = params[:titulos_informe]
     @datos = params[:datos]
+    @datos_informe = params[:datos_informe]
     @nombre_hoja = params[:nombre_hoja]
+    @nombre_hoja_informe = params[:nombre_hoja_informe]
     @ruta = params[:ruta]
   end
 
@@ -79,44 +82,71 @@ class CrearExcel
             v.first(v.size - 3).humanize+" id"
           end
         }, :style => cabecera
-        # definimos la fila base para agrupar
-        ultimo_numero_meta = 2
-        ultimo_numero_accion = 2
         # Pobla hoja
-        datos.each do |nombre,acciones_hashed|
-          # obtenemos el rowspan
-          rowspan_meta = acciones_hashed[:rowspan]
-          # recorremos las acciones de cada meta
-          acciones_hashed[:acciones].each do |nombre_accion, comentarios_hashed|
-            rowspan_accion = comentarios_hashed[:rowspan]
-            # si hay comentarios agregamos la demas informacion sino agregamos una fila casi vacia
-            if comentarios_hashed[:datos].size > 0
-              # recorremos los comentarios de cada accion
-              comentarios_hashed[:datos].each_with_index do |comentario_hash,index|
-                fila = []
-                fila << nombre
-                fila << nombre_accion
-                fila << comentario_hash[:nombre]
-                fila << comentario_hash[:rut]
-                fila << comentario_hash[:email]
-                fila << comentario_hash[:comentario]
-                ws.add_row fila, :style => agrupadas_verical
+        meta_current_row = 2
+        datos.each do |meta_id,meta|
+          meta_rowspan = 0
+          accion_current_row = meta_current_row
+          meta[:acciones].each do |accion_id, accion|
+            accion_rowspan = 0
+            materia_current_row = accion_current_row
+            accion[:materias].each do |materia_id, materia|
+              materia_rowspan = 0
+              alcance_current_row = materia_current_row
+              materia[:alcances].each do |alcance_id, alcance|
+                alcance_rowspan = 0
+                alcance[:data].each do |comentario|
+                  fila = []
+                  fila << meta[:nombre]
+                  fila << accion[:nombre]
+                  fila << materia[:nombre]
+                  fila << alcance[:nombre]
+                  fila << comentario[:nombre]
+                  fila << comentario[:rut]
+                  fila << comentario[:email]
+                  fila << comentario[:fecha_hora]
+                  fila << comentario[:comentario]
+                  ws.add_row fila, :style => agrupadas_verical
+                  alcance_rowspan += 1
+                end
+                #si tiene rowspan los juntamos
+                ws.merge_cells("D#{alcance_current_row}:D#{alcance_current_row+alcance_rowspan-1}") if alcance_rowspan > 1
+                #actualizo el current_row
+                alcance_current_row += alcance_rowspan
+                #le paso al padre el span que hicimos en hijo
+                materia_rowspan += alcance_rowspan
               end
-            else
-              fila = []
-              fila << nombre
-              fila << nombre_accion
-              ws.add_row fila, :style => agrupadas_verical
+              #si tiene rowspan los juntamos
+              ws.merge_cells("C#{materia_current_row}:C#{materia_current_row+materia_rowspan-1}") if materia_rowspan > 1
+              #actualizo el current_row
+              materia_current_row += materia_rowspan
+              #le paso al padre el span que hicimos en hijo
+              accion_rowspan += materia_rowspan
             end
-            # unimos la columna nombre accion
-            ws.merge_cells("B#{ultimo_numero_accion}:B#{ultimo_numero_accion+rowspan_accion-1}") if rowspan_accion > 1
-            # actualizamos el numero para rowspan
-            ultimo_numero_accion += rowspan_accion
+            #si tiene rowspan los juntamos
+            ws.merge_cells("B#{accion_current_row}:B#{accion_current_row+accion_rowspan-1}") if accion_rowspan > 1
+            #actualizo el current_row
+            accion_current_row += accion_rowspan
+            #le paso al padre el span que hicimos en hijo
+            meta_rowspan += accion_rowspan
           end
-          # unimos la columna nombre meta
-          ws.merge_cells("A#{ultimo_numero_meta}:A#{ultimo_numero_meta+rowspan_meta-1}") if rowspan_meta > 1
-          # actualizamos el numero para rowspan
-          ultimo_numero_meta += rowspan_meta
+          #si tiene rowspan los juntamos
+          ws.merge_cells("A#{meta_current_row}:A#{meta_current_row+meta_rowspan-1}") if meta_rowspan > 1
+          #actualizo el current_row
+          meta_current_row += meta_rowspan
+        end
+      end
+      wb.add_worksheet(:name => nombre_hoja_informe) do |ws|
+        ws.add_row titulos_informe.map{|v|
+          # cambiamos el campo_id por campo id
+          unless (v.last(3).downcase == "_id") 
+            v.humanize
+          else
+            v.first(v.size - 3).humanize+" id"
+          end
+        }, :style => cabecera
+        datos_informe.each do |dato|
+          ws.add_row dato
         end
       end
     end
@@ -124,7 +154,7 @@ class CrearExcel
       # creo el archivo de salida
       @salida = p.serialize ("#{ruta}")
     else
-      @salida = nil
+      @salida = p
     end
     @salida
   end

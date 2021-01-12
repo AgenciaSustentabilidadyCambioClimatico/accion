@@ -3,7 +3,7 @@
 
     $('.add-auditoria').click(function(){
       var id_temporal = 'id_temporal_'+$.now();
-      var partial_auditorias = "#{ j render partial: 'form_auditoria'}";
+      var partial_auditorias = "#{ j render('form_auditoria', puede_ver_fecha: (@informe.tipo_acuerdo == 'desde_firma_acuerdo'))}";
       partial_auditorias = partial_auditorias.replace(/id_temporal/g, id_temporal);
       $('#tabla_auditoria').append(partial_auditorias);
       iniciarAutoNumeric();
@@ -159,6 +159,13 @@
     });
   }
 
+  function actualiza_fecha_de_plazo_auditoria(clase, element){
+    var d = new Date('#{@informe.fecha_firma.strftime("%F")}');
+    d.setMonth(d.getMonth() + parseInt(element.value));
+    //console.log((d.getDate())+"/"+(d.getMonth()+1)+"/"+(d.getFullYear()));
+    $(element).siblings('.'+clase).html(d.getDate().toString().padStart(2, "0")+"/"+(d.getMonth()+1).toString().padStart(2, "0")+"/"+d.getFullYear());
+  }
+
 
 .card.m-0
   .card-body
@@ -183,7 +190,7 @@
                 .col-12.col-lg-3
                   = f.input :fecha_firma, as: :string, input_html: {value: (@informe.fecha_firma.strftime("%d/%m/%Y"))}, label: t(:fecha_firma_acuerdo), required: false, disabled: true
                 .col-12.col-lg-5
-                  = f.label t(:vigencia_acuerdo), class: "mb-1"
+                  = f.label t(:vigencia_acuerdo_anios), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
                       = f.input :plazo_vigencia_acuerdo, as: :string, label: false, required: false, disabled: true, wrapper: false
@@ -196,7 +203,7 @@
                   
               .row.mt-3
                 .col-12.col-lg-5
-                  = f.label t(:plazo_máximo_adhesión_desde_firma_acuerdo), class: "mb-1"
+                  = f.label t(:plazo_máximo_adhesión_desde_firma_acuerdo_meses), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
                       = f.input :plazo_maximo_adhesion, as: :string, label: false, required: false, disabled: true, wrapper: false
@@ -204,7 +211,7 @@
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_plazo_maximo_adhesion, as: :string, input_html: {value: @informe.fecha_plazo_maximo_adhesion.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
                 .col-12.col-lg-5
-                  = f.label t(:plazo_finalización_implementación), class: "mb-1"
+                  = f.label t(:plazo_finalización_implementación_meses), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
                       = f.input :plazo_finalizacion_implementacion, as: :string, label: false, required: false, disabled: true, wrapper: false
@@ -244,10 +251,14 @@
                           %input.form-control.auditoria-orden{type: :text, disabled: true}
                         %td
                           = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][nombre]", aud.nombre, {class: "form-control informe_acuerdo_auditoria_nombre", onkeyup: "cambio_nombre_auditoria('#{aud.id}');", readonly: !puede_editar}
-                        %td{style: "width:70px;min-width:70px;max-width:70px;"}
-                          = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_apertura]", aud.plazo_apertura, class: "form-control numero", readonly: !puede_editar
-                        %td{style: "width:70px;min-width:70px;max-width:70px;"}
-                          = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_cierre]", aud.plazo_cierre, class: "form-control numero", readonly: !puede_editar
+                        %td{style: "width:90px;min-width:90px;max-width:90px;"}
+                          = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_apertura]", aud.plazo_apertura, class: "form-control numero", readonly: !puede_editar, onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_apertura_fecha', this);"
+                          -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
+                            .plazo_apertura_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.fecha_firma + aud.plazo_apertura.months).strftime("%d/%m/%Y")
+                        %td{style: "width:90px;min-width:90px;max-width:90px;"}
+                          = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_cierre]", aud.plazo_cierre, class: "form-control numero", readonly: !puede_editar, onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_cierre_fecha', this);"
+                          -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
+                            .plazo_cierre_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.fecha_firma + aud.plazo_cierre.months).strftime("%d/%m/%Y")
                         %td
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", (!puede_editar && aud.con_certificacion?)
                           = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('#{aud.id}');", disabled: !puede_editar

@@ -178,7 +178,7 @@ class AdhesionesController < ApplicationController
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
     when Tarea::COD_APL_025
-      @tarea_pendiente.pasar_a_siguiente_tarea ['A','C']
+      @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
     when Tarea::COD_APL_028
       # DZC 2018-11-06 11:04:40 se modifica acorde a los cambios realizados en las condiciones de continuación de flujo
       # DZC 2018-11-08 14:58:14 se corrige erro en acceso a condición 'C'

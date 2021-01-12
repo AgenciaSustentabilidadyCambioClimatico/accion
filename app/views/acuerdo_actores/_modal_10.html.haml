@@ -14,7 +14,7 @@
                 - InformeAcuerdo.vigencia_acuerdo_palabras_claves.keys.each do |palabra|
                   ="[#{palabra}] "
             .col-12
-              = f.input :plazo_vigencia_acuerdo, as: :string, input_html: {class: 'numero'}, label: t(:vigencia_del_acuerdo_anios)
+              = f.input :plazo_vigencia_acuerdo, as: :string, input_html: {class: 'numero required'}, label: t(:vigencia_del_acuerdo_anios)
       .modal-footer
         %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
           Terminar

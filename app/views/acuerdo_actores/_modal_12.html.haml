@@ -15,7 +15,7 @@
                   - InformeAcuerdo.palabras_claves("vigencia_certificacion").keys.each do |palabra|
                     ="[#{palabra}] "
               .col-12.mt-2
-                = f.input :vigencia_certificacion_final, label: t(:vigencia_certificación_final), input_html: { class: "numero-1-7" }, as: :string
+                = f.input :vigencia_certificacion_final, label: t(:vigencia_certificación_final), input_html: { class: "numero-1-7 required" }, as: :string
               .col-12#div-certificaciones-intermedias.mt-2
                 .row
                   .col-12

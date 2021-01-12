@@ -42,7 +42,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
     @informe.accion = action_name # DZC 2018-11-15 14:43:27 se agrega para evitar validaciones
     respond_to do |format|
 
-      if @informe.necesita_evidencia && informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria].blank? && informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank?
+      if @informe.necesita_evidencia && informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria].blank? && informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank? && @informe.archivos_anexos_posteriores_firmas.blank?
         #necesita evidencia y no la agregó
         format.js { 
           @informe.solo_guarda_archivos = false
@@ -102,6 +102,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
     respond_to do |format|
       r_to = actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
       @informe.auditorias = params[:informe_acuerdo][:auditorias].values rescue []
+      @informe.tarea_codigo = @tarea.codigo
       if @informe.valid?
         @informe.save
         @informe.update(necesita_evidencia: true)

@@ -377,30 +377,6 @@ class ManifestacionDeInteres < ApplicationRecord
       # DZC 2019-08-16 20:26:20
       # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente      
       errores = []
-
-      unless roles_minimos.blank? #DZC revisa que se cumpla con los roles minimos
-        roles_correctos = true
-        roles_minimos.each {|k, v|
-          # DZC 2018-11-02 12:49:22 se corrige error en comparación de cantidad de roles mínimos
-          #roles_correctos = (data.select{|d| d[:rol_en_acuerdo]==k.to_s}.count < v) ? false : roles_correctos
-          #si rol existe, comprobar que no sea la misma persona (llave rut persona - rut institucion)
-          personas_unicas = []
-          filas_con_rol_requerido = data.select{|d| d[:rol_en_acuerdo]==k.to_s}
-          filas_con_rol_requerido.each do |persona|
-            personas_unicas << persona[:rut_persona]+"/"+persona[:rut_institucion] if !personas_unicas.include?(persona[:rut_persona]+"/"+persona[:rut_institucion])
-          end
-
-          roles_correctos = (personas_unicas.count < v) ? false : roles_correctos
-        } 
-        if !roles_correctos 
-          ##
-          # DZC 2019-08-16 20:26:20
-          # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea"
-          # errors.add(:mapa_de_actores_archivo, "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea")
-          archivo_correcto = false
-        end
-      end
       ruts_invalidos=[]
       emails_invalidos=[]
       telefonos_invalidos=[]
@@ -507,6 +483,32 @@ class ManifestacionDeInteres < ApplicationRecord
         errores << "El archivo contiene #{telefonos_invalidos.size} teléfonos inválidos. Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir"
         #errors.add(:mapa_de_actores_archivo, "El archivo contiene #{telefonos_invalidos.size} Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir")
         archivo_correcto = false
+      end
+      
+      if archivo_correcto
+        unless roles_minimos.blank? #DZC revisa que se cumpla con los roles minimos
+          roles_correctos = true
+          roles_minimos.each {|k, v|
+            # DZC 2018-11-02 12:49:22 se corrige error en comparación de cantidad de roles mínimos
+            #roles_correctos = (data.select{|d| d[:rol_en_acuerdo]==k.to_s}.count < v) ? false : roles_correctos
+            #si rol existe, comprobar que no sea la misma persona (llave rut persona - rut institucion)
+            personas_unicas = []
+            filas_con_rol_requerido = data.select{|d| d[:rol_en_acuerdo]==k.to_s}
+            filas_con_rol_requerido.each do |persona|
+              personas_unicas << persona[:rut_persona]+"/"+persona[:rut_institucion] if !personas_unicas.include?(persona[:rut_persona]+"/"+persona[:rut_institucion])
+            end
+
+            roles_correctos = (personas_unicas.count < v) ? false : roles_correctos
+          } 
+          if !roles_correctos 
+            ##
+            # DZC 2019-08-16 20:26:20
+            # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
+            errores << "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea"
+            # errors.add(:mapa_de_actores_archivo, "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea")
+            archivo_correcto = false
+          end
+        end
       end
 
       if archivo_correcto #DZC se mantiene el almacenamiento de data en el campo mapa_actores_data, para mantener la comparación de archivo 

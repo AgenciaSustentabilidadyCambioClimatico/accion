@@ -35,19 +35,23 @@ class ExcelParser
 
 	private 
 		def __columns(columns={},start_index=1)
-			cols = self.sheet.row(start_index).map do |name|
-				next if name.nil?
-				c_alias = ExcelParser.parameterize(name.to_s)
-				if columns.size > 0
-					if columns.is_a?(Hash) && columns.has_key?(c_alias)
-						c_alias = columns[c_alias]
-					elsif columns.is_a?(Array) && columns.include?(c_alias)
-						c_alias = c_alias #en realidad mantiene el valor recorrido
-					else
-						c_alias = nil
+			if !self.sheet.first_row.nil?
+				cols = self.sheet.row(start_index).map do |name|
+					next if name.nil?
+					c_alias = ExcelParser.parameterize(name.to_s)
+					if columns.size > 0
+						if columns.is_a?(Hash) && columns.has_key?(c_alias)
+							c_alias = columns[c_alias]
+						elsif columns.is_a?(Array) && columns.include?(c_alias)
+							c_alias = c_alias #en realidad mantiene el valor recorrido
+						else
+							c_alias = nil
+						end
 					end
+					c_alias
 				end
-				c_alias
+			else
+				cols = []
 			end
 			#Verificamos que no sea un array de nils
 			if cols.compact.size == 0
