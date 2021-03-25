@@ -402,7 +402,7 @@ function checkRutValidity() {
 
 function validarRutEnTiempoReal(mensaje) {
   if (mensaje===undefined) { mensaje="El R.U.T ingresado es INCORRECTO." }
-  $('body').on('change','.identificacion',function() {
+  $('body').on('change focusout','.identificacion',function() {
     divAcceso=$(this).parent('div');
     inputAcceso=divAcceso.find('.identificacion');
     if (checkRutValidity()) { $('.check-validity').removeAttr('disabled');

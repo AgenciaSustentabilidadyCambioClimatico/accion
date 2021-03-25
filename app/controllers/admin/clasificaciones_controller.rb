@@ -59,6 +59,9 @@ class Admin::ClasificacionesController < ApplicationController
         :descripcion,
         :referencia,
         :es_meta,
+        :imagen,
+        :icono,
+        :color
       )
     end
 end

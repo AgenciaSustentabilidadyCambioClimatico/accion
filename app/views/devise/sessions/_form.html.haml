@@ -1,0 +1,27 @@
+-mensaje = mensaje.nil? ? false : mensaje
+= simple_form_for(resource, as: resource_name, url: session_path(resource_name), wrapper: :group_with_icon, remote: form_remote, method: :post, html: { class: 'form-devise row p-0', autocomplete: :off } ) do |f|
+  -if !@correcto.nil? && !@correcto
+    .alert.alert-danger.w-100
+      =t('devise.sessions.invalid')
+  -if mensaje
+    .alert.alert-success.w-100
+      =mensaje
+  .card.mb-2.col-12.p-0
+    .card-header
+      %h5.titulo-caja.text-center= "Ingreso de usuarios"
+    .card-body
+      .text-center.mb-4
+        = image_tag ("logo-ascc.png")
+      = f.input :rut, required: false, placeholder: 'R.U.T.', label: false, fa_icon: 'id-card-o', input_html: { class: 'identificacion required-field' }
+      = f.input :password, required: false, placeholder: 'Contraseña', label: false, fa_icon: :key, input_html: { class: 'required-field' }
+      = f.button :submit, "Ingresar", class: 'btn btn-sm btn-agencia btn-block mt-3 btn-disabled', disabled: :disabled
+      .text-center.mt-2
+        %hr
+        %hr
+      .text-center
+        = clave_unica_btn
+  = render "devise/shared/links", form_remote: form_remote
+:javascript
+  $(document).ready(function(){
+    checkFieldValidity($('#user_rut'));
+  });

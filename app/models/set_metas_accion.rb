@@ -82,6 +82,18 @@ class SetMetasAccion < ApplicationRecord
 		end
 	end
 
+  def obtiene_porcentaje_avance
+    auditorias = Auditoria.where(flujo_id: self.flujo.id)
+    auditoria_elementos = AuditoriaElemento.where(auditoria_id: auditorias.pluck(:id), set_metas_accion_id: self.id)
+    if auditoria_elementos.present?
+      total_auditorias_aplica = auditoria_elementos.where(aplica: true).size.to_f
+      porcentaje = (total_auditorias_aplica > 0)? (total_auditorias_aplica/auditoria_elementos.length.to_f).to_f : 0.to_f
+      porcentaje_avance =  "#{(porcentaje*100).round(2)}%"
+    else
+      porcentaje_avance =  "0%"
+    end
+  end
+
 	def estado_vista
 		if self.estado == 3
 			es = "<i class='fa fa-check text-success'></i> No"

@@ -1,14 +1,32 @@
 class Admin::PasswordsController < Devise::PasswordsController
 
+  def new
+    self.resource = resource_class.new
+  end
+
   def create
     self.resource = resource_class.send_reset_password_instructions(resource_params)
     yield resource if block_given?
 
     if successfully_sent?(resource)
-      respond_with({}, location: after_sending_reset_password_instructions_path_for(resource_name))
+      respond_to do |format|
+        format.html{
+          respond_with({}, location: after_sending_reset_password_instructions_path_for(resource_name))
+        }
+        format.js{
+          @correcto = true
+        }
+      end
     else
-      flash[:danger] = "Error al enviar correo"
-      respond_with(resource)
+      respond_to do |format|
+        format.html{
+          flash[:danger] = "Error al enviar correo"
+          respond_with(resource)
+        }
+        format.js{
+          @correcto = false
+        }
+      end
     end
   end
 

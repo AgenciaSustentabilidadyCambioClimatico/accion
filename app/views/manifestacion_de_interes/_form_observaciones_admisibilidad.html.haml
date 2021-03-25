@@ -6,6 +6,11 @@
       console.log($('#manifestacion_de_interes_update_obs_admisibilidad').val());
     });
 
+    $('#guardar-manifestacion-temporal-button').click(function(e){
+      $('#manifestacion_de_interes_update_obs_admisibilidad').val(false);
+      $('#manifestacion_de_interes_temporal').val(true);
+    });
+
 
 
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
@@ -63,12 +68,13 @@
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:observaciones_admisibilidad)
-= simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: true, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: false
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
   = f.submit "", class: 'd-none'
   =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
   = f.input :update_obs_admisibilidad, as: :hidden, wrapper: false, input_html: { value: "" }
+  = f.submit '', id: 'guardar-manifestacion-temporal-button', class: 'd-none'
   .row
     .col-12
       .card
@@ -145,6 +151,7 @@
                       -if !solo_lectura
                         .col-12.col-md-10
                           = f.input :archivo_admisibilidad, as: :file, input_html: {class: 'form-control'}, label: t(:adjuntar_archivo)
+                          = f.input :archivo_admisibilidad_cache, as: :hidden
                         .col-12.col-md-2
                           -#
                             = __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad)

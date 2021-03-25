@@ -184,7 +184,7 @@ class AdhesionesController < ApplicationController
       # DZC 2018-11-08 14:58:14 se corrige erro en acceso a condición 'C'
        
       if @todas.present? && @todas[:aceptada].present? && (@tarea_pendiente.data.blank? || @tarea_pendiente.data!={primera_ejecucion: true})
-        @tarea_pendiente.update(data: {primera_ejecucion: false})
+        #@tarea_pendiente.update(data: {primera_ejecucion: false})#no se para que se usa, no encontree el sentido
         @tarea_pendiente.pasar_a_siguiente_tarea 'C', {}, false
       end
       @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false

@@ -244,7 +244,9 @@ class AuditoriaElemento < ApplicationRecord
 			end
 		end
 
-		auditorias = AuditoriaElemento.where(adhesion_elemento_id: elems_id).where(estado: [1,3,nil]).where(auditoria_id: auditoria.id).all
+		auditorias = AuditoriaElemento.where(adhesion_elemento_id: elems_id)
+																	.where(auditoria_id: auditoria.id)
+																	.all
 		auditorias.each do |audit|
 			
 			elem = audit.adhesion_elemento

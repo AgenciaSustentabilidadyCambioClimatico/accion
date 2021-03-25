@@ -88,6 +88,7 @@ class ActoresConvocatoriasController < ApplicationController
 						rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
 					ConvocatoriaMailer.delay.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:06:07 se corrige error en nombre de variable rgc.id
 					end
+					TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_018.to_s]}).update(estado_tarea_pendiente_id: 2)
 					continua_flujo_segun_tipo_tarea
 					flash.now[:success] = "Convocatoria modificada"
 					render js: "window.location='#{actores_convocatorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes)}'"

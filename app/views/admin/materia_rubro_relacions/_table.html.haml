@@ -29,7 +29,7 @@
       - @levantados.each do | levantar |
         %tr
           %td= levantar.materia_sustancia.nombre
-          %td= levantar.actividad_economica.codigo_ciiuv2
+          %td= levantar.actividad_economica.codigo_ciiuv4
           %td= levantar.recolectados.to_sentence
           - if es_para_seleccion
             %td.iconos-acciones

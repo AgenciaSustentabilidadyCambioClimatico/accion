@@ -14,8 +14,10 @@ class SetMetasAccionesController < ApplicationController
   end
 
   def enviar_revision
-    if @tarea.codigo == Tarea::COD_APL_018
+    if @tarea.codigo == Tarea::COD_APL_018 || @tarea.codigo == Tarea::COD_APL_013
       success = "Set de metas y acciones correctamente actualizada"
+    elsif @tarea.codigo == Tarea::COD_APL_020
+      success = "Respuestas set de metas y acciones guardadas"
     else
       parameters = enviar_revision_set_metas_accion_params()
       @manifestacion_de_interes.aprueba_set_metas_accion = parameters[:aprueba_set_metas_accion]

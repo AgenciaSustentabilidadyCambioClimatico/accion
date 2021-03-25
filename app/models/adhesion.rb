@@ -109,10 +109,11 @@ class Adhesion < ApplicationRecord
 					fila[:comuna_casa_matriz].blank? || fila[:cargo_encargado].blank?
 					errores[:base] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
 				else
-					rut_institucion = fila[:rut_institucion].to_s.gsub('k', 'K')
+					fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
+					rut_institucion = fila[:rut_institucion]
 					# DZC 2019-06-19 11:18:31 se modifica para que exista coherencia entre las comparaciones de RUT
 					# rut_encargado = fila[:rut_encargado].to_s.gsub('k', 'K')
-					fila[:rut_encargado] = fila[:rut_encargado].to_s.gsub('k', 'K')
+					fila[:rut_encargado] = fila[:rut_encargado].to_s.gsub('k', 'K').gsub(".", "")
 					rut_encargado = fila[:rut_encargado]
 
 					contribuyente = nil
@@ -150,7 +151,7 @@ class Adhesion < ApplicationRecord
 					# validaciones del encargado
 					emails = data.map{|d| d[:email_encargado]}
 					if emails.include?(fila[:email_encargado])
-						temp = data.map{|d| [d[:rut_encargado],d[:email_encargado]]}
+						temp = data.map{|d| [d[:rut_encargado].to_s.gsub("k","K").gsub(".",""),d[:email_encargado]]}
 						#obtengo todos los que hacen match con el email
 						temp_filtro = temp.select{|t| t.last == fila[:email_encargado]}
 						#Verifico aquellos que tenga el mismo rut
@@ -463,11 +464,15 @@ class Adhesion < ApplicationRecord
     fila_identificador = fila[:identificador].present? ? fila[:identificador].to_s : fila[:identificador]
     fila_patente = fila[:patente].present? ? fila[:patente].to_s : fila[:patente]
 
-    contribuyente = Contribuyente.find_by(rut: (fila[:rut_institucion][0,fila[:rut_institucion].length-2].to_i))
+    fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
+		rut_vs_split = fila[:rut_institucion].split("-")
+		rut_institucion = rut_vs_split.first
+		dv_institucion = rut_vs_split.last
+    contribuyente = Contribuyente.find_by(rut: rut_institucion)
 		if contribuyente.nil?
 			contribuyente = Contribuyente.new(
-				rut: (fila[:rut_institucion][0,fila[:rut_institucion].length-2]).to_i,
-				dv: (fila[:rut_institucion][fila[:rut_institucion].length-1,1]).to_s.gsub(/k/,'K'),
+				rut: rut_institucion,
+				dv: dv_institucion,
 				razon_social: fila[:nombre_institucion].to_s
 				)
 			contribuyente.save(validate: false)
@@ -527,11 +532,13 @@ class Adhesion < ApplicationRecord
 		# DZC (5) se busca la existencia del usuario y persona, en caso de ausencia se crean.
 
 		# DZC 2018-10-20 19:45:45 se consideran el rut y el email en conjunto para la búsqueda del usuario
-		usuario = User.find_by(rut: fila[:rut_encargado].to_s, email: fila[:email_encargado].to_s)
+		fila[:rut_encargado] = fila[:rut_encargado].to_s.gsub('k', 'K').gsub(".", "")
+		rut_encargado = fila[:rut_encargado]
+		usuario = User.find_by(rut: rut_encargado, email: fila[:email_encargado].to_s)
 		if usuario.blank?
 			# Crea un usuario sin password y le envia la invitación al email
 			usuario = User.invite!(
-				rut: fila[:rut_encargado].to_s.gsub(/k/,'K'),
+				rut: rut_encargado,
 				nombre_completo: fila[:nombre_encargado].to_s,
 				telefono: fila[:fono_encargado].to_s,
 				email: fila[:email_encargado].to_s)
@@ -660,7 +667,7 @@ class Adhesion < ApplicationRecord
 	    	
 	    	# propuestas_de_acuerdos = SetMetasAccion.where(manifestacion_de_interes_id: manifestacion.id)
 	    	propuestas_de_acuerdos = SetMetasAccion.where(flujo_id: flujo.id)
-
+	    	par_materia_alcance = []
 	    	propuestas_de_acuerdos.each do |propuesta|
 	    		if propuesta.ppf_metas_establecimiento_id.present?
 	    			alcance = Alcance::ESTABLECIMIENTO
@@ -670,17 +677,23 @@ class Adhesion < ApplicationRecord
 	    		if (alcance == adhesion_elemento.alcance_id)
 		    		ms = propuesta.materia_sustancia
 		    		if ms.present?
-			    		#Busco todas las MateriasRubroRelacions existen deacuerdo a la materia y las actividades economicas del contribuyente.-
-			    		actividades_economicas.each do |ae|
-			    			materia_rubro_relacion = MateriaRubroRelacion.where(materia_sustancia_id: ms.id, actividad_economica_id: ae.actividad_economica_id).first
-			    			if materia_rubro_relacion.present?
-				    			#Obtengo todos los datos relacionadoes segun el rubro y materia.-
-				    			materia_rubro_dato_relaciones = materia_rubro_relacion.materia_rubro_dato_relacions
-				    			materia_rubro_dato_relaciones.each do |mrdr|		
-				    				mrdr.dato_recolectado.dato_productivo_elemento_adheridos.create(adhesion_elemento_id: adhesion_elemento.id, set_metas_accion_id: propuesta.id)
-				    			end
+		    			#una vez por cada par materia-alcance
+		    			if !par_materia_alcance.include?("#{ms.id}-#{alcance}")
+		    				par_materia_alcance << "#{ms.id}-#{alcance}"
+				    		#Busco todas las MateriasRubroRelacions existen deacuerdo a la materia y las actividades economicas del contribuyente.-
+				    		actividades_economicas.each do |ae|
+				    			ae_ids = [ae.actividad_economica_id]
+				    			ae_ids += ae.actividad_economica.get_parents.map{|_ae| _ae.id }
+				    			materia_rubro_relaciones = MateriaRubroRelacion.where(materia_sustancia_id: ms.id, actividad_economica_id: ae_ids)
+				    			materia_rubro_relaciones.each do |mrr|
+					    			#Obtengo todos los datos relacionadoes segun el rubro y materia.-
+					    			materia_rubro_dato_relaciones = mrr.materia_rubro_dato_relacions
+					    			materia_rubro_dato_relaciones.each do |mrdr|
+					    				mrdr.dato_recolectado.dato_productivo_elemento_adheridos.find_or_create_by(adhesion_elemento_id: adhesion_elemento.id, set_metas_accion_id: propuesta.id)
+					    			end
+						    	end
 				    		end
-			    		end
+				    	end
 			    	end
 		    	end
     		end

@@ -115,7 +115,9 @@ class MapaDeActor < ApplicationRecord
 			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].to_s)
 			sector_productivo = ae.first.descripcion_ciiuv4 if ae.present?
 			# DZC 2018-10-10 16:09:11 se prevee el caso de que el contribuyente se este creando mediante el archivo excel
-			razon_social = Contribuyente.where(rut: fila[:rut_institucion]).blank? ? nil : Contribuyente.where(rut: fila[:rut_institucion]).first.razon_social
+			fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
+			rut_institucion = fila[:rut_institucion]
+			razon_social = Contribuyente.where(rut: rut_institucion.split("-").first).blank? ? nil : Contribuyente.where(rut: rut_institucion.split("-").first).first.razon_social
 			if !fila.has_key?(:sector_productivo) then fila[:sector_productivo] = sector_productivo end
 			if !fila.has_key?(:razon_social) then fila[:razon_social] = razon_social end
 		end
@@ -126,7 +128,7 @@ class MapaDeActor < ApplicationRecord
 		actores_unidos = {}
 		# agrupamos los actores por rut persona y rut_institucion
 		data.each do |fila|
-			llave = fila[:rut_persona]+fila[:rut_institucion]
+			llave = fila[:rut_persona].to_s.gsub("k","K").gsub(".","")+fila[:rut_institucion].to_s.gsub("k","K").gsub(".","")
 			if actores_unidos.has_key?(llave)
 				# agregamos los roles para luego compararlos y dejarlos unicos
 				actores_unidos[llave][:roles_en_acuerdo] << fila[:rol_en_acuerdo]
@@ -225,12 +227,16 @@ class MapaDeActor < ApplicationRecord
 					pem.delete
 				end
 			end
+			fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
+			rut_vs_split = fila[:rut_institucion].split("-")
+			rut_institucion = rut_vs_split.first
+			dv_institucion = rut_vs_split.last
 			#DZC (1) Verifica la existencia del contribuyente y en caso de ausencia lo crea.
-			contribuyente = Contribuyente.find_by(rut: (fila[:rut_institucion][0,fila[:rut_institucion].length-2].to_i))
+			contribuyente = Contribuyente.find_by(rut: rut_institucion)
 			if contribuyente.blank?
 				contribuyente = Contribuyente.new(
-					rut: (fila[:rut_institucion][0,fila[:rut_institucion].length-2]).to_i,
-					dv: (fila[:rut_institucion][fila[:rut_institucion].length-1,1]).to_s.gsub(/k/,'K'),
+					rut: rut_institucion,
+					dv: dv_institucion,
 					razon_social: fila[:razon_social].to_s
 					)
 				# DZC 2018-10-03 12:12:18 se corrige error que transformaba en boolean la variable contribuyente
@@ -286,7 +292,9 @@ class MapaDeActor < ApplicationRecord
 			# DZC 2018-10-20 19:45:45 se consideran el rut y el email en conjunto para la búsqueda del usuario
 			# DZC 2019-08-05 se corrige validación de email, pues es posible que el correo exista en una 
 			# relación persona pero no en la tabla user.
-			usuario = User.find_by(rut: fila[:rut_persona].to_s)
+			fila[:rut_persona] = fila[:rut_persona].to_s.gsub('k', 'K').gsub(".", "")
+			rut_persona = fila[:rut_persona]
+			usuario = User.find_by(rut: rut_persona)
 			unless usuario.present?
 				##
 				# DZC 2019-08-08 15:20:37
@@ -294,7 +302,7 @@ class MapaDeActor < ApplicationRecord
 				# con el mismo email.
 				begin
 					usuario = User.invite!(
-						rut: fila[:rut_persona].to_s.gsub(/k/,'K'),
+						rut: rut_persona,
 						nombre_completo: fila[:nombre_completo_persona].to_s,
 						telefono: fila[:telefono_institucional].to_s,
 						email: fila[:email_institucional].to_s

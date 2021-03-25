@@ -13,6 +13,16 @@ class ActividadEconomica < ApplicationRecord
 		ActividadEconomica.where("codigo_ciiuv4 LIKE '"+codigo_ciu+"%'").where.not(id: self.id)
 	end
 
+  def get_parents
+    #dependiendo de mi nivel traigo mi padre y/o abuelo, o nada
+    parents = []
+    if self.codigo_ciiuv4.length > 2
+      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,2])
+      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,3]) if self.codigo_ciiuv4.length == 6
+    end
+    parents
+  end
+
 	def self.__select_arbol(lowest_only=true)
 
 		#acteco = ActividadEconomica

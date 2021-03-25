@@ -32,10 +32,17 @@ Rails.application.routes.draw do
     authenticated :user do
       root :to => "home#index", :as => "authenticated_user_home"
     end
-    root to: 'devise/sessions#new'
+    #root to: 'devise/sessions#new'
+    root :to => "home#index"
   end
 
   get 'consulta-publica-propuestas-acuerdo', to: "home#consulta_publica_propuestas_acuerdo", as: :consulta_publica_propuestas_acuerdo
+
+  #no logeado
+  get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
+  get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
+  get 'empresas-y-elementos-adheridos', to: "home#empresas_y_elementos_adheridos", as: :empresas_y_elementos_adheridos
+  get 'empresas-y-elementos-certificados', to: "home#empresas_y_elementos_certificados", as: :empresas_y_elementos_certificados
 
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
@@ -328,6 +335,7 @@ Rails.application.routes.draw do
         get 'ppf/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#ppf_set_metas_acciones", as: :ppf_set_metas_acciones
         get 'fpl/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#fpl_set_metas_acciones", as: :fpl_set_metas_acciones
         get 'fpl/:id/rendiciones/', to: "gestionar_mis_instrumentos#fpl_rendiciones", as: :fpl_rendiciones
+        get ':id/descargar_reporte_sustentabilidad', to: "gestionar_mis_instrumentos#descargar_reporte_sustentabilidad", as: :descargar_reporte_sustentabilidad
       end
     end
 
@@ -374,6 +382,10 @@ Rails.application.routes.draw do
         get :get_estandar
       end
     end
+
+    get '/datos_publicos/edit', to: "datos_publicos#edit", as: :edit_datos_publico
+    match '/datos_publicos', to: "datos_publicos#update", as: :datos_publico, via: [:patch, :put]
+
   end
   #end namespace admin
 

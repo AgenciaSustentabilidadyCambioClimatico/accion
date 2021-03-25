@@ -1,0 +1,17 @@
+.cover-header-footer
+.footer-pdf.mx-5
+  .blue
+  .red
+:javascript
+  document.getElementsByTagName("body")[0].onload = function() {
+    var x=document.location.search.substring(1).split('&');
+    for (var i in x) {
+      if(x[i] == "page=1"){
+        document.getElementsByClassName("cover-header-footer")[i].style.display = "block";
+        document.getElementsByClassName("footer-pdf")[i].style.display = "none";
+      }else{
+        document.getElementsByClassName("cover-header-footer")[i].style.display = "none";
+        document.getElementsByClassName("footer-pdf")[i].style.display = "block";
+      }
+    }
+  };

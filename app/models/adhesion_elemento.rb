@@ -58,6 +58,22 @@ class AdhesionElemento < ApplicationRecord
     return nombre unless tipo.blank?   
   end
 
+  def otro_dato
+    otro_dato = ""
+    if self.alcance_id == Alcance::MAQUINARIA
+      otro_dato = [self.maquinaria.numero_serie,self.maquinaria.patente].join("/")
+    elsif self.alcance_id == Alcance::PRODUCTO
+      otro_dato = self.otro.identificador_unico
+    elsif self.alcance_id == Alcance::ESTABLECIMIENTO
+      ec_elem = self.establecimiento_contribuyente
+      otro_dato = [ec_elem.direccion,ec_elem.comuna.nombre,ec_elem.comuna.provincia.region.nombre].join(", ")
+    else
+      ec_elem = Contribuyente.find_by(rut: self.fila["rut_institucion"].split('-').first).direccion_principal
+      otro_dato = [ec_elem.direccion,ec_elem.comuna.nombre,ec_elem.comuna.provincia.region.nombre].join(", ")
+    end
+    otro_dato
+  end
+
   #DZC calucula el porcentaje de cumplimiento 
   # DZC 2018-11-13 11:27:19 se modifica para correcta aplicación de filtros de auditoría y elemento adherido
   # DZC 2018-11-14 16:47:00 se traspasa la primera parte del código al método calcula_porcentaje_cumplimiento
@@ -96,6 +112,38 @@ class AdhesionElemento < ApplicationRecord
     end
     total_auditorias_cumple_aplica = auditorias_cumple_aplica.size.to_f 
     porcentaje = (total_auditorias_elementos_aplica > 0)? (total_auditorias_cumple_aplica/total_auditorias_elementos_aplica).to_f : 0.to_f
+  end
+
+  def ultima_auditoria_elemento_cumplida
+    auditoria_elems = AuditoriaElemento.where(adhesion_elemento_id: self.id, cumple: true, aplica: true)
+                      .where.not(aprobacion_fecha: nil)
+                      .order(aprobacion_fecha: :desc)
+    auditoria_elems.each do |aud_elem|
+      if aud_elem.auditoria.con_validacion == true
+        if aud_elem.validacion_aceptada
+          return aud_elem
+        end
+      else
+        return aud_elem
+      end
+    end
+  end
+
+  def fecha_certificacion
+    self.ultima_auditoria_elemento_cumplida.aprobacion_fecha
+  end
+
+  def vigencia_certificacion(nivel_plazo=nil, fecha=self.fecha_certificacion)
+    plazo = 0
+    if nivel_plazo.to_i > 0 
+      plazo = nivel_plazo.to_i
+    else
+      plazo = self.ultima_auditoria_elemento_cumplida.auditoria.plazo.to_i
+      if plazo == 0
+        plazo = InformeAcuerdo.where(manifestacion_de_interes_id: self.ultima_auditoria_elemento_cumplida.auditoria.flujo.manifestacion_de_interes_id).last.vigencia_certificacion_final.to_i
+      end
+    end
+    (fecha+plazo.years)
   end
 
   def nombre_del_elemento #APL:033

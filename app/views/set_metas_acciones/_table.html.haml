@@ -258,7 +258,8 @@
             = f.input :comentarios_y_observaciones_set_metas_acciones, as: :text,label: t(:comentarios_y_observaciones_set_metas_acciones), required: true, input_html: {class: "required-field"}
       -if [:actualizacion, :revision].include?(@manifestacion_de_interes.accion_en_set_metas_accion) && @tarea.codigo != Tarea::COD_APL_018
         - comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones
-        - comentarios = comentarios.blank? && !@comentarios_set_metas_acciones.blank? ? @comentarios_set_metas_acciones : []
+        - if comentarios.blank?
+          - comentarios = !@comentarios_set_metas_acciones.blank? ? @comentarios_set_metas_acciones : []
         -if comentarios.size > 0
           .row
             .col-12

@@ -46,6 +46,13 @@
       }
     });
 
+    $('#informe_acuerdo_plazo_finalizacion_implementacion').on('input paste keyup', function(){
+      if($('#informe_acuerdo_tipo_acuerdo_desde_firma_acuerdo').is(":checked")){
+        $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('set', '');
+        $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('update', {vMax: this.value});
+      }
+    });
+
     $('#informe_acuerdo_vigencia_certificacion_final').change(function(){
       max_value = this.value;
       $('.vigencia-cert-intermedia-plazo').each(function(index, elemento){

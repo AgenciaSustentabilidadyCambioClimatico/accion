@@ -60,22 +60,30 @@
       if($('#advertencia-cambio #tipo').val() == "3"){
         e.preventDefault();
 
-        dataConfirmModal.confirm({
-          title: 'Confirme antes de continuar',
-          text: "Al elegir Metas y Acciones de otro Acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
-          commit: 'Quitar',
-          cancel: 'Volver',
-          zIindex: 10099,
-          onConfirm: function() {
-            $('#advertencia-cambio form').submit();
-            $('#advertencia-cambio').modal('hide');
-            $('.loading-data').show();
-          },
-          onCancel:  function() {
-          },
-          onHide:    function() {
-          }
-        });
+        if(#{@origenes.keys.select{|o| o.split("-").last == "ManifestacionDeInteres"}.length > 0}){
+
+          dataConfirmModal.confirm({
+            title: 'Confirme antes de continuar',
+            text: "Al elegir Metas y Acciones de otro Acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
+            commit: 'Quitar',
+            cancel: 'Volver',
+            zIindex: 10099,
+            onConfirm: function() {
+              $('#advertencia-cambio form').submit();
+              $('#advertencia-cambio').modal('hide');
+              $('.loading-data').show();
+            },
+            onCancel:  function() {
+            },
+            onHide:    function() {
+            }
+          });
+        }else{
+          $('#advertencia-cambio form').submit();
+          $('#advertencia-cambio').modal('hide');
+          $('.loading-data').show();
+        }
+
       }
     });
   });
@@ -305,7 +313,6 @@
     });
     
   }
-
 - titulo t(:actualización_de_acuerdo)
 = render 'manifestacion_de_interes/modal_advertencia_set_metas'
 .card

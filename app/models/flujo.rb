@@ -36,10 +36,16 @@ class Flujo < ApplicationRecord
 
 
   def plazo_maximo_acciones_meses
-    accion_plazo_mayor = self.set_metas_acciones.order('plazo_unidad_tiempo ASC', 'plazo_valor DESC').first
-    # si no hay accion pone plazo 0
-    plazo = accion_plazo_mayor&.plazo_valor.nil? ? 0 : accion_plazo_mayor.plazo_valor
-    plazo = plazo*12 if accion_plazo_mayor&.plazo_unidad_tiempo == "years"
+    accion_plazo_mayor_anios = self.set_metas_acciones.where(plazo_unidad_tiempo: 0).order('plazo_valor DESC').first
+    accion_plazo_mayor_meses = self.set_metas_acciones.where(plazo_unidad_tiempo: 1).order('plazo_valor DESC').first
+    if accion_plazo_mayor_anios.nil? && accion_plazo_mayor_meses.nil?
+      # si no hay accion pone plazo 0
+      plazo = 0
+    else
+      plazo_anios = accion_plazo_mayor_anios.nil? ? 0 : accion_plazo_mayor_anios.plazo_valor*12
+      plazo_meses = accion_plazo_mayor_meses.nil? ? 0 : accion_plazo_mayor_meses.plazo_valor
+      plazo = plazo_anios > plazo_meses ? plazo_anios : plazo_meses
+    end
     plazo
   end
 
@@ -150,6 +156,7 @@ class Flujo < ApplicationRecord
     objeto_cuatro = nil
     establecimientos_id = []
     actividades = nil
+    manifestacion_de_interes_id = self.manifestacion_de_interes_id
     
     # DZC 2018-10-18 15:42:09 obtengo los roles de las personas, y el usuario correspondiente
     actores = MapaDeActor.where(flujo_id: self.id, persona_id: personas_id)
@@ -254,6 +261,7 @@ class Flujo < ApplicationRecord
           tipo_instrumento: self.tipo_instrumento.nombre,
           subtipo_instrumento: self.subtipo_de_instrumento, 
           id_instrumento: self.id,
+          manifestacion_de_interes_id: manifestacion_de_interes_id,
           nombre_instrumento: self.nombre_instrumento,
           roles: roles.sort.to_sentence,
           acciones_actividades: {

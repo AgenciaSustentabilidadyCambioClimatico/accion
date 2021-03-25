@@ -1,4 +1,42 @@
-- titulo "#{t(:bandeja_de_entrada)}<small>&nbsp;</small>".html_safe
+-if user_signed_in?
+  - titulo "#{t(:bandeja_de_entrada)}<small>&nbsp;</small>".html_safe
 
-/- if policy(@manifestacion).index?
-= render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true
+  /- if policy(@manifestacion).index?
+  = render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true
+-else
+  .row
+    -@clasificaciones_padre.order(updated_at: :desc).each do |clasificacion|
+      .col-12.col-lg-4.py-2.px-lg-2
+        .flip-card
+          .flip-card-inner
+            .flip-card-front{style: "background-image:url('#{clasificacion.imagen.url}');background-repeat:no-repeat;background-size:cover;"}
+              .d-flex.flex-column.h-100
+                .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion.color};"}
+                  %img{src: clasificacion.icono.url}
+                .flip-card-name-container{style: "background-color: #{clasificacion.color};"}
+                  =clasificacion.nombre
+            .flip-card-back
+              .d-flex.flex-column.h-100
+                .d-flex.mb-2
+                  .flip-card-name=clasificacion.nombre
+                  .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion.color};"}
+                    %img{src: clasificacion.icono.url}
+                .flip-card-description.mb-2=clasificacion.descripcion
+                .d-flex.w-100.justify-content-between
+                  .flip-number
+                    .number=clasificacion.acuerdos.length
+                    .title acuerdos
+                  .flip-number
+                    .number=clasificacion.set_metas_acciones.length
+                    .title acciones
+                  .flip-number
+                    .number=clasificacion.empresas.length
+                    .title empresas
+                  .flip-number
+                    .number=clasificacion.elementos.length
+                    .title elementos totales
+                .d-flex.mt-auto.align-items-center
+                  =link_to "#", class: "flip-access mr-2 iniciar-sesion-header" do
+                    Ingresar
+                  =link_to acuerdos_firmados_path(clasificacion_id: clasificacion.id), class: "flip-more-info" do
+                    Más información

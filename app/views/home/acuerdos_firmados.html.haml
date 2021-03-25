@@ -1,0 +1,72 @@
+.row.mt-2
+  .col-12.mb-2
+    =link_to root_path, class: "btn btn-outline-home" do
+      .d-flex.align-items-center
+        %i.fa.fa-arrow-left
+        =t(:back)
+  .col-12
+    .card
+      .card-body
+        .card.card-home
+          .card-header.d-flex.flex-column.flex-md-row.justify-content-between.align-items-center
+            .title=t(:acuerdos_firmados)
+            .input-buscar-home
+              %i.fa.fa-search
+              %input#buscar_custom{placeholder: :Buscar}
+          .card-body.p-0.m-0
+            .table-responsive
+              %table.table.table-home{cellspacing: "0"}
+                %thead
+                  %tr
+                    %th=t(:nombre_acuerdo)
+                    %th=t(:documentos)
+                    %th=t(:estado_consulta_publica)
+                    %th=t(:empresas_certificadas)
+                    %th=t(:empresas_adheridas)
+                %tbody
+                  -@manifestaciones_de_interes.each do |manif_de_interes|
+                    %tr
+                      -params_seleccionado = {acuerdo_id: manif_de_interes.id}
+                      -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
+                      %td=link_to manif_de_interes.nombre_acuerdo, acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
+                      %td
+                        -if !manif_de_interes.diagnostico_de_acuerdo_anterior.blank? && @datos_publicos.visibilidad_documentos.include?("1")
+                          %div.text-nowrap
+                            =link_to "Documento 1", manif_de_interes.diagnostico_de_acuerdo_anterior.url
+                        -if !manif_de_interes.documento_diagnosticos.blank? && @datos_publicos.visibilidad_documentos.include?("2")
+                          %div.text-nowrap
+                            =link_to "Documento 2", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, manif_de_interes,acuerdo_id: manif_de_interes.id)
+                        -if !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.archivos_anexos.blank? && @datos_publicos.visibilidad_documentos.include?("3")
+                          %div.text-nowrap
+                            =link_to "Documento 3", desacarga_zip_path(clase: "InformeAcuerdo", objeto_id: manif_de_interes.informe_acuerdo, atributo: "archivos_anexos")
+                        -if !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.documento.blank? && @datos_publicos.visibilidad_documentos.include?("4")
+                          %div.text-nowrap
+                            =link_to "Documento 4", manif_de_interes.informe_impacto.documento.url
+
+                      %td
+                        .d-flex.align-items-center{style: "white-space: nowrap;"}
+                          -if manif_de_interes.estado_consulta_publica == "No iniciada"
+                            .estado-consulta.amarillo
+                          -if manif_de_interes.estado_consulta_publica == "Abierta"
+                            .estado-consulta.verde
+                          -if manif_de_interes.estado_consulta_publica == "Cerrada"
+                            .estado-consulta.amarillo
+                          -if manif_de_interes.estado_consulta_publica == "Finalizada"
+                            .estado-consulta.rojo
+                          =manif_de_interes.estado_consulta_publica
+                      %td=manif_de_interes.empresas_certificadas.count
+                      %td=manif_de_interes.empresas_adheridas.count
+:javascript
+  $(document).ready(function(){
+    $('.table-home').DataTable({
+      dom: "<'d-none'f>ti",
+      paging: false,
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+
+    $('#buscar_custom').on('input paste', function(){
+      $('.dataTables_filter input').val(this.value).trigger("input");
+    });
+  });

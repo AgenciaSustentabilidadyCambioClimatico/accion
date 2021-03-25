@@ -23,7 +23,7 @@ class Admin::MateriaRubroRelacionsController < ApplicationController
     @levantados = @levantados.where(materia_sustancia_id: materias.pluck(:id))
    end
    if ciiu.present?
-    actividades = ActividadEconomica.where("codigo_ciiuv2 ILIKE ?", "%#{ciiu}%")
+    actividades = ActividadEconomica.where("codigo_ciiuv4 ILIKE ?", "#{ciiu}%")
     @filtro_utilizado << "Codigo producto: #{ciiu}"
     @levantados = @levantados.where(actividad_economica_id: actividades.pluck(:id))
    end

@@ -19,12 +19,9 @@ class DatoProductivoElementoAdheridosController < ApplicationController
     datos_generados = DatoProductivoElementoAdherido.generar_data(@datos_productivos)
     datos = datos_generados[0]
     dominios = datos_generados[1]
-    @ruta = "#{Rails.root}/public/uploads/dato_productivo_elemento_adherido/formato/#{@flujo.id}/descargado/"
-    FileUtils.mkdir_p(@ruta) unless File.exist?(@ruta)
-    @ruta += "DatoProductivoElementoAdherido.xlsx"
     
-    ExportaExcel.formato(@ruta, titulos, dominios, datos, "DatoProductivoElementoAdherido")
-    send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "DatoProductivoElementoAdherido.xlsx"
+    archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "DatoProductivoElementoAdherido")
+    send_data archivo.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "DatoProductivoElementoAdherido.xlsx"
   end
 
   def cargar_dato_productivo

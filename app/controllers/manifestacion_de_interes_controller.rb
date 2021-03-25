@@ -344,12 +344,15 @@ class ManifestacionDeInteresController < ApplicationController
               # end
               cargo_ids = Responsable.where(rol_id: Rol::PROPONENTE, tipo_instrumento_id: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente_id: [nil, @contribuyente_temporal.contribuyente_id]).pluck(:cargo_id)
               persona_cogestora = Persona.includes(:persona_cargos).where(personas: {contribuyente_id: @contribuyente_temporal.contribuyente_id}).where(persona_cargos: {cargo_id: cargo_ids}).select{|p| p.user_id == @usuario_temporal.user_id}.first
-              mapa = MapaDeActor.find_or_create_by({
-                flujo_id: @tarea_pendiente.flujo_id,
-                rol_id: Rol::COGESTOR, #se vuelve a usar el id
-                #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-                persona_id: persona_cogestora.id
-              })
+              persona_cogestora = Persona.where(user_id: @usuario_temporal.user_id).first if persona_cogestora.nil?#si lo cargo buscandolo
+              if !persona_cogestora.nil?# si es nuevo usuario, no existe persona
+                mapa = MapaDeActor.find_or_create_by({
+                  flujo_id: @tarea_pendiente.flujo_id,
+                  rol_id: Rol::COGESTOR, #se vuelve a usar el id
+                  #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
+                  persona_id: persona_cogestora.id
+                })
+              end
               success = 'Manifestación Enviada'
               format.js {
                 flash[:success] = success
@@ -954,9 +957,6 @@ class ManifestacionDeInteresController < ApplicationController
     @flujo.cuenca_ids = manifestacion_obs_admisibilidad_params[:cuencas_ids]
     @flujo.save
 
-
-
-    @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_params)
     unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -1019,19 +1019,20 @@ class ManifestacionDeInteresController < ApplicationController
 
           #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
           if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
-            if manifestacion_obs_admisibilidad_params.key?(:update_obs_admisibilidad)
+            if manifestacion_obs_admisibilidad_params.key?(:update_obs_admisibilidad) && manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
               @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
+
+              format.js { 
+                flash[:success] = 'Admisibilidad Técnica Enviada correctamente'
+                render js: "window.location='#{root_path}'"
+              }
+              format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica Enviada correctamente' }}
             end
-            format.js { 
-              flash[:success] = 'Admisibilidad Técnica Enviada correctamente'
-              render js: "window.location='#{root_path}'"
-            }
-            format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica Enviada correctamente' }}
           else
             @mantener_temporal = manifestacion_params[:temporal]
-            success = 'Admisibilidad Técnica Actualizada correctamente'
+            success = 'Manifestación actualizada'
             format.js { flash.now[:success] = success }
-            format.html { redirect_to root_path, notice: success }
+            format.html { redirect_to observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), notice: success }
           end
           #format.js { 
           #  flash.now[:success] = 'Admisibilidad Actualizada correctamente'
@@ -1192,9 +1193,6 @@ class ManifestacionDeInteresController < ApplicationController
     @flujo.cuenca_ids = manifestacion_obs_admisibilidad_juridica_params[:cuencas_ids]
     @flujo.save
 
-
-
-    @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_juridica_params)
     unless @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -1267,9 +1265,9 @@ class ManifestacionDeInteresController < ApplicationController
             format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica Enviada correctamente' }}
           else
             @mantener_temporal = manifestacion_params[:temporal]
-            success = 'Admisibilidad Jurídica Actualizada correctamente'
+            success = 'Manifestación actualizada'
             format.js { flash.now[:success] = success }
-            format.html { redirect_to root_path, notice: success }
+            format.html { redirect_to observaciones_admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), notice: success }
           end
           #format.js { 
           #  flash.now[:success] = 'Admisibilidad Actualizada correctamente'
@@ -1581,7 +1579,6 @@ class ManifestacionDeInteresController < ApplicationController
     @flujo.cuenca_ids = manifestacion_responder_pertinencia_params[:cuencas_ids]
     @flujo.save
 
-    @manifestacion_de_interes.assign_attributes(manifestacion_responder_pertinencia_params)
     unless @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.map{|s| [s.to_sym, [""]]}.to_h
     end
@@ -1936,7 +1933,7 @@ class ManifestacionDeInteresController < ApplicationController
 
       unless @manifestacion.comentarios_y_observaciones_negociacion_acuerdo.blank?
         #DZC da por terminadas las tareas APL-01, APL-012, APL-013
-        TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_017.to_s, Tarea::COD_APL_018.to_s]}).update(estado_tarea_pendiente_id: 2)
+        TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_017.to_s]}).update(estado_tarea_pendiente_id: 2)
         # @tarea_pendiente.pasar_a_siguiente_tarea 'B'
         continua_flujo_segun_tipo_tarea
         format.js { flash.now[:success] = 'Se puso término a la etapa de negociación'; render js: "window.location='#{root_path}'" }
@@ -2444,7 +2441,7 @@ class ManifestacionDeInteresController < ApplicationController
         :detalle_de_localizacion, :detalle_de_alternativa_de_instalacion,
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
-        :respuesta_observaciones_admisibilidad,:archivo_admisibilidad,:update_obs_admisibilidad,
+        :respuesta_observaciones_admisibilidad,:archivo_admisibilidad,:archivo_admisibilidad_cache,:update_obs_admisibilidad,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},
@@ -2477,7 +2474,7 @@ class ManifestacionDeInteresController < ApplicationController
         :detalle_de_localizacion, :detalle_de_alternativa_de_instalacion,
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
-        :respuesta_observaciones_admisibilidad_juridica,:archivo_admisibilidad_juridica,:update_obs_admisibilidad_juridica,
+        :respuesta_observaciones_admisibilidad_juridica,:archivo_admisibilidad_juridica,:archivo_admisibilidad_juridica_cache,:update_obs_admisibilidad_juridica,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},
@@ -2504,6 +2501,7 @@ class ManifestacionDeInteresController < ApplicationController
         :coordinador_subtipo_instrumento_id,
         :encargado_hitos_prensa_id,
         :archivo_pertinencia_factibilidad,
+        :archivo_pertinencia_factibilidad_cache,
         :temporal,
         :update_pertinencia,
         secciones_observadas_pertinencia_factibilidad: []
@@ -2531,7 +2529,7 @@ class ManifestacionDeInteresController < ApplicationController
         :detalle_de_localizacion, :detalle_de_alternativa_de_instalacion,
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
-        :acepta_condiciones_pertinencia, :respuesta_observaciones_pertinencia_factibilidad, :respuesta_otros_pertinencia_factibilidad, :archivo_respuesta_pertinencia_factibilidad, :update_respuesta_pertinencia,
+        :acepta_condiciones_pertinencia, :respuesta_observaciones_pertinencia_factibilidad, :respuesta_otros_pertinencia_factibilidad, :archivo_respuesta_pertinencia_factibilidad, :archivo_respuesta_pertinencia_factibilidad_cache, :update_respuesta_pertinencia,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},

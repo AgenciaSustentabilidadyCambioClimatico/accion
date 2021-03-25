@@ -784,5 +784,30 @@ module ApplicationHelper
       end
     end
   end
+
+  def svg_inline(icon_name, options={})
+    file = File.read(Rails.root.join('app', 'assets', 'images', icon_name))
+    doc = Nokogiri::HTML::DocumentFragment.parse file
+    svg = doc.at_css 'svg'
+
+    options.each {|attr, value| svg[attr.to_s] = value}
+
+    doc.to_html.html_safe
+  end
+
+  def img64(path,request)
+    require 'open-uri'
+    base_url = request.base_url
+    if Rails.env.production? || Rails.env.staging?
+      base_url = request.base_url.gsub(":443","").gsub(":80","")
+    end
+    url = "#{base_url}#{path}"
+    file = open(url)
+    if file.blank?
+      return ""
+    else
+      return 'data:image/png;base64,' + Base64.strict_encode64(file.read)
+    end
+  end
   
 end

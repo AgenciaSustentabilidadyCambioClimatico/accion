@@ -1384,8 +1384,30 @@ es:
   descargar_indicaciones: Descargar indicaciones
   nombre_acuerdo_que_requiere_informe_impacto: Nombre de Acuerdo que requiere informe de impacto
   unidad: Unidad
-
+  imagen: Imagen
+  icono: Ícono
+  color: Color
   crear_: Crear %{item}
+  acuerdos_firmados: Acuerdos firmados
+  estado_consulta_publica: Estado consulta pública
+  empresas_certificadas: Empresas certificadas
+  empresas_adheridas: Empresas adheridas
+  empresas_y_elementos_certificados: Empresas y Elementos Certificados
+  empresa: Empresa
+  rut_empresa: Rut empresa
+  otro_dato: Otro dato
+  fecha_certificacion: Fecha certificación
+  vigencia_certificacion: Vigencia certificación
+  logotipo: Logotipo
+  empresas_y_elementos_adheridos: Empresas y Elementos Adheridos
+  tamano_empresa: Tamaño empresa
+  configuracion_datos_publicos: Configuración de datos públicos
+  visibilidad_documentos_acuerdos_firmados: Visibilidad documentos en Acuerdos firmados
+  visibilidad_columnas_empresas_adheridas: Visibilidad columnas vista empresas adheridas
+  visibilidad_columnas_empresas_certificadas: Visibilidad columnas vista empresas certificadas
+  extension_reporte_sustentabilidad: Extensión del reporte de sustentabilidad
+  guardar: Guardar
+  MateriaRubroRelacion: Datos por Rubro y Materia / Sustancia
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio

@@ -41,13 +41,17 @@
                       =link_to public_send(ins[:acciones_actividades][:url], ins[:acciones_actividades][:objeto_uno],ins[:acciones_actividades][:objeto_dos]), class: "btn-tabla-instrumentos" do
                         =fa_icon 'eye'
                         =ins[:acciones_actividades][:texto]
-                  - if ins[:auditorias_rendiciones][:url].blank?
-                    %td=ins[:auditorias_rendiciones][:texto]
-                  - else
-                    %td
-                      =link_to public_send(ins[:auditorias_rendiciones][:url], ins[:auditorias_rendiciones][:objeto_uno],ins[:auditorias_rendiciones][:objeto_dos]), class: "btn-tabla-instrumentos" do
+                  %td
+                    -if ins[:auditorias_rendiciones][:url].blank? && ins[:manifestacion_de_interes_id].blank?
+                      =ins[:auditorias_rendiciones][:texto]
+                    -elsif !ins[:auditorias_rendiciones][:url].blank?
+                      =link_to public_send(ins[:auditorias_rendiciones][:url], ins[:auditorias_rendiciones][:objeto_uno],ins[:auditorias_rendiciones][:objeto_dos]), class: "btn-tabla-instrumentos mb-2" do
                         =fa_icon 'eye'
                         =ins[:auditorias_rendiciones][:texto]
+                    -if !ins[:manifestacion_de_interes_id].blank?  
+                      =link_to acuerdo_seleccionado_path(acuerdo_id: ins[:manifestacion_de_interes_id]), class: "btn-tabla-instrumentos" do
+                        =fa_icon 'eye'
+                        Mi Reporte Sustentabilidad
                   %td
                     =link_to cargar_instrumento_admin_historial_instrumentos_path(instrumento: ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
                       =fa_icon 'eye'

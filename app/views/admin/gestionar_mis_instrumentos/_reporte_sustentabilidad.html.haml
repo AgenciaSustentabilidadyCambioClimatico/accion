@@ -1,0 +1,297 @@
+-manifestacion_de_interes = @manifestacion_de_interes if manifestacion_de_interes.nil?
+-clasificaciones_del_acuerdo = @clasificaciones_del_acuerdo if clasificaciones_del_acuerdo.nil?
+-ods_clasif = @ods_clasif if ods_clasif.nil?
+-metas = @metas if metas.nil?
+-niveles = @niveles if niveles.nil?
+-auditorias = @auditorias if auditorias.nil?
+-clasificaciones_padre_del_acuerdo = @clasificaciones_padre_del_acuerdo if clasificaciones_padre_del_acuerdo.nil?
+-set_metas_acciones = @set_metas_acciones if set_metas_acciones.nil?
+-app_helpers = @app_helpers if app_helpers.nil?
+-request = @request if request.nil?
+
+.cover
+  .triangle
+    .imagen
+      =app_helpers.image_tag(app_helpers.wicked_pdf_asset_base64('logo-ascc.png'), width: 250, class: "imagen")
+  %table.w-100.h-100
+    %tr
+      %td.w-60
+      %td.w-40
+        .titulo 
+          Reporte de 
+          %br
+          Sustentabilidad
+
+.alwaysbreak
+
+.w-100.intro-pdf.mb-3
+  %table.w-100
+    %tr
+      %td.px-4
+        =app_helpers.image_tag(app_helpers.wicked_pdf_asset_base64('logo-ascc.png'), width: '100%')
+      %td.w-70.py-4.px-5.borde-izquiedo
+        %table.w-100
+          %tr
+            %td{colspan:2}
+              .pdf-title
+                .label=manifestacion_de_interes.nombre_acuerdo
+                .limiter
+                  -(0..9).each do |e|
+                    .red
+                  -(0..9).each do |e|
+                    .blue
+          %tr
+            %td.w-50.pb-3
+              .titulo Estado del Acuerdo:
+              .detalle="Evaluación final de cumplimiento"
+            %td.w-50.pb-3
+              .titulo Fecha Firma:
+              .detalle=(manifestacion_de_interes.firma_fecha.nil? ? 'Aún no firmado' : manifestacion_de_interes.firma_fecha.strftime("%d-%m-%Y"))
+          %tr
+            %td.w-50
+              .titulo Institución:
+              .detalle=manifestacion_de_interes.contribuyente.razon_social
+            %td.w-50
+              .titulo Fecha creación documento:
+              .detalle=Date.today.strftime("%d-%m-%Y")
+.row.mx-4
+  .col-12.nobreak
+    .pdf-title
+      .label Clasificaciones del acuerdo
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  .col-12.mb-2.nobreak
+    %table
+      -clasificaciones_del_acuerdo.each_slice(3) do |sub_grupo|
+        %tr
+          -sub_grupo.each do |clasificacion|
+            %td.w-33.pr-1.pb-1
+              .pdf-flip-card
+                %table
+                  %tr
+                    %td.align-top{colspan: 4}
+                      .w-100
+                        .flip-card-name.d-inline-block.w-90=clasificacion.nombre
+                        .flip-card-icon-back.float-right.d-inline-block.text-center{style: "background-color: #{clasificacion.color};"}
+                          -if !clasificacion.icono.nil? && !clasificacion.icono.url.nil?
+                            =app_helpers.image_tag(app_helpers.img64(clasificacion.icono.url,request))
+                  %tr
+                    %td{colspan: 4}
+                      .flip-card-description.mb-2=clasificacion.descripcion
+                  %tr
+                    %td.flip-number.w-25.align-top
+                      .number=clasificacion.metas_comprometidas(manifestacion_de_interes).count
+                      .title metas
+                    %td.flip-number.w-25.align-top
+                      .number=clasificacion.set_metas_acciones_comprometidas(manifestacion_de_interes).uniq.count
+                      .title acciones
+                    %td.flip-number.w-25.align-top
+                      .number=clasificacion.empresas_comprometidas(manifestacion_de_interes, 'clasificaciones').length
+                      .title empresas
+                    %td.flip-number.w-25.align-top
+                      .number=clasificacion.elementos_comprometidos(manifestacion_de_interes, 'clasificaciones').count
+                      .title elementos totales
+          -(sub_grupo.length..2).each do |e|
+            %td.w-33.pr-1.pb-1
+  .col-12.mb-4.nobreak
+    %table.tabla-metas-ods
+      %tbody
+        %tr
+          %td
+          -ods_clasif.each do |ods|
+            %td
+              -if !ods.icono.nil? && !ods.icono.url.nil?
+                -#%img{src: ods.icono.url, width: 20, height: 20}
+                =#wicked_pdf_image_tag(ods.icono.url, width: 20, height: 20)
+                =app_helpers.image_tag(app_helpers.img64(ods.icono.url,request), width: 20, height: 20)
+        -metas.each do |meta|
+          %tr
+            %td
+              -if !meta[:icono].blank?
+                -#%img{src: meta[:icono], width: 20, height: 20}
+                =#wicked_pdf_image_tag(meta[:icono], width: 20, height: 20)
+                =app_helpers.image_tag(app_helpers.img64(meta[:icono],request), width: 20, height: 20)
+            -ods_clasif.each do |ods|
+              -color = meta[:color]
+              -color = '#C4C4C4' if color.nil?
+              %td{style: "color: #{color}"}
+                -if meta[:clasificaciones].include?(ods.id)
+                  -#%i.fa.fa-user{style: "color: #{color};"}
+                  =app_helpers.svg_inline('tint-solid.svg', {width: 20, height: 20})
+
+  .col-12.nobreak
+    .pdf-title
+      .label Resumen certificaciones obtenidas
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  -niveles.each do |nivel|
+    .col-12.nobreak
+      .pdf-card-nivel
+        %table
+          %tr
+            %td.w-15
+              -if !nivel[:icono].nil?
+                =app_helpers.image_tag(app_helpers.img64(nivel[:icono],request), height: 120)
+            %td
+              .titulo="CERTIFICACIÓN NIVEL #{nivel[:nombre]}"
+              .descripcion=nivel[:descripcion]
+            %td.w-15.text-center
+              .numero=nivel[:elementos].length
+              .titulo Elementos
+            %td.w-15
+              -if !nivel[:grafica].blank?
+                =app_helpers.image_tag(app_helpers.img64(nivel[:grafica],request), width: '100%', height: '100%')
+
+  .col-12.nobreak
+    .pdf-title
+      .label Auditorías realizadas
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  .col-12
+    %table.tabla-pdf
+      %thead
+        %tr
+          %th="Nombre"
+          %th="Fecha inicio"
+          %th="Fecha fin"
+          %th="Certificación auditoría"
+          %th="Validación auditoría"
+          %th="Tipo de auditoría"
+          %th="Mantención auditoría"
+
+      %tbody
+        -auditorias.each do |auditoria|
+          -plazo_apertura = auditoria.plazo_apertura.nil? ? 0 : auditoria.plazo_apertura.months
+          -plazo_cierre = auditoria.plazo_cierre.nil? ? 0 : auditoria.plazo_cierre.months
+          %tr
+            %td=auditoria.nombre
+            %td=(manifestacion_de_interes.firma_fecha.blank? ? '' : (manifestacion_de_interes.firma_fecha+plazo_apertura).strftime("%d-%m-%Y"))
+            %td=(manifestacion_de_interes.firma_fecha.blank? ? '' : (manifestacion_de_interes.firma_fecha+plazo_cierre).strftime("%d-%m-%Y"))
+            %td=auditoria.con_certificacion ? "Con certificación" : "Sin certificación"
+            %td=auditoria.con_validacion ? "Con validación" : "Sin validación"
+            %td=auditoria.final ? "Final" : "intermedia"
+            %td=auditoria.con_mantencion ? "Con mantención" : "Sin mantención"
+
+  .col-12.nobreak
+    .pdf-title
+      .label Metas y avances de acciones
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  -clasificaciones_padre_del_acuerdo.each do |clasificacion|
+    .col-12.nobreak
+      .pdf-card-clasificacion-padre
+        %table.w-100
+          %tr
+            %td.w-30
+              -if !clasificacion.imagen.nil? && !clasificacion.imagen.url.blank?
+                =app_helpers.image_tag(app_helpers.img64(clasificacion.imagen.url,request), width: '100%', height: '220')
+            %td.align-top
+              .titulo=clasificacion.nombre
+              .descripcion=clasificacion.descripcion
+          %tr
+            %td{colspan: 2}
+              %table.tabla-acciones.mt-3
+                %tr
+                  %th.titulo{colspan: 3, style: "background-color: #{clasificacion.color}"} Tabla de acciones
+                -clasificacion.set_metas_acciones_comprometidas(manifestacion_de_interes).uniq.each do |set_meta_accion|
+                  %tr
+                    %th.accion
+                      =set_meta_accion.accion.nombre
+                    %th.accion
+                      -if !set_meta_accion.materia_sustancia.nil?
+                        =set_meta_accion.materia_sustancia.nombre
+                    %th.accion
+                      =set_meta_accion.alcance.nombre
+                  -auditorias.each do |auditoria|
+                    -porcentaje_avance = auditoria.obtiene_porcentaje_avance(set_meta_accion)
+                    -#porcentaje_avance = rand(100)
+                    -if !porcentaje_avance.nil?
+                      %tr
+                        %td.pl-5{colspan: 3}
+                          %table.w-100
+                            %tr
+                              %td.auditoria.w-60=auditoria.nombre
+                              %td.auditoria.text-right
+                                .d-inline-block.pr-1{style: "vertical-align: super;white-space: nowrap;text-overflow: ellipsis; overflow: hidden;"} Porcentaje de avance
+                                .porcentaje-avance.d-inline-block.w-50
+                                  .barra-avance{style: "width: #{porcentaje_avance}%;"}
+                                  .texto="#{porcentaje_avance}%"
+
+  .col-12.nobreak
+    .pdf-title
+      .label Certificaciones y detalle de Elementos y vigencia
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  -niveles.each do |nivel|
+    .col-12.nobreak
+      .pdf-card-clasificacion-padre
+        %table.w-100
+          %tr
+            %td.w-15
+              -if !nivel[:icono].nil?
+                =app_helpers.image_tag(app_helpers.img64(nivel[:icono],request), height: 120)
+            %td
+              .titulo="CERTIFICACIÓN NIVEL #{nivel[:nombre]}"
+              .descripcion=nivel[:descripcion]
+            %td.w-15.text-center
+              .numero=nivel[:elementos].length
+              .titulo Elementos
+            %td.w-15
+              -if !nivel[:grafica].blank?
+                =app_helpers.image_tag(app_helpers.img64(nivel[:grafica],request), width: '100%', height: '100%')
+          %tr
+            %td{colspan: 4}
+              %table.tabla-acciones.sin-titulo.mt-3
+                %tr
+                  %th.accion Nombre
+                  %th.accion Tipo (Alcance)
+                  %th.accion Otro dato
+                  %th.accion Fecha certificación
+                  %th.accion Vigencia certificación
+                -nivel[:elementos].each do |elemento|
+                  -fecha_cert = elemento.fecha_certificacion
+                  %tr
+                    %td=elemento.nombre_segun_alcance
+                    %td=elemento.alcance.nombre
+                    %td=elemento.otro_dato
+                    %td=fecha_cert.strftime("%d-%m-%Y")
+                    %td=elemento.vigencia_certificacion(nivel[:plazo], fecha_cert).strftime("%d-%m-%Y")
+
+  .col-12.nobreak
+    .pdf-title
+      .label Reporte de Avance
+      .limiter
+        -(0..9).each do |e|
+          .red
+        -(0..9).each do |e|
+          .blue
+  .col-12
+    %table.tabla-pdf
+      %thead
+        %tr
+          %th Meta por elemento
+          %th Acción
+          %th Detalle del medio de verificación
+          %th Porcentaje de cumplimiento
+      %tbody
+        - set_metas_acciones.each do |set_meta_accion|
+          %tr
+            %td=set_meta_accion.meta.nombre
+            %td=set_meta_accion.accion.nombre
+            %td=set_meta_accion.detalle_medio_verificacion
+            %td=set_meta_accion.obtiene_procentaje_cumplimiento

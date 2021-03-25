@@ -66,10 +66,18 @@ class Admin::EstandarHomologacionesController < ApplicationController
   end
 
   def destroy
-    @estandar.destroy
-    respond_to do |format|
-      format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de certificación correctamente eliminado.' }
-      format.json { head :no_content }
+    begin
+      @estandar.destroy
+      respond_to do |format|
+        format.html { redirect_to admin_estandar_homologaciones_path, notice: 'Estandar de certificación correctamente eliminado.' }
+        format.json { head :no_content }
+      end
+    rescue
+      respond_to do |format|
+        format.html { redirect_to admin_estandar_homologaciones_path, alert: 'Estandar de certificación no puede ser eliminado ya que se encuentra en uso.' }
+        format.json { head :no_content }
+      end
+    rescue
     end
   end
 

@@ -49,7 +49,7 @@ class Tarea < ApplicationRecord
 
 	#DZC se agrega para efecto de determinar si se requiere revisión de la tarea en mapa de actores (y futuros posibles usos)
 	def requiere_revision?
-		![Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023].include?(self.codigo)
+		![Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023, Tarea::COD_APL_037].include?(self.codigo)
 	end
 
 	def necesita_notificacion?

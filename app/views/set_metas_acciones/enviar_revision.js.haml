@@ -1,1 +1,4 @@
-= render 'layouts/remote_form', block: 'propuestas-de-acuerdo', form_partial: 'table', remote: true
+-if @tarea.codigo == Tarea::COD_APL_018 || @tarea.codigo == Tarea::COD_APL_013 || @tarea.codigo == Tarea::COD_APL_020
+  $("#messages-remote-block").html("#{j render 'layouts/messages'}");
+-else
+  = render 'layouts/remote_form', block: 'propuestas-de-acuerdo', form_partial: 'table', remote: true

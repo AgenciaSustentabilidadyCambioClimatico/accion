@@ -5,6 +5,11 @@
       $('#manifestacion_de_interes_update_respuesta_pertinencia').val(true);
     });
 
+    $('#guardar-manifestacion-temporal-button').click(function(e){
+      $('#manifestacion_de_interes_update_respuesta_pertinencia').val(false);
+      $('#manifestacion_de_interes_temporal').val(true);
+    });
+
     $('#manifestacion_de_interes_resultado_pertinencia').change(function(){
       carga_por_resultado($(this).val());
     });
@@ -105,6 +110,7 @@
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: 'tipo-de-acuerdo-tab' }
   = f.submit "", class: 'd-none'
   = f.input :update_respuesta_pertinencia, as: :hidden, wrapper: false, input_html: { value: "" }
+  = f.submit '', id: 'guardar-manifestacion-temporal-button', class: 'd-none'
   .row
     .col-12
       .card
@@ -228,6 +234,7 @@
                           .row
                             .col-12.col-lg-6
                               = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}
+                              = f.input :archivo_respuesta_pertinencia_factibilidad_cache, as: :hidden
                             .col-12.col-lg-6
                               .form-group
                                 = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object)

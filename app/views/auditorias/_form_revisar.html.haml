@@ -1,6 +1,26 @@
 :javascript
+  var tabla;
   $(document).ready(function() {
+    tabla = $('#auditorias_pendientes').DataTable({
+      dom: 'tip',
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
     htmlErrorToTooltip('top');
+
     $('.estado').change(function(){
       debeComentar(this,true);
     });
@@ -24,15 +44,16 @@
       estado_nombre = estado.text();
       justificacion = $('#auditoria_justificacion_elementos').val();
 
-      $('.seleccionar-elemento-auditoria:checked').each(function(index, elem){
+      tabla.$('.seleccionar-elemento-auditoria:checked').each(function(index, elem){
         posicion = elem.value;
-        tr = $('#auditorias_pendientes tr[data-id="'+posicion+'"]');
+        tr = tabla.$('tr[data-id="'+posicion+'"]');
         tr.find(".estado-elem").html(estado_nombre);
-        tr.find(".estado-auditoria-elemento").val(estado_val);
-        tr.find(".observacion-auditoria-elemento").val(justificacion);
+        div = $('.global-data[data-id="'+posicion+'"]');
+        div.find(".estado-auditoria-elemento").val(estado_val);
+        div.find(".observacion-auditoria-elemento").val(justificacion);
       });
 
-      $('.seleccionar-elemento-auditoria').attr("checked", false);
+      tabla.$('.seleccionar-elemento-auditoria').attr("checked", false);
       $('#boton_clasificar').prop('disabled', true);
       $('#modal_clasificar_elementos').modal("hide");
       $('#auditoria_estado_elementos').val("");
@@ -41,24 +62,7 @@
       $('#enviar_button').prop("disabled", false);
     });
 
-    $('#auditorias_pendientes').DataTable({
-      dom: 't',
-      paging: false,
-      responsive: {
-        details: {
-          type: 'column',
-          target: 'tr'
-        }
-      },
-      language: {
-        url: "#{asset_path('spanish.json')}"
-      },
-      columnDefs: [
-        { responsivePriority: 1, targets: 3 },
-        { responsivePriority: 2, targets: -1, orderable: false },
-        { responsivePriority: 3, targets: -2 }
-      ]
-    });
+    
   });
 
   function activar_guardar_modal_clasificar(){
@@ -91,6 +95,12 @@
 - titulo t(:auditoria_revisa_, item: "#{@auditoria.nombre.upcase}")
 = simple_form_for @auditoria, url: guardar_revisar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
   =render 'modal_clasificar_elementos'
+  = f.fields_for :auditoria_elementos do |ae|
+    .global-data{"data-id" => ae.object.id}
+      = ae.input :id, as: :hidden, wrapper: false
+      = ae.input :estado, as: :hidden, wrapper: false, input_html: {class: "estado-auditoria-elemento", value: 2}
+      = ae.input :observacion, as: :hidden, wrapper: false, input_html: {class: "observacion-auditoria-elemento"}
+
   .row
     .col-12
       .card
@@ -157,9 +167,6 @@
                           ="Rechazado"
                         - elsif ae.object.estado == 5
                           ="Aprobado"
-                      = ae.input :id, as: :hidden, wrapper: false
-                      = ae.input :estado, as: :hidden, wrapper: false, input_html: {class: "estado-auditoria-elemento", value: 2}
-                      = ae.input :observacion, as: :hidden, wrapper: false, input_html: {class: "observacion-auditoria-elemento"}
                     %td.text-center
                       %input.form-control.seleccionar-elemento-auditoria.mt-2{type: :checkbox, value: ae.object.id}
     .col-12

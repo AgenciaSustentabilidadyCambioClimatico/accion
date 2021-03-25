@@ -3,6 +3,10 @@
   %head
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
-    = wicked_pdf_stylesheet_link_tag    'application', media: 'all'
-  %body{style: "background-color: white !important;"}
+    = wicked_pdf_stylesheet_link_tag    'application'
+  %body.m-0.p-0{style: "background-color: white !important;"}
+    :css
+      div.alwaysbreak { page-break-before: always; }
+      div.nobreak:before { clear:both; }
+      div.nobreak { page-break-inside: avoid; }
     =yield

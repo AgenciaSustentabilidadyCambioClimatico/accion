@@ -27,37 +27,6 @@
       showTooltipError(error_sop, $('.manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad'), 'top');
     }
 
-
-  });
-
-  function carga_por_resultado(){
-    var resultado_pertinencia = $('#manifestacion_de_interes_resultado_pertinencia').val();
-    var obs = $('#manifestacion_de_interes_observaciones_pertinencia_factibilidad');
-    var comp = $('#manifestacion_de_interes_compromiso_pertinencia_factibilidad');
-    if(resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones" || resultado_pertinencia == "no_aceptada"){
-      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", true);
-    }else{
-      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", false);
-    }
-    if(resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones" || resultado_pertinencia == "no_aceptada"){
-      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", true);
-    }else{
-      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", false);
-    }
-    if(resultado_pertinencia == "aceptada"){
-      $(".chosen-control").prop('disabled', false).trigger('chosen:updated');
-      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", true);
-      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", true);
-
-      required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", false);
-    }else if(resultado_pertinencia != ""){
-      $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
-      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", false);
-      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", false);
-
-      required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", true);
-    }
-
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
       tab_selected = e.target;
       $('.accordionTabs .card-body a').removeClass('hide');
@@ -104,6 +73,39 @@
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
+
+
+  });
+
+  function carga_por_resultado(){
+    var resultado_pertinencia = $('#manifestacion_de_interes_resultado_pertinencia').val();
+    var obs = $('#manifestacion_de_interes_observaciones_pertinencia_factibilidad');
+    var comp = $('#manifestacion_de_interes_compromiso_pertinencia_factibilidad');
+    if(resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones" || resultado_pertinencia == "no_aceptada"){
+      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", true);
+    }else{
+      required_dinamico(".manifestacion_de_interes_observaciones_pertinencia_factibilidad", false);
+    }
+    if(resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones" || resultado_pertinencia == "no_aceptada"){
+      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", true);
+    }else{
+      required_dinamico(".manifestacion_de_interes_compromiso_pertinencia_factibilidad", false);
+    }
+    if(resultado_pertinencia == "aceptada"){
+      $(".chosen-control").prop('disabled', false).trigger('chosen:updated');
+      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", true);
+      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", true);
+
+      required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", false);
+    }else if(resultado_pertinencia != ""){
+      $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
+      required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", false);
+      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", false);
+
+      required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", true);
+    }
+
+    
   }
 
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
@@ -243,6 +245,7 @@
                           -if !solo_lectura
                             .col-12.col-lg-6
                               = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
+                              = f.input :archivo_pertinencia_factibilidad_cache, as: :hidden
                             .col-12.col-lg-6
                               .form-group
                                 = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object)

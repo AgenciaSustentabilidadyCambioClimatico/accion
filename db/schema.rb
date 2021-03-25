@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20201210172813) do
+ActiveRecord::Schema.define(version: 20210310122602) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -325,6 +325,9 @@ ActiveRecord::Schema.define(version: 20201210172813) do
     t.boolean "es_meta", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "imagen"
+    t.string "icono"
+    t.string "color"
   end
 
   create_table "comentario_archivos", force: :cascade do |t|
@@ -515,6 +518,15 @@ ActiveRecord::Schema.define(version: 20201210172813) do
     t.string "medios_verificacion"
     t.string "unidad_base"
     t.string "unidades_compatibles"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "datos_publicos", force: :cascade do |t|
+    t.text "visibilidad_documentos"
+    t.text "visibilidad_empresas_adheridas"
+    t.text "visibilidad_empresas_certificadas"
+    t.integer "extension_reporte"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -1629,6 +1641,8 @@ ActiveRecord::Schema.define(version: 20201210172813) do
     t.date "fecha_retorno"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "cambios_mapa_de_actores"
+    t.text "cambios_tareas_pendientes"
     t.index ["destino_id"], name: "index_traspaso_instrumentos_on_destino_id"
     t.index ["flujo_id"], name: "index_traspaso_instrumentos_on_flujo_id"
     t.index ["origen_id"], name: "index_traspaso_instrumentos_on_origen_id"

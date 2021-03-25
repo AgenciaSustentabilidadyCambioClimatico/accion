@@ -67,4 +67,15 @@ class Auditoria < ApplicationRecord
     end
   end
 
+  def obtiene_porcentaje_avance(set_meta_accion)
+    _auditoria_elementos = self.auditoria_elementos.where(set_metas_accion_id: set_meta_accion.id)
+    porcentaje_avance = nil
+    if _auditoria_elementos.present?
+      total_auditorias_aplica = _auditoria_elementos.where(aplica: true).size.to_f
+      porcentaje = (total_auditorias_aplica > 0)? (total_auditorias_aplica/_auditoria_elementos.length.to_f).to_f : 0.to_f
+      porcentaje_avance = (porcentaje*100.0)
+    end
+    porcentaje_avance
+  end
+
 end

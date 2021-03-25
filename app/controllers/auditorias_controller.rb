@@ -5,7 +5,6 @@ class AuditoriasController < ApplicationController
   before_action :set_auditorias, only: [:index]
   before_action :set_auditoria, only: [:actualizar, :actualizar_guardar, :revisar, :revisar_guardar, :validar, :validar_guardar, :descargar]
   before_action :set_datos
-  before_action :set_crea_archivo, only: [:descargar]
 
   #DZC TAREA APL-032
   def actualizar
@@ -112,8 +111,13 @@ class AuditoriasController < ApplicationController
   end
 
   def descargar 
+    titulos = AuditoriaElemento.columnas_excel
+    datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria) #DZC obtiene los datos desde las tablas
     
-    send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "auditoria.xlsx"  #   #DZC agrega al campo data de la tarea_pendiente 
+    dominios = AuditoriaElemento.dominios
+    archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
+    
+    send_data archivo.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "auditoria.xlsx"  #   #DZC agrega al campo data de la tarea_pendiente 
   end
 
   #DZC agrega al campo data de la tarea_pendiente 
@@ -124,6 +128,7 @@ class AuditoriasController < ApplicationController
       enviar_correos_revisar_reportes(@flujo) #DZC 2018-11-15 16:42:43 envia correos suguiriendo la revision de los reportes de auditoría
     when Tarea::COD_APL_033
       auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id)
+      #esto creo que ya no se usa
       if auditoria_elementos.where.not(estado: [4,5]).size == 0
         @tarea_pendiente.pasar_a_siguiente_tarea 'A', {auditoria_id: @auditoria.id}
       end
@@ -259,6 +264,7 @@ class AuditoriasController < ApplicationController
           auditoria_nombre: ae.auditoria.nombre,
           auditoria_id: ae.auditoria.id,
           alcance_nombre: ae.adhesion_elemento.alcance.nombre,
+          nombre_instalacion: ae.adhesion_elemento.fila[:nombre_instalacion],
           id: ae.id,
           descripcion_accion: ae.set_metas_accion.descripcion_accion,
           aplica: ae.aplica,
@@ -304,18 +310,6 @@ class AuditoriasController < ApplicationController
 
     def auditoria_elementos_validar_params
       params.require(:auditoria).permit(auditoria_elementos_attributes: [:id, :validacion_observaciones, :validacion_aceptada])
-    end
-
-    def set_crea_archivo
-      
-      titulos = AuditoriaElemento.columnas_excel
-      datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria) #DZC obtiene los datos desde las tablas
-      
-      dominios = AuditoriaElemento.dominios
-      @ruta = "#{Rails.root}/public/uploads/auditoria/"
-      FileUtils.mkdir_p(@ruta) unless File.exist?(@ruta) #DZC crea las carpetas pertinentes para la ruta
-      @ruta += "auditorias.xlsx"
-      ExportaExcel.formato(@ruta, titulos, dominios, datos, "auditorias.xlsx" )
     end
 
 end
