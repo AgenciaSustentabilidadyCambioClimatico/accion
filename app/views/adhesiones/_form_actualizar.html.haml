@@ -44,7 +44,7 @@
                 %th=t(:observaciones)
                 %th=t(:estado)
             %tbody
-              - @todas.each do |k,v|
+              - @todas_mias.each do |k,v|
                 - v.each do |fila|
                   %tr
                     %td=fila[:rut_institucion]

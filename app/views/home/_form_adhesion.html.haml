@@ -1,0 +1,192 @@
+-#is_responsable = user_signed_in? && current_user.is_responsable?
+-if user_signed_in?
+  - titulo t(:solicitud_de_adhesiones)
+= simple_form_for @adhesion, url: solicitar_adhesion_guardar_path(@manifestacion_de_interes.id), method: :post, remote: true do |f|
+  .row
+    -if !user_signed_in?
+      .col-12.mt-3
+        %h1.titulo=t(:solicitud_de_adhesiones)
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            %b Acuerdo de Producción Limpia
+          %h5.no-margin=titulo_acuerdo.html_safe
+        .card-header
+          %h5.no-margin
+            %b
+            = t(:datos_solicitante)
+        .card-body
+          .row
+            .col-12
+              %label.string
+                %b Datos institución
+            .col-12.col-lg
+              =f.input :rut_institucion_adherente, input_html: {class: 'validado check-boton-llenado identificacion'}
+            .col-12.col-lg-5
+              =f.input :nombre_institucion_adherente, as: :string, input_html: {class: 'validado check-boton-llenado'}
+            .col-12.col-lg
+              =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [tc.nombre, tc.id] }, input_html: {class: 'validado chosen-control check-boton-llenado'}
+          .row
+            .col-12.col-lg-6
+              =f.input :matriz_direccion, as: :string, input_html: {class: 'validado check-boton-llenado'}
+            .col-12.col-lg
+              =f.input :matriz_region_id, collection: @regiones.map{|r| [r.nombre, r.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
+            .col-12.col-lg
+              =f.input :matriz_comuna_id, collection: f.object.matriz_region.nil? ? [] : f.object.matriz_region.comunas.map{|c| [c.nombre, c.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
+          .row
+            .col-12
+              %label.string
+                %b Datos representante
+            .col-12.col-lg
+              =f.input :rut_representante_legal, input_html: {class: 'validado check-boton-llenado identificacion'}
+            .col-12.col-lg-4
+              =f.input :nombre_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado'}
+            .col-12.col-lg
+              =f.input :fono_representante_legal, as: :string, input_html: {class: 'validado numero check-boton-llenado'}
+            .col-12.col-lg
+              =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado'}
+
+
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            %b
+            = t(:adhesiones)
+        .card-body
+          %table.table.table-striped#adhesiones_rechazadas
+            %thead
+              %tr
+                %th=t(:alcance)
+                %th=t(:nombre_elemento)
+                %th=t(:comuna_del_elemento)
+                %th=t(:direccion_del_elemento)
+                %th=t(:datos_encargado)
+                %th=t(:observaciones)
+                %th=t(:estado)
+            %tbody
+              - @todas.each do |k,v|
+                - v.each do |fila|
+                  %tr
+                    %td=fila[:alcance]
+                    %td=fila[:nombre_elemento]
+                    %td=fila[:comuna_instalacion]
+                    %td=fila[:direccion_instalacion]
+                    %td
+                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                    %td=fila[:observaciones]
+                    %td=k.upcase
+  
+  .row
+    .col-12.col-lg-6
+      .card
+        .card-header
+          %h5.m-0
+            = t(:descargar_archivos_formatos)
+        .card-body
+          .row
+            .col-12
+              =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-001",t(:formulario_de_adhesion))
+            .col-12    
+              .form-group
+                %label.string.control-label
+                  = t(:formato_excel_de_consolidado_de_adhesiones)
+                = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado' do
+                  %i.fa.fa-download
+                  = t(:descargar)
+                %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban{title: "Debe llenar los datos solicitante para descargar archivo"}
+                  %i.fa.fa-ban
+    .col-12.col-lg-6
+      .card
+        .card-header
+          %h5.no-margin=t(:subir_documentacion_adhesiones)
+        .card-body
+          .row
+            .col-12
+              = f.input :archivos_adhesion_y_documentacion, label: t(:formulario_de_adhesion_y_documentacion_complementaria), as: :file, input_html: {class: "validado form-control auto-save disabled", multiple: true}, required: true
+              = f.hidden_field :archivos_adhesion_y_documentacion_cache
+            .col-12
+              = f.input :archivo_elementos, label: t(:consolidado_de_adhesiones), as: :file, required: true, input_html: {class: "validado form-control auto-save "}
+              = f.hidden_field :archivo_elementos_cache
+            .col-12
+              =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-002",t(:instrucciones_de_llenado_excel_consolidado_de_adhesiones))
+
+  .float-right
+    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary button-send"
+
+:javascript
+
+  $(document).ready(function(){
+    $("#adhesiones_rechazadas").DataTable({
+      responsive: true,
+      lengthMenu: [[8], [8]],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+
+    $('#adhesion_tipo_contribuyente_id').chosen({
+      allow_single_deselect: false,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true,
+      placeholder_text_single: "Seleccione un tipo de contribuyente"
+    });
+
+    $('#adhesion_matriz_region_id').chosen({
+      allow_single_deselect: false,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true,
+      placeholder_text_single: "Seleccione una región"
+    });
+
+    $('#adhesion_matriz_comuna_id').chosen({
+      allow_single_deselect: false,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true,
+      placeholder_text_single: "Seleccione una comuna"
+    });
+
+    $('#adhesion_matriz_region_id').change(function(){
+      $.ajax({
+        url: "#{get_comunas_path}",
+        method: 'get',
+        data: {id: this.value}
+      });
+    });
+
+    $('.check-boton-llenado').on('change input paste', function(){
+      $('.boton-llenado').removeClass("d-none");
+      $('.boton-llenado-ban').removeClass("d-none");
+      if($('.check-boton-llenado').filter(function() {return !this.value;}).length == 0){
+        $('.boton-llenado').removeClass("d-none");
+        $('.boton-llenado-ban').addClass("d-none");
+      }else{
+        $('.boton-llenado').addClass("d-none");
+        $('.boton-llenado-ban').removeClass("d-none");
+      }
+    }).trigger("paste");
+
+    $('.boton-llenado').click(function(e){
+      e.preventDefault();
+      data = {
+        ri: $('#adhesion_rut_institucion_adherente').val(),
+        ni: $('#adhesion_nombre_institucion_adherente').val(),
+        ti: $('#adhesion_tipo_contribuyente_id option:selected').text(),
+        md: $('#adhesion_matriz_direccion').val(),
+        mc: $('#adhesion_matriz_comuna_id option:selected').text(),
+        rr: $('#adhesion_rut_representante_legal').val(),
+        nr: $('#adhesion_nombre_representante_legal').val(),
+        fr: $('#adhesion_fono_representante_legal').val(),
+        er: $('#adhesion_email_representante_legal').val()
+      }
+      window.location = "#{descargar_adhesion_path(@tarea_pendiente)}?tarea_id=#{Tarea::ID_APL_025_1}&"+$.param(data);
+    });
+
+  });

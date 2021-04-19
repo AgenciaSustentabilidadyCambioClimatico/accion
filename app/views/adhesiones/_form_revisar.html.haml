@@ -163,7 +163,13 @@
             .card.mb-0.mt-3.mt-lg-0
               .card-body.px-3.py-2
                 .form-group
-                  =__descargar_archivo(f.object.archivos_adhesion_y_documentacion, f.object, true, true, t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones), t(:descargar_documentación))
+                  %label.string.control-label
+                    = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
+                  = link_to descargar_compilado_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                    %i.fa.fa-download
+                    = t(:descargar_documentación)
+
+                  =#__descargar_archivo(f.object.archivos_adhesion_y_documentacion, f.object, true, true, t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones), t(:descargar_documentación))
 
 
         .card-header
@@ -184,7 +190,27 @@
                 %th=t(:estado)
                 %th=t(:seleccionar)
             %tbody
-              - @pendientes.each_with_index do |fila, posicion|
+              - @pendientes_todas.each do |adhesion_id, data|
+                -data.each do |fila|
+                  -posicion = fila[:posicion]
+                  %tr{"data-id" => "#{adhesion_id}|#{posicion}"}
+                    %td=fila[:rut_institucion]
+                    %td=fila[:nombre_institucion]
+                    %td=fila[:alcance]
+                    %td=fila[:nombre_elemento]
+                    %td=fila[:comuna_instalacion]
+                    %td=fila[:direccion_instalacion]
+                    %td
+                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                    %td
+                      %label.estado-elem Pendiente
+                      = f.input :aceptado, as: :hidden, input_html: { name: "aceptado[#{adhesion_id}|#{posicion}]", class: "elemento-estado"}, wrapper: false
+                      = f.input :observacion, as: :hidden, input_html: { name: "observacion[#{adhesion_id}|#{posicion}]"}, wrapper: false
+                    %td.text-center
+                      %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{adhesion_id}|#{posicion}"}
+              -# @pendientes.each_with_index do |fila, posicion|
                 %tr{"data-id" => posicion}
                   %td=fila[:rut_institucion]
                   %td=fila[:nombre_institucion]
@@ -198,14 +224,14 @@
                     %div{style: "white-space: nowrap"}=fila[:email_encargado]
                   %td
                     %label.estado-elem Pendiente
-                    = f.input :aceptado, as: :hidden, input_html: { name: "aceptado[#{posicion}]", class: "elemento-estado"}, wrapper: false
+                    = f.input :aceptado, as: :hidden, input_html: { name: "aceptado[][#{posicion}]", class: "elemento-estado"}, wrapper: false
                     = f.input :observacion, as: :hidden, input_html: { name: "observacion[#{posicion}]"}, wrapper: false
                   %td.text-center
                     %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: posicion}
     .col-12.mb-2
       .float-right
         = volver_root
-        - unless @pendientes.blank?
+        - unless @pendientes_todas.blank?
           = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
 #aceptadas.mt-2
   =render "aceptados"

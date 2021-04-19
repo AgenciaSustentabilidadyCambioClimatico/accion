@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210310122602) do
+ActiveRecord::Schema.define(version: 20210415145856) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -131,6 +131,8 @@ ActiveRecord::Schema.define(version: 20210310122602) do
     t.text "fila"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "adhesion_externa_id"
+    t.index ["adhesion_externa_id"], name: "index_adhesion_elementos_on_adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elementos_on_adhesion_id"
     t.index ["alcance_id"], name: "index_adhesion_elementos_on_alcance_id"
     t.index ["establecimiento_contribuyente_id"], name: "index_adhesion_elementos_on_establecimiento_contribuyente_id"
@@ -147,7 +149,23 @@ ActiveRecord::Schema.define(version: 20210310122602) do
     t.datetime "updated_at"
     t.bigint "manifestacion_de_interes_id"
     t.bigint "flujo_id"
+    t.string "rut_institucion_adherente"
+    t.text "nombre_institucion_adherente"
+    t.text "matriz_direccion"
+    t.bigint "matriz_region_id"
+    t.bigint "matriz_comuna_id"
+    t.bigint "tipo_contribuyente_id"
+    t.string "rut_representante_legal"
+    t.text "nombre_representante_legal"
+    t.integer "fono_representante_legal"
+    t.text "email_representante_legal"
+    t.boolean "externa", default: false
+    t.bigint "rol_id"
     t.index ["flujo_id"], name: "index_adhesiones_on_flujo_id"
+    t.index ["matriz_comuna_id"], name: "index_adhesiones_on_matriz_comuna_id"
+    t.index ["matriz_region_id"], name: "index_adhesiones_on_matriz_region_id"
+    t.index ["rol_id"], name: "index_adhesiones_on_rol_id"
+    t.index ["tipo_contribuyente_id"], name: "index_adhesiones_on_tipo_contribuyente_id"
   end
 
   create_table "alcances", force: :cascade do |t|
@@ -551,7 +569,7 @@ ActiveRecord::Schema.define(version: 20210310122602) do
     t.integer "formato", null: false
     t.text "contenido"
     t.string "nombre"
-    t.string "codigo", limit: 15
+    t.string "codigo"
     t.string "archivo"
     t.boolean "subido", default: false, null: false
     t.datetime "created_at", null: false
@@ -1724,12 +1742,17 @@ ActiveRecord::Schema.define(version: 20210310122602) do
   add_foreign_key "adhesion_elemento_retirados", "otros"
   add_foreign_key "adhesion_elemento_retirados", "personas"
   add_foreign_key "adhesion_elementos", "adhesiones"
+  add_foreign_key "adhesion_elementos", "adhesiones", column: "adhesion_externa_id"
   add_foreign_key "adhesion_elementos", "alcances"
   add_foreign_key "adhesion_elementos", "establecimiento_contribuyentes"
   add_foreign_key "adhesion_elementos", "maquinarias"
   add_foreign_key "adhesion_elementos", "otros"
   add_foreign_key "adhesion_elementos", "personas"
+  add_foreign_key "adhesiones", "comunas", column: "matriz_comuna_id"
   add_foreign_key "adhesiones", "flujos"
+  add_foreign_key "adhesiones", "regiones", column: "matriz_region_id"
+  add_foreign_key "adhesiones", "roles"
+  add_foreign_key "adhesiones", "tipo_contribuyentes"
   add_foreign_key "auditoria_elementos", "adhesion_elementos"
   add_foreign_key "auditoria_elementos", "auditorias"
   add_foreign_key "auditoria_elementos", "set_metas_acciones"

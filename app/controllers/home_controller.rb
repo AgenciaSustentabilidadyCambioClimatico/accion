@@ -1,6 +1,8 @@
 class HomeController < ApplicationController
+  #before_action :authenticate_user!, only: [:consulta_publica_propuestas_acuerdo]
   before_action :set_datos_publicos, only: [:acuerdos_firmados, :empresas_y_elementos_adheridos, :empresas_y_elementos_certificados]
-  before_action :datos_header_no_signed, only: [:index, :acuerdos_firmados, :acuerdo_seleccionado, :empresas_y_elementos_adheridos, :empresas_y_elementos_certificados]
+  before_action :datos_header_no_signed, except: [:consulta_publica_propuestas_acuerdo, :get_comunas, :solicitar_adhesion_guardar]
+  before_action :set_manif_de_interes, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
   def index
     if user_signed_in?
       include_models    = [:tipo_instrumento,:contribuyente,:estado_manifestacion,:persona]
@@ -33,6 +35,32 @@ class HomeController < ApplicationController
         nombre_acuerdo: nombre_acuerdo,
         estado_consulta: estado_consulta
       }
+    end
+  end
+
+  def adherir_a_un_acuerdo
+    @acuerdos = ManifestacionDeInteres.where.not(firma_fecha: nil)
+    @acuerdos = @acuerdos.select{|m| !m.informe_acuerdo.nil? && TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: Tarea::ID_APL_025).count > 0 }.sort_by { |a| a.informe_acuerdo.calcula_fecha_plazo_maximo_adhesion}.reverse!
+  end
+
+  def solicitar_adhesion
+    
+  end
+
+  def solicitar_adhesion_guardar
+    @adhesion.assign_attributes(adhesion_params)
+    @adhesion.current_user = current_user
+    respond_to do |format|
+      if @adhesion.save
+        #abro tarea 28 si esque no esta abierta
+        @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
+        @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
+        format.js{
+          flash.now[:success] = "Adhesion guardada correctamente"
+        }
+      else
+        format.js
+      end
     end
   end
 
@@ -108,6 +136,11 @@ class HomeController < ApplicationController
     end
   end
 
+  def get_comunas
+    @region = Region.find(params[:id])
+    @comunas = @region.comunas
+  end
+
   private
   def set_datos_publicos
     #id 1 porque solo sera un registro que contenga la data
@@ -134,5 +167,29 @@ class HomeController < ApplicationController
       flujos = Flujo.where.not(manifestacion_de_interes_id: nil)
       @acciones = SetMetasAccion.where(flujo_id: flujos.pluck(:id)).count
     end
+  end
+
+  def set_manif_de_interes
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    @flujo = @manifestacion_de_interes.flujo
+    @todas = []
+    #@todas = @adhesion.adhesiones_todas_propietario()
+    #tarea pendiente 025
+    @tarea_pendiente = TareaPendiente.where(flujo_id: @flujo.id, tarea_id: Tarea::ID_APL_025).first
+    @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    @descargables = @tarea.get_descargables
+    @regiones = Region.all
+    @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
+  end
+
+  def adhesion_params
+    params.require(:adhesion).permit(
+      :rut_institucion_adherente, :nombre_institucion_adherente, :matriz_direccion, :matriz_region_id, :matriz_comuna_id,:tipo_contribuyente_id,
+      :rut_representante_legal, :nombre_representante_legal, :fono_representante_legal, :email_representante_legal,
+      :archivo_elementos,
+      :archivo_elementos_cache,
+      :archivos_adhesion_y_documentacion_cache,
+      archivos_adhesion_y_documentacion: []
+    )
   end
 end

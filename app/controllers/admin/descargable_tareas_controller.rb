@@ -1,6 +1,6 @@
 class Admin::DescargableTareasController < ApplicationController
   protect_from_forgery with: :exception, unless: proc{action_name == 'previsualizacion'}
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:descargar]
   before_action :set_tarea
 #DZC Gini
   before_action :set_tarea_pendiente, only: [:descargar], if: -> { params[:tarea_pendiente_id].present? }
@@ -50,6 +50,7 @@ class Admin::DescargableTareasController < ApplicationController
   end
 
   def descargar
+    authenticate_user! if @tarea.id != Tarea::ID_APL_025_1
     # DZC 2018-10-04 19:35:51 se corrige error en funcionamiento del método en la vista del mantenedor de descargables
     if params["tarea_pendiente"].present?
       tarea_pendiente = TareaPendiente.find(params["tarea_pendiente"])
@@ -153,7 +154,7 @@ class Admin::DescargableTareasController < ApplicationController
     def metodos(campo_acuerdo=nil,nombre_entidad=nil)
 #DZC
       director = Variable.where(nombre: :nombre_director_ascc).first
-      persona = current_user.personas.first
+      persona = current_user.personas.first if user_signed_in?
       contribuyente = persona.blank? ? nil : persona.contribuyente
 #DZC Gino
       campo_acuerdo = campo_acuerdo.blank? ? "Acuerdo de Producción Limpia para Certificación de Instalaciones" : campo_acuerdo
@@ -173,7 +174,7 @@ class Admin::DescargableTareasController < ApplicationController
         "[campo_acuerdo]": campo_acuerdo,
         "[nombre_director_ascc]": director.blank? ? '--' : director[:valor],
         "[fecha_hoy]": (l(Date.today,format: "%A, %d de %B %Y")),
-        "[representante_entidad_cogestora]": current_user.nombre_completo, 
+        "[representante_entidad_cogestora]": user_signed_in? ? current_user.nombre_completo : "", 
         "[nombre_entidad_cogestora]": nombre_entidad, 
       }
 #DZC

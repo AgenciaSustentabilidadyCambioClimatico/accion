@@ -39,6 +39,10 @@ Rails.application.routes.draw do
   get 'consulta-publica-propuestas-acuerdo', to: "home#consulta_publica_propuestas_acuerdo", as: :consulta_publica_propuestas_acuerdo
 
   #no logeado
+  get 'adherir-a-un-acuerdo', to: "home#adherir_a_un_acuerdo", as: :adherir_a_un_acuerdo
+  get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
+  get 'get_comunas', to: "home#get_comunas", as: :get_comunas
+  post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
   get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
   get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
   get 'empresas-y-elementos-adheridos', to: "home#empresas_y_elementos_adheridos", as: :empresas_y_elementos_adheridos
@@ -746,6 +750,7 @@ Rails.application.routes.draw do
   patch ':tarea_pendiente_id/adhesion/actualizar_revisar', to: "adhesiones#revisar_guardar", as: :guardar_revisar_adhesion
   post ':tarea_pendiente_id/auditoria/retirar_elemento', to: "adhesiones#retirar_elemento", as: :retirar_elemento_adhesion
   get ':tarea_pendiente_id/adhesion/descargar', to: "adhesiones#descargar", as: :descargar_adhesion
+  get ':tarea_pendiente_id/adhesion/descargar_compilado', to: "adhesiones#descargar_compilado", as: :descargar_compilado_adhesion
 
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos

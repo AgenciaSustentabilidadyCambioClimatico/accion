@@ -318,6 +318,25 @@ module ApplicationHelper
       end
     end
   end
+  def __mostrar_descargable_simple(tarea,codigo,titulo, boton=I18n.t(:descargar))
+    descargable = tarea.descargable_tareas.find_by(codigo: codigo)
+    capture_haml do
+      if descargable.blank?
+        haml_tag :label, titulo, class: 'control-label string pt-06'
+        haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado) do
+          haml_tag :i, class: 'fa fa-ban'
+        end
+        # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
+        # haml_tag :div, codigo, class: 'form-control'
+      else
+        haml_tag :label, titulo.blank? ? descargable.nombre : titulo, class: 'control-label string'
+        haml_tag :a, href: descargar_admin_tarea_descargable_tarea_path(tarea, descargable), class: 'btn btn-sm btn-descargar btn-block' do
+          haml_tag :i, class: 'fa fa-download'
+          haml_concat boton
+        end
+      end
+    end
+  end
 
   # DZC 2018-10-26 10:23:18 modifica el método para que, tratándose de un atributo que contenga múltiples archivos, se permita la descarga de un archivo ZIP que contenga todos esos  archivos
   def __descargar_archivo(field,objeto, label = true, nombre_boton=true, titulo=nil, boton=nil)

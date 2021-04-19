@@ -18,22 +18,23 @@
               %th=t(:estado)
               %th=t(:retirar_del_acuerdo)
           %tbody
-            - @no_pendientes.each do |k,v|
-              - v.each do |fila|
-                %tr
-                  %td=fila[:rut_institucion]
-                  %td=fila[:nombre_institucion]
-                  %td=fila[:alcance]
-                  %td=fila[:nombre_elemento]
-                  %td=fila[:comuna_instalacion]
-                  %td=fila[:direccion_instalacion]
-                  %td
-                    %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
-                    %div{style: "white-space: nowrap"}=fila[:fono_encargado]
-                    %div{style: "white-space: nowrap"}=fila[:email_encargado]
-                  %td=fila[:observaciones]
-                  %td=k.upcase
-                  %td.text-center
-                    -if k.upcase.to_s == "ACEPTADA"
-                      =link_to '#', class: "btn btn-tabla retirar-elemento", "data-id" => fila[:id], "data-target" => '#modal_retirar_elemento', 'data-toggle' => 'modal' do
-                        =fa_icon 'ban'
+            - @no_pendientes_todas.each do |adhesion_id, data|
+              -data.each do |k,v|
+                - v.each do |fila|
+                  %tr
+                    %td=fila[:rut_institucion]
+                    %td=fila[:nombre_institucion]
+                    %td=fila[:alcance]
+                    %td=fila[:nombre_elemento]
+                    %td=fila[:comuna_instalacion]
+                    %td=fila[:direccion_instalacion]
+                    %td
+                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                    %td=fila[:observaciones]
+                    %td=k.upcase
+                    %td.text-center
+                      -if k.upcase.to_s == "ACEPTADA"
+                        =link_to '#', class: "btn btn-tabla retirar-elemento", "data-id" => fila[:id], "data-target" => '#modal_retirar_elemento', 'data-toggle' => 'modal' do
+                          =fa_icon 'ban'

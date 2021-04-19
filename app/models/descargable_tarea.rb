@@ -4,7 +4,7 @@ class DescargableTarea < ApplicationRecord
   belongs_to :tarea
   validates :nombre, presence: true
   validates :tarea_id, presence: true
-  validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL)-[\0-9]{3}-DES-[\0-9]{3}\Z/ }
+  validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL)-[\0-9]{3}(\.[0-9])?-DES-[\0-9]{3}\Z/ }
   validates :formato, presence: true
   validates :contenido, presence: true, unless: -> { subido == true }
   validates :archivo, presence: true, if: -> { subido == true }

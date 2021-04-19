@@ -34,6 +34,7 @@
                 = link_to t(:gestionar_mis_instrumentos), admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
                 = link_to t(:traspaso_de_instrumentos), new_traspaso_instrumento_path, class: 'dropdown-item'
                 = link_to t(:consulta_pública_propuestas_de_acuerdo), consulta_publica_propuestas_acuerdo_path, class: 'dropdown-item'
+                = link_to t(:adherir_a_un_acuerdo), adherir_a_un_acuerdo_path, class: 'dropdown-item'
                 -if es_encargado_institucion
                   = link_to t(:mis_instituciones), admin_contribuyentes_path, class: 'dropdown-item'
                   = link_to t(:mis_establecimientos), admin_establecimientos_path, class: 'dropdown-item'

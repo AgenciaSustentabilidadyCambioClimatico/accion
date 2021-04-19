@@ -1,5 +1,5 @@
 class AdhesionesController < ApplicationController
-	before_action :authenticate_user!
+	before_action :authenticate_user!, except: [:descargar]
   before_action :set_tarea_pendiente
   before_action :set_flujo
 	before_action :set_datos
@@ -88,35 +88,70 @@ class AdhesionesController < ApplicationController
 
   def revisar_guardar #DZC APL-028 PPF-017
     
-    # @al_menos_se_acepto_uno = false
-    aceptados = params[:aceptado]
-    observaciones = params[:observacion]
-    data = @pendientes
+    correcto = false
+    ActiveRecord::Base.transaction do
+      # @al_menos_se_acepto_uno = false
+      aceptados = params[:aceptado]
+      observaciones = params[:observacion]
+      data = @por_revisar_todas
+      adh = nil
+      procesar_tareas_25 = []
 
-    aceptados.each do |k,v|
-      
-      datos = data[k.to_i]
-      if v == "true"
-        # @al_menos_se_acepto_uno = true
-        #Ademas se pobla la tabla dato_productivo_elemento_adheridos
-        data[k.to_i][:revisado] = true
-        data[k.to_i][:observaciones] = observaciones[k]
-        @adhesion.poblar_data(datos, @flujo)
-      elsif v == "false"
-        data[k.to_i][:revisado] = false
-        data[k.to_i][:observaciones] = observaciones[k]
-      else
-        data[k.to_i][:revisado] = false
-        data[k.to_i][:observaciones] = nil
+      aceptados.each do |k,v|
+
+        key = k.split("|")
+        adhesion_id = key.first
+        posicion = key.last
+        nueva_adhesion = false
+        
+        if adh.nil? || adh.id.to_s != adhesion_id.to_s
+          adh = Adhesion.unscoped.find(adhesion_id) 
+          nueva_adhesion = true
+        end
+        idx = 0
+        datos = nil
+        data[adh.id].each_with_index do |fila, _idx|
+          if fila[:posicion].to_s == posicion.to_s
+            datos = fila
+            idx = _idx
+          end
+        end
+        if v == "true"
+          # @al_menos_se_acepto_uno = true
+          #Ademas se pobla la tabla dato_productivo_elemento_adheridos
+          
+          data[adh.id][idx][:revisado] = true
+          data[adh.id][idx][:observaciones] = observaciones[k]
+          @adhesion.poblar_data(datos, @flujo, adh.archivos_adhesion_y_documentacion, adh)
+
+          procesar_tareas_25 << adh if adh.externa && nueva_adhesion
+        elsif v == "false"
+          data[adh.id][idx][:revisado] = false
+          data[adh.id][idx][:observaciones] = observaciones[k]
+          #si observo debo crear igual datos de usuario para tareas 25.1 y 25.2
+          procesar_tareas_25 << adh if adh.externa && nueva_adhesion
+        else
+          data[adh.id][idx][:revisado] = false
+          data[adh.id][idx][:observaciones] = nil
+        end
+        
       end
-      
+
+      procesar_tareas_25.each do |adh|
+        adh.crear_data_nuevas_tareas_25
+      end
+      @adhesiones.each do |adh|
+        if !data[adh.id].blank?
+          adh.adhesiones_data = data[adh.id]
+          # @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
+          adh.flujo_id = @flujo.id
+          adh.tipo = "revision"
+          correcto = true if adh.save
+        end
+      end
     end
-    @adhesion.adhesiones_data = data
-    # @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
-    @adhesion.flujo_id = @flujo.id
-    @adhesion.tipo = "revision"
     respond_to do |format|
-      if @adhesion.save
+      if correcto
         set_datos
         
         continua_flujo_segun_tipo_tarea 
@@ -174,6 +209,26 @@ class AdhesionesController < ApplicationController
     send_data @archivo.to_stream.read, type: 'application/xslx', charset: "iso-8859-1", filename: "formato_adhesion.xlsx"
   end
 
+  def descargar_compilado
+    require 'zip'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones.each do |adhesion|
+        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+          if File.exists?(archivo.path)
+            nombre = archivo.file.identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+  end
+
   #DZC agrega al campo data de la tarea_pendiente 
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
@@ -207,8 +262,9 @@ class AdhesionesController < ApplicationController
     #asigna valor de id de tarea pendiente, leyendolo desde la URL (esto es neceario por que no se traspasa desde la jerarquia superior)
     def set_tarea_pendiente
       @tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
-      autorizado? @tarea_pendiente
+      autorizado? @tarea_pendiente if params[:action] != "descargar"
       @tarea = @tarea_pendiente.tarea #crea una instancia de tarea a través de la forean key de tarea_pendiente (primary de tarea)
+      @tarea = Tarea.find(params[:tarea_id]) if !params[:tarea_id].blank?
     end
 
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
@@ -233,6 +289,23 @@ class AdhesionesController < ApplicationController
       @no_pendientes = @adhesion.adhesiones_aceptadas_y_observadas
       @retiradas = @adhesion.adhesiones_retiradas
       @todas = @adhesion.adhesiones_todas
+
+      @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @todas_mias = @adhesion.adhesiones_todas_mias
+      @rechazadas_todas = {}
+      @pendientes_todas = {}
+      @no_pendientes_todas = {}
+      @retiradas_todas = {}
+      @todas_todas = {}
+      @por_revisar_todas = {}
+      @adhesiones.each do |adh|
+        @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
+        @pendientes_todas[adh.id] = adh.adhesiones_pendientes
+        @no_pendientes_todas[adh.id] = adh.adhesiones_aceptadas_y_observadas
+        @retiradas_todas[adh.id] = adh.adhesiones_retiradas
+        @todas_todas[adh.id] = adh.adhesiones_todas
+        @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
+      end
 		end
 
 		def adhesion_params
@@ -247,7 +320,35 @@ class AdhesionesController < ApplicationController
     def set_crea_archivo
       titulos = Adhesion.columnas_excel
       datos = []
-      datos = @adhesion.desparseas_adhesiones_rechazadas unless @adhesion.new_record?
+      if [Tarea::ID_APL_025_1].include?(@tarea.id)
+        data_primera_fila = [
+          "",
+          params[:ri],#rut institucionm
+          params[:ni],#nombre institucion
+          "",
+          params[:ti],#tipo institucion
+          "",
+          params[:md],#matriz direccion
+          params[:mc],#matriz comuna,
+          params[:rr],#rut representante
+          params[:nr],#nombre representante
+          "",
+          params[:fr],#fono representante
+          params[:er],#email representante
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          "",
+          ""
+        ]
+        datos = [data_primera_fila]
+      else
+        datos = @adhesion.desparseas_adhesiones_rechazadas unless @adhesion.new_record?
+      end
       dominios = Adhesion.dominios(@ppp.present?)
       @archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "Adhesiones" )
     end

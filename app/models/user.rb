@@ -133,6 +133,11 @@ class User < ApplicationRecord
     #self.cargo_users.map{|m|m.cargo_id}.include?(Cargo::CO_GESTOR)
   end
 
+  def is_responsable?
+    personas = Responsable.__personas_responsables_v2(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+    personas.select{|p| p.user_id = self.id}.first
+  end
+
   #Jamás podremos borrar al usuario root, admin ni user
   def destroy
     unless BASIC.include?(self.id)

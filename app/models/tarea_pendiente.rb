@@ -100,14 +100,7 @@ class TareaPendiente < ApplicationRecord
 
   def get_descargables
 
-    descargables = {}
-    tarea = self.tarea
-    tarea.descargable_tareas.each do |desc|
-      if ((desc.archivo.path.present? && File.exist?(desc.archivo.path)) || (!desc.subido && desc.contenido.present?))
-        descargables[desc.codigo] = { nombre: desc.nombre, args: [id,tarea,desc] } 
-      end
-    end
-    descargables
+    self.tarea.get_descargables
   end
 
   # aoliva

@@ -1310,7 +1310,7 @@ module Admin::CargasHistoricasHelper
 				archivos_por_codigo = []
 				adhesion_excell[1].each do |elemento|
 					#metodo que se reutiliza para cargar las adhesiones_elementos.-
-					adhesion_elemento = adhesion.poblar_data elemento, adhesion.flujo
+					adhesion_elemento = adhesion.poblar_data elemento, adhesion.flujo, adhesion.archivos_adhesion_y_documentacion, adhesion
 					#Para guardar las certificaciones.-
 					cah = CertificacionAdhesionHistorico.new
 					cah.adhesion_elemento_id = adhesion_elemento.id

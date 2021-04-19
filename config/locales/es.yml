@@ -1408,6 +1408,16 @@ es:
   extension_reporte_sustentabilidad: Extensión del reporte de sustentabilidad
   guardar: Guardar
   MateriaRubroRelacion: Datos por Rubro y Materia / Sustancia
+  estado_de_solicitud_de_adhesion: Estado de solicitud de adhesión
+  adherir_a_un_acuerdo: Adherir a un Acuerdo
+  datos_solicitante: Datos solicitante
+  comuna_del_elemento: Comuna del elemento
+  direccion_del_elemento: Direccion del elemento
+  formulario_de_adhesion_y_documentacion_complementaria: Formulario de adhesión y documentación complementaria
+  consolidado_de_adhesiones: Consolidado de adhesiones
+  instrucciones_de_llenado_excel_consolidado_de_adhesiones: Instrucciones de llenado excel Consolidado de adhesiones
+  formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
+  formulario_de_adhesion: Formulario de adhesión
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
@@ -1447,6 +1457,10 @@ es:
     attributes:
       informe_acuerdo:
         tipo_acuerdo: Plazo de implementación y certificación
+      adhesion:
+        matriz_direccion: Dirección casa matriz
+        matriz_region_id: Región casa matriz
+        matriz_comuna_id: Comuna casa matriz
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"

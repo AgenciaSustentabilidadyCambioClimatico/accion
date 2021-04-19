@@ -9,6 +9,7 @@ class AdhesionElemento < ApplicationRecord
   belongs_to :establecimiento_contribuyente, optional: true
   belongs_to :maquinaria, optional: true
   belongs_to :otro, optional: true
+  belongs_to :adhesion_externa, class_name: 'Adhesion', foreign_key: 'adhesion_externa_id', optional: true
 
   has_many :dato_productivo_elemento_adheridos
   has_many :certificacion_adhesion_historicos, dependent: :destroy

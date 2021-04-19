@@ -312,12 +312,16 @@ class Responsable < ApplicationRecord
         subquery += "contribuyentes.id = "+r.contribuyente_id.to_s 
       end
       if !r.actividad_economica_id.blank? #subquery.where(actividad_economica_contribuyentes: { actividad_economica_id: r.actividad_economica_id }) if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
         subquery += " AND " if !subquery.blank?
-        subquery += "actividad_economica_contribuyentes.actividad_economica_id = "+r.actividad_economica_id.to_s 
+        subquery += "actividad_economica_contribuyentes.actividad_economica_id IN (#{aeid.join(',')}) "
       end
       if !r.tipo_contribuyente_id.blank? #subquery.where(dato_anual_contribuyentes: { tipo_contribuyente_id: r.tipo_contribuyente_id }) if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
         subquery += " AND " if !subquery.blank? 
-        subquery += "dato_anual_contribuyentes.tipo_contribuyente_id = "+r.tipo_contribuyente_id.to_s 
+        subquery += "dato_anual_contribuyentes.tipo_contribuyente_id IN (#{tcid.join(',')})"
       end
       subquery = " OR ("+subquery+") " if !subquery.blank? && !where_query.blank?
       where_query += subquery if !subquery.blank?
@@ -325,6 +329,34 @@ class Responsable < ApplicationRecord
     contribuyentes = []
     contribuyentes = Contribuyente.joins([:actividad_economica_contribuyentes, :dato_anual_contribuyentes]).where(where_query) if !where_query.blank?
     contribuyentes
+  end
+
+  def self._cargos_por_rol_empresa(rol_id, tipo_instrumento_id, contribuyente_id)
+    cargos = []
+    instrumentos_id = [tipo_instrumento_id]    
+    instrumentos_id << TipoInstrumento.where(id: tipo_instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: tipo_instrumento_id).tipo_instrumento_id.blank?
+    responsables = Responsable.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
+    responsables.each do |r|
+      subquery = ""
+      if !r.contribuyente_id.blank? #subquery.where(contribuyente_id: r.contribuyente_id) if !r.contribuyente_id.blank?
+        subquery += "contribuyentes.id = "+r.contribuyente_id.to_s 
+      end
+      if !r.actividad_economica_id.blank? #subquery.where(actividad_economica_contribuyentes: { actividad_economica_id: r.actividad_economica_id }) if !r.actividad_economica_id.blank?
+        aeid = [r.actividad_economica_id]
+        aeid += r.actividad_economica.get_children.pluck(:id)
+        subquery += " AND " if !subquery.blank?
+        subquery += "actividad_economica_contribuyentes.actividad_economica_id IN (#{aeid.join(',')}) "
+      end
+      if !r.tipo_contribuyente_id.blank? #subquery.where(dato_anual_contribuyentes: { tipo_contribuyente_id: r.tipo_contribuyente_id }) if !r.tipo_contribuyente_id.blank?
+        tcid = [r.tipo_contribuyente_id]
+        tcid += r.tipo_contribuyente.get_children_id
+        subquery += " AND " if !subquery.blank? 
+        subquery += "dato_anual_contribuyentes.tipo_contribuyente_id IN (#{tcid.join(',')})"
+      end
+      contribuyentes = Contribuyente.joins([:actividad_economica_contribuyentes, :dato_anual_contribuyentes]).where(subquery).where(id: contribuyente_id)
+      cargos << r.cargo if contribuyentes.count > 0
+    end
+    cargos
   end
 
 end

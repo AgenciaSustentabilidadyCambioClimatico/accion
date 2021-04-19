@@ -1,16 +1,33 @@
 class Adhesion < ApplicationRecord
 
 	has_many :adhesion_elementos, dependent: :destroy
+	has_many :adhesion_elemento_externos, dependent: :destroy, class_name: 'AdhesionElemento', foreign_key: 'adhesion_externa_id'
 	has_many :adhesion_elemento_retirados, dependent: :destroy
 	# belongs_to :manifestacion_de_interes
+	belongs_to :matriz_region, class_name: 'Region', foreign_key: 'matriz_region_id', optional: true
+	belongs_to :matriz_comuna, class_name: 'Comuna', foreign_key: 'matriz_comuna_id', optional: true
 	belongs_to :flujo
+	belongs_to :rol, optional: true
 
 	mount_uploaders :archivos_adhesion_y_documentacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
 	mount_uploader :archivo_elementos, ArchivoElementosAdhesionesUploader
 
-	validate :data_adhesiones, unless: -> { tipo.present? }
+	#skip_callback :commit, :after, :remove_previously_stored_archivos_adhesion_y_documentacion
+
+	#before_save :remove_no_used_files
+
+	validates :archivos_adhesion_y_documentacion, presence: true, if: -> { externa }
+	validates :archivo_elementos, presence: true, if: -> { externa }
+	validate :data_adhesiones, if: -> { !tipo.present? && !archivo_elementos.blank? }
 	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
 	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
+	#tareas 25
+	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present?}
+	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present?}
+	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
+	validates :nombre_representante_legal,:fono_representante_legal, presence: true, if: -> { externa && !tipo.present? && current_user.nil?}
+	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
+	validate :validar_datos_tareas_25, if: -> { externa && !tipo.present?}
 
 	serialize :adhesiones_data
 
@@ -18,7 +35,36 @@ class Adhesion < ApplicationRecord
 	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
 	attr_accessor :documento_justificacion, :elemento_retirado_id, :validar_retirar
 
+	#para tareas 25
+	attr_accessor :current_user, :tarea
+
 	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
+
+
+	default_scope { where(externa: false) }
+
+  def normalizar_ruts
+    self.rut_institucion_adherente = self.rut_institucion_adherente.to_s.upcase.gsub(/[^0-9\-K]/,'') unless self.rut_institucion_adherente.blank?
+		self.rut_representante_legal = self.rut_representante_legal.to_s.upcase.gsub(/[^0-9\-K]/,'') unless self.rut_representante_legal.blank?
+  end
+
+	def validar_datos_tareas_25
+		if current_user.nil? && !errors.key?(:rut_representante_legal)
+			user = User.find_by(rut: rut_representante_legal.gsub(".",""))
+			errors.add(:rut_representante_legal, "Usuario ya existe en plataforma. Por favor ingrese para solicitar adhesiones") if !user.nil?
+		end
+
+		if !errors.key?(:rut_institucion_adherente)
+			contribuyente = Contribuyente.find_by(rut: rut_institucion_adherente.gsub(".","").split("-").first)
+			if !contribuyente.nil?
+				personas = Responsable.__personas_responsables_v2(rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente.id)
+				if personas.length > 0
+					nombre_responsable = personas.first.user.nombre_completo
+					errors.add(:rut_institucion_adherente, "Institución ya existe en plataforma y tiene asociado un responsable, por favor contactarse con #{nombre_responsable} para que solicite adhesiones") 
+				end
+			end
+		end
+	end
 
 
 	def self.columnas_excel
@@ -82,7 +128,7 @@ class Adhesion < ApplicationRecord
 
 	def desparseas_adhesiones_rechazadas
 		self.adhesiones_por_revisar.map{ |ac|
-			ac.except(:revisado, :observaciones, :posicion).map{|k,v| v}
+			ac.except(:revisado, :observaciones, :posicion, :propietario).map{|k,v| v}
 		}
 	end
 
@@ -121,29 +167,33 @@ class Adhesion < ApplicationRecord
 					if !rut_institucion.rut_valid?
 						errores[:rut_institucion] << " El archivo contiene un formato de RUT invalido, para la fila #{(posicion+2)}"
 					else
-						contribuyente = Contribuyente.find_by(rut: rut_institucion.split('-')[0])
-						if contribuyente.nil?
-							if fila[:direccion_casa_matriz].blank?
-								errores[:direccion_casa_matriz] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
-							elsif fila[:nombre_institucion].blank?
-								errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"
-							else
-								if ActividadEconomica.where(codigo_ciiuv4: fila[:sector_productivo]).first.nil?
-									errores[:sector_productivo] << fila[:sector_productivo]
-								end
-								if TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
-									errores[:tipo_institucion] << fila[:tipo_institucion]
-								end
-								tamano_empresa_split = fila[:tamaño_empresa].split('-')
-								if RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last).nil?
-									errores[:tamaño_empresa] << fila[:tamaño_empresa]
-								end
-								if Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
-									errores[:comuna_casa_matriz] << fila[:comuna_casa_matriz]
-								end
-							end
+						if externa && rut_institucion_adherente.to_s.gsub('k', 'K').gsub(".", "") != rut_institucion
+							errores[:rut_institucion] << " Sólo puede solicitar adhesiones para institución señalada, por favor corregir RUT institución en archivo Excel, para la fila #{(posicion+2)}"
 						else
-							data[posicion][:nombre_institucion] = contribuyente.razon_social
+							contribuyente = Contribuyente.find_by(rut: rut_institucion.split('-')[0])
+							if contribuyente.nil?
+								if fila[:direccion_casa_matriz].blank?
+									errores[:direccion_casa_matriz] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
+								elsif fila[:nombre_institucion].blank?
+									errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"
+								else
+									if ActividadEconomica.where(codigo_ciiuv4: fila[:sector_productivo]).first.nil?
+										errores[:sector_productivo] << fila[:sector_productivo]
+									end
+									if TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
+										errores[:tipo_institucion] << fila[:tipo_institucion]
+									end
+									tamano_empresa_split = fila[:tamaño_empresa].split('-')
+									if RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last).nil?
+										errores[:tamaño_empresa] << fila[:tamaño_empresa]
+									end
+									if Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
+										errores[:comuna_casa_matriz] << fila[:comuna_casa_matriz]
+									end
+								end
+							else
+								data[posicion][:nombre_institucion] = contribuyente.razon_social
+							end
 						end
 					end
 
@@ -310,7 +360,7 @@ class Adhesion < ApplicationRecord
 							end
 						end
 					else
-						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.identifier}.include? fila[:nombre_archivo]
+						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.file.identifier}.include? fila[:nombre_archivo]
 							errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
 						else
 							instituciones_con_archivo << rut_institucion
@@ -431,6 +481,18 @@ class Adhesion < ApplicationRecord
 		end
 	end
 
+	def adhesiones_aceptadas_mias
+		if self.persisted?
+			self.adhesion_elemento_externos.map{ |a|
+				fila = a.fila
+				fila[:id] = a.id
+				fila
+			}
+		else
+			[]
+		end
+	end
+
 	def adhesiones_retiradas
 		if self.persisted?
 			self.adhesion_elemento_retirados.map{|a| 
@@ -447,15 +509,23 @@ class Adhesion < ApplicationRecord
 		{ aceptada: adhesiones_aceptadas, observada: adhesiones_observadas}
 	end
 
+	def adhesiones_aceptadas_y_observadas_mias
+		{ aceptada: adhesiones_aceptadas_mias, observada: adhesiones_observadas}
+	end
+
 	def adhesiones_todas
 		{ aceptada: adhesiones_aceptadas, observada: adhesiones_observadas, pendiente: adhesiones_pendientes}
 	end
 
-	def poblar_data(fila, flujo) #PPF-017 APL-028
+	def adhesiones_todas_mias
+		{ aceptada: adhesiones_aceptadas_mias, observada: adhesiones_observadas, pendiente: adhesiones_pendientes}
+	end
+
+	def poblar_data(fila, flujo, archivos, externa) #PPF-017 APL-028
 
 		archivo_adhesion = nil
 		archivo_respaldo = nil
-    self.archivos_adhesion_y_documentacion.each do |f|
+    archivos.each do |f|
     	archivo_adhesion = f if f.file.filename.split(".")[0] == "adhesion"
       archivo_respaldo = f if f.file.filename == fila[:nombre_archivo]
     end
@@ -565,7 +635,8 @@ class Adhesion < ApplicationRecord
 		if persona_cargo.nil?
 			persona_cargo = PersonaCargo.new(
 				persona_id: persona.id,
-				cargo_id: cargo.id
+				cargo_id: cargo.id,
+				establecimiento_contribuyente_id: establecimiento_contribuyente.id
 				)
 			persona_cargo.save(validate: false)
 		end
@@ -649,7 +720,8 @@ class Adhesion < ApplicationRecord
     	otro_id: otro.nil? ? nil : otro.id,
 	    fila: fila,
 	    archivo_adhesion: archivo_adhesion,
-	    archivo_respaldo: archivo_respaldo
+	    archivo_respaldo: archivo_respaldo,
+	    adhesion_externa_id: externa.id
     })
     #Cada vez que en la tabla “Adhesión_elementos” se hayan creado registros, entonces se debe poblar la tabla Datos Productivos Elementos Adheridos, pero solo para los APL
     if adhesion_elemento.save  
@@ -701,5 +773,83 @@ class Adhesion < ApplicationRecord
     end
     adhesion_elemento
 	end	
+
+	def crear_data_nuevas_tareas_25
+
+		_rut_institucion_adherente = rut_institucion_adherente.gsub(".","").gsub("k","K").split('-')
+		contribuyente = Contribuyente.find_by(rut: _rut_institucion_adherente.first)
+		if contribuyente.nil?
+			contribuyente = Contribuyente.new(
+				rut: _rut_institucion_adherente.first,
+				dv: _rut_institucion_adherente.last,
+				razon_social: nombre_institucion_adherente
+				)
+			contribuyente.save(validate: false)
+		end
+
+		datos_anuales_contribuyente = contribuyente.dato_anual_contribuyentes.where(tipo_contribuyente_id: tipo_contribuyente_id).first
+		if datos_anuales_contribuyente.blank?
+			datos_anuales_contribuyente = DatoAnualContribuyente.new(
+				contribuyente_id: contribuyente.id,
+				tipo_contribuyente_id: tipo_contribuyente_id
+				)
+			datos_anuales_contribuyente.save(validate: false)
+		end
+
+		#DZC (4) verifica la ubicación del contribuyente y en caso de ausencia crea y asocia el establecimiento.
+
+		# DZC 2019-05-20 12:04:40 se modifica para evitar comparación de comunas case sensitive
+		# comuna = Comuna.where(nombre: fila[:comuna_casa_matriz].to_s).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+		comuna = Comuna.where(id: matriz_comuna_id).includes(provincia: [region: [:pais]]).where({"paises.nombre" => "Chile"}).first #modificar para el caso de que puedan existir comunas repetidas
+
+		#DZC se agrega la dirección en la búsqueda de la casa matríz
+		establecimiento_contribuyente = contribuyente.establecimiento_contribuyentes.where(comuna_id: comuna.id, direccion: matriz_direccion).first
+		if establecimiento_contribuyente.nil?
+			establecimiento_contribuyente = EstablecimientoContribuyente.new(
+				contribuyente_id: contribuyente.id,
+				casa_matriz: true,
+				direccion: matriz_direccion,
+				pais_id: comuna.provincia.region.pais.id,
+				region_id: comuna.provincia.region.id,
+				comuna_id: comuna.id
+				)
+			establecimiento_contribuyente.save(validate: false)
+		end
+
+		#agrego usuario que ingreso por 25.1
+		propietario_user = User.find_by(rut: rut_representante_legal.gsub(".","").gsub("k","K"))
+		if propietario_user.nil?
+			propietario_user = User.invite!(
+				rut: rut_representante_legal.gsub(".","").gsub("k","K"),
+				nombre_completo: nombre_representante_legal,
+				telefono: fono_representante_legal,
+				email: email_representante_legal
+			)
+		end
+		propietario_persona = propietario_user.personas.where(contribuyente_id: contribuyente.id).first
+		if propietario_persona.nil?
+			propietario_persona = Persona.new(
+				user_id: propietario_user.id,
+				contribuyente_id: contribuyente.id,
+				telefono_institucional: fono_representante_legal,
+				email_institucional: email_representante_legal
+			)
+			propietario_persona.save(validate: false)
+		end
+		#necesito el cargo configurado en responsables
+		cargos = Responsable._cargos_por_rol_empresa(rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente.id)
+		if propietario_persona.persona_cargos.where(cargo_id: cargos.pluck(:id)).count == 0
+			cargos.each do |cargo|
+				persona_cargo = PersonaCargo.new(
+					persona_id: propietario_persona.id,
+					cargo_id: cargo.id,
+					establecimiento_contribuyente_id: establecimiento_contribuyente.id
+				)
+				persona_cargo.save(validate: false)
+			end
+		end
+
+		
+	end
 
 end
