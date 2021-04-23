@@ -270,7 +270,7 @@ function __show_hide_(group,control) {
 }
 
 function closeAlertMessage(seconds) {
-  seconds=(seconds===undefined) ? 10000 : seconds
+  seconds=(seconds===undefined) ? 15000 : seconds
   cierreAlerta = setTimeout(function() {$('button[data-dismiss="alert"]').trigger("click"); }, seconds);
 }
 

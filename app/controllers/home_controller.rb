@@ -56,7 +56,7 @@ class HomeController < ApplicationController
         @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
         @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
         format.js{
-          flash.now[:success] = "Adhesion guardada correctamente"
+          flash.now[:success] = "Adhesion enviada correctamente"
         }
       else
         format.js

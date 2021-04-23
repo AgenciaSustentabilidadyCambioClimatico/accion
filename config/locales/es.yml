@@ -1414,7 +1414,7 @@ es:
   comuna_del_elemento: Comuna del elemento
   direccion_del_elemento: Direccion del elemento
   formulario_de_adhesion_y_documentacion_complementaria: Formulario de adhesión y documentación complementaria
-  consolidado_de_adhesiones: Consolidado de adhesiones
+  consolidado_de_adhesiones_formato_excel: Consolidado de adhesiones (formato 'excel')
   instrucciones_de_llenado_excel_consolidado_de_adhesiones: Instrucciones de llenado excel Consolidado de adhesiones
   formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
   formulario_de_adhesion: Formulario de adhesión

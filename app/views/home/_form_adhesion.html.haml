@@ -47,38 +47,38 @@
             .col-12.col-lg
               =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado'}
 
-
-    .col-12
-      .card
-        .card-header
-          %h5.no-margin
-            %b
-            = t(:adhesiones)
-        .card-body
-          %table.table.table-striped#adhesiones_rechazadas
-            %thead
-              %tr
-                %th=t(:alcance)
-                %th=t(:nombre_elemento)
-                %th=t(:comuna_del_elemento)
-                %th=t(:direccion_del_elemento)
-                %th=t(:datos_encargado)
-                %th=t(:observaciones)
-                %th=t(:estado)
-            %tbody
-              - @todas.each do |k,v|
-                - v.each do |fila|
-                  %tr
-                    %td=fila[:alcance]
-                    %td=fila[:nombre_elemento]
-                    %td=fila[:comuna_instalacion]
-                    %td=fila[:direccion_instalacion]
-                    %td
-                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
-                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
-                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
-                    %td=fila[:observaciones]
-                    %td=k.upcase
+    -#
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              %b
+              = t(:adhesiones)
+          .card-body
+            %table.table.table-striped#adhesiones_rechazadas
+              %thead
+                %tr
+                  %th=t(:alcance)
+                  %th=t(:nombre_elemento)
+                  %th=t(:comuna_del_elemento)
+                  %th=t(:direccion_del_elemento)
+                  %th=t(:datos_encargado)
+                  %th=t(:observaciones)
+                  %th=t(:estado)
+              %tbody
+                - @todas.each do |k,v|
+                  - v.each do |fila|
+                    %tr
+                      %td=fila[:alcance]
+                      %td=fila[:nombre_elemento]
+                      %td=fila[:comuna_instalacion]
+                      %td=fila[:direccion_instalacion]
+                      %td
+                        %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                        %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                        %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                      %td=fila[:observaciones]
+                      %td=k.upcase
   
   .row
     .col-12.col-lg-6
@@ -94,10 +94,10 @@
               .form-group
                 %label.string.control-label
                   = t(:formato_excel_de_consolidado_de_adhesiones)
-                = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado' do
+                = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado mt-0' do
                   %i.fa.fa-download
                   = t(:descargar)
-                %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban{title: "Debe llenar los datos solicitante para descargar archivo"}
+                %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
                   %i.fa.fa-ban
     .col-12.col-lg-6
       .card
@@ -109,8 +109,14 @@
               = f.input :archivos_adhesion_y_documentacion, label: t(:formulario_de_adhesion_y_documentacion_complementaria), as: :file, input_html: {class: "validado form-control auto-save disabled", multiple: true}, required: true
               = f.hidden_field :archivos_adhesion_y_documentacion_cache
             .col-12
-              = f.input :archivo_elementos, label: t(:consolidado_de_adhesiones), as: :file, required: true, input_html: {class: "validado form-control auto-save "}
+              = f.input :archivo_elementos, label: t(:consolidado_de_adhesiones_formato_excel), as: :file, required: true, input_html: {class: "validado form-control auto-save "}
               = f.hidden_field :archivo_elementos_cache
+    .col-12.col-lg-6.offset-lg-6
+      .card
+        .card-header
+          %h5.no-margin=t(:instrucciones_de_llenado)
+        .card-body
+          .row
             .col-12
               =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-002",t(:instrucciones_de_llenado_excel_consolidado_de_adhesiones))
 
