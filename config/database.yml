@@ -4,14 +4,14 @@ default: &default
   timeout: 5000
   pool: 5
   host: localhost
-  username: postgres
-  password: postgres
+  username: nelson
+  password: 
   template: template0
   schema_search_path: "public, admin"
 
 development:
   <<: *default
-  database: ascc_qa_cliente
+  database: bd_accion
 
 test:
   <<: *default
@@ -19,7 +19,7 @@ test:
 
 staging:
   <<: *default
-  database: bd_dev_accion
+  database: bd_accion
 
 production:
   <<: *default
