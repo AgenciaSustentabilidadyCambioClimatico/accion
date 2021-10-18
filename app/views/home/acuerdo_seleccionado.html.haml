@@ -61,7 +61,11 @@
                             =clasificacion.metas_comprometidas(@manifestacion_de_interes).count
                           -else
                             =clasificacion.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes).count
-                        .title Metas/acciones comprometidas
+                        .title 
+                          -if @vista == "clasificaciones"
+                            Metas comprometidas
+                          -else
+                            Acciones comprometidas
                       .flip-number.w-25
                         .number=clasificacion.empresas_comprometidas(@manifestacion_de_interes, @vista).length
                         .title Empresas comprometidas
@@ -80,23 +84,25 @@
                 .title=t(:cumplimiento_de_acuerdo)
               .card-body
                 -if @vista == "clasificaciones"
+                  -acciones_ids = clasificacion.set_metas_acciones_comprometidas(@manifestacion_de_interes).pluck(:id)
                   -clasificacion.metas_comprometidas(@manifestacion_de_interes).each do |meta|
                     .meta-title.mb-2=meta.nombre
                     .table-responsive
                       %table.tabla-simple
                         %tbody
                           -meta.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes).each do |accion|
-                            %tr
-                              %td="#{accion.accion.nombre}#{(accion.materia_sustancia.blank?? '' : '/'+accion.materia_sustancia.nombre)}"
-                              %td="#{accion.obtiene_porcentaje_avance} Porcentaje avance"
-                              %td="#{accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f}% Porcentaje cumplimiento"
+                            -if acciones_ids.include?(accion.id)
+                              %tr
+                                %td{title: accion.descripcion_accion}="#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}"
+                                %td="#{accion.obtiene_porcentaje_avance} Porcentaje avance"
+                                %td="#{accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f}% Porcentaje cumplimiento"
                 -else
                   .table-responsive
                     %table.tabla-simple
                       %tbody
                         -clasificacion.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes).each do |accion|
                           %tr
-                            %td="#{accion.accion.nombre}#{(accion.materia_sustancia.blank?? '' : '/'+accion.materia_sustancia.nombre)}"
+                            %td{title: accion.descripcion_accion}="#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}"
                             %td="#{accion.obtiene_porcentaje_avance} Porcentaje avance"
                             %td="#{accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f}% Porcentaje cumplimiento"
 :javascript

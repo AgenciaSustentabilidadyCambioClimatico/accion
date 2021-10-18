@@ -382,11 +382,11 @@ class ManifestacionDeInteres < ApplicationRecord
       telefonos_invalidos=[]
       dominios_invalidos=[]
       data.each_with_index do |fila, posicion|
-        if fila.any?{|c|c.blank?}
+        if fila.values.any?{|c|c.blank?}
           ##
           # DZC 2019-08-16 20:26:20
           # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "El archivo contiene celdas sin completar"
+          errores << "Fila #{(posicion+2)} contiene celdas sin completar"
           # errors.add(:mapa_de_actores_archivo, "El archivo contiene celdas sin completar")
           archivo_correcto = false
         else

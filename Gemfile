@@ -5,13 +5,12 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
+gem 'caracal-rails'
 gem "animate-rails"
 gem "hashid-rails", "~> 1.0"
 gem 'activerecord-session_store'
 gem 'autonumeric-rails'
-gem 'axlsx', '~> 2.1.0.pre'
-# gem 'axlsx'
-gem 'axlsx_rails', '~> 0.3.0'
+gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.0.0'
 gem 'carrierwave', '~> 1.0'
 gem 'chartkick'
@@ -46,7 +45,7 @@ gem 'roo'
 gem 'roo-xls'
 gem 'ruby-units', '~> 2.3'
 # gem 'rubyzip', '~> 1.2.0'
-gem 'rubyzip', '~> 1.1.7'
+gem 'rubyzip'
 gem 'rut_validation'
 gem 'sass-rails', '~> 5.0'
 gem 'simple_form'

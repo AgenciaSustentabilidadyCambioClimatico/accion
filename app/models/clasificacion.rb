@@ -96,19 +96,34 @@ class Clasificacion < ApplicationRecord
     lista
   end
 
+  def mi_padre_mayor
+    if self.clasificacion_id.blank?
+      return self
+    else
+      return self.clasificacion_padre.mi_padre_mayor
+    end
+  end
+
   def acuerdos
-    self.set_metas_acciones.pluck(:flujo_id).uniq
+    manifestacion_de_intereses_ids = Flujo.where(id: self.set_metas_acciones.pluck(:flujo_id).uniq).pluck(:manifestacion_de_interes_id)
+    ManifestacionDeInteres.where(id: manifestacion_de_intereses_ids).where("firma_fecha IS NOT NULL")
   end
 
   def set_metas_acciones
-    SetMetasAccion.joins("INNER JOIN accion_clasificaciones ON accion_clasificaciones.accion_id = set_metas_acciones.accion_id INNER JOIN materia_sustancia_clasificaciones ON materia_sustancia_clasificaciones.materia_sustancia_id = set_metas_acciones.materia_sustancia_id")
-                  .where("accion_clasificaciones.clasificacion_id = #{self.id} OR materia_sustancia_clasificaciones.clasificacion_id =  #{self.id}")
+    ids = todos_mis_hijos(true)
+    SetMetasAccion.joins("LEFT JOIN accion_clasificaciones ON accion_clasificaciones.accion_id = set_metas_acciones.accion_id LEFT JOIN materia_sustancia_clasificaciones ON materia_sustancia_clasificaciones.materia_sustancia_id = set_metas_acciones.materia_sustancia_id")
+                  .joins("INNER JOIN flujos ON flujos.id = set_metas_acciones.flujo_id INNER JOIN manifestacion_de_intereses ON manifestacion_de_intereses.id = flujos.manifestacion_de_interes_id")
+                  .where("accion_clasificaciones.clasificacion_id IN (#{ids.join(",")}) OR materia_sustancia_clasificaciones.clasificacion_id  IN (#{ids.join(",")})")
+                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL")
                   .distinct
   end
 
   def set_metas_acciones_de_meta
-    SetMetasAccion.joins("INNER JOIN acciones ON acciones.id = set_metas_acciones.accion_id INNER JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id")
-                  .where("acciones.meta_id = #{self.id} OR materia_sustancias.meta_id =  #{self.id}")
+    ids = todos_mis_hijos(true)
+    SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id")
+                  .joins("INNER JOIN flujos ON flujos.id = set_metas_acciones.flujo_id INNER JOIN manifestacion_de_intereses ON manifestacion_de_intereses.id = flujos.manifestacion_de_interes_id")
+                  .where("acciones.meta_id IN (#{ids.join(",")}) OR materia_sustancias.meta_id IN (#{ids.join(",")})")
+                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL")
                   .distinct
   end
 
@@ -138,17 +153,20 @@ class Clasificacion < ApplicationRecord
   end
 
   def set_metas_acciones_comprometidas(manifestacion_de_interes)
+    ids = todos_mis_hijos(true)
     SetMetasAccion.joins("LEFT JOIN accion_clasificaciones ON accion_clasificaciones.accion_id = set_metas_acciones.accion_id LEFT JOIN materia_sustancia_clasificaciones ON materia_sustancia_clasificaciones.materia_sustancia_id = set_metas_acciones.materia_sustancia_id")
-                  .where("accion_clasificaciones.clasificacion_id = #{self.id} OR materia_sustancia_clasificaciones.clasificacion_id =  #{self.id}")
+                  .where("accion_clasificaciones.clasificacion_id IN (#{ids.join(",")}) OR materia_sustancia_clasificaciones.clasificacion_id IN (#{ids.join(",")})")
                   .where("set_metas_acciones.flujo_id = #{manifestacion_de_interes.flujo.id}")
+                  .distinct
                   
     #SetMetasAccion.where(meta_id: self.todos_mis_hijos(true, false)).where(flujo_id: manifestacion_de_interes.flujo.id)
   end
 
   def set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes)
     SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id")
-                  .where("acciones.meta_id = #{self.id} OR materia_sustancias.meta_id =  #{self.id} OR set_metas_acciones.meta_id = #{self.id}")
+                  .where("acciones.meta_id = #{self.id} OR materia_sustancias.meta_id = #{self.id} OR set_metas_acciones.meta_id = #{self.id}")
                   .where("set_metas_acciones.flujo_id = #{manifestacion_de_interes.flujo.id}")
+                  .distinct
                   
     #SetMetasAccion.where(meta_id: self.todos_mis_hijos(true, false)).where(flujo_id: manifestacion_de_interes.flujo.id)
   end

@@ -32,16 +32,17 @@
                       %td
                         -if !manif_de_interes.diagnostico_de_acuerdo_anterior.blank? && @datos_publicos.visibilidad_documentos.include?("1")
                           %div.text-nowrap
-                            =link_to "Documento 1", manif_de_interes.diagnostico_de_acuerdo_anterior.url
+                            =link_to "Documento Diagnóstico", manif_de_interes.diagnostico_de_acuerdo_anterior.url
                         -if !manif_de_interes.documento_diagnosticos.blank? && @datos_publicos.visibilidad_documentos.include?("2")
                           %div.text-nowrap
-                            =link_to "Documento 2", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, manif_de_interes,acuerdo_id: manif_de_interes.id)
+                            =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, manif_de_interes,acuerdo_id: manif_de_interes.id)
                         -if !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.archivos_anexos.blank? && @datos_publicos.visibilidad_documentos.include?("3")
                           %div.text-nowrap
-                            =link_to "Documento 3", desacarga_zip_path(clase: "InformeAcuerdo", objeto_id: manif_de_interes.informe_acuerdo, atributo: "archivos_anexos")
+                            =#link_to "Informe de Acuerdo", desacarga_zip_path(clase: "InformeAcuerdo", objeto_id: manif_de_interes.informe_acuerdo, atributo: "archivos_anexos")
+                            =link_to "Documento de Acuerdos y anexos", obtener_archivo_acuerdo_anexos_zip_path(manif_de_interes.flujo.id)
                         -if !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.documento.blank? && @datos_publicos.visibilidad_documentos.include?("4")
                           %div.text-nowrap
-                            =link_to "Documento 4", manif_de_interes.informe_impacto.documento.url
+                            =link_to "Informe de Impacto", manif_de_interes.informe_impacto.documento.url
 
                       %td
                         .d-flex.align-items-center{style: "white-space: nowrap;"}

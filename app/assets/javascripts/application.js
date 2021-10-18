@@ -395,8 +395,8 @@ function __tooltip(options) {
   $('.tooltip-block').tooltip(options)//.tooltip('show');
 }
 
-function checkRutValidity() {
-  rut = $.trim($('.identificacion').val());
+function checkRutValidity(input) {
+  rut = $.trim(input.val());
   return Fn.validaRut(rut);
 }
 
@@ -405,9 +405,9 @@ function validarRutEnTiempoReal(mensaje) {
   $('body').on('change focusout','.identificacion',function() {
     divAcceso=$(this).parent('div');
     inputAcceso=divAcceso.find('.identificacion');
-    if (checkRutValidity()) { $('.check-validity').removeAttr('disabled');
+    if (checkRutValidity(inputAcceso)) { $('.check-validity').removeAttr('disabled');
     } else { $('.check-validity').attr('disabled','disabled'); }
-    if ( $(this).val() == "" || checkRutValidity() ) {
+    if ( $(this).val() == "" || checkRutValidity(inputAcceso) ) {
       divAcceso.removeClass('error field_with_errors');
       inputAcceso.removeClass('border-error');inputAcceso.tooltip('hide');
       inputAcceso.removeAttr('title');inputAcceso.siblings('span.error').hide().tooltip('destroy');
@@ -476,7 +476,7 @@ function getAllTheChecks(e) {
   c={}
   c['is_not_checked'] = ( $(e).is(':checkbox') && ! $(e).prop('checked') );
   c['is_a_empty_value'] = ( ! $(e).val() );
-  c['is_an_invalid_id'] = ($(e).hasClass('identificacion') && checkRutValidity()==false);
+  c['is_an_invalid_id'] = ($(e).hasClass('identificacion') && checkRutValidity($(e))==false);
   c['is_a_empty_file'] = ( $(e).is(':file') && $(e).get(0).files.length == 0 );
   return c
 }

@@ -270,7 +270,7 @@
     - if @tarea.codigo == Tarea::COD_APL_038
       = link_to t(:volver), edit_tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria), class: 'btn btn-warning btn-sm' 
     - elsif @convocatoria.tarea_codigo != Tarea::COD_APL_021
-      = link_to t(:listado_convocatorias), tarea_pendiente_convocatorias_path(@tarea_pendiente_convocatoria), class: 'btn btn-warning btn-sm' 
+      = link_to t(:listado_convocatorias), tarea_pendiente_convocatorias_path(@tarea_pendiente, @convocatoria), class: 'btn btn-warning btn-sm' 
     - if (@minuta.plazo_vigente?(@minuta.fecha_acta) && !@convocatoria.terminada) || (@convocatoria.tarea_codigo == Tarea::COD_APL_021)
       = button_tag t(:enviar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
     %br

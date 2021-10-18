@@ -916,6 +916,8 @@ es:
   instancia: Instancias de la tarea
   comuna_establecimiento: Comuna del establecimiento
   direccion_establecimiento: Dirección del establecimiento
+  comuna_elemento: Comuna del elemento
+  direccion_elemento: Dirección del elemento
   nombre_encargado: Nombre encargado
   fono_encargado: Teléfono encargado
   mail_encargado: eMail encargado
@@ -1418,6 +1420,7 @@ es:
   instrucciones_de_llenado_excel_consolidado_de_adhesiones: Instrucciones de llenado excel Consolidado de adhesiones
   formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
   formulario_de_adhesion: Formulario de adhesión
+  documentación: Documentación
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio

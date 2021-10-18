@@ -17,6 +17,8 @@ class Persona < ApplicationRecord
 
   attr_accessor :establecimientos_data
 
+  scope :sin_temporales, -> { joins(:contribuyente).where(contribuyentes: {temporal: false}) }
+
 
   
   def contribuyente

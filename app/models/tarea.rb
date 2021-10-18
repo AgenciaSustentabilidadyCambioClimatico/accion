@@ -45,7 +45,7 @@ class Tarea < ApplicationRecord
     descargables = {}
     self.descargable_tareas.each do |desc|
       if ((desc.archivo.path.present? && File.exist?(desc.archivo.path)) || (!desc.subido && desc.contenido.present?))
-        descargables[desc.codigo] = { nombre: desc.nombre, args: [id,self,desc] } 
+        descargables[desc.codigo] = { nombre: desc.nombre, args: [id,desc.id] } 
       end
     end
     descargables
@@ -212,7 +212,9 @@ class Tarea < ApplicationRecord
 	ID_APL_023			= 61  # - APL-023- Actualizar Miembros Comité Coordinador y Acuerdo
 	ID_APL_024			= 60  # - APL-024- Asignar Usuario a Cargar Entregables y Cargar Datos Empresas
 	ID_APL_025			= 59  # - APL-025- Solicitar Adhesión, Admisión y Certificación
-	ID_APL_025_1		= 97  # - APL-025.1- Solicitar Adhesión, Admisión y Certificación
+	ID_APL_025_1		= 97  # - APL-025.1- Solicitar Adhesión, Admisión y Certificación no logueado
+	ID_APL_025_2		= 98  # - APL-025.2- Solicitar Adhesión, Admisión y Certificación logueado sin empresas sin ser parte de proceso
+	ID_APL_025_3		= 99  # - APL-025.3- Solicitar Adhesión, Admisión y Certificación loqgueado con empresa sin ser parte de proceso
 	ID_APL_026			= 56  # - APL-026- Notificar Cierre Procesos Acuerdos
 	ID_APL_027			= 55  # - APL-027- Elaborar y enviar reporte automatizado de Avance
 	ID_APL_028			= 54  # - APL-028- Aprobar Adhesión, Admisión y Certificación

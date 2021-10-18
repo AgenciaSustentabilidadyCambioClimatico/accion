@@ -15,8 +15,8 @@ class ApplicationController < ActionController::Base
   def desacarga_zip
     # 
     clase = params[:clase].to_s.constantize
-    objeto_id = params[:objeto_id].to_i
-    objeto = clase.find_by(id: objeto_id)
+    objeto_id = params[:objeto_id]
+    objeto = clase.find(objeto_id)
     if params[:atributo].is_a?(Array)
       atributo = params[:atributo]
     else

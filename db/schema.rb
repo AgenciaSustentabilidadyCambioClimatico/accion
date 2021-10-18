@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210415145856) do
+ActiveRecord::Schema.define(version: 20210902153639) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -157,7 +157,7 @@ ActiveRecord::Schema.define(version: 20210415145856) do
     t.bigint "tipo_contribuyente_id"
     t.string "rut_representante_legal"
     t.text "nombre_representante_legal"
-    t.integer "fono_representante_legal"
+    t.bigint "fono_representante_legal"
     t.text "email_representante_legal"
     t.boolean "externa", default: false
     t.bigint "rol_id"
@@ -471,6 +471,8 @@ ActiveRecord::Schema.define(version: 20210415145856) do
     t.string "tarea_codigo"
     t.integer "tipo"
     t.text "nombre"
+    t.datetime "fecha_hora"
+    t.integer "tipo_reunion", default: 0
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
 
@@ -1055,6 +1057,10 @@ ActiveRecord::Schema.define(version: 20210415145856) do
     t.string "institucion_entregables_name"
     t.string "usuario_entregable_name"
     t.text "observaciones_propuesta_acuerdo"
+    t.integer "firma_tipo_reunion", default: 0
+    t.datetime "firma_fecha_hora"
+    t.integer "ceremonia_certificacion_tipo_reunion", default: 0
+    t.datetime "ceremonia_certificacion_fecha_hora"
   end
 
   create_table "mapa_de_actores", force: :cascade do |t|
@@ -1128,6 +1134,8 @@ ActiveRecord::Schema.define(version: 20210415145856) do
     t.datetime "fecha_acta"
     t.text "mensaje_encabezado"
     t.text "mensaje_cuerpo"
+    t.datetime "fecha_hora"
+    t.integer "tipo_reunion", default: 0
   end
 
   create_table "modalidades", force: :cascade do |t|
@@ -1511,6 +1519,7 @@ ActiveRecord::Schema.define(version: 20210415145856) do
     t.text "descripcion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "mostrar_en_excel", default: true
   end
 
   create_table "sessions", force: :cascade do |t|

@@ -67,7 +67,7 @@ class MapaDeActor < ApplicationRecord
 			persona_cargo.each do |p|
 				institucion = persona.contribuyente
 				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
-				dato_anual = institucion.dato_anual_contribuyentes.order(periodo: :desc).first
+				dato_anual = institucion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
 				establecimiento = institucion.establecimiento_contribuyentes.where(casa_matriz: true).blank? ?
 					institucion.establecimiento_contribuyentes.first :
 					institucion.establecimiento_contribuyentes.where(casa_matriz: true).first

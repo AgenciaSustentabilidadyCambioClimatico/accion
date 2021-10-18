@@ -50,6 +50,7 @@ class HomeController < ApplicationController
   def solicitar_adhesion_guardar
     @adhesion.assign_attributes(adhesion_params)
     @adhesion.current_user = current_user
+    @adhesion.tarea_id = @tarea.id
     respond_to do |format|
       if @adhesion.save
         #abro tarea 28 si esque no esta abierta
@@ -89,12 +90,17 @@ class HomeController < ApplicationController
       @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
       clasificaciones_ids = []
       if @vista == "clasificaciones"
-        clasificaciones_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
+        clasif_ids = []
+        clasif_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
                                                   .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
                                                   .pluck("accion_clasificaciones.clasificacion_id")
-        clasificaciones_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
+        clasif_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
                                                   .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
                                                   .pluck("materia_sustancia_clasificaciones.clasificacion_id")
+        Clasificacion.where(id: clasif_ids).each do |clasif|
+          clasificaciones_ids << clasif.mi_padre_mayor.id
+        end
+        clasificaciones_ids.uniq
       else
         clasificaciones_ids += Accion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = acciones.id")
                                       .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
@@ -105,6 +111,7 @@ class HomeController < ApplicationController
         clasificaciones_ids += SetMetasAccion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:meta_id)
       end
       @clasificaciones_del_acuerdo = Clasificacion.where(id: clasificaciones_ids)
+
     end
   end
 
@@ -151,7 +158,8 @@ class HomeController < ApplicationController
 
   def datos_header_no_signed
     if !user_signed_in?
-      @acuerdos_firmados = ManifestacionDeInteres.where.not(firma_fecha: nil).count
+      manif_de_intereses_firmadas = ManifestacionDeInteres.where.not(firma_fecha: nil)
+      @acuerdos_firmados = manif_de_intereses_firmadas.count
       @empresas_adheridas = []
       @empresas_certificadas = []
       ManifestacionDeInteres.all.each do |manif_de_interes|
@@ -164,7 +172,7 @@ class HomeController < ApplicationController
       end
       @empresas_adheridas = @empresas_adheridas.uniq.length
       @empresas_certificadas = @empresas_certificadas.uniq.length
-      flujos = Flujo.where.not(manifestacion_de_interes_id: nil)
+      flujos = Flujo.where(manifestacion_de_interes_id: manif_de_intereses_firmadas.pluck(:id))
       @acciones = SetMetasAccion.where(flujo_id: flujos.pluck(:id)).count
     end
   end
@@ -176,7 +184,30 @@ class HomeController < ApplicationController
     #@todas = @adhesion.adhesiones_todas_propietario()
     #tarea pendiente 025
     @tarea_pendiente = TareaPendiente.where(flujo_id: @flujo.id, tarea_id: Tarea::ID_APL_025).first
-    @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    if current_user.nil?
+      @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    elsif current_user.personas.count == 0
+      @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    else
+      @tarea = Tarea.find(Tarea::ID_APL_025_3)
+      @contribuyentes = []
+      Contribuyente.includes(:personas).where(personas: {user_id: current_user.id}).each do |c|
+        casa_matriz = c.establecimiento_contribuyentes.where(casa_matriz: true).first
+        dato_anual = c.dato_anual_contribuyentes.first
+        @contribuyentes << [
+          "#{c.rut}-#{c.dv} | #{c.razon_social}",
+          c.id,
+          {
+            "data-rut": "#{c.rut}-#{c.dv}",
+            "data-nombre": c.razon_social,
+            "data-matriz-direccion": casa_matriz.nil? ? '' : casa_matriz.direccion,
+            "data-matriz-region-id": casa_matriz.nil? ? '' : casa_matriz.region_id,
+            "data-matriz-comuna-id": casa_matriz.nil? ? '' : casa_matriz.comuna_id,
+            "data-tipo-contribuyente-id": dato_anual.nil? ? '' : dato_anual.tipo_contribuyente_id
+          }
+        ]
+      end
+    end
     @descargables = @tarea.get_descargables
     @regiones = Region.all
     @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
@@ -185,6 +216,7 @@ class HomeController < ApplicationController
   def adhesion_params
     params.require(:adhesion).permit(
       :rut_institucion_adherente, :nombre_institucion_adherente, :matriz_direccion, :matriz_region_id, :matriz_comuna_id,:tipo_contribuyente_id,
+      :contribuyente_id,
       :rut_representante_legal, :nombre_representante_legal, :fono_representante_legal, :email_representante_legal,
       :archivo_elementos,
       :archivo_elementos_cache,

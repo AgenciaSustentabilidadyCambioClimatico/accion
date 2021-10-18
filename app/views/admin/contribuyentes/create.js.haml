@@ -1,7 +1,7 @@
 -if @contribuyente.temporal
   $('#body-contribuyente-buscador').html("#{j render 'admin/contribuyentes/form_temporal', cont_temporal: @contribuyente_temporal}");
   -if @contribuyente_temporal.errors.blank? && @error_extra.blank?
-    $('#buscar-contribuyente#{custom_id}').modal("hide");
+    $('#buscar-contribuyente#{@custom_id}').modal("hide");
     $("#manifestacion_de_interes_contribuyente_id").val(#{@contribuyente_temporal.id});
     $("#manifestacion_de_interes_contribuyente_id").change();
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");

@@ -15,6 +15,9 @@ class Adhesion < ApplicationRecord
 	#skip_callback :commit, :after, :remove_previously_stored_archivos_adhesion_y_documentacion
 
 	#before_save :remove_no_used_files
+	before_save :normalizar_ruts, if: -> { externa }
+
+	before_validation :load_contribuyente, if: -> { !contribuyente_id.blank? }
 
 	validates :archivos_adhesion_y_documentacion, presence: true, if: -> { externa }
 	validates :archivo_elementos, presence: true, if: -> { externa }
@@ -22,8 +25,9 @@ class Adhesion < ApplicationRecord
 	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
 	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
 	#tareas 25
-	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present?}
-	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present?}
+	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
+	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
+	validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
 	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :nombre_representante_legal,:fono_representante_legal, presence: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
@@ -34,14 +38,29 @@ class Adhesion < ApplicationRecord
 	attr_accessor :aceptado, :observacion, :tipo, :is_ppf
 	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
 	attr_accessor :documento_justificacion, :elemento_retirado_id, :validar_retirar
+	attr_accessor :contribuyente_id #para tarea 25.3
 
 	#para tareas 25
-	attr_accessor :current_user, :tarea
+	attr_accessor :current_user, :tarea_id
 
 	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
 
 
 	default_scope { where(externa: false) }
+
+	def load_contribuyente
+		contribuyente = Contribuyente.find(self.contribuyente_id)
+		casa_matriz = contribuyente.establecimiento_contribuyentes.where(casa_matriz: true).first
+		dato_anual = contribuyente.dato_anual_contribuyentes.first
+		self.rut_institucion_adherente = "#{contribuyente.rut}-#{contribuyente.dv}"
+		self.nombre_institucion_adherente = contribuyente.razon_social
+		if !casa_matriz.nil?
+			self.matriz_direccion = casa_matriz.direccion
+			self.matriz_region_id = casa_matriz.region_id
+			self.matriz_comuna_id = casa_matriz.comuna_id
+		end
+		self.tipo_contribuyente_id = dato_anual.tipo_contribuyente_id if !dato_anual.nil?
+	end
 
   def normalizar_ruts
     self.rut_institucion_adherente = self.rut_institucion_adherente.to_s.upcase.gsub(/[^0-9\-K]/,'') unless self.rut_institucion_adherente.blank?
@@ -49,23 +68,26 @@ class Adhesion < ApplicationRecord
   end
 
 	def validar_datos_tareas_25
-		if current_user.nil? && !errors.key?(:rut_representante_legal)
-			user = User.find_by(rut: rut_representante_legal.gsub(".",""))
-			errors.add(:rut_representante_legal, "Usuario ya existe en plataforma. Por favor ingrese para solicitar adhesiones") if !user.nil?
+		if self.tarea_id == Tarea::ID_APL_025_1
+			if current_user.nil? && !errors.key?(:rut_representante_legal)
+				user = User.find_by(rut: rut_representante_legal.gsub(".",""))
+				errors.add(:rut_representante_legal, "Usuario ya existe en plataforma. Por favor ingrese para solicitar adhesiones") if !user.nil?
+			end
 		end
 
-		if !errors.key?(:rut_institucion_adherente)
-			contribuyente = Contribuyente.find_by(rut: rut_institucion_adherente.gsub(".","").split("-").first)
-			if !contribuyente.nil?
-				personas = Responsable.__personas_responsables_v2(rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente.id)
-				if personas.length > 0
-					nombre_responsable = personas.first.user.nombre_completo
-					errors.add(:rut_institucion_adherente, "Institución ya existe en plataforma y tiene asociado un responsable, por favor contactarse con #{nombre_responsable} para que solicite adhesiones") 
+		if self.tarea_id =! Tarea::ID_APL_025
+			if !errors.key?(:rut_institucion_adherente)
+				contribuyente = Contribuyente.find_by(rut: rut_institucion_adherente.gsub(".","").split("-").first)
+				if !contribuyente.nil?
+					personas = Responsable.__personas_responsables_v2(rol_id, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente.id)
+					if personas.length > 0 && !personas.map{|p| p.user_id}.include?(current_user.id)
+						nombre_responsable = personas.first.user.nombre_completo
+						errors.add(:rut_institucion_adherente, "Institución ya existe en plataforma y tiene asociado un responsable, por favor contactarse con #{nombre_responsable} para que solicite adhesiones") 
+					end
 				end
 			end
 		end
 	end
-
 
 	def self.columnas_excel
 		{
@@ -220,6 +242,8 @@ class Adhesion < ApplicationRecord
 						# errores[:rut_encargado] << fila[:rut_encargado]
 						# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)} es inválido")
 						errores[:rut_encargado] << " El RUT del encargado para la línea #{(posicion+2)} es inválido"	
+					elsif externa && rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "") != rut_encargado
+						errores[:rut_encargado] << " Sólo puede solicitar adhesiones para representante señalado, por favor corregir RUT representante en archivo Excel, para la fila #{(posicion+2)}"
 					else 
 						user = User.find_by(rut: rut_encargado, email: fila[:email_encargado].to_s)
 						if user.blank?
@@ -250,7 +274,7 @@ class Adhesion < ApplicationRecord
 					end
 
 					if Alcance.find_by(nombre: fila[:alcance]).blank?
-						alcances_invalidos << fila[:alcance]
+						errores[:alcance] << "Alcance definido en línea #{(posicion+2)} es incorrecto"#fila[:alcance]
 					else
 						if is_ppf
 							if fila[:alcance].to_s == "Establecimiento"
@@ -439,7 +463,7 @@ class Adhesion < ApplicationRecord
 		self.adhesion_elementos.each do |ae|
 			filas << ae.fila.except(:revisado, :observaciones)
 		end
-		unless self.new_record?
+		if !self.new_record? && !self.adhesiones_data.blank?
 			self.adhesiones_data.select{|fila| 
 				fila[:revisado] == true #&& !filas.include?(fila.except(:revisado, :observaciones))
 			}
@@ -450,11 +474,11 @@ class Adhesion < ApplicationRecord
 
 	#Son todas aquellas adhesiones que no han sido aprobadas.-
 	def adhesiones_por_revisar
-		self.new_record? ? [] : self.adhesiones_data.select{|v| v[:revisado] == false}
+		self.new_record? || self.adhesiones_data.blank? ? [] : self.adhesiones_data.select{|v| v[:revisado] == false}
 	end
 
 	def adhesiones_pendientes
-		if self.persisted?
+		if self.persisted? && !self.adhesiones_data.blank?
 			self.adhesiones_data.select{|fila| fila[:revisado] == false && fila[:observaciones] == nil }
 		else
 			[]
@@ -462,7 +486,7 @@ class Adhesion < ApplicationRecord
 	end
 
 	def adhesiones_observadas
-		if self.persisted?
+		if self.persisted? && !self.adhesiones_data.blank?
 			self.adhesiones_data.select{|fila| fila[:revisado] == false && fila[:observaciones] != nil }
 		else
 			[]
@@ -848,6 +872,15 @@ class Adhesion < ApplicationRecord
 				persona_cargo.save(validate: false)
 			end
 		end
+		#genero tarea pendiente 25, no importa si esta aceptado, pasa a funcionar igual que en el flujo
+		tp = TareaPendiente.find_or_create_by({
+			flujo_id: self.flujo_id, 
+			tarea_id: Tarea::ID_APL_025, 
+			estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
+			user_id: propietario_user.id, 
+			data: {},
+			persona_id: propietario_persona.id
+		})
 
 		
 	end

@@ -9,10 +9,12 @@ class EstablecimientoContribuyente < ApplicationRecord
 	belongs_to :comuna, optional: true
 	has_many :adhesion_elementos
 	has_many :adhesiones, through: :adhesion_elementos
+  has_many :personas
+  has_many :persona_cargos
 
   validates :contribuyente, presence: true
 	validates :direccion, presence: true
-	validates :ciudad, presence: true
+	validates :ciudad, presence: true, if: -> { !marked_for_destruction? }
 	validates :region, presence: true
 	validates :comuna, presence: true
   validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> {! self.email.blank? && !contribuyente.temporal}
@@ -26,6 +28,10 @@ class EstablecimientoContribuyente < ApplicationRecord
   
   def contribuyente
     super || (Contribuyente.unscoped.find(self.contribuyente_id) if self.contribuyente_id.present?)
+  end
+
+  def no_esta_referenciado
+    return adhesion_elementos.count == 0 && personas.count == 0 && persona_cargos.count == 0
   end
 
 	def nombre_and_direccion

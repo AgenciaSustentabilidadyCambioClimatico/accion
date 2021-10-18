@@ -1,5 +1,7 @@
 class ActividadEconomica < ApplicationRecord
 
+  has_many :actividad_economica_contribuyentes
+
 	#validates :codigo_ciiuv2, presence: true
 	#validates :descripcion, presence: true
 	#validates :descripcion_ciiuv2, presence: true

@@ -1,4 +1,5 @@
 :javascript
+  const dt = new DataTransfer();
   $(document).ready(function(){
     $("#adhesiones_rechazadas").DataTable({
       responsive: true,
@@ -7,7 +8,34 @@
         url: "#{asset_path('spanish.json')}"
       },
     });
+    $('#adhesion_archivos_adhesion_y_documentacion').change(function(e){
+      for (let file of this.files) {
+        dt.items.add(file);
+      }
+      this.files = dt.files;
+      render_files();
+    });
   });
+
+  $(document).on('click', '.remove-file', function(e){
+    e.preventDefault();
+    $(this).parents('.list-group-item').remove();
+    dt.items.remove(parseInt($(this).attr("href")));
+    $('#adhesion_archivos_adhesion_y_documentacion')[0].files = dt.files;
+    render_files();
+  });
+
+  function render_files(){
+    $('#list_files').empty();
+    $.each(dt.items, function(index, elem){
+      li = '<li class="list-group-item">';
+      li += '<div class="d-flex align-items-center justify-content-between">';
+      li += elem.getAsFile().name;
+      li += '<a href="'+index+'" class="remove-file"><i class="fa fa-trash"></i></a>';
+      li += '</li>';
+      $('#list_files').append(li);
+    });
+  }
 -if @flujo.apl?
   - titulo t(:solicitud_de_adhesiones)
 -if @flujo.ppf?
@@ -38,8 +66,8 @@
                 %th=t(:nombre_institución)
                 %th=t(:alcance)
                 %th=t(:nombre_elemento)
-                %th=t(:comuna_establecimiento)
-                %th=t(:direccion_establecimiento)
+                %th=t(:comuna_elemento)
+                %th=t(:direccion_elemento)
                 %th=t(:datos_encargado)
                 %th=t(:observaciones)
                 %th=t(:estado)
@@ -80,6 +108,8 @@
             .col-12
               = f.input :archivos_adhesion_y_documentacion, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
               = f.hidden_field :archivos_adhesion_y_documentacion_cache
+            .col-12
+              %ul.list-group#list_files
             .col-12
               = f.input :archivo_elementos, label: t(:archivo_elementos_adheridos), as: :file, required: true, input_html: {class: "required-field form-control auto-save "}
               = f.hidden_field :archivo_elementos_cache

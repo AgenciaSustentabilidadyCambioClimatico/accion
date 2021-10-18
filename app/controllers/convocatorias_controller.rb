@@ -128,7 +128,39 @@ class ConvocatoriasController < ApplicationController
 
 	#**descarga de archivos copiado desde rendicion_actividades_controler.descargar_tecnicas
 	def descargar_adjuntos
-			send_data(@convocatoria.genera_zip(@convocatoria.archivo_adjunto), type: 'application/zip',filename: "archivos_adjuntos.zip")
+		require 'zip'
+		archivos = []
+		archivos += @convocatoria.archivo_adjunto if !@convocatoria.archivo_adjunto.blank?
+		if !@convocatoria.minuta.nil?
+			archivos << @convocatoria.minuta.lista_asistencia if !@convocatoria.minuta.lista_asistencia.blank?
+			archivos << @convocatoria.minuta.acta if !@convocatoria.minuta.acta.blank?
+		end
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      archivos.each do |archivo|
+        if archivo.is_a?(String)
+          archivo_path = "#{Rails.root}/public#{archivo}"
+          if File.exists?(archivo_path)
+            split = archivo_path.split('/')
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read(archivo_path)
+          end
+        else
+          if File.exists?(archivo.path)
+            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip.rewind
+		send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos.zip")
 	end
 
 	#DZC REVISAR UTILIDAD

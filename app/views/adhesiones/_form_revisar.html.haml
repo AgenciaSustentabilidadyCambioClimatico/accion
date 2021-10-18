@@ -184,9 +184,10 @@
                 %th=t(:nombre_institución)
                 %th=t(:alcance)
                 %th=t(:nombre_elemento)
-                %th=t(:comuna_establecimiento)
-                %th=t(:direccion_establecimiento)
+                %th=t(:comuna_elemento)
+                %th=t(:direccion_elemento)
                 %th=t(:datos_encargado)
+                %th=t(:documentación)
                 %th=t(:estado)
                 %th=t(:seleccionar)
             %tbody
@@ -204,6 +205,9 @@
                       %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
                       %div{style: "white-space: nowrap"}=fila[:fono_encargado]
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                    %td.text-center
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id), class: 'btn btn-tabla' do
+                        %i.fa.fa-download
                     %td
                       %label.estado-elem Pendiente
                       = f.input :aceptado, as: :hidden, input_html: { name: "aceptado[#{adhesion_id}|#{posicion}]", class: "elemento-estado"}, wrapper: false

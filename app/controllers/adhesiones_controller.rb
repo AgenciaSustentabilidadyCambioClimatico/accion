@@ -212,10 +212,35 @@ class AdhesionesController < ApplicationController
   def descargar_compilado
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      if params[:aid].blank?
+        @adhesiones.each do |adhesion|
+          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+            if File.exists?(archivo.path)
+              #nombre = archivo.file.identifier
+              if adhesion.externa
+                nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+              else
+                c = adhesion.flujo.manifestacion_de_interes.contribuyente
+                nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+              end
+              # rename the file
+              stream.put_next_entry(nombre)
+              # add file to zip
+              stream.write IO.read((archivo.current_path rescue archivo.path))
+            end
+          end
+        end
+      else
+        adhesion = Adhesion.unscoped.find(params[:aid])
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
-            nombre = archivo.file.identifier
+            #nombre = archivo.file.identifier
+            if adhesion.externa
+              nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+            else
+              c = adhesion.flujo.manifestacion_de_interes.contribuyente
+              nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+            end
             # rename the file
             stream.put_next_entry(nombre)
             # add file to zip
@@ -282,7 +307,8 @@ class AdhesionesController < ApplicationController
 			@descargables = @tarea_pendiente.get_descargables
       # @adhesion = Adhesion.find_by(manifestacion_de_interes_id: @manifestacion_de_interes.id)
       
-      @adhesion = Adhesion.find_by(flujo_id: @flujo.id)
+      @adhesion = Adhesion.unscoped.where(flujo_id: @flujo.id, rut_representante_legal: current_user.rut, externa: true).first if user_signed_in?
+      @adhesion = Adhesion.where(flujo_id: @flujo.id).first if @adhesion.nil?
 			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
       @rechazadas = @adhesion.adhesiones_rechazadas
       @pendientes = @adhesion.adhesiones_pendientes
@@ -320,7 +346,7 @@ class AdhesionesController < ApplicationController
     def set_crea_archivo
       titulos = Adhesion.columnas_excel
       datos = []
-      if [Tarea::ID_APL_025_1].include?(@tarea.id)
+      if [Tarea::ID_APL_025_1,Tarea::ID_APL_025_2,Tarea::ID_APL_025_3].include?(@tarea.id)
         data_primera_fila = [
           "",
           params[:ri],#rut institucionm

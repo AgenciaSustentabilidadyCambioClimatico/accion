@@ -101,7 +101,7 @@ class Contribuyente < ApplicationRecord
 
 	def tipo_contribuyente
 		tipo_string = "Tipo contribuyente no informado"
-		tc = dato_anual_contribuyentes.order(periodo: :desc).first
+		tc = dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
 		unless tc.blank?
 			tipo_string = tc.tipo_contribuyente.nombre
 		end
@@ -110,7 +110,7 @@ class Contribuyente < ApplicationRecord
 
 	def tipo_contribuyente_id
 		tipo_id = nil
-		tc = dato_anual_contribuyentes.order(periodo: :desc).first
+		tc = dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
 		unless tc.blank?
 			tipo_id = tc.tipo_contribuyente.id
 		end

@@ -129,7 +129,7 @@
 
 - url = ''
 - if @set_metas_accion.new_record?
-  - url = tarea_pendiente_manifestacion_de_interes_set_metas_acciones_path(@tarea_pendiente,@manifestacion_de_interes,@set_metas_accion, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: @set_metas_accion.anexo)
+  - url = tarea_pendiente_manifestacion_de_interes_set_metas_acciones_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: @set_metas_accion.anexo)
 - else
   - url = tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,@set_metas_accion, accion: @manifestacion_de_interes.accion_en_set_metas_accion)
 -#DZC se programa interacción de comentarios entre observaciones y respuestas por propuesta específica 

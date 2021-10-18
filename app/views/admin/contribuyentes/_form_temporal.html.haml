@@ -96,7 +96,7 @@
                             %tr.fields.desactivado{style: style}
                               %td.no-padding.casa-matriz=establ.input :casa_matriz, as: :boolean, label: false, input_html: { class: 'checkbox-casa-matriz'}
                               %td.no-padding.direccion=establ.input :direccion, input_html: { class: 'form-control establ-direccion form-temporal-boton-guardar'}, label: false
-                              %td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras establ-ciudad form-temporal-boton-guardar'}, label: false
+                              %td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras establ-ciudad required form-temporal-boton-guardar'}, label: false
                               -regiones = Region.__select
                               -region_selec = establ.object.region_id.nil? ? regiones.first.last : establ.object.region_id
                               %td.no-padding.region

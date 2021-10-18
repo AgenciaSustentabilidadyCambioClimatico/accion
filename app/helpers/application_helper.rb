@@ -306,7 +306,7 @@ module ApplicationHelper
       else
 
         if tarea_pendiente.present?
-          url = ext_descargable_tarea_url(*descargables[codigo][:args], tarea_pendiente: tarea_pendiente)
+          url = ext_descargable_tarea_url(*[tarea_pendiente]+descargables[codigo][:args])
         else
           url = ext_descargable_tarea_url(*descargables[codigo][:args])
         end
