@@ -31,7 +31,12 @@ class Admin::EncuestasController < ApplicationController
       if @encuesta.save
         format.js { 
           flash.now[:success] = 'Encuesta correctamente creada.'
-          @encuesta = Encuesta.new
+          
+          if @preguntas_base.size > 0
+            @encuesta = Encuesta.new(@encuesta_params_base)
+          else
+            @encuesta = Encuesta.new
+          end
         }
         format.html { redirect_to edit_admin_encuesta_url(@encuesta), notice: 'Encuesta correctamente creada.' }
       else

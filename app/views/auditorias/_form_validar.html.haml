@@ -1,4 +1,19 @@
 :javascript
+
+
+  function cambio_estado_check(){
+    check_length = $('.seleccionar-elemento-auditoria:checked').length
+    total_length = $('.seleccionar-elemento-auditoria').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
+  }
+
   $(document).ready(function() {
     htmlErrorToTooltip('top');
     $('.estado').change(function(){
@@ -7,7 +22,17 @@
 
 
     $('.seleccionar-elemento-auditoria').click(function(){
-      $('#boton_clasificar').prop('disabled', ($('.seleccionar-elemento-auditoria:checked').length == 0));
+      cambio_estado_check();
+    });
+
+    $('#boton_sel_todos').click(function(){
+      $('.seleccionar-elemento-auditoria').prop("checked", true);
+      cambio_estado_check();
+    });
+
+    $('#boton_desel_todos').click(function(){
+      $('.seleccionar-elemento-auditoria').prop("checked", false);
+      cambio_estado_check();
     });
 
     $('#auditoria_estado_elementos').change(function(){
@@ -96,7 +121,10 @@
         .card-header
           .d-flex.justify-content-between.align-items-center
             %h5.no-margin=t(:elementos_observados_o_rechazados)
-            %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Validar
+            %div
+              %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Validar
+              %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+              %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
         .card-body.p-0
           %table.table.table-striped.table-bordered.m-0#auditorias_por_validar{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
             %thead

@@ -181,15 +181,24 @@ class AdhesionesController < ApplicationController
     aer.otro_id = ae.otro_id
     aer.fila = fila
     #copiar archivos
-    aer.archivo_adhesion = File.open(ae.archivo_adhesion.file.file) if ae.archivo_adhesion.present?
-    aer.archivo_respaldo = File.open(ae.archivo_respaldo.file.file) if ae.archivo_respaldo.present?
+    #aer.archivo_adhesion = File.open(ae.archivo_adhesion.file.file) if ae.archivo_adhesion.present?
+    #aer.archivo_respaldo = File.open(ae.archivo_respaldo.file.file) if ae.archivo_respaldo.present?
     aer.archivo_retiro = params[:adhesion][:documento_justificacion]
 
     respond_to do |format|
 
       if aer.valid?
         aer.save
-        AuditoriaElemento.where(adhesion_elemento_id: ae.id).update_all(adhesion_elemento_id: nil)
+        begin
+          AuditoriaElemento.where(adhesion_elemento_id: ae.id).destroy_all
+        rescue
+          AuditoriaElemento.where(adhesion_elemento_id: ae.id).update_all(adhesion_elemento_id: nil)
+        end
+        begin
+          DatoProductivoElementoAdherido.where(adhesion_elemento_id: ae.id).destroy_all
+        rescue
+          DatoProductivoElementoAdherido.where(adhesion_elemento_id: ae.id).update_all(adhesion_elemento_id: nil)
+        end
         ae.destroy
         set_datos
 
@@ -263,11 +272,40 @@ class AdhesionesController < ApplicationController
       # DZC 2018-11-06 11:04:40 se modifica acorde a los cambios realizados en las condiciones de continuación de flujo
       # DZC 2018-11-08 14:58:14 se corrige erro en acceso a condición 'C'
        
-      if @todas.present? && @todas[:aceptada].present? && (@tarea_pendiente.data.blank? || @tarea_pendiente.data!={primera_ejecucion: true})
+      if !@aceptadas_todas.blank? && (@tarea_pendiente.data.blank? || @tarea_pendiente.data!={primera_ejecucion: true})
         #@tarea_pendiente.update(data: {primera_ejecucion: false})#no se para que se usa, no encontree el sentido
         @tarea_pendiente.pasar_a_siguiente_tarea 'C', {}, false
+
+        adhesion_base = Adhesion.find_by(flujo_id: @flujo.id)
+        if !adhesion_base.nil? && @aceptadas_todas.keys.include?(adhesion_base.id)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
+        end
+
+        auditorias = Auditoria.where(flujo_id: @flujo.id).map{|a| {auditoria_id: a.id}}
+
+        Adhesion.unscoped.where(id: @aceptadas_todas.keys, externa: true).each do |adh|
+
+          representante_legal = User.where(rut: adh.rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "")).first
+          _rut_institucion_adherente = adh.rut_institucion_adherente.gsub(".","").gsub("k","K").split('-')
+          contribuyente = Contribuyente.find_by(rut: _rut_institucion_adherente.first)
+          representante_persona = representante_legal.personas.where(contribuyente_id: contribuyente.id).first if !contribuyente.nil?
+
+
+
+          if !representante_legal.nil? && !representante_persona.nil?
+            auditorias.each do |extra|
+              tp = TareaPendiente.find_or_create_by({
+                flujo_id: @flujo.id, 
+                tarea_id: Tarea::ID_APL_032_1, 
+                estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
+                user_id: representante_legal.id, 
+                data: extra,
+                persona_id: representante_persona.id
+              })
+            end
+          end
+        end
       end
-      @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
 
       # auditorias=Auditoria.where(manifestacion_de_interes_id: @manifestacion_de_interes.id).pluck(:final)
       # @tarea_pendiente.pasar_a_siguiente_tarea 'C', {}, false
@@ -306,10 +344,20 @@ class AdhesionesController < ApplicationController
 			# @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
 			@descargables = @tarea_pendiente.get_descargables
       # @adhesion = Adhesion.find_by(manifestacion_de_interes_id: @manifestacion_de_interes.id)
-      
-      @adhesion = Adhesion.unscoped.where(flujo_id: @flujo.id, rut_representante_legal: current_user.rut, externa: true).first if user_signed_in?
-      @adhesion = Adhesion.where(flujo_id: @flujo.id).first if @adhesion.nil?
-			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
+      if @tarea_pendiente.data[:externa]
+        @adhesiones_externas = []
+        Adhesion.unscoped.where(flujo_id: @flujo.id, externa: true).each do |adh|
+          @adhesiones_externas << adh if adh.rut_representante_legal.gsub('k', 'K').gsub(".", "") == current_user.rut.gsub('k', 'K').gsub(".", "")
+        end
+      end
+      if @tarea_pendiente.data[:externa] && !params[:adhesion_externa_id].blank?
+        @adhesion = Adhesion.unscoped.where(id: params[:adhesion_externa_id]).first
+      else
+        @adhesion = Adhesion.where(flujo_id: @flujo.id).first if @adhesion.nil?
+  			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
+      end
+
+
       @rechazadas = @adhesion.adhesiones_rechazadas
       @pendientes = @adhesion.adhesiones_pendientes
       @no_pendientes = @adhesion.adhesiones_aceptadas_y_observadas
@@ -322,6 +370,7 @@ class AdhesionesController < ApplicationController
       @pendientes_todas = {}
       @no_pendientes_todas = {}
       @retiradas_todas = {}
+      @aceptadas_todas = {}
       @todas_todas = {}
       @por_revisar_todas = {}
       @adhesiones.each do |adh|
@@ -329,6 +378,8 @@ class AdhesionesController < ApplicationController
         @pendientes_todas[adh.id] = adh.adhesiones_pendientes
         @no_pendientes_todas[adh.id] = adh.adhesiones_aceptadas_y_observadas
         @retiradas_todas[adh.id] = adh.adhesiones_retiradas
+        _adh_aceptadas = adh.adhesiones_aceptadas_mias
+        @aceptadas_todas[adh.id] = _adh_aceptadas if !_adh_aceptadas.blank?
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
       end

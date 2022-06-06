@@ -6,7 +6,7 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@rol)
+						= action_label_of_(@rol, true)
 				.card-body
 					.row
 						.col-12
@@ -14,6 +14,10 @@
 							= f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre del rol", input_html: { class: 'required-field' }, required: true
 						.col-12
 							= f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Ingrese una descripción para este rol"
+						.col-12
+							.d-flex.mt-3
+								=f.input :mostrar_en_excel, label: false
+								=f.label t(:mostrar_en_excel), class: 'ml-3'
 	.float-right
 		= link_to t(:back), admin_roles_path, class: 'btn btn-sm btn-warning'
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled 

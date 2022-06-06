@@ -67,12 +67,16 @@ class Admin::MateriaSustanciasController < ApplicationController
 
     def materia_sustancia_params
       params.require(:materia_sustancia).permit(
-        :meta_id,
         :unidad_base,
         :nombre,
         :descripcion,
         :posee_una_magnitud_fisica_asociada,
         materia_sustancia_clasificaciones_attributes: [
+          :id,
+          :clasificacion_id,
+          :_destroy
+        ],
+        materia_sustancia_metas_attributes: [
           :id,
           :clasificacion_id,
           :_destroy

@@ -62,7 +62,7 @@ class Encuesta < ApplicationRecord
   end
 
   def cabecera_respuestas_excel
-    ["Nombre", "RUT", "Correo", "Fecha/Hora"] + self.preguntas_cabecera_excel
+    ["Nombre", "RUT", "Correo", "Fecha/Hora", "Institución", "Tipo institución"] + self.preguntas_cabecera_excel
   end
 
   def respuestas_por_usuario_con_datos_excel(flujo_id, tarea_pendiente_id=nil)
@@ -71,9 +71,11 @@ class Encuesta < ApplicationRecord
     user_respuestas = self.encuesta_user_respuestas.where(flujo_id: flujo_id)
     user_respuestas = user_respuestas.where(tarea_pendiente_id: tarea_pendiente_id) if !tarea_pendiente_id.nil?
     user_respuestas.order(:id).each do |respuesta|
+      institucion = (respuesta.user.personas.first.contribuyente.razon_social rescue "")
+      tipo_institucion = (respuesta.user.personas.first.contribuyente.dato_anual_contribuyentes.first.tipo_contribuyente.nombre rescue "")
       #agrupamos por usuario
       
-      respuestas[respuesta.user_id] = [respuesta.user.nombre_completo, respuesta.user.rut, respuesta.user.email, respuesta.created_at.strftime("%F %T")] unless respuestas.has_key?(respuesta.user_id)
+      respuestas[respuesta.user_id] = [respuesta.user.nombre_completo, respuesta.user.rut, respuesta.user.email, respuesta.created_at.strftime("%F %T"), institucion, tipo_institucion] unless respuestas.has_key?(respuesta.user_id)
       respuestas[respuesta.user_id] << respuesta.respuesta
     end
     #mostramos solo las respuestas, no el id del usuario

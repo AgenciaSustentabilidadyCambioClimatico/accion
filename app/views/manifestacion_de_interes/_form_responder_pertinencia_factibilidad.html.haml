@@ -1,13 +1,16 @@
 :javascript
   $(document).ready(function(){
 
-    $('#enviar-pertinencia-button').click(function(e){
-      $('#manifestacion_de_interes_update_respuesta_pertinencia').val(true);
+    
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
     });
-
-    $('#guardar-manifestacion-temporal-button').click(function(e){
-      $('#manifestacion_de_interes_update_respuesta_pertinencia').val(false);
-      $('#manifestacion_de_interes_temporal').val(true);
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#manifestacion_de_interes_temporal').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
     });
 
     $('#manifestacion_de_interes_resultado_pertinencia').change(function(){
@@ -106,11 +109,11 @@
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:responder_pertinencia_factibilidad)
 = simple_form_for @manifestacion_de_interes, url: responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
-  = f.hidden_field :temporal, as: :boolean, value: false
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.hidden_field :update_respuesta_pertinencia, as: :boolean, value: true
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: 'tipo-de-acuerdo-tab' }
   = f.submit "", class: 'd-none'
-  = f.input :update_respuesta_pertinencia, as: :hidden, wrapper: false, input_html: { value: "" }
-  = f.submit '', id: 'guardar-manifestacion-temporal-button', class: 'd-none'
   .row
     .col-12
       .card
@@ -179,12 +182,12 @@
                           -if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
                             .col-12.col-lg-6
                               -if !solo_lectura
-                                = f.label t(:acepta_condiciones), required: true
+                                = f.label "¿Acepta condiciones y/o compromisos?", required: true
                                 = f.input :acepta_condiciones_pertinencia, as: :radio_buttons, collection: [["Si", true],["No", false]], label: false, required: true, item_wrapper_class: :radio, item_wrapper_tag: :div
                               -else
                                 .form-group
                                   -no_data = f.object.acepta_condiciones_pertinencia.blank?
-                                  %label.control-label.string=t(:acepta_condiciones)
+                                  %label.control-label.string="¿Acepta condiciones y/o compromisos?"
                                   %p#manifestacion_de_interes_acepta_condiciones_pertinencia.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                                     =(no_data ? 'No se ingresó respuesta' : (f.object.acepta_condiciones_pertinencia ? "Si" : "No"))
                       -if @manifestacion_de_interes.resultado_pertinencia == "realiza_observaciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
@@ -213,45 +216,48 @@
                           .row
                             .col-12.col-lg-6
                               -if !solo_lectura
-                                = f.input :compromiso_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}
+                                = f.input :compromiso_pertinencia_factibilidad, as: :text, disabled: true, input_html: {rows: 4}, label: "Condiciones y/o compromisos solicitados"
                               -else
                                 .form-group
                                   -no_data = f.object.compromiso_pertinencia_factibilidad.blank?
-                                  %label.control-label.string=t(:compromiso_a_solicitar)
+                                  %label.control-label.string="Condiciones y/o compromisos solicitados"
                                   %p#manifestacion_de_interes_compromiso_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                                     =(no_data ? 'No se ingresó respuesta' : f.object.compromiso_pertinencia_factibilidad)
                             .col-12.col-lg-6
                               -if !solo_lectura
-                                =f.input :respuesta_otros_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:comentarios_sobre_condiciones_y_compromisos)
+                                =f.input :respuesta_otros_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: "Comentarios sobre condiciones y/o compromisos solicitados"
                               -else
                                 .form-group
                                   -no_data = f.object.respuesta_otros_pertinencia_factibilidad.blank?
-                                  %label.control-label.string=t(:comentarios_sobre_condiciones_y_compromisos)
+                                  %label.control-label.string="Comentarios sobre condiciones y/o compromisos solicitados"
                                   %p#manifestacion_de_interes_respuesta_otros_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                                     =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_otros_pertinencia_factibilidad)
-                      .col-12.col-lg-6
+                      .col-12.col-lg-6.align-self-end
                         -if !solo_lectura
-                          .row
+                          .row.align-items-end
                             .col-12.col-lg-6
-                              = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}
+                              = f.input :archivo_respuesta_pertinencia_factibilidad, as: :file, input_html: {class: "form-control validado"}, label: "Archivo complementario a respuesta de pertinencia y factibilidad (opcional)"
                               = f.input :archivo_respuesta_pertinencia_factibilidad_cache, as: :hidden
                             .col-12.col-lg-6
                               .form-group
                                 = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object)
                         -else
                           .form-group
-                            %label.string.control-label Archivo respuesta pertinencia factibilidad
+                            %label.string.control-label Archivo complementario a respuesta de pertinencia y factibilidad (opcional)
                             = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object, false)
 
-                      .col-12.col-lg-6
+                      .col-12.col-lg-6.align-self-end
                         .form-group
-                          %label.string.control-label Archivo pertinencia factibilidad
+                          %label.string.control-label Ficha de Manifestación de Interés
                           = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
     -if !solo_lectura
       .col-12
         .float-right
           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "enviar-pertinencia-button"
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+            %i.fa.fa-arrow-circle-right
+            =t(:enviar)
 -if !solo_lectura
   = render 'admin/users/buscador'
   - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA

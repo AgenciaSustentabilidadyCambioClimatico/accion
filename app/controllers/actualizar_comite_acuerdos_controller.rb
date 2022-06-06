@@ -107,6 +107,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
         @informe.save
         @informe.update(necesita_evidencia: true)
         audits_ids = []
+        new_audits = []
         Auditoria.where(flujo_id: @flujo.id).where.not(id: @informe.auditorias.map{|a| a[:id]}).delete_all #DZC busca y elimina los audits existentes y relacionados con esta instancia de informe, y que el usuario decidio no mantener
         @informe.auditorias.each do |aud_data|
           
@@ -125,6 +126,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
             plazo: aud_data[:plazo] #viene de modal vigencia certificacion
           })
           audits_ids << aud.id if aud.save
+          new_audits << aud if aud_data[:id] == "no"
 
           #relacionar niveles
           #si no esta en la lista es porque fue eliminado
@@ -145,7 +147,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
           end
 
         end
-        continua_flujo_segun_tipo_tarea
+        continua_flujo_segun_tipo_tarea(nil,new_audits)
         format.js{ 
           flash[:success] = "Informe guardado correctamente"
           render js: "window.location='#{r_to}'"
@@ -160,13 +162,39 @@ class ActualizarComiteAcuerdosController < ApplicationController
   end
 
   #DZC agrega al campo data de la tarea_pendiente 
-  def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
+  def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil,new_audits)
     
     if @informe.nuevo
       @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
       @informe.update(nuevo: false)
     end
-    @tarea_pendiente.pasar_a_siguiente_tarea 'D', {primera_ejecucion: true}, false
+    if !new_audits.blank?
+      @tarea_pendiente.pasar_a_siguiente_tarea 'D', {primera_ejecucion: true}, false
+
+      Adhesion.unscoped.where(flujo_id: @flujo.id, externa: true).each do |adh|
+        if !adh.adhesiones_aceptadas_mias.blank?
+          representante_legal = User.where(rut: adh.rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "")).first
+          _rut_institucion_adherente = adh.rut_institucion_adherente.gsub(".","").gsub("k","K").split('-')
+          contribuyente = Contribuyente.find_by(rut: _rut_institucion_adherente.first)
+          representante_persona = representante_legal.personas.where(contribuyente_id: contribuyente.id).first if !contribuyente.nil?
+
+          if !representante_legal.nil? && !representante_persona.nil?
+            new_audits.each do |_aud|
+              tp = TareaPendiente.find_or_create_by({
+                flujo_id: @flujo.id, 
+                tarea_id: Tarea::ID_APL_032_1, 
+                estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
+                user_id: representante_legal.id, 
+                data: {auditoria_id: _aud.id},
+                persona_id: representante_persona.id
+              })
+            end
+          end
+        end
+      end
+    end
+
+
   end
 
   private
@@ -224,9 +252,11 @@ class ActualizarComiteAcuerdosController < ApplicationController
 
     def informe_params
       params.require(:informe_acuerdo).permit(
+        :plazo_vigencia_acuerdo,
         :con_extension,
         :plazo_maximo_adhesion, :plazo_finalizacion_implementacion,
         :plazo_maximo, :plazo_maximo_neto,
+        :vigencia_certificacion_final,
         :archivos_anexos_cache,
         archivos_anexos: [],
       )

@@ -97,7 +97,7 @@
 				.card-body
 					.row
 						.col-lg-2.pr-lg-0.col-12
-							= f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, disabled: ! @user.new_record? 
+							= f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, disabled: ! @user.new_record? && !@user.rut.blank?
 						.col-lg-4.pr-lg-0.col-12
 							= f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'required-field' }, readonly: (@acceso != :admin)
 						.col-lg-3.pr-lg-0.col-12

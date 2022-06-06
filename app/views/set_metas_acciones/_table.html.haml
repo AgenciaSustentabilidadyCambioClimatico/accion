@@ -191,13 +191,13 @@
                     %div{style:"border-radius: 2px;width: 12px;height: 12px;background-color: #"+origen[:color].to_s, title: origen[:nombre].gsub("<b>","").gsub("</b>","")}
               -if observar_propuestas
                 = hidden_field_tag "comentarios[#{record[:id]}]", nil
-              %td=record.meta.nombre
+              %td=(record.meta.blank? ? "" : record.meta.nombre)
               %td=record.accion.nombre
               %td=ms.blank? ? '--' : ms.nombre
               /%td=record.tipo_cuantitativa
               - if apl.nil?
                 %td=record.valor_referencia
-              %td=record.alcance.nombre
+              %td=(record.alcance.blank? ? "" : record.alcance.nombre)
               %td=record.criterio_inclusion_exclusion
               %td=record.descripcion_accion
               %td=record.detalle_medio_verificacion
@@ -217,7 +217,7 @@
                     -
                     - edit_link_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion)
                     - aa_link_to = acciones_relacionadas_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
-                    -
+                    - dup_link_to = duplicar_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
                     - if record.es_editable(@tarea.codigo) == 'total' || record.es_editable(@tarea.codigo) == 'parcial'
                       = link_to aa_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Ver acciones relacionadas", class: "btn btn-tabla-sm my-1" do
                         %i.fa.fa-pagelines
@@ -240,6 +240,10 @@
                       = link_to tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente, @manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:set_metas_accion)), remote: false }, class: "btn btn-tabla-sm my-1" do
                         %i.fa.fa-trash
                         .d-inline.d-lg-none Eliminar
+                    - if record.es_editable(@tarea.codigo) == 'total' || record.es_editable(@tarea.codigo) == 'parcial'
+                      = link_to dup_link_to, method: :post, remote: true, "data-confirm" => "¿Está seguro que desea duplicar esta acción?", title: "Duplicar", class: "btn btn-tabla-sm my-1" do
+                        %i.fa.fa-copy
+                        .d-inline.d-lg-none Duplicar
       -if @tarea_pendiente.tarea.codigo == Tarea::COD_APL_013 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_014 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_018 || @tarea_pendiente.tarea.codigo == Tarea::COD_APL_023
         .col-md-8.mx-auto.p-2.my-4
           = link_to pdf_set_metas_manifestacion_de_interes_path , download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
@@ -311,12 +315,12 @@
                 %tr
                   -if observar_propuestas
                     = hidden_field_tag "comentarios[#{record[:id]}]", nil
-                  %td=record.meta.nombre
+                  %td=(record.meta.blank? ? "" : record.meta.nombre)
                   %td=record.accion.nombre
                   %td=ms.blank? ? '--' : ms.nombre
                   /%td=record.tipo_cuantitativa
                   %td=record.valor_referencia
-                  %td=record.alcance.nombre
+                  %td=(record.alcance.blank? ? "" : record.alcance.nombre)
                   %td=record.criterio_inclusion_exclusion
                   %td=record.descripcion_accion
                   %td=record.detalle_medio_verificacion
@@ -330,6 +334,7 @@
                     .d-flex.align-items-start.flex-column.flex-lg-row
                       - edit_link_to = edit_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion)
                       - aa_link_to = acciones_relacionadas_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
+                      - dup_link_to = duplicar_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes,record)
                       -
                       - if record.es_editable(@tarea.codigo) == 'total' || comite_propuestas
                         = link_to aa_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", title: "Acciones relacionadas", class: "btn btn-tabla-sm my-1" do
@@ -346,6 +351,10 @@
                         = link_to tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente, @manifestacion_de_interes,record, accion: @manifestacion_de_interes.accion_en_set_metas_accion), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:set_metas_accion)), remote: false }, class: "btn btn-tabla-sm my-1" do
                           %i.fa.fa-trash
                           .d-inline.d-lg-none Eliminar
+                      - if record.es_editable(@tarea.codigo) == 'total' || comite_propuestas
+                        = link_to dup_link_to, method: :post, remote: true, "data-confirm" => "¿Está seguro que desea duplicar esta acción?", title: "Duplicar", class: "btn btn-tabla-sm my-1" do
+                          %i.fa.fa-copy
+                          .d-inline.d-lg-none Duplicar
 
   - if !comite_propuestas && @tarea.codigo != Tarea::COD_APL_019
     .float-right.mr-3.mb-3.mt-3

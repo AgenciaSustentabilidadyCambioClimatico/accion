@@ -225,10 +225,10 @@ es:
 #DZC Agregado por nosotros
   adhesiones_rechazadas: Adhesiones rechazadas
   nombre_institución: Nombre institución
-  nombre_representante_legal: Nombre representante legal
-  rut_representante_legal: Rut representante legal
-  fono_representante_legal: Fono representante legal
-  mail_representante_legal: Mail representante legal
+  nombre_representante_legal: Nombre Encargado APL
+  rut_representante_legal: Rut Encargado APL
+  fono_representante_legal: Fono Encargado APL
+  email_representante_legal: Mail Encargado APL
 #DZC
   entregables: Entregables
   set_metas_accion: Set de metas y acciones
@@ -863,7 +863,7 @@ es:
   actualizar_actores_resolver_comentarios_set_metas_acciones: Actualizar mapa de actores y resolver comentarios en set de metas y acciones
   terminar_carga_actualizacion_actores_en_acuerdo: Terminar actualizacion de mapa de actores y resolucíon de comentarios en propuestas de Acuerdo
   confirma_terminar_actualizacion_actores_resolucion_observaciones_propuestas: ¿Confirma que desea terminar tanto con la actualización del mapa de actores, como con la resolución de las observaciones a las propuestas de Acuerdo?
-  actualizar_mapa_actores_convocatoria_firma: Actualizar listado de actores y convocar a firma de Acuerdo
+  actualizar_mapa_actores_convocatoria_firma: Actualizar listado de actores y convocar a Ceremonia de Certificación
   configuracion_datos_productivos: Configuración de datos productivos
   auditoria_plazos: Auditoría y plazos
   actualizar_actores_metas_acciones_auditoria_plazos: Actualizar mapa de actores, set de metas y acciones, auditoria y plazos
@@ -888,6 +888,9 @@ es:
   terminar_acuerdo: Terminar Acuerdo
   comentarios_y_observaciones_termino_acuerdo: Comentarios y observaciones por el término del Acuerdo
   confirma_poner_termino_acuerdo: ¿Está seguro que desea poner término al Acuerdo?
+  detener_acuerdo: Detener Acuerdo
+  comentarios_y_observaciones_detencion_acuerdo: Comentarios y observaciones por la detención del Acuerdo
+  confirma_detener_acuerdo: ¿Está seguro que desea detener el Acuerdo?
   auditoria_id: Auditoría ID
   elemento_auditado_id: Elemento auditado ID
   auditoria: Auditoría
@@ -1421,6 +1424,20 @@ es:
   formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
   formulario_de_adhesion: Formulario de adhesión
   documentación: Documentación
+  mostrar_en_excel: Mostrar en excel
+  Rol: Rol
+  fecha_hora_activacion: Fecha/Hora activación
+  fecha_hora_ejecucion: Fecha/Hora ejecución
+  indicar_tipo_reunion: Indicar tipo reunión
+  indicar_enlace_web_reunion: Indicar enlace web de la reunión
+  descargar_certificado: Descargar Certificado
+  estado_del_acuerdo: Estado del acuerdo
+  config_reporte_sustentabilidad: Config. Reporte Sustentabilidad
+  configurar_reporte_sustentabilidad: Configurar Reporte Sustentabilidad
+  descargar_reporte_sustentabilidad: Descargar Reporte Sustentabilidad
+  archivos_de_auditoria_y_documentacion: Archivos de auditoría y documentación
+  metas: Metas
+  meta: Meta
 
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
@@ -1464,6 +1481,9 @@ es:
         matriz_direccion: Dirección casa matriz
         matriz_region_id: Región casa matriz
         matriz_comuna_id: Comuna casa matriz
+      reporte_sustentabilidad:
+        titulo_intro: Título introducción
+        cuerpo_intro: Cuerpo introducción
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"

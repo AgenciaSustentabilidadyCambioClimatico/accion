@@ -1,10 +1,14 @@
 class Admin::PasswordsController < Devise::PasswordsController
 
   def new
+
+    @header = ReporteriaDato.find_by(ruta: nil)
     self.resource = resource_class.new
   end
 
   def create
+
+    @header = ReporteriaDato.find_by(ruta: nil)
     self.resource = resource_class.send_reset_password_instructions(resource_params)
     yield resource if block_given?
 
@@ -30,7 +34,14 @@ class Admin::PasswordsController < Devise::PasswordsController
     end
   end
 
+  def edit
+    @header = ReporteriaDato.find_by(ruta: nil)
+    super
+  end
+
   def update
+
+    @header = ReporteriaDato.find_by(ruta: nil)
     self.resource = resource_class.reset_password_by_token(resource_params)
     yield resource if block_given?
 

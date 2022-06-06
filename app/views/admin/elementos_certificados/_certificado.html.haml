@@ -1,0 +1,44 @@
+.row
+  .col-12.mb-5
+    =app_helpers.image_tag(app_helpers.wicked_pdf_asset_base64('logo-ascc.png'), width: 250, class: "imagen")
+  .col-12.text-center.certificado-black
+    %p.certificado-40px CERTIFICADO
+    %p.certificado-20px.certificado-600 LA AGENCIA DE SUSTENTABILIDAD Y CAMBIO CLIMÁTICO
+  .col-12.mt-5.text-center.certificado-black
+    -titulo = [Alcance::PRODUCTO, Alcance::ESTABLECIMIENTO].include?(adhesion_elemento.alcance_id) ? "Por el presente otorga al #{adhesion_elemento.alcance.nombre}:" : "Por el presente otorga a la #{adhesion_elemento.alcance.nombre}:"
+    %p=titulo
+    %p.certificado-40px.certificado-600=adhesion_elemento.nombre_segun_alcance
+    %p=adhesion_elemento.dir_segun_alcance.values.join(", ")
+    %p de la empresa: 
+  .col-12.mt-5.text-center.certificado-black
+    %p.certificado-40px.certificado-600=institucion.razon_social
+    %p La cual ha sido auditada y certificada en conformidad con los requisitos de:
+  .col-12.my-5.text-center.text-justify.certificado-black
+    %p.mx-4
+      -if auditoria_nivel.nil?
+        ="Ha cumplido con las metas y acciones contenidas en el"
+        %b=" #{adhesion_elemento.adhesion.flujo.manifestacion_de_interes.nombre_acuerdo} "
+      -else
+        ="Ha cumplido con las metas y acciones requeridas para el nivel"
+        %b=" #{auditoria_nivel.estandar_nivel.nombre} "
+        ="perteneciente al estándar de certificación"
+        %b=" #{auditoria_nivel.estandar_nivel.estandar_homologacion.nombre} "
+      ="de conformidad a lo establecido en la "
+      %a{href: "https://www.ascc.cl/resources/uploads/documentos/archivos/57/acuerdos_de_produccion_limpia_(apl)_-_requisitos_para_los_auditores_y_procedimiento_de_la_auditoria_de_evaluacion_de_cumplimiento_nch2825-of2009.pdf"} norma técnica de producción limpia NCh2825
+      =" y el artículo noveno de la ley de Acuerdos de Producción Limpia, a su vez artículo de "
+      %a{href: "https://www.bcn.cl/leychile/navegar?idNorma=1010668"} ley 20.416.
+    %p.mx-4 Estas metas y acciones tienen por finalidad contribuir al desarrollo sustentable de la empresas, incrementando la eficiencia, la productividad, reduciendo los riesgos y minimizando los impactos para el ser humano y el medio ambiente.
+    %p.mx-4
+      ="La adhesión de #{adhesion_elemento.nombre_segun_alcance} al APL tiene fecha de #{l(adhesion_elemento.created_at, format: "%d de %B de %Y")}, siendo emitida la Certificación de Cumplimiento el #{l(fecha_certificacion, format: "%d de %B de %Y")}. La vigencia de la certificación emitida tiene como plazo límite el #{l(vigencia_certificacion, format: "%d de %B de %Y")}."
+  .col-12.certificado-mt-150px.w-100
+    %table.w-100
+      %tr.w-100
+        %td.w-50
+          .text-center.certificado-black
+            %p.certificado-20px.certificado-600 GIOVANNI CALDERÓN BASSI
+            %p.certificado-20px DIRECTOR EJECUTIVO
+        %td.w-50
+          .text-center.certificado-black
+            %p
+              Fecha Emisión Certificado de Cumplimiento: 
+              =l(Date.today, format: "%d de %B de %Y")

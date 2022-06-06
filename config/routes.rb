@@ -129,6 +129,7 @@ Rails.application.routes.draw do
         end
         member do
           get :acciones_relacionadas
+          post :duplicar
         end
       end 
 
@@ -263,6 +264,7 @@ Rails.application.routes.draw do
     resources :elementos_certificados, only: [:index] do
       collection do
         get :filtro_institucion
+        get ':auditoria_id/:adhesion_elemento_id/certificado(/:auditoria_nivel_id)', to: 'elementos_certificados#certificado', as: 'certificado'
       end
     end
 
@@ -339,7 +341,7 @@ Rails.application.routes.draw do
         get 'ppf/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#ppf_set_metas_acciones", as: :ppf_set_metas_acciones
         get 'fpl/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#fpl_set_metas_acciones", as: :fpl_set_metas_acciones
         get 'fpl/:id/rendiciones/', to: "gestionar_mis_instrumentos#fpl_rendiciones", as: :fpl_rendiciones
-        get ':id/descargar_reporte_sustentabilidad', to: "gestionar_mis_instrumentos#descargar_reporte_sustentabilidad", as: :descargar_reporte_sustentabilidad
+        get 'descargar_reporte_sustentabilidad(/:id)', to: "gestionar_mis_instrumentos#descargar_reporte_sustentabilidad", as: :descargar_reporte_sustentabilidad
       end
     end
 
@@ -389,6 +391,9 @@ Rails.application.routes.draw do
 
     get '/datos_publicos/edit', to: "datos_publicos#edit", as: :edit_datos_publico
     match '/datos_publicos', to: "datos_publicos#update", as: :datos_publico, via: [:patch, :put]
+
+    get '/reporte_sustentabilidad/edit', to: "reporte_sustentabilidad#edit", as: :edit_reporte_sustentabilidad
+    match '/reporte_sustentabilidad', to: "reporte_sustentabilidad#update", as: :reporte_sustentabilidad, via: [:patch, :put]
 
   end
   #end namespace admin
@@ -522,6 +527,8 @@ Rails.application.routes.draw do
       # get ':id/actualizar-comite-acuerdos/reload-informe', to: 'actualizar_comite_acuerdos#reload_informe', as: :reload_informe_actualizar_comite_acuerdos_actores
       patch ':id/actualizar-comite-acuerdos/guardar_archivos_anexos_posteriores_firmas(.:format)', to: 'actualizar_comite_acuerdos#guardar_archivos_anexos_posteriores_firmas', as: :guardar_archivos_anexos_posteriores_firmas_actualizar_acuerdos_actores
 
+      #DZC TAREA APL-016 y APL-023 pausa acuerdo
+      patch 'detener-acuerdo(.:format)', to: "manifestacion_de_interes#detener_acuerdo", as: :detener_acuerdo
       #DZC TAREA APL-023 continua con el flujo al presionar terminar acuerdo
       patch 'terminar-acuerdo(.:format)', to: "manifestacion_de_interes#terminar_acuerdo", as: :terminar_acuerdo
 
@@ -541,6 +548,7 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-032
       get ':id/auditoria/descargar', to: "auditorias#descargar", as: :descargar_auditorias
+      get ':id/auditoria/descargar_compilado', to: "auditorias#descargar_compilado", as: :descargar_compilado_auditorias
       get ':id/auditoria/actualizar', to: "auditorias#actualizar", as: :actualizar_auditorias
       get ':id/auditoria/revisar', to: "auditorias#revisar", as: :revisar_auditorias
       get ':id/auditoria/validar', to: "auditorias#validar", as: :validar_auditorias
@@ -571,10 +579,14 @@ Rails.application.routes.draw do
     resources :set_metas_acciones, path: 'set_metas_acciones', except: [:show] do  
       member do
         get 'acciones-relacionadas', to: 'set_metas_acciones#acciones_relacionadas', as: :acciones_relacionadas
+        post 'duplicar', to: 'set_metas_acciones#duplicar', as: :duplicar
         #DZC APL-013, 3era pestaña
         get 'actualizacion', to: "set_metas_acciones#actualizacion", as: :actualizacion
         #DZC APL-014, 3era pestaña
         get 'revision', to: "set_metas_acciones#revision", as: :revision
+      end
+      collection do
+        post 'utilizar/:accion_id', to: 'set_metas_acciones#utilizar', as: :utilizar
       end
     end
       patch 'set-metas-acciones/enviar-revision', to: "set_metas_acciones#enviar_revision", as: :enviar_revision

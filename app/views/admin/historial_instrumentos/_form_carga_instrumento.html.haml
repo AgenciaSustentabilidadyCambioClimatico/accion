@@ -15,7 +15,7 @@
               =@instrumento.id
           %h5
             = link_to t(:volver_a_cargar), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-primary btn-sm float-right'
-      -if current_user.is_admin?
+      -if current_user.is_admin? || current_user.is_ascc?
         .card-body.pb-0        
           .row.justify-content-left       
             .col-md-4
@@ -35,6 +35,8 @@
                 %th=t(:tarea_nombre)
                 %th=t(:tarea_responsables)
                 %th=t(:instancia)
+                %th=t(:fecha_hora_activacion)
+                %th=t(:fecha_hora_ejecucion)
                 %th=t(:tarea_documentos_asociados)
                 %th=t(:estado)
             %tbody
@@ -46,6 +48,8 @@
                   %td=ins[:nombre_tarea]
                   %td=ins[:responsables].to_sentence
                   %td=ins[:instancia].to_sentence
+                  %td=ins[:activacion]
+                  %td=ins[:ejecucion]
                   - if ins[:documentos_asociados][:url].blank?
                     %td=ins[:documentos_asociados][:nombre]
                   - else

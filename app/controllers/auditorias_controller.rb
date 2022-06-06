@@ -3,7 +3,7 @@ class AuditoriasController < ApplicationController
   before_action :set_tarea_pendiente
   before_action :set_flujo
   before_action :set_auditorias, only: [:index]
-  before_action :set_auditoria, only: [:actualizar, :actualizar_guardar, :revisar, :revisar_guardar, :validar, :validar_guardar, :descargar]
+  before_action :set_auditoria, only: [:actualizar, :actualizar_guardar, :revisar, :revisar_guardar, :validar, :validar_guardar, :descargar, :descargar_compilado]
   before_action :set_datos
 
   #DZC TAREA APL-032
@@ -112,7 +112,7 @@ class AuditoriasController < ApplicationController
 
   def descargar 
     titulos = AuditoriaElemento.columnas_excel
-    datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria) #DZC obtiene los datos desde las tablas
+    datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria, @adhesion) #DZC obtiene los datos desde las tablas
     
     dominios = AuditoriaElemento.dominios
     archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
@@ -124,6 +124,9 @@ class AuditoriasController < ApplicationController
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
     when Tarea::COD_APL_032
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A', {auditoria_id: @auditoria.id}, false #DZC en espera que de la revisión en la APL-033
+      enviar_correos_revisar_reportes(@flujo) #DZC 2018-11-15 16:42:43 envia correos suguiriendo la revision de los reportes de auditoría
+    when Tarea::COD_APL_032_1
       @tarea_pendiente.pasar_a_siguiente_tarea 'A', {auditoria_id: @auditoria.id}, false #DZC en espera que de la revisión en la APL-033
       enviar_correos_revisar_reportes(@flujo) #DZC 2018-11-15 16:42:43 envia correos suguiriendo la revision de los reportes de auditoría
     when Tarea::COD_APL_033
@@ -193,6 +196,45 @@ class AuditoriasController < ApplicationController
     end
   end
 
+  def descargar_compilado
+    require 'zip'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      @auditoria_elementos.each do |auditoria_elemento|
+        adhesion = Adhesion.unscoped.where(id: auditoria_elemento.adhesion_elemento.adhesion_externa_id).first
+        archivo_evidencia = auditoria_elemento.archivo_evidencia
+        archivo_informe = auditoria_elemento.archivo_informe
+
+        if File.exists?(archivo_evidencia.path)
+          if adhesion.externa
+            nombre_evidencia = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - Evidencia - #{archivo_evidencia.file.identifier}"
+          else
+            c = adhesion.flujo.manifestacion_de_interes.contribuyente
+            nombre_evidencia = "#{c.rut}-#{c.dv} - #{c.razon_social} - Evidencia - #{archivo_evidencia.file.identifier}"
+          end
+          # rename the file
+          stream.put_next_entry(nombre_evidencia)
+          # add file to zip
+          stream.write IO.read((archivo_evidencia.current_path rescue archivo_evidencia.path))
+        end
+        if File.exists?(archivo_informe.path)
+          if adhesion.externa
+            nombre_informe = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - Informe - #{archivo_informe.file.identifier}"
+          else
+            c = adhesion.flujo.manifestacion_de_interes.contribuyente
+            nombre_informe = "#{c.rut}-#{c.dv} - #{c.razon_social} - Informe - #{archivo_informe.file.identifier}"
+          end
+          # rename the file
+          stream.put_next_entry(nombre_informe)
+          # add file to zip
+          stream.write IO.read((archivo_informe.current_path rescue archivo_informe.path))
+        end
+      end
+    end
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+  end
+
   private
 
     def set_tarea_pendiente
@@ -208,6 +250,20 @@ class AuditoriasController < ApplicationController
       @manifestacion_de_interes.update(tarea_codigo: @tarea.codigo) unless @manifestacion_de_interes.blank?
       @proyecto = @flujo.proyecto_id.blank? ? nil : Proyecto.find(@flujo.proyecto_id)
       @ppp = @flujo.programa_proyecto_propuesta_id.blank? ? nil : ProgramaProyectoPropuesta.find(@flujo.programa_proyecto_propuesta_id)
+
+      if @tarea_pendiente.tarea_id == Tarea::ID_APL_032_1
+        @adhesion = Adhesion.unscoped.where(id: params[:adhesion_externa_id]).first if !params[:adhesion_externa_id].blank?
+        @adhesiones_externas = []
+        Adhesion.unscoped.where(flujo_id: @flujo.id, externa: true).each do |adh|
+          @adhesiones_externas << adh if adh.rut_representante_legal.gsub('k', 'K').gsub(".", "") == current_user.rut.gsub('k', 'K').gsub(".", "")
+        end
+      else
+        @adhesion = Adhesion.find_by(flujo_id: @flujo.id)
+      end
+
+      if @tarea_pendiente.tarea_id == Tarea::ID_APL_032_1
+        
+      end
     end
 
     def set_auditorias
@@ -220,16 +276,32 @@ class AuditoriasController < ApplicationController
 
     def set_auditoria
       @auditoria = Auditoria.find_by_id(@tarea_pendiente.data[:auditoria_id])
+      aud_elem_archivos = AuditoriaElementoArchivo.where(auditoria_id: @auditoria.id)
+
+      @archivos_auditoria = aud_elem_archivos.count > 0 ? aud_elem_archivos.map{|aea| {aea.id => aea.archivo.url}}.inject(:merge) : {}
       # DZC 2019-06-19 12:56:28 se mueve para correcto funcionamiento del algoritmo
       @auditoria_elementos = nil
       if @tarea.codigo == Tarea::COD_APL_032 #&& @auditoria.archivo_correcto #DZC 2019-06-19 12:57:04 se modifica para correcto funcionamiento del algoritmo
-        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id) #.where(estado: [3,4]) #DZC elementos a auditar
+        adh_elems = []
+        Adhesion.unscoped.where(flujo_id: @flujo.id).each do |_adh|
+          adh_elems += _adh.adhesion_elemento_externos.pluck(:id)
+        end
+        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems) #.where(estado: [3,4]) #DZC elementos a auditar
         # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
         @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
+      elsif @tarea.codigo == Tarea::COD_APL_032_1
+        if params[:adhesion_externa_id].blank?
+          @auditoria_elementos = []
+        else
+          adh_elems = @adhesion.adhesion_elemento_externos.pluck(:id)
+          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems) #.where(estado: [3,4]) #DZC elementos a auditar
+          # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
+          @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
+        end
       elsif @tarea.codigo == Tarea::COD_APL_033
-        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [2]) #DZC elementos a auditar
+        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [2]).where.not(adhesion_elemento_id: nil) #DZC elementos a auditar
       else #DZC APL-034
-        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [5]) #DZC elementos a auditar
+        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(estado: [5]).where.not(adhesion_elemento_id: nil) #DZC elementos a auditar
 
         @auditoria_validacion = AuditoriaValidacion.find_or_create_by({auditoria_id: @auditoria.id, user_id: @tarea_pendiente.user_id})
         set_estado_validaciones(@auditoria_validacion.validaciones)
@@ -258,21 +330,22 @@ class AuditoriasController < ApplicationController
             persiste = (!validacion_bd.nil? && !validacion_bd[:estado_valor].nil? && validacion_bd[:estado_valor] != "" )
           end
         end
-
+        adh = ae.adhesion_elemento
+        aud = ae.auditoria
         @elementos << {
-          contribuyente_rut_completo: ae.adhesion_elemento.persona.contribuyente.rut_completo,
-          auditoria_nombre: ae.auditoria.nombre,
-          auditoria_id: ae.auditoria.id,
-          alcance_nombre: ae.adhesion_elemento.alcance.nombre,
-          nombre_instalacion: ae.adhesion_elemento.fila[:nombre_instalacion],
+          contribuyente_rut_completo: adh.fila[:rut_institucion],
+          auditoria_nombre: aud.nombre,
+          auditoria_id: aud.id,
+          alcance_nombre: adh.alcance.nombre,
+          nombre_instalacion: adh.nombre_del_elemento_v2,
           id: ae.id,
           descripcion_accion: ae.set_metas_accion.descripcion_accion,
           aplica: ae.aplica,
           motivo: ae.motivo,
           cumple: ae.cumple,
           estado_detalle: ae.estado_detalle,
-          archivo_evidencia_url: ae.archivo_evidencia.url,
-          archivo_informe_url: ae.archivo_informe.url,
+          archivo_evidencia_url: @archivos_auditoria[ae.archivo_evidencia_id],
+          archivo_informe_url: @archivos_auditoria[ae.archivo_informe_id],
           validacion_estado_nombre: validacion_estado_nombre,
           validacion_estado_valor: validacion_estado_valor,
           validacion_justificacion: validacion_justificacion,

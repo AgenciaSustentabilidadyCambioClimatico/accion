@@ -20,6 +20,7 @@
       %table.table.elementos-certificados.table-striped
         %thead
           %tr
+            %th=t(:nombre_acuerdo_estándar)
             %th=t(:auditoria_id)
             %th=t(:auditoria_nombre)
             %th=t(:tipo_elemento)
@@ -28,15 +29,19 @@
             %th=t(:fecha_certificación)
             %th=t(:con_extension)
             %th=t(:vigencia_certificación)
-            %th=t(:nombre_acuerdo_estándar)
+            %th=t(:descargar_certificado)
 
         %tbody
           - if @elementos_certificados.size == 0
             %tr
-              %td.text-center{colspan: 8} No posee elementos certificados
+              %td.text-center{colspan: 10} No posee elementos certificados
           - else
             -@elementos_certificados.each do |elem|
               %tr
+                %td
+                  =elem[:nombre_acuerdo]
+                  -if !elem[:nombre_estandar].blank?
+                    %b=elem[:nombre_estandar]
                 %td=elem[:auditoria_id]
                 %td=elem[:auditoria_nombre]
                 %td=elem[:tipo_elemento]
@@ -45,4 +50,9 @@
                 %td=elem[:fecha_certificacion]
                 %td=elem[:con_extension]
                 %td=elem[:vigencia_certificacion]
-                %td=elem[:nombre_acuerdo]
+                %td.text-center
+                  -if elem[:vigente]
+                    = link_to certificado_admin_elementos_certificados_path(elem[:auditoria_id], elem[:id_elemento], elem[:nivel_id]),class: "btn btn-tabla-sm mx-auto", target: '_blank' do
+                      %i.fa.fa-download
+                  -else
+                    No tiene certificado por descargar

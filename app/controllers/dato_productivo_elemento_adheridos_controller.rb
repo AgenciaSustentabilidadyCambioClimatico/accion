@@ -99,7 +99,9 @@ class DatoProductivoElementoAdheridosController < ApplicationController
 
     def set_datos_productivos
       set_metas_acciones = @flujo.set_metas_acciones.where.not('materia_sustancia_id' => nil)
-      @datos_productivos = DatoProductivoElementoAdherido.where(set_metas_accion_id: set_metas_acciones.pluck(:id))
+      adhesiones_ids = Adhesion.unscoped.where(flujo_id: @flujo.id).pluck(:id)
+      adhesion_elementos_ids = AdhesionElemento.where(adhesion_id: adhesiones_ids).pluck(:id)
+      @datos_productivos = DatoProductivoElementoAdherido.where(set_metas_accion_id: set_metas_acciones.pluck(:id), adhesion_elemento_id: adhesion_elementos_ids)
 
       @archivos_evidencia = []
       @archivo_excel = nil

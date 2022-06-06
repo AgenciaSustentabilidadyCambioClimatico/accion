@@ -13,5 +13,5 @@
 			= f.input :password, required: true, autofocus: true, placeholder: 'Nueva contraseña', label: false
 			= f.input :password_confirmation, required: true, placeholder: "Confirme su nueva contraseña", label: false
 			= f.button :submit, "Cambiar", class: 'btn btn-sm btn-primary btn-block'
-	= render "devise/shared/links"
+	= render "devise/shared/links", form_remote: false
 	

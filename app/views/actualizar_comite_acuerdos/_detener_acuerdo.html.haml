@@ -1,0 +1,16 @@
+.modal.fade{id: :"detener-acuerdo", tabindex: "-1", role: :dialog, "aria-labelledby": :SetMetasAccionModalLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      - url = detener_acuerdo_manifestacion_de_interes_path(@tarea_pendiente)
+      = simple_form_for @manifestacion_de_interes, url: url, remote: true, html: { autocomplete: :off } do |m|
+        .modal-header
+          %h5.no-margin
+            = t(:detener_acuerdo)
+        .modal-body
+          .row
+            .col-12
+              = m.input :comentarios_y_observaciones_detencion_acuerdo, label: t(:comentarios_y_observaciones_detencion_acuerdo), input_html: { class: ''}, placeholder: "Ingrese comentario u observación", as: :text, required: false
+        .modal-footer
+          %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+            Cerrar
+          = m.submit t(:detener_acuerdo), class: 'btn btn-danger btn-primary btn-sm', data: { confirm: t(:confirma_detener_acuerdo), remote: false }

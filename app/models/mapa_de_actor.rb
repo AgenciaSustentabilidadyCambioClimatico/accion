@@ -76,7 +76,7 @@ class MapaDeActor < ApplicationRecord
 				cargo_en_institucion = p.cargo.nombre
 				institucion = persona.contribuyente
 				rut_institucion = institucion.rut.to_s+'-'+institucion.dv.to_s
-				codigo_ciiuv4 = acteco.present? ? acteco.codigo_ciiuv4 : ""
+				codigo_ciiuv4 = acteco.present? ? "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}" : ""
 				tipo_institucion = dato_anual.present? ? dato_anual.tipo_contribuyente.nombre : ""
 				direccion = establecimiento.present? ? establecimiento.direccion : ""
 				comuna = establecimiento.present? ? establecimiento.comuna.nombre : ""
@@ -106,13 +106,15 @@ class MapaDeActor < ApplicationRecord
 
 	def self.construye_datos_actores_para_excel (data)
 		para_excel = data # extrañamente al trabajar directamente sobre 'data' se altera el contenido de @actores
-		para_excel = para_excel.map {|i| i.map {|k,v| v unless (k==:sector_productivo)}.compact} #transforma un array de hashes en array de arrays, eliminando el sector productivo y la razon social
+		para_excel = para_excel.map {|i| i.map {|k,v| (k == :rut_persona || k == :email_institucional) && v.blank? ? 'no' : (v unless (k==:sector_productivo))}.compact}
+		#para_excel = para_excel.map{|i| i.except(:sector_productivo).values}
+		#para_excel = para_excel.map {|i| i.map {|k,v| v unless (k==:sector_productivo)}.compact} #transforma un array de hashes en array de arrays, eliminando el sector productivo y la razon social
 	end
 	
 	def self.adecua_actores_para_vista (data)
 		actores = data
 		actores.each do |fila|
-			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].to_s)
+			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].split(" - ").first.to_s)
 			sector_productivo = ae.first.descripcion_ciiuv4 if ae.present?
 			# DZC 2018-10-10 16:09:11 se prevee el caso de que el contribuyente se este creando mediante el archivo excel
 			fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
@@ -128,14 +130,20 @@ class MapaDeActor < ApplicationRecord
 		actores_unidos = {}
 		# agrupamos los actores por rut persona y rut_institucion
 		data.each do |fila|
-			llave = fila[:rut_persona].to_s.gsub("k","K").gsub(".","")+fila[:rut_institucion].to_s.gsub("k","K").gsub(".","")
-			if actores_unidos.has_key?(llave)
-				# agregamos los roles para luego compararlos y dejarlos unicos
-				actores_unidos[llave][:roles_en_acuerdo] << fila[:rol_en_acuerdo]
+			if !fila[:rut_persona].to_s.gsub("k","K").gsub(".","").blank? && fila[:rut_persona].to_s.gsub("k","K").gsub(".","") != "no"
+				llave = fila[:rut_persona].to_s.gsub("k","K").gsub(".","")+fila[:rut_institucion].to_s.gsub("k","K").gsub(".","")
+				if actores_unidos.has_key?(llave)
+					# agregamos los roles para luego compararlos y dejarlos unicos
+					actores_unidos[llave][:roles_en_acuerdo] << fila[:rol_en_acuerdo]
+				else
+					# inicializamos el arreglo donde guardaremos los roles
+					fila[:roles_en_acuerdo] = [fila[:rol_en_acuerdo]]
+					actores_unidos[llave] = fila
+				end
 			else
-				# inicializamos el arreglo donde guardaremos los roles
+				#los que no tengan rut se agregan si o si a lista, y sin llave
 				fila[:roles_en_acuerdo] = [fila[:rol_en_acuerdo]]
-				actores_unidos[llave] = fila
+				actores_unidos[actores_unidos.length] = fila
 			end
 		end
 		# descomprimimos y nos quedamos solo con una fila por actor repetido pero agregamos los otros roles
@@ -145,9 +153,9 @@ class MapaDeActor < ApplicationRecord
 
 	def self.dominios
 		{
-			roles: Rol.all.order(nombre: :asc).map {|r| r.nombre}.compact,
+			roles: Rol.where(mostrar_en_excel: true).order(nombre: :asc).map {|r| r.nombre}.compact,
 			cargos: Cargo.all.order(nombre: :asc).map {|c| c.nombre}.compact,
-			sectores: ActividadEconomica.where.not(codigo_ciiuv4: nil).order(codigo_ciiuv4: :asc).all.map {|ac| ac.codigo_ciiuv4}.compact,
+			sectores: ActividadEconomica.where.not(codigo_ciiuv4: nil).order(codigo_ciiuv4: :asc).all.map {|ac| "#{ac.codigo_ciiuv4} - #{ac.descripcion_ciiuv4}"}.compact,
 			comunas: Comuna.order(nombre: :asc).all.map {|c| c.nombre}.compact,
 			# comunas: Comuna.order(nombre: :asc).vigente?.all.map {|c| c.nombre}.compact, #REEMPLAZAR CUANDO SE HAGA MERGE CON RAMA DE RICARDO
 			tipo_instituciones: TipoContribuyente.order(nombre: :asc).all.map {|ti| ti.nombre}.compact
@@ -201,6 +209,8 @@ class MapaDeActor < ApplicationRecord
 	end
 
 	def self.actualiza_tablas_mapa_actores (data, flujo=nil, tarea_pendiente=nil, historico = false) #DZC SOLO LLAMAR DESDE USO DE REST POR EDITOR
+		pem_lista = {}
+		usuarios_vacios_procesados = []
 		if !flujo.nil?
 			manifestacion = flujo.manifestacion_de_interes
 			#DZC resetea el valor del campo mapa_de_actores_data en la manifestación de interés
@@ -213,7 +223,7 @@ class MapaDeActor < ApplicationRecord
 			personas_en_mapa = MapaDeActor.where(flujo_id: flujo.id).all.includes(:rol)
 			personas_en_mapa.each do |pem|
 				unless self.roles_no_actualizables(tarea_pendiente.tarea.codigo).include?(pem.rol.id.to_i)
-						pem.delete
+					pem_lista[pem.id] = pem
 				end
 			end
 		end
@@ -244,7 +254,7 @@ class MapaDeActor < ApplicationRecord
 			end
 
 			#DZC (2) verifica la existencia de las actividades económicas y en caso de ausencia las crea.
-			actividad_economica = ActividadEconomica.find_by(codigo_ciiuv4: fila[:codigo_ciiuv4])
+			actividad_economica = ActividadEconomica.find_by(codigo_ciiuv4: fila[:codigo_ciiuv4].split(" - ").first)
 			aaeec = contribuyente.actividad_economica_contribuyentes.includes(:actividad_economica).where({"actividad_economicas.codigo_ciiuv4" => fila[:codigo_ciiuv4].to_s}).first # realiza un select join
 			if aaeec.blank? 
 				aaeec = ActividadEconomicaContribuyente.new(
@@ -294,7 +304,68 @@ class MapaDeActor < ApplicationRecord
 			# relación persona pero no en la tabla user.
 			fila[:rut_persona] = fila[:rut_persona].to_s.gsub('k', 'K').gsub(".", "")
 			rut_persona = fila[:rut_persona]
-			usuario = User.find_by(rut: rut_persona)
+			if rut_persona.blank? || rut_persona == "no"
+				#debo buscar segun mi condicion
+				if fila[:email_institucional].to_s.blank? || fila[:email_institucional].to_s == "no"
+					#puede ser que no tenga email, entonces primero me fijaré en traer a persona que tenga el rol de mi fila en el mapa
+					#asi, aunque no sea el mismo nombre da lo mismo porque se actualizará
+					#y ordenaré por fecha de actualizacion asc en mapa y traere el primero
+					usuario = nil
+					#cargo rol
+					rol = Rol.find_by(nombre: fila[:rol_en_acuerdo].to_s)
+					#obtengo personas en mi flujo que tengan mi rol
+					actores = MapaDeActor.where(flujo_id: flujo.id, rol_id: rol.id).order(updated_at: :asc)
+					#busco usuarios que no tengan rut ni correo, pero que tengan mis personas
+					actores.each do |_actor|
+						#deberia ser solo un usuario, no se si buscar en bd o evaluar una vez cargado el user
+						#creo que es mas rapido por bd
+						usuario = User.includes(:personas).where(personas: {id: _actor.persona_id}).where(users: {rut: "", email: ""}).where.not(users: {id: usuarios_vacios_procesados}).first
+						if !usuario.nil?
+							usuarios_vacios_procesados << usuario.id
+							pem_lista.delete(_actor.id)
+							break
+						end
+					end
+				else
+					#puede ser que tenga email, entonces busco por email
+					usuario = User.find_by(email: fila[:email_institucional].to_s)
+					#lo mismo de abajo
+					if usuario.nil?
+						rol = Rol.find_by(nombre: fila[:rol_en_acuerdo].to_s)
+						actores = MapaDeActor.where(flujo_id: flujo.id, rol_id: rol.id).order(updated_at: :asc)
+						actores.each do |_actor|
+							usuario = User.includes(:personas).where(personas: {id: _actor.persona_id}).where(users: {rut: "", email: ""}).where.not(users: {id: usuarios_vacios_procesados}).first
+							if !usuario.nil?
+								usuarios_vacios_procesados << usuario.id
+								usuario.update(email: fila[:email_institucional].to_s)
+								pem_lista.delete(_actor.id)
+								break
+							end
+						end
+					end
+				end
+			else
+				usuario = User.find_by(rut: rut_persona)
+				#puede ser que el rut no exista, si es el caso puede ser porque antes era una persona sin rut y/o email
+				#para eso debo buscar igual que arriba, si hay usuarios sin rut-email con el rol que tengo como fila
+				#no importa si piso otro, una vez que lo actualice, el otro sin ambos datos se creará de nuevo
+				if usuario.nil?
+					rol = Rol.find_by(nombre: fila[:rol_en_acuerdo].to_s)
+					actores = MapaDeActor.where(flujo_id: flujo.id, rol_id: rol.id).order(updated_at: :asc)
+					#busco usuarios que no tengan rut ni correo, pero que tengan mis personas
+					actores.each do |_actor|
+						#deberia ser solo un usuario, no se si buscar en bd o evaluar una vez cargado el user
+						#creo que es mas rapido por bd
+						usuario = User.includes(:personas).where(personas: {id: _actor.persona_id}).where(users: {rut: "", email: ""}).where.not(users: {id: usuarios_vacios_procesados}).first
+						if !usuario.nil?
+							usuarios_vacios_procesados << usuario.id
+							usuario.update(rut: rut_persona, email: fila[:email_institucional].to_s)
+							pem_lista.delete(_actor.id)
+							break
+						end
+					end
+				end
+			end
 			unless usuario.present?
 				##
 				# DZC 2019-08-08 15:20:37
@@ -384,7 +455,7 @@ class MapaDeActor < ApplicationRecord
 
 			#DZC (7) se busca la existencia del rol y reemplaza o modifica según corresponda
 			rol = Rol.find_by(nombre: fila[:rol_en_acuerdo].to_s)
-			actor = MapaDeActor.where(flujo_id: flujo.id, persona_id: persona.id, rol_id: rol.id)
+			actor = MapaDeActor.find_by(flujo_id: flujo.id, persona_id: persona.id, rol_id: rol.id)
 			if actor.blank?
 				# DZC 2018-10-30 11:10:37 se modifica para agregar persona_cargo_id
 				actor = MapaDeActor.new(
@@ -392,10 +463,16 @@ class MapaDeActor < ApplicationRecord
 					persona_id: persona.id,
 					rol_id: rol.id,
 					persona_cargo_id: persona_cargo_institucion_id
-					).save(validate: false)
+					)
+				actor.save(validate: false)
 			else
-				actor.update(persona_cargo_id: persona_cargo_institucion_id)
+				actor.update(persona_cargo_id: persona_cargo_institucion_id, updated_at: DateTime.now)
 			end
+			pem_lista.delete(actor.id) #si lo estoy usando deberia no eliminarse
+		end
+		#aqui elimino si esque no esta usandose
+		pem_lista.values.each do |pem|
+			pem.delete
 		end
 	end
 end

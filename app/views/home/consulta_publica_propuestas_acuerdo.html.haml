@@ -8,16 +8,16 @@
           %thead
             %tr
               %th=t(:nombre_de_acuerdo)
-              %th=t(:estado_de_consulta)
+              %th=t(:estado_del_acuerdo)
               %th=t(:acciones)
           %tbody
             - @acuerdos.each do |acuerdo|
               %tr.accion
                 %td=acuerdo[:nombre_acuerdo]
-                %td=acuerdo[:estado_consulta]
+                %td=acuerdo[:estado_acuerdo]
                 %td
                   =link_to evaluacion_negociacion_manifestacion_de_interes_path(acuerdo[:tarea_pendiente_id], acuerdo[:manifestacion_de_interes_id], acuerdo[:encuesta_id],consulta_publica: 1), class: "btn btn-tabla" do
-                    -if acuerdo[:estado_consulta] == "Abierta"
+                    -if acuerdo[:disponible]
                       =fa_icon 'edit'
                       Responder consulta
                     -else

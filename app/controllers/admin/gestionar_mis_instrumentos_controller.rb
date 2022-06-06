@@ -37,104 +37,22 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
 
   def descargar_reporte_sustentabilidad
 
-    @datos_publicos = DatosPublico.load
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id]) if !params[:id].blank?
 
-    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
+    if !@manifestacion_de_interes.nil? || current_user.is_admin?
 
-    #clasificaciones del acuerdo
-    clasificaciones_ids = []
-    clasificaciones_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
-                                              .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
-                                              .pluck("accion_clasificaciones.clasificacion_id")
-    clasificaciones_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
-                                              .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
-                                              .pluck("materia_sustancia_clasificaciones.clasificacion_id")
-    @clasificaciones_del_acuerdo = Clasificacion.where(id: clasificaciones_ids)
+      @datos_publicos = DatosPublico.load
 
-    @ods_clasif = Clasificacion.where(clasificacion_id: nil)
-    @metas = {}
-    @set_metas_acciones = @manifestacion_de_interes.flujo.set_metas_acciones
-    @set_metas_acciones.each do |set_metas_accion|
-      @metas[set_metas_accion.meta_id] = {icono: set_metas_accion.meta.icono.url, color: set_metas_accion.meta.color, clasificaciones: []} if !@metas.has_key?(set_metas_accion.meta_id)
-      @metas[set_metas_accion.meta_id][:clasificaciones] = @metas[set_metas_accion.meta_id][:clasificaciones]+set_metas_accion.accion.accion_clasificaciones.pluck(:clasificacion_id) if !set_metas_accion.accion.nil?
-      @metas[set_metas_accion.meta_id][:clasificaciones] = @metas[set_metas_accion.meta_id][:clasificaciones]+set_metas_accion.materia_sustancia.materia_sustancia_clasificaciones.pluck(:clasificacion_id) if !set_metas_accion.materia_sustancia.nil?
+      @adhesion_elemento = AdhesionElemento.find(params[:ae_id]) if !params[:ae_id].blank?
+
+      @contribuyente = Contribuyente.find(params[:c_id]) if !params[:c_id].blank?
+
+      archivo = CreaReporteSustentabilidad.new(request, @manifestacion_de_interes, @adhesion_elemento, current_user, @contribuyente).crear_reporte
+
+      send_data archivo, disposition: "attachment", filename: "Reporte Sustentabilidad.#{@datos_publicos.extension_reporte}"
+    else
+      redirect_to root_path, alert: "No tiene permiso para acceder a esta página"
     end
-    @metas = @metas.values
-    #fin clasificaciones del acuerdo
-
-    #certificaciones obtenidas
-    @niveles = {}
-    AdhesionElemento.joins(:adhesion).where(adhesiones: {flujo_id: @manifestacion_de_interes.flujo.id}).each do |adhesion_elemento|
-      #obtengo las auditorias elementos
-      #asi lo asocio con set_meta_accion
-      #y del set_meta_accion traigo el estandar y sus niveles
-      #segun el porcentaje de cumplimiento del elemento es a que nivel pertenece
-      auditoria_elementos = AuditoriaElemento.where(auditoria_id: Auditoria.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id), adhesion_elemento_id: adhesion_elemento.id)
-
-      total_auditorias_elementos_aplica = auditoria_elementos.where(aplica: true).size.to_f
-
-      auditorias_cumple_aplica = auditoria_elementos.where(cumple: true, aplica: true)
-      
-      auditorias_cumple_aplica = auditorias_cumple_aplica.select do |aud_elem|
-        if aud_elem.auditoria.con_validacion == true
-          (aud_elem[:validacion_aceptada] == true && aud_elem[:aprobacion_fecha].present?)
-        else
-          aud_elem[:aprobacion_fecha].present?
-        end
-      end
-
-      total_auditorias_cumple_aplica = auditorias_cumple_aplica.size.to_f 
-      porcentaje = (total_auditorias_elementos_aplica > 0) ? ((total_auditorias_cumple_aplica/total_auditorias_elementos_aplica)*100.0).to_f : 0.to_f
-
-      estandares_ids = []
-      auditorias_cumple_aplica.each do |aud_elem|
-        #obtengo los niveles del estandar relacionado al set meta accion
-        estandares_ids += EstandarSetMetasAccion.where(id: aud_elem.set_metas_accion.id_referencia).pluck(:estandar_homologacion_id)
-      end
-
-
-      auditorias_ids = @manifestacion_de_interes.flujo.auditorias.pluck(:id)
-      #voy desde el mayor porcentaje al menor, una vez que calze con uno se agrega y ya no se agrega a los menores
-      EstandarNivel.where(estandar_homologacion_id: estandares_ids).order(porcentaje: :desc).each do |nivel|
-        plazo = AuditoriaNivel.where(auditoria_id: auditorias_ids, estandar_nivel_id: nivel.id).last
-        plazo = plazo.nil? ? 0 : plazo.plazo
-        icono = nivel.estandar_homologacion.referencias.select{|f| ["jpg", "jpeg", "png"].include?(f.file.extension.downcase) }.first
-        icono = icono.url if !icono.nil?
-        if porcentaje >= nivel.porcentaje.to_f
-          @niveles[nivel.id] = {nombre: nivel.nombre, icono: icono, grafica: nivel.archivo.url, descripcion: nivel.estandar_homologacion.descripcion, plazo: plazo, elementos: []} if !@niveles.has_key?(nivel.id)
-          @niveles[nivel.id][:elementos] = @niveles[nivel.id][:elementos]+[adhesion_elemento]
-          break
-        end
-      end
-    end
-
-    #una vez cargados los niveles, quito los que no tienen elementos
-    @niveles = @niveles.values
-    #fin certificaciones obtenidas
-
-    #auditoria
-    @auditorias = @manifestacion_de_interes.flujo.auditorias
-    #fin auditorias
-
-    #metas y avances
-    clasificaciones_padre_ids = []
-    clasificaciones_padre_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
-                                              .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
-                                              .pluck("accion_clasificaciones.clasificacion_id")
-    clasificaciones_padre_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
-                                                .where("set_metas_acciones.flujo_id = #{@manifestacion_de_interes.flujo.id}")
-                                                .pluck("materia_sustancia_clasificaciones.clasificacion_id")
-
-    @clasificaciones_padre_del_acuerdo = Clasificacion.where(id: clasificaciones_padre_ids)
-    #fin metas y avances
-
-    #reporte de avances
-    #son las set metas acciones del flujo definidas en clasificaciones del acuerdo
-    #fin reporte de avances
-    archivo = CreaReporteSustentabilidad.new(request, @datos_publicos, @manifestacion_de_interes, @clasificaciones_del_acuerdo, @ods_clasif, @metas, @niveles, @auditorias, @clasificaciones_padre_del_acuerdo, @set_metas_acciones)
-                                        .crear_reporte
-    send_data archivo, disposition: "attachment", filename: "Reporte Sustentabilidad.#{@datos_publicos.extension_reporte}"
-    #render '_reporte_sustentabilidad'
   end
 
   private
@@ -144,7 +62,7 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
       personas = current_user.personas
       personas_id = personas.pluck(:id)
       user_actores = MapaDeActor.where(persona_id: personas.pluck(:id))
-      @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq)
+      @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :desc)
       unless @instrumentos.blank?
         @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
         @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
@@ -153,7 +71,7 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
         @instrumentos.each do |i|
           @instancias += i.datos_para_gestionar(personas_id)       
         end
-        @instancias = @instancias.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_instrumento]]}
+        #@instancias = @instancias.sort_by { |hsh| hsh[:id_instrumento]}
       else
         flash[:warning] = "Usted no tiene instrumentos asociados."
         redirect_to root_path

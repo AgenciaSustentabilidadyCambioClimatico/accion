@@ -30,7 +30,7 @@
 						= "Datos de cuenta"
 				.card-body
 					.row
-						.col-12
+						-#.col-12
 							= f.input :current_password, required: true, placeholder: 'Ingrese su actual contraseña', label: t(:current_password), input_html: { class: 'required-field' }
 						.col-12
 							= f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'required-field' }

@@ -19,6 +19,12 @@
       revisa_valores_dmv();
     });
 
+    $('.chosen-control').chosen({
+      allow_single_deselect: false,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+
   
     verificar_si_necesita_agregar_materia_sustancia(acSelector.val());
     actualizar_metas(acSelector.val(),msSelector.val());
@@ -58,6 +64,7 @@
           $('label[for="set_metas_accion_materia_sustancia_id"] > abbr').hide();
           $('#set_metas_accion_clasificacion_para_filtro.cpf-materia-sustancia').attr('disabled','disabled');
         }
+        msSelector.trigger("chosen:updated");
       } else {
         mtSelector.empty().attr('disabled','disabled');
         msSelector.val("").attr('disabled','disabled');
@@ -74,8 +81,12 @@
         metas[accion.meta_id] = metas_descritas[accion.meta_id].nombre;
         activarSelectorMetas = true;
       }
-      if (materia_sustancia !== undefined && accion.meta_id != materia_sustancia.meta_id) {
-        metas[materia_sustancia.meta_id] = metas_descritas[materia_sustancia.meta_id].nombre;
+      if (materia_sustancia !== undefined && materia_sustancia.metas_ids.length > 0) {
+        $.each(materia_sustancia.metas_ids, function(index, meta_id){
+          if(!activarSelectorMetas || meta_id != accion.meta_id){
+            metas[meta_id] = metas_descritas[meta_id].nombre;
+          }
+        });
         activarSelectorMetas = true;
       }
       mtSelector.empty();
@@ -88,6 +99,7 @@
       } else {
         mtSelector.attr('disabled','disabled');
       }
+      mtSelector.trigger("chosen:updated");
     }
 
     function filtrar_modelo_por_clasificacion() {
@@ -117,12 +129,16 @@
       });
     }
 
-    if(#{@manifestacion_de_interes.accion_en_set_metas_accion == :revision || responder_propuesta || @manifestacion_de_interes.accion_en_set_metas_accion == :observacion || (@manifestacion_de_interes.accion_en_set_metas_accion == :comite && !@set_metas_accion.new_record?)}){
+    if(#{@manifestacion_de_interes.accion_en_set_metas_accion == :revision || responder_propuesta || @manifestacion_de_interes.accion_en_set_metas_accion == :observacion}){
       $(".desactivado *").prop('disabled',true);
+      acSelector.trigger("chosen:updated");
+      msSelector.trigger("chosen:updated");
     }
 
     if(#{@manifestacion_de_interes.tipo_manifestacion_metas == 2}){
       $("form.edit_set_metas_accion #set_metas_accion_detalle_medio_verificacion, #set_metas_accion_accion_id, #set_metas_accion_clasificacion_para_filtro, #set_metas_accion_materia_sustancia_id, #set_metas_accion_descripcion_accion, #set_metas_accion_alcance_id, #set_metas_accion_meta_id").attr('disabled', true);
+      acSelector.trigger("chosen:updated");
+      msSelector.trigger("chosen:updated");
     }
     iniciarAutoNumeric();
   });
@@ -167,11 +183,11 @@
               .col-lg-6.pr-lg-0.col-12.desactivado
                 = f.input :clasificacion_para_filtro, label: t(:filtrar_modelo_por_clasificación, m: t(:materia_sustancia).downcase), collection: Clasificacion.where(es_meta: false).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'clasificacion_para_filtro cpf-materia-sustancia' }, disabled: true
             .col-lg-4.pr-lg-0.col-12.desactivado
-              = f.input :meta_id, label: t(:meta), collection: [], input_html: { class: "#{requerido}" }, required: true, disabled: true
+              = f.input :meta_id, label: t(:meta), collection: [], input_html: { class: "#{requerido} chosen-control", "data-placeholder" => "Seleccione una opción" }, required: true, disabled: true
             .col-lg-4.pr-lg-0.col-12.desactivado
-              = f.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
+              = f.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido} chosen-control", "data-placeholder" => "Seleccione una opción" }, required: true
             .col-lg-4.col-12.desactivado
-              = f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, required: true, disabled: true
+              = f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, required: true, disabled: true,  input_html: { class: " chosen-control", "data-placeholder" => "Seleccione una opción"}
             .col-lg-4.pr-lg-0.col-12.desactivado
               = f.input :valor_referencia, label: t(:valor_referencia), input_html: { class: "#{requerido}" }, required: true
             .col-lg-4.pr-lg-0.col-12.desactivado

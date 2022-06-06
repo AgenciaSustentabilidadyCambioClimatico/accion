@@ -20,7 +20,7 @@
               .col-12.col-lg-6
                 = f.input :plazo_maximo_adhesion, label: t(:plazo_máximo_adhesión_en_meses), input_html: { class: "numero required" }, as: :string
               .col-12.col-lg-6
-                = f.input :plazo_finalizacion_implementacion, label: t(:plazo_finalización_implementación), input_html: {class: "numero required", value: f.object.manifestacion_de_interes.flujo.plazo_maximo_acciones_meses }, as: :string
+                = f.input :plazo_finalizacion_implementacion, label: t(:plazo_finalización_implementación), input_html: {class: "numero required", value: f.object.plazo_finalizacion_implementacion.blank? ? f.object.manifestacion_de_interes.flujo.plazo_maximo_acciones_meses : f.object.plazo_finalizacion_implementacion }, as: :string
               .col-12
                 .card.mt-2
                   .card-header

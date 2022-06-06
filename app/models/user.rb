@@ -1,5 +1,5 @@
 class User < ApplicationRecord
-  attr_accessor :is_admin, :updated, :current
+  attr_accessor :is_admin, :updated, :current, :claveunica
   has_many :personas, dependent: :destroy
   has_many :contribuyentes, through: :personas
   has_many :persona_cargos, through: :personas
@@ -10,7 +10,6 @@ class User < ApplicationRecord
   accepts_nested_attributes_for :personas, :allow_destroy => true#, reject_if: :all_blank
   serialize :fields_visibility
   serialize :session
-  before_validation :normalizar_rut
 
   ROOT  = 1
   ADMIN = 2
@@ -21,14 +20,24 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :invitable, :database_authenticatable, :registerable, :recoverable, :rememberable, :trackable, :validatable
-  validates :rut, presence: true, rut: true
+  validates :rut, presence: true
+  validates :rut, rut: true, if: -> { !rut.blank? && rut != "no" }
   validates :nombre_completo, presence: true
-  validates :telefono, numericality: true, length: {in: 8..11}, allow_blank: false
-  validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }  
-  validates_uniqueness_of :email, on: :create
-  validates_uniqueness_of :rut, on: :create
+  validates :telefono, numericality: true, length: {in: 8..11}, allow_blank: false, if: -> { !claveunica }
+  validates :email, presence: true, if: -> { !claveunica }
+  validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { !email.blank? && email != "no"}
+  validates_uniqueness_of :email, on: :create, if: ->  {email != "no" }
+  validates_uniqueness_of :rut, on: :create, if: ->  {rut != "no" }
+
+  before_validation :normalizar_rut, if: ->  {rut != "no" }
+  before_save :clear_no_data
 
   default_scope { where(temporal: false) }
+
+  def clear_no_data
+    self.rut = "" if self.rut == "no"
+    self.email = "" if self.email == "no"
+  end
 
   def persona_segun_(contribuyente_id)
     self.personas.map{|p|p if (p.contribuyente_id == contribuyente_id) }.compact.first
@@ -103,6 +112,10 @@ class User < ApplicationRecord
       lo_es = !(cargos & cargos_en_tabla_responsables).blank?
     end
     lo_es
+  end
+
+  def is_ascc?
+    !self.personas.includes(:contribuyente).where(contribuyentes: {rut: 75980060}).blank?
   end
 
   def mis_instituciones
@@ -192,5 +205,16 @@ class User < ApplicationRecord
       user_final.save(validate: false)
     end
     user_final
+  end
+
+  def update_without_password(params, *options)
+    if params[:password].blank?
+      params.delete(:password)
+      params.delete(:password_confirmation) if params[:password_confirmation].blank?
+    end
+
+    result = update_attributes(params, *options)
+    clean_up_passwords
+    result
   end
 end

@@ -118,6 +118,7 @@ class TareaPendiente < ApplicationRecord
     tareas_unico_actor += [Tarea::COD_APL_022] if !condicion_de_salida.blank? && (!condicion_de_salida.include?('A')) #DZC APL-022 que no finalizan la tarea
     tareas_unico_actor += [Tarea::COD_APL_015, Tarea::COD_APL_039, Tarea::COD_APL_043, Tarea::COD_PPF_023, Tarea::COD_PPF_024] #DZC Encuestas
     tareas_unico_actor += [Tarea::COD_APL_034] #validacion
+    tareas_unico_actor += [Tarea::COD_APL_032, Tarea::COD_APL_032_1] #auditoria
 
     #DZC tareas que finalizarán todas las tareas pendientes del flujo
     tareas_finalizan_flujo = []
@@ -130,24 +131,25 @@ class TareaPendiente < ApplicationRecord
 
     # cuando se envia tarea 20, cierra todas las tareas 19
     if ([Tarea::COD_APL_020].include?(self.tarea.codigo))
-      TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: Tarea::ID_APL_019).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+      TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: Tarea::ID_APL_019).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
     end
     if ([Tarea::COD_APL_023].include?(self.tarea.codigo))
       TareaPendiente.finaliza_pendientes_por_auditoria(self.flujo_id)
     end
     if ([Tarea::COD_PPF_019].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('D'))
-      TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: Tarea::ID_PPF_018).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+      TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: Tarea::ID_PPF_018).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
     end
     if finaliza
       #DZC se finaliza solo la tarea pendiente actual y para ese actor
       if tareas_unico_actor.uniq.include?(self.tarea.codigo)
         self.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        self.updated_at = DateTime.now
 
       #DZC se finalizan las tareas pendientes del mismo tipo para el flujo actual
       else
         #DZC se finalizan todas las tareas del flujo
         if (tareas_finalizan_flujo.include?(self.tarea.codigo))
-          TareaPendiente.where(flujo_id: self.flujo_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+          TareaPendiente.where(flujo_id: self.flujo_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
           Flujo.find_by(id: self.flujo_id).update(terminado: true)
 
         #DZC se finalizan las tareas pendientes por auditoría específica
@@ -157,26 +159,36 @@ class TareaPendiente < ApplicationRecord
 
         #DZC se finalizan todas la tareas PPF-019 y PPF-018
         elsif ([Tarea::COD_PPF_019].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('D'))
-          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: [Tarea::ID_PPF_018, self.tarea_id]).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: [Tarea::ID_PPF_018, self.tarea_id]).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
 
         #DZC se finalizan todas la tareas PPF-022, PPF-021, PPF-020
         elsif ([Tarea::COD_PPF_022].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('D'))
-          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: [Tarea::ID_PPF_020, Tarea::ID_PPF_021, self.tarea_id]).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: [Tarea::ID_PPF_020, Tarea::ID_PPF_021, self.tarea_id]).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
 
         # DZC 2018-11-07 06:01:00 se agregar continuación de flujo para condición de término de APL-033
         elsif ([Tarea::COD_APL_033].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('A'))
-          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+          TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
 
         # DZC 2018-11-07 06:01:00 se agregar continuación de flujo para condición de término de APL-034
         #elsif ([Tarea::COD_APL_034].include?(self.tarea.codigo) && !condicion_de_salida.blank? && condicion_de_salida.include?('C'))
           #TareaPendiente.where(flujo_id: self.flujo_id, tarea_id: self.tarea_id, data: extra).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
         #DZC se finalizan las demás tareas del mismo tipo
         else
-          TareaPendiente.where(flujo_id: self.flujo_id).where(tarea_id: self.tarea_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+          TareaPendiente.where(flujo_id: self.flujo_id).where(tarea_id: self.tarea_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA, updated_at: DateTime.now)
         end
       end
+    else
+      #necesito decir que marque que se ejecuto, no se si lo hace por defecto asique lo obligo
+      self.updated_at = DateTime.now
     end
     if self.save
+      #despauso flujo pero dejo datos de cuando se pauso
+      manif = self.flujo.manifestacion_de_interes
+      if manif.detenido
+        manif.temporal = true
+        manif.detenido = false
+        manif.save
+      end
       # aqui se crea el filtro para la condicion de salida, si no viene el campo lo crea como hash vacio, no afectado la busqueda
       filtro_condicion_salida = condicion_de_salida.blank? ? {} : {condicion_de_salida: condicion_de_salida}
       # se recorren todos los flujos de tareas que cumplen con la condicion y se agregan las tareas pedientes,
@@ -197,7 +209,7 @@ class TareaPendiente < ApplicationRecord
       auditorias << {auditoria_id: a.id}
     end
     auditoria << extra unless (extra.nil?)
-    tareas_pendientes = TareaPendiente.where(flujo_id: flujo_id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_032.to_s, Tarea::COD_APL_033.to_s, Tarea::COD_APL_034.to_s]})
+    tareas_pendientes = TareaPendiente.where(flujo_id: flujo_id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_032.to_s,Tarea::COD_APL_032_1.to_s, Tarea::COD_APL_033.to_s, Tarea::COD_APL_034.to_s]})
     tareas_pendientes.each do |t|
       #DZC termina las tareas pendientes de auditorias borradas
       t.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if (!auditorias.include?(t.data))
@@ -214,18 +226,20 @@ class TareaPendiente < ApplicationRecord
       tareas_pendientes= self.todas_del_(user_id).all
     end
     tareas_pendientes.each do |pend|
+      manif = pend.flujo.manifestacion_de_interes
+      next if !manif.nil? && manif.detenido
       case pend.tarea.codigo
       when Tarea::COD_APL_004_1
-        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, 45)
+        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, pend.tarea.duracion)
       when Tarea::COD_APL_004_2
-        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, 45)
+        pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, pend.tarea.duracion)
       when Tarea::COD_APL_006
-        pend.pasar_a_siguiente_tarea 'C' if !pend.plazo_vigente?(pend.created_at, 45)
+        pend.pasar_a_siguiente_tarea 'C' if !pend.plazo_vigente?(pend.created_at, pend.tarea.duracion)
       when Tarea::COD_APL_012 #ingresar acta minutas, 25 dias
 
         conv = pend.determina_convocatoria
         minuta = conv.minuta
-        if (!minuta.plazo_vigente? minuta.fecha_acta, 25) && !minuta.lista_asistencia.nil?
+        if (!minuta.plazo_vigente? minuta.fecha_acta, pend.tarea.duracion) && !minuta.lista_asistencia.nil?
           conv.update({terminada: true})
           pend.pasar_a_siguiente_tarea 'A'
         end
@@ -239,7 +253,7 @@ class TareaPendiente < ApplicationRecord
         conv = pend.determina_convocatoria
         unless conv.blank?
           minuta = conv.minuta
-          if (!minuta.plazo_vigente? minuta.fecha_acta, 25) && !minuta.lista_asistencia.nil?
+          if (!minuta.plazo_vigente? minuta.fecha_acta, pend.tarea.duracion) && !minuta.lista_asistencia.nil?
             conv.update({terminada: true})
             pend.pasar_a_siguiente_tarea 'B'
           end
@@ -252,13 +266,13 @@ class TareaPendiente < ApplicationRecord
       when Tarea::COD_APL_022, Tarea::COD_APL_038  #ingresar acta minutas, 25 dias
         conv = pend.determina_convocatoria
         minuta = conv.minuta
-        if !minuta.plazo_vigente? minuta.fecha_acta, 25
+        if !minuta.plazo_vigente? minuta.fecha_acta, pend.tarea.duracion
           conv.update({terminada: true})# cierra la edición de la convocatoria
           pend.pasar_a_siguiente_tarea 'A' # modificar por cambios de Adan en el método
         end
       when Tarea::COD_APL_025
         flujo = pend.flujo
-        firma_fecha = flujo.manifestacion_de_interes.firma_fecha
+        firma_fecha = flujo.manifestacion_de_interes.firma_fecha_hora.blank? ? flujo.manifestacion_de_interes.firma_fecha : flujo.manifestacion_de_interes.firma_fecha_hora
 
         # DZC 2019-04-30 12:17:48 corrije posible ejecución de método sobre objeto nulo
         meses = InformeAcuerdo.find_by(manifestacion_de_interes_id: flujo.manifestacion_de_interes_id)
@@ -274,7 +288,7 @@ class TareaPendiente < ApplicationRecord
         flujo=pend.flujo
         conv = pend.determina_convocatoria
         minuta = conv.minuta
-        if !minuta.plazo_vigente? minuta.fecha_acta, 25
+        if !minuta.plazo_vigente? minuta.fecha_acta, pend.tarea.duracion
           conv.update({terminada: true})# cierra la edición de la convocatoria
           TareaPendiente.where(flujo_id: flujo.id).each do |tp|
             if !tp.data.blank?
@@ -288,21 +302,33 @@ class TareaPendiente < ApplicationRecord
           end
           pend.pasar_a_siguiente_tarea 'A'
         end
-      when Tarea::COD_APL_032
+      when Tarea::COD_APL_032, Tarea::COD_APL_032_1
         flujo = pend.flujo
         manifestacion = flujo.manifestacion_de_interes
         informe = InformeAcuerdo.find_by(manifestacion_de_interes_id: manifestacion.id)
         auditoria = Auditoria.find_by_id(pend.data[:auditoria_id])
-        plazo = informe.calcula_fecha_plazo_finalizacion_implementacion(auditoria.plazo)
-        if (Time.now > plazo)
+        fecha_cierre = informe.calcula_fecha_firma + auditoria.plazo_cierre.months
+        if (Date.today > fecha_cierre)
           pend.pasar_a_siguiente_tarea 'B'
         end
       when Tarea::COD_PPF_015 #ingresar acta minutas, 25 dias
         conv = pend.determina_convocatoria
         minuta = conv.minuta
-        if (!minuta.plazo_vigente? minuta.fecha_acta, 25) && !minuta.lista_asistencia.nil?
+        if (!minuta.plazo_vigente? minuta.fecha_acta, pend.tarea.duracion) && !minuta.lista_asistencia.nil?
           conv.update({terminada: true})
           pend.pasar_a_siguiente_tarea 'B'
+        end
+      else
+        if pend.tarea_vencida_duracion?
+          flujo = pend.flujo
+          manifestacion = flujo.manifestacion_de_interes
+          manifestacion.temporal = true
+          manifestacion.update({
+            temporal: true,
+            comentarios_y_observaciones_termino_acuerdo: "Plazo vencido tarea #{pend.tarea.codigo}"
+          })
+          TareaPendiente.where(flujo_id: flujo.id).includes([:tarea]).all.update(estado_tarea_pendiente_id: 2)
+          flujo.update(terminado: true)
         end
       end
     end
@@ -334,7 +360,7 @@ class TareaPendiente < ApplicationRecord
   #DZC
   def es_auditoria?
     unless self.tarea.codigo == Tarea::COD_APL_037
-      [Tarea::COD_APL_032, Tarea::COD_APL_033, Tarea::COD_APL_034].include? self.tarea.codigo
+      [Tarea::COD_APL_032,Tarea::COD_APL_032_1, Tarea::COD_APL_033, Tarea::COD_APL_034].include? self.tarea.codigo
     else
       self.data.has_key?(:auditoria_id) ? true : false
     end

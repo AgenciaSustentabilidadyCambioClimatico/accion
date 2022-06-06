@@ -4,7 +4,12 @@ class ReunionDestinatario < ApplicationRecord
 
 	def format_titulo
 		titulo = self.reunion.encabezado
-		FlujoTarea.metodos(destinatario.user, self.reunion).each do |key, value| 
+		begin
+			mdi = self.reunion.proyecto.flujo.manifestacion_de_interes
+		rescue
+			mdi = nil
+		end
+		FlujoTarea.metodos(destinatario.user, self.reunion, mdi).each do |key, value| 
 			titulo = titulo.gsub(key.to_s, value.to_s)
 		end
 		titulo
@@ -12,7 +17,12 @@ class ReunionDestinatario < ApplicationRecord
 
 	def format_cuerpo
 		cuerpo = self.reunion.mensaje
-		FlujoTarea.metodos(destinatario.user, self.reunion).each do |key, value| 
+		begin
+			mdi = self.reunion.proyecto.flujo.manifestacion_de_interes
+		rescue
+			mdi = nil
+		end
+		FlujoTarea.metodos(destinatario.user, self.reunion, mdi).each do |key, value| 
 			cuerpo = cuerpo.gsub(key.to_s, value.to_s)
 		end
 		cuerpo

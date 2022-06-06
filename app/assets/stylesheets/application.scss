@@ -48,6 +48,7 @@ form#new_comentario .alert-info { background-color: #ceeaff; border-color: #bee5
 .form-inputs { margin-bottom: 7px; }
 .form-actions { margin-top: 10px; }
 .border-error{border-color:#de2d0f;border-width:1px;/*margin-bottom:0.5rem;*/border-style:solid;}
+.border-error-important{border-color:#de2d0f !important;border-width:1px !important;/*margin-bottom:0.5rem;*/border-style:solid !important;}
 .tooltip {font-size:12px!important}
 .tooltip.error .tooltip-inner {background: #DE2D0F}
 .tooltip.error .tooltip-inner.tooltip-inner::before {border-top-color: #DE2D0F}
@@ -497,8 +498,9 @@ ul#manifestacion, ul#proyecto, ul#actividad-proyecto, ul#programa-proyecto-propu
 }
 #actividad-proyecto-content .table thead th { border-bottom: none; }
 #actividad-proyecto-content .table tbody td { padding: 0; }
-.loading-data {display:none;position:absolute;width:100%;top:0;left:0;opacity:0.6;background:#727272;z-index:1}
-.loading-data .spinner{width:60px;height:60px;margin:0 auto}
+.loading-data {display:none;position:absolute;width: 100%;height:100vh;top:0;left:0;opacity:0.6;background:#727272;z-index:1}
+.loading-data .spinner{width:60px;height:60px}
+.loading-data .spinner{width:60px;height:60px;margin:auto auto}
 #manifestacion_de_interes_descripcion_acuerdo { height: 160px; resize: none; }
 #programa_proyecto_propuesta_descripcion,
 #programa_proyecto_propuesta_motivacion_y_objetivos,
@@ -1970,7 +1972,7 @@ table.table.table-home.dataTable.no-footer{
 .cover .triangle{
   position: absolute;
   top: 200px;
-  left: -500px;
+  left: -600px;
   width: 900px;
   height: 900px;
   transform: rotate(45deg);
@@ -1980,8 +1982,8 @@ table.table.table-home.dataTable.no-footer{
 
 .cover .triangle .imagen{
   position: absolute;
-  top: 48px;
-  right: 85px;
+  top: 30px;
+  right: 45px;
   transform: rotate(-22.5deg);
 }
 .cover-header-footer{
@@ -1996,5 +1998,31 @@ table.table.table-home.dataTable.no-footer{
   color: #FFFFFF;
   border-bottom: 4px solid #FFFFFF;
   padding-bottom: 8px;
-  width: 230px;
+  margin-top: 15px;
+  width: 450px;
+}
+.cover .subtitulo{
+  font-weight: 400;
+  font-size: 30px;
+  line-height: 35px;
+  color: #FFFFFF;
+  padding-bottom: 8px;
+  margin-top: 15px;
+  width: 450px;
+}
+//clases para certificado de certificacion
+.certificado-20px{
+  font-size: 20px;
+}
+.certificado-40px{
+  font-size: 40px;
+}
+.certificado-600{
+  font-weight: 600;
+}
+.certificado-black{
+  color: #000000;
+}
+.certificado-mt-150px{
+  margin-top: 150px;
 }

@@ -4,7 +4,7 @@ class SetMetasAccionesController < ApplicationController
   before_action :set_flujo
   before_action :set_informe
   before_action :set_metas_acciones
-  before_action :set_metas_accion, only: [:edit,:update,:destroy,:acciones_relacionadas]
+  before_action :set_metas_accion, only: [:edit,:update,:destroy,:acciones_relacionadas, :duplicar]
   before_action :set_entra_propuesta, only: [:new, :create, :edit, :update, :actualizacion, :revision, :enviar_revision]
 
   def actualizacion
@@ -262,6 +262,36 @@ class SetMetasAccionesController < ApplicationController
     # DZC 2018-10-08 10:50:33 se corrige error que mostraba la misma acción y no las relacionadas a ella
     @acciones=acciones_relacionadas.map{|a|a.accion_relacionada}
     render layout: false if request.xhr? #DZC no renderiza el layout si el reques es ajax
+  end
+
+  def duplicar
+    new_accion = @set_metas_accion.dup
+    new_accion.id_referencia = nil
+    new_accion.modelo_referencia = nil
+    new_accion.solo_comentar = true
+    new_accion.save
+    flash[:notice] = "Accion duplicada correctamente"
+    respond_to do |format|
+      format.js{ render js: "window.location.reload()" }
+    end
+  end
+
+  def utilizar
+    accion = Accion.find(params[:accion_id])
+    new_accion = SetMetasAccion.new({
+      flujo_id: @flujo.id,
+      manifestacion_de_interes_id: @manifestacion_de_interes.id,
+      accion_id: accion.id,
+      meta_id: accion.meta_id,
+      descripcion_accion: accion.descripcion,
+      detalle_medio_verificacion: accion.medio_de_verificacion_generico,
+      solo_comentar: true
+    })
+    new_accion.save
+    flash[:notice] = "Accion utilizada correctamente"
+    respond_to do |format|
+      format.js{ render js: "window.location.reload()" }
+    end
   end
 
   def continua_flujo_segun_tipo_tarea #DZC generalización de condiciones de continuación de flujo

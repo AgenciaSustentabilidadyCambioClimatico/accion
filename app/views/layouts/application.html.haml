@@ -45,16 +45,16 @@
               %img{src: image_url("logo-ascc.png"), style: "height: 65px;"}
           .d-flex
             =link_to acuerdos_firmados_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "acuerdos_firmados" ? 'active' : '')}" do
-              .title.mb-0=@acuerdos_firmados
+              .title.mb-0=@header.datos[:acuerdos_firmados]
               .subtitle.mb-0 Acuerdos Firmados
             =link_to empresas_y_elementos_adheridos_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "empresas_y_elementos_adheridos" ? 'active' : '')}" do
-              .title.mb-0=@empresas_adheridas
+              .title.mb-0=@header.datos[:empresas_adheridas]
               .subtitle.mb-0 Empresas adheridas
             =link_to empresas_y_elementos_certificados_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "empresas_y_elementos_certificados" ? 'active' : '')}" do
-              .title.mb-0=@empresas_certificadas
+              .title.mb-0=@header.datos[:empresas_certificadas]
               .subtitle.mb-0 Empresas Certificadas
             =link_to "#", class: 'header-no-signed d-flex flex-column ml-2' do
-              .title.mb-0=@acciones
+              .title.mb-0=@header.datos[:acciones]
               .subtitle.mb-0 Acciones
             =link_to '#', class: 'btn btn-ingresar-header iniciar-sesion-header ml-2 align-self-center' do
               Ingresar
@@ -70,16 +70,16 @@
               Ingresar
           .d-flex.flex-row.my-2
             =link_to acuerdos_firmados_path, class: "header-no-signed d-flex flex-column w-25 #{(params[:action] == "acuerdos_firmados" ? 'active' : '')}" do
-              .title.mb-0=@acuerdos_firmados
+              .title.mb-0=@header.datos[:acuerdos_firmados]
               .subtitle.mb-0 Acuerdos Firmados
             =link_to empresas_y_elementos_adheridos_path, class: "header-no-signed d-flex flex-column ml-1 w-25 #{(params[:action] == "empresas_y_elementos_adheridos" ? 'active' : '')}" do
-              .title.mb-0=@empresas_adheridas
+              .title.mb-0=@header.datos[:empresas_adheridas]
               .subtitle.mb-0 Empresas adheridas
             =link_to empresas_y_elementos_certificados_path, class: "header-no-signed d-flex flex-column ml-1 w-25 #{(params[:action] == "empresas_y_elementos_certificados" ? 'active' : '')}" do
-              .title.mb-0=@empresas_certificadas
+              .title.mb-0=@header.datos[:empresas_certificadas]
               .subtitle.mb-0 Empresas Certificadas
             =link_to "#", class: 'header-no-signed d-flex flex-column ml-1 w-25' do
-              .title.mb-0=@acciones
+              .title.mb-0=@header.datos[:acciones]
               .subtitle.mb-0 Acciones
       #modal_login.modal{style: "position: fixed; top: 0; right: 0; bottom: 0; left: auto; max-width: 465px;"}
         .modal-dialog.m-0
@@ -115,7 +115,7 @@
     :javascript
       $(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
     .loading-data
-      .spinner
+      .d-flex.align-items-center.justify-content-center.w-100.h-100
         = image_tag("loading.gif", class: :spinner)
     :javascript
       tarea_terminada = #{!@tarea_pendiente.nil? && @tarea_pendiente.no_esta_pendiente?};

@@ -10,6 +10,11 @@ class ApplicationController < ActionController::Base
   before_action :set_personas
   before_action :set_flash_trio
   before_action :set_default_url
+  before_action :clean_prev_redirect
+
+  def clean_prev_redirect
+    session.delete(:user_return_to) if request.path == session[:user_return_to]
+  end
 
   # DZC 2018-10-25 20:21:52 permite descargar zips, independiente de la clase, objeto y atributo donde se almacenan los archivos a comprimir
   def desacarga_zip

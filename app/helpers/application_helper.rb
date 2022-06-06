@@ -250,6 +250,9 @@ module ApplicationHelper
 
   def beauty_tree_selector(tree=[], identifier="default", group="default")
     capture_haml do
+      haml_tag :div do
+        haml_tag :input, type: :string, placeholder: "Buscar ...", class: "w-100 search"
+      end
       haml_tag :input, name: identifier, value: "", type: :hidden
       haml_tag :div, class: "ae-group #{group}" do
         _beauty_tree_selector(tree, identifier, false)
@@ -639,7 +642,15 @@ module ApplicationHelper
     data[:url] = dato_productivo_elemento_adheridos_path(pendiente)
     data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_APL_032
-    unless flujo.adhesion_elementos.blank?
+    unless false#Adhesion.find_by(flujo_id: flujo.id).adhesiones_aceptadas_mias.blank?
+      data[:url] = actualizar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    else
+      data[:url] = tarea_pendiente_auditoria_sin_elementos_adheridos_path(pendiente)
+      data[:icon] = "<i class='fa fa-exclamation-triangle' data-toggle='tooltip' title='APL sin elementos adheridos'></i>"
+      end
+    when Tarea::COD_APL_032_1
+    unless false#Adhesion.unscoped.where(id: pendiente.data[:adhesion_id]).first.adhesiones_aceptadas_mias.blank?
       data[:url] = actualizar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)
       data[:icon] = "<i class='fa fa-edit'></i>"
     else
@@ -650,7 +661,7 @@ module ApplicationHelper
     auditoria = pendiente.determina_auditoria
     informe_acuerdo = flujo.manifestacion_de_interes.informe_acuerdo
     fecha_comparativa = informe_acuerdo.fecha_desde_tipo_acuerdo
-    hoy =  Date.today
+    hoy =  DateTime.now
     #hoy debo estan entre os plazos de auditoria, inclusivo
     if (!fecha_comparativa.nil? && !auditoria.plazo_apertura.nil? && !auditoria.plazo_cierre.nil?) && hoy >= (fecha_comparativa + auditoria.plazo_apertura.months) && hoy <= (fecha_comparativa + auditoria.plazo_cierre.months)
       data[:url] = revisar_auditorias_manifestacion_de_interes_path(pendiente, flujo.manifestacion_de_interes)

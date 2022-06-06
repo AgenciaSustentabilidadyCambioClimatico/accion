@@ -41,7 +41,7 @@
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("9")
                       %th=t(:otro_dato)
                 %tbody
-                  -@elementos_adheridos.each do |elem|
+                  -@elementos_adheridos.datos.each do |elem|
                     %tr
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("1")
                         %td=elem[:fecha_adhesion]

@@ -11,13 +11,20 @@ class Persona < ApplicationRecord
 	has_many :tarea_pendientes #, dependent: :destroy # DZC 2019-08-16 19:19:36 se debe descomentar según se decida el tratamiento para eliminación de relaciones persona en mantenedor de usuarios.
 
 	validates :contribuyente_id, presence: true
-  validates :email_institucional, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
+  validates :email_institucional, presence: true
+  validates :email_institucional, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { !email_institucional.blank? && email_institucional != "no"}
   # DZC 2018-11-02 15:05:11 se modifica la condicion allow_blank a objeto de que el mantenedor de usuarios permita que el campo venga nulo
   validates :telefono_institucional, numericality: true, length: {in: 8..11}, allow_blank: true
 
   attr_accessor :establecimientos_data
 
   scope :sin_temporales, -> { joins(:contribuyente).where(contribuyentes: {temporal: false}) }
+
+  before_save :clear_no_data
+
+  def clear_no_data
+    self.email_institucional = "" if self.email_institucional == "no"
+  end
 
 
   

@@ -1,5 +1,6 @@
 :javascript
 	var map;
+	var uluru = {lat: -33.4429091, lng: -70.6538699};
 	var marker;
 	var geocoder;
 
@@ -21,31 +22,44 @@
 		});
 
 		$('#convocatoria_direccion').on('keyup',function(){
-			if($(this).val() != ""){
-				$('#btn_mostrar_mapa').removeClass('d-none');
-			}else{
-				$('#btn_mostrar_mapa').addClass('d-none');
+			if($('.tipo-reunion:checked').val() == "presencial"){
+				if($(this).val() != ""){
+					$('#btn_mostrar_mapa').removeClass('d-none');
+				}else{
+					$('#btn_mostrar_mapa').addClass('d-none');
+				}
 			}
-			actualizar_previsualizacion();
 		});
 
-		$('#convocatoria_fecha').on('change',function(){
-			actualizar_previsualizacion();
+		$('#convocatoria_fecha_hora').on('change',function(){
 		});
 
 		$('#seleccionar').change(function(){
 			$("input[name='seleccionados[]']").prop('checked', $(this).is(':checked'));
 		});
-		
 
-		
+		$('.tipo-reunion').click(function(){
+			if(this.value == 'presencial'){
+				$('.presencial').removeClass('d-none');
+				$('.virtual').addClass('d-none');
+			}else{
+				$('.presencial').addClass('d-none');
+				$('.virtual').removeClass('d-none');
+				$('#btn_mostrar_mapa').addClass('d-none');
+				$('#convocatoria_lat').val("");
+				$('#convocatoria_lng').val("");
+				marker.setMap(null);
+				map.setCenter(uluru);
+				map.setZoom(5);
+			}
+			$('#convocatoria_direccion').val("");
+		});
 
 		loadScript();
 
 	});
 
 	function initMap(){
-		var uluru = {lat: -33.4429091, lng: -70.6538699};
 		map = new google.maps.Map(document.getElementById('map'), {
 			zoom: 5,
 			center: uluru
@@ -105,30 +119,9 @@
 			} else {
 				$('#convocatoria_direccion').val('Dirección no cargada');
 			}
-			actualizar_previsualizacion();
 		});
 	}
 
-	function actualizar_previsualizacion(){
-		var fecha = $('#convocatoria_fecha').val();
-		var lugar = $('#convocatoria_direccion').val();
-		var encabezado = $('#encabezado_base').val();
-		var mensaje = $('#mensaje_base').val();
-
-		if(fecha != ""){
-			encabezado = encabezado.replace(/\[fecha_convocatoria\]/g, fecha);
-			mensaje = mensaje.replace(/\[fecha_convocatoria\]/g, fecha);
-		}
-
-		if(lugar != ""){
-			encabezado = encabezado.replace(/\[lugar_convocatoria\]/g, lugar);
-			mensaje = mensaje.replace(/\[lugar_convocatoria\]/g, lugar);
-		}
-
-		$('#convocatoria_encabezado').val(encabezado);
-		$('#convocatoria_mensaje').val(mensaje);
-
-	}
 
 - titulo "#{@tarea.nombre[8..-1]}" rescue ''
 
@@ -152,14 +145,24 @@
 					%h5.no-margin=datos_beneficiario.html_safe
 				.card-body
 					.row
-						.col-lg-6.col-12
+						.col-lg.col-12
 							.row                
 								.col-12
 									= f.input :nombre, label: t(:indicar_nombre_convocatoria), input_html: { class: 'required-field'}, placeholder: "Ingrese nombre de convocatoria", as: :string, required: true
 								.col-12
-									= f.input :fecha, label: t(:indicar_fecha_reunion), input_html: { class: 'required-field basic-datetimepicker'}, as: :string, required: true
+									= f.input :fecha_hora, label: t(:indicar_fecha_reunion), input_html: { class: 'required-field full-datetimepicker', value: @convocatoria.fecha_hora.strftime("%d-%m-%Y %H:%M")}, as: :string, required: true
 								.col-12
-									= f.input :direccion, label: t(:indicar_lugar_reunion), required: true, input_html: { class: 'required-field'}
+									= f.label t(:indicar_tipo_reunion)
+									%div
+										-Convocatoria.tipo_reuniones.keys.each do |tipo_reu|
+											= f.radio_button :tipo_reunion, tipo_reu, class: 'tipo-reunion'
+											= f.label tipo_reu.to_s.titleize
+								.col-12
+									.presencial{class: @convocatoria.virtual? ? 'd-none' : ''}
+										=f.label t(:indicar_lugar_reunion), required: true
+									.virtual{class: @convocatoria.presencial? ? 'd-none' : ''}
+										=f.label t(:indicar_enlace_web_reunion), required: true
+									= f.input :direccion, label: false, required: true, input_html: { class: 'required-field'}
 									= f.hidden_field :lat
 									= f.hidden_field :lng
 								.col-12
@@ -179,7 +182,7 @@
 								.col-2
 									= __descargar_archivo(f.object.archivo_adjunto,f.object)
 
-						.col-lg-6.col-12.mt-3
+						.col-lg-6.col-12.mt-3.presencial{class: @convocatoria.virtual? ? 'd-none' : ''}
 							%div#map{style: "height: 300px;"}
 				%hr
 				.card-body

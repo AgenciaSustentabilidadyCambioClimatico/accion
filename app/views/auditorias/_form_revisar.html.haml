@@ -1,5 +1,19 @@
 :javascript
   var tabla;
+
+  function cambio_estado_check(){
+    check_length = tabla.$('.seleccionar-elemento-auditoria:checked').length
+    total_length = tabla.$('.seleccionar-elemento-auditoria').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
+  }
+
   $(document).ready(function() {
     tabla = $('#auditorias_pendientes').DataTable({
       dom: 'tip',
@@ -27,7 +41,17 @@
 
 
     $('.seleccionar-elemento-auditoria').click(function(){
-      $('#boton_clasificar').prop('disabled', ($('.seleccionar-elemento-auditoria:checked').length == 0));
+      cambio_estado_check();
+    });
+
+    $('#boton_sel_todos').click(function(){
+      tabla.$('.seleccionar-elemento-auditoria').prop("checked", true);
+      cambio_estado_check();
+    });
+
+    $('#boton_desel_todos').click(function(){
+      tabla.$('.seleccionar-elemento-auditoria').prop("checked", false);
+      cambio_estado_check();
     });
 
     $('#auditoria_estado_elementos').change(function(){
@@ -96,28 +120,41 @@
 = simple_form_for @auditoria, url: guardar_revisar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
   =render 'modal_clasificar_elementos'
   = f.fields_for :auditoria_elementos do |ae|
-    .global-data{"data-id" => ae.object.id}
-      = ae.input :id, as: :hidden, wrapper: false
-      = ae.input :estado, as: :hidden, wrapper: false, input_html: {class: "estado-auditoria-elemento", value: 2}
-      = ae.input :observacion, as: :hidden, wrapper: false, input_html: {class: "observacion-auditoria-elemento"}
+    -if ae.object.estado == 2
+      .global-data{"data-id" => ae.object.id}
+        = ae.input :id, as: :hidden, wrapper: false
+        = ae.input :estado, as: :hidden, wrapper: false, input_html: {class: "estado-auditoria-elemento", value: 2}
+        = ae.input :observacion, as: :hidden, wrapper: false, input_html: {class: "observacion-auditoria-elemento"}
 
   .row
     .col-12
       .card
         .card-header
-          %div
-            %h5.no-margin=titulo_instrumento.html_safe
-            -if !@manifestacion_de_interes.blank?
-              %h5.no-margin=titulo_acuerdo.html_safe
-            -elsif !@proyecto.blank?
-              %h5.no-margin=titulo_proyecto.html_safe
-            -elsif !@ppp.blank?
-              %h5.no-margin=titulo_programa.html_safe
-            %h5.no-margin=datos_beneficiario.html_safe
+          .d-flex.justify-content-between.flex-column.flex-lg-row
+            %div
+              %h5.no-margin=titulo_instrumento.html_safe
+              -if !@manifestacion_de_interes.blank?
+                %h5.no-margin=titulo_acuerdo.html_safe
+              -elsif !@proyecto.blank?
+                %h5.no-margin=titulo_proyecto.html_safe
+              -elsif !@ppp.blank?
+                %h5.no-margin=titulo_programa.html_safe
+              %h5.no-margin=datos_beneficiario.html_safe
+            .card.mb-0.mt-3.mt-lg-0
+              .card-body.px-3.py-2
+                .form-group
+                  %label.string.control-label
+                    = t(:archivos_de_auditoria_y_documentacion)
+                  = link_to descargar_compilado_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-descargar btn-block' do
+                    %i.fa.fa-download
+                    = t(:descargar_documentación)
         .card-header
           .d-flex.justify-content-between.align-items-center
             %h5.no-margin=t(:elementos_a_revisar)
-            %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Clasificar
+            %div
+              %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_clasificar_elementos", disabled: true} Clasificar
+              %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+              %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
         .card-body.p-0
           %table.table.table-striped.table-bordered#auditorias_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
             %thead
@@ -141,10 +178,12 @@
               = f.fields_for :auditoria_elementos do |ae|
                 - if estado.include? (ae.object.estado) 
                   %tr{"data-id" => ae.object.id}
-                    %td=ae.object.adhesion_elemento.persona.contribuyente.rut_completo
-                    %td=ae.object.auditoria.nombre
-                    %td=ae.object.auditoria.id
-                    %td=ae.object.adhesion_elemento.nombre_del_elemento
+                    -adh = ae.object.adhesion_elemento
+                    -aud = ae.object.auditoria
+                    %td=adh.fila[:rut_institucion]
+                    %td=aud.nombre
+                    %td=aud.id
+                    %td=adh.nombre_del_elemento_v2
                     %td=ae.object.id
                     %td=ae.object.set_metas_accion.descripcion_accion
                     %td=ae.object.aplica ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
@@ -152,10 +191,10 @@
                     %td=ae.object.cumple ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
                     %td.text-center
                       -
-                      = link_to ae.object.archivo_evidencia.url, target: :_blank, class: "btn btn-tabla" do
+                      = link_to @archivos_auditoria[ae.object.archivo_evidencia_id], target: :_blank, class: "btn btn-tabla" do
                         %i.fa.fa-file
                     %td.text-center
-                      = link_to ae.object.archivo_informe.url, target: :_blank, class: "btn btn-tabla" do
+                      = link_to @archivos_auditoria[ae.object.archivo_informe_id], target: :_blank, class: "btn btn-tabla" do
                         %i.fa.fa-file
                     %td
                       %label.estado-elem

@@ -37,7 +37,8 @@ class CeremoniaCertificacionesController < ApplicationController
           minuta=Minuta.find_or_create_by({
             convocatoria_id: @convocatoria.id})
           minuta.update({
-            fecha: @convocatoria.fecha,
+            fecha_hora: @convocatoria.fecha_hora,
+            tipo_reunion: @convocatoria.tipo_reunion,
             direccion: @convocatoria.direccion,
             lat: @convocatoria.lat,
             lng: @convocatoria.lng})
@@ -71,7 +72,8 @@ class CeremoniaCertificacionesController < ApplicationController
           minuta = Minuta.find_or_create_by({
             convocatoria_id: @convocatoria.id})
           minuta.assign_attributes({
-            fecha: @convocatoria.fecha,
+            fecha_hora: @convocatoria.fecha_hora,
+            tipo_reunion: @convocatoria.tipo_reunion,
             direccion: @convocatoria.direccion,
             lat: @convocatoria.lat,
             lng: @convocatoria.lng
@@ -144,7 +146,7 @@ class CeremoniaCertificacionesController < ApplicationController
       case action_name
       when "nueva_convocatoria", "reset_convocatoria"
         if Convocatoria.where(flujo_id: @flujo.id, tarea_codigo: @tarea.codigo).blank? || @tarea_pendiente.data.has_key?(:auditoria_id)
-          @fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone.to_date : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
+          @fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
           @direccion = Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? nil : Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo)
           # DZC 2018-11-07 02:49:38 se agrega nombre de auditoria al nombre de la convocatoria, y se agrega el id de la convocatoria a la tabla de la auditoría
           @nombre = "Ceremonia de Certificación" #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
@@ -152,7 +154,7 @@ class CeremoniaCertificacionesController < ApplicationController
             auditoria = Auditoria.find(@tarea_pendiente.data[:auditoria_id])
             @nombre += (auditoria.nombre.present? ? +" "+auditoria.nombre : "") #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
           end
-          @convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha: @fecha, direccion: @direccion, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo, nombre: @nombre)
+          @convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha_hora: @fecha, direccion: @direccion, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo, nombre: @nombre)
           @convocatoria.save(validate: false)
           auditoria.update(convocatoria_id: @convocatoria.id) if auditoria.present?
         else
@@ -189,7 +191,8 @@ class CeremoniaCertificacionesController < ApplicationController
       parametros=params.require(:convocatoria).permit(
         :flujo_id,
         :nombre,
-        :fecha,
+        :fecha_hora,
+        :tipo_reunion,
         :direccion,
         :lat,
         :lng,

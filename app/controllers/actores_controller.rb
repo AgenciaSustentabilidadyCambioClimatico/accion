@@ -177,6 +177,7 @@ class ActoresController < ApplicationController
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
       # DZC 2018-11-02 13:14:12 se corrige error en actualización de variable @actores_desde_campo
+      @tarea_pendiente.update(data: {primera_ejecucion: false})
       set_obtiene_mapa_actual_y_actores
       @lista_actores = @actores_desde_campo.nil? ? @actores_desde_tablas : @actores_desde_campo
       MapaDeActor.actualiza_tablas_mapa_actores(@lista_actores, @flujo, @tarea_pendiente)

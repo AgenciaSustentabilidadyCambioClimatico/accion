@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20210902153639) do
+ActiveRecord::Schema.define(version: 20220503145219) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -175,6 +175,14 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "auditoria_elemento_archivos", force: :cascade do |t|
+    t.string "archivo"
+    t.bigint "auditoria_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auditoria_id"], name: "index_auditoria_elemento_archivos_on_auditoria_id"
+  end
+
   create_table "auditoria_elementos", force: :cascade do |t|
     t.bigint "auditoria_id"
     t.bigint "adhesion_elemento_id"
@@ -194,7 +202,11 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.text "validacion_observaciones"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "archivo_informe_id"
+    t.bigint "archivo_evidencia_id"
     t.index ["adhesion_elemento_id"], name: "index_auditoria_elementos_on_adhesion_elemento_id"
+    t.index ["archivo_evidencia_id"], name: "index_auditoria_elementos_on_archivo_evidencia_id"
+    t.index ["archivo_informe_id"], name: "index_auditoria_elementos_on_archivo_informe_id"
     t.index ["auditoria_id"], name: "index_auditoria_elementos_on_auditoria_id"
     t.index ["set_metas_accion_id"], name: "index_auditoria_elementos_on_set_metas_accion_id"
   end
@@ -620,6 +632,24 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "encuesta_descarga_roles", force: :cascade do |t|
+    t.bigint "tarea_id"
+    t.bigint "rol_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rol_id"], name: "index_encuesta_descarga_roles_on_rol_id"
+    t.index ["tarea_id"], name: "index_encuesta_descarga_roles_on_tarea_id"
+  end
+
+  create_table "encuesta_ejecucion_roles", force: :cascade do |t|
+    t.bigint "tarea_id"
+    t.bigint "rol_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rol_id"], name: "index_encuesta_ejecucion_roles_on_rol_id"
+    t.index ["tarea_id"], name: "index_encuesta_ejecucion_roles_on_tarea_id"
+  end
+
   create_table "encuesta_preguntas", force: :cascade do |t|
     t.integer "encuesta_id", null: false
     t.integer "pregunta_id", null: false
@@ -918,13 +948,13 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.text "caracterizacion_sector_territorio"
     t.text "principales_actores"
     t.string "mapa_de_actores_archivo"
-    t.integer "numero_empresas"
+    t.text "numero_empresas"
     t.float "porcentaje_mipymes"
-    t.string "produccion"
-    t.integer "ventas"
-    t.float "porcentaje_exportaciones"
+    t.text "produccion"
+    t.text "ventas"
+    t.text "porcentaje_exportaciones"
     t.text "principales_mercados"
-    t.integer "numero_trabajadores"
+    t.text "numero_trabajadores"
     t.text "vulnerabilidad_al_cambio_climatico_del_sector"
     t.text "principales_impactos_socioambientales_del_sector"
     t.text "principales_problemas_y_desafios"
@@ -1061,6 +1091,9 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.datetime "firma_fecha_hora"
     t.integer "ceremonia_certificacion_tipo_reunion", default: 0
     t.datetime "ceremonia_certificacion_fecha_hora"
+    t.text "comentarios_y_observaciones_detencion_acuerdo"
+    t.datetime "fecha_detencion_acuerdo"
+    t.boolean "detenido", default: false
   end
 
   create_table "mapa_de_actores", force: :cascade do |t|
@@ -1111,8 +1144,14 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "materia_sustancia_metas", force: :cascade do |t|
+    t.bigint "materia_sustancia_id"
+    t.bigint "clasificacion_id"
+    t.index ["clasificacion_id"], name: "index_materia_sustancia_metas_on_clasificacion_id"
+    t.index ["materia_sustancia_id"], name: "index_materia_sustancia_metas_on_materia_sustancia_id"
+  end
+
   create_table "materia_sustancias", force: :cascade do |t|
-    t.integer "meta_id", null: false
     t.string "nombre", null: false
     t.text "descripcion", null: false
     t.boolean "posee_una_magnitud_fisica_asociada", default: false, null: false
@@ -1483,6 +1522,23 @@ ActiveRecord::Schema.define(version: 20210902153639) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "reporte_sustentabilidads", force: :cascade do |t|
+    t.string "titulo_intro"
+    t.text "cuerpo_intro"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "reporteria_datos", force: :cascade do |t|
+    t.string "ruta"
+    t.integer "clasificacion_id"
+    t.integer "acuerdo_id"
+    t.string "vista"
+    t.text "datos"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "responsables", force: :cascade do |t|
     t.integer "tipo_instrumento_id", null: false
     t.integer "rol_id", null: false
@@ -1677,7 +1733,7 @@ ActiveRecord::Schema.define(version: 20210902153639) do
 
   create_table "users", force: :cascade do |t|
     t.string "rut", null: false
-    t.string "telefono", null: false
+    t.string "telefono"
     t.string "email", default: "", null: false
     t.string "web_o_red_social_1"
     t.string "web_o_red_social_2"
@@ -1762,7 +1818,10 @@ ActiveRecord::Schema.define(version: 20210902153639) do
   add_foreign_key "adhesiones", "regiones", column: "matriz_region_id"
   add_foreign_key "adhesiones", "roles"
   add_foreign_key "adhesiones", "tipo_contribuyentes"
+  add_foreign_key "auditoria_elemento_archivos", "auditorias"
   add_foreign_key "auditoria_elementos", "adhesion_elementos"
+  add_foreign_key "auditoria_elementos", "auditoria_elemento_archivos", column: "archivo_evidencia_id"
+  add_foreign_key "auditoria_elementos", "auditoria_elemento_archivos", column: "archivo_informe_id"
   add_foreign_key "auditoria_elementos", "auditorias"
   add_foreign_key "auditoria_elementos", "set_metas_acciones"
   add_foreign_key "auditoria_historicos", "manifestacion_de_intereses"
@@ -1807,6 +1866,10 @@ ActiveRecord::Schema.define(version: 20210902153639) do
   add_foreign_key "documento_garantias", "tipo_documento_garantias"
   add_foreign_key "ejecucion_presupuestarias", "centro_de_costos"
   add_foreign_key "ejecucion_presupuestarias", "programa_proyecto_propuestas"
+  add_foreign_key "encuesta_descarga_roles", "roles"
+  add_foreign_key "encuesta_descarga_roles", "tareas"
+  add_foreign_key "encuesta_ejecucion_roles", "roles"
+  add_foreign_key "encuesta_ejecucion_roles", "tareas"
   add_foreign_key "encuesta_preguntas", "encuestas"
   add_foreign_key "encuesta_preguntas", "preguntas"
   add_foreign_key "encuesta_user_respuestas", "encuestas"
@@ -1852,7 +1915,8 @@ ActiveRecord::Schema.define(version: 20210902153639) do
   add_foreign_key "materia_rubro_relacions", "materia_sustancias"
   add_foreign_key "materia_sustancia_clasificaciones", "clasificaciones"
   add_foreign_key "materia_sustancia_clasificaciones", "materia_sustancias"
-  add_foreign_key "materia_sustancias", "clasificaciones", column: "meta_id"
+  add_foreign_key "materia_sustancia_metas", "clasificaciones"
+  add_foreign_key "materia_sustancia_metas", "materia_sustancias"
   add_foreign_key "minutas", "convocatorias"
   add_foreign_key "modificacion_calendarios", "proyectos"
   add_foreign_key "otros", "alcances"

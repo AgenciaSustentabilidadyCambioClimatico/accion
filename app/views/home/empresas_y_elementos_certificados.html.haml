@@ -22,6 +22,8 @@
               %table.table.table-home{cellspacing: "0"}
                 %thead
                   %tr
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
+                      %th=t(:nombre_acuerdo)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("1")
                       %th=t(:empresa)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("2")
@@ -36,17 +38,17 @@
                       %th=t(:tipo)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("7")
                       %th=t(:otro_dato)
-                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
-                      %th=t(:nombre_acuerdo)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("9")
                       %th=t(:fecha_certificacion)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("10")
                       %th=t(:vigencia_certificacion)
                     -if @datos_publicos.visibilidad_empresas_certificadas.include?("11")
-                      %th=#t(:logotipo)
+                      %th=t(:descargar_certificado)
                 %tbody
-                  -@elementos_certificados.each do |elem|
+                  -@elementos_certificados.datos.each do |elem|
                     %tr
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
+                        %td=elem[:nombre_acuerdo]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("1")
                         %td=elem[:nombre_institucion]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("2")
@@ -61,14 +63,17 @@
                         %td=elem[:tipo_elemento]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("7")
                         %td=elem[:otro_dato]
-                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
-                        %td=elem[:nombre_acuerdo]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("9")
                         %td=elem[:fecha_certificacion]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("10")
                         %td=elem[:vigencia_certificacion]
                       -if @datos_publicos.visibilidad_empresas_certificadas.include?("11")
-                        %td=image_tag("download-solid.jpg", height: "33")
+                        %td
+                          -if elem[:vigente]
+                            = link_to certificado_admin_elementos_certificados_path(elem[:auditoria_id], elem[:id_elemento], elem[:nivel_id]),class: "btn btn-tabla-sm mx-auto", target: '_blank' do
+                              %i.fa.fa-download
+                          -else
+                            No tiene certificado por descargar
 :javascript
   $(document).ready(function(){
     $('.table-home').DataTable({

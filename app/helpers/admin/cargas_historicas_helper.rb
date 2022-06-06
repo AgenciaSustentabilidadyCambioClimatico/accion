@@ -567,7 +567,7 @@ module Admin::CargasHistoricasHelper
 							firma_fecha: fila[:fecha_firma_apl], #19
 							texto_apl: texto_apl_validado[0], #20
 							auditoria_historicos_attributes: auditorias_historicas, #21-38
-							ceremonia_certificacion_fecha: fila[:fecha_ceremonia_certificacion], #39
+							ceremonia_certificacion_fecha_hora: fila[:fecha_ceremonia_certificacion], #39
 							informe_impacto_attributes: informe_impacto #40-41
 						}]
       		

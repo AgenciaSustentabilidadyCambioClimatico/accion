@@ -70,8 +70,14 @@ class SetMetasAccion < ApplicationRecord
 		
 		auditorias = auditoria_especifica.blank? ? Auditoria.where(flujo_id: self.flujo.id) : [auditoria_especifica]
 		auditoria_elementos = AuditoriaElemento.where(auditoria_id: auditorias.pluck(:id), set_metas_accion_id: self.id)
-		
-		auditoria_elementos = elemento_especifico.present? ? auditoria_elementos.where(adhesion_elemento_id: elemento_especifico.id) : auditoria_elementos
+
+		if elemento_especifico.present?
+			if elemento_especifico.class == Array
+				auditoria_elementos = auditoria_elementos.where(adhesion_elemento_id: elemento_especifico)
+			else
+				auditoria_elementos = auditoria_elementos.where(adhesion_elemento_id: elemento_especifico.id)
+			end
+		end
 		if auditoria_elementos.present?
 			total_auditorias_cumple_aplica = auditoria_elementos.where(cumple: true, aplica: true).size.to_f
 			total_auditorias_aplica = auditoria_elementos.where(aplica: true).size.to_f
@@ -190,7 +196,7 @@ class SetMetasAccion < ApplicationRecord
 
 
   def self.observaciones_agrupadas_para_excel_v2(set_metas_acciones)
-    agrupadas = set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
+    #agrupadas = set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
     salida = {}
 
     #estructura a lograr: meta > accion > materia > alcance

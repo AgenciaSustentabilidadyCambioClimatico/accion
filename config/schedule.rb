@@ -74,3 +74,8 @@ end
 every '0 4 * * *' do
   rake "ascc:envia_correos_aviso", :enviroment => ambiente.to_s
 end
+
+#todos los dias a las 0 procesa datos de reporteria de paginas iniciales
+every '0 4 * * *' do
+  rake "ascc:genera_data_reporteria", :enviroment => ambiente.to_s
+end

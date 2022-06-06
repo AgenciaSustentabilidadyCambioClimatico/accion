@@ -6,7 +6,7 @@ class ArchivoRespuestasPertinenciasFactibilidadesManifestacionDeInteresUploader 
   end
 
   def extension_whitelist
-    %w(pdf docx png jpg)
+    %w(pdf docx png jpg zip)
   end
 
 end

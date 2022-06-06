@@ -54,7 +54,7 @@ class Clasificacion < ApplicationRecord
         ms = msc.materia_sustancia
         {
           id: ms.id,
-          meta_id: ms.meta_id,
+          metas_ids: ms.materia_sustancia_metas.pluck(:clasificacion_id),
           unidad_base: ms.unidad_base, #DZC se corrige modificación en tabla materia sustancia
           nombre: ms.nombre,
           descripcion: ms.descripcion,
@@ -106,7 +106,7 @@ class Clasificacion < ApplicationRecord
 
   def acuerdos
     manifestacion_de_intereses_ids = Flujo.where(id: self.set_metas_acciones.pluck(:flujo_id).uniq).pluck(:manifestacion_de_interes_id)
-    ManifestacionDeInteres.where(id: manifestacion_de_intereses_ids).where("firma_fecha IS NOT NULL")
+    ManifestacionDeInteres.where(id: manifestacion_de_intereses_ids).where("firma_fecha IS NOT NULL OR firma_fecha_hora IS NOT NULL")
   end
 
   def set_metas_acciones
@@ -114,16 +114,16 @@ class Clasificacion < ApplicationRecord
     SetMetasAccion.joins("LEFT JOIN accion_clasificaciones ON accion_clasificaciones.accion_id = set_metas_acciones.accion_id LEFT JOIN materia_sustancia_clasificaciones ON materia_sustancia_clasificaciones.materia_sustancia_id = set_metas_acciones.materia_sustancia_id")
                   .joins("INNER JOIN flujos ON flujos.id = set_metas_acciones.flujo_id INNER JOIN manifestacion_de_intereses ON manifestacion_de_intereses.id = flujos.manifestacion_de_interes_id")
                   .where("accion_clasificaciones.clasificacion_id IN (#{ids.join(",")}) OR materia_sustancia_clasificaciones.clasificacion_id  IN (#{ids.join(",")})")
-                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL")
+                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL OR manifestacion_de_intereses.firma_fecha_hora IS NOT NULL")
                   .distinct
   end
 
   def set_metas_acciones_de_meta
     ids = todos_mis_hijos(true)
-    SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id")
+    SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id INNER JOIN materia_sustancia_metas ON materia_sustancia_metas.materia_sustancia_id = materia_sustancias.id")
                   .joins("INNER JOIN flujos ON flujos.id = set_metas_acciones.flujo_id INNER JOIN manifestacion_de_intereses ON manifestacion_de_intereses.id = flujos.manifestacion_de_interes_id")
-                  .where("acciones.meta_id IN (#{ids.join(",")}) OR materia_sustancias.meta_id IN (#{ids.join(",")})")
-                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL")
+                  .where("acciones.meta_id IN (#{ids.join(",")}) OR materia_sustancia_metas.clasificacion_id IN (#{ids.join(",")})")
+                  .where("manifestacion_de_intereses.firma_fecha IS NOT NULL OR manifestacion_de_intereses.firma_fecha_hora IS NOT NULL")
                   .distinct
   end
 
@@ -148,52 +148,70 @@ class Clasificacion < ApplicationRecord
       alcances_ids << accion.alcance_id
       flujos_ids << accion.flujo_id
     end
-    adhesiones_ids = Adhesion.where(flujo_id: flujos_ids).pluck(:id)
+    adhesiones_ids = Adhesion.unscoped.where(flujo_id: flujos_ids).pluck(:id)
     AdhesionElemento.where(adhesion_id: adhesiones_ids, alcance_id: alcances_ids)
   end
 
-  def set_metas_acciones_comprometidas(manifestacion_de_interes)
+  def set_metas_acciones_comprometidas(manifestacion_de_interes, flujos_ids=[], adhesion_elemento=nil)
+    where_flujo = {set_metas_acciones: {flujo_id: manifestacion_de_interes.nil? ? flujos_ids : manifestacion_de_interes.flujo.id}}
+    if !adhesion_elemento.nil?
+      if adhesion_elemento.class == Array
+        where_flujo[:set_metas_acciones][:alcance_id] = adhesion_elemento
+      else
+        where_flujo[:set_metas_acciones][:alcance_id] = adhesion_elemento.alcance_id
+      end
+    end
     ids = todos_mis_hijos(true)
     SetMetasAccion.joins("LEFT JOIN accion_clasificaciones ON accion_clasificaciones.accion_id = set_metas_acciones.accion_id LEFT JOIN materia_sustancia_clasificaciones ON materia_sustancia_clasificaciones.materia_sustancia_id = set_metas_acciones.materia_sustancia_id")
                   .where("accion_clasificaciones.clasificacion_id IN (#{ids.join(",")}) OR materia_sustancia_clasificaciones.clasificacion_id IN (#{ids.join(",")})")
-                  .where("set_metas_acciones.flujo_id = #{manifestacion_de_interes.flujo.id}")
+                  .where(where_flujo)
                   .distinct
                   
     #SetMetasAccion.where(meta_id: self.todos_mis_hijos(true, false)).where(flujo_id: manifestacion_de_interes.flujo.id)
   end
 
-  def set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes)
-    SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id")
-                  .where("acciones.meta_id = #{self.id} OR materia_sustancias.meta_id = #{self.id} OR set_metas_acciones.meta_id = #{self.id}")
-                  .where("set_metas_acciones.flujo_id = #{manifestacion_de_interes.flujo.id}")
+  def set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes, flujos_ids=[], adhesion_elemento=nil)
+    where_flujo = {set_metas_acciones: {flujo_id: manifestacion_de_interes.nil? ? flujos_ids : manifestacion_de_interes.flujo.id}}
+    if !adhesion_elemento.nil?
+      if adhesion_elemento.class == Array
+        where_flujo[:set_metas_acciones][:alcance_id] = adhesion_elemento
+      else
+        where_flujo[:set_metas_acciones][:alcance_id] = adhesion_elemento.alcance_id
+      end
+    end
+    SetMetasAccion.joins("LEFT JOIN acciones ON acciones.id = set_metas_acciones.accion_id LEFT JOIN materia_sustancias ON materia_sustancias.id = set_metas_acciones.materia_sustancia_id INNER JOIN materia_sustancia_metas ON materia_sustancia_metas.materia_sustancia_id = materia_sustancias.id")
+                  .where("acciones.meta_id = #{self.id} OR materia_sustancia_metas.clasificacion_id = #{self.id} OR set_metas_acciones.meta_id = #{self.id}")
+                  .where(where_flujo)
                   .distinct
                   
     #SetMetasAccion.where(meta_id: self.todos_mis_hijos(true, false)).where(flujo_id: manifestacion_de_interes.flujo.id)
   end
 
-  def metas_comprometidas(manifestacion_de_interes)
+  def metas_comprometidas(manifestacion_de_interes, flujos_ids=[], adhesion_elemento = nil)
     #metas = SetMetasAccion.where(flujo_id: manifestacion_de_interes.flujo.id).pluck(:meta_id)
     #hijos = self.todos_mis_hijos(false, true)
     #hijos.select{|clasif| metas.include?(clasif.id)}
-    acciones_comprometidas = self.set_metas_acciones_comprometidas(manifestacion_de_interes).select(:id).map{|accion| accion.id}
+    acciones_comprometidas = self.set_metas_acciones_comprometidas(manifestacion_de_interes, flujos_ids, adhesion_elemento).select(:id).map{|accion| accion.id}
     if acciones_comprometidas.blank?
       return []
     else
-      return Clasificacion.joins("LEFT JOIN acciones ON acciones.meta_id = clasificaciones.id LEFT JOIN materia_sustancias ON materia_sustancias.meta_id = clasificaciones.id INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = acciones.id OR set_metas_acciones.materia_sustancia_id = materia_sustancias.id OR set_metas_acciones.meta_id = clasificaciones.id")
-                    .where("set_metas_acciones.id IN (#{acciones_comprometidas.join(',')})")
+      return Clasificacion.joins("LEFT JOIN acciones ON acciones.meta_id = clasificaciones.id LEFT JOIN materia_sustancia_metas ON materia_sustancia_metas.clasificacion_id = clasificaciones.id INNER JOIN materia_sustancias ON materia_sustancias.id = materia_sustancia_metas.materia_sustancia_id INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = acciones.id OR set_metas_acciones.materia_sustancia_id = materia_sustancias.id OR set_metas_acciones.meta_id = clasificaciones.id")
+                    .where(set_metas_acciones: { id: acciones_comprometidas })
                     .distinct
     end
   end
 
-  def elementos_comprometidos(manifestacion_de_interes, vista="clasificaciones")
+  def elementos_comprometidos(manifestacion_de_interes, vista="clasificaciones", flujos_ids=[], elementos_adheridos_ids=nil)
     alcances_ids = []
     if vista == "clasificaciones"
-      alcances_ids = self.set_metas_acciones_comprometidas(manifestacion_de_interes).select("set_metas_acciones.alcance_id").map{|accion| accion.alcance_id}
+      alcances_ids = self.set_metas_acciones_comprometidas(manifestacion_de_interes, flujos_ids).select("set_metas_acciones.alcance_id").map{|accion| accion.alcance_id}
     else
-      alcances_ids = self.set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes).select("set_metas_acciones.alcance_id").map{|accion| accion.alcance_id}
+      alcances_ids = self.set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes, flujos_ids).select("set_metas_acciones.alcance_id").map{|accion| accion.alcance_id}
     end
-    adhesiones_ids = Adhesion.where(flujo_id: manifestacion_de_interes.flujo.id).pluck(:id)
-    AdhesionElemento.where(adhesion_id: adhesiones_ids, alcance_id: alcances_ids)
+    adhesiones_ids = Adhesion.unscoped.where(flujo_id: manifestacion_de_interes.nil? ? flujos_ids : manifestacion_de_interes.flujo.id).pluck(:id)
+    ae = AdhesionElemento.where(adhesion_id: adhesiones_ids, alcance_id: alcances_ids)
+    ae = ae.where(id: elementos_adheridos_ids) if !elementos_adheridos_ids.nil?
+    ae
   end
 
   def empresas_comprometidas(manifestacion_de_interes, vista="clasificaciones")
@@ -204,12 +222,25 @@ class Clasificacion < ApplicationRecord
     rut_empresas.uniq
   end
 
-  def cumplimiento_promedio(manifestacion_de_interes, vista="clasificaciones")
+  def cumplimiento_promedio(manifestacion_de_interes, vista="clasificaciones", flujos_ids=[], adhesion_elemento=nil)
+    alcances_ids = nil
+    elementos_ids = nil
+    if !adhesion_elemento.nil?
+      alcances_ids = []
+      elementos_ids = []
+      if adhesion_elemento.class == Array
+        alcances_ids = adhesion_elemento.map{|ae| ae.alcance_id}
+        elementos_ids = adhesion_elemento.map{|ae| ae.id}
+      else
+        alcances_ids = [adhesion_elemento.alcance_id]
+        elementos_ids = [adhesion_elemento.id]
+      end
+    end
     acciones = []
     if vista == "clasificaciones"
-      acciones = self.set_metas_acciones_comprometidas(manifestacion_de_interes)
+      acciones = self.set_metas_acciones_comprometidas(manifestacion_de_interes, flujos_ids, alcances_ids)
     else
-      acciones = self.set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes)
+      acciones = self.set_metas_acciones_comprometidas_de_meta(manifestacion_de_interes, flujos_ids, alcances_ids)
     end
     cantidad = acciones.count
     if cantidad == 0
@@ -217,7 +248,7 @@ class Clasificacion < ApplicationRecord
     else
       suma = 0
       acciones.each do |accion|
-        suma += accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f
+        suma += accion.obtiene_procentaje_cumplimiento(nil, elementos_ids).gsub("%","").to_f
       end
       return (suma/cantidad).round(2)
     end

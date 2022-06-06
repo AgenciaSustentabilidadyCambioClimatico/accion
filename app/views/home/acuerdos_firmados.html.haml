@@ -20,43 +20,42 @@
                   %tr
                     %th=t(:nombre_acuerdo)
                     %th=t(:documentos)
-                    %th=t(:estado_consulta_publica)
-                    %th=t(:empresas_certificadas)
+                    %th=t(:estado_del_acuerdo)
                     %th=t(:empresas_adheridas)
+                    %th=t(:empresas_certificadas)
                 %tbody
-                  -@manifestaciones_de_interes.each do |manif_de_interes|
+                  -@acuerdos_firmados.datos.each do |data|
                     %tr
-                      -params_seleccionado = {acuerdo_id: manif_de_interes.id}
+                      -params_seleccionado = {acuerdo_id: data[:acuerdo_id]}
                       -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
-                      %td=link_to manif_de_interes.nombre_acuerdo, acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
+                      %td=link_to data[:nombre_acuerdo], acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
                       %td
-                        -if !manif_de_interes.diagnostico_de_acuerdo_anterior.blank? && @datos_publicos.visibilidad_documentos.include?("1")
+                        -if !data[:diagnostico_de_acuerdo_anterior].blank? && @datos_publicos.visibilidad_documentos.include?("1")
                           %div.text-nowrap
-                            =link_to "Documento Diagnóstico", manif_de_interes.diagnostico_de_acuerdo_anterior.url
-                        -if !manif_de_interes.documento_diagnosticos.blank? && @datos_publicos.visibilidad_documentos.include?("2")
+                            =link_to "Documento Diagnóstico", data[:diagnostico_de_acuerdo_anterior]
+                        -if data[:documento_diagnosticos] && @datos_publicos.visibilidad_documentos.include?("2")
                           %div.text-nowrap
-                            =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, manif_de_interes,acuerdo_id: manif_de_interes.id)
-                        -if !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.nil? && !manif_de_interes.informe_acuerdo.archivos_anexos.blank? && @datos_publicos.visibilidad_documentos.include?("3")
+                            =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
+                        -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
                           %div.text-nowrap
-                            =#link_to "Informe de Acuerdo", desacarga_zip_path(clase: "InformeAcuerdo", objeto_id: manif_de_interes.informe_acuerdo, atributo: "archivos_anexos")
-                            =link_to "Documento de Acuerdos y anexos", obtener_archivo_acuerdo_anexos_zip_path(manif_de_interes.flujo.id)
-                        -if !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.nil? && !manif_de_interes.informe_impacto.documento.blank? && @datos_publicos.visibilidad_documentos.include?("4")
+                            =link_to "Documento de Acuerdos y anexos", obtener_archivo_acuerdo_anexos_zip_path(data[:flujo_id])
+                        -if !data[:informe_impacto].blank? && @datos_publicos.visibilidad_documentos.include?("4")
                           %div.text-nowrap
-                            =link_to "Informe de Impacto", manif_de_interes.informe_impacto.documento.url
+                            =link_to "Informe de Impacto", data[:informe_impacto]
 
                       %td
                         .d-flex.align-items-center{style: "white-space: nowrap;"}
-                          -if manif_de_interes.estado_consulta_publica == "No iniciada"
+                          -if data[:estado_consulta_publica] == "No iniciada"
                             .estado-consulta.amarillo
-                          -if manif_de_interes.estado_consulta_publica == "Abierta"
+                          -if data[:estado_consulta_publica] == "Abierta"
                             .estado-consulta.verde
-                          -if manif_de_interes.estado_consulta_publica == "Cerrada"
+                          -if data[:estado_consulta_publica] == "Cerrada"
                             .estado-consulta.amarillo
-                          -if manif_de_interes.estado_consulta_publica == "Finalizada"
+                          -if data[:estado_consulta_publica] == "Finalizada"
                             .estado-consulta.rojo
-                          =manif_de_interes.estado_consulta_publica
-                      %td=manif_de_interes.empresas_certificadas.count
-                      %td=manif_de_interes.empresas_adheridas.count
+                          =data[:estado_consulta_publica]
+                      %td=data[:empresas_adheridas]
+                      %td=data[:empresas_certificadas]
 :javascript
   $(document).ready(function(){
     $('.table-home').DataTable({

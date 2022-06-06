@@ -36,7 +36,7 @@ class Admin::DatosPublicosController < ApplicationController
 
     def soy_admin?
       unless current_user.is_admin?
-        flash[:warning] = 'No tiene permiso para acceder a esta tarea'
+        flash[:warning] = 'No tiene permiso para acceder a esta página'
         redirect_to root_path
       end
     end

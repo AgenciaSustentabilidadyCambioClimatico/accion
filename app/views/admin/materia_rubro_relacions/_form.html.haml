@@ -33,22 +33,6 @@
 			 });          
 		});
 
-		$(".tupla-existe").change(function(){
-			var ms = $("#select-materia");
-			var act = $("#select-actividad");
-			if(ms.val() != "" && act.val() != ""){
-				$.ajax({
-		      url: "#{tupla_existe_admin_materia_rubro_relacions_path}",
-		      type: "GET",
-		      dataType: "script",
-		      data: { materia: ms.val(), actividad: act.val() }
-		    }).fail(function() {
-			    alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-			    $('.loading-data').hide();
-			  }).success(function(){
-			  });
-			}	
-		});
 
 	});
 - url = !@levantar.id.nil? ? admin_materia_rubro_relacion_path(@levantar) : admin_materia_rubro_relacions_path
@@ -62,9 +46,12 @@
 				.card-body
 					.row
 						.col-12.col-lg-6
-							= f.input :materia_sustancia_id, collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field tupla-existe', id: "select-materia"}, label: t(:materia_sustancia), prompt: "Seleccione una materia / sustancia"
+							= f.input :materia_sustancia_id, collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field validado chosen-control', id: "select-materia" , "data-placeholder" => "Seleccione una materia / sustancia"}, label: t(:materia_sustancia)
 						.col-12.col-lg-6
-							= f.input :actividad_economica_id, collection: ActividadEconomica.__select_arbol.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'required-field tupla-existe', id: "select-actividad" }, label: t(:actividad_económica), prompt: "Seleccione una actividad económica"
+							-if @levantar.new_record?
+								= f.input :actividad_economica_ids, collection: ActividadEconomica.__select_arbol.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'required-field', id: "select-actividad", multiple: true, "data-placeholder" => "Seleccione las actividades económicas" }, label: t(:actividad_económica)
+							-else
+								= f.input :actividad_economica_id, collection: ActividadEconomica.__select_arbol.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'required-field', id: "select-actividad", "data-placeholder" => "Seleccione una actividade económica" }, label: t(:actividad_económica)
 		.col-lg-12.column
 			.card
 				.card-header
