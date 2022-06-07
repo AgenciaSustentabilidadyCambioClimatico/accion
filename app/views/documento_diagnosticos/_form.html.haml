@@ -15,49 +15,52 @@
           = t(:agregar)
           %i.fa.fa-plus-circle
     .card-body
-      %table#documento-diagnosticos.table.table-striped.mb-0
-        %thead
-          %tr
-            %th=t(:tipo_documento_diagnostico)
-            %th=t(:nombre)
-            %th.text-center=t(:público?)
-            %th.text-center=t(:documento)
-            %th.text-center=t(:requiere_correcciones?)
-            %th
-        %tbody
-          = f.fields_for :documento_diagnosticos, @manifestacion_de_interes.documento_diagnosticos.order("id ASC"), wrapper: false  do |dd|
-            %tr.fields
-              - if ver_documentos_con_observaciones
-                %td.p-0
-                  = dd.input :tipo_documento_diagnostico_id, label: false, collection: TipoDocumentoDiagnostico.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'required-field p-0 campo-tipo-documento' }, required: true, wrapper_class: 'm-0'
-                %td.p-0
-                  = dd.input :nombre, label: false, input_html: { class: 'required-field p-0' }, wrapper_class: 'm-0'
-                %td.p-0.text-center
-                  = dd.input :publico, label: false, input_html: { class: 'im-not-required-check-the-others p-0' }, wrapper_class: 'm-0 chk-m-0'
-                %td.p-0.text-center
-                  = dd.input :archivo, label: false, input_html: { class: "#{dd.object.archivo.blank? ? 'required-field' : ''} p-0 float-left" }, wrapper_class: 'm-0'
-                  = dd.hidden_field :archivo_cache
-                  - unless dd.object.archivo.blank?
-                    %i.fa.fa-check-circle.float-right.tooltip-block.text-success.fa-2x{title: dd.object.archivo.file.filename}
-                %td.p-0.text-center                
-                  = dd.object.requiere_correcciones ? (t(:yes_with_fa_times).html_safe) : t(:no_with_fa_check).html_safe
-                %td.accion.no-padding.remove-row
-                  = dd.link_to_remove do
-                    %i.fa.fa-times-circle.left.link-to-remove-row
-              - elsif indicar_documentos_con_observaciones 
-                %td.p-o.text-center
-                  = dd.fields_for :tipo_documento_diagnostico, wrapper: false do |td|
-                    = td.object.nombre
-                %td.p-o.text-center
-                  = dd.object.nombre
-                %td.p-o.text-center
-                  = dd.object.publico ? "Si" : "No"
-                %td.p-o.text-center
-                  = link_to dd.object.archivo.url, class: "btn btn-primary btn-sm" do
-                    Descargar
-                %td.p-0.text-center
-                  = dd.input :requiere_correcciones, label: false, input_html: { class: 'im-not-required-check-the-others p-0 correcciones' }, wrapper_class: 'm-0 chk-m-0'
-                %td
+      .table-responsive.mb-3
+        %table#documento-diagnosticos.table.table-striped.mb-0.estandar-tabla
+          %thead
+            %tr
+              %th=t(:tipo_documento_diagnostico)
+              %th=t(:nombre)
+              %th.text-center=t(:público?)
+              %th.text-center=t(:documento)
+              %th.text-center=t(:requiere_correcciones?)
+              %th
+          %tbody
+            = f.fields_for :documento_diagnosticos, @manifestacion_de_interes.documento_diagnosticos.order("id ASC"), wrapper: false  do |dd|
+              %tr.fields
+                - if ver_documentos_con_observaciones
+                  %td.p-0.align-middle
+                    = dd.input :tipo_documento_diagnostico_id, label: false, collection: TipoDocumentoDiagnostico.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'required-field p-0 campo-tipo-documento' }, required: true, wrapper_class: 'm-0'
+                  %td.py-0.align-middle
+                    = dd.input :nombre, label: false, input_html: { class: 'required-field p-0 form-control', style: "height: calc(2.25rem + 2px);" }, wrapper_class: 'm-0'
+                  %td.py-0.text-center.align-middle
+                    = dd.input :publico, label: false, input_html: { class: 'im-not-required-check-the-others p-0 form-control m-2' }, wrapper_class: 'm-0 chk-m-0'
+                  %td.py-0.text-center.align-middle
+                    .d-flex.align-items-center.mb-1
+                      = dd.input :archivo, label: false, input_html: { class: "#{dd.object.archivo.blank? ? 'required-field' : ''}" }, wrapper_class: 'text-left'
+                      = dd.hidden_field :archivo_cache
+                      - unless dd.object.archivo.blank?
+                        %i.fa.fa-check-circle.float-right.tooltip-block.text-success.fa-2x.ml-2{title: dd.object.archivo.file.filename}
+                  %td.py-0.text-center.align-middle
+                    = dd.object.requiere_correcciones ? (t(:yes_with_fa_times).html_safe) : t(:no_with_fa_check).html_safe
+                  %td.accion.no-padding.remove-row
+                    = dd.link_to_remove do
+                      %i.fa.fa-times-circle.left.link-to-remove-row
+                - elsif indicar_documentos_con_observaciones 
+                  %td.p-o
+                    = dd.fields_for :tipo_documento_diagnostico, wrapper: false do |td|
+                      = td.object.nombre
+                  %td.p-o
+                    = dd.object.nombre
+                  %td.p-o.text-center
+                    = dd.object.publico ? "Si" : "No"
+                  %td.p-o.text-center
+                    = link_to dd.object.archivo.url, download: '', class: "btn btn-tabla" do
+                      %i.fa.fa-download.p-1
+                      #{dd.object.archivo.file.filename}
+                  %td.p-0.text-center.align-middle
+                    = dd.input :requiere_correcciones, label: false, input_html: { class: 'im-not-required-check-the-others p-0 correcciones' }, wrapper_class: 'm-0 chk-m-0'
+                  %td
       .row
         - if @manifestacion_de_interes.accion_en_documento_diagnostico == :revision
           .co-12.col-lg-4
@@ -65,38 +68,36 @@
               %label.boolean.required{for: :manifestacion_de_interes_aprueba_documentos_diagnostico}
                 %abbr{:title => "required"} *
                 = t(:aprueba_documentos_diagnostico)
-              .radio-buttons.form-control
+              .radio-buttons
                 = f.collection_radio_buttons :aprueba_documentos_diagnostico, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
           .col-lg-8.col-12
             = f.input :comentarios_y_observaciones_documento_diagnosticos, disabled: true, label: t(:comentarios_y_observaciones_documento_diagnosticos), required: true, input_html: {value: @manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos}
-        -# elsif @manifestacion_de_interes.accion_en_documento_diagnostico == :actualizacion
-        .col-12
-          .form-group
-            %label.string
-              = t(:comentarios)
-          %table.table.table-striped
-            %thead
-              %tr
-                %th=t(:fecha_y_hora)
-                %th=t(:usuario)
-                %th=t(:texto)
-            %tbody
-              -
-              - @comentarios.each do |c|
-                %tr
-                  %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
-                  %td=c[:user]
-                  %td=c[:texto]
+        -if @comentarios.size > 0
+          .col-12
+            .form-group
+              %label.string
+                = t(:comentarios)
+            .table-responsive
+              %table.table.table-striped
+                %thead
+                  %tr
+                    %th=t(:fecha_y_hora)
+                    %th=t(:usuario)
+                    %th=t(:texto)
+                %tbody
+                  -
+                  - @comentarios.each do |c|
+                    %tr
+                      %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
+                      %td=c[:user]
+                      %td=c[:texto]
           
-  .float-right
-    - position_class = nil
+  .float-right.mr-3.mb-3
     - unless externo
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    - else
-      - position_class = "mr-3 mb-3"
     - boton_disable = (@tarea.codigo == "APL-013") ? nil : :disabled
     - boton_tipo = (@tarea.codigo == "APL-013") ? nil : "btn-disabled"
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "#{position_class} btn btn-sm btn-primary button-send actualizar-mapa-de-actores-button #{boton_tipo}", disabled: boton_disable
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary button-send actualizar-mapa-de-actores-button #{boton_tipo}", disabled: boton_disable
 :javascript
   $(document).ready(function(){
     if ("#{@tarea.codigo}" != "APL-013"){

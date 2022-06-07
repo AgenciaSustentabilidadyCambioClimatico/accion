@@ -1,0 +1,130 @@
+=simple_form_for @datos_publicos, url: admin_datos_publico_path, method: :patch do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:visibilidad_documentos_acuerdos_firmados)
+        .card-body
+          .row
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_documentos.include?("1")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_documentos][]', value: 1, checked: checked}
+              Documento 1 (Doc. diagnóstico APL-001)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_documentos.include?("2")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_documentos][]', value: 2, checked: checked}
+              Documento 2 (Docs. diagnóstico APL-013)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_documentos.include?("3")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_documentos][]', value: 3, checked: checked}
+              Documento 3 (Documentos Acuerdo y anexos APL-018)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_documentos.include?("4")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_documentos][]', value: 4, checked: checked}
+              Documento 4 (Informe de Impacto APL-042)
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:visibilidad_columnas_empresas_adheridas)
+        .card-body
+          .row
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("1")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 1, checked: checked}
+              =t(:fecha_adhesion)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("2")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 2, checked: checked}
+              =t(:empresa)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("3")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 3, checked: checked}
+              =t(:rut_empresa)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("4")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 4, checked: checked}
+              =t(:region)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("5")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 5, checked: checked}
+              =t(:comuna)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("6")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 6, checked: checked}
+              =t(:tamano_empresa)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("7")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 7, checked: checked}
+              =t(:nombre_elemento)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("8")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 8, checked: checked}
+              =t(:tipo)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_adheridas.include?("9")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_adheridas][]', value: 9, checked: checked}
+              =t(:otro_dato)
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:visibilidad_columnas_empresas_certificadas)
+        .card-body
+          .row
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("1")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 1, checked: checked}
+              =t(:empresa)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("2")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 2, checked: checked}
+              =t(:rut_empresa)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("3")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 3, checked: checked}
+              =t(:region)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("4")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 4, checked: checked}
+              =t(:comuna)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("5")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 5, checked: checked}
+              =t(:nombre_elemento)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("6")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 6, checked: checked}
+              =t(:tipo)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("7")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 7, checked: checked}
+              =t(:otro_dato)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("8")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 8, checked: checked}
+              =t(:nombre_acuerdo)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("9")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 9, checked: checked}
+              =t(:fecha_certificacion)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("10")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 10, checked: checked}
+              =t(:vigencia_certificacion)
+            .col-12.col-md-6
+              -checked = @datos_publicos.visibilidad_empresas_certificadas.include?("11")
+              %input{type: :checkbox, name: 'datos_publico[visibilidad_empresas_certificadas][]', value: 11, checked: checked}
+              =t(:logotipo)
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:extension_reporte_sustentabilidad)
+        .card-body
+          .row
+            -DatosPublico.extension_reportes.keys.each do |ext|
+              .col-12.col-md-1
+                = f.radio_button :extension_reporte, ext, checked: @datos_publicos.extension_reporte == ext
+                = ext.to_sym
+
+    .col-12
+      .float-right
+        =f.submit t(:guardar), class: "btn btn-sm btn-primary"

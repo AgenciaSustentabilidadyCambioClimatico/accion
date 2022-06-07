@@ -133,9 +133,12 @@
 			check_campos_relacionados($(this).val(),true)
 		});
 
-		$('body').on('change','.contribuyente-radio',function() {
-			$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		});
+		//DZC 2019-06-17 13:54:12 se modifica para ejecutar la función verificarModal()
+		// $('body').on('change','.contribuyente-radio',function() {
+		// 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		// });
+		verificarModal();
+		
 		$('body').on('change','.usuario-radio',function() {
 			$('.seleccionar-usuario-button').removeAttr('disabled'); 
 		});

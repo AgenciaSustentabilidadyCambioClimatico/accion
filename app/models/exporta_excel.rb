@@ -101,17 +101,19 @@ class ExportaExcel
         end
         # Crea fila vacía con dominios
         empty = [*1..titulos_nombres.size].fill("")
-        ws.add_row empty, :style => defecto, types: titulos_types
-        control_dom.each do |cd|
-          # DZC 2018-10-09 11:13:49 Se modifica la fórmula para que mantenga el rango al copiarse filas
-          ws.add_data_validation(ws.rows.last.cells[cd[:posicion_celda]].r, {
-            :type => :list,
-            :formula1 => "Dominios!#{cd[:posicion_dominio]}$2:#{cd[:posicion_dominio]}$1000000",
-            :showDropDown => false,
-            :showInputMessage => true,
-            :promptTitle => cd[:titulo],
-            :prompt => 'Por favor seleccione'
-          })
+        (1..25).to_a.each do |fila_blanco|
+          ws.add_row empty, :style => defecto, types: titulos_types
+          control_dom.each do |cd|
+            # DZC 2018-10-09 11:13:49 Se modifica la fórmula para que mantenga el rango al copiarse filas
+            ws.add_data_validation(ws.rows.last.cells[cd[:posicion_celda]].r, {
+              :type => :list,
+              :formula1 => "Dominios!#{cd[:posicion_dominio]}$2:#{cd[:posicion_dominio]}$1000000",
+              :showDropDown => false,
+              :showInputMessage => true,
+              :promptTitle => cd[:titulo],
+              :prompt => 'Por favor seleccione'
+            })
+          end
         end
         #bloque columnas espeficas
         if bloqueo.present?
@@ -136,7 +138,11 @@ class ExportaExcel
       end
     end
     # creo el archivo de salida
-    p.serialize ("#{ruta}")
+    if ruta.blank?
+      return p
+    else
+      return p.serialize ("#{ruta}")
+    end
   end
 
 

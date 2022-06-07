@@ -1,0 +1,26 @@
+-app_helpers = @app_helpers if app_helpers.nil?
+-request = @request if request.nil?
+.cover-header-footer
+.intro-pdf-clean
+.header-pdf.mx-5.py-2
+  =app_helpers.image_tag(app_helpers.image_url('logo-ascc.png', host: request.base_url), height: 60)
+  .separator.mt-1
+:javascript
+  document.getElementsByTagName("body")[0].onload = function() {
+    var x=document.location.search.substring(1).split('&');
+    for (var i in x) {
+      if(x[i] == "page=1"){
+        document.getElementsByClassName("cover-header-footer")[i].style.display = "block";
+        document.getElementsByClassName("intro-pdf-clean")[i].style.display = "none";
+        document.getElementsByClassName("header-pdf")[i].style.display = "none";
+      }else if(x[i] == "page=3"){
+        document.getElementsByClassName("cover-header-footer")[i].style.display = "none";
+        document.getElementsByClassName("intro-pdf-clean")[i].style.display = "block";
+        document.getElementsByClassName("header-pdf")[i].style.display = "none";
+      }else{
+        document.getElementsByClassName("cover-header-footer")[i].style.display = "none";
+        document.getElementsByClassName("intro-pdf-clean")[i].style.display = "none";
+        document.getElementsByClassName("header-pdf")[i].style.display = "block";
+      }
+    }
+  };

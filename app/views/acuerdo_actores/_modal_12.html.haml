@@ -1,0 +1,46 @@
+.modal.fade.reload-previsualizar{id: :"modal-12", tabindex: "-1", role: :dialog, "aria-labelledby": :modal4Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-xxl.animated{role: :document}
+    .modal-content
+      .modal-header
+        =t(:vigencia_certificación)
+      .modal-body
+        .row
+          .col-12.col-lg-6
+            = f.input :vigencia_certificacion, label: t(:vigencia_certificación), as: :ckeditor, input_html: {value: @datos["vigencia_certificacion"], ckeditor: {height: 300}}
+          .col-12.col-lg-6
+            .row
+              .col-12
+                = f.label t(:palabras_claves)
+                %br
+                  - InformeAcuerdo.palabras_claves("vigencia_certificacion").keys.each do |palabra|
+                    ="[#{palabra}] "
+              .col-12.mt-2
+                = f.input :vigencia_certificacion_final, label: t(:vigencia_certificación_final), input_html: { class: "numero-1-7 required" }, as: :string
+              .col-12#div-certificaciones-intermedias.mt-2
+                .row
+                  .col-12
+                    %label.control-label=t(:vigencia_certificaciones_intermedias)
+                  .col-12
+                    .table-responsive-sm
+                      .row#auditorias-vigencia
+                        - @auditorias.each_with_index do |aud, index|
+                          -begin
+                            -id = aud.id
+                            -nombre = aud.nombre
+                            -plazo = aud.plazo
+                            -auditoria_niveles = aud.auditoria_niveles
+                            -con_cert = aud.con_certificacion?
+                            -final = aud.final?
+                          -rescue
+                            -id = 'id_temporal_'+index.to_s
+                            -nombre = aud[:nombre]
+                            -plazo = aud[:plazo]
+                            -auditoria_niveles = (aud[:auditoria_niveles].values rescue [])
+                            -con_cert = aud[:con_certificacion] == "true"
+                            -final = aud[:final] == "true"
+                          -if con_cert && !final
+                            =render 'form_auditoria_vigencia', aud_id: id, nombre: nombre, plazo: plazo, auditoria_niveles: auditoria_niveles
+
+      .modal-footer
+        %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
+          Terminar

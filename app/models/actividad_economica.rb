@@ -1,17 +1,60 @@
 class ActividadEconomica < ApplicationRecord
 
-	validates :codigo_ciiuv2, presence: true
-	validates :descripcion, presence: true
-	validates :descripcion_ciiuv2, presence: true
+  has_many :actividad_economica_contribuyentes
+
+	#validates :codigo_ciiuv2, presence: true
+	#validates :descripcion, presence: true
+	#validates :descripcion_ciiuv2, presence: true
 	#validates :codigo_ciiuv4, presence: true
 	#validates :descripcion_ciiuv4, presence: true
 	alias_attribute :nombre, :descripcion
+
+	def get_children
+		codigo_ciu = "nada"
+		codigo_ciu = self.codigo_ciiuv4 if !self.codigo_ciiuv4.blank?
+		ActividadEconomica.where("codigo_ciiuv4 LIKE '"+codigo_ciu+"%'").where.not(id: self.id)
+	end
+
+  def get_parents
+    #dependiendo de mi nivel traigo mi padre y/o abuelo, o nada
+    parents = []
+    if self.codigo_ciiuv4.length > 2
+      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,2])
+      parents << ActividadEconomica.find_by(codigo_ciiuv4: self.codigo_ciiuv4[0,3]) if self.codigo_ciiuv4.length == 6
+    end
+    parents
+  end
+
+	def self.__select_arbol(lowest_only=true)
+
+		#acteco = ActividadEconomica
+		#if lowest_only
+		#	acteco = acteco.where("length(codigo_ciiuv4) = 6").order(codigo_ciiuv4: :asc)
+		#end
+		#list = [["",""]]
+    #list += acteco.all.map {|acteco| [acteco.as_label, acteco.id, {class: "sub"}]}
+    #list
+    list = [["",""]]
+    beauty_tree_selector_v2.each do |ae|
+    	list << [ae[:name], ae[:id]]
+    	ae[:children].each do |subae|
+    		list << ["&nbsp;&nbsp;"+subae[:name], subae[:id]]
+    		subae[:children].each do |subsubae|
+    			list << ["&nbsp;&nbsp;&nbsp;&nbsp;"+subsubae[:name], subsubae[:id]]
+    		end
+    	end
+    end
+    list
+  end
+
 	def self.__select(lowest_only=true)
 		acteco = ActividadEconomica
 		if lowest_only
-			acteco = acteco.where("length(codigo_ciiuv2) = 6")
+			acteco = acteco.where("length(codigo_ciiuv4) = 6").order(codigo_ciiuv4: :asc)
 		end
-    acteco.all.map {|acteco| [acteco.as_label, acteco.id]}
+		list = [["",""]]
+    list += acteco.all.map {|acteco| [acteco.as_label, acteco.id]}
+    list
   end
 
   # DZC 2018-11-05 17:18:20 
@@ -20,7 +63,7 @@ class ActividadEconomica < ApplicationRecord
   end
 
   def as_label
-  	"<label>#{self.codigo_ciiuv2}</label> - #{self.descripcion}".html_safe
+  	"<label>#{self.codigo_ciiuv4}</label> - #{self.descripcion_ciiuv4}".html_safe
   end
 
   #DZC Listado de sectores económicos para el helper de vista TAREA PPF-012
@@ -51,6 +94,135 @@ class ActividadEconomica < ApplicationRecord
 		end
 		actecos
   end
+
+  def self.beauty_tree_selector_v2_old(checkeds=[])
+  	tree = {}
+  	min_length = 2
+  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv2) >= ?", min_length).order("LENGTH(codigo_ciiuv2) asc, codigo_ciiuv2 asc").all
+  	aes.each do |ae|
+  		ae_length = ae.codigo_ciiuv2.length
+  		if ae_length == min_length
+  			tree[ae.codigo_ciiuv2] = {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: nil, children: {}}
+  		else
+  			case ae_length
+  			when 3
+  				padre = ae.codigo_ciiuv2.chop
+  				tree[padre][:children][ae.codigo_ciiuv2] = {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: nil, children: {}}
+  			when 4
+  				padre = ae.codigo_ciiuv2.chop
+  				abuelo = padre.chop
+  				tree[abuelo][:children][padre][:children][ae.codigo_ciiuv2] = {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: nil, children: {}}
+  			when 5
+  				padre = ae.codigo_ciiuv2.chop
+  				abuelo = padre.chop
+  				tatarabuelo = abuelo.chop
+  				tree[tatarabuelo][:children][abuelo][:children][padre][:children][ae.codigo_ciiuv2] = {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: nil, children: {}}
+  			when 6
+  				padre = ae.codigo_ciiuv2.chop
+  				abuelo = padre.chop
+  				tatarabuelo = abuelo.chop
+  				tataratatarabuelo = tatarabuelo.chop
+  				tree[tataratatarabuelo][:children][tatarabuelo][:children][abuelo][:children][padre][:children][ae.codigo_ciiuv2] = {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: nil, children: {}}
+  			end
+  		end
+  	end
+
+  	tree = self.child_tree(tree, checkeds)
+
+  	tree
+  end
+
+  def self.beauty_tree_selector_v2(checkeds=[])
+  	tree = {}
+  	min_length = 2
+  	aee = nil
+  	aes = ActividadEconomica.where("LENGTH(codigo_ciiuv4) >= ?", min_length).order("LENGTH(codigo_ciiuv4) asc, codigo_ciiuv4 asc").all
+  	aes.each do |ae|
+  		aee = ae
+  		ae_length = ae.codigo_ciiuv4.length
+      ae_name = "#{ae.codigo_ciiuv4} - #{ae.descripcion_ciiuv4}"
+      ae_tooltip = ae.codigo_ciiuv2.blank? ? nil : "#{ae.codigo_ciiuv2} - #{ae.descripcion}"
+  		if ae_length == min_length
+  			tree[ae.codigo_ciiuv4] = {id: ae.id, name: ae_name, tooltip: ae_tooltip, status: nil, children: {}}
+  		else
+  			case ae_length
+  			when 3
+  				padre = ae.codigo_ciiuv4.chop
+  				tree[padre][:children][ae.codigo_ciiuv4] = {id: ae.id, name: ae_name, tooltip: ae_tooltip, status: nil, children: {}}
+  			when 6
+  				padre = ae.codigo_ciiuv4.chop.chop.chop
+  				abuelo = padre.chop
+  				tree[abuelo][:children][padre][:children][ae.codigo_ciiuv4] = {id: ae.id, name: ae_name, tooltip: ae_tooltip, status: nil, children: {}}
+  			end
+  		end
+  	end
+
+  	tree = self.child_tree(tree, checkeds)
+
+  	tree
+  end
+
+  def self.child_tree(data, checkeds=[])
+  	data.values.map{|ae|
+  		children = self.child_tree(ae[:children], checkeds)
+  		status = "unchecked"
+  		if children.size > 0
+	  		children_checked = children.select{|child| child[:status] == 'checked'}.size
+	  		children_unchecked = children.select{|child| child[:status] == 'unchecked'}.size
+	  		children_indeterminate = children.select{|child| child[:status] == 'indeterminate'}.size
+
+  			status = 'checked' if children.size == children_checked
+  			status = "indeterminate" if children_indeterminate > 0 || (children_unchecked > 0 && children_unchecked != children.size)
+  		else
+  			status = "checked" if checkeds.include?(ae[:id])
+  		end
+  		ae[:status] = status
+  		ae[:children] = children
+
+  		ae
+  	}
+  end
+  #Solo se usa para armar lista de beauty tree
+  #ToDo: tooltip para mostrat v2 cuando salga v4
+  ##INICIO
+  def self.beauty_tree_selector(checkeds=[])
+  	tree = []
+  	ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2").order(id: :asc).each do |ae|
+  		children = ae.children(checkeds, 3)
+  		children_checked = children.select{|child| child[:status] == 'checked'}.size
+  		children_unchecked = children.select{|child| child[:status] == 'unchecked'}.size
+  		children_indeterminate = children.select{|child| child[:status] == 'indeterminate'}.size
+  		status = "unchecked"
+  		if children.size > 0
+  			status = 'checked' if children.size == children_checked
+  			status = "indeterminate" if children_indeterminate > 0 || (children_unchecked > 0 && children_unchecked != children.size)
+  		else
+  			status = "checked" if checkeds.include?(ae.id)
+  		end
+  		tree << {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: status, children: children}
+  	end
+  	tree
+  end
+
+  def children(checkeds=[], nivel)
+  	tree = []
+  	ActividadEconomica.where("codigo_ciiuv2 LIKE '#{self.codigo_ciiuv2}%' AND LENGTH(codigo_ciiuv2) = #{nivel}").order(id: :asc).each do |ae|
+  		children = ae.children(checkeds, nivel+1)
+  		children_checked = children.select{|child| child[:status] == 'checked'}.size
+  		children_unchecked = children.select{|child| child[:status] == 'unchecked'}.size
+  		children_indeterminate = children.select{|child| child[:status] == 'indeterminate'}.size
+  		status = "unchecked"
+  		if children.size > 0
+  			status = 'checked' if children.size == children_checked
+  			status = "indeterminate" if children_indeterminate > 0 || (children_unchecked > 0 && children_unchecked != children.size)
+  		else
+  			status = "checked" if checkeds.include?(ae.id)
+  		end
+  		tree << {id: ae.id, name: "#{ae.codigo_ciiuv2} - #{ae.descripcion}", status: status, children: children}
+  	end
+  	tree
+  end
+  ##FIN
 
 	def self.ciiu_v2_to_id(code)
 		{

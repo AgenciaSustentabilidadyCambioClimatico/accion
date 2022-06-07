@@ -1,0 +1,30 @@
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin=t(:adhesiones_retiradas)
+      .card-body.p-0
+        %table.table.table-striped.table-bordered#adhesiones_retiradas{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+          %thead
+            %tr
+              %th=t(:rut_institucion)
+              %th=t(:nombre_institución)
+              %th=t(:alcance)
+              %th=t(:nombre_elemento)
+              %th=t(:comuna_elemento)
+              %th=t(:direccion_elemento)
+              %th=t(:fecha_retiro)
+              %th=t(:documento_de_justificacion)
+          %tbody
+            - @retiradas.each do |fila|
+              %tr
+                %td=fila[:rut_institucion]
+                %td=fila[:nombre_institucion]
+                %td=fila[:alcance]
+                %td=fila[:nombre_elemento]
+                %td=fila[:comuna_instalacion]
+                %td=fila[:direccion_instalacion]
+                %td=fila[:fecha_retiro]
+                %td.text-center
+                  =link_to fila[:documento_justificacion].url, class: "btn btn-tabla mx-auto" do
+                    =fa_icon 'file'

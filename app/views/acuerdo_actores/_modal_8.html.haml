@@ -1,4 +1,4 @@
-.modal.fade{id: :"modal-8", tabindex: "-1", role: :dialog, "aria-labelledby": :modal8Label, "aria-hidden": true}
+.modal.fade.reload-previsualizar{id: :"modal-8", tabindex: "-1", role: :dialog, "aria-labelledby": :modal8Label, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
     .modal-content
       .modal-header
@@ -6,7 +6,7 @@
       .modal-body
         .row
           .col-12
-            = f.input :personerias, as: :ckeditor, input_html: { value: @datos["personerias"]}, readonly: true, disabled: true, label: t(:pesonería)
+            = f.input :personerias, as: :ckeditor, input_html: { value: @datos["personerias"]}, readonly: true, disabled: true, label: t(:personería)
           .col-12
             = f.input :ejemplares, as: :ckeditor, input_html: { value: @datos["ejemplares"]}
           .col-12

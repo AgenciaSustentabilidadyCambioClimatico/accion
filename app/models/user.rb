@@ -1,14 +1,15 @@
 class User < ApplicationRecord
-  attr_accessor :is_admin, :updated, :current, :flujo_id
+  attr_accessor :is_admin, :updated, :current, :claveunica
   has_many :personas, dependent: :destroy
   has_many :contribuyentes, through: :personas
   has_many :persona_cargos, through: :personas
   has_many :tarea_pendientes, dependent: :destroy
   has_many :mapa_de_actores, through: :personas
+  has_many :registro_apertura_correos, dependent: :destroy # DZC 2019-08-06 15:57:06 se agrega dependencia para destroy
+  belongs_to :user, optional: true
   accepts_nested_attributes_for :personas, :allow_destroy => true#, reject_if: :all_blank
   serialize :fields_visibility
   serialize :session
-  before_validation :normalizar_rut
 
   ROOT  = 1
   ADMIN = 2
@@ -19,12 +20,24 @@ class User < ApplicationRecord
   # Include default devise modules. Others available are:
   # :confirmable, :lockable, :timeoutable and :omniauthable
   devise :invitable, :database_authenticatable, :registerable, :recoverable, :rememberable, :trackable, :validatable
-  validates :rut, presence: true, rut: true
+  validates :rut, presence: true
+  validates :rut, rut: true, if: -> { !rut.blank? && rut != "no" }
   validates :nombre_completo, presence: true
-  validates :telefono, numericality: true, length: {in: 8..11}, allow_blank: false
-  validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }  
-  validates_uniqueness_of :email
-  validates_uniqueness_of :rut
+  validates :telefono, numericality: true, length: {in: 8..11}, allow_blank: false, if: -> { !claveunica }
+  validates :email, presence: true, if: -> { !claveunica }
+  validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { !email.blank? && email != "no"}
+  validates_uniqueness_of :email, on: :create, if: ->  {email != "no" }
+  validates_uniqueness_of :rut, on: :create, if: ->  {rut != "no" }
+
+  before_validation :normalizar_rut, if: ->  {rut != "no" }
+  before_save :clear_no_data
+
+  default_scope { where(temporal: false) }
+
+  def clear_no_data
+    self.rut = "" if self.rut == "no"
+    self.email = "" if self.email == "no"
+  end
 
   def persona_segun_(contribuyente_id)
     self.personas.map{|p|p if (p.contribuyente_id == contribuyente_id) }.compact.first
@@ -54,8 +67,12 @@ class User < ApplicationRecord
 
   #Se concidera administrador solo a aquel que posea el cargo adminsitrado dentro de la agencia
   def is_admin?
+    cargos = []
+    self.personas.each do |p|
+      cargos += p.persona_cargos.map{|cp| cp.cargo_id}
+    end
     # DZC 2018-11-19 14:28:39 se agrega como administrador al root, para efectos de control y acceso a solución de problemas
-    if session[:cargos].include?(Cargo::ROOT)# || session[:cargos].include?(Cargo::ADMIN)
+    if cargos.include?(Cargo::ROOT)# || session[:cargos].include?(Cargo::ADMIN)
       true
     else
       ascc = Contribuyente.find_by_rut(75980060)
@@ -82,8 +99,11 @@ class User < ApplicationRecord
     #DZC si se ingresa un rol como simple numero, lo transforma en Array 
     (roles = (roles.class == Array)? roles : [roles]) if (roles.class == Integer) 
     lo_es = false
-    personas = session[:personas]
-    cargos = session[:cargos]
+    personas = self.personas
+    cargos = []
+    self.personas.each do |p|
+      cargos += p.persona_cargos.map{|cp| cp.cargo_id}
+    end
     contribuyentes_de_usuario_id = []
     contribuyentes_de_usuario_id = personas.map{|p| p[:contribuyente_id]}
     contribuyentes_de_usuario_rut = Contribuyente.where(id: contribuyentes_de_usuario_id).pluck(:rut)
@@ -92,6 +112,14 @@ class User < ApplicationRecord
       lo_es = !(cargos & cargos_en_tabla_responsables).blank?
     end
     lo_es
+  end
+
+  def is_ascc?
+    !self.personas.includes(:contribuyente).where(contribuyentes: {rut: 75980060}).blank?
+  end
+
+  def mis_instituciones
+    personas.map{|p| p[:contribuyente_id]}
   end
 
   def is_encargado_institucion?
@@ -118,6 +146,11 @@ class User < ApplicationRecord
     #self.cargo_users.map{|m|m.cargo_id}.include?(Cargo::CO_GESTOR)
   end
 
+  def is_responsable?
+    personas = Responsable.__personas_responsables_v2(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+    personas.select{|p| p.user_id = self.id}.first
+  end
+
   #Jamás podremos borrar al usuario root, admin ni user
   def destroy
     unless BASIC.include?(self.id)
@@ -139,5 +172,49 @@ class User < ApplicationRecord
       "#{u[:rut]}"+" - "+ "#{u[:nombre_completo]}"
     end
     usuarios.to_sentence
+  end
+
+  def password_required?
+    return false if temporal
+    super
+  end
+
+  def clonar_con_relaciones
+    user_temporal = self.dup
+    user_temporal.user_id = self.id
+    user_temporal.reset_password_token = nil
+    user_temporal.save(validate: false)
+    user_temporal
+  end
+
+  def confirmar_temporal
+    if(self.user_id.nil?)
+      #Es nuevo
+      user_final = self
+      user_final.temporal = false
+      user_final.flujo_id = nil
+      user_final.save
+    else
+      #Se edito uno existente
+      user_final = User.find(self.user_id)
+
+      #Primero los valores del padre
+      user_final.telefono = self.telefono
+      user_final.email = self.email
+      user_final.nombre_completo = self.nombre_completo
+      user_final.save(validate: false)
+    end
+    user_final
+  end
+
+  def update_without_password(params, *options)
+    if params[:password].blank?
+      params.delete(:password)
+      params.delete(:password_confirmation) if params[:password_confirmation].blank?
+    end
+
+    result = update_attributes(params, *options)
+    clean_up_passwords
+    result
   end
 end

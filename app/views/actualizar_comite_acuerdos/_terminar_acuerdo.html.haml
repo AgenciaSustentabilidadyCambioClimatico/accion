@@ -9,8 +9,8 @@
         .modal-body
           .row
             .col-12
-              = m.input :comentarios_y_observaciones_termino_acuerdo, label: t(:comentarios_y_observaciones_termino_acuerdo), input_html: { class: '', value: @comentarios}, placeholder: "Ingrese comentario u observación", as: :text, required: false
+              = m.input :comentarios_y_observaciones_termino_acuerdo, label: t(:comentarios_y_observaciones_termino_acuerdo), input_html: { class: ''}, placeholder: "Ingrese comentario u observación", as: :text, required: false
         .modal-footer
-          %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
             Cerrar
-          = m.submit "Terminar acuerdo", class: 'btn btn-outline-danger btn-primary btn-sm', data: { confirm: t(:confirma_poner_termino_acuerdo), remote: false }
+          = m.submit "Terminar Acuerdo", class: 'btn btn-danger btn-primary btn-sm', data: { confirm: t(:confirma_poner_termino_acuerdo), remote: false }

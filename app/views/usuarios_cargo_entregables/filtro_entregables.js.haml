@@ -1,1 +1,1 @@
-$("#mapa_de_actor_usuario_entregables").html("#{escape_javascript(render 'filtro')}");
+$('#usuarios_entregables .usuarios-remote-table').html("#{j render('admin/users/tabla', modal_id: 'usuarios_entregables')}");

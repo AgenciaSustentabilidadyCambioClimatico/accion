@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20190307184636) do
+ActiveRecord::Schema.define(version: 20220503145219) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -45,6 +45,15 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "actividad_economica_flujos", force: :cascade do |t|
+    t.bigint "actividad_economica_id"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_economica_id"], name: "index_actividad_economica_flujos_on_actividad_economica_id"
+    t.index ["flujo_id"], name: "index_actividad_economica_flujos_on_flujo_id"
   end
 
   create_table "actividad_economicas", force: :cascade do |t|
@@ -89,6 +98,27 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "adhesion_elemento_retirados", force: :cascade do |t|
+    t.bigint "adhesion_id"
+    t.bigint "persona_id"
+    t.bigint "alcance_id"
+    t.bigint "establecimiento_contribuyente_id"
+    t.bigint "maquinaria_id"
+    t.bigint "otro_id"
+    t.string "archivo_adhesion"
+    t.string "archivo_respaldo"
+    t.string "archivo_retiro"
+    t.text "fila"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["adhesion_id"], name: "index_adhesion_elemento_retirados_on_adhesion_id"
+    t.index ["alcance_id"], name: "index_adhesion_elemento_retirados_on_alcance_id"
+    t.index ["establecimiento_contribuyente_id"], name: "idx_aer_ec"
+    t.index ["maquinaria_id"], name: "index_adhesion_elemento_retirados_on_maquinaria_id"
+    t.index ["otro_id"], name: "index_adhesion_elemento_retirados_on_otro_id"
+    t.index ["persona_id"], name: "index_adhesion_elemento_retirados_on_persona_id"
+  end
+
   create_table "adhesion_elementos", force: :cascade do |t|
     t.bigint "adhesion_id"
     t.bigint "persona_id"
@@ -101,6 +131,8 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "fila"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "adhesion_externa_id"
+    t.index ["adhesion_externa_id"], name: "index_adhesion_elementos_on_adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elementos_on_adhesion_id"
     t.index ["alcance_id"], name: "index_adhesion_elementos_on_alcance_id"
     t.index ["establecimiento_contribuyente_id"], name: "index_adhesion_elementos_on_establecimiento_contribuyente_id"
@@ -117,7 +149,23 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at"
     t.bigint "manifestacion_de_interes_id"
     t.bigint "flujo_id"
+    t.string "rut_institucion_adherente"
+    t.text "nombre_institucion_adherente"
+    t.text "matriz_direccion"
+    t.bigint "matriz_region_id"
+    t.bigint "matriz_comuna_id"
+    t.bigint "tipo_contribuyente_id"
+    t.string "rut_representante_legal"
+    t.text "nombre_representante_legal"
+    t.bigint "fono_representante_legal"
+    t.text "email_representante_legal"
+    t.boolean "externa", default: false
+    t.bigint "rol_id"
     t.index ["flujo_id"], name: "index_adhesiones_on_flujo_id"
+    t.index ["matriz_comuna_id"], name: "index_adhesiones_on_matriz_comuna_id"
+    t.index ["matriz_region_id"], name: "index_adhesiones_on_matriz_region_id"
+    t.index ["rol_id"], name: "index_adhesiones_on_rol_id"
+    t.index ["tipo_contribuyente_id"], name: "index_adhesiones_on_tipo_contribuyente_id"
   end
 
   create_table "alcances", force: :cascade do |t|
@@ -125,6 +173,14 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "descripcion", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "auditoria_elemento_archivos", force: :cascade do |t|
+    t.string "archivo"
+    t.bigint "auditoria_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auditoria_id"], name: "index_auditoria_elemento_archivos_on_auditoria_id"
   end
 
   create_table "auditoria_elementos", force: :cascade do |t|
@@ -146,7 +202,11 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "validacion_observaciones"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "archivo_informe_id"
+    t.bigint "archivo_evidencia_id"
     t.index ["adhesion_elemento_id"], name: "index_auditoria_elementos_on_adhesion_elemento_id"
+    t.index ["archivo_evidencia_id"], name: "index_auditoria_elementos_on_archivo_evidencia_id"
+    t.index ["archivo_informe_id"], name: "index_auditoria_elementos_on_archivo_informe_id"
     t.index ["auditoria_id"], name: "index_auditoria_elementos_on_auditoria_id"
     t.index ["set_metas_accion_id"], name: "index_auditoria_elementos_on_set_metas_accion_id"
   end
@@ -163,26 +223,79 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.index ["manifestacion_de_interes_id"], name: "index_auditoria_historicos_on_manifestacion_de_interes_id"
   end
 
+  create_table "auditoria_niveles", force: :cascade do |t|
+    t.bigint "auditoria_id"
+    t.bigint "estandar_nivel_id"
+    t.integer "plazo"
+    t.index ["auditoria_id"], name: "index_auditoria_niveles_on_auditoria_id"
+    t.index ["estandar_nivel_id"], name: "index_auditoria_niveles_on_estandar_nivel_id"
+  end
+
+  create_table "auditoria_validaciones", force: :cascade do |t|
+    t.bigint "auditoria_id"
+    t.bigint "user_id"
+    t.text "validaciones"
+    t.string "archivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auditoria_id"], name: "index_auditoria_validaciones_on_auditoria_id"
+    t.index ["user_id"], name: "index_auditoria_validaciones_on_user_id"
+  end
+
   create_table "auditorias", force: :cascade do |t|
     t.bigint "manifestacion_de_interes_id"
     t.string "nombre"
     t.integer "plazo"
-    t.boolean "con_certificacion", default: false
-    t.boolean "con_validacion", default: false
-    t.boolean "final", default: false
+    t.boolean "con_certificacion"
+    t.boolean "con_validacion"
+    t.boolean "final"
     t.bigint "flujo_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "auditoria_id"
+    t.bigint "convocatoria_id"
     t.date "ceremonia_certificacion_fecha"
     t.string "ceremonia_certificacion_direccion"
     t.decimal "ceremonia_certificacion_lat"
     t.decimal "ceremonia_certificacion_lng"
     t.text "ceremonia_certificacion_firmantes"
     t.json "ceremonia_certificacion_archivo"
-    t.bigint "convocatoria_id"
     t.boolean "archivo_correcto"
+    t.integer "plazo_apertura"
+    t.integer "plazo_cierre"
+    t.boolean "con_mantencion", default: false
+    t.string "archivo_revision"
     t.index ["flujo_id"], name: "index_auditorias_on_flujo_id"
+  end
+
+  create_table "campo_tareas", force: :cascade do |t|
+    t.bigint "campo_id"
+    t.bigint "tarea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["campo_id"], name: "index_campo_tareas_on_campo_id"
+    t.index ["tarea_id"], name: "index_campo_tareas_on_tarea_id"
+  end
+
+  create_table "campos", force: :cascade do |t|
+    t.string "clase", null: false
+    t.string "atributo", null: false
+    t.string "tipo", null: false
+    t.string "nombre"
+    t.boolean "validacion_contenido_obligatorio", default: true
+    t.boolean "validaciones_activas", default: true
+    t.string "validacion_vacio_mensaje"
+    t.bigint "validacion_min"
+    t.bigint "validacion_max"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "validacion_min_activa", default: true
+    t.boolean "validacion_max_activa", default: true
+    t.string "tooltip"
+    t.string "ayuda"
+    t.boolean "tooltip_activo", default: true
+    t.boolean "ayuda_activo", default: true
+    t.text "id_referencial"
   end
 
   create_table "cargos", id: :serial, force: :cascade do |t|
@@ -222,6 +335,18 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
   end
 
+  create_table "ckeditor_assets", force: :cascade do |t|
+    t.string "data_file_name", null: false
+    t.string "data_content_type"
+    t.integer "data_file_size"
+    t.string "type", limit: 30
+    t.integer "width"
+    t.integer "height"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["type"], name: "index_ckeditor_assets_on_type"
+  end
+
   create_table "clasificaciones", force: :cascade do |t|
     t.integer "clasificacion_id"
     t.string "nombre", null: false
@@ -230,6 +355,9 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.boolean "es_meta", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "imagen"
+    t.string "icono"
+    t.string "color"
   end
 
   create_table "comentario_archivos", force: :cascade do |t|
@@ -249,6 +377,32 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.boolean "resuelto"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "comentarios_informe_acuerdos", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "informe_acuerdo_id", null: false
+    t.string "nombre", null: false
+    t.string "rut", null: false
+    t.string "email"
+    t.text "comentario", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["informe_acuerdo_id"], name: "index_comentarios_informe_acuerdos_on_informe_acuerdo_id"
+    t.index ["user_id"], name: "index_comentarios_informe_acuerdos_on_user_id"
+  end
+
+  create_table "comentarios_metas_acciones", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "set_metas_accion_id", null: false
+    t.string "nombre", null: false
+    t.string "rut", null: false
+    t.string "email"
+    t.text "comentario", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["set_metas_accion_id"], name: "index_comentarios_metas_acciones_on_set_metas_accion_id"
+    t.index ["user_id"], name: "index_comentarios_metas_acciones_on_user_id"
   end
 
   create_table "comunas", id: :serial, force: :cascade do |t|
@@ -271,6 +425,15 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "region_id"
   end
 
+  create_table "comunas_flujos", force: :cascade do |t|
+    t.bigint "comuna_id"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["comuna_id"], name: "index_comunas_flujos_on_comuna_id"
+    t.index ["flujo_id"], name: "index_comunas_flujos_on_flujo_id"
+  end
+
   create_table "contribuyentes", force: :cascade do |t|
     t.integer "rut"
     t.string "dv", limit: 1
@@ -278,7 +441,13 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "fields_visibility"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["rut"], name: "index_contribuyentes_on_rut", unique: true
+    t.boolean "temporal", default: false
+    t.bigint "flujo_id"
+    t.bigint "contribuyente_id"
+    t.index ["contribuyente_id"], name: "index_contribuyentes_on_contribuyente_id"
+    t.index ["flujo_id"], name: "index_contribuyentes_on_flujo_id"
+    t.index ["razon_social"], name: "contribuyentes_razon_social"
+    t.index ["rut"], name: "index_contribuyentes_on_rut"
   end
 
   create_table "convocatoria_destinatarios", force: :cascade do |t|
@@ -310,11 +479,30 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.json "archivo_adjunto"
     t.text "caracterizacion"
     t.boolean "terminada", default: false
-    t.integer "tipo"
     t.bigint "flujo_id"
     t.string "tarea_codigo"
+    t.integer "tipo"
     t.text "nombre"
+    t.datetime "fecha_hora"
+    t.integer "tipo_reunion", default: 0
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
+  end
+
+  create_table "cuencas", force: :cascade do |t|
+    t.string "codigo_cuenca"
+    t.string "nombre_cuenca"
+    t.string "region"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "cuencas_flujos", force: :cascade do |t|
+    t.bigint "flujo_id"
+    t.bigint "cuenca_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["cuenca_id"], name: "index_cuencas_flujos_on_cuenca_id"
+    t.index ["flujo_id"], name: "index_cuencas_flujos_on_flujo_id"
   end
 
   create_table "dato_anual_contribuyentes", force: :cascade do |t|
@@ -366,6 +554,15 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "datos_publicos", force: :cascade do |t|
+    t.text "visibilidad_documentos"
+    t.text "visibilidad_empresas_adheridas"
+    t.text "visibilidad_empresas_certificadas"
+    t.integer "extension_reporte"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer "priority", default: 0, null: false
     t.integer "attempts", default: 0, null: false
@@ -386,7 +583,7 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "formato", null: false
     t.text "contenido"
     t.string "nombre"
-    t.string "codigo", limit: 15
+    t.string "codigo"
     t.string "archivo"
     t.boolean "subido", default: false, null: false
     t.datetime "created_at", null: false
@@ -435,10 +632,28 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "encuesta_descarga_roles", force: :cascade do |t|
+    t.bigint "tarea_id"
+    t.bigint "rol_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rol_id"], name: "index_encuesta_descarga_roles_on_rol_id"
+    t.index ["tarea_id"], name: "index_encuesta_descarga_roles_on_tarea_id"
+  end
+
+  create_table "encuesta_ejecucion_roles", force: :cascade do |t|
+    t.bigint "tarea_id"
+    t.bigint "rol_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rol_id"], name: "index_encuesta_ejecucion_roles_on_rol_id"
+    t.index ["tarea_id"], name: "index_encuesta_ejecucion_roles_on_tarea_id"
+  end
+
   create_table "encuesta_preguntas", force: :cascade do |t|
     t.integer "encuesta_id", null: false
     t.integer "pregunta_id", null: false
-    t.integer "orden", default: 0, null: false
+    t.integer "orden", limit: 2, default: 0, null: false
     t.boolean "obligatorio", default: false, null: false
     t.boolean "base", default: false, null: false
     t.datetime "created_at", null: false
@@ -451,9 +666,11 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "pregunta_id", null: false
     t.text "respuesta", null: false
     t.integer "flujo_id", null: false
-    t.integer "institucion_proveedor_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "institucion_proveedor_id"
+    t.bigint "tarea_pendiente_id"
+    t.index ["tarea_pendiente_id"], name: "index_encuesta_user_respuestas_on_tarea_pendiente_id"
   end
 
   create_table "encuestas", force: :cascade do |t|
@@ -461,9 +678,9 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "valor_tiempo_para_contestar", null: false
     t.integer "unidad_tiempo_para_contestar", null: false
     t.boolean "solo_dias_habiles", default: false, null: false
-    t.boolean "base", default: false, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "base", default: false, null: false
   end
 
   create_table "establecimiento_contribuyentes", force: :cascade do |t|
@@ -481,9 +698,10 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.string "telefono"
     t.string "email"
     t.text "fields_visibility"
-    t.datetime "fecha_eliminacion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "fecha_eliminacion"
+    t.integer "establecimiento_contribuyente_id"
   end
 
   create_table "estado_admisibilidades", force: :cascade do |t|
@@ -515,6 +733,17 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.json "referencias"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "descripcion"
+    t.string "url_referencia"
+  end
+
+  create_table "estandar_niveles", force: :cascade do |t|
+    t.integer "numero"
+    t.string "nombre"
+    t.decimal "porcentaje", precision: 5, scale: 2
+    t.string "archivo"
+    t.bigint "estandar_homologacion_id"
+    t.index ["estandar_homologacion_id"], name: "index_estandar_niveles_on_estandar_homologacion_id"
   end
 
   create_table "estandar_set_metas_acciones", force: :cascade do |t|
@@ -528,9 +757,12 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.string "detalle_medio_verificacion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "puntaje"
+    t.bigint "estandar_nivel_id"
     t.index ["accion_id"], name: "index_estandar_set_metas_acciones_on_accion_id"
     t.index ["alcance_id"], name: "index_estandar_set_metas_acciones_on_alcance_id"
     t.index ["estandar_homologacion_id"], name: "index_estandar_set_metas_acciones_on_estandar_homologacion_id"
+    t.index ["estandar_nivel_id"], name: "index_estandar_set_metas_acciones_on_estandar_nivel_id"
     t.index ["materia_sustancia_id"], name: "index_estandar_set_metas_acciones_on_materia_sustancia_id"
   end
 
@@ -552,12 +784,12 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   create_table "flujo_tareas", force: :cascade do |t|
     t.integer "tarea_entrada_id", null: false
     t.integer "tarea_salida_id"
-    t.boolean "sin_salida", default: false
     t.text "rol_destinatarios", null: false
-    t.text "descripcion_flujo"
     t.text "condicion_de_salida", null: false
     t.string "mensaje_salida_asunto"
     t.text "mensaje_salida_cuerpo"
+    t.boolean "sin_salida", default: false, null: false
+    t.text "descripcion_flujo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -565,9 +797,9 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   create_table "flujos", force: :cascade do |t|
     t.integer "contribuyente_id"
     t.integer "tipo_instrumento_id", null: false
-    t.integer "proyecto_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "proyecto_id"
     t.integer "manifestacion_de_interes_id"
     t.integer "programa_proyecto_propuesta_id"
     t.boolean "terminado", default: false
@@ -644,11 +876,16 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "con_extension"
-    t.boolean "nuevo", null: false
+    t.boolean "nuevo", default: true, null: false
     t.json "archivos_anexos_posteriores_firmas", default: []
     t.boolean "necesita_evidencia", default: false
     t.integer "plazo_maximo_neto"
     t.integer "plazo_maximo"
+    t.text "vigencia_acuerdo"
+    t.integer "plazo_vigencia_acuerdo"
+    t.text "vigencia_certificacion"
+    t.integer "vigencia_certificacion_final"
+    t.text "respuesta_observaciones"
     t.index ["manifestacion_de_interes_id"], name: "index_informe_acuerdos_on_manifestacion_de_interes_id"
   end
 
@@ -711,13 +948,13 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "caracterizacion_sector_territorio"
     t.text "principales_actores"
     t.string "mapa_de_actores_archivo"
-    t.integer "numero_empresas"
+    t.text "numero_empresas"
     t.float "porcentaje_mipymes"
-    t.string "produccion"
-    t.integer "ventas"
-    t.float "porcentaje_exportaciones"
+    t.text "produccion"
+    t.text "ventas"
+    t.text "porcentaje_exportaciones"
     t.text "principales_mercados"
-    t.integer "numero_trabajadores"
+    t.text "numero_trabajadores"
     t.text "vulnerabilidad_al_cambio_climatico_del_sector"
     t.text "principales_impactos_socioambientales_del_sector"
     t.text "principales_problemas_y_desafios"
@@ -795,6 +1032,7 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "roles_especificos_usuario_carga_datos"
     t.text "roles_especificos_comentarios_carga_datos"
     t.text "informe"
+    t.text "observaciones_documentos_diagnostico"
     t.integer "user_carga_actores_id"
     t.text "comentarios_y_observaciones_documento_diagnosticos"
     t.text "comentarios_y_observaciones_set_metas_acciones"
@@ -812,7 +1050,6 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "tarea_codigo"
     t.text "comentarios_y_observaciones_termino_acuerdo"
     t.datetime "fecha_termino_acuerdo"
-    t.text "observaciones_documentos_diagnostico"
     t.datetime "diagnostico_fecha_termino"
     t.text "instrumentos_relacionados_historico"
     t.date "fecha_manifestacion"
@@ -820,6 +1057,43 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.string "texto_apl"
     t.integer "proponente_institucion_id"
     t.integer "representante_institucion_para_solicitud_id"
+    t.text "relacion_de_politicas"
+    t.text "fuente_de_fondos"
+    t.text "justificacion_de_estimacion_de_fondos_requeridos"
+    t.text "nombre_de_estandar_certificable"
+    t.text "diagnostico_de_acuerdo_propuesto"
+    t.text "estandar_certificable"
+    t.text "diagnostico_de_acuerdo_anterior"
+    t.text "informe_de_acuerdo_anterior"
+    t.integer "acuerdo_previo_con_informe_id"
+    t.text "programas_o_proyectos_relacionados_ids"
+    t.text "cadena_de_valor"
+    t.text "otras_caracteristicas_relevantes"
+    t.boolean "acuerdo_de_alcance_nacional"
+    t.text "comentarios_cifras"
+    t.integer "sucursal_ligada"
+    t.text "justificacion_de_seleccion"
+    t.text "registro_en_linea"
+    t.text "detalle_de_localizacion"
+    t.text "detalle_de_alternativa_de_instalacion"
+    t.text "unidad_de_medida_volumen"
+    t.text "secciones_observadas_admisibilidad_juridica"
+    t.integer "resultado_admisibilidad_juridica"
+    t.text "observaciones_admisibilidad_juridica"
+    t.text "respuesta_observaciones_admisibilidad_juridica"
+    t.string "archivo_admisibilidad_juridica"
+    t.datetime "fecha_observaciones_admisibilidad_juridica"
+    t.integer "institucion_entregables_id"
+    t.string "institucion_entregables_name"
+    t.string "usuario_entregable_name"
+    t.text "observaciones_propuesta_acuerdo"
+    t.integer "firma_tipo_reunion", default: 0
+    t.datetime "firma_fecha_hora"
+    t.integer "ceremonia_certificacion_tipo_reunion", default: 0
+    t.datetime "ceremonia_certificacion_fecha_hora"
+    t.text "comentarios_y_observaciones_detencion_acuerdo"
+    t.datetime "fecha_detencion_acuerdo"
+    t.boolean "detenido", default: false
   end
 
   create_table "mapa_de_actores", force: :cascade do |t|
@@ -870,8 +1144,14 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "materia_sustancia_metas", force: :cascade do |t|
+    t.bigint "materia_sustancia_id"
+    t.bigint "clasificacion_id"
+    t.index ["clasificacion_id"], name: "index_materia_sustancia_metas_on_clasificacion_id"
+    t.index ["materia_sustancia_id"], name: "index_materia_sustancia_metas_on_materia_sustancia_id"
+  end
+
   create_table "materia_sustancias", force: :cascade do |t|
-    t.integer "meta_id", null: false
     t.string "nombre", null: false
     t.text "descripcion", null: false
     t.boolean "posee_una_magnitud_fisica_asociada", default: false, null: false
@@ -893,6 +1173,8 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "fecha_acta"
     t.text "mensaje_encabezado"
     t.text "mensaje_cuerpo"
+    t.datetime "fecha_hora"
+    t.integer "tipo_reunion", default: 0
   end
 
   create_table "modalidades", force: :cascade do |t|
@@ -1139,16 +1421,16 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   create_table "proyecto_actividades", force: :cascade do |t|
     t.integer "proyecto_id"
     t.string "nombre"
-    t.integer "duracion"
     t.date "fecha_finalizacion"
     t.date "fecha_realizacion_compromiso"
+    t.integer "duracion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "proyecto_pagos", force: :cascade do |t|
     t.bigint "proyecto_id"
-    t.datetime "fecha_pago", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "fecha_pago", default: -> { "now()" }, null: false
     t.integer "monto", null: false
     t.integer "numero_orden_pago"
     t.date "fecha_pago_efectiva"
@@ -1240,6 +1522,23 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "reporte_sustentabilidads", force: :cascade do |t|
+    t.string "titulo_intro"
+    t.text "cuerpo_intro"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "reporteria_datos", force: :cascade do |t|
+    t.string "ruta"
+    t.integer "clasificacion_id"
+    t.integer "acuerdo_id"
+    t.string "vista"
+    t.text "datos"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "responsables", force: :cascade do |t|
     t.integer "tipo_instrumento_id", null: false
     t.integer "rol_id", null: false
@@ -1276,6 +1575,7 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.text "descripcion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "mostrar_en_excel", default: true
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -1309,6 +1609,11 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "estado", limit: 2, default: 1
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "puntaje"
+    t.bigint "estandar_nivel_id"
+    t.bigint "id_referencia"
+    t.string "modelo_referencia"
+    t.index ["estandar_nivel_id"], name: "index_set_metas_acciones_on_estandar_nivel_id"
     t.index ["flujo_id"], name: "index_set_metas_acciones_on_flujo_id"
     t.index ["ppf_metas_establecimiento_id"], name: "index_set_metas_acciones_on_ppf_metas_establecimiento_id"
   end
@@ -1323,19 +1628,20 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.integer "flujo_id", null: false
     t.integer "tarea_id", null: false
     t.integer "estado_tarea_pendiente_id", null: false
-    t.integer "user_id", null: false
+    t.integer "user_id"
     t.text "data"
     t.text "resultado"
-    t.datetime "created_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
-    t.datetime "updated_at", default: -> { "CURRENT_TIMESTAMP" }, null: false
+    t.datetime "created_at", default: -> { "now()" }, null: false
+    t.datetime "updated_at", default: -> { "now()" }, null: false
     t.boolean "primera_ejecucion", default: true
+    t.bigint "persona_id"
+    t.index ["persona_id"], name: "index_tarea_pendientes_on_persona_id"
   end
 
   create_table "tareas", force: :cascade do |t|
     t.integer "etapa_id"
     t.integer "tipo_instrumento_id", null: false
     t.integer "rol_id", null: false
-    t.integer "encuesta_id"
     t.string "nombre", null: false
     t.text "descripcion"
     t.string "recordatorio_tarea_asunto"
@@ -1345,9 +1651,11 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.boolean "cualquiera_con_rol_o_usuario_asignado"
     t.text "condicion_de_acceso"
     t.boolean "es_una_encuesta", default: false, null: false
+    t.integer "encuesta_id"
     t.string "codigo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "duracion"
     t.index ["codigo"], name: "index_tareas_on_codigo"
   end
 
@@ -1408,10 +1716,24 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "traspaso_instrumentos", force: :cascade do |t|
+    t.bigint "origen_id"
+    t.bigint "flujo_id"
+    t.bigint "destino_id"
+    t.integer "tipo_traspaso"
+    t.date "fecha_retorno"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.text "cambios_mapa_de_actores"
+    t.text "cambios_tareas_pendientes"
+    t.index ["destino_id"], name: "index_traspaso_instrumentos_on_destino_id"
+    t.index ["flujo_id"], name: "index_traspaso_instrumentos_on_flujo_id"
+    t.index ["origen_id"], name: "index_traspaso_instrumentos_on_origen_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "rut", null: false
-    t.string "nombre_completo", null: false
-    t.string "telefono", null: false
+    t.string "telefono"
     t.string "email", default: "", null: false
     t.string "web_o_red_social_1"
     t.string "web_o_red_social_2"
@@ -1435,6 +1757,7 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.datetime "locked_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "nombre_completo", null: false
     t.string "invitation_token"
     t.datetime "invitation_created_at"
     t.datetime "invitation_sent_at"
@@ -1443,15 +1766,20 @@ ActiveRecord::Schema.define(version: 20190307184636) do
     t.string "invited_by_type"
     t.bigint "invited_by_id"
     t.integer "invitations_count", default: 0
+    t.boolean "temporal", default: false
+    t.bigint "flujo_id"
+    t.bigint "user_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
-    t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["email"], name: "index_users_on_email"
+    t.index ["flujo_id"], name: "index_users_on_flujo_id"
     t.index ["invitation_token"], name: "index_users_on_invitation_token", unique: true
     t.index ["invitations_count"], name: "index_users_on_invitations_count"
     t.index ["invited_by_id"], name: "index_users_on_invited_by_id"
     t.index ["invited_by_type", "invited_by_id"], name: "index_users_on_invited_by_type_and_invited_by_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.index ["rut"], name: "index_users_on_rut", unique: true
+    t.index ["rut"], name: "index_users_on_rut"
     t.index ["unlock_token"], name: "index_users_on_unlock_token", unique: true
+    t.index ["user_id"], name: "index_users_on_user_id"
   end
 
   create_table "variables", force: :cascade do |t|
@@ -1468,31 +1796,63 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   add_foreign_key "acciones", "clasificaciones", column: "meta_id"
   add_foreign_key "actividad_economica_contribuyentes", "actividad_economicas"
   add_foreign_key "actividad_economica_contribuyentes", "contribuyentes"
+  add_foreign_key "actividad_economica_flujos", "actividad_economicas"
+  add_foreign_key "actividad_economica_flujos", "flujos"
   add_foreign_key "actividad_por_lineas", "actividades"
   add_foreign_key "actividad_por_lineas", "tipo_instrumentos"
+  add_foreign_key "adhesion_elemento_retirados", "adhesiones"
+  add_foreign_key "adhesion_elemento_retirados", "alcances"
+  add_foreign_key "adhesion_elemento_retirados", "establecimiento_contribuyentes"
+  add_foreign_key "adhesion_elemento_retirados", "maquinarias"
+  add_foreign_key "adhesion_elemento_retirados", "otros"
+  add_foreign_key "adhesion_elemento_retirados", "personas"
   add_foreign_key "adhesion_elementos", "adhesiones"
+  add_foreign_key "adhesion_elementos", "adhesiones", column: "adhesion_externa_id"
   add_foreign_key "adhesion_elementos", "alcances"
   add_foreign_key "adhesion_elementos", "establecimiento_contribuyentes"
   add_foreign_key "adhesion_elementos", "maquinarias"
   add_foreign_key "adhesion_elementos", "otros"
   add_foreign_key "adhesion_elementos", "personas"
+  add_foreign_key "adhesiones", "comunas", column: "matriz_comuna_id"
   add_foreign_key "adhesiones", "flujos"
+  add_foreign_key "adhesiones", "regiones", column: "matriz_region_id"
+  add_foreign_key "adhesiones", "roles"
+  add_foreign_key "adhesiones", "tipo_contribuyentes"
+  add_foreign_key "auditoria_elemento_archivos", "auditorias"
   add_foreign_key "auditoria_elementos", "adhesion_elementos"
+  add_foreign_key "auditoria_elementos", "auditoria_elemento_archivos", column: "archivo_evidencia_id"
+  add_foreign_key "auditoria_elementos", "auditoria_elemento_archivos", column: "archivo_informe_id"
   add_foreign_key "auditoria_elementos", "auditorias"
   add_foreign_key "auditoria_elementos", "set_metas_acciones"
   add_foreign_key "auditoria_historicos", "manifestacion_de_intereses"
+  add_foreign_key "auditoria_niveles", "auditorias"
+  add_foreign_key "auditoria_niveles", "estandar_niveles"
+  add_foreign_key "auditoria_validaciones", "auditorias"
+  add_foreign_key "auditoria_validaciones", "users"
   add_foreign_key "auditorias", "convocatorias"
   add_foreign_key "auditorias", "flujos"
   add_foreign_key "auditorias", "manifestacion_de_intereses"
+  add_foreign_key "campo_tareas", "campos"
+  add_foreign_key "campo_tareas", "tareas"
   add_foreign_key "certificacion_adhesion_historicos", "adhesion_elementos"
   add_foreign_key "clasificaciones", "clasificaciones"
   add_foreign_key "comentario_archivos", "comentarios"
   add_foreign_key "comentarios", "tipo_comentarios"
+  add_foreign_key "comentarios_informe_acuerdos", "informe_acuerdos"
+  add_foreign_key "comentarios_informe_acuerdos", "users"
+  add_foreign_key "comentarios_metas_acciones", "set_metas_acciones"
+  add_foreign_key "comentarios_metas_acciones", "users"
   add_foreign_key "comunas", "provincias"
+  add_foreign_key "comunas_flujos", "comunas"
+  add_foreign_key "comunas_flujos", "flujos"
+  add_foreign_key "contribuyentes", "contribuyentes"
+  add_foreign_key "contribuyentes", "flujos"
   add_foreign_key "convocatoria_destinatarios", "convocatorias"
   add_foreign_key "convocatoria_destinatarios", "personas", column: "destinatario_id"
   add_foreign_key "convocatorias", "flujos"
   add_foreign_key "convocatorias", "manifestacion_de_intereses"
+  add_foreign_key "cuencas_flujos", "cuencas"
+  add_foreign_key "cuencas_flujos", "flujos"
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"
@@ -1506,24 +1866,31 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   add_foreign_key "documento_garantias", "tipo_documento_garantias"
   add_foreign_key "ejecucion_presupuestarias", "centro_de_costos"
   add_foreign_key "ejecucion_presupuestarias", "programa_proyecto_propuestas"
+  add_foreign_key "encuesta_descarga_roles", "roles"
+  add_foreign_key "encuesta_descarga_roles", "tareas"
+  add_foreign_key "encuesta_ejecucion_roles", "roles"
+  add_foreign_key "encuesta_ejecucion_roles", "tareas"
   add_foreign_key "encuesta_preguntas", "encuestas"
   add_foreign_key "encuesta_preguntas", "preguntas"
   add_foreign_key "encuesta_user_respuestas", "encuestas"
   add_foreign_key "encuesta_user_respuestas", "preguntas"
+  add_foreign_key "encuesta_user_respuestas", "tarea_pendientes"
   add_foreign_key "encuesta_user_respuestas", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"
   add_foreign_key "establecimiento_contribuyentes", "paises"
+  add_foreign_key "estandar_niveles", "estandar_homologaciones"
   add_foreign_key "estandar_set_metas_acciones", "acciones"
   add_foreign_key "estandar_set_metas_acciones", "alcances"
   add_foreign_key "estandar_set_metas_acciones", "clasificaciones", column: "meta_id"
   add_foreign_key "estandar_set_metas_acciones", "estandar_homologaciones"
+  add_foreign_key "estandar_set_metas_acciones", "estandar_niveles"
   add_foreign_key "estandar_set_metas_acciones", "materia_sustancias"
   add_foreign_key "etapas", "etapas"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
-  add_foreign_key "flujos", "manifestacion_de_intereses"
+  add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
   add_foreign_key "flujos", "tipo_instrumentos"
@@ -1548,7 +1915,8 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   add_foreign_key "materia_rubro_relacions", "materia_sustancias"
   add_foreign_key "materia_sustancia_clasificaciones", "clasificaciones"
   add_foreign_key "materia_sustancia_clasificaciones", "materia_sustancias"
-  add_foreign_key "materia_sustancias", "clasificaciones", column: "meta_id"
+  add_foreign_key "materia_sustancia_metas", "clasificaciones"
+  add_foreign_key "materia_sustancia_metas", "materia_sustancias"
   add_foreign_key "minutas", "convocatorias"
   add_foreign_key "modificacion_calendarios", "proyectos"
   add_foreign_key "otros", "alcances"
@@ -1595,11 +1963,13 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   add_foreign_key "set_metas_acciones", "acciones"
   add_foreign_key "set_metas_acciones", "alcances"
   add_foreign_key "set_metas_acciones", "clasificaciones", column: "meta_id"
+  add_foreign_key "set_metas_acciones", "estandar_niveles"
   add_foreign_key "set_metas_acciones", "flujos"
   add_foreign_key "set_metas_acciones", "materia_sustancias"
   add_foreign_key "set_metas_acciones", "ppf_metas_establecimientos"
   add_foreign_key "tarea_pendientes", "estado_tarea_pendientes"
   add_foreign_key "tarea_pendientes", "flujos"
+  add_foreign_key "tarea_pendientes", "personas"
   add_foreign_key "tarea_pendientes", "tareas"
   add_foreign_key "tarea_pendientes", "users"
   add_foreign_key "tareas", "encuestas"
@@ -1608,4 +1978,9 @@ ActiveRecord::Schema.define(version: 20190307184636) do
   add_foreign_key "tareas", "tipo_instrumentos"
   add_foreign_key "tipo_contribuyentes", "tipo_contribuyentes"
   add_foreign_key "tipo_instrumentos", "tipo_instrumentos"
+  add_foreign_key "traspaso_instrumentos", "flujos"
+  add_foreign_key "traspaso_instrumentos", "users", column: "destino_id"
+  add_foreign_key "traspaso_instrumentos", "users", column: "origen_id"
+  add_foreign_key "users", "flujos"
+  add_foreign_key "users", "users"
 end

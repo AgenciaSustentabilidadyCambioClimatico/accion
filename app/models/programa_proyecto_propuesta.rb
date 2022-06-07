@@ -162,7 +162,8 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	validates :resultado_postulacion, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
 	validates :fecha_entrega_resultados, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
 	validates :motivos_resultado, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion && resultado_postulacion == 1 }
-	validates :monto_aprobado, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
+	# DZC 2019-06-25 16:19:36 se agrega para manejar monto máximo a ingresar
+	validates :monto_aprobado, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
 	validates :organismo_ejecutor_id, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
 	validates :responsable_coordinacion_ejecucion_seguimiento_id, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
 	validates :documentos_administrativos_aprobando_el_proyecto, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
@@ -221,7 +222,6 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	  self.rut_representante_institucion_para_solicitud = self.current_user.rut
 	  
 	  persona_de_contribuyente = self.current_user.personas.where(contribuyente_id: contribuyente.id).first
-	  # self.email_representante_institucion_para_solicitud = persona_de_contribuyente.email_institucional rescue binding.pry
 	  # DZC 2018-10-05 11:09:07 se elimina el rescue
 	  self.email_representante_institucion_para_solicitud = persona_de_contribuyente.email_institucional
 	  self.telefono_representante_institucion_para_solicitud = persona_de_contribuyente.telefono_institucional

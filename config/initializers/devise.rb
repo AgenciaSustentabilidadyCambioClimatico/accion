@@ -8,6 +8,11 @@ Devise.setup do |config|
   # by default. You can change it below and use your own secret key.
   # config.secret_key = '5edc06ce03134c04052626d8dccfb2217ac4d363a6e888d80c7c207b5b1a591432370987443bb306a714cdc52443ab71d428a1c7964d8c8bf923a8c98e24790e'
 
+  ##
+  # DZC 2019-08-21 17:27:24
+  # se agrega para funcionamiento de envio de correos
+  config.secret_key = Rails.application.secrets.secret_key_base
+
   # ==> Mailer Configuration
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
@@ -210,7 +215,8 @@ Devise.setup do |config|
   # Email regex used to validate email formats. It simply asserts that
   # one (and only one) @ exists in the given string. This is mainly
   # to give user feedback and not to assert the e-mail validity.
-  config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
+  #config.email_regexp = /\A[^@\s]+@[^@\s]+\z/
+  config.email_regexp = /\A.*\z/
 
   # ==> Configuration for :timeoutable
   # The time you want to timeout the user session without activity. After this
@@ -293,7 +299,7 @@ Devise.setup do |config|
   # config.navigational_formats = ['*/*', :html]
 
   # The default HTTP method used to sign out a resource. Default is :delete.
-  config.sign_out_via = :delete
+  config.sign_out_via = :get
 
   # ==> OmniAuth
   # Add a new OmniAuth provider. Check the wiki for more information on setting

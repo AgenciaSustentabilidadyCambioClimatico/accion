@@ -1,60 +1,174 @@
 !!!
 %html
-	%head
-		%meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
-		%meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
-		%title
-			= t(:ascc)
-			- if content_for?(:head_title)
-				= "-"
-				= strip_tags yield(:head_title)
-		= csrf_meta_tags
-		= stylesheet_link_tag    'application', media: 'all'
-		= javascript_include_tag 'application'
-		= javascript_include_tag 'ckeditor/config.js'
-	%body
-		- if user_signed_in?
-			= render 'layouts/navigation'
-		.container.fix-width#-fluid
-			- if content_for?(:titulo)
-				.col-12
-					%h1.titulo
-						= yield(:titulo)
-			.col-12
-				#messages-remote-block
-					= render 'layouts/messages'
-			.col-12
-				= yield				
-			- if user_signed_in?
-				- session[:original_url] = request.original_url
-				= link_to '#', "data-toggle"=>:modal, "data-target"=>"#site-comments", class: 'show-comments' do
-					%i.fa.fa-commenting.fa-4x
-			.modal.fade{id: :"site-comments", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
-				.modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
-					.modal-content#modal-comentario-remote-form
-						= render 'comentarios/form_modal'
-			:javascript
-				$(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
-		.loading-data
-			.spinner
-				= image_tag("loading.gif", class: :spinner)                      
-		- unless Rails.env.production?
-			.traducciones-faltantes
-				%span
-					= "#{t(:traducciones_faltantes)}: ";
-				%ul
-			:javascript
-				$(document).ready(function() {
-					result = dameTraduccionesFaltantes();
-					c = 0;
-					for (var i in result) {
-						c++;
-					}
-					if ( c > 0 ) {
-						$('.traducciones-faltantes').show();
-						$.each(result,function(k,v) {
-							$('.traducciones-faltantes ul').append("<li>"+k+": "+v+"</li>");
-						});
-					}
-				});
-		.clearfix
+  %head
+    %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
+    %meta{:content => 'width=device-width, maximum-scale=1.0', :name => "viewport"}
+    = favicon_link_tag asset_path('favicon.ico')
+
+    %title
+      = t(:ascc)
+      - if content_for?(:head_title)
+        = "-"
+        = strip_tags yield(:head_title)
+    = csrf_meta_tags
+    = stylesheet_link_tag    'application', media: 'all'
+    = javascript_include_tag 'application'
+    = javascript_include_tag 'ckeditor/config.js', async: true
+
+  %body
+    - if user_signed_in?
+      = render 'layouts/navigation'
+      =yield :subheader
+      .container.fix-width#-fluid
+        - if content_for?(:titulo)
+          .col-12
+            %h1.titulo
+              = yield(:titulo)
+        .col-12
+          #messages-remote-block
+            = render 'layouts/messages'
+        .col-12
+          #contenido_principal
+            = yield
+          #fin_contenido_principal
+        - session[:original_url] = request.original_url
+        = link_to '#', "data-toggle"=>:modal, "data-target"=>"#site-comments", class: 'show-comments' do
+          %i.fa.fa-commenting.fa-4x
+    -else
+      .fixed-top.bg-white
+        .container.d-none.d-lg-flex.justify-content-between.align-items-center.px-0.container-header-home
+          .d-flex.h-100.flex-column
+            .d-flex.w-100
+              %div{style: "background-color: #0060AB;height: 11px;width: 30%;"}
+              %div{style: "background-color: #E72B37;height: 11px;width: 40%;"}
+            = link_to root_path, class: 'my-auto' do
+              %img{src: image_url("logo-ascc.png"), style: "height: 65px;"}
+          .d-flex
+            =link_to acuerdos_firmados_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "acuerdos_firmados" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:acuerdos_firmados]
+              .subtitle.mb-0 Acuerdos Firmados
+            =link_to empresas_y_elementos_adheridos_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "empresas_y_elementos_adheridos" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:empresas_adheridas]
+              .subtitle.mb-0 Empresas adheridas
+            =link_to empresas_y_elementos_certificados_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "empresas_y_elementos_certificados" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:empresas_certificadas]
+              .subtitle.mb-0 Empresas Certificadas
+            =link_to "#", class: 'header-no-signed d-flex flex-column ml-2' do
+              .title.mb-0=@header.datos[:acciones]
+              .subtitle.mb-0 Acciones
+            =link_to '#', class: 'btn btn-ingresar-header iniciar-sesion-header ml-2 align-self-center' do
+              Ingresar
+        .container.d-flex.d-lg-none.flex-column.container-header-home
+          .d-flex.justify-content-between.align-items-center
+            .d-flex.h-100.flex-column
+              .d-flex.w-100
+                %div{style: "background-color: #0060AB;height: 11px;width: 30%;"}
+                %div{style: "background-color: #E72B37;height: 11px;width: 40%;"}
+              = link_to root_path, class: 'my-auto' do
+                %img{src: image_url("logo-ascc.png"), style: "height: 65px;"} 
+            =link_to '#', class: 'btn btn-ingresar-header iniciar-sesion-header ml-2 align-self-center' do
+              Ingresar
+          .d-flex.flex-row.my-2
+            =link_to acuerdos_firmados_path, class: "header-no-signed d-flex flex-column w-25 #{(params[:action] == "acuerdos_firmados" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:acuerdos_firmados]
+              .subtitle.mb-0 Acuerdos Firmados
+            =link_to empresas_y_elementos_adheridos_path, class: "header-no-signed d-flex flex-column ml-1 w-25 #{(params[:action] == "empresas_y_elementos_adheridos" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:empresas_adheridas]
+              .subtitle.mb-0 Empresas adheridas
+            =link_to empresas_y_elementos_certificados_path, class: "header-no-signed d-flex flex-column ml-1 w-25 #{(params[:action] == "empresas_y_elementos_certificados" ? 'active' : '')}" do
+              .title.mb-0=@header.datos[:empresas_certificadas]
+              .subtitle.mb-0 Empresas Certificadas
+            =link_to "#", class: 'header-no-signed d-flex flex-column ml-1 w-25' do
+              .title.mb-0=@header.datos[:acciones]
+              .subtitle.mb-0 Acciones
+      #modal_login.modal{style: "position: fixed; top: 0; right: 0; bottom: 0; left: auto; max-width: 465px;"}
+        .modal-dialog.m-0
+          .modal-content.rounded-0.border-0
+            .modal-body{style: "width: 100%; height: 100vh;"}
+              .d-flex.flex-column.h-100
+                %button.btn.btn-cerrar-login.align-self-end{"data-dismiss" => "modal"}
+                  %i.fa.fa-times
+                .align-self-center.my-auto#modal_login_form
+      :javascript
+        $(document).on('click', '.iniciar-sesion-header', function(e){
+          e.preventDefault();
+          $.ajax({
+            url: "#{new_user_session_path}.js",
+            type: 'get'
+          });
+        });
+      .container-no-signed
+        .row.w-100.mx-0
+          .col-12.px-0
+            =yield :subheader
+          .col-12
+            .container
+              #messages-remote-block
+                = render 'layouts/messages'
+          .col-12
+            .container
+              =yield
+    .modal.fade{id: :"site-comments", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
+      .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+        .modal-content#modal-comentario-remote-form
+          = render 'comentarios/form_modal'
+    :javascript
+      $(document).ready(function() { $('#site-comments').on('hidden.bs.modal', function (e) { $.get("#{reset_comentarios_path}") }) });
+    .loading-data
+      .d-flex.align-items-center.justify-content-center.w-100.h-100
+        = image_tag("loading.gif", class: :spinner)
+    :javascript
+      tarea_terminada = #{!@tarea_pendiente.nil? && @tarea_pendiente.no_esta_pendiente?};
+      if(tarea_terminada){
+        $(document).ajaxStop(function() {
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").prop('disabled',true);
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").off();
+          //elimino boton de enviar
+          $("#contenido_principal button[type='submit']").remove();
+          //elimino boton de eliminar en tablas
+          $("#contenido_principal i.fa-trash").closest('a').remove();
+          //elimino botones de agregar y editar de nested fields
+          $("#contenido_principal .add_nested_fields").remove();
+          $("#contenido_principal .remove_nested_fields").remove();
+        });
+      }
+      $(document).ready(function() {
+
+        if(tarea_terminada){
+          //bloqueo de inputs generales
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").prop('disabled',true);
+          $("#contenido_principal ").find("input:not([type='search']), select, textarea").off();
+          //elimino boton de enviar
+          $("#contenido_principal button[type='submit']").remove();
+          //elimino boton de eliminar en tablas
+          $("#contenido_principal i.fa-trash").closest('a').remove();
+          //elimino botones de agregar y editar de nested fields
+          $("#contenido_principal .add_nested_fields").remove();
+          $("#contenido_principal .remove_nested_fields").remove();
+        }
+
+        $('.flip-card-back').click(function(){
+          $(this).parents(".flip-card").mouseout();
+        });
+      });
+    - unless Rails.env.production?
+      .traducciones-faltantes
+        %span
+          = "#{t(:traducciones_faltantes)}: ";
+        %ul
+      :javascript
+
+        $(document).ready(function() {
+          result = dameTraduccionesFaltantes();
+          c = 0;
+          for (var i in result) {
+            c++;
+          }
+          if ( c > 0 ) {
+            $('.traducciones-faltantes').show();
+            $.each(result,function(k,v) {
+              $('.traducciones-faltantes ul').append("<li>"+k+": "+v+"</li>");
+            });
+          }
+        });
+    .clearfix

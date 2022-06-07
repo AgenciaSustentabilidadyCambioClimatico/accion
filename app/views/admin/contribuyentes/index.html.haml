@@ -12,7 +12,7 @@
 				= t(:buscar_, item: t(:institución).downcase)
 		.card-body
 			#contribuyentes-remote-filter
-				= render 'filter_form'
+				= render 'filter_form', custom_id: ''
 
 	.card
 		.card-header
@@ -20,7 +20,7 @@
 				= t(:lista_de_, items: t(:instituciones).downcase)
 		.card-body
 			#contribuyentes-remote-table
-				= render 'table'
+				= render 'table', custom_id: ''
 
 	= render 'layouts/privacidad', entidad: :instituciones
 -else
@@ -31,4 +31,4 @@
 				= t(:lista_de_, items: t(:instituciones).downcase)
 		.card-body
 			#contribuyentes-remote-table
-				= render 'table'
+				= render 'table', custom_id: ''

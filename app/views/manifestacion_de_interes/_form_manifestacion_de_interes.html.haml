@@ -1,37 +1,112 @@
+
 :javascript
   var pais = 'Chile';//aún no se sabe como se manejará la internalización de este proyecto
   var desc = #{raw json_escape(@tipo_instrumentos.inject({}){|h,ti|h[ti.id]=ti.descripcion;h}.to_json)}
+
+  // DZC 2019-07-12 12:22:18 se agregan validaciones
+  var validaciones = #{raw json_escape(@validaciones.to_json)};
+  var clases = Object.keys(validaciones);
+  var descargables = #{raw json_escape(@descargables.to_json)}
+
+  $(document).on('click focus mouseover', '*',function(e){
+    if(!$(this).is('abbr')){
+      metodo = ['click','focus'].includes(e.type) ? 'hide' : 'enable';
+      $(this).tooltip(metodo);
+    }
+  });
+
+
+  $(document).on('click', '.x-remove-selection', function(){
+    elemento_a_quitar = $(this).attr('value');
+    arr_valores = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val();
+    $(this).parent().remove();
+    arr_valores = jQuery.grep(arr_valores, function(value) {
+      return value != elemento_a_quitar;
+    });
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val(arr_valores);
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2('close');
+  });
+
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      $("#manifestacion_de_interes_contribuyente_id").val(data.id);
+      $("#manifestacion_de_interes_contribuyente_id").change();
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+  //Permite que al seleccionar un usuario desde el modal se adjunte su información
+  $(document).on('click' , '.seleccionar-usuario-button', function() {
+    try {
+      data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
   $(document).ready(function(){
 
-    $('body').on('change','.contribuyente-radio',function() {
-      $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-    });
-    $('body').on('change','.usuario-radio',function() {
-      $('.seleccionar-usuario-button').removeAttr('disabled'); 
-    });
-    
-    $('.seleccionar-contribuyente-button').on('click', function() {
-      try {
-        data=JSON.parse($('.contribuyente-radio:checked').val());
-        $("#manifestacion_de_interes_contribuyente_id").val(data.id);
-        $("#manifestacion_de_interes_contribuyente_id").change();
-      } catch(e) {
-        alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-      }
-    });
-    //Permite que al seleccionar un usuario desde el modal se adjunte su información
-    $('.seleccionar-usuario-button').click(function() {
-      try {
-        data=JSON.parse($('.usuario-radio:checked').val());
-        $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
-        $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
-        $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
-      } catch(e) {
-        alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-      }
+    if(#{!solo_lectura}){
+      $('#manifestacion_de_interes_acuerdo_previo_con_informe_id').select2({
+        placeholder: 'Seleccione un Acuerdo previo',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_estandar_de_certificacion_id').select2({
+        placeholder: 'Seleccione un estándar',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_diagnostico_id').select2({
+        placeholder: 'Seleccione un diagnóstico',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2({
+        placeholder: 'Seleccione uno o varios programas',
+        width: '100%'
+      });
+    } 
+
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:select', function(e){
+      var data = e.params.data;
+      create_span_de_selector_ppp(data.id);
     });
 
-    verificarPreinversion();
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:unselect', function(e){
+      var data = e.params.data;
+      $(".selection-list-boxes[value=" + data.id +"]").remove();
+    });    
+
+    function create_span_de_selector_ppp(id){
+      selector_ppp = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids');
+      op = selector_ppp.children("[value=" + id + "]");
+      x_span = "<a class='x-remove-selection' value='" + id + "'><span style='color: #999;'>×</span></a>";
+      $('#selection-container').append("<span class='selection-list-boxes' value='"+id+"'>" + x_span + op.text() + "</span>");
+    };
+
+    verificarModal();
+    process_mantenedor_campos();
+    //activa_validaciones();
+
+    $('body').on('change','.usuario-radio',function() {
+      $('.seleccionar-usuario-button').removeAttr('disabled');
+      $('.seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
+    });
+
+
+    // ## 
+    // # DOSSA 2019-09-10 16:48
+    // # Se comenta función ya que el tab Datos Proyecto debe disponibilizarse siempre.
+    //verificarPreinversion();
     //$("#area-influencia-proyecto-mapa").focusout(function(e){
       //if( $(document.activeElement).parents('div#area-influencia-proyecto-mapa').length ) {
         //console.log("yes");
@@ -83,22 +158,41 @@
       __enable_fieds_if_checkbox_is_true($(this), when_checkbox_is_true, when_checkbox_is_false);
     });
 
-    //htmlErrorToTooltip("top");
-
     $('#enviar-manifestacion-button').click(function(e){
       $('#manifestacion_de_interes_temporal').val("");
     });
 
+    if(#{!solo_lectura}){
+      $(".radios-selector-subida").on("change", function(){
+        padre = $(this).closest('.radios-selector-subida-padre');
+        check = $(this).val(); 
+        if( check == 0 ){
+          padre.find("input[type='file']").attr("disabled",false);
+          padre.find("select").attr("disabled",true);
+          padre.find(".descargable-file").removeClass("d-none");
+          padre.find(".descargable-select").addClass("d-none");
+        }
+        else if( check == 1 ){
+          padre.find("input[type='file']").attr("disabled",true);
+          padre.find("select").attr("disabled",false);
+          padre.find(".descargable-file").addClass("d-none");
+          padre.find(".descargable-select").removeClass("d-none");
+        };
+      });
+      $(".radios-selector-subida:checked").trigger("change");
+    }
+    
+    //# DOSSA 2019-09-24 17:00 se comenta ya que no es necesaria esta validación
     //Validar que solo se leccione o un diagnostico o un estandar, no ambos.-
-    if($('#manifestacion_de_interes_diagnostico_id').val() != '' && $('#manifestacion_de_interes_diagnostico_id').val() != null){
+    //if($('#manifestacion_de_interes_diagnostico_id').val() != '' && $('#manifestacion_de_interes_diagnostico_id').val() != null){
       //console.log($('#manifestacion_de_interes_diagnostico_id').val())
-      $('#manifestacion_de_interes_estandar_de_certificacion_id').attr('disabled', true);
-      $('#manifestacion_de_interes_estandar_de_certificacion_id').val("");
-    }
-    if($('#manifestacion_de_interes_estandar_de_certificacion_id').val() != '' && $('#manifestacion_de_interes_estandar_de_certificacion_id').val() != null){
-      $('#manifestacion_de_interes_diagnostico_id').attr('disabled', true);
-      $('#manifestacion_de_interes_diagnostico_id').val("");
-    }
+      //$('#manifestacion_de_interes_estandar_de_certificacion_id').attr('disabled', true);
+      //$('#manifestacion_de_interes_estandar_de_certificacion_id').val("");
+    //}
+    //if($('#manifestacion_de_interes_estandar_de_certificacion_id').val() != '' && $('#manifestacion_de_interes_estandar_de_certificacion_id').val() != null){
+      //$('#manifestacion_de_interes_diagnostico_id').attr('disabled', true);
+      //$('#manifestacion_de_interes_diagnostico_id').val("");
+    //}
 
     //DZC 2019-02-28 20:01:23 configura la visualización del mensaje recuerde_guardar
 
@@ -115,475 +209,1674 @@
       setTimeout(showModal, ((+minutos)*60*1000));
       }, ((+minutos)*60*1000)
     );
+
+    $(".show-ayuda").on("click",function(){
+      id_campo_boton = $(this).attr("campo");
+      $(".ayuda-campo-div-"+id_campo_boton).toggle(700);
+    });
+
+    $(".card-wrap").each(function(){
+      $(this).addClass("card");
+      $(this).css("margin-bottom", "0");
+    });
   });
 
+  //DZC 2019-07-17 22:02:04 activa los listeners para las validaciones por incumplimiento de cantidades minimas y maximas de caracteres
+  function activa_validaciones(){
+    elementos_ids = id_elementos_a_validar();
+    elementos_validaciones = validaciones_por_elemento();
+    elementos_ids.forEach(function(elemento_id, index, arr){
+      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
+      if (validaciones_activas && #{!solo_lectura}){
+        var max_activa = elementos_validaciones[elemento_id]["validacion_max_activa"];
+        var min_activa = elementos_validaciones[elemento_id]["validacion_min_activa"];
+        var max = elementos_validaciones[elemento_id]["validacion_max"];
+        var min = elementos_validaciones[elemento_id]["validacion_min"];
+        var tipo = elementos_validaciones[elemento_id]["tipo"];
+        largo_campo = $(elemento_id).text().length;
+        condicional = (((min_activa && largo_campo < min) || (max_activa && largo_campo > max)) && largo_campo > 0);
+        label_inicial = condicional ? "\u26a0 Caracteres: " : "Caracteres: ";
+        label_max = (max_activa) ? "de " + max : "";
+        label_min = (min_activa) ? " (mínimo " + min + ")" : "";
+        $(elemento_id).after(label_contador(label_inicial, label_min, label_max, largo_campo, condicional));
+        // # DOSSA 2019-07-29 se cambia función para cuando se agreguen valores en el input ya que la función "keyup" sólo reconocía los cambios al presionar y soltar una tecla, esta nueva función reconoce todos los cambios en el input.
+        $(elemento_id).on("input propertychange",function (){
+          // DOSSA 2019-07-29 se hace condición única para mínimo y máximo, ya que ambas hacen lo mismo
+          largo_actual = $(this).val().length;
+          if ( (min_activa && largo_actual < min) || (max_activa && largo_actual > max) ){
+            // # DOSSA 2019-07-29 label que agrega símbolo unicode en caso de que el texto ingresado sea menor al mínimo o mayor al máximo.
+            label_inicial_m = "\u26a0 Caracteres: "
+            // # DOSSA 2019-07-29 en caso de que la validación máxima esté activa, la variable label_max tendrá un valor específico.
+            label_max_m = (max_activa) ? "de " + max : "";
+            // # DOSSA 2019-07-29 en caso de que la validación mínima esté activa, la variable label_min tendrá un valor específico.
+            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
+            $(this).next().remove();
+            $(this).after(label_contador( label_inicial_m, label_min_m, label_max_m, largo_actual, true ));
+          }else{
+            label_max_m = (max_activa) ? "de " + max : "";
+            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
+            $(this).css('color','#495057');
+            $(this).next().remove();
+            $(this).after(label_contador( label_inicial, label_min_m, label_max_m, largo_actual, false ));
+          };
+        });
+      }else if (tipo == "text" || tipo == "integer" || tipo == "double"){
+        $(elemento_id).after("<label class='float-right control-label' style='color: #0000'><br></label>")
+      }
+    });
+  };
+
+  // DZC 2019-07-17 19:44:46 retorna los ids de los doms a validar
+  function id_elementos_a_validar(){
+    elementos = [];
+    for (var modelo in validaciones){
+      for (var campo in validaciones[modelo]){
+        elementos.push("#" + modelo + "_" + campo);
+      };
+    };
+    return elementos;
+  };
+
+  //DZC 2019-07-17 19:46:42 retorna un hash con el id del dom, y sus validaciones asociadas
+  function validaciones_por_elemento(){
+    elementos = {};
+    for (var modelo in validaciones){
+      for (var campo in validaciones[modelo]){
+        elementos["#" + modelo + "_" + campo]={};
+        for (var validacion in validaciones[modelo][campo]){
+          elementos["#" + modelo + "_" + campo][validacion] = validaciones[modelo][campo][validacion];
+        };
+      };
+    };
+    return elementos;
+  };
+
+  //DZC 2019-07-17 19:59:04 retorna los elementos del dom a validar
+  function elementos_a_validar_dom(){
+    elementos = {};
+    $.each(clases, function(index, value){
+      texto = "[id*='";
+      texto += value;
+      texto += "']";
+      elementos[value] = $(texto);
+    });
+    return elementos;
+  };
+
+  // # DOSSA 2019-07-29 función que crea label que muestra el contador, máximo y mínimo de caracteres en caso de que corresponda, además agrega un label inicial el cual contendra
+  //    un símbolo unicode cuando sea necesario.
+  function label_contador( label_inicial, label_min, label_max, largo = 0, cond){
+    if(cond){
+      color = "red";
+    }else{
+      color = "#5d759e";
+    };
+    label = "<label class='float-right control-label' style='color:" + color + "'>" + label_inicial + "<b>" + largo + "</b>" + " " + label_max + label_min + "</label>";
+    return label;
+  };
+
+  //Procesar label, ayuda y tooltip
+  function process_mantenedor_campos(){
+    elementos_ids = id_elementos_a_validar();
+    elementos_validaciones = validaciones_por_elemento();
+
+    var ids_a_evitar = ["#manifestacion_de_interes_area_influencia_proyecto_data", "#manifestacion_de_interes_alternativas_instalacion_data"];
+    if(#{!solo_lectura}){
+      ids_a_evitar.push("#manifestacion_de_interes_actividad_economicas_ids");
+      ids_a_evitar.push("#manifestacion_de_interes_comunas_ids");
+      ids_a_evitar.push("#manifestacion_de_interes_cuencas_ids");
+    }else{
+      ids_a_evitar.push("#manifestacion_de_interes_acuerdo_de_alcance_nacional");
+    }
+
+    elementos_ids.forEach(function(elemento_id, index, arr){
+      var obligatorio = elementos_validaciones[elemento_id]["obligatorio_campo"];
+      var nombre = elementos_validaciones[elemento_id]["nombre"];
+      var ayuda_activo = elementos_validaciones[elemento_id]["ayuda_activo"];
+      var ayuda = elementos_validaciones[elemento_id]["ayuda"];
+      var id_campo = elementos_validaciones[elemento_id]["id_campo"];
+      var tooltip_activo = elementos_validaciones[elemento_id]["tooltip_activo"];
+      var texto_tooltip = elementos_validaciones[elemento_id]["tooltip"];
+      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
+      var elemento_tipo = elementos_validaciones[elemento_id]["tipo"];
+
+      elemento_padre = $(elemento_id).parent();
+      label = crear_label_de_nombre(elemento_id, obligatorio, nombre);
+      boton_ayuda = "";
+      div_ayuda = "";
+      if(ayuda_activo){
+        boton_ayuda = crear_boton_de_ayuda(id_campo);
+        div_ayuda = crear_div_de_ayuda(ayuda, id_campo)
+      };
+
+      //Fix para radio buttons
+      row_de_radio = elemento_padre.parent().children('.align-items-end');
+      if(row_de_radio.length > 0){
+        row_de_radio.append("<div class='col'>"+label+"</div>");
+        row_de_radio.append("<div class='col-auto pr-1'>"+boton_ayuda+"</div>");
+        row_de_radio.after("<div class='row'><div class='col'>"+div_ayuda+"</div></div>");
+      }else if(elemento_tipo == "list" && ayuda_activo && #{!solo_lectura}){
+        $(elemento_id).after("<div class='card-body group-hide ayuda-div py-1' style='font-size: 13px;'>" + ayuda + "</div>")
+      }else{
+        if (!ids_a_evitar.includes(elemento_id)){
+          top_input = "<div class='row align-items-end'>";
+          top_input += "<div class='col'>"+label+"</div>";
+          top_input += "<div class='col-auto pr-0'>"+boton_ayuda+"</div>";
+          top_input += "</div>";
+          top_input += "<div class='row'>";
+          top_input += "<div class='col'>"+div_ayuda+"</div>";
+          top_input += "</div>";
+          elemento_padre.children(".control-label").first().remove();
+          elemento_padre.prepend(top_input);
+        }
+      }
+
+      if (tooltip_activo && (elemento_id != "#manifestacion_de_interes_descarga_formato_cartas_de_patrocinio" || ('APL-001-DES-003' in descargables))){ 
+        crear_tooltip(elemento_id, texto_tooltip); 
+      }
+    });
+    if(#{!@mantener_temporal}){
+      htmlErrorToTooltip('top');
+    };
+    __tooltip({placement: 'top'});
+  };
+
+  // # DOSSA 2019-08-12 12:25 Función encargada de crear el div con las clases, atributos y texto el cual debe ser pasado como parámetro cuando se invoca esta función.
+  function crear_div_de_ayuda(contenido, id_campo){
+    div_ayuda = "<div class='ayuda-campo-div-"+id_campo+" alert ayuda-div small' style='display: none;'>" + contenido + "</div>";
+    return div_ayuda;
+  };
+
+  // # DOSSA 2019-08-12 12:26 Función encargada de crear el botón para los campos que posean la ayuda activa en el mantenedor.
+  function crear_boton_de_ayuda(id_campo){
+    i = "<i class='fa fa-info-circle' style='color: #0c5460;'></i>";
+    a = "<a class='btn show-ayuda pb-0' campo='" + id_campo + "' >" + i + "</a>";
+    return a;
+  };
+
+  function crear_label_de_nombre(elemento, obligatorio, nombre){
+    elemento_sin_gato = elemento.slice(1);
+    if (obligatorio){
+      abbr = "<abbr title='Campo requerido'>*</abbr>"
+      label_nombre = "<label class='control-label label-nombre text required' for='" + elemento_sin_gato + "'>" + abbr + " " + nombre + "</label>";
+    }else{
+      label_nombre = "<label class='control-label label-nombre text' for='" + elemento_sin_gato + "'>" + nombre + "</label>";
+    };
+    return label_nombre;
+  };
+
+  function crear_tooltip(elemento_id, tooltip){
+    var card_header = $('input[name="manifestacion_de_interes['+elemento_id.replace("#manifestacion_de_interes_", "")+'][]"]').closest(".card").children(".card-header");
+    if(elemento_id.includes("_ids") && card_header.length > 0){
+      if(!card_header.parent().hasClass("has-error")){
+        card_header.addClass('tooltip-block');
+        card_header.attr('data-tooltip','true');
+        card_header.attr('data-original-title', tooltip);
+      }
+    }else if($(elemento_id).hasClass('select2-hidden-accessible')){
+      $(elemento_id).parent().children('span').addClass('tooltip-block');
+      $(elemento_id).parent().children('span').attr('data-tooltip','true');
+      $(elemento_id).parent().children('span').attr('data-original-title', tooltip);
+    }else if($(elemento_id).hasClass('file')){
+      if(!$(elemento_id).parent().hasClass('has-error')){
+        $(elemento_id).parent().addClass('tooltip-block');
+        $(elemento_id).parent().attr('data-tooltip','true');
+        $(elemento_id).parent().attr('data-original-title', tooltip);
+      }
+    }else{
+      $(elemento_id).attr("title","");
+      $(elemento_id).addClass('tooltip-block');
+      $(elemento_id).attr('data-tooltip','true');
+      $(elemento_id).attr('data-original-title', tooltip);
+    }
+  }
+
+
+
 = render 'modal_recuerde_guardar'
-#manifestacionContent.tab-content
-  #tipo-de-acuerdo.tab-pane.fade.disabled{"aria-expanded" => tabs[:"tipo-de-acuerdo"], "aria-labelledby" => "tipo-de-acuerdo-tab", :role => "tabpanel", class: ("show active" if tabs[:"tipo-de-acuerdo"])}
-    .card
-      .card-body
-        .row
-          .col-lg-7.col-12
-            = f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, input_html: { "data-tooltip" => true,class: 'required-field', :title => "Testeo de tooltips"}, required: true
-          .col-lg-5.pl-lg-0.col-sm-12
-            = f.input :proponente, input_html: { value: current_user.nombre_completo, class: 'required-field' }, readonly: true, required: true
-          .col-lg-12.col-12
-            
-            = f.input :proponente_institucion_id, collection: @contribuyentes_del_proponente.map{|m|[(m.razon_social.blank? ? "Sin razón social. RUT: #{m.rut_completo}".upcase : m.razon_social),m.id]}, input_html: { class: 'required-field' }, prompt: t(:prompt_,g:nil,e:t(:institución).downcase), required: true, label: t(:institución)
-          .col-12
-            = f.input :descripcion_acuerdo, as: :text, input_html: { class: 'required-field', rows: 4 }, label: t(:descripción_acuerdo), readonly: true
+#manifestacionContent.tab-content.px-2.pt-0
+  -# DOSSA 2019-10-11 10:47 tab eliminado
+    #tipo-de-acuerdo.tab-pane.fade.disabled{"aria-expanded" => tabs[:"tipo-de-acuerdo"], "aria-labelledby" => "tipo-de-acuerdo-tab", :role => "tabpanel", class: ("show active" if tabs[:"tipo-de-acuerdo"])}
+      .card
+        .card-body
+          .row
+            .col-lg-7.col-12
+              = f.input :tipo_instrumento_id, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, input_html: { "data-tooltip" => true,class: 'required-field', :title => "Testeo de tooltips"}, required: true
+            .col-lg-5.pl-lg-0.col-sm-12
+              = f.input :proponente, input_html: { value: current_user.nombre_completo, class: 'required-field' }, readonly: true, required: true
+            .col-lg-12.col-12
+              = f.input :proponente_institucion_id, collection: @contribuyentes_del_proponente.map{|m|[(m.razon_social.blank? ? "Sin razón social. RUT: #{m.rut_completo}".upcase : m.razon_social),m.id]}, input_html: { class: 'required-field' }, prompt: t(:prompt_,g:nil,e:t(:institución).downcase), required: true, label: t(:institución)
+            .col-12
+              = f.input :descripcion_acuerdo, as: :text, input_html: { class: 'required-field', rows: 4 }, label: t(:descripción_acuerdo), readonly: true
   #datos-institucion.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"datos-institucion"] ? 'true' : 'false'), "aria-labelledby" => "datos-institucion-tab", :role => "tabpanel", class: ("show active" if tabs[:"datos-institucion"])}
     .card
       .card-body
-        .alert.alert-info
+        .alert.alert-primary
           %small
             %i.fa.fa-question-circle.fa-1-5x
             Datos Institución Gestora Acuerdo que actuará como contraparte de los organismos públicos firmantes
+
+        .row{class: (solo_lectura ? '' : 'align-items-end')}
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :proponente, input_html: { value: current_user.nombre_completo, class: 'required-field' }, readonly: true, required: true
+            -else
+              .form-group
+                -no_data = f.object.proponente.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:proponente][:nombre]
+                %p#manifestacion_de_interes_proponente.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.proponente)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :proponente_institucion_id, collection: @contribuyentes_del_proponente.map{|m|[(m.razon_social.blank? ? "Sin razón social. RUT: #{m.rut_completo}".upcase : m.razon_social),m.id]}, input_html: { class: 'required-field' }, required: true
+            -else
+              .form-group
+                -no_data = f.object.proponente_institucion_id.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:proponente_institucion_id][:nombre]
+                %p#manifestacion_de_interes_proponente_institucion_id.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : (f.object.proponente_institucion.razon_social.blank? ? "Sin razón social. RUT: #{f.object.proponente_institucion.rut_completo}".upcase : f.object.proponente_institucion.razon_social))
         .row
-          .col-lg-2.col-12
-            - unless @revisando
+          -if !solo_lectura
+            .col-12.col-lg-4.mt-2
+              - unless @revisando
+                .form-group.integer.required.proveedor_contribuyente_id
+                  .row.align-items.end
+                    .col
+                      %label.string.control-label{class: (@validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:obligatorio_campo] ? 'required' : '')}
+                        -if @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:obligatorio_campo]
+                          %abbr{title: :required}*
+                        = @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:nombre]
+                    -if @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:ayuda_activo]
+                      .col-auto.pr-0
+                        %a.btn.show-ayuda.py-0{campo: "9995"}
+                          %i.fa.fa-info-circle{style: "color: #0c5460;"}
+                  .ayuda-campo-div-9995.alert.ayuda-div.small{style: "display: none"}
+                    =@validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:ayuda].html_safe
+                  - tlt_search_inst = @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:tooltip_activo]
+                  = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', "data-original-title": "#{tlt_search_inst ? @validaciones[:manifestacion_de_interes][:buscar_institución_gestora][:tooltip] : '' }", id: "intitucion_cogestora" do
+                    %i.fa.fa-search-plus
+                    Buscar
+
+            .col-12.col-lg-8
+              = f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: ''}
+              = f.input :institucion_gestora_acuerdo, input_html: { class: 'required-field' }, required: true, readonly: true
+          -else
+            .col-12.col-lg-6
+              .form-group
+                -no_data = f.object.institucion_gestora_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:institucion_gestora_acuerdo][:nombre]
+                %p#manifestacion_de_interes_institucion_gestora_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.institucion_gestora.razon_social)
+            .col-lg-6
+        .row
+          .col-12.col-lg-4
+            -if !solo_lectura
+              = f.input :rut_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.rut_institucion_gestora_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:rut_institucion_gestora_acuerdo][:nombre]
+                %p#manifestacion_de_interes_rut_institucion_gestora_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.rut_institucion_gestora_acuerdo)
+          .col-12.col-lg-4
+            -if !solo_lectura
+              = f.input :fecha_creacion_institucion, as: :string, input_html: { class: 'basic-datetimepicker-max-today required-field', value: ((f.object.fecha_creacion_institucion.blank?) ? nil : localize(f.object.fecha_creacion_institucion)) }, required: true
+            -else
+              .form-group
+                -no_data = f.object.fecha_creacion_institucion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:fecha_creacion_institucion][:nombre]
+                %p#manifestacion_de_interes_fecha_creacion_institucion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.fecha_creacion_institucion)
+          .col-12.col-lg-4
+            -if !solo_lectura
+              = f.input :numero_de_socios_institucion_gestora, as: :string, input_html: { class: 'required-field numero-en-miles' }, required: true
+            -else
+              .form-group
+                -no_data = f.object.numero_de_socios_institucion_gestora.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_de_socios_institucion_gestora][:nombre]
+                %p#manifestacion_de_interes_numero_de_socios_institucion_gestora.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.numero_de_socios_institucion_gestora)
+          .col-12.col-lg-8
+            -if !solo_lectura
+              = f.input :direccion_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.direccion_institucion_gestora_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:direccion_institucion_gestora_acuerdo][:nombre]
+                %p#manifestacion_de_interes_direccion_institucion_gestora_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.direccion_institucion_gestora_acuerdo)
+          .col-12.col-lg-4
+            -if !solo_lectura
+              = f.input :ubicacion_exacta, input_html: { class: 'required-field' }, required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.ubicacion_exacta.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:ubicacion_exacta][:nombre]
+                %p#manifestacion_de_interes_ubicacion_exacta.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.ubicacion_exacta)
+          .col-12.col-lg-6
+            -if !solo_lectura
+              = f.input :tipo_contribuyente_de_institucion_gestora, input_html: { class: 'required-field' }, required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.tipo_contribuyente_de_institucion_gestora.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:tipo_contribuyente_de_institucion_gestora][:nombre]
+                %p#manifestacion_de_interes_tipo_contribuyente_de_institucion_gestora.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.tipo_contribuyente_de_institucion_gestora)
+          .col-12.col-lg-6
+            -if !solo_lectura
+              -establ_para_sucursal_ligada = @contribuyente_temporal.establecimiento_contribuyentes.map{|ec| [ec.id, ec.nombre_and_direccion]} rescue []
+              = f.input :sucursal_ligada, input_html: { class: 'required-field' }, collection: establ_para_sucursal_ligada, label_method: :second, value_method: :first, required: true
+            -else
+              .form-group
+                -no_data = f.object.sucursal_ligada.blank?
+                -if !no_data
+                  -establecimiento_contribuyente = EstablecimientoContribuyente.unscoped.where(id: f.object.sucursal_ligada)
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:sucursal_ligada][:nombre]
+                %p#manifestacion_de_interes_sucursal_ligada.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data || establecimiento_contribuyente.first.nil? ? 'No se ingresó respuesta' : establecimiento_contribuyente.first.nombre_and_direccion)
+          -#
+            .col-lg-7.pr-lg-0.col-12
+              .row
+                .col-12
+                .col-lg-7.pr-lg-0.col-12
+                  = f.input :lugar_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, label: t(:lugar_institución_gestora_acuerdo), required: true, readonly: true
+                .col-lg-5.col-12
+                .col-md-8.pr-md-0.col-12
+                .col-md-4.col-12
+                .col-12
+                  = f.input :experiencia_en_gestion_de_proyectos, as: :text, input_html: { class: ' required-field' }, label: t(:experiencia_en_gestión_de_proyectos), required: true
+            .col-lg-5.col-12
+              %label
+              #mapa-entidad-cogestora
+        .row
+          .col-12.col-md-6
+            -if !solo_lectura
+              =f.input :justificacion_de_seleccion, input_html: { class: 'required-field text-fixed-size' }
+            -else
+              .form-group
+                -no_data = f.object.justificacion_de_seleccion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:justificacion_de_seleccion][:nombre]
+                %p#manifestacion_de_interes_justificacion_de_seleccion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.justificacion_de_seleccion)
+          .col-12.col-md-6
+            -if !solo_lectura
+              =f.input :registro_en_linea, input_html: { class: 'required-field text-fixed-size' }
+            -else
+              .form-group
+                -no_data = f.object.registro_en_linea.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:registro_en_linea][:nombre]
+                %p#manifestacion_de_interes_registro_en_linea.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.registro_en_linea)
+          .col-12.col-md-6
+            -if !solo_lectura
+              =f.input :equipo_de_trabajo_comprometido, input_html: { class: 'required-field text-fixed-size' }, required: true
+            -else
+              .form-group
+                -no_data = f.object.equipo_de_trabajo_comprometido.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:equipo_de_trabajo_comprometido][:nombre]
+                %p#manifestacion_de_interes_equipo_de_trabajo_comprometido.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.equipo_de_trabajo_comprometido)
+          .col-12.col-md-6
+            -if !solo_lectura
+              =f.input :experiencia_en_gestion_de_proyectos, input_html: { class: 'required-field text-fixed-size' }, required: true
+            -else
+              .form-group
+                -no_data = f.object.experiencia_en_gestion_de_proyectos.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:experiencia_en_gestion_de_proyectos][:nombre]
+                %p#manifestacion_de_interes_experiencia_en_gestion_de_proyectos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.experiencia_en_gestion_de_proyectos)
+
+        .row
+          -if !solo_lectura
+            .col-12.col-md-4.mt-2
               .form-group.integer.required.proveedor_contribuyente_id
-                %label.string.control-label.required
-                  %abbr{title: :required}*
-                  = t(:eligir_institucion)
-                = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: "intitucion_cogestora" do
+                .row.align-items.end
+                  .col
+                    %label.string.control-label{class: (@validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:obligatorio_campo] ? 'required' : '')}
+                      -if @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:obligatorio_campo]
+                        %abbr{title: :required}*
+                      =@validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:nombre]
+                  -if @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:ayuda_activo]
+                    .col-auto.pr-0
+                      %a.btn.show-ayuda.py-0{campo: "9994"}
+                        %i.fa.fa-info-circle{style: "color: #0c5460;"}
+                .ayuda-campo-div-9994.alert.ayuda-div.small{style: "display: none"}
+                  =@validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:ayuda].html_safe
+                - tlt_search_repr = @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:tooltip_activo]
+                = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', flujo_id: (@flujo.present? ? @flujo.id : nil), "data-original-title": "#{tlt_search_repr ? @validaciones[:manifestacion_de_interes][:elegir_representante_institucion][:tooltip] : '' }", id: 'usuario_representante' do
                   %i.fa.fa-search-plus
                   Buscar
-          .col-lg-6.col-12
-            = f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: ''}
-            = f.input :institucion_gestora_acuerdo, input_html: { class: 'required-field' }, label: t(:institución_gestora_acuerdo), required: true, readonly: true
-          .col-lg-4.col-12
-            = f.input :rut_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, label: t(:rut_institución_gestora_acuerdo), required: true, readonly: true
-          .col-lg-7.pr-lg-0.col-12
-            .row
-              .col-12
-                = f.input :direccion_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, label: t(:dirección_institución_gestora_acuerdo), required: true, readonly: true
-              .col-lg-7.pr-lg-0.col-12
-                = f.input :lugar_institucion_gestora_acuerdo, input_html: { class: 'required-field' }, label: t(:lugar_institución_gestora_acuerdo), required: true, readonly: true
-              .col-lg-5.col-12
-                = f.input :ubicacion_exacta, input_html: { class: 'required-field' }, label: t(:ubicación_exacta), required: true, readonly: true
-              .col-12
-                = f.input :tipo_contribuyente_de_institucion_gestora, input_html: { class: 'required-field' }, label: t(:tipo_contribuyente_de_institución_gestora), required: true, readonly: true
-              .col-md-8.pr-md-0.col-12
-                = f.input :numero_de_socios_institucion_gestora, as: :string, input_html: { class: 'required-field numero' }, label: t(:número_de_socios_institución_gestora), required: true
-              .col-md-4.col-12
-                = f.input :fecha_creacion_institucion, as: :string, input_html: { class: 'basic-datetimepicker-max-today required-field', value: ((f.object.fecha_creacion_institucion.blank?) ? nil : localize(f.object.fecha_creacion_institucion)) }, label: t(:fecha_creación_institución), required: true
-              .col-12
-                = f.input :experiencia_en_gestion_de_proyectos, as: :text, input_html: { class: ' required-field' }, label: t(:experiencia_en_gestión_de_proyectos), required: true
-          .col-lg-5.col-12
-            %label
-            #mapa-entidad-cogestora
-          .col-md-3.col-12
-            .form-group.integer.required.proveedor_contribuyente_id
-              %label.string.control-label.required
-                %abbr{title: :required}*
-                = t(:eligir_representante)
-              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-usuario", class: 'form-control btn btn-primary btn-sm', flujo_id: (@flujo.present? ? @flujo.id : nil) do
-                %i.fa.fa-search-plus
-                Buscar
-          .col-md-3.pr-md-0.col-12
-            = f.input :representante_institucion_para_solicitud_id, collection: @representantes, input_html: { class: 'required-field' }, label: t(:nombre_representante_institucion), required: true
-          .col-md-3.pr-md-0.col-12
-            = f.input :rut_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:rut_representante_para_acuerdo), required: true, readonly: true
-          .col-md-3.col-12
-            = f.input :email_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:mail_representante_para_acuerdo), required: true, readonly: true
-          .col-md-4.pr-md-0.col-12
-            = f.input :telefono_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:teléfono_representante_para_acuerdo), required: true, readonly: true
-          .col-md-4.col-9
-            = f.input :carta_de_interes_institucion_gestora_firmada, as: :file, input_html: { class: 'form-control required-field' }, label: t(:subir_carta_de_interés_firmada), required: true
-            = f.hidden_field :carta_de_interes_institucion_gestora_firmada_cache
-          .col-3.col-md-1.align-self-end
+              = f.input :representante_institucion_para_solicitud_id, as: :hidden, wrapper: false, label: false
+          -else
+
+          .col-12.col-md-4
+            -if !solo_lectura
+              = f.input :nombre_representante_para_acuerdo, input_html: { class: 'required-field'}, readonly: true, required: true
+            -else
+              .form-group
+                -no_data = f.object.nombre_representante_para_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_representante_para_acuerdo][:nombre]
+                %p#manifestacion_de_interes_nombre_representante_para_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.nombre_representante_para_acuerdo)
+          
+          -if !solo_lectura
+            .col-12.col-md-4
+              = f.input :rut_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:rut_representante_para_acuerdo), required: true, readonly: true
+          -else
+            .col-12.col-md-4.offset-md-4
+              .form-group
+                -no_data = f.object.rut_representante_para_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:rut_representante_para_acuerdo][:nombre]
+                %p#manifestacion_de_interes_rut_representante_para_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.rut_representante_para_acuerdo)
+          .col-12.col-md-4
+            -if !solo_lectura
+              = f.input :email_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:mail_representante_para_acuerdo), required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.email_representante_para_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:email_representante_para_acuerdo][:nombre]
+                %p#manifestacion_de_interes_email_representante_para_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.email_representante_para_acuerdo)
+          .col-12.col-md-4
+            -if !solo_lectura
+              = f.input :telefono_representante_para_acuerdo, input_html: { class: 'required-field' }, label: t(:teléfono_representante_para_acuerdo), required: true, readonly: true
+            -else
+              .form-group
+                -no_data = f.object.telefono_representante_para_acuerdo.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:telefono_representante_para_acuerdo][:nombre]
+                %p#manifestacion_de_interes_telefono_representante_para_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.telefono_representante_para_acuerdo)
+        .row.mt-2
+          -if !solo_lectura
+            .col-12.col-md-4
+              = f.input :carta_de_interes_institucion_gestora_firmada, as: :file, input_html: { class: 'form-control required-field' }, required: true
+              = f.hidden_field :carta_de_interes_institucion_gestora_firmada_cache
+            .col-12.col-md-4.mt-2
+              = __descargar_archivo(f.object.carta_de_interes_institucion_gestora_firmada,f.object)
             -#
-              = __descargar_archivo(f.object.carta_de_interes_institucion_gestora_firmada,:carta_de_interes_institucion_gestora_firmada)
-            = __descargar_archivo(f.object.carta_de_interes_institucion_gestora_firmada,f.object)
-          .col-md-3.col-12
-            = __mostrar_descargable(@descargables,'APL-001-DES-001', tarea_pendiente: @tarea_pendiente)
+              .col-12.col-md-4
+                =__subida_archivo("carta_de_interes_institucion_gestora_firmada", f.object, false, solo_lectura)
+            .col-12.col-md-4
+              = __mostrar_descargable(@descargables,'APL-001-DES-001', tarea_pendiente: @tarea_pendiente, carta_interes: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:atributo], nombre: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:nombre])
+          -else
+            -no_data = f.object.carta_de_interes_institucion_gestora_firmada.blank?
+            .col-12.col-md-4
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:carta_de_interes_institucion_gestora_firmada][:nombre]
+              -if no_data
+                %p#manifestacion_de_interes_carta_de_interes_institucion_gestora_firmada.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+              -else
+                #manifestacion_de_interes_carta_de_interes_institucion_gestora_firmada
+                = __descargar_archivo(f.object.carta_de_interes_institucion_gestora_firmada,f.object, false)
+                =#__subida_archivo("carta_de_interes_institucion_gestora_firmada", f.object, false, solo_lectura)
+            .col-12.col-md-4
+              = __mostrar_descargable(@descargables,'APL-001-DES-001', tarea_pendiente: @tarea_pendiente, carta_interes: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:atributo], nombre: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas][:nombre])
+
   #contexto-sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"contexto-sector"] ? 'true' : 'false'), "aria-labelledby" => "contexto-sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"contexto-sector"])}
     .card
       .card-body
-        .alert.alert-info
+        .alert.alert-primary
           %small
             %i.fa.fa-question-circle.fa-1-5x
             Contexto Sector y/o Territorio Involucrado
         .row
           .col-12
+            -if solo_lectura
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:actividad_economicas_ids][:nombre]
+              #manifestacion_de_interes_actividad_economicas_ids
             #checkbox-tree-selector-actividades-economicas.mb-3
-              .card.m-0{class: ('has-error' if f.object.errors.messages.has_key?(:sectores_economicos))}
-                .card-header.pt-1.pb-1.pl-3
-                  %h5.no-margin.float-left
-                    %abbr{title: :required} *
-                    = t(:elegir_sectores_económicos)
-                  .float-right
-                    %i.fa.fa-chevron-right
-                .card-body.p-0.group-hide.required
-                  = f.input "sectores_economicos[0]", as: :hidden, wrapper: false, input_html: { value: nil }
-                  = selector_de_actividades_economicas(@actecos_checked,:manifestacion_de_interes)
-                  - if f.object.errors.messages.has_key?(:sectores_economicos)
-                    %span.help-block
-                      = f.object.errors.messages[:sectores_economicos].first
-          .col-12
-            #checkbox-tree-selector-regiones-provincias-comunas.mb-3
-              .card.m-0{class: ('has-error' if f.object.errors.messages.has_key?(:territorios_regiones))}
-                .card-header.pt-2.pb-1.pl-3
-                  %h5.no-margin.float-left
-                    %abbr{title: :required} *
-                    = t(:elegir_territorios)
-                  .float-right
-                    %i.fa.fa-chevron-right
-                .card-body.p-0.group-hide.required
+              -card_class = ''
+              -card_class += ' border-0' if solo_lectura
+              -card_class += ' has-error' if f.object.errors.messages.has_key?(:actividad_economicas_ids)
+              .card.m-0.card-preview-seleccionados{class: card_class}
+                -if !solo_lectura
+                  #manifestacion_de_interes_actividad_economicas_ids.card-header.pt-1.pb-1.pl-3
+                    %h5.no-margin.float-left.display_select_title
+                      %abbr{title: :required} *
+                      =@validaciones[:manifestacion_de_interes][:actividad_economicas_ids][:nombre]
+                    .float-right
+                      %i.fa.fa-chevron-right
+                .card-body.py-0.group-hide.required{style: 'padding-left: 15px; padding-right: 15px;', class: (solo_lectura ? 'd-none' : '')}
                   .row
-                    .col-lg-4.pr-lg-0.col-12
-                      = selector_de_regiones_provincias_comunas(@rpc_checked,:manifestacion_de_interes)
-                    .col-lg-8.pl-lg-0.col-12
-                      = f.input "territorios_regiones[0]", as: :hidden, wrapper: false, input_html: { value: nil }
-                      = f.input "territorios_provincias[0]", as: :hidden, wrapper: false, input_html: { value: nil }
-                      = f.input "territorios_comunas[0]", as: :hidden, wrapper: false, input_html: { value: nil }
-                      = f.input :coordernadas_territorios, as: :hidden, wrapper: false, input_html: {class: ""}
-                      #representacion-seleccion-territorio-mapa
-                  - if f.object.errors.messages.has_key?(:territorios_regiones)
-                    %span.help-block
-                      = f.object.errors.messages[:territorios_regiones].first
-          .col-lg-6.pr-lg-0.col-12
-            -#
-              #textarea-caracterizacion-sector-territorio.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:caracterización_sector_territorio)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :caracterizacion_sector_territorio, as: :text, input_html: { class: 'card-wrap' }, label: t(:caracterización_sector_territorio), wrapper_class: 'm-0', required: true
-          .col-lg-6.col-12
-            -#
-              #textarea-principales_actores.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:principales_actores)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :principales_actores, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_actores), wrapper_class: 'm-0', required: true
-          .col-lg-4.pr-lg-0.col-12
-            = f.input :numero_empresas, as: :string, input_html: { class: 'numero' }, label: t(:nro_empresas), required: true
-          .col-lg-4.pr-lg-0.col-12
-            - f.object.porcentaje_mipymes=(f.object.porcentaje_mipymes.blank? ? 0 : f.object.porcentaje_mipymes)
-            = f.input :porcentaje_mipymes, input_html: { type: :range, class: '', min: 0.0, max: 100, step: 0.1 }, label: t(:with_range_values_, label: t(:porcentaje_mipymes), init: f.object.porcentaje_mipymes ).html_safe, wrapper_class: 'range-slider', required: true
-          .col-lg-4.col-12
-            = f.input :produccion, as: :string, input_html: { class: '' }, label: t(:producción), required: true
-          .col-lg-4.pr-lg-0.col-12
-            = f.input :ventas, as: :string, input_html: { class: 'moneda' }, label: t(:ventas), required: true
-          .col-lg-4.pr-lg-0.col-12
-            - f.object.porcentaje_exportaciones=(f.object.porcentaje_exportaciones.blank? ? 0 : f.object.porcentaje_exportaciones)
-            = f.input :porcentaje_exportaciones, input_html: { type: :range, class: '', min: 0.0, max: 100, step: 0.1 }, label: t(:with_range_values_, label: t(:porcentaje_exportaciones), init: f.object.porcentaje_exportaciones ).html_safe, wrapper_class: 'range-slider', required: true
-          .col-lg-4.col-12
-            = f.input :numero_trabajadores, as: :string, input_html: { class: 'numero' }, label: t(:nro_trabajadores), required: true
-          .col-lg-6.pr-lg-0.col-12
-            = f.input :principales_mercados, input_html: { class: '' }, label: t(:principales_mercados), required: true
-          .col-lg-6.col-12
-            -#
-              #textarea-vulnerabilidad-al-cambio-climatico-del-sector.mt-2.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:vulnerabilidad_al_cambio_climático_del_sector)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :vulnerabilidad_al_cambio_climatico_del_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:vulnerabilidad_al_cambio_climático_del_sector), wrapper_class: 'm-0', required: true
-          .col-lg-6.pr-lg-0.col-12
-            -#
-              #textarea-principales-impactos-socioambientales-del-sector.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:principales_impactos_socioambientales_del_sector)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :principales_impactos_socioambientales_del_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_impactos_socioambientales_del_sector), wrapper_class: 'm-0', required: true
-          .col-lg-6.col-12
-            -#
-              #textarea-principales-problemas-y-desafios.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:principales_problemas_y_desafíos)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :principales_problemas_y_desafios, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_problemas_y_desafíos), wrapper_class: 'm-0', required: true
-          .col-lg-6.pr-lg-0.col-12
-            -#
-              #textarea-principales-conflictos.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      %abbr{title: :required} *
-                      = t(:principales_conflictos)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            = f.input :principales_conflictos, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_conflictos), wrapper_class: 'm-0', required: true
-          .col-lg-6.col-12
-            -#
-              #textarea-estudios-sectoriales-territoriales-relevantes.mb-3
-                .card.m-0
-                  .card-header.pt-2.pb-1.pl-3
-                    %h5.no-margin.float-left
-                      = t(:otro_contexto_sector)
-                    .float-right
-                      %i.fa.fa-chevron-right
-                  .card-body.p-0.group-hide
-            
-            = f.input :otro_contexto_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:otro_contexto_sector), wrapper_class: 'm-0'
-          .col-lg-4.col-9
-            = f.input :estudios_sectoriales_territoriales_relevantes, as: :file, input_html: { class: 'form-control' }, label: t(:estudios_sectoriales_territoriales_relevantes), required: true
-            = f.hidden_field :estudios_sectoriales_territoriales_relevantes_cache
-          .col-lg-1.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,:estudios_sectoriales_territoriales_relevantes)
-            = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,f.object)   
-          .col-lg-4.col-md-7.col-9
-            
-            = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control' }, label: t(:subir_mapa_de_actores_actualizado), required: true
-            = f.hidden_field :mapa_de_actores_archivo_cache
-          .col-lg-1.col-3.align-self-end
-            = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
-          .col-lg-2.col-md-3.pl-md-0.col-12
-            =f.label t(:descargar_mapa_de_actores)
-            - if (action_name.to_sym == :edit || action_name.to_sym == :observaciones_admisibilidad || action_name.to_sym == :resolver_observaciones_admisibilidad|| action_name.to_sym ==  :responder_pertinencia_factibilidad)
-              -# url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
-              = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download
-                = t(:descargar_mapa_de_actores) 
-            -elsif @tarea.codigo == Tarea::COD_APL_001
-              = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download
-                = t(:descargar_mapa_de_actores)            
-            - elsif (action_name.to_sym == :admisibilidad || action_name.to_sym == :pertinencia_factibilidad)
-              -# url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
-              = link_to descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download
-                = t(:descargar_mapa_de_actores)
-            -#            
-              %br
-              = link_to url, class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download
-                = t(:descargar_mapa_de_actores)
+                    .col-12.aeconomicas-list.beauty-tree-content.p-0.border-0
+                      =beauty_tree_selector(f.object.actividades_economicas_beauty_tree_selector ,"manifestacion_de_interes[actividad_economicas_ids][]", "ae")
+                      - if f.object.errors.messages.has_key?(:actividad_economicas_ids)
+                        %span.help-block
+                          = f.object.errors.messages[:actividad_economicas_ids].first
+                -if !solo_lectura
+                  .card-footer.p-0
+                    %ul.list-group.seleccionados_tree.m-0
+                -else
+                  .card-footer.p-0.border-0
+                    %ul.list-group.seleccionados_tree_solo_lectura.m-0
+
+          -#
+            .col-lg-6.pr-lg-0.col-12
+              -#
+                #textarea-caracterizacion-sector-territorio.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:caracterización_sector_territorio)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :caracterizacion_sector_territorio, as: :text, input_html: { class: 'card-wrap' }, label: t(:caracterización_sector_territorio), wrapper_class: 'm-0', required: true
+          -#
+            .col-lg-6.col-12
+              -#
+                #textarea-principales_actores.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:principales_actores)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :principales_actores, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_actores), wrapper_class: 'm-0', required: true
+        %br
+        .row{class: (!solo_lectura ? 'align-items-end' : '')}
+          .col-12
+            .h5
+              =@validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:nombre]
+              -if @validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:ayuda_activo]
+                %a.btn.show-ayuda{campo: "9997"}
+                  %i.fa.fa-info-circle{style: "color: #0c5460;"}
+            .ayuda-campo-div-9997.alert.ayuda-div.small{style: "display: none"}
+              =@validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:ayuda].html_safe
+
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :numero_empresas, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:numero_empresas][:nombre], required: true
+            -else
+              -no_data = f.object.numero_empresas.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_empresas][:nombre]
+              %p#manifestacion_de_interes_numero_empresas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.numero_empresas)
+          -#
+            .col-lg-4.pr-lg-0.col-12
+              - f.object.porcentaje_mipymes=(f.object.porcentaje_mipymes.blank? ? 0 : f.object.porcentaje_mipymes)
+              = f.input :porcentaje_mipymes, input_html: { type: :range, class: '', min: 0.0, max: 100, step: 0.1 }, label: t(:with_range_values_, label: t(:porcentaje_mipymes), init: f.object.porcentaje_mipymes ).html_safe, wrapper_class: 'range-slider', required: true
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :produccion, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:produccion][:nombre], required: true
+            -else
+              -no_data = f.object.produccion.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:produccion][:nombre]
+              %p#manifestacion_de_interes_produccion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.produccion)
+          -#.col-12.col-md-1
+            -if !solo_lectura
+              = f.input :unidad_de_medida_volumen, collection: ManifestacionDeInteres.unidades_de_medida_para_volumen, input_html: { class: ''}, label: false, required: true
+            -else
+              -no_data = f.object.unidad_de_medida_volumen.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:unidad_de_medida_volumen][:nombre]
+              %p#manifestacion_de_interes_unidad_de_medida_volumen.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.unidad_de_medida_volumen)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :ventas, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:ventas][:nombre], required: true
+            -else
+              -no_data = f.object.ventas.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:ventas][:nombre]
+              %p#manifestacion_de_interes_ventas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : number_to_currency(f.object.ventas))
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :porcentaje_exportaciones, input_html: { class: 'text-fixed-size'}, label: @validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre], required: true
+            -else
+              -no_data = f.object.porcentaje_exportaciones.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre]
+              %p#manifestacion_de_interes_porcentaje_exportaciones.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.porcentaje_exportaciones)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :numero_trabajadores, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre], required: true
+            -else
+              -no_data = f.object.numero_trabajadores.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre]
+              %p#manifestacion_de_interes_numero_trabajadores.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.numero_trabajadores)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :comentarios_cifras, input_html: { class: 'text-fixed-size' }, label: false, required: false
+            -else
+              .form-group
+                -no_data = f.object.comentarios_cifras.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:comentarios_cifras][:nombre]
+                %p#manifestacion_de_interes_comentarios_cifras.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.comentarios_cifras)
+          .col-12
+            %hr{style: 'display: block;'}
+        %br
+        .row
+          .col-12
+            .h5=@validaciones[:manifestacion_de_interes][:titulo_caracterizacion_actividades_economicas][:nombre]
+
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :principales_mercados, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:principales_mercados][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.principales_mercados.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_mercados][:nombre]
+                %p#manifestacion_de_interes_principales_mercados.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_mercados)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :cadena_de_valor, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:cadena_de_valor][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.cadena_de_valor.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:cadena_de_valor][:nombre]
+                %p#manifestacion_de_interes_cadena_de_valor.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.cadena_de_valor)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :otras_caracteristicas_relevantes, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
+            -else
+              .form-group
+                -no_data = f.object.otras_caracteristicas_relevantes.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
+                %p#manifestacion_de_interes_otras_caracteristicas_relevantes.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otras_caracteristicas_relevantes)
+        .col-12
+          %hr{style: 'display: block;'}
+        .row.mt-3{class: (solo_lectura ? '' : 'align-items-end')}
+          - tool_acuerdo = @validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:tooltip_activo]
+          -if !solo_lectura
+            .col-4{style:"font-size: 13px"}
+              =f.input :acuerdo_de_alcance_nacional, as: :radio_buttons, collection: [['  Si', true], ['  No', false]], input_html: {class: "acuerdo_alcance_nacional"}, required: true, label: @validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:nombre], label_html: { class: "tooltip-block", "data-original-title": "#{tool_acuerdo ? @validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:tooltip] : ''}"}
+          -else
+            .col-4.pt-1
+              .d-flex.flex-row.align-items-start
+                -no_data = f.object.acuerdo_de_alcance_nacional.nil?
+                %label.control-label.string
+                  %abbr{title: 'Campo requerido'} *
+                  =@validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:nombre]
+                %p#manifestacion_de_interes_acuerdo_de_alcance_nacional.tooltip-block.d-inline.fs-14.ml-2{align: :justify, class: (no_data ? 'font-italic text-muted' : ''), "data-original-title": (tool_acuerdo ? @validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:tooltip] : '')}
+                  =(no_data ? 'No se ingresó respuesta' : (f.object.acuerdo_de_alcance_nacional ? 'Si' : 'No'))
+
+          -if @validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:ayuda_activo]
+            %a.btn.show-ayuda{campo: "9996", class: (solo_lectura ? 'pt-0' : '')}
+              %i.fa.fa-info-circle{style: "color: #0c5460;"}
+          .col-12
+            .ayuda-campo-div-9996.alert.ayuda-div.small{style: "display: none"}
+              =@validaciones[:manifestacion_de_interes][:acuerdo_de_alcance_nacional][:ayuda].html_safe
+          #si_acuerdo_alcance.col-12.p-0{style: "display: #{(f.object.acuerdo_de_alcance_nacional || f.object.acuerdo_de_alcance_nacional.nil?) ? 'none' : 'block'};"}
+            .col-12
+              -if solo_lectura
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                #manifestacion_de_interes_comunas_ids
+              #checkbox-tree-selector-regiones-provincias-comunas.mb-3
+                -card_class = ''
+                -card_class += ' border-0' if solo_lectura
+                -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
+                .card.m-0.card-preview-seleccionados{class: card_class}
+                  -if !solo_lectura
+                    #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left.display_select_title
+                        %abbr{title: :required} *
+                        =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                      .float-right
+                        %i.fa.fa-chevron-right#boton_expandir_territorios
+                  .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
+                    .row
+                      .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
+                        =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
+                      .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
+                        = f.input :coordernadas_territorios, as: :hidden, wrapper: false, input_html: {class: ""}
+                        #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
+                    - if f.object.errors.messages.has_key?(:comunas_ids)
+                      %span.help-block
+                        = f.object.errors.messages[:comunas_ids].first
+                  -if !solo_lectura
+                    .card-footer.p-0
+                      %ul.list-group.seleccionados_tree.m-0
+                  -else
+                    .card-footer.px-0.pb-0.pt-1.border-0
+                      %ul.list-group.seleccionados_tree_solo_lectura.m-0
+            .col-12
+              -if solo_lectura
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:cuencas_ids][:nombre]
+                #manifestacion_de_interes_cuencas_ids
+              #checkbox-tree-selector-cuencas.mb-3
+                -card_class = ''
+                -card_class += ' border-0' if solo_lectura
+                -card_class += ' has-error' if f.object.errors.messages.has_key?(:cuencas_ids)
+                .card.m-0.card-preview-seleccionados{class: card_class}
+                  -if !solo_lectura
+                    #manifestacion_de_interes_cuencas_ids.card-header.pt-1.pb-1.pl-3
+                      %h5.no-margin.float-left.display_select_title
+                        =@validaciones[:manifestacion_de_interes][:cuencas_ids][:nombre]
+                      .float-right
+                        %i.fa.fa-chevron-right
+                      %span
+                  .card-body.py-0.group-hide.required{class: (solo_lectura ? 'd-none' : '')}
+                    .row
+                      .col-12.aeconomicas-list.beauty-tree-content.p-0.border-0
+                        =beauty_tree_selector(f.object.cuencas_beauty_tree_selector ,"manifestacion_de_interes[cuencas_ids][]", "cuencas")
+                        - if f.object.errors.messages.has_key?(:cuencas_ids)
+                          %span.help-block
+                            = f.object.errors.messages[:cuencas_ids].first
+                  -if !solo_lectura
+                    .card-footer.p-0
+                      %ul.list-group.seleccionados_tree.m-0
+                  -else
+                    .card-footer.p-0.border-0
+                      %ul.list-group.seleccionados_tree_solo_lectura.m-0
+        .row{class: (solo_lectura ? '' : 'align-items-end')}
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :caracterizacion_sector_territorio, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:caracterizacion_sector_territorio][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.caracterizacion_sector_territorio.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:caracterizacion_sector_territorio][:nombre]
+                %p#manifestacion_de_interes_caracterizacion_sector_territorio.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.caracterizacion_sector_territorio)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :vulnerabilidad_al_cambio_climatico_del_sector, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:vulnerabilidad_al_cambio_climatico_del_sector][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.vulnerabilidad_al_cambio_climatico_del_sector.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:vulnerabilidad_al_cambio_climatico_del_sector][:nombre]
+                %p#manifestacion_de_interes_vulnerabilidad_al_cambio_climatico_del_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.vulnerabilidad_al_cambio_climatico_del_sector)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :principales_impactos_socioambientales_del_sector, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.principales_impactos_socioambientales_del_sector.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre]
+                %p#manifestacion_de_interes_principales_impactos_socioambientales_del_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_impactos_socioambientales_del_sector)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :principales_problemas_y_desafios, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_problemas_y_desafios][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.principales_problemas_y_desafios.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_problemas_y_desafios][:nombre]
+                %p#manifestacion_de_interes_principales_problemas_y_desafios.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_problemas_y_desafios)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :principales_conflictos, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_conflictos][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.principales_conflictos.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_conflictos][:nombre]
+                %p#manifestacion_de_interes_principales_conflictos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_conflictos)
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :otro_contexto_sector, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:otro_contexto_sector][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.otro_contexto_sector.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otro_contexto_sector][:nombre]
+                %p#manifestacion_de_interes_otro_contexto_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otro_contexto_sector)
+          .col-12.col-md-6
+            .row
+              -if !solo_lectura
+                .col-12.col-md-8
+                  = f.input :estudios_sectoriales_territoriales_relevantes, as: :file, input_html: { class: 'form-control validado' }
+                  = f.hidden_field :estudios_sectoriales_territoriales_relevantes_cache
+                #descargar_estudios_sectoriales_territoriales.col-12.col-md-4.descargable-file.pt-2
+                  - if(!f.object.estudios_sectoriales_territoriales_relevantes.blank?)
+                    = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,f.object)
+              -else
+                -no_data = f.object.estudios_sectoriales_territoriales_relevantes.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:estudios_sectoriales_territoriales_relevantes][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_estudios_sectoriales_territoriales_relevantes.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_estudios_sectoriales_territoriales_relevantes
+                    = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,f.object, false)
+
+
+          -#
+            .col-lg-6.col-12
+              -#
+                #textarea-vulnerabilidad-al-cambio-climatico-del-sector.mt-2.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:vulnerabilidad_al_cambio_climático_del_sector)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :vulnerabilidad_al_cambio_climatico_del_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:vulnerabilidad_al_cambio_climático_del_sector), wrapper_class: 'm-0', required: true
+            .col-lg-6.pr-lg-0.col-12
+              -#
+                #textarea-principales-impactos-socioambientales-del-sector.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:principales_impactos_socioambientales_del_sector)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :principales_impactos_socioambientales_del_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_impactos_socioambientales_del_sector), wrapper_class: 'm-0', required: true
+            .col-lg-6.col-12
+              -#
+                #textarea-principales-problemas-y-desafios.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:principales_problemas_y_desafíos)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :principales_problemas_y_desafios, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_problemas_y_desafíos), wrapper_class: 'm-0', required: true
+            .col-lg-6.pr-lg-0.col-12
+              -#
+                #textarea-principales-conflictos.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:principales_conflictos)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :principales_conflictos, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_conflictos), wrapper_class: 'm-0', required: true
+            .col-lg-6.col-12
+              -#
+                #textarea-estudios-sectoriales-territoriales-relevantes.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        = t(:otro_contexto_sector)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+
+              = f.input :otro_contexto_sector, as: :text, input_html: { class: 'card-wrap' }, label: t(:otro_contexto_sector), wrapper_class: 'm-0'
+            .col-lg-4.col-9
+              = f.input :estudios_sectoriales_territoriales_relevantes, as: :file, input_html: { class: 'form-control' }, label: t(:estudios_sectoriales_territoriales_relevantes), required: true
+              = f.hidden_field :estudios_sectoriales_territoriales_relevantes_cache
+            .col-lg-1.col-3.align-self-end
+              -#
+                = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,:estudios_sectoriales_territoriales_relevantes)
+              = __descargar_archivo(f.object.estudios_sectoriales_territoriales_relevantes,f.object)
+            .col-lg-4.col-md-7.col-9
+
+              = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control' }, label: t(:subir_mapa_de_actores_actualizado), required: true
+              = f.hidden_field :mapa_de_actores_archivo_cache
+            .col-lg-1.col-3.align-self-end
+              = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
+            .col-lg-2.col-md-3.pl-md-0.col-12
+              =f.label t(:descargar_mapa_de_actores)
+              - if (action_name.to_sym == :edit || action_name.to_sym == :observaciones_admisibilidad || action_name.to_sym == :resolver_observaciones_admisibilidad|| action_name.to_sym ==  :responder_pertinencia_factibilidad)
+                -# url = descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+                = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
+                  %i.fa.fa-download
+                  = t(:descargar_mapa_de_actores)
+              -elsif @tarea.codigo == Tarea::COD_APL_001
+                = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
+                  %i.fa.fa-download
+                  = t(:descargar_mapa_de_actores)
+              - elsif (action_name.to_sym == :admisibilidad || action_name.to_sym == :pertinencia_factibilidad)
+                -# url = descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes)
+                = link_to descargar_revisor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-outline-secondary btn-block' do
+                  %i.fa.fa-download
+                  = t(:descargar_mapa_de_actores)
+              -#
+                %br
+                = link_to url, class: 'btn btn-sm btn-outline-secondary btn-block' do
+                  %i.fa.fa-download
+                  = t(:descargar_mapa_de_actores)
   #datos-proyecto.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"datos-proyecto"] ? 'true' : 'false'), "aria-labelledby" => "datos-proyecto-tab", :role => "tabpanel", class: ("show active" if tabs[:"datos-proyecto"])}
     .card
       .card-body
+        .alert.alert-primary
+          %small
+            %i.fa.fa-question-circle.fa-1-5x
+            Solo Aplica a Acuerdos que tienen por objetivo la instalación de proyectos de inversión socio ambientalmente sólidos y confiables.
         .row
-          .col-12
-            = f.input :nombre_proyecto, input_html: { class: '' }, label: t(:nombre_proyecto), required: true
-          .col-lg-6.pr-lg-0.col-12
-            = f.input :descripcion_proyecto, as: :text, input_html: { class: '' }, label: t(:descripción_proyecto), required: true
           .col-lg-6.col-12
-            = f.input :justificacion_proyecto, as: :text, input_html: { class: '' }, label: t(:justificación_proyecto), required: true
+            .col-lg-12.p-0.col-12
+              -if !solo_lectura
+                = f.input :nombre_proyecto, as: :text
+              -else
+                .form-group
+                  -no_data = f.object.nombre_proyecto.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_proyecto][:nombre]
+                  %p#manifestacion_de_interes_nombre_proyecto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.nombre_proyecto)
+              %br
+            .col-lg-12.p-0.col-12
+              -if !solo_lectura
+                = f.input :descripcion_proyecto, as: :text
+              -else
+                .form-group
+                  -no_data = f.object.descripcion_proyecto.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:descripcion_proyecto][:nombre]
+                  %p#manifestacion_de_interes_descripcion_proyecto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.descripcion_proyecto)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :justificacion_proyecto, as: :text
+            -else
+              .form-group
+                -no_data = f.object.justificacion_proyecto.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:justificacion_proyecto][:nombre]
+                %p#manifestacion_de_interes_justificacion_proyecto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.justificacion_proyecto)
+          .col-12
+            %hr{style: 'display: block;'}
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :detalle_de_localizacion, as: :text, input_html: {class: 'text-fixed-size'}
+            -else
+              .form-group
+                -no_data = f.object.detalle_de_localizacion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:detalle_de_localizacion][:nombre]
+                %p#manifestacion_de_interes_detalle_de_localizacion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.detalle_de_localizacion)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :detalle_de_alternativa_de_instalacion, as: :text, input_html: {class: 'text-fixed-size'}
+            -else
+              .form-group
+                -no_data = f.object.detalle_de_alternativa_de_instalacion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:detalle_de_alternativa_de_instalacion][:nombre]
+                %p#manifestacion_de_interes_detalle_de_alternativa_de_instalacion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.detalle_de_alternativa_de_instalacion)
           .col-12
             .row
-              .col-lg-6.pr-lg-0.col-12
-                .row
-                  -# .col-10.pr-0
-                  -#  = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form-control border-right-0' }, label: t(:área_influencia_proyecto), required: true
-                  -#  = f.hidden_field :area_influencia_proyecto_archivo_cache
-                  = f.hidden_field :area_influencia_proyecto_data, class: ''
-                  -# .col-2.pl-0
-                  -#  = __upload_status(f.object,:area_influencia_proyecto_archivo)
-                  .col-12
-                    %label.control-label.string
-                      = t(:area_influencia_proyecto_mapa)
-                    #area-influencia-proyecto-mapa
               .col-lg-6.col-12
                 .row
-                  -# .col-10.pr-0
-                  -#  = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control border-right-0' }, label: t(:alternativas_instalación), required: true
-                  -#  = f.hidden_field :alternativas_instalacion_archivo_cache
-                  = f.hidden_field :alternativas_instalacion_data, class: ''
-                  -# .col-2.pl-0
-                  -#  = __upload_status(f.object,:alternativas_instalacion_archivo)
-                  .col-12
+                  = f.hidden_field :area_influencia_proyecto_data
+                  - tlt_influencia = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip_activo]
+                  .col
                     %label.control-label.string
-                      = t(:alternativas_instalacion_mapa)
+                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:nombre]
+                  .col-auto.pr-0
+                    -if @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda_activo]
+                      %a.btn.show-ayuda.pb-0{campo: "9998"}
+                        %i.fa.fa-info-circle{style: "color: #0c5460;"}
+                  .col-12
+                    .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9998'}
+                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda].html_safe
+                  .col-12.tooltip-block{"data-original-title": "#{tlt_influencia ? @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip] : '' }"}
+                    #area-influencia-proyecto-mapa
+                .row.mt-3
+                  -if !solo_lectura
+                    .col-12.col-lg-6
+                      = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form- validado' }, label: false
+                      = f.hidden_field :area_influencia_proyecto_archivo_cache
+                    .col-lg-6.col-12.mt-auto
+                      = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object,false)
+                  -else
+                    -no_data = f.object.area_influencia_proyecto_archivo.blank?
+                    .col-12.col-lg-6
+                      %label.control-label.string=@validaciones[:manifestacion_de_interes][:area_influencia_proyecto_archivo][:nombre]
+                      -if no_data
+                        %p#manifestacion_de_interes_area_influencia_proyecto_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                      -else
+                        #manifestacion_de_interes_area_influencia_proyecto_archivo
+                        = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object, false)
+              .col-lg-6.col-12
+                .row
+                  = f.hidden_field :alternativas_instalacion_data
+                  - tlt_alt = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip_activo]
+                  .col
+                    %label.control-label.string
+                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:nombre]
+                  .col-auto.pr-0
+                    -if @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda_activo]
+                      %a.btn.show-ayuda.pb-0{campo: "9999"}
+                        %i.fa.fa-info-circle{style: "color: #0c5460;"}
+                  .col-12
+                    .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9999'}
+                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda].html_safe
+                  .col-12.tooltip-block{"data-original-title": "#{tlt_alt ? @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip] : '' }"}
                     #alternativas-instalacion-mapa
-          -#
-            .col-12
-              %label.control-label.string
-                = t(:representación_en_mapa_proyecto)
-              #representacion-en-mapa-proyecto.mb-2
-          .col-md-4.pr-md-0.col-12
-            = f.input :monto_inversion, as: :string, input_html: { class: 'moneda' }, label: t(:monto_inversión), required: true
-          .col-md-4.pr-md-0.col-12
-            = f.input :tecnologia, input_html: { class: '' }, label: t(:tecnología), required: true
-          .col-md-4.col-12
-            = f.input :estado_proyecto, input_html: { class: '' }, label: t(:estado_proyecto), required: true
-          .col-md-4.col-9
-            = f.input :estudio_de_mercado, as: :file, input_html: { class: 'form-control' }, label: t(:estudio_de_mercado), required: true
-            = f.hidden_field :estudio_de_mercado_cache
-          .col-md-2.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.estudio_de_mercado,:estudio_de_mercado)
-            = __descargar_archivo(f.object.estudio_de_mercado, f.object)
-          .col-md-4.col-9
-            = f.input :anteproyecto, as: :file, input_html: { class: 'form-control' }, label: t(:anteproyecto), required: true
-            = f.hidden_field :anteproyecto_cache
-          .col-md-2.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.anteproyecto,:anteproyecto)
-            = __descargar_archivo(f.object.anteproyecto, f.object)
-          .col-md-4.col-9
-            = f.input :gantt_proyecto, as: :file, input_html: { class: 'form-control' }, label: t(:gantt_proyecto), required: true
-            = f.hidden_field :gantt_proyecto_cache
-          .col-md-2.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.gantt_proyecto,:gantt_proyecto)
-            = __descargar_archivo(f.object.gantt_proyecto,f.object)
-          .col-md-4.col-9
-            = f.input :otros_estudios, as: :file, input_html: { class: 'form-control' }, label: t(:otros_estudios), required: true
-            = f.hidden_field :otros_estudios_cache
-          .col-md-2.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.otros_estudios,:otros_estudios)
-            = __descargar_archivo(f.object.otros_estudios,f.object)
+                .row.mt-3
+                  -if !solo_lectura
+                    .col-12.col-lg-6
+                      = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control validado' }, label: false
+                      = f.hidden_field :alternativas_instalacion_archivo_cache
+                    .col-lg-6.col-12.mt-auto
+                      = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object,false)
+                  -else
+                    -no_data = f.object.alternativas_instalacion_archivo.blank?
+                    .col-12.col-lg-6
+                      %label.control-label.string=@validaciones[:manifestacion_de_interes][:alternativas_instalacion_archivo][:nombre]
+                      -if no_data
+                        %p#manifestacion_de_interes_alternativas_instalacion_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                      -else
+                        #manifestacion_de_interes_alternativas_instalacion_archivo
+                        = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object, false)
           .col-12
-            = f.input :operador, input_html: { class: '' }, label: t(:operador), required: true
-          .col-lg-6.pr-lg-0.col-12
-            = f.input :otros_proyectos_en_territorios_cercanos, as: :text, input_html: { class: '' }, label: t(:otros_proyectos_del_desarrollador_operador_en_territorios_cercanos), required: true
+            %hr{style: 'display: block;'}
           .col-lg-6.col-12
-            = f.input :otro_datos_proyecto, as: :text, input_html: { class: '' }, label: t(:otro_datos_proyecto), required: true
+            -if !solo_lectura
+              = f.input :estado_proyecto, as: :text
+            -else
+              .form-group
+                -no_data = f.object.estado_proyecto.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:estado_proyecto][:nombre]
+                %p#manifestacion_de_interes_estado_proyecto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.estado_proyecto)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :tecnologia, as: :text
+            -else
+              .form-group
+                -no_data = f.object.tecnologia.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:tecnologia][:nombre]
+                %p#manifestacion_de_interes_tecnologia.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.tecnologia)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :operador, required: true
+            -else
+              .form-group
+                -no_data = f.object.operador.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:operador][:nombre]
+                %p#manifestacion_de_interes_operador.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.operador)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :monto_inversion, as: :string, input_html: { class: 'moneda' }, required: true
+            -else
+              .form-group
+                -no_data = f.object.monto_inversion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:monto_inversion][:nombre]
+                %p#manifestacion_de_interes_monto_inversion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : number_to_currency(f.object.monto_inversion))
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :otros_proyectos_en_territorios_cercanos, as: :text
+            -else
+              .form-group
+                -no_data = f.object.otros_proyectos_en_territorios_cercanos.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_proyectos_en_territorios_cercanos][:nombre]
+                %p#manifestacion_de_interes_otros_proyectos_en_territorios_cercanos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otros_proyectos_en_territorios_cercanos)
+          .col-lg-6.col-12
+            -if !solo_lectura
+              = f.input :otro_datos_proyecto, as: :text
+            -else
+              .form-group
+                -no_data = f.object.otro_datos_proyecto.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otro_datos_proyecto][:nombre]
+                %p#manifestacion_de_interes_otro_datos_proyecto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otro_datos_proyecto)
+          -if !solo_lectura
+            .col-lg-4.col-12
+              = f.input :gantt_proyecto, as: :file, input_html: { class: 'form-control validado' }
+              = f.hidden_field :gantt_proyecto_cache
+            .col-lg-2.col-12.mt-auto
+              = __descargar_archivo(f.object.gantt_proyecto,f.object,false)
+            .col-lg-4.col-12
+              = f.input :estudio_de_mercado, as: :file, input_html: { class: 'form-control validado' }
+              = f.hidden_field :estudio_de_mercado_cache
+            .col-lg-2.col-12.mt-auto
+              = __descargar_archivo(f.object.estudio_de_mercado, f.object,false)
+            .col-lg-4.col-12
+              = f.input :anteproyecto, as: :file, input_html: { class: 'form-control validado' }
+              = f.hidden_field :anteproyecto_cache
+            .col-lg-2.col-12.mt-auto
+              = __descargar_archivo(f.object.anteproyecto, f.object,false)
+            .col-lg-4.col-12
+              = f.input :otros_estudios, as: :file, input_html: { class: 'form-control validado' }
+              = f.hidden_field :otros_estudios_cache
+            .col-lg-2.col-12.mt-auto
+              = __descargar_archivo(f.object.otros_estudios,f.object,false)
+          -else
+            -no_data = f.object.gantt_proyecto.blank?
+            .col-12.col-lg-4
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:gantt_proyecto][:nombre]
+              -if no_data
+                %p#manifestacion_de_interes_gantt_proyecto.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+              -else
+                #manifestacion_de_interes_gantt_proyecto
+                = __descargar_archivo(f.object.gantt_proyecto,f.object, false)
+            -no_data = f.object.estudio_de_mercado.blank?
+            .col-12.col-lg-4.offset-lg-2
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:estudio_de_mercado][:nombre]
+              -if no_data
+                %p#manifestacion_de_interes_estudio_de_mercado.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+              -else
+                #manifestacion_de_interes_estudio_de_mercado
+                = __descargar_archivo(f.object.estudio_de_mercado,f.object, false)
+            -no_data = f.object.anteproyecto.blank?
+            .col-12.col-lg-4
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:anteproyecto][:nombre]
+              -if no_data
+                %p#manifestacion_de_interes_anteproyecto.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+              -else
+                #manifestacion_de_interes_anteproyecto
+                = __descargar_archivo(f.object.anteproyecto,f.object, false)
+            -no_data = f.object.otros_estudios.blank?
+            .col-12.col-lg-4.offset-lg-2
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_estudios][:nombre]
+              -if no_data
+                %p#manifestacion_de_interes_otros_estudios.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+              -else
+                #manifestacion_de_interes_otros_estudios
+                = __descargar_archivo(f.object.otros_estudios,f.object, false)
   #objetivo-acuerdo.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"objetivo-acuerdo"] ? 'true' : 'false'), "aria-labelledby" => "objetivo-acuerdo-tab", :role => "tabpanel", class: ("show active" if tabs[:"objetivo-acuerdo"])}
     .card
       .card-body
-        .alert.alert-info
+        .alert.alert-primary
           %small
             %i.fa.fa-question-circle.fa-1-5x
-            Objetivos del Acuerdo y Compromiso con el mismo
+            Motivación y fundamentos del Acuerdo
         .row
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, as: :text, input_html: { }, label: @validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre], required: true
+            -else
+              -no_data = f.object.nombre_acuerdo.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre]
+              %p#manifestacion_de_interes_nombre_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.nombre_acuerdo)
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :motivacion_y_objetivos, as: :text , input_html: { }, label: @validaciones[:manifestacion_de_interes][:motivacion_y_objetivos][:nombre], required: true
+            -else
+              -no_data = f.object.motivacion_y_objetivos.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:motivacion_y_objetivos][:nombre]
+              %p#manifestacion_de_interes_motivacion_y_objetivos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.motivacion_y_objetivos)
           .col-12
-            = f.input :nombre_acuerdo, input_html: { class: '' }, label: t(:nombre_acuerdo), required: true
-          .col-md-6.pr-md-0.col-12
-            = f.input :motivacion_y_objetivos, as: :text, input_html: { class: '' }, label: t(:motivación_y_objetivos), required: true
-          .col-md-6.col-12
-            = f.input :equipo_de_trabajo_comprometido, as: :text, input_html: { class: '' }, label: t(:equipo_de_trabajo_comprometido), required: true
+            %hr{style: 'display: block;'}
+          
+          -# DOSSA 2019-09-13 12:43 SE MUEVE A SECCIÓN 4
+            .col-md-6.col-12
+              = f.input :equipo_de_trabajo_comprometido, as: :text , input_html: { }, label: @validaciones[:manifestacion_de_interes][:equipo_de_trabajo_comprometido][:nombre], required: true
+          
+          -# DOSSA 2019-09-13 12:47 SE MUEVE A SECCIÓN ? (Aún no hay certeza de esto o si se combinará)
+            .col-12.mt-auto
+              = f.input :patrocinadores, as: :text, input_html: { class: '' }, label: t(:patrocinadores), required: true  
+          
+          -# DOSSA 2019-09-13 12:42 SE ELIMINA
+            .col-md-6.pr-md-0.col-12.mt-auto
+              = f.input :monto_total_comprometido, as: :string, input_html: { class: 'moneda' }, label: t(:indicar_monto_total_comprometido), required: true
+            .col-md-5.col-9.mt-auto
+              = f.input :organigrama, as: :file, input_html: { class: 'form-control' }, label: t(:organigrama), required: true
+              = f.hidden_field :organigrama_cache
+            .col-md-1.col-3.align-self-end.mt-auto
+              -#
+                = __descargar_archivo(f.object.organigrama,:organigrama)
+              = __descargar_archivo(f.object.organigrama,f.object)
+            .col-12.mt-auto
+              = f.input :otros_recursos_comprometidos, as: :text , input_html: { }, label: @validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre], required: true
+          
+          -# DOSSA 2019-09-13 12:49 SE MUEVE A SECCIÓN 3
+            .col-md-5.col-9.mt-auto
+              = f.input :carta_de_apoyo_y_compromiso, as: :file, input_html: { class: 'form-control' }, label: t(:subir_cartas_de_apoyo_y_compromiso), required: true
+              = f.hidden_field :carta_de_apoyo_y_compromiso_cache
+            .col-md-1.col-3.align-self-end.mt-auto
+              -#
+                = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,:carta_de_apoyo_y_compromiso)
+              = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,f.object)
+            .col-lg-3.col-md-6.pr-md-0.col-12.mt-auto
+              = __mostrar_descargable(@descargables,'APL-001-DES-003', tarea_pendiente: @tarea_pendiente.id)
+          
+          -# DOSSA 2019-09-13 12:52 SE ELIMINA    
+            .col-lg-3.col-md-6.col-12.mt-auto
+              = f.input :numero_participantes, as: :string, input_html: { class: 'numero' }, label: t(:nro_participantes), required: true
+            .col-md-6.pr-md-0.col-12.mt-auto
+              = f.input :lista_participantes, as: :text, input_html: { class: '' }, label: t(:lista_participantes), required: true
+            .col-md-6.col-12.mt-auto
+              = f.input :priorizacion, as: :text, input_html: { class: '' }, label: t(:priorización), required: true
+          
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :relacion_de_politicas, as: :text, label: @validaciones[:manifestacion_de_interes][:relacion_de_politicas][:nombre]
+            -else
+              -no_data = f.object.relacion_de_politicas.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:relacion_de_politicas][:nombre]
+              %p#manifestacion_de_interes_relacion_de_politicas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.relacion_de_politicas)
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :otras_iniciativas_relacionadas_en_ejecucion, as: :text, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
+            -else
+              -no_data = f.object.otras_iniciativas_relacionadas_en_ejecucion.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
+              %p#manifestacion_de_interes_otras_iniciativas_relacionadas_en_ejecucion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.otras_iniciativas_relacionadas_en_ejecucion)
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :programas_o_proyectos_relacionados_ids, collection: ManifestacionDeInteres.ppp_aprobados, input_html: { class: 'select-ppp', multiple: true }, label: @validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre], required: true
+              #selection-container
+                -f.object.programas_o_proyectos_relacionados.each do |ppr|
+                  .selection-list-boxes{value: ppr.id}
+                    %a.x-remove-selection{value: ppr.id}
+                      %span{style: "color: #999;"} &times;
+                    =ppr.nombre_propuesta
+            -else
+              -no_data = f.object.programas_o_proyectos_relacionados_ids.blank? || f.object.programas_o_proyectos_relacionados_ids.size == 1
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre]
+              #manifestacion_de_interes_programas_o_proyectos_relacionados_ids.d-inline{align: :justify, class: (no_data ? 'font-italic text-muted fs-14' : '')}
+                -if no_data
+                  No se ingresó respuesta
+                -else
+                  #selection-container
+                    -f.object.programas_o_proyectos_relacionados.each do |ppr|
+                      .selection-list-boxes{value: ppr.id}
+                        =ppr.nombre_propuesta
           .col-12
-            = f.input :patrocinadores, as: :text, input_html: { class: '' }, label: t(:patrocinadores), required: true
-          .col-md-6.pr-md-0.col-12
-            = f.input :monto_total_comprometido, as: :string, input_html: { class: 'moneda' }, label: t(:indicar_monto_total_comprometido), required: true
-          .col-md-5.col-9
-            = f.input :organigrama, as: :file, input_html: { class: 'form-control' }, label: t(:organigrama), required: true
-            = f.hidden_field :organigrama_cache
-          .col-md-1.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.organigrama,:organigrama)
-            = __descargar_archivo(f.object.organigrama,f.object)
+            %hr{style: 'display: block;'}
+
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :fuente_de_fondos, as: :text, label: @validaciones[:manifestacion_de_interes][:fuente_de_fondos][:nombre], required: true
+            -else
+              -no_data = f.object.fuente_de_fondos.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:fuente_de_fondos][:nombre]
+              %p#manifestacion_de_interes_fuente_de_fondos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.fuente_de_fondos)
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :justificacion_de_estimacion_de_fondos_requeridos, as: :text, label: @validaciones[:manifestacion_de_interes][:justificacion_de_estimacion_de_fondos_requeridos][:nombre], required: true
+            -else
+              -no_data = f.object.justificacion_de_estimacion_de_fondos_requeridos.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:justificacion_de_estimacion_de_fondos_requeridos][:nombre]
+              %p#manifestacion_de_interes_justificacion_de_estimacion_de_fondos_requeridos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.justificacion_de_estimacion_de_fondos_requeridos)
           .col-12
-            = f.input :otros_recursos_comprometidos, as: :text, input_html: { class: '' }, label: t(:indicar_otros_recursos_comprometidos), required: true
-          .col-md-5.col-9
-            = f.input :carta_de_apoyo_y_compromiso, as: :file, input_html: { class: 'form-control' }, label: t(:subir_cartas_de_apoyo_y_compromiso), required: true
-            = f.hidden_field :carta_de_apoyo_y_compromiso_cache
-          .col-md-1.col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,:carta_de_apoyo_y_compromiso)
-            = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,f.object)
-          .col-lg-3.col-md-6.pr-md-0.col-12
-            = __mostrar_descargable(@descargables,'APL-001-DES-003', tarea_pendiente: @tarea_pendiente.id)
-          .col-lg-3.col-md-6.col-12
-            = f.input :numero_participantes, as: :string, input_html: { class: 'numero' }, label: t(:nro_participantes), required: true
-          .col-md-6.pr-md-0.col-12
-            = f.input :lista_participantes, as: :text, input_html: { class: '' }, label: t(:lista_participantes), required: true
-          .col-md-6.col-12
-            = f.input :priorizacion, as: :text, input_html: { class: '' }, label: t(:priorización), required: true
+            %hr{style: 'display: block;'}
+
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :nombre_de_estandar_certificable, as: :text, label: @validaciones[:manifestacion_de_interes][:nombre_de_estandar_certificable][:nombre]
+            -else
+              -no_data = f.object.nombre_de_estandar_certificable.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_de_estandar_certificable][:nombre]
+              %p#manifestacion_de_interes_nombre_de_estandar_certificable.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.nombre_de_estandar_certificable)
+          .col-md-6.col-12.radios-selector-subida-padre
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0
+                      %input.radios-selector-subida{type: :radio, value: 0, name: "manifestacion_de_interes[radio_estandar]", checked: f.object.radio_estandar.to_i == 0}
+                  = f.input :estandar_certificable, as: :file, input_html: { class: 'form-control validado' }, label: false, disabled: true
+                  = f.hidden_field :estandar_certificable_cache
+                #descargar_estandar_certificable.col-md-4.col-12.descargable-file.d-none.pt-2
+                  - if(!f.object.estandar_certificable.blank?)
+                    = __descargar_archivo(f.object.estandar_certificable,f.object)
+              -else
+                -no_data = f.object.estandar_certificable.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:estandar_certificable][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_estandar_certificable.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_estandar_certificable
+                    = __descargar_archivo(f.object.estandar_certificable,f.object, false)
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0
+                      %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_estandar]", checked: f.object.radio_estandar.to_i == 1}
+                  = f.input :estandar_de_certificacion_id, collection: EstandarHomologacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'mt-auto select-diagnostico-estandar-informe' }, label: false, disabled: true, required: true
+                .col-md-4.col-12.descargable-select.d-none
+                  .form-group.mt-1
+                    = label_tag nil, @validaciones[:manifestacion_de_interes][:descarga_estandar_seleccionado][:nombre], class: "string mb-1"
+                    = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-descargar btn-block estandar_de_homologacion_descarga' do
+                      %i.fa.fa-download
+              -else
+                -no_data = f.object.estandar_homologacion.nil?
+                -if no_data
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:estandar_de_certificacion_id][:nombre]
+                    %p#manifestacion_de_interes_estandar_de_certificacion_id.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                -else
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:estandar_de_certificacion_id][:nombre]
+                    %p#manifestacion_de_interes_estandar_de_certificacion_id.d-inline.fs-14{align: :justify}=f.object.estandar_homologacion.nombre
+                  .col-12.col-md-4
+                    .form-group.mt-1
+                      = label_tag nil, @validaciones[:manifestacion_de_interes][:descarga_estandar_seleccionado][:nombre], class: "string mb-1"
+                      = link_to descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, estandar_id: f.object.estandar_de_certificacion_id), download: '', class: 'btn btn-sm btn-descargar btn-block estandar_de_homologacion_descarga' do
+                        %i.fa.fa-download
+
           .col-12
-            = f.input :otras_iniciativas_relacionadas_en_ejecucion, as: :text, input_html: { class: '' }, label: t(:otras_iniciativas_relacionadas_en_ejecución), required: true
-          .col-lg-3.pr-md-0.col-md-8.col-12
-            = f.input :diagnostico_id, collection: ManifestacionDeInteres.con_diagnostico, input_html: { class: '' }, label: t(:acuerdo_anterior)
-          .col-lg-3.pr-lg-0.col-md-4.col-12
-            - if f.object.diagnostico_id.present?
-              = label_tag nil, t(:documentos_diagnostico), class: "string mb-1"
-              = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download       
-          .col-lg-3.pr-md-0.col-md-8.col-12
-            = f.input :estandar_de_certificacion_id, collection: EstandarHomologacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: '' }, label: t(:estándar_homologación)
-          .col-lg-3.col-md-4.col-12
-            - if f.object.estandar_de_certificacion_id.present?
-              = label_tag nil, t(:documentos_estandar_homologacion), class: "string mb-1"
-              = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
-                %i.fa.fa-download
-          .col-9
-            = f.input :otros_estudios_relevantes, as: :file, input_html: { class: 'form-control' }, label: t(:otros_estudios_relevantes), required: true
-            = f.hidden_field :otros_estudios_relevantes_cache
-          .col-3.align-self-end
-            -#
-              = __descargar_archivo(f.object.otros_estudios_relevantes,:otros_estudios_relevantes)
-            = __descargar_archivo(f.object.otros_estudios_relevantes,f.object)
-          .col-12
-            = f.input :otros_objetivos_acuerdo, as: :text, input_html: { class: '' }, label: t(:otros_objetivos_acuerdo), required: true
+            %hr{style: 'display: block;'}
+
+
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :diagnostico_de_acuerdo_propuesto, as: :text, label: @validaciones[:manifestacion_de_interes][:diagnostico_de_acuerdo_propuesto][:nombre]
+            -else
+              -no_data = f.object.diagnostico_de_acuerdo_propuesto.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:diagnostico_de_acuerdo_propuesto][:nombre]
+              %p#manifestacion_de_interes_diagnostico_de_acuerdo_propuesto.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.diagnostico_de_acuerdo_propuesto)
+          .col-12.col-md-0
+            %hr{style: 'display: block;'}
+          .col-md-6.col-12.radios-selector-subida-padre
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0
+                      %input.radios-selector-subida{type: :radio, value: 0, name: "manifestacion_de_interes[radio_diagnostico]", checked: f.object.radio_diagnostico.to_i == 0}
+                  = f.input :diagnostico_de_acuerdo_anterior, as: :file, input_html: { class: 'form-control validado' }, label: false, disabled: true
+                  = f.hidden_field :diagnostico_de_acuerdo_anterior_cache
+                #descargar_diagnostico_de_existir.col-md-4.col-12.descargable-file.d-none.pt-2
+                  - if(!f.object.diagnostico_de_acuerdo_anterior.blank?)
+                    = __descargar_archivo(f.object.diagnostico_de_acuerdo_anterior,f.object)
+              -else
+                -no_data = f.object.diagnostico_de_acuerdo_anterior.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:diagnostico_de_acuerdo_anterior][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_diagnostico_de_acuerdo_anterior.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_diagnostico_de_acuerdo_anterior
+                    = __descargar_archivo(f.object.diagnostico_de_acuerdo_anterior,f.object, false)
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0{style:"align-self: flex-start;"}
+                      %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_diagnostico]", checked: f.object.radio_diagnostico.to_i == 1}
+                  = f.input :diagnostico_id, collection: ManifestacionDeInteres.con_diagnostico, input_html: { class: 'select-diagnostico-estandar-informe' }, label: false, disabled: true, required: true
+                .col-md-4.col-12.descargable-select.d-none
+                  .form-group.mt-3
+                    = label_tag nil, t(:documentos_diagnostico), class: "string mb-1"
+                    = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-descargar btn-block diagnostico_id_descarga' do
+                      %i.fa.fa-download
+              -else
+                -no_data = f.object.antiguo.nil?
+                -if no_data
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:diagnostico_id][:nombre]
+                    %p#manifestacion_de_interes_diagnostico_id.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                -else
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:diagnostico_id][:nombre]
+                    %p#manifestacion_de_interes_diagnostico_id.d-inline.fs-14{align: :justify}=f.object.antiguo.nombre_acuerdo
+                  .col-12.col-md-4
+                    .form-group.mt-3
+                      = label_tag nil, t(:documentos_diagnostico), class: "string mb-1"
+                      = link_to descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, diagnostico_id: f.object.diagnostico_id), download: '', class: 'btn btn-sm btn-descargar btn-block diagnostico_id_descarga' do
+                        %i.fa.fa-download
+          .col-12.col-md-0
+            %hr{style: 'display: block;'}
+          .col-md-6.col-12.radios-selector-subida-padre
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0
+                      %input.radios-selector-subida{type: :radio, value: 0, name: "manifestacion_de_interes[radio_informe]", checked: f.object.radio_informe.to_i == 0}
+                  = f.input :informe_de_acuerdo_anterior, as: :file, input_html: { class: 'form-control validado' }, label: false, disabled: true
+                  = f.hidden_field :informe_de_acuerdo_anterior_cache
+                #descargar_informe_de_acuerdo_anterior.col-md-4.col-12.descargable-file.d-none.pt-2
+                  - if(!f.object.informe_de_acuerdo_anterior.blank?)
+                    = __descargar_archivo(f.object.informe_de_acuerdo_anterior,f.object,)
+              -else
+                -no_data = f.object.informe_de_acuerdo_anterior.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:informe_de_acuerdo_anterior][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_informe_de_acuerdo_anterior.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_informe_de_acuerdo_anterior
+                    = __descargar_archivo(f.object.informe_de_acuerdo_anterior,f.object, false)
+            .row
+              -if !solo_lectura
+                .col-md-8.col-12
+                  .row.align-items-end
+                    .col-auto.pr-0{style:"align-self: flex-start;"}
+                      %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_informe]", checked: f.object.radio_informe.to_i == 1}
+                  = f.input :acuerdo_previo_con_informe_id, collection: ManifestacionDeInteres.informe_de_impactos_selector, input_html: { class: 'select-informe-de-impacto'}, label: false, disabled: true, required: true
+                .col-md-4.col-12.mb-3.descargable-select.d-none
+                  .form-group.mt-3
+                    = label_tag nil, t(:documentos_informe_impacto), class: "string mb-1"
+                    = link_to descarga_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), download: '', class: 'btn btn-sm btn-descargar btn-block informe_impacto_id_descarga' do
+                      %i.fa.fa-download
+              -else
+                -no_data = f.object.acuerdo_previo_con_informe_id.nil?
+                -if no_data
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:acuerdo_previo_con_informe_id][:nombre]
+                    %p#manifestacion_de_interes_acuerdo_previo_con_informe_id.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                -else
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:acuerdo_previo_con_informe_id][:nombre]
+                    %p#manifestacion_de_interes_acuerdo_previo_con_informe_id.d-inline.fs-14{align: :justify}=InformeImpacto.find(f.object.acuerdo_previo_con_informe_id).manifestacion_de_interes.nombre_acuerdo
+                  .col-12.col-md-4
+                    .form-group.mt-3
+                      = label_tag nil, t(:documentos_informe_impacto), class: "string mb-1"
+                      = link_to descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes, informe_id: f.object.acuerdo_previo_con_informe_id), download: '', class: 'btn btn-sm btn-descargar btn-block informe_impacto_id_descarga' do
+                        %i.fa.fa-download
+
+          -# DOSSA 2019-09-13 13:58 SE ELIMINA
+            .col-9.mt-auto
+              = f.input :otros_estudios_relevantes, as: :file, input_html: { class: 'form-control' }, label: t(:otros_estudios_relevantes), required: true
+              = f.hidden_field :otros_estudios_relevantes_cache
+            .col-3.align-self-end.mt-auto
+              -#
+                = __descargar_archivo(f.object.otros_estudios_relevantes,:otros_estudios_relevantes)
+              = __descargar_archivo(f.object.otros_estudios_relevantes,f.object)
+            .col-12.mt-auto
+              = f.input :otros_objetivos_acuerdo, as: :text, input_html: { class: '' }, label: t(:otros_objetivos_acuerdo), required: true
+  #actores-y-partes-interesadas.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"actores-y-partes-interesadas"] ? 'true' : 'false'), "aria-labelledby" => "actores-y-partes-interesadas-tab", :role => "tabpanel", class: ("show active" if tabs[:"actores-y-partes-interesadas"])}
+    .card
+      .card-body
+        .alert.alert-primary
+          %small
+            %i.fa.fa-question-circle.fa-1-5x
+            Identificación de actores relevantes para el Acuerdo, así como recursos que estos podrían comprometer
+        .row
+          .col-12.col-lg-6
+            -if !solo_lectura
+              = f.input :principales_actores, as: :text, label: @validaciones[:manifestacion_de_interes][:principales_actores][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.principales_actores.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_actores][:nombre]
+                %p#manifestacion_de_interes_principales_actores.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_actores)
+          .col-12.col-lg-6
+            -if !solo_lectura
+              = f.input :otros_recursos_comprometidos, as: :text, label: @validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre], required: true
+            -else
+              .form-group
+                -no_data = f.object.otros_recursos_comprometidos.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre]
+                %p#manifestacion_de_interes_otros_recursos_comprometidos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otros_recursos_comprometidos)
+          .col-12.col-lg-6
+            .row
+              .col-12
+                = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-descargar btn-block', id: 'manifestacion_de_interes_descarga_formato_listado_de_actores' do
+                  %i.fa.fa-download
+                  = @validaciones[:manifestacion_de_interes][:descarga_formato_listado_de_actores][:nombre]
+              -if !solo_lectura
+                .col-lg-6.col-12
+                  = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control' }, label: false, required: true
+                  = f.hidden_field :mapa_de_actores_archivo_cache
+                .col-lg-6.col-12.mt-auto
+                  = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object,false)
+              -else
+                -no_data = f.object.mapa_de_actores_archivo.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:mapa_de_actores_archivo][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_mapa_de_actores_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_mapa_de_actores_archivo
+                    = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object, false)
+          .col-lg-6.col-12
+            .row
+              .col-12
+                = __mostrar_descargable(@descargables,'APL-001-DES-003', tarea_pendiente: @tarea_pendiente, carta_interes: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas_de_patrocinio][:atributo], nombre: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas_de_patrocinio][:nombre])
+              -if !solo_lectura
+                .col-lg-6.col-12
+                  = f.input :carta_de_apoyo_y_compromiso, as: :file, input_html: { class: 'form-control' }, label: false, required: true
+                  = f.hidden_field :carta_de_apoyo_y_compromiso_cache
+                .col-lg-6.col-12.mt-auto
+                  = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,f.object,false)
+              -else
+                -no_data = f.object.carta_de_apoyo_y_compromiso.blank?
+                .col-12.col-md-8
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:carta_de_apoyo_y_compromiso][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_carta_de_apoyo_y_compromiso.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_carta_de_apoyo_y_compromiso
+                    = __descargar_archivo(f.object.carta_de_apoyo_y_compromiso,f.object, false)
+
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
-:javascript
-  initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
-  initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
-  
-  //carga la data desde el mapa, con el poligono
-  var areaInfluenciaProyectoData  = #{@manifestacion_de_interes.area_influencia_proyecto_data.blank? ? false : (raw json_escape @manifestacion_de_interes.area_influencia_proyecto_data.to_json)};
-  var alternativasInstalacionData = #{@manifestacion_de_interes.alternativas_instalacion_data.blank? ? false : (raw json_escape @manifestacion_de_interes.alternativas_instalacion_data.to_json)};
+:javascript  
+
+  if(#{!solo_lectura}){
+    function display_descarga(){
+      selector = $("#manifestacion_de_interes_estandar_de_certificacion_id");
+      if(selector.val() == ""){
+        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: none");
+      }else{
+        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: block");
+        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+selector.val());    
+      };
+    };
+
+    display_descarga();
+    $("#manifestacion_de_interes_estandar_de_certificacion_id").on('change', function(){
+      display_descarga();
+      if($(this).val()!=""){
+        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+$(this).val());
+      }
+    });
+
+    function display_descarga_diagnostico(){
+      selector = $("#manifestacion_de_interes_diagnostico_id");
+      if(selector.val() == ""){
+        $(".diagnostico_id_descarga").parent().children().addClass("d-none");
+      }else{
+        $(".diagnostico_id_descarga").parent().children().removeClass("d-none");
+        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+selector.val());    
+      };
+    };
+
+    display_descarga_diagnostico();
+    $("#manifestacion_de_interes_diagnostico_id").on('change', function(){
+      display_descarga_diagnostico();
+      if($(this).val()!=""){
+        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+$(this).val());
+      }
+    });
+
+    function display_descarga_informe_impacto(){
+      selector = $("#manifestacion_de_interes_acuerdo_previo_con_informe_id");
+      if(selector.val() == ""){
+        $(".informe_impacto_id_descarga").parent().children().addClass("d-none");
+      }else{
+        $(".informe_impacto_id_descarga").parent().children().removeClass("d-none");  
+        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+selector.val());  
+      };
+    };
+
+    display_descarga_informe_impacto();
+    $("#manifestacion_de_interes_acuerdo_previo_con_informe_id").on('change', function(){
+      display_descarga_informe_impacto();
+      if($(this).val()!=""){
+        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+$(this).val());
+      }
+    });
+  }else{}
+
 
   //Permite cargar el mapa de area de inicia y alternativa de instalaciòn
-  initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
-  initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
-  //initializeRepresentacionEnMapaProyectoMap(-30.0000000, -71.0000000);
 
-  $(document).ready(function() {    
-    $('.rpc-checkbox').on('click',function(){
-      places = [];
-      $.each($('.name-region:checked'),function(ri,rc){
-        nr=$(rc).val(); tp=0;
-        $.each($(rc).siblings('ul').find('.name-provincia:checked'),function(pi,pc){
-          np=$(pc).val(); tp++; tc=0;
-          $.each($(pc).siblings('ul').find('.name-comuna:checked'),function(ci,cc){
-            places.push ( $(cc).val()+" "+np+" "+ nr+" "+pais ); tc++;
-          });
-          if (tc == 0) { places.push ( np+" "+ nr+" "+pais ); }
-        });
-        if (tp == 0) { places.push ( nr+" "+pais ); }
-      });
-      setCoordinates();
+  //initializeRepresentacionEnMapaProyectoMap(-30.0000000, -71.0000000);
+  //# DZC 2019-08-14 11:17:51 se comenta hasta que se disponibilicen los cambios
+  //# DZC 2019-08-16 19:15:46 se descomenta para QA
+
+  activa_validaciones();
+
+
+  $(document).ready(function() {
+
+    $('.acuerdo_alcance_nacional').change(function(){
+      if(this.value == 'true'){
+        $('#si_acuerdo_alcance').hide(1200);
+      }else{
+        $('#si_acuerdo_alcance').show(1200);
+      }
     });
 
     $('.parent-checkbox').on('click', function() {
-      ancestorBlock=$(this).parent();     
+      ancestorBlock=$(this).parent();
       childControl=ancestorBlock.children('i[class^="fa"]');
-      if((this).checked){ 
+      if((this).checked){
         childGroup=ancestorBlock.children('.group-hide');
       }else{
-        childGroup=ancestorBlock.children('.group-show'); 
+        childGroup=ancestorBlock.children('.group-show');
         $(this).siblings('ul').find("input[type='checkbox']").prop('checked', this.checked);
       }
-      __show_hide_(childGroup,childControl);      
+      __show_hide_(childGroup,childControl);
     });
 
-    setAllMarkers(#{raw json_escape @manifestacion_de_interes.coordernadas_territorios.blank? ? [] :  @manifestacion_de_interes.coordernadas_territorios},representacionSeleccionTerritorioMap)   
+    // ##
+    // # SGUERRA 2019-06-09 14:38
+    // # Click en actividad economica para desplegar sub grupo
+
+    $('.p-chevron').on('click', function(){
+      ancestorBlock=$(this).parent().parent().parent();
+      childGroup=ancestorBlock.children('.ae-subgroup');
+      childControl=$(this).children('.fa');
+        __show_hide_(childGroup,childControl);      
+    });
+
+    init_coordenadas_territorios();
+
+    //initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+    document_ready = true;
+    if(typeof google != "undefined"){
+      mapLoaded();
+    }
 
     
-  }); 
 
+    //##
+    //# SGUERRA 19-08-2019 12:51:00
+    //# Funcion encargda de agrega la clase tooltip-block y los atributos necesarios para crear tooltip de forma dinámica a los elementos del formulario
+  });
+
+  // ## 
+  // # DOSSA 2019-09-10 16:48
+  // # Se comenta función ya que el tab Datos Proyecto debe disponibilizarse siempre.
   //Permite mostrar la pestaña datos del proyecto solo en caso de que se preinversion
-  function verificarPreinversion(){    
-    var tipoSeleccionado = $('#manifestacion_de_interes_tipo_instrumento_id').val();
-    //En apl:003 al estar deshabilitado el input no es posible ller el valor.-
-    if (tipoSeleccionado == null){
-      tipoSeleccionado = '#{@manifestacion_de_interes.tipo_instrumento_id}'
-    }
-    if(tipoSeleccionado=="6"){
-      $('#datos-proyecto-tab').removeClass('d-none');
-    }else{
-      $('#datos-proyecto-tab').addClass('d-none');
-    }
-  }
+  // function verificarPreinversion(){
+  //   var tipoSeleccionado = $('#manifestacion_de_interes_tipo_instrumento_id').val();
+  //   //En apl:003 al estar deshabilitado el input no es posible ller el valor.-
+  //   if (tipoSeleccionado == null){
+  //     tipoSeleccionado = '#{@manifestacion_de_interes.tipo_instrumento_id}'
+  //   }
+  //   if(tipoSeleccionado=="6"){
+  //     $('#datos-proyecto-tab').removeClass('d-none');
+  //   }else{
+  //     $('#datos-proyecto-tab').addClass('d-none');
+  //   }
+  // }
+
+
+

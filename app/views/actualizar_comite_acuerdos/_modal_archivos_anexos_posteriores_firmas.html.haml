@@ -1,37 +1,47 @@
 .modal.fade#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma{tabindex: "-1", role: :dialog, "aria-labelledby": :modalArchivosAnexosPosterioresFirma, "aria-hidden": true}
-	.modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
-		.modal-content
-			= simple_form_for @informe, url: guardar_archivos_anexos_posteriores_firmas_actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, method: :patch), remote: true, method: :patch do |i|
-				.modal-header
-					=t(:archivos_anexos_posteriores_a_la_firma)
-				.modal-body
-					- if @informe.necesita_evidencia
-						.alert.alert-info
-							%small
-								%i.fa.fa-question-circle.fa-1-5x
-								INGESE EL O LOS ARCHIVO(S) QUE EVIDENCIE(N) LAS ULTIMAS MODIFICACIONES O AGREGACIONES AL SET DE METAS Y ACCIONES, AUDITORIAS, PLAZOS, O BIEN ACEPTE LOS EXISTENTES	
-					%ul.list-group#archivos_cargados
-						%li.list-group-item.d-flex.justify-content-between.align-items-center
-							%b=t(:para_eliminar)
-							%b=t(:nombre_archivo)
-							%span.badge.badge-pill.align-right
-								%b=t(:descargar)
-						- @informe.archivos_anexos_posteriores_firmas.each do |aapf|
-							%li.list-group-item.d-flex.justify-content-between.align-items-center
-								= check_box_tag "por_eliminar[]", aapf.file.filename, false, class: "not-required-if-other-like-me-is-present"  
-								=aapf.file.filename
-								%span.badge.badge-pill
-									= link_to aapf.url do
-										%i.fa.fa-download.fa-2x
-					.row
-						.col-12
-							= i.input :archivos_anexos_posteriores_firmas, label: t(:subir_archivos), as: :file, input_html: { class: "form-control", multiple: true}
-							= i.input :archivos_anexos_posteriores_firmas_cache, as: :hidden
-							%small
-								%i.fa.fa-exclamation-circle
-								Recuerde que solo se aceptan archivos de formato pdf, docx, png o jpeg
-				.modal-footer
-					- if !@informe.necesita_evidencia
-						= link_to t(:back), actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), class: 'btn btn-sm btn-warning ml-1'
-					= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled button-send", disabled: false
-					
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      = simple_form_for @informe, url: guardar_archivos_anexos_posteriores_firmas_actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes, method: :patch), remote: true, method: :patch do |i|
+        .modal-header
+          =t(:archivos_anexos_posteriores_a_la_firma)
+        .modal-body
+          - if @informe.necesita_evidencia
+            .alert.alert-info
+              %small
+                %i.fa.fa-question-circle.fa-1-5x
+                INGRESE EL O LOS ARCHIVO(S) QUE EVIDENCIE(N) LAS ULTIMAS MODIFICACIONES O AGREGACIONES AL SET DE METAS Y ACCIONES, AUDITORIAS, PLAZOS, O BIEN ACEPTE LOS EXISTENTES
+            .alert.alert-danger.d-none#error_adjuntar_archivos
+              %small
+                Debe adjuntar evidencia o seleccionar un acta de reunión
+          %table.table.table-condensed.border#archivos_cargados{style: "table-layout: fixed;"}
+            %thead
+              %tr
+                %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                  %b=t(:para_eliminar)
+                %td.text-center{style: 'width: 25%;min-width: 25%;max-width: 25%'}
+                  %b=t(:nombre_archivo)
+                %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                  %b=t(:descargar)
+            %tbody
+              - @informe.archivos_anexos_posteriores_firmas.each_with_index do |aapf, index|
+                %tr
+                  %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}= check_box_tag "por_eliminar[]", aapf.file.filename, false, class: "not-required-if-other-like-me-is-present"
+                  %td.text-center{style: "overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 25%;min-width: 25%;max-width: 25%", title: aapf.file.filename}=aapf.file.filename
+                  %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                    = link_to aapf.url do
+                      %i.fa.fa-download.fa-2x
+          .row
+            .col-12.col-lg-6
+              - convocatorias = Convocatoria.includes(:minuta).where(tarea_codigo: Tarea::COD_APL_030, flujo: @flujo.id).where.not(minutas: {acta: nil}).map{|c| [c.nombre, c.id]}
+              = i.input :acta_convocatoria, collection: convocatorias, input_html: {class: 'form-control'}, label: t(:acta_de_reunión)
+            .col-12.col-lg-6
+              = i.input :archivos_anexos_posteriores_firmas, label: t(:subir_archivos), as: :file, input_html: { class: "form-control", multiple: true}
+              = i.input :archivos_anexos_posteriores_firmas_cache, as: :hidden
+              %small
+                %i.fa.fa-exclamation-circle
+                Recuerde que solo se aceptan archivos de formato pdf, docx, png o jpeg
+        .modal-footer
+          - if !@informe.necesita_evidencia
+            = link_to t(:back), actualizar_comite_acuerdos_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), class: 'btn btn-sm btn-warning ml-1'
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled button-send", disabled: false
+          

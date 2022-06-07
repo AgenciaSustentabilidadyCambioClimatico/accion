@@ -1,0 +1,31 @@
+.modal.fade{id: :"modal-asociar-estandar", tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .card.mb-0
+        .card-header
+          %h5=t(:estándares_de_certificación_asociados_a_auditoría)
+        .card-body
+          %input#modal_asociar_estandar_auditoria_id{type: :hidden}
+          .row
+            -if @estandares_certificacion.length == 0
+              .col-12
+                .alert.alert-warning.fade.show.text-center.messages-content{:role => "alert"}
+                  El acuerdo no posee estándar de certificación seleccionado en set de metas y acciones
+            -else
+              -@estandares_certificacion.each do |estandar_certificacion|
+                .col-12
+                  .card
+                    .card-header.bg-white.fw-400=estandar_certificacion.nombre
+                    .card-body
+                      -estandar_certificacion.estandar_niveles.each do |nivel|
+                        %input{type: :hidden, name: "modal_asociar_estandar[#{nivel.id}][nombre_estandar]", value: estandar_certificacion.nombre}
+                        %input{type: :hidden, name: "modal_asociar_estandar[#{nivel.id}][nombre_nivel]", value: nivel.nombre}
+                        .form-check
+                          %input.form-check-input.modal_asociar_estandar_nivel_id{type: :checkbox, value: nivel.id, name: "modal_asociar_estandar[#{nivel.id}][id]"}
+                          %label.form-check-label.fw-400=nivel.nombre
+        .modal-footer
+          -if @estandares_certificacion.length > 0
+            %button.btn.btn-primary{type: :button, onclick: "anadir_estandar();"}
+              Añadir
+          %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+            Cerrar

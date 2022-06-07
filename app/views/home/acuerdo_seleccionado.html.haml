@@ -1,0 +1,131 @@
+-content_for :subheader do
+  .subheader-home
+    .container{class: (user_signed_in? ? 'fix-width' : '')}
+      .d-flex.flex-column.my-3
+        .title=@acuerdo_seleccionado.datos[:nombre_acuerdo]
+        -if user_signed_in?
+          .empresa="#{@acuerdo_seleccionado.datos[:contribuyente_razon_social]} - RUT: #{@acuerdo_seleccionado.datos[:contribuyente_rut]}"
+        -if !@acuerdo_seleccionado.datos[:firma_fecha].nil? || !@acuerdo_seleccionado.datos[:firma_fecha_hora].nil?
+          -_firma_fecha = @acuerdo_seleccionado.datos[:firma_fecha_hora].blank? ? @acuerdo_seleccionado.datos[:firma_fecha] : @acuerdo_seleccionado.datos[:firma_fecha_hora]
+          .firma="Firmado #{l(_firma_fecha, format: '%e de %B del %Y')}"
+        .d-flex.flex-column.flex-lg-row.mt-3.align-items-lg-center
+          -if @acuerdo_seleccionado.datos[:acciones] > 0
+            .acciones
+              .numero="#{@acuerdo_seleccionado.datos[:acciones]} "
+              acciones
+          -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
+            =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+              .numero="#{@acuerdo_seleccionado.datos[:empresas_adheridas]} "
+              empresas adheridas
+          -if @acuerdo_seleccionado.datos[:empresas_certificadas] > 0
+            =link_to empresas_y_elementos_certificados_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+              .numero="#{@acuerdo_seleccionado.datos[:empresas_certificadas]} "
+              empresas certificadas
+          -if !user_signed_in?
+            .btn-group.ml-lg-auto.mt-1.mt-lg-0
+              =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
+              =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
+        -if user_signed_in?
+          .d-flex.flex-column.flex-lg-row.justify-content-between.mt-2
+            .d-flex
+              .btn-group
+                -if @contribuyentes_de_usuario.length > 1
+                  %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos_empresa{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
+                    =fa_icon :download
+                    Descargar Reporte Consolidado
+                  .dropdown-menu{"aria-labelledby" => :btn_group_elementos_empresa}
+                    -@contribuyentes_de_usuario.each do |contribuyente|
+                      =link_to contribuyente.razon_social, descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: contribuyente.id), class: "dropdown-item"
+                -else
+                  -c_id = @contribuyentes_de_usuario.blank? ? nil : @contribuyentes_de_usuario.first.id
+                  =link_to descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: c_id), class: 'btn btn-dark-blue', style: "border-right: 1px solid #FFFFFF" do
+                    =fa_icon :download
+                    Descargar Reporte Consolidado
+                
+              .dropdown.ml-2
+                %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
+                  =fa_icon :download
+                  Descargar Reporte por Unidad Funcional
+                .dropdown-menu{"aria-labelledby" => :btn_group_elementos}
+                  -@acuerdo_seleccionado.datos[:elementos_adheridos].each do |elem|
+                    =link_to elem[:nombre], descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], ae_id: elem[:id]), class: "dropdown-item"
+            .btn-group.mt-2.mt-lg-0
+              =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
+              =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
+
+.row
+  .col-12
+    -@acuerdo_seleccionado.datos[:clasificaciones].each_slice(3) do |sub_grupo|
+      .row
+        -sub_grupo.each do |clasificacion|
+          .col-12.col-lg-4.py-2.px-lg-2
+            .flip-card
+              .flip-card-inner
+                .flip-card-front{style: "background-image:url('#{clasificacion[:imagen]}');background-repeat:no-repeat;background-size:cover;"}
+                  .d-flex.flex-column.h-100
+                    .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion[:color]};"}
+                      %img{src: clasificacion[:icono]}
+                    .flip-card-name-container{style: "background-color: #{clasificacion[:color]};"}
+                      =clasificacion[:nombre]
+                .flip-card-back
+                  .d-flex.flex-column.h-100
+                    .d-flex.mb-2
+                      .flip-card-name=clasificacion[:nombre]
+                      .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion[:color]};"}
+                        %img{src: clasificacion[:icono]}
+                    .flip-card-description.mb-2=clasificacion[:descripcion]
+                    .d-flex.w-100.justify-content-between
+                      .flip-number.w-25
+                        .number
+                          -if @vista == "clasificaciones"
+                            =clasificacion[:metas_comprometidas].count
+                          -else
+                            =clasificacion[:acciones_comprometidas].count
+                        .title 
+                          -if @vista == "clasificaciones"
+                            Metas comprometidas
+                          -else
+                            Acciones comprometidas
+                      .flip-number.w-25
+                        .number=clasificacion[:empresas_comprometidas]
+                        .title Empresas comprometidas
+                      .flip-number.w-25
+                        .number=clasificacion[:cumplimiento_promedio]
+                        .title Cumplimiento promedio
+                      .flip-number.w-25
+                        .number=clasificacion[:elementos_comprometidos]
+                        .title Elementos Comprometidos totales
+                    .d-flex.mt-auto.align-items-center
+                      =link_to "#info-#{clasificacion[:id]}", class: "flip-more-info", "data-toggle" => "collapse" do
+                        Más información
+          .col-12.px-lg-2.order-lg-last.collapse{id: "info-#{clasificacion[:id]}"}
+            .card.card-home.bordered.mb-0
+              .card-header
+                .title=t(:cumplimiento_de_acuerdo)
+              .card-body
+                -if @vista == "clasificaciones"
+                  -clasificacion[:metas_comprometidas].each do |meta|
+                    .meta-title.mb-2=meta[:nombre]
+                    .table-responsive
+                      %table.tabla-simple
+                        %tbody
+                          -meta[:acciones].each do |accion|
+                            %tr
+                              %td{title: accion[:descripcion]}=accion[:nombre]
+                              %td="#{accion[:porcentaje_avance]} Porcentaje avance"
+                              %td="#{accion[:porcentaje_cumplimiento]}% Porcentaje cumplimiento"
+                -else
+                  .table-responsive
+                    %table.tabla-simple
+                      %tbody
+                        -clasificacion[:acciones_comprometidas].each do |accion|
+                          %tr
+                            %td{title: accion[:descripcion]}=accion[:nombre]
+                            %td="#{accion[:porcentaje_avance]} Porcentaje avance"
+                            %td="#{accion[:porcentaje_cumplimiento]}% Porcentaje cumplimiento"
+:javascript
+  $(document).ready(function(){
+    $('.collapse').on('show.bs.collapse', function (e) {
+      $('.collapse.show').collapse("hide");
+    })
+  });

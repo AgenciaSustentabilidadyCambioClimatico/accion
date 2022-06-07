@@ -1,15 +1,20 @@
 = titulo t(:convocatorias_, item: "#{@tipo.descripcion}")
 - if @tarea.codigo == Tarea::COD_APL_016
-	-# url = tarea_pendiente_convocatoria_termina_etapa_negociacion_path(@tarea_pendiente, @convocatoria)
 	- url = termina_etapa_negociacion_manifestacion_de_interes_path(@tarea_pendiente)
-	=# simple_form_for @convocatoria, url: url, remote: true, html: { autocomplete: :off } do |f|
-	= simple_form_for @manifestacion_de_interes, url: url, remote: true, html: { autocomplete: :off } do |f|
-		= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-negociacion-acuerdo", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' do
-			/%i.fa.fa-file-signature
-			%i.fa.fa-file-text-o
 
-			Terminar proceso de negociación
-		= render 'terminar_negociacion_acuerdo', f: f, comentarios_y_observaciones_negociacion_acuerdo: @comentarios
+	.d-flex.justify-content-between
+		= simple_form_for @manifestacion_de_interes, url: url, remote: true, html: { autocomplete: :off } do |f|
+			= link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-negociacion-acuerdo", class: 'btn btn-sm btn-primary margin-bottom-20' do
+				%i.fa.fa-file-text-o
+				=t(:iniciar_proceso_de_consulta_pública)
+		 
+			= render 'terminar_negociacion_acuerdo', f: f, comentarios_y_observaciones_negociacion_acuerdo: @comentarios
+		%div
+			-if !@manifestacion_de_interes.detenido
+				= link_to '#', "data-toggle"=>:modal, "data-target"=>"#detener-acuerdo", class: 'btn btn-sm btn-danger margin-bottom-20' do
+					%i.fa.fa-file-text-o
+					=t(:detener_acuerdo)
+				= render 'actualizar_comite_acuerdos/detener_acuerdo', remote: true
 = link_to t(:agregar_, item: t(:convocatoria).downcase), new_tarea_pendiente_convocatoria_path(@tarea_pendiente), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
 #convocatorias-remote-table
 	= render 'table_convocatorias'

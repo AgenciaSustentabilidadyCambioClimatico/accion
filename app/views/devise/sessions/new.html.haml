@@ -1,11 +1,1 @@
-= simple_form_for(resource, as: resource_name, url: session_path(resource_name), wrapper: :group_with_icon, html: { class: 'form-devise row p-0', autocomplete: :off } ) do |f|
-	.card.mb-2.col-12.p-0
-		.card-header
-			%h5.titulo-caja.text-center= "Ingreso de usuarios"
-		.card-body
-			.text-center.mb-4
-				= image_tag ("logo-ascc.png")
-			= f.input :rut, required: false, autofocus: true, placeholder: 'R.U.T.', label: false, fa_icon: 'id-card-o', input_html: { class: 'identificacion required-field' }
-			= f.input :password, required: false, placeholder: 'Contraseña', label: false, fa_icon: :key, input_html: { class: 'required-field' }
-			= f.button :submit, "Ingresar", class: 'btn btn-sm btn-agencia btn-block mt-3 btn-disabled', disabled: :disabled
-	= render "devise/shared/links"
+= render 'form', form_remote: false

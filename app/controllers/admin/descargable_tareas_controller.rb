@@ -1,6 +1,6 @@
 class Admin::DescargableTareasController < ApplicationController
   protect_from_forgery with: :exception, unless: proc{action_name == 'previsualizacion'}
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:descargar]
   before_action :set_tarea
 #DZC Gini
   before_action :set_tarea_pendiente, only: [:descargar], if: -> { params[:tarea_pendiente_id].present? }
@@ -10,6 +10,7 @@ class Admin::DescargableTareasController < ApplicationController
 #DZC Gino 
  before_action :usar_metodos_del_instrumento
 #DZC
+  before_action :posee_permisos_administracion_admin, only: [:index, :new, :edit, :create, :update, :destroy]
 
   def index
     @descargable_tareas = DescargableTarea.where(tarea_id: @tarea.id).order(id: :asc).all
@@ -49,40 +50,44 @@ class Admin::DescargableTareasController < ApplicationController
   end
 
   def descargar
+    authenticate_user! if @tarea.id != Tarea::ID_APL_025_1
     # DZC 2018-10-04 19:35:51 se corrige error en funcionamiento del método en la vista del mantenedor de descargables
-    tarea_pendiente = TareaPendiente.find(params["tarea_pendiente"]) if params["tarea_pendiente"].present?
-    # tarea_pendiente = TareaPendiente.find(params[:"tarea_pendiente"][:tarea_pendiente].to_i) if params[:"tarea_pendiente"][:tarea_pendiente].present?
-    tipo_flujo = tarea_pendiente.flujo.tipo_de_flujo if tarea_pendiente.present?
-    
-    case tipo_flujo
-    when "APL"
-      manifestacion_de_interes = tarea_pendiente.flujo.manifestacion_de_interes
-      if manifestacion_de_interes.representante.present?
-        representante = manifestacion_de_interes.representante.nombre_completo
-      else
-        representante = "No definido"
-      end 
-      if manifestacion_de_interes.institucion_gestora.present?
-        entidad_cogestora = manifestacion_de_interes.institucion_gestora.razon_social
-      else
-        entidad_cogestora = "No definido"
-      end       
-      @metodos[:"[representante_entidad_cogestora]"] = representante
-      @metodos[:"[nombre_entidad_cogestora]"] = entidad_cogestora
-    when "PPF"
-      ppp = tarea_pendiente.flujo.ppp
-      if ppp.representante.present?
-        representante = ppp.representante.nombre_completo
-      else
-        representante = "No definido"
+    if params["tarea_pendiente"].present?
+      tarea_pendiente = TareaPendiente.find(params["tarea_pendiente"])
+      # tarea_pendiente = TareaPendiente.find(params[:"tarea_pendiente"][:tarea_pendiente].to_i) if params[:"tarea_pendiente"][:tarea_pendiente].present?
+      tipo_flujo = tarea_pendiente.flujo.tipo_de_flujo if tarea_pendiente.present?
+
+      # DZC 2019-06-18 15:41:31 se modifica para el caso de que no se trate de una tarea pendiente
+      case tipo_flujo
+      when "APL"
+        manifestacion_de_interes = tarea_pendiente.flujo.manifestacion_de_interes
+        if !manifestacion_de_interes.representante_institucion_para_solicitud_id.blank?
+          representante = manifestacion_de_interes.representante.nombre_completo
+        else
+          representante = "No definido"
+        end 
+        if !manifestacion_de_interes.contribuyente_id.blank?
+          entidad_cogestora = manifestacion_de_interes.institucion_gestora.razon_social
+        else
+          entidad_cogestora = "No definido"
+        end       
+        @metodos[:"[representante_entidad_cogestora]"] = representante
+        @metodos[:"[nombre_entidad_cogestora]"] = entidad_cogestora
+      when "PPF"
+        ppp = tarea_pendiente.flujo.ppp
+        if ppp.representante.present?
+          representante = ppp.representante.nombre_completo
+        else
+          representante = "No definido"
+        end
+        if ppp.institucion_gestora.present?
+          entidad_cogestora = ppp.institucion_gestora.razon_social
+        else
+          entidad_cogestora = "No definido"
+        end        
+        @metodos[:"[representante_entidad_cogestora]"] = representante
+        @metodos[:"[nombre_entidad_cogestora]"] = entidad_cogestora
       end
-      if ppp.institucion_gestora.present?
-        entidad_cogestora = ppp.institucion_gestora.razon_social
-      else
-        entidad_cogestora = "No definido"
-      end        
-      @metodos[:"[representante_entidad_cogestora]"] = representante
-      @metodos[:"[nombre_entidad_cogestora]"] = entidad_cogestora
     end
 
     ruta= @descargable.archivo.path
@@ -149,7 +154,7 @@ class Admin::DescargableTareasController < ApplicationController
     def metodos(campo_acuerdo=nil,nombre_entidad=nil)
 #DZC
       director = Variable.where(nombre: :nombre_director_ascc).first
-      persona = current_user.personas.first
+      persona = current_user.personas.first if user_signed_in?
       contribuyente = persona.blank? ? nil : persona.contribuyente
 #DZC Gino
       campo_acuerdo = campo_acuerdo.blank? ? "Acuerdo de Producción Limpia para Certificación de Instalaciones" : campo_acuerdo
@@ -169,7 +174,7 @@ class Admin::DescargableTareasController < ApplicationController
         "[campo_acuerdo]": campo_acuerdo,
         "[nombre_director_ascc]": director.blank? ? '--' : director[:valor],
         "[fecha_hoy]": (l(Date.today,format: "%A, %d de %B %Y")),
-        "[representante_entidad_cogestora]": current_user.nombre_completo, 
+        "[representante_entidad_cogestora]": user_signed_in? ? current_user.nombre_completo : "", 
         "[nombre_entidad_cogestora]": nombre_entidad, 
       }
 #DZC

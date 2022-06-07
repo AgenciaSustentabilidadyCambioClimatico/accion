@@ -1,0 +1,4 @@
+- titulo "#{t(:cuenca)} <small>#{t(:codigo_cuenca)}: #{@cuenca.codigo_cuenca}</small>".html_safe
+- @url = admin_cuenca_path(@cuenca)
+#cuenca-remote-form
+	= render 'form'

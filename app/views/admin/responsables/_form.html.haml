@@ -3,16 +3,17 @@
 - else
 	- contribuyente = @responsable.contribuyente
 - i_collection = contribuyente ? [[contribuyente.razon_social,contribuyente.id]] : []
-- ti_collection = TipoInstrumento.por_padre
+- ti_collection = TipoInstrumento.__select_arbol
 - r_collection = Rol.__select
 - c_collection = Cargo.__select
-- ae_collection_all = ActividadEconomica.__select(false)
-- tc_collection_all = TipoContribuyente.__select
-- ae_collection = contribuyente ? contribuyente.actividad_economica_contribuyentes.map{|m|f=m.actividad_economica;["<label>#{f.codigo_ciiuv2}</label> - #{f.descripcion}".html_safe,f.id]}.uniq : ae_collection_all
+- ae_collection_all = ActividadEconomica.__select_arbol
+- tc_collection_all = TipoContribuyente.__select_arbol
+- ae_collection = contribuyente ? contribuyente.actividad_economica_contribuyentes.map{|m|f=m.actividad_economica;["<label>#{f.codigo_ciiuv4}</label> - #{f.descripcion_ciiuv4}".html_safe,f.id]}.uniq : ae_collection_all
 - tc_collection = contribuyente ? contribuyente.dato_anual_contribuyentes.order(periodo: :desc).map{|m|[m.tipo_contribuyente.nombre,m.tipo_contribuyente_id]}.uniq : tc_collection_all
 
 - titulo t(:responsables)
 :javascript
+
 	$(document).ready(function() {
 		var actecos=#{raw json_escape ae_collection_all.to_json}
 		var tipos_contr=#{raw json_escape tc_collection_all.to_json}
@@ -33,10 +34,11 @@
 			$("select#responsable_contribuyente_id option:not([value=''])").remove();
 
 			//DZC 2018-10-25 11:56:43 agrega la opción contribuyente eliminado a la lista
-			$("select#responsable_contribuyente_id").append('<option value="0">Contribuyente eliminado</option>');
+			$("select#responsable_contribuyente_id").append('<option value="">Contribuyente eliminado</option>');
 	
 			//DZC 2018-10-25 11:57:22 selecciona la opción de contribuyente eliminado
-			$("select#responsable_contribuyente_id option:selected").val(0);
+			$("select#responsable_contribuyente_id option:selected").val("");
+			$("input#responsable_contribuyente_id").val("");
 
 			//DZC 2018-10-25 11:55:58 asigna el valor null al contribuyente para la tabla
 			$('.contribuyente-valor').val(null);
@@ -77,10 +79,18 @@
 			return final;
 		}
 
-		$('body').on('change','.contribuyente-radio',function() { $('.seleccionar-contribuyente-button').removeAttr('disabled'); });
+		//DZC 2019-06-17 14:00:37 se modifica para usar la función verificarModal()
+		//$('body').on('change','.contribuyente-radio',function() { 
+		//	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
+
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				$("select#responsable_contribuyente_id").append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
 				$("input#responsable_contribuyente_id").val(data.id);
 				checkFieldValidity($("select#responsable_contribuyente_id"));
@@ -98,6 +108,13 @@
 			} catch(e) {
 				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
 			}
+
+			$('.chosen-control').on('chosen:showing_dropdown', function(evt, params) {
+				console.log('lala');
+				console.log($(this).find('option'));
+		    //compress()
+		  });
+
 		});
 		htmlErrorToTooltip('top');
 	});
@@ -114,11 +131,11 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@responsable)
+						= action_label_of_(@responsable, true)
 				.card-body
 					.row
 						.col-lg-7.pr-lg-0.col-12
-							= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), as: :grouped_select, collection: ti_collection, group_method: :last, input_html: { class: 'required-field' }, required: true
+							= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), collection: ti_collection, input_html: { class: 'required-field' }, required: true, label_method: ->(obj){ obj.first.html_safe }
 						.col-lg-5.col-12
 							= f.input :cargo_id, label: t(:cargo), collection: c_collection, input_html: { class: 'chosen-control required-field', type: :string, "data-placeholder"=>"Seleccione un cargo" }, required: true
 						.col-lg-4.pr-lg-0.col-12
@@ -131,9 +148,9 @@
 							= f.input :contribuyente_id, label: t(:contribuyente), collection: i_collection, input_html: { class: 'not-required-if-other-like-me-is-present float-left', disabled: :true }, prompt: "Seleccione una institución desde el buscador"
 							%i.fa.fa-times.deseleccionar-contribuyente
 						.col-lg-8.col-12
-							= f.input :actividad_economica_id, collection: ae_collection, input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: t(:actividad_económica)
+							= f.input :actividad_economica_id, collection: ae_collection, input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: t(:actividad_económica), label_method: ->(obj){ obj.first.html_safe }
 						.col-lg-4.pl-lg-0.col-12
-							= f.input :tipo_contribuyente_id, collection: tc_collection, input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione un tipo de contribuyente" }, label: t(:tipo_contribuyente)
+							= f.input :tipo_contribuyente_id, collection: tc_collection, input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione un tipo de contribuyente" }, label: t(:tipo_contribuyente), label_method: ->(obj){ obj.first.html_safe }
 	.float-right
 		= link_to t(:back), admin_responsables_path, class: 'btn btn-sm btn-warning'
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

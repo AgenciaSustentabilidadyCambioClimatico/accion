@@ -1,0 +1,20 @@
+.modal.fade.reload-previsualizar{id: :"modal-10", tabindex: "-1", role: :dialog, "aria-labelledby": :modal5Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-xl.animated{role: :document}
+    .modal-content
+      .modal-header
+        =t(:vigencia_del_acuerdo_de_producción_limpia)
+      .modal-body
+        .row
+          .col-12.col-lg-6
+            = f.input :vigencia_acuerdo, label: t(:vigencia_del_acuerdo_de_producción_limpia), as: :ckeditor, input_html: {value: @datos["vigencia_acuerdo"], ckeditor: {height: 300}}
+          .col-12.col-lg-6
+            .col-12
+              = f.label t(:palabras_claves)
+              %br
+                - InformeAcuerdo.vigencia_acuerdo_palabras_claves.keys.each do |palabra|
+                  ="[#{palabra}] "
+            .col-12
+              = f.input :plazo_vigencia_acuerdo, as: :string, input_html: {class: 'numero required'}, label: t(:vigencia_del_acuerdo_anios)
+      .modal-footer
+        %button.btn.btn-primary.terminar-button{type: :button, "data-dismiss"=>:modal}
+          Terminar

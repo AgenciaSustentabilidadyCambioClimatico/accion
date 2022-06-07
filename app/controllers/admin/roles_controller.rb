@@ -17,7 +17,7 @@ class Admin::RolesController < ApplicationController
   def create
     # 
     @rol = Rol.new(rol_params)
-    @rol.nombre = @rol.nombre.split.map(&:capitalize).join(" ") #DZC 2018-10-23 17:41:39 transforma en mayúsculas las primeras letras de cada palabra del nombre
+    @rol.nombre = @rol.nombre.titleize #DZC 2018-10-23 17:41:39 transforma en mayúsculas las primeras letras de cada palabra del nombre
     # @rol.nombre = @rol.nombre.gsub(/\w+/, &:capitalize) # DZC 2018-10-23 17:45:03 no funciona con acentos, snif snif
     respond_to do |format|
       if @rol.save
@@ -37,6 +37,7 @@ class Admin::RolesController < ApplicationController
     respond_to do |format|
       # 
       @rol.assign_attributes(rol_update_params)
+      @rol.nombre = @rol.nombre.titleize
       # @rol.nombre = @rol.nombre.split.map(&:capitalize).join(" ") #DZC 2018-10-23 17:41:39 transforma en mayúsculas las primeras letras de cada palabra del nombre
       if @rol.save
         format.js { 
@@ -70,13 +71,16 @@ class Admin::RolesController < ApplicationController
     def rol_params
       params.require(:rol).permit(
       	:nombre,
-        :descripcion
+        :descripcion,
+        :mostrar_en_excel
       )
     end
 
     def rol_update_params
       params.require(:rol).permit(
-        :descripcion
+        :nombre,
+        :descripcion,
+        :mostrar_en_excel
       )
     end
 end

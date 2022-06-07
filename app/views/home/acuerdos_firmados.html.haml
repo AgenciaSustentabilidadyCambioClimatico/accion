@@ -1,0 +1,72 @@
+.row.mt-2
+  .col-12.mb-2
+    =link_to root_path, class: "btn btn-outline-home" do
+      .d-flex.align-items-center
+        %i.fa.fa-arrow-left
+        =t(:back)
+  .col-12
+    .card
+      .card-body
+        .card.card-home
+          .card-header.d-flex.flex-column.flex-md-row.justify-content-between.align-items-center
+            .title=t(:acuerdos_firmados)
+            .input-buscar-home
+              %i.fa.fa-search
+              %input#buscar_custom{placeholder: :Buscar}
+          .card-body.p-0.m-0
+            .table-responsive
+              %table.table.table-home{cellspacing: "0"}
+                %thead
+                  %tr
+                    %th=t(:nombre_acuerdo)
+                    %th=t(:documentos)
+                    %th=t(:estado_del_acuerdo)
+                    %th=t(:empresas_adheridas)
+                    %th=t(:empresas_certificadas)
+                %tbody
+                  -@acuerdos_firmados.datos.each do |data|
+                    %tr
+                      -params_seleccionado = {acuerdo_id: data[:acuerdo_id]}
+                      -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
+                      %td=link_to data[:nombre_acuerdo], acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
+                      %td
+                        -if !data[:diagnostico_de_acuerdo_anterior].blank? && @datos_publicos.visibilidad_documentos.include?("1")
+                          %div.text-nowrap
+                            =link_to "Documento Diagnóstico", data[:diagnostico_de_acuerdo_anterior]
+                        -if data[:documento_diagnosticos] && @datos_publicos.visibilidad_documentos.include?("2")
+                          %div.text-nowrap
+                            =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
+                        -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
+                          %div.text-nowrap
+                            =link_to "Documento de Acuerdos y anexos", obtener_archivo_acuerdo_anexos_zip_path(data[:flujo_id])
+                        -if !data[:informe_impacto].blank? && @datos_publicos.visibilidad_documentos.include?("4")
+                          %div.text-nowrap
+                            =link_to "Informe de Impacto", data[:informe_impacto]
+
+                      %td
+                        .d-flex.align-items-center{style: "white-space: nowrap;"}
+                          -if data[:estado_consulta_publica] == "No iniciada"
+                            .estado-consulta.amarillo
+                          -if data[:estado_consulta_publica] == "Abierta"
+                            .estado-consulta.verde
+                          -if data[:estado_consulta_publica] == "Cerrada"
+                            .estado-consulta.amarillo
+                          -if data[:estado_consulta_publica] == "Finalizada"
+                            .estado-consulta.rojo
+                          =data[:estado_consulta_publica]
+                      %td=data[:empresas_adheridas]
+                      %td=data[:empresas_certificadas]
+:javascript
+  $(document).ready(function(){
+    $('.table-home').DataTable({
+      dom: "<'d-none'f>ti",
+      paging: false,
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+
+    $('#buscar_custom').on('input paste', function(){
+      $('.dataTables_filter input').val(this.value).trigger("input");
+    });
+  });

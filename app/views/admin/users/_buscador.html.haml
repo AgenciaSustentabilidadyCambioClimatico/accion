@@ -2,17 +2,112 @@
 - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
 - @usuarios = @usuarios.nil? ? [] : @usuarios
 - @flujo_id = @flujo.present? ? @flujo.id : nil
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
+- lista_usuarios = lista_usuarios.nil? ? @usuarios : lista_usuarios
 
-.modal.fade{id: :"buscar-usuario", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
-  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
-    .modal-content.p-3
-      .modal-body.no-padding
-        #usuarios-form-buscar
-          = render "admin/users/form_buscar"
-        #usuarios-remote-table
-          = render "admin/users/tabla"
-      .modal-footer.pr-0
+.modal.fade{id: modal_id, tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
+    .modal-content
+      .modal-body
+        .container-fluid.body-usuario-buscador
+          =render 'admin/users/buscador_form', modal_id: modal_id, solo_tabla: solo_tabla, lista_usuarios: lista_usuarios
+      .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
           Cerrar
-        %button.btn.btn-primary.seleccionar-usuario-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled}
-          Seleccionar
+:javascript
+
+  $(document).on('change','#tabla_usuarios_#{modal_id} .usuario-radio',function() {
+    $('##{modal_id} .seleccionar-usuario-button').removeAttr('disabled');
+    $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
+  });
+
+  $(document).on('click','#nuevo-usuario-button', function(e){
+    e.preventDefault();
+    $.ajax({
+      url: "#{edit_modal_admin_users_path}",
+      type: "GET",
+      data: {
+        id: "",
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('##{modal_id} .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+  $(document).on('click','#deshacer-usuario-button', function(e){
+    e.preventDefault();    
+    $('##{modal_id} .body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
+  });
+  $(document).on('change keyup', '.form-temporal-boton-guardar-usuario', function(){
+    nuevo_usuario_temporal_validaciones();
+  });
+
+  $(document).on('click', '.seleccionar-y-actualizar-usuario-button', function(){
+    data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+    $.ajax({
+      url: "#{edit_modal_admin_users_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        user_id: data.id
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('##{modal_id} .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+
+
+  $(document).ready(function(){
+
+    $('#usuario_representante').click(function(e){
+      e.preventDefault();
+      $('##{modal_id} .body-usuario-buscador').html("");
+      if(#{!@usuario_temporal.nil? && !@usuario_temporal.new_record?}){
+        $.ajax({
+          url: "#{edit_modal_admin_users_path}",
+          type: "GET",
+          data: {
+            id: "#{@usuario_temporal.nil? ? '' : @usuario_temporal.id}",
+            flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+          }
+        }).fail(function(a, b, c) {
+          alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+          $('.loading-data').hide();
+          $('##{modal_id}').modal("show");
+        }).success(function(data){
+          $('##{modal_id} .body-usuario-buscador').html(data);
+          $('.loading-data').hide();
+          $('##{modal_id}').modal("show");
+        });
+      }else{
+        $('##{modal_id} .body-usuario-buscador').html("#{j render('admin/users/buscador_form', modal_id: modal_id)}");
+        $('##{modal_id}').modal("show");
+      }
+    });
+  });
+
+  function nuevo_usuario_temporal_validaciones(){
+    var rut = $('#user_rut').val() != "";
+    var nombre_completo = $('#user_nombre_completo').val() != "";
+    var email = $('#user_email').val() != "";
+    var telefono = $('#user_telefono').val() != "";
+    if(rut && nombre_completo && email && telefono){
+      $('.guarda-usuario-button').removeAttr("disabled");
+    }else{
+      $('.guarda-usuario-button').attr("disabled", true);
+    }
+  }
+
+  
+        

@@ -1,18 +1,27 @@
 deploy=YAML.load(ERB.new(File.read("#{Dir.pwd}/config/deploy.yml")).result)["staging"]
 login="#{deploy["server"]["user"]}@#{deploy["server"]["host"]}"
-set :user, deploy["gateway"]["user"]
-set :gateway, deploy["gateway"]["host"]
-set :ssh_options, {
-  user: fetch(:user),
-  forward_agent: false,
-  proxy: Net::SSH::Proxy::Command.new(
-    "ssh -l #{fetch(:user)} #{fetch(:gateway)} -W %h:%p"
-  )
-}
+# set :user, deploy["gateway"]["user"]
+# set :gateway, deploy["gateway"]["host"]
+# set :ssh_options, {
+#   user: fetch(:user),
+#   forward_agent: false,
+#   proxy: Net::SSH::Proxy::Command.new(
+#     "ssh -l #{fetch(:user)} #{fetch(:gateway)} -W %h:%p"
+#   )
+# }
+
+set :application, deploy["application"] # staging
+
+set :repo_url, deploy["repo"]["url"]
+set :branch, deploy["repo"]["branch"]
+
+set :user, 'ext-binary'
 set :stage, "staging"
+
 set :deploy_to, deploy["path"]
 set :nginx_server_name, deploy["domain"]
 set :nginx_port, 3999
+set :nginx_read_timeout, 60
 server deploy["server"]["host"], user: deploy["server"]["user"], roles: %w{app web db}
 role :app, [login]
 role :web, [login]

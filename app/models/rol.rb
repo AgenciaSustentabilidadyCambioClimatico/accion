@@ -28,6 +28,7 @@ class Rol < ApplicationRecord
   REVISOR_CONTABLE                     = 30
   # ELABORADOR_PROPUESTA                 = 32
   RESPONSABLE_ELABORACION_PROPUESTA    = 33 # en PPF se llama responsable_elaboracion_propuesta_y_seguimiento
+  REVISOR_JURIDICO                     = 34
   
   #ENCARGADO_ENTREGABLES_DIAGNOSTICO   = 10
   #REVISOR_TECNICO_INFORME_DE_IMPACTOS = 20
@@ -59,6 +60,7 @@ class Rol < ApplicationRecord
   STR_REVISOR_CONTABLE                     = "Revisor Contable"
   # STR_ELABORADOR_PROPUESTA                 = "Elaborador Propuesta"
   STR_RESPONSABLE_ELABORACION_PROPUESTA    = "Responsable Elaboración Propuesta"
+  STR_REVISOR_JURIDICO                     = "Revisor jurídico"
 
   
 

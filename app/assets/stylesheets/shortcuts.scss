@@ -302,12 +302,12 @@
 .titulo-pdf { text-align: center; font-weight: 600; font-size: 21px!important; }
 
 /* Extra small devices (portrait phones, less than 576px) */
-@media (max-width: 575px) { 
+@media (max-width: 575px) {
 
 }
 
 /* Small devices (landscape phones, less than 768px) */
-@media (min-width:576px) and (max-width:767px) { 
+@media (min-width:576px) and (max-width:767px) {
 	.no-padding-sm 				{ padding: 0!important; }
 	.no-padding-top-sm 		{ padding-top: 0!important; }
 	.no-padding-right-sm 	{ padding-right: 0!important; }
@@ -316,7 +316,7 @@
 }
 
 /* Medium devices (tablets, less than 992px) */
-@media (min-width:768px) and (max-width:991px) { 
+@media (min-width:768px) and (max-width:991px) {
 	.no-padding-md 				{ padding: 0!important; }
 	.no-padding-top-md 		{ padding-top: 0!important; }
 	.no-padding-right-md 	{ padding-right: 0!important; }
@@ -325,7 +325,7 @@
 }
 
 /* Large devices ((desktops, less than 1200px) */
-@media (min-width:992px) and (max-width:1999px) { 
+@media (min-width:992px) and (max-width:1999px) {
 	.no-padding-lg 				{ padding: 0!important; }
 	.no-padding-top-lg 		{ padding-top: 0!important; }
 	.no-padding-right-lg 	{ padding-right: 0!important; }
@@ -335,7 +335,7 @@
 }
 
 /* Extra Large devices (desktops, more than 1999px) */
-@media (min-width:1200px) { 
+@media (min-width:1200px) {
 	.no-padding-xl 				{ padding: 0!important; }
 	.no-padding-top-xl 		{ padding-top: 0!important; }
 	.no-padding-right-xl 	{ padding-right: 0!important; }
@@ -418,3 +418,8 @@
 
 .vertical-align-middle { vertical-align: middle!important; }
 .uppercase { text-transform: uppercase; }
+
+
+.child-checkbox{
+  padding: 10px;
+}

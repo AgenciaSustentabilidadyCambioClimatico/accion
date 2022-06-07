@@ -1,0 +1,5 @@
+-if @correcto
+  $('#modal_login_form').html('#{j render("devise/sessions/form", form_remote: true, mensaje: t('devise.passwords.send_instructions'))}');
+-else
+  $('#modal_login_form').html('#{j render("form", form_remote: true)}');
+$('.loading-data').hide();

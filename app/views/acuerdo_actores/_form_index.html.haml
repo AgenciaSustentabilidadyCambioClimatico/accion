@@ -1,5 +1,7 @@
 :javascript
-  $(document).ready(function(){
+  confirmar_cambio_acuerdo = false;
+  $(document).ready(function() {
+
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
       $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
       if($(this).attr('id') === "construccion-informe-remote-form-tab"){
@@ -9,7 +11,7 @@
           type: "POST"
         }).success(function() {
           $('.loading-data').hide();
-          console.log("carga realizada");
+          //console.log("carga realizada");
         }).error(function(jqXHR, textStatus, errorThrown){
           $('.loading-data').hide();
           console.log(jqXHR);
@@ -18,30 +20,350 @@
         });
       }
     });
+
+
+    var tipo_manifestacion = "#{@manifestacion_de_interes.tipo_manifestacion_metas}"
+    $('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+    $('#tipo_metas').change(function(){
+      var tipo =  $(this).val();
+      show_modal_tipo(tipo);
+    });
+    $('#advertencia-cambio').on('hide.bs.modal', function(){
+      $('#tipo_metas').val(tipo_manifestacion);
+    });
+
+    $('.btn-show-modal-tipo').click(function(){
+      show_modal_tipo($(this).data('tipo'));
+    });
+
+    $('.selector-tipo-meta').change(function(){
+      valor = this.value;
+      $('.loading-data').show();
+      $.ajax({
+        url: "#{tarea_pendiente_manifestacion_de_interes_metas_acciones_tipo_meta_path(@tarea_pendiente, @manifestacion_de_interes)}",
+        type: "POST",
+        data: {
+          id: valor,
+          tipo: $('#advertencia-cambio #tipo').val()
+        }
+      }).success(function() {
+        $('.loading-data').hide();
+      }).error(function(jqXHR, textStatus, errorThrown){
+        $('.loading-data').hide();
+        console.log(jqXHR);
+        console.log(textStatus);
+        console.log(errorThrown);
+      });
+    });
+
+    $('.agregar-metas-acciones-relacionados').click(function(e){
+      if($('#advertencia-cambio #tipo').val() == "3"){
+        e.preventDefault();
+
+        if(#{@origenes.keys.select{|o| o.split("-").last == "ManifestacionDeInteres"}.length > 0}){
+
+          dataConfirmModal.confirm({
+            title: 'Confirme antes de continuar',
+            text: "Al elegir Metas y Acciones de otro Acuerdo, se quitarán todas las acciones del Acuerdo seleccionado previamente. ¿Está seguro que desea continuar?",
+            commit: 'Quitar',
+            cancel: 'Volver',
+            zIindex: 10099,
+            onConfirm: function() {
+              $('#advertencia-cambio form').submit();
+              $('#advertencia-cambio').modal('hide');
+              $('.loading-data').show();
+            },
+            onCancel:  function() {
+            },
+            onHide:    function() {
+            }
+          });
+        }else{
+          $('#advertencia-cambio form').submit();
+          $('#advertencia-cambio').modal('hide');
+          $('.loading-data').show();
+        }
+
+      }
+    });
   });
-- titulo t(:manifestación_de_acuerdo)
-.float-right
-  = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
-- (@tab_metas.present? && @tab_metas) ? tabs = { "mapa-de-actores": false, "set-metas-accion": true, "construccion-informe-remote-form": false  } : tabs = { "mapa-de-actores": true, "set-metas-accion": false, "construccion-informe-remote-form": false } # DZC 2018-11-05 12:35:08 se agrega para posicionar la vista en la pestaña set de metas y acciones  
-#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-    - tabs.each do |tab,active|
-      %li.nav-item
-        %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-          =t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
-#manifestacionContent.tab-content
-  #mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
-    .card
-      .card-body.p-0
-        #actores-remote-table
-          = render 'actores/table'
-        #actualizar-remote-form
-          = render 'actores/form', externo: true
-  #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
-    .card
-      .card-body.p-0
-        #propuestas-de-acuerdo-remote-table
-          = render 'set_metas_acciones/table', externo: true
-        -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
-        = render 'set_metas_acciones/modal'
-  #construccion-informe-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"construccion-informe-remote-form"], "aria-labelledby" => "construccion-informe-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"construccion-informe-remote-form"])}
+
+  function show_modal_tipo(tipo){
+    $('#advertencia-cambio').modal('toggle');
+    $('#advertencia-cambio #tipo').val(tipo);
+    $('#advertencia-cambio #modal-tipo-meta-tabla').empty();
+    if(tipo == 2){
+      $('#advertencia-cambio .tipo-vista-2').show();
+      $('#advertencia-cambio .tipo-vista-3').hide();
+      $('#advertencia-cambio #diagnostico_adherido').val("").removeClass('required-field');
+      $('#advertencia-cambio #estandar_adherido').val("").addClass('required-field');
+      $('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
+    }else if(tipo == 3){
+      $('#advertencia-cambio .tipo-vista-3').show();
+      $('#advertencia-cambio .tipo-vista-2').hide();
+      $('#advertencia-cambio #estandar_adherido').val("").removeClass('required-field');
+      $('#advertencia-cambio #diagnostico_adherido').val("").addClass('required-field');
+      $('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
+    }
+  }
+
+  //para informe
+  
+
+  function certificacion_activa_validacion(id){
+    var validacion = $("#informe_acuerdo_auditorias_"+id+"_con_certificacion").closest("tr").find(".con-validacion");
+    if($("#informe_acuerdo_auditorias_"+id+"_con_certificacion:checked").length > 0){
+      validacion.prop("disabled", false);
+
+      if(!$("#informe_acuerdo_auditorias_"+id+"_final_true:checked").length > 0){
+        
+        nombre = $("#informe_acuerdo_auditorias_"+id+"_nombre").val();
+
+        //agrego a vigencia
+        var partial_auditoria_vigencia = "#{ j render('form_auditoria_vigencia', aud_id: 'aud_id_temp', nombre: 'nombre_temp')}";
+        partial_auditoria_vigencia = partial_auditoria_vigencia.replace(/aud_id_temp/g, id);
+        partial_auditoria_vigencia = partial_auditoria_vigencia.replace(/nombre_temp/g, nombre);
+        $('#auditorias-vigencia').append(partial_auditoria_vigencia);
+
+        iniciarAutoNumeric();
+        $('.vigencia-cert-intermedia-plazo').autoNumeric('update', {vMax: $('#informe_acuerdo_vigencia_certificacion_final').val()});
+      }
+
+    }else{
+      validacion.prop("disabled", true);
+      validacion.prop("checked", false);
+
+      $('#auditorias-vigencia .auditoria-row[data-id="'+id+'"]').remove();
+
+    }
+    mostrar_auditoria_vigencia();
+  }
+
+  function solo_una_auditoria_final(id){
+    $('.auditoria-final:checked').not("#informe_acuerdo_auditorias_"+id+"_final_true").each(function(index, elemento){
+      $(elemento).prop("checked", false);
+      id_descheck = $(elemento).closest("tr").data("id");
+      if($("#informe_acuerdo_auditorias_"+id_descheck+"_con_certificacion:checked").length > 0){
+        console.log('si entra '+id_descheck);
+        nombre = $("#informe_acuerdo_auditorias_"+id_descheck+"_nombre").val();
+
+        //agrego a vigencia
+        var partial_auditoria_vigencia = "#{ j render('acuerdo_actores/form_auditoria_vigencia', aud_id: 'aud_id_temp', nombre: 'nombre_temp')}";
+        partial_auditoria_vigencia = partial_auditoria_vigencia.replace(/aud_id_temp/g, id_descheck);
+        partial_auditoria_vigencia = partial_auditoria_vigencia.replace(/nombre_temp/g, nombre);
+        $('#auditorias-vigencia').append(partial_auditoria_vigencia);
+
+        iniciarAutoNumeric();
+        $('.vigencia-cert-intermedia-plazo').autoNumeric('update', {vMax: $('#informe_acuerdo_vigencia_certificacion_final').val()});
+      }
+      
+    });
+    con_mantencion = $("#informe_acuerdo_auditorias_"+id+"_final_true").closest("tr").find(".con-mantencion");
+    if($('.con-mantencion:checked').length == 0 || $('.con-mantencion:checked').prop("id") != con_mantencion.prop("id")){
+      $('.con-mantencion').prop("checked", false).prop("disabled", true);
+      con_mantencion.prop("disabled", false);
+      $('#auditorias-vigencia .auditoria-row[data-id="'+id+'"]').remove();
+    }
+  }
+
+  function remover_auditoria(id){
+    $(".auditoria-row[data-id='"+id+"']").remove();
+
+    mostrar_auditoria_vigencia();
+  }
+
+  function mostrar_auditoria_vigencia(){
+    if($('#tabla_auditoria .con-certificacion:checked').length == 0){
+      $('#div-certificaciones-intermedias').hide();
+    }else{
+      $('#div-certificaciones-intermedias').show();
+    }
+  }
+
+  function asociar_estandar(id){
+    //aqui muestro el modal con estandares y sus niveles
+    $('#modal_asociar_estandar_auditoria_id').val(id);
+    $('.modal_asociar_estandar_nivel_id').prop("checked", false);
+    $('.auditoria-row[data-id="'+id+'"] .auditoria-niveles .auditoria-nivel-row').each(function(index, elem){
+      nivel_id = $(elem).data("id");
+      $('input[name="modal_asociar_estandar['+nivel_id+'][id]"]').prop("checked", true);
+    });
+    $('#modal-asociar-estandar').modal("show");
+  }
+
+
+
+  function anadir_estandar(){
+    aud_id = $('#modal_asociar_estandar_auditoria_id').val();
+    $('.modal_asociar_estandar_nivel_id:checked').each(function(index, elem){
+      nivel_id = elem.value;
+      if($(".auditoria-row[data-id='"+aud_id+"'] .auditoria-nivel-row[data-id='"+nivel_id+"']").length == 0){
+        nombre_estandar = $('input[name="modal_asociar_estandar['+nivel_id+'][nombre_estandar]"]').val();
+        nombre_nivel = $('input[name="modal_asociar_estandar['+nivel_id+'][nombre_nivel]"]').val();
+        var partial_auditoria_nivel = "#{ j render('form_auditoria_nivel', aud_id: nil, nivel: nil)}";
+        partial_auditoria_nivel = partial_auditoria_nivel.replace(/aud_id_temp/g, aud_id);
+        partial_auditoria_nivel = partial_auditoria_nivel.replace(/nivel_id_temp/g, nivel_id);
+        partial_auditoria_nivel = partial_auditoria_nivel.replace(/nombre_estandar_temp/g, nombre_estandar);
+        partial_auditoria_nivel = partial_auditoria_nivel.replace(/nombre_nivel_temp/g, nombre_nivel);
+        $('.auditoria-row[data-id="'+aud_id+'"] .auditoria-niveles').append(partial_auditoria_nivel);
+
+        iniciarAutoNumeric();
+        $('.vigencia-cert-intermedia-plazo').autoNumeric('update', {vMax: $('#informe_acuerdo_vigencia_certificacion_final').val()});
+      }
+    });
+    $('.auditoria-row[data-id="'+aud_id+'"] .auditoria-niveles .auditoria-nivel-row').each(function(index, elem){
+      nivel_id = $(elem).data("id");
+      if(!$('input[name="modal_asociar_estandar['+nivel_id+'][id]"]').prop("checked")){
+        remover_auditoria_nivel(aud_id, nivel_id);
+      }
+    });
+    $('#modal-asociar-estandar').modal("hide");
+  }
+
+  function remover_auditoria_nivel(aud_id, id){
+    $(".auditoria-row[data-id='"+aud_id+"'] .auditoria-nivel-row[data-id='"+id+"']").remove();
+  }
+
+  function cambio_nombre_auditoria(id){
+    nombre = $('#informe_acuerdo_auditorias_'+id+'_nombre').val();
+    $('.auditoria-row[data-id="'+id+'"] .nombre-auditoria-vigencia').html(nombre);
+  }
+
+  function previsualizar(){
+
+    $('#informe_acuerdo_fundamentos').val(CKEDITOR.instances['informe_acuerdo_fundamentos'].getData());
+    $('#informe_acuerdo_antecedentes').val(CKEDITOR.instances['informe_acuerdo_antecedentes'].getData());
+    $('#informe_acuerdo_normativas_aplicables').val(CKEDITOR.instances['informe_acuerdo_normativas_aplicables'].getData());
+    $('#informe_acuerdo_alcance').val(CKEDITOR.instances['informe_acuerdo_alcance'].getData());
+    $('#informe_acuerdo_campo_de_aplicacion').val(CKEDITOR.instances['informe_acuerdo_campo_de_aplicacion'].getData());
+    $('#informe_acuerdo_definiciones').val(CKEDITOR.instances['informe_acuerdo_definiciones'].getData());
+    $('#informe_acuerdo_objetivo_general').val(CKEDITOR.instances['informe_acuerdo_objetivo_general'].getData());
+    $('#informe_acuerdo_objetivo_especifico').val(CKEDITOR.instances['informe_acuerdo_objetivo_especifico'].getData());
+    $('#informe_acuerdo_vigencia_acuerdo').val(CKEDITOR.instances['informe_acuerdo_vigencia_acuerdo'].getData());
+    $('#informe_acuerdo_mecanismo_de_implementacion').val(CKEDITOR.instances['informe_acuerdo_mecanismo_de_implementacion'].getData());
+    //$('#informe_acuerdo_mecanismo_evaluacion_cumplimiento').val(CKEDITOR.instances['informe_acuerdo_mecanismo_evaluacion_cumplimiento'].getData());
+    $('#informe_acuerdo_vigencia_certificacion').val(CKEDITOR.instances['informe_acuerdo_vigencia_certificacion'].getData());
+    $('#informe_acuerdo_derechos').val(CKEDITOR.instances['informe_acuerdo_derechos'].getData());
+    $('#informe_acuerdo_obligaciones').val(CKEDITOR.instances['informe_acuerdo_obligaciones'].getData());
+    $('#informe_acuerdo_difusion').val(CKEDITOR.instances['informe_acuerdo_difusion'].getData());
+    $('#informe_acuerdo_promocion').val(CKEDITOR.instances['informe_acuerdo_promocion'].getData());
+    $('#informe_acuerdo_incentivos').val(CKEDITOR.instances['informe_acuerdo_incentivos'].getData());
+    $('#informe_acuerdo_sanciones').val(CKEDITOR.instances['informe_acuerdo_sanciones'].getData());
+    $('#informe_acuerdo_personerias').val(CKEDITOR.instances['informe_acuerdo_personerias'].getData());
+    $('#informe_acuerdo_ejemplares').val(CKEDITOR.instances['informe_acuerdo_ejemplares'].getData());
+    $('#informe_acuerdo_firmas').val(CKEDITOR.instances['informe_acuerdo_firmas'].getData());
+
+    var datos = new Object();
+    datos.fundamentos = $('#informe_acuerdo_fundamentos').val();
+    datos.antecedentes = $('#informe_acuerdo_antecedentes').val();
+    datos.normativas_aplicables = $('#informe_acuerdo_normativas_aplicables').val();
+    datos.alcance = $('#informe_acuerdo_alcance').val();
+    datos.campo_de_aplicacion = $('#informe_acuerdo_campo_de_aplicacion').val();
+    datos.definiciones = $('#informe_acuerdo_definiciones').val();
+    datos.objetivo_general = $('#informe_acuerdo_objetivo_general').val();
+    datos.objetivo_especifico = $('#informe_acuerdo_objetivo_especifico').val();
+    datos.vigencia_acuerdo = $('#informe_acuerdo_vigencia_acuerdo').val();
+    datos.plazo_vigencia_acuerdo = $('#informe_acuerdo_plazo_vigencia_acuerdo').val();
+    datos.mecanismo_de_implementacion = $('#informe_acuerdo_mecanismo_de_implementacion').val();
+    datos.tipo_acuerdo = $("input[name='informe_acuerdo[tipo_acuerdo]']:checked").val();
+    datos.plazo_maximo_adhesion = $('#informe_acuerdo_plazo_maximo_adhesion').val();
+    datos.plazo_finalizacion_implementacion = $('#informe_acuerdo_plazo_finalizacion_implementacion').val();
+    datos.vigencia_certificacion = $('#informe_acuerdo_vigencia_certificacion').val();
+    datos.vigencia_certificacion_final = $('#informe_acuerdo_vigencia_certificacion_final').val();
+    //datos.mecanismo_evaluacion_cumplimiento = $('#informe_acuerdo_mecanismo_evaluacion_cumplimiento').val();
+    //datos.plazo_maximo = $('#informe_acuerdo_plazo_maximo').val();
+    //datos.plazo_maximo_neto = $('#informe_acuerdo_plazo_maximo_neto').val();
+    //datos.adhesiones = $("input[name='informe_acuerdo[adhesiones]']:checked").val();
+    datos.con_validacion = $("input[name='informe_acuerdo[con_validacion]']:checked").val();
+    datos.derechos = $('#informe_acuerdo_derechos').val();
+    datos.obligaciones = $('#informe_acuerdo_obligaciones').val();
+    datos.difusion = $('#informe_acuerdo_difusion').val();
+    datos.promocion = $('#informe_acuerdo_promocion').val();
+    datos.incentivos = $('#informe_acuerdo_incentivos').val();
+    datos.sanciones = $('#informe_acuerdo_sanciones').val();
+    datos.personerias = $('#informe_acuerdo_personerias').val();
+    datos.ejemplares = $('#informe_acuerdo_ejemplares').val();
+    datos.firmas = $('#informe_acuerdo_firmas').val();
+    datos.archivos_anexos = "";
+
+    $('.archivo-anexo-por-eliminar:not(:checked)').each(function(index, elem){
+      nombre = $(elem).closest('.list-group-item').find('.nombre-archivo-anexo').html();
+      datos.archivos_anexos += nombre + ",";
+    });
+
+    var auditorias = [];
+    //DZC 2019-06-19 16:13:24
+    //$("input[name='informe_acuerdo[auditorias][][nombre]']").each(function() {
+    $(".informe_acuerdo_auditoria_nombre").each(function() {
+      var audit = new Object();
+      audit.nombre = this.value;
+      auditorias.push(audit);
+    });
+    datos.auditorias = auditorias;
+    
+    //console.log(auditorias);    
+    $.ajax({
+      url: "#{mostrar_informe_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}",
+      type: 'POST',
+      dataType: 'html',
+      data: JSON.parse('{"informe":'+JSON.stringify(datos)+'}'),
+      success: function(response) {
+        $('#previsualizacion_base').html(response);
+      }
+    });
+    
+  }
+- titulo t(:actualización_de_acuerdo)
+= render 'manifestacion_de_interes/modal_advertencia_set_metas'
+.card
+  .card-header.p-0
+    .p-3
+      %h5.no-margin
+        =titulo_instrumento.html_safe
+      - if @proyecto.blank?
+        %h5.no-margin
+          =titulo_acuerdo.html_safe
+      - else
+        %h5.no-margin
+          =titulo_proyecto.html_safe
+      %h5.no-margin
+        =datos_beneficiario.html_safe
+
+    .d-block.d-lg-none.d-flex.justify-content-end.pb-3.pr-3
+      = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+    .d-flex.justify-content-between
+      - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "set-metas-accion": true, "construccion-informe-remote-form": false  } : tabs = { "listado-de-actores": true, "set-metas-accion": false, "construccion-informe-remote-form": false } # DZC 2018-11-05 12:35:08 se agrega para posicionar la vista en la pestaña set de metas y acciones
+      #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
+        %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
+          - tabs.each do |tab,active|
+            %li.nav-item.tab-block{id: "#{tab}-tab"}
+              %a.nav-link.tab-block.d-flex{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                %div{style: "flex-grow:1 !important;"}
+                  =t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
+      .d-none.d-lg-block.mr-2
+        = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+  .card-body.p-0.with-top
+    #manifestacionContent.tab-content
+      #listado-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"listado-de-actores"], "aria-labelledby" => "listado-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"listado-de-actores"])}
+        .card.m-0
+          .card-body.p-0
+            #actores-remote-table
+              = render 'actores/table', externo: true
+            #revisar-remote-form
+              = render 'actores/form', externo: true
+      #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
+        .card.m-0
+          .card-body.p-0
+            .row.form-group.my-3
+              .col-12
+                .d-flex.justify-content-lg-end.flex-lg-row.flex-column.align-items-start
+                  =# select_tag :tipo_metas, options_for_select([ ["Crear propio Set de Metas y Acciones", 1], ["Elegir Estándar de Homologación", 2], ["Elegir Metas y Acciones de otro acuerdo", 3] ], @manifestacion_de_interes.tipo_manifestacion_metas), { class: 'form-control chosen-control m2',:prompt => false}
+                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo{"data-tipo" => 2} Desde estándar de certificación
+                  %button.btn.btn-primary.btn-sm.my-1.mx-2.btn-show-modal-tipo.text-left{"data-tipo" => 3, style: "white-space: normal;"} Desde metas y acciones de otro Acuerdo
+                  - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: false)
+                  = link_to "Nueva acción", new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary my-1 mx-2 btn-sm'
+            #propuestas-de-acuerdo-remote-table
+              = render 'set_metas_acciones/table', externo: true
+            -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+            = render 'set_metas_acciones/modal'
+      #construccion-informe-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"construccion-informe-remote-form"], "aria-labelledby" => "construccion-informe-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"construccion-informe-remote-form"])}

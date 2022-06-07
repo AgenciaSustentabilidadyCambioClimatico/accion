@@ -16,7 +16,7 @@ namespace :ascc do
   end
 
   # DZC 2018-11-22 12:19:48 rake task que agrega a crontab la ejecución de :limpia_cache_carrierwave todos los días a las 03:00 horas
-  desc "Ejecuta la rake task ':agrega_limpia_cache_carrierwave_a_crontab'"
+  desc "# DZC 2019-08-23 20:24:47 DEPLETED - Ejecuta la rake task ':agrega_limpia_cache_carrierwave_a_crontab'"
   task :agrega_limpia_cache_carrierwave_a_crontab do
     on roles(:app) do
       within release_path do
@@ -28,7 +28,7 @@ namespace :ascc do
   end
 
   # DZC 2018-11-22 14:49:06 rake task que agrega a crontab la ejecución de :agrega_recordatorios_crontab
-  desc "Ejecuta la rake task ':agrega_limpia_cache_carrierwave_a_crontab'"
+  desc "# DZC 2019-08-23 20:24:47 DEPLETED - Ejecuta la rake task ':agrega_limpia_cache_carrierwave_a_crontab'"
   task :agrega_recordatorios_crontab do
     on roles(:app) do
       within release_path do

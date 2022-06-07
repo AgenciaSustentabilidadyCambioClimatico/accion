@@ -21,9 +21,11 @@
 			$(this).hide();
 		});*/
 
-		$('body').on('change','.contribuyente-radio',function() {
-		 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		});
+		//DZC 2019-06-17 13:59:36 se modifica para usar la función verificarModal()
+		//$('body').on('change','.contribuyente-radio',function() {
+		// 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
 
 		$('body').on('focus','.tp-proveedor',function() {
 			valor_previo = this.value;
@@ -64,7 +66,10 @@
 		
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				$("input#proveedor_contribuyente_id").val(data.id);
 				$("input#proveedor_rut_contribuyente").val(data.rut);
 				$("input#proveedor_nombre_contribuyente").val(data.razon_social);

@@ -46,6 +46,7 @@ es:
       signed_in: "Ha iniciado sesión correctamente."
       signed_out: "Ha cerrado sesión correctamente."
       already_signed_out: "Se cerró la sesión correctamente."
+      invalid: "RUT y/o contraseña inválidos."
     unlocks:
       send_instructions: "Recibirá un email con instrucciones para desbloquear su cuenta en unos minutos"
       send_paranoid_instructions: "Si su cuenta existe, recibirá un email con instrucciones para desbloquear su cuenta en unos minutos"

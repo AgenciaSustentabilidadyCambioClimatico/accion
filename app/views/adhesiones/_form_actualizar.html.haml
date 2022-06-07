@@ -1,4 +1,5 @@
 :javascript
+  const dt = new DataTransfer();
   $(document).ready(function(){
     $("#adhesiones_rechazadas").DataTable({
       responsive: true,
@@ -7,20 +8,55 @@
         url: "#{asset_path('spanish.json')}"
       },
     });
+    $('#adhesion_archivos_adhesion_y_documentacion').change(function(e){
+      for (let file of this.files) {
+        dt.items.add(file);
+      }
+      this.files = dt.files;
+      render_files();
+    });
+
+    $('.chosen-control').chosen({
+      allow_single_deselect: false,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true,
+      placeholder_text_single: "Seleccione"
+    });
+
+    $('.chosen-control').change(function(){
+      window.location = '/#{@tarea_pendiente.id}/adhesion/actualizar?adhesion_externa_id='+this.value;
+    });
   });
+
+  $(document).on('click', '.remove-file', function(e){
+    e.preventDefault();
+    $(this).parents('.list-group-item').remove();
+    dt.items.remove(parseInt($(this).attr("href")));
+    $('#adhesion_archivos_adhesion_y_documentacion')[0].files = dt.files;
+    render_files();
+  });
+
+  function render_files(){
+    $('#list_files').empty();
+    $.each(dt.items, function(index, elem){
+      li = '<li class="list-group-item">';
+      li += '<div class="d-flex align-items-center justify-content-between">';
+      li += elem.getAsFile().name;
+      li += '<a href="'+index+'" class="remove-file"><i class="fa fa-trash"></i></a>';
+      li += '</li>';
+      $('#list_files').append(li);
+    });
+  }
 -if @flujo.apl?
-  - titulo t(:manifestación_de_acuerdo)
+  - titulo t(:solicitud_de_adhesiones)
 -if @flujo.ppf?
   - titulo t(:atencion_directa_adhesion)
--
-= simple_form_for @adhesion, url: guardar_actualizar_adhesion_path(@tarea_pendiente), method: :patch, remote: true do |f|
+-if @tarea_pendiente.data[:externa] && params[:adhesion_externa_id].blank?
   .row
     .col-12
       .card
         .card-header
-          %h5.no-margin
-          %b
-            = t(:adhesiones)
           %h5.no-margin=titulo_instrumento.html_safe
           -if !@manifestacion_de_interes.blank?
             %h5.no-margin=titulo_acuerdo.html_safe
@@ -29,62 +65,132 @@
           -elsif !@ppp.blank?
             %h5.no-margin=titulo_programa.html_safe
           %h5.no-margin=datos_beneficiario.html_safe
-        .card-body
-          %table.table.table-striped#adhesiones_rechazadas
-            %thead
-              %tr
-                %th=t(:rut_institucion)
-                %th=t(:nombre_institución)
-                %th=t(:comuna_establecimiento)
-                %th=t(:direccion_establecimiento)
-                %th=t(:nombre_encargado)
-                %th=t(:fono_encargado)
-                %th=t(:mail_encargado)
-                %th=t(:observaciones)
-                %th=t(:estado)
-            %tbody
-              - @todas.each do |k,v|
-                - v.each do |fila|
-                  %tr
-                    %td=fila[:rut_institucion]
-                    %td=fila[:nombre_institucion]
-                    %td=fila[:comuna_instalacion]
-                    %td=fila[:direccion_instalacion]
-                    %td=fila[:nombre_encargado]
-                    %td=fila[:fono_encargado]
-                    %td=fila[:email_encargado]
-                    %td=fila[:observaciones]
-                    %td=k.upcase
-  .row
-    .col-12.col-lg-6
-      .card
         .card-header
-          %h5.no-margin=t(:subir_documentacion_adhesiones)
+          %h5.no-margin
+            %b
+            Seleccione una institución
         .card-body
           .row
             .col-12
-              = f.input :archivos_adhesion_y_documentacion, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
-              = f.hidden_field :archivos_adhesion_y_documentacion_cache
-            .col-12
-              = f.input :archivo_elementos, label: t(:archivo_elementos_adheridos), as: :file, required: true, input_html: {class: "required-field form-control auto-save "}
-              = f.hidden_field :archivo_elementos_cache
-    .col-12.col-lg-6
-      .card
-        .card-header
-          %h5.m-0
-            = t(:descargar_archivos_formatos)
-        .card-body
-          .row
-            .col-12
-              .form-group
-                %label.string.control-label
-                  = t(:formato_excel_de_elementos_adherir)
-                = link_to descargar_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-outline-secondary btn-block' do
-                  %i.fa.fa-download
-                  = t(:descargar)
-              = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", "Documento de adhesión", {tarea_pendiente: @tarea_pendiente})
-  .float-right
-    = volver_root
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+              %select.form-control.chosen-control
+                %option
+                -@adhesiones_externas.each do |adh|
+                  %option{value: adh.id}=adh.nombre_institucion_adherente
+
+-else
+  = simple_form_for @adhesion, url: guardar_actualizar_adhesion_path(@tarea_pendiente, adhesion_externa_id: params[:adhesion_externa_id]), method: :patch, remote: true do |f|
+    .row
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin=titulo_instrumento.html_safe
+            -if !@manifestacion_de_interes.blank?
+              %h5.no-margin=titulo_acuerdo.html_safe
+            -elsif !@proyecto.blank?
+              %h5.no-margin=titulo_proyecto.html_safe
+            -elsif !@ppp.blank?
+              %h5.no-margin=titulo_programa.html_safe
+            %h5.no-margin=datos_beneficiario.html_safe
+          -if @tarea_pendiente.data[:externa] && !params[:adhesion_externa_id].blank?
+            .card-header
+              %h5.no-margin
+                %b
+                Seleccione una institución
+            .card-body
+              .row
+                .col-12
+                  %select.form-control.chosen-control
+                    %option
+                    -@adhesiones_externas.each do |adh|
+                      %option{value: adh.id, selected: adh.id == params[:adhesion_externa_id].to_i}=adh.nombre_institucion_adherente
+          .card-header
+            %h5.no-margin
+              %b
+              = t(:adhesiones)
+          .card-body
+            %table.table.table-striped#adhesiones_rechazadas
+              %thead
+                %tr
+                  %th=t(:rut_institucion)
+                  %th=t(:nombre_institución)
+                  %th=t(:alcance)
+                  %th=t(:nombre_elemento)
+                  %th=t(:comuna_elemento)
+                  %th=t(:direccion_elemento)
+                  %th=t(:datos_encargado)
+                  %th=t(:observaciones)
+                  %th=t(:estado)
+              %tbody
+                - @todas_mias.each do |k,v|
+                  - v.each do |fila|
+                    %tr
+                      %td=fila[:rut_institucion]
+                      %td=fila[:nombre_institucion]
+                      %td=fila[:alcance]
+                      %td=fila[:nombre_elemento]
+                      %td=fila[:comuna_instalacion]
+                      %td=fila[:direccion_instalacion]
+                      %td
+                        %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                        %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                        %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                      %td=fila[:observaciones]
+                      %td=k.upcase
+    
+    .row
+      -if @flujo.apl? && @tarea_pendiente.data.has_key?(:observacion_tarea_anterior) && @tarea_pendiente.data[:observacion_tarea_anterior].has_key?(Rol::RESPONSABLE_ENTREGABLES)
+        .col-12.col-lg-6
+          .card
+            .card-header
+            .card-body
+              .row
+                .col-12
+                  .form-group
+                    %label.control-label=t(:comentarios_del_coordinador_del_acuerdo)
+                    %textarea.form-control{disabled: true, rows: 4}=@tarea_pendiente.data[:observacion_tarea_anterior][Rol::RESPONSABLE_ENTREGABLES]
+      .col-12.col-lg-6
+        .card
+          .card-header
+            %h5.no-margin=t(:subir_documentacion_adhesiones)
+          .card-body
+            .row
+              .col-12
+                = f.input :archivos_adhesion_y_documentacion, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
+                = f.hidden_field :archivos_adhesion_y_documentacion_cache
+              .col-12
+                %ul.list-group#list_files
+              .col-12
+                = f.input :archivo_elementos, label: t(:archivo_elementos_adheridos), as: :file, required: true, input_html: {class: "required-field form-control auto-save "}
+                = f.hidden_field :archivo_elementos_cache
+      .col-12.col-lg-6
+        .card
+          .card-header
+            %h5.m-0
+              = t(:descargar_archivos_formatos)
+          .card-body
+            .row
+              .col-12
+                = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", t(:documento_de_adhesión), {tarea_pendiente: @tarea_pendiente})
+              .col-12    
+                .form-group
+                  %label.string.control-label
+                    = t(:formato_excel_de_elementos_adherir)
+                  = link_to descargar_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                    %i.fa.fa-download
+                    = t(:descargar)
+      -if @flujo.apl?
+        .col-12.col-lg-6
+          .card
+            .card-header
+              %h5.m-0
+                = t(:instrucciones_de_llenado)
+            .card-body
+              .row
+                .col-12
+                  = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-003", t(:instrucciones_de_llenado_excel_elementos_a_adherir), {tarea_pendiente: @tarea_pendiente})
+
+    .float-right
+      = volver_root
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
 
 

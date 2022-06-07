@@ -1,12 +1,14 @@
 .modal.fade{id: :"terminar-actualizar-acuerdo-actores", tabindex: "-1", role: :dialog, "aria-labelledby": :terminarActualizarAcuerdoActoresModalLabel, "aria-hidden": true}
-	.modal-dialog.modal-dialog-centered.modal-lg.larger-please.animated{role: :document}
+	.modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
 		.modal-content
 			.modal-header
-				%div.m-auto
-					%h5.no-margin
-						= t(:terminar_carga_actualizacion_actores_en_acuerdo)
+				%h5.no-margin
+					= t(:publicar_respuestas_consulta_publica_terminar_proceso)
+			.modal-body
+				.row
+					.col-12.col-md-12
+						= f.input :observaciones_propuesta_acuerdo, label: t(:observaciones_comentarios_siguiente_etapa), input_html: { class: ''}, placeholder: "Ingrese comentario u observación", as: :text, required: true
 			.modal-footer
-				%div.m-auto
-					%button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
-						Cerrar
-					= f.submit "Terminar etapa de diagnóstico y pasar a negociación de acuerdo", class: 'btn btn-sm btn-primary btn-sm', data: { confirm: t(:confirma_poner_termino_diagnostico), remote: false }
+				%button.btn.btn-sm.btn-warning{type: :button, "data-dismiss"=>:modal}
+					=t(:volver)
+				= f.submit t(:terminar_proceso_de_negociacion), class: 'btn btn-sm btn-primary btn-sm d-block d-lg-inline-block', style: "white-space: normal;", data: { confirm: t(:confirma_poner_termino_proceso_negociacion_y_resolucion_de_observaciones), remote: false }

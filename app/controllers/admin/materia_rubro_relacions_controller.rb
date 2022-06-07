@@ -23,7 +23,7 @@ class Admin::MateriaRubroRelacionsController < ApplicationController
     @levantados = @levantados.where(materia_sustancia_id: materias.pluck(:id))
    end
    if ciiu.present?
-    actividades = ActividadEconomica.where("codigo_ciiuv2 ILIKE ?", "%#{ciiu}%")
+    actividades = ActividadEconomica.where("codigo_ciiuv4 ILIKE ?", "#{ciiu}%")
     @filtro_utilizado << "Codigo producto: #{ciiu}"
     @levantados = @levantados.where(actividad_economica_id: actividades.pluck(:id))
    end
@@ -62,7 +62,19 @@ class Admin::MateriaRubroRelacionsController < ApplicationController
   def create
     @levantar = MateriaRubroRelacion.new(levantado_params)
     respond_to do |format|
-      if @levantar.save        
+      if @levantar.valid?
+        @levantar.actividad_economica_ids.each do |ae|
+          if !ae.blank?
+            _lev = MateriaRubroRelacion.create({
+              materia_sustancia_id: @levantar.materia_sustancia_id,
+              actividad_economica_id: ae,
+              omite_val: true
+            })
+            @levantar.materia_rubro_dato_relacions.each do |mrdr|
+              _lev.materia_rubro_dato_relacions.create(dato_recolectado_id: mrdr.dato_recolectado_id)
+            end
+          end
+        end
         format.js { 
           flash[:success] = 'Asociación correctamente creada.'
           @levantar = MateriaRubroRelacion.new
@@ -117,6 +129,7 @@ class Admin::MateriaRubroRelacionsController < ApplicationController
       params.require(:materia_rubro_relacion).permit(
         :materia_sustancia_id,
         :actividad_economica_id,
+        actividad_economica_ids: [],
         materia_rubro_dato_relacions_attributes: [:dato_recolectado_id, :_delete]
       )
     end

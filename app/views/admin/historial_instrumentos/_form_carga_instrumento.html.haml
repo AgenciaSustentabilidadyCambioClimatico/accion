@@ -1,124 +1,178 @@
 .row
-	.col-12
-		.card
-			.card-header
-				%h5.no-margin=t(:instrumentos)
-				%h5.m-0.float-right
-					= link_to t(:volver_a_cargar), admin_historial_instrumentos_path, class: 'btn btn-sm btn-primary m-1 btn-sm float-right'
-			.card-body        
-				.row.justify-content-left       
-					.col-md-4
-						= select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
-					.col-md-4
-						= select_tag :ppf, options_from_collection_for_select(@ppfs, "id", "nombre_para_raa", :selected=>@ppf), { class: 'form-control',:prompt => 'Seleccione un Programa y/o Proyecto de Financiamiento' }  
-					.col-md-4
-						= select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }           
-			.card-body.p-0
-				.table-responsive
-					%table.table.table-bordered.table-striped
-						%thead
-							%tr
-								%th=t(:instrumento_tipo)
-								%th=t(:id)                  
-								%th=t(:instrumento_nombre)
-								%th=t(:tarea_nombre)
-								%th=t(:tarea_responsables)
-								%th=t(:instancia)
-								%th=t(:estado)
-						%tbody
-							- @instancias.each do |ins|
-								%tr.accion
-									%td=ins[:tipo_instrumento]
-									%td=ins[:id_instrumento]
-									%td=ins[:nombre_instrumento]
-									%td=ins[:nombre_tarea]
-									%td=ins[:responsables].to_sentence
-									%td=ins[:instancia].to_sentence
-									%td=ins[:estado]
+  .col-12
+    .card
+      .card-header
+        .d-flex.flex-column.flex-md-row.justify-content-md-between.align-items-start.align-items-md-end
+          -if !@instrumento.nil?
+            %h5
+              %b=@instrumento.tipo_instrumento.nombre_tipo
+              %br
+              %b=@instrumento.subtipo_de_instrumento
+              %br
+              =@instrumento.nombre_instrumento
+              %br
+              %b ID
+              =@instrumento.id
+          %h5
+            = link_to t(:volver_a_cargar), admin_gestionar_mis_instrumentos_path, class: 'btn btn-sm btn-primary btn-sm float-right'
+      -if current_user.is_admin? || current_user.is_ascc?
+        .card-body.pb-0        
+          .row.justify-content-left       
+            .col-md-4
+              = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
+            .col-md-4
+              = select_tag :ppf, options_from_collection_for_select(@ppfs, "id", "nombre_para_raa", :selected=>@ppf), { class: 'form-control',:prompt => 'Seleccione un Programa y/o Proyecto de Financiamiento' }  
+            .col-md-4
+              = select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }  
+      .card-body.p-0
+        .table-responsive.mis-instrumentos
+          %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
+            %thead
+              %tr
+                -#%th=t(:instrumento_tipo)
+                -#%th=t(:id)                  
+                -#%th=t(:instrumento_nombre)
+                %th=t(:tarea_nombre)
+                %th=t(:tarea_responsables)
+                %th=t(:instancia)
+                %th=t(:fecha_hora_activacion)
+                %th=t(:fecha_hora_ejecucion)
+                %th=t(:tarea_documentos_asociados)
+                %th=t(:estado)
+            %tbody
+              - @instancias.each do |ins|
+                %tr.accion
+                  -#%td=ins[:tipo_instrumento]
+                  -#%td=ins[:id_instrumento]
+                  -#%td=ins[:nombre_instrumento]
+                  %td=ins[:nombre_tarea]
+                  %td=ins[:responsables].to_sentence
+                  %td=ins[:instancia].to_sentence
+                  %td=ins[:activacion]
+                  %td=ins[:ejecucion]
+                  - if ins[:documentos_asociados][:url].blank?
+                    %td=ins[:documentos_asociados][:nombre]
+                  - else
+                    -if ins[:documentos_asociados][:url] == "modal"
+                      =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:documentos_asociados][:lista]
+                      %td
+                        =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'download'
+                          =ins[:documentos_asociados][:nombre]
+                    -else
+                      %td
+                        -enlace = ins[:documentos_asociados][:metodo] ? public_send(ins[:documentos_asociados][:url], *ins[:documentos_asociados][:parametros]) : ins[:documentos_asociados][:url]
+                        =link_to enlace, class: "btn-tabla-instrumentos" do
+                          =fa_icon 'download'
+                          =ins[:documentos_asociados][:nombre]
+                  %td
+                    - if ins[:puedo_ver_tarea]
+                      -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
+                        -if ins[:estado] == "Ejecutada"
+                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                          =link_to data_url[:url], class: "btn-tabla-instrumentos" do
+                            =fa_icon 'eye'
+                            =ins[:estado]
+                        -else
+                          =ins[:estado]
+                      -elsif !ins[:auditorias_tarea_033].blank?
+                        =render 'modal_auditorias_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:auditorias_tarea_033]
+                        =link_to '#', "data-target" => "#modal_auditorias_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'eye'
+                          =ins[:estado]
+                      -elsif !ins[:validaciones_tarea_034].blank?
+                        =render 'modal_validaciones_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:validaciones_tarea_034]
+                        =link_to '#', "data-target" => "#modal_validaciones_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
+                          =fa_icon 'eye'
+                          =ins[:estado]
+                    -else
+                      =ins[:estado]
+
 .float-right
-	= link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-	-#
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+  = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+  -#
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
 
 :javascript
-	$(document).ready(function() {
-		$('table.table-bordered').DataTable({
-			responsive: true,
-			lengthMenu: [[30], [30]],
-			columnDefs: [ { targets: [-1], orderable: true } ],
-			language: {
-				url: "#{asset_path('spanish.json')}"
-			}, 
-		});
+  $(document).ready(function() {
+    $('table.table-bordered').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: true } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      fixedHeader: true
+    });
 
-		$('.chosen-control').chosen({
-			allow_single_deselect: true,
-			no_results_text: 'No se encontraron resultados',
-			width: '100%'
-		});
-		htmlErrorToTooltip('top');
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
 
-		$('#apl').chosen(chosenOptions);
-		$('#apl').change(function(){
-			$.ajax({
-				url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
-				type: "GET",
-				dataType: "script",
-				data: { apl: $(this).val() },
-				beforeSend: function(){
-					loadingParent = $(".loading-data").parent().parent()[0]
-					$('.loading-data').height(loadingParent.scrollHeight).show();
-					spinner = $('.loading-data > .spinner').css({'display':'block'})
-					scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-					spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
-				}
-			}).fail(function() {
-				alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-				$('.loading-data').hide();
-			}).success(function(){
-				$('.loading-data').hide();
-			});
-		});
-		$('#fpl').chosen(chosenOptions);
-		$('#fpl').change(function(){
-			$.ajax({
-				url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
-				type: "GET",
-				dataType: "script",
-				data: { fpl: $(this).val() },
-				beforeSend: function(){
-					loadingParent = $(".loading-data").parent().parent()[0]
-					$('.loading-data').height(loadingParent.scrollHeight).show();
-					spinner = $('.loading-data > .spinner').css({'display':'block'})
-					scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-					spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
-				}
-			}).fail(function() {
-				alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-				$('.loading-data').hide();
-			}).success(function(){
-				$('.loading-data').hide();
-			});
-		});
-		$('#ppf').chosen(chosenOptions);
-		$('#ppf').change(function(){
-			$.ajax({
-				url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
-				type: "GET",
-				dataType: "script",
-				data: { ppf: $(this).val() },
-				beforeSend: function(){
-					loadingParent = $(".loading-data").parent().parent()[0]
-					$('.loading-data').height(loadingParent.scrollHeight).show();
-					spinner = $('.loading-data > .spinner').css({'display':'block'})
-					scrollTop = document.documentElement.scrollTop || document.body.scrollTop
-					spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
-				}
-			}).fail(function() {
-				alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-				$('.loading-data').hide();
-			}).success(function(){
-				$('.loading-data').hide();
-			});
-		});		
-	});
+    $('#apl').chosen(chosenOptions);
+    $('#apl').change(function(){
+      $.ajax({
+        url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
+        type: "GET",
+        dataType: "script",
+        data: { apl: $(this).val() },
+        beforeSend: function(){
+          loadingParent = $(".loading-data").parent().parent()[0]
+          $('.loading-data').height(loadingParent.scrollHeight).show();
+          spinner = $('.loading-data > .spinner').css({'display':'block'})
+          scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+          spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
+        }
+      }).fail(function() {
+        alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+        $('.loading-data').hide();
+      }).success(function(){
+        $('.loading-data').hide();
+      });
+    });
+    $('#fpl').chosen(chosenOptions);
+    $('#fpl').change(function(){
+      $.ajax({
+        url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
+        type: "GET",
+        dataType: "script",
+        data: { fpl: $(this).val() },
+        beforeSend: function(){
+          loadingParent = $(".loading-data").parent().parent()[0]
+          $('.loading-data').height(loadingParent.scrollHeight).show();
+          spinner = $('.loading-data > .spinner').css({'display':'block'})
+          scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+          spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
+        }
+      }).fail(function() {
+        alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+        $('.loading-data').hide();
+      }).success(function(){
+        $('.loading-data').hide();
+      });
+    });
+    $('#ppf').chosen(chosenOptions);
+    $('#ppf').change(function(){
+      $.ajax({
+        url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
+        type: "GET",
+        dataType: "script",
+        data: { ppf: $(this).val() },
+        beforeSend: function(){
+          loadingParent = $(".loading-data").parent().parent()[0]
+          $('.loading-data').height(loadingParent.scrollHeight).show();
+          spinner = $('.loading-data > .spinner').css({'display':'block'})
+          scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+          spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
+        }
+      }).fail(function() {
+        alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+        $('.loading-data').hide();
+      }).success(function(){
+        $('.loading-data').hide();
+      });
+    });   
+  });

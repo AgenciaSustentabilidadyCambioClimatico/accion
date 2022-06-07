@@ -1,0 +1,19 @@
+.modal.fade{id: "modal_auditorias_ejecutadas-"+tarea.id.to_s, tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.animated{role: :document}
+    .modal-content
+      .modal-body.p-0
+        .card.border-0.m-0
+          .card-header
+            %h5.m-0=t(:tareas_ejecutadas)
+          .card-body.p-0
+            %table.table.table-condensed.table-striped.m-0
+              %tbody
+                -lista.each do |dato|
+                  %tr
+                    %td
+                      =link_to revisar_auditorias_manifestacion_de_interes_path(dato[:tarea_pendiente_id], manifestacion_de_interes.id), class: "btn-tabla-instrumentos" do
+                        =fa_icon 'eye'
+                        =dato[:nombre]
+          .card-footer.text-right
+            %button.btn.btn-sm.btn-warning{type: :button, "data-dismiss"=>:modal}
+              Volver

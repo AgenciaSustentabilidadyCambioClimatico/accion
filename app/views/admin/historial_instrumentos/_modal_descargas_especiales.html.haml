@@ -1,0 +1,15 @@
+.modal.fade{id: "modal_descargas_especiales-"+tarea.id.to_s, tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header
+        %h5=t(:opciones_de_descarga)
+      .modal-body
+        .row
+          -lista.each do |dato|
+            .col-12.px-5.py-2.d-flex.justify-content-between
+              %span=dato[:nombre]
+              =link_to descargar_respuesta_encuesta_auditoria_admin_historial_instrumentos_path(manifestacion_de_interes.id, tarea.id, dato[:id]) do
+                =fa_icon 'download'
+      .modal-footer
+        %button.btn.btn-sm.btn-warning{type: :button, "data-dismiss"=>:modal}
+          Volver

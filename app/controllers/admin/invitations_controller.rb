@@ -1,8 +1,15 @@
 class Admin::InvitationsController < Devise::InvitationsController
   prepend_before_action :require_no_authentication, :only => [:update]
 
+  def edit
+    @header = ReporteriaDato.find_by(ruta: nil)
+    super
+  end
+
   # PUT /resource/invitation
   def update
+    @header = ReporteriaDato.find_by(ruta: nil)
+
     raw_invitation_token = update_resource_params[:invitation_token]
     self.resource = accept_resource
     invitation_accepted = resource.errors.empty?

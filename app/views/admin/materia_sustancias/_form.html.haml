@@ -1,6 +1,7 @@
 :javascript
 	$(document).ready(function() {
 		$('.chosen-control').chosen(chosenOptions);
+		
 		if ($('[type="radio"]:checked').length > 0) {
 			posee_magnitud_fisica_asociada($('[type="radio"]:checked'),false);
 		}
@@ -31,6 +32,12 @@
 	
 	$(document).on('nested:fieldAdded:materia_sustancia_clasificaciones', function(e){
 		checkFieldValidity($('#materia_sustancia_nombre'));
+		$(e.target).find('select').chosen(chosenOptions);
+	});
+	
+	$(document).on('nested:fieldAdded:materia_sustancia_metas', function(e){
+		checkFieldValidity($('#materia_sustancia_nombre'));
+		$(e.target).find('select').chosen(chosenOptions);
 	});
 	
 	$(document).on('nested:fieldRemoved:materia_sustancia_clasificaciones', function(e){
@@ -40,11 +47,19 @@
 		} else {
 			submitBtn.removeAttr('disabled');
 		}
+		checkFieldValidity($('#materia_sustancia_nombre'));
+	});
+	
+	$(document).on('nested:fieldRemoved:materia_sustancia_metas', function(e){
+		submitBtn = $(e.target).parents('form').find('.btn-disabled');
+		if ( $('select.ms-metas').parents('.fields:not([style="display: none;"])').length == 0 ) {
+			submitBtn.attr('disabled','disabled');
+		} else {
+			submitBtn.removeAttr('disabled');
+		}
+		checkFieldValidity($('#materia_sustancia_nombre'));
 	});
 
-	$(document).on('nested:fieldAdded:materia_sustancia_clasificaciones', function(e) {
-		$(e.target).find('select').chosen(chosenOptions);
-	});
 :css
 	label[for="materia_sustancia_unidad_base"] abbr { display: none; }
 - titulo t(:materia_sustancia)
@@ -61,8 +76,6 @@
 							.row
 								.col-12
 									= f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Indique un nombre", required: true
-								.col-12
-									= f.input :meta_id, label: t(:meta), collection: Clasificacion.where(es_meta: true).all.map{|c|[c.nombre,c.id]}, input_html: { class: 'required-field' }, required: true
 								.col-12
 									= f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una descripción", required: true
 								.col-12
@@ -94,9 +107,28 @@
 														= f.fields_for :materia_sustancia_clasificaciones, :wrapper => false  do |msc|
 															%tr.fields
 																%td.p-0
-																	= msc.input :clasificacion_id, label: false, collection: Clasificacion.where(es_meta: false).all.map{|c|[c.nombre,c.id]}, input_html: { class: 'ms-clasificacion chosen-control required-field', 'data-placeholder': 'Seleccione una clasificación' }, required: true, wrapper_class: 'm-0'
+																	= msc.input :clasificacion_id, label: false, collection: Clasificacion.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'ms-clasificacion chosen-control required-field', 'data-placeholder': 'Seleccione una clasificación' }, required: true, wrapper_class: 'm-0'
 																%td.accion.no-padding.remove-row
 																	= msc.link_to_remove do
+																		%i.fa.fa-times-circle.left.link-to-remove-row
+								.col-12
+									.form-group
+										.card.mb-0
+											.card-header.p-1.pr-3
+												%label.integer.float-left.m-0
+													%abbr{:title => "required"} *
+													= t(:metas)
+												= f.link_to_add :materia_sustancia_metas, data: { target: "#materia-sustancia-metas" }, class: 'float-right' do
+													%i.fa.fa-plus-circle
+											.card-body.p-0
+												%table#materia-sustancia-metas.table.table-striped.mb-0
+													%tbody
+														= f.fields_for :materia_sustancia_metas, :wrapper => false  do |msm|
+															%tr.fields
+																%td.p-0
+																	= msm.input :clasificacion_id, label: false, collection: Clasificacion.where(es_meta: true).map{|c|[c.nombre,c.id]}, input_html: { class: 'ms-meta chosen-control required-field', 'data-placeholder': 'Seleccione una meta' }, required: true, wrapper_class: 'm-0'
+																%td.accion.no-padding.remove-row
+																	= msm.link_to_remove do
 																		%i.fa.fa-times-circle.left.link-to-remove-row
 
 	.float-right

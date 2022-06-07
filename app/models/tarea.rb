@@ -1,4 +1,16 @@
 class Tarea < ApplicationRecord
+	# DZC 2019-07-15 11:28:38 se agrega relación con tabla 'campo_tooltips'
+	has_many :campo_tareas, dependent: :delete_all
+	has_many :campos, through: :campo_tareas
+	has_many :encuesta_descarga_roles
+	has_many :encuesta_ejecucion_roles
+
+	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
+	accepts_nested_attributes_for :campos
+
+	accepts_nested_attributes_for :encuesta_descarga_roles, allow_destroy: true
+	accepts_nested_attributes_for :encuesta_ejecucion_roles, allow_destroy: true
+
 	belongs_to :tipo_instrumento, -> { includes :tipo }
 	belongs_to :rol
 	belongs_to :encuesta, optional: true
@@ -9,7 +21,7 @@ class Tarea < ApplicationRecord
 	#validates :etapa_id, presence: true
 	validates :tipo_instrumento_id, presence: true
 	validates :rol_id, presence: true
-	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL)-[\0-9]{3}\Z/ }
+	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL)-[\0-9]{3}(\.[0-9])?\Z/ }
 	validates :nombre, presence: true
 	validates :descripcion, presence: true
 
@@ -26,43 +38,85 @@ class Tarea < ApplicationRecord
 
 	validate :frecuencia
 
-	after_save :update_crontab
+	attr_accessor :limitar_duracion
+
+	before_save :check_encuesta_data
+	after_commit :update_crontab
+
+	# AON: no se sabe si será obligatorio
+	# validate :dias_duracion, if: -> { posee_formulario == true}
+
+	def check_encuesta_data
+		if !self.es_una_encuesta
+			self.encuesta_id = nil
+			self.encuesta_descarga_roles.destroy_all
+		end
+	end
+
+  def get_descargables
+
+    descargables = {}
+    self.descargable_tareas.each do |desc|
+      if ((desc.archivo.path.present? && File.exist?(desc.archivo.path)) || (!desc.subido && desc.contenido.present?))
+        descargables[desc.codigo] = { nombre: desc.nombre, args: [id,desc.id] } 
+      end
+    end
+    descargables
+  end
+
+	def dias_duracion
+		if(self.duracion == '' || self.duracion.nil?)
+			# por ahora no es obligatorio
+			# errors.add(:duracion,'Debe indicar cantidad de días de duracion')
+		elsif(self.duracion < 10 || self.duracion > 70)
+			errors.add(:duracion,'Debe ser entre 10 y 70 días')
+		end
+	end
 
 	#DZC se agrega para efecto de determinar si se requiere revisión de la tarea en mapa de actores (y futuros posibles usos)
 	def requiere_revision?
-		![Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023].include?(self.codigo)
+		![Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023, Tarea::COD_APL_037].include?(self.codigo)
 	end
 
 	def necesita_notificacion?
 		( ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_cuerpo.blank? )
 	end
 
-	def metodos(o)
+	def metodos(o,mdi=nil)
 		metodos = {
 			"[nombre]": o.nombre_completo,
 			"[telefono]": o.telefono, 
 			"[email]": o.email, 
-			"[rut]": o.rut
+			"[rut]": o.rut,
+			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo
 		}
 	end
 
   def update_crontab
-  	__crontab = "#{Rails.root}/tmp/__#{Time.now.to_i}_tareas_crontab"
-  	%x{crontab -r}
-  	%x{crontab -l > #{__crontab}}
-  	Tarea.all.each do |tarea|
-  		unless tarea.recordatorio_tarea_frecuencia.blank?
-  			comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:notificador_de_tareas_pendientes[#{tarea.id}] --silent'"
-  			%x{echo "#{tarea.recordatorio_tarea_frecuencia} #{comando}" >> #{__crontab} }
-  		end
-  	end
-  	# DZC 2018-11-22 11:37:22 se agrega a crontab la eliminación de los temporales de carrierwave via rake task ascc:limpia_cache_carrierwave
-		# %x{/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:agrega_limpia_cache_carrierwave_a_crontab --silent'}  	
-  	comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:limpia_cache_carrierwave --silent'"
-  	%x{echo "#{'0 3 * * *'} #{comando}" >> #{__crontab} }
+  	##
+		# DZC 2019-08-23 20:16:40
+		# se modifica para el uso de la gema whenever, incluyendo el uso de dockers (pero sin impactar el 
+		# despliegue sin dockers)
+		ambiente = (Rails.env.to_s || "development" )
+  	%x{whenever --update-crontab #{ambiente} --set "environment=#{ambiente}&bundle_command=bundle exec" >> "#{Rails.root}/log/whenever_error_#{ambiente}.log" 2>&1}
 
-  	%x{crontab #{__crontab}}
-  	%x{rm #{__crontab}}
+  # 	__crontab = "#{Rails.root}/tmp/__#{Time.now.to_i}_tareas_crontab"
+  # 	%x{crontab -r}
+  # 	%x{crontab -l > #{__crontab}}
+  # 	Tarea.all.each do |tarea|
+  # 		unless tarea.recordatorio_tarea_frecuencia.blank?
+  # 			ambiente = Rails.env.production? ? "production" : "development"
+  # 			comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{ambiente} bundle exec rails ascc:notificador_de_tareas_pendientes[#{tarea.id}] --silent >> #{Rails.root}/log/crontab_recordatorios.log 2>&1'"
+  # 			%x{echo "#{tarea.recordatorio_tarea_frecuencia} #{comando}" >> #{__crontab} }
+  # 		end
+  # 	end
+  # 	# DZC 2018-11-22 11:37:22 se agrega a crontab la eliminación de los temporales de carrierwave via rake task ascc:limpia_cache_carrierwave
+		# # %x{/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:agrega_limpia_cache_carrierwave_a_crontab --silent'}  	
+  # 	comando = "/bin/bash -l -c 'cd #{Rails.root} && RAILS_ENV=#{Rails.env.production? ? :production : :development} bundle exec rails ascc:limpia_cache_carrierwave --silent >> #{Rails.root}/log/limpia_cache_carrierwave.log 2>&1'"
+  # 	%x{echo "#{'0 3 * * *'} #{comando}" >> #{__crontab} }
+
+  # 	%x{crontab #{__crontab}}
+  # 	%x{rm #{__crontab}}
   end
 
 	def frecuencia
@@ -74,7 +128,11 @@ class Tarea < ApplicationRecord
 					#self.recordatorio_tarea_frecuencia = (array.size > 5 ? array.slice(0,5) : array ).join(" ")
 					errors.add(:recordatorio_tarea_frecuencia,message_error)
 				else
-					verify_crontab_line(self.recordatorio_tarea_frecuencia+" dummy_command_for_validation")
+					##
+					# DZC 2019-08-23 21:30:43
+					# se corrige caso de que se agregue un espacio al final del string
+					verificado = verify_crontab_line(self.recordatorio_tarea_frecuencia+" dummy_command_for_validation")
+					self.recordatorio_tarea_frecuencia = verificado.split(" dummy_command_for_validation")[0]
 				end
 			rescue
 				errors.add(:recordatorio_tarea_frecuencia,message_error)
@@ -90,8 +148,12 @@ class Tarea < ApplicationRecord
 		# instrumento_base_id = self.tipo_instrumento.tipo_instrumento_id.blank? ? self.tipo_instrumento.id : self.tipo_instrumento.tipo_instrumento_id
 		# instrumentos_id = TipoInstrumento.where(tipo_instrumento_id: instrumento_base_id).pluck(:id)
 		# instrumentos_id << instrumento_base_id
+		roles_ids = [self.rol_id]
+		if self.es_una_encuesta
+			roles_ids += self.encuesta_ejecucion_roles.pluck(:rol_id)
+		end
 		
-	  Responsable.__personas_responsables(self.rol_id, self.tipo_instrumento.id)
+	  Responsable.__personas_responsables(roles_ids, self.tipo_instrumento.id)
 	end
 
 	def puedo_ver user, flujo_id
@@ -115,9 +177,11 @@ class Tarea < ApplicationRecord
 	def responsables_de_la_tarea flujo_id
 		responsables_id = [] 
 		TareaPendiente.where(flujo_id: flujo_id, tarea_id: self.id).each do |tp|
-			responsables_id << tp.user.id
+			responsables_id << tp.user_id if !tp.user_id.blank?
 		end
-		User.where(id: responsables_id.uniq).pluck(:nombre_completo).sort
+		responsables = []
+		responsables = User.where(id: responsables_id.uniq).pluck(:nombre_completo).sort if !responsables_id.blank?
+		responsables
 	end
 
 	#DZC para determinacion de historial de instrumentos
@@ -132,95 +196,108 @@ class Tarea < ApplicationRecord
 
 	#DZC para determinacion de historial de instrumentos
 	def es_encuesta?
-		[Tarea::ID_APL_015, Tarea::ID_APL_019, Tarea::ID_APL_039, Tarea::ID_APL_043, Tarea::ID_PPF_023, Tarea::ID_PPF_024].include? self.id 
+		[Tarea::ID_APL_015, Tarea::ID_APL_039, Tarea::ID_APL_043, Tarea::ID_PPF_023, Tarea::ID_PPF_024].include? self.id 
 	end
 
 	#DZC para determinacion de historial de instrumentos
 	def es_auditoria?
-		[Tarea::ID_APL_032, Tarea::ID_APL_033, Tarea::ID_APL_034, Tarea::ID_PPF_021, Tarea::ID_PPF_022].include? self.id 
+		[Tarea::ID_APL_032,Tarea::ID_APL_032_1, Tarea::ID_APL_033, Tarea::ID_APL_034, Tarea::ID_PPF_021, Tarea::ID_PPF_022].include? self.id 
 	end
 
-	#DZC APLs
-	ID_APL_001	=	1		# -	APL-001-Completar Manifestación de Interés
-	ID_APL_002	=	30	# - APL-002-Asignar Revisor
-	ID_APL_003	=	34	# - APL-003-Revisar Admisibilidad Manifestación de Interés
-	ID_APL_004	=	36	# - APL-004-Resolver Observaciones Admisibilidad Manifestación de Interés
-	ID_APL_005	=	39	# - APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés
-	ID_APL_006	=	41	# - APL-006-Responder Condiciones u Observaciones Factibilidad y Pertinencia Manifestación de Interés
-	ID_APL_007	=	44	# - APL-007-Cargar Hito de Prensa
-	ID_APL_008	=	46	# - APL-008-Asignar Usuario a Cargo de Entregables Diagnóstico General
-	ID_APL_011	= 57  # - APL-011-Preparar Convocatoria Taller o Reunión
-	ID_APL_012	= 58  # - APL-012-Elaborar y Cargar Minuta, Acta y Asistencia
-	ID_APL_013	= 63  # - APL-013-Cargar/Actualizar Entregables Diagnóstico General
-	ID_APL_014	= 66  # - APL-014-Revisar Entregables Diagnóstico General 
-	ID_APL_015	= 67  # - APL-015-Contestar Encuesta Diagnóstico General
-	ID_APL_016	= 69  # - APL-016-Convocar Negociación o Indicar paso a firma
-	ID_APL_017	= 72  # - APL-017-Elaborar y Cargar Acta o Minuta y Asistencia
-	ID_APL_018	= 71  # - APL-018- Actualizar Acuerdo, Mapa de Actores
-	ID_APL_019	= 70  # - APL-019- Contestar Evaluación y Consulta Proceso Negociación
-	ID_APL_020	= 68  # - APL-020- Actualizar Cambios en Acuerdo, Mapa de Actores, Responder Observaciones
-	ID_APL_021	= 65  # - APL-021- Actualizar Mapa de Actores, Realizar Convocatoria Firma
-	ID_APL_022	= 62  # - APL-022- Cargar Acuerdo con Todas las Firmas
-	ID_APL_023	= 61  # - APL-023- Actualizar Miembros Comité Coordinador y Acuerdo
-	ID_APL_024	= 60  # - APL-024- Asignar Usuario a Cargar Entregables y Cargar Datos Empresas
-	ID_APL_025	= 59  # - APL-025- Solicitar Adhesión, Admisión y Certificación
-	ID_APL_026	= 56  # - APL-026- Notificar Cierre Procesos Acuerdos
-	ID_APL_027	= 55  # - APL-027- Elaborar y enviar reporte automatizado de Avance
-	ID_APL_028	= 54  # - APL-028- Aprobar Adhesión, Admisión y Certificación
-	ID_APL_029	= 52  # - APL-029- Cargar Datos Productivos Asociados a Elemento a Certificar
-	ID_APL_030	= 51  # - APL-030- Preparar Convocatoria Comité Coordinador
-	ID_APL_031	= 50  # - APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
-	ID_APL_032	= 48  # - APL-032- Cargar Datos para Auditoría
-	ID_APL_033	= 47  # - APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
-	ID_APL_034	= 45  # - APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
-	ID_APL_037	= 40  # - APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
-	ID_APL_038	= 45  # - APL-038- Indicar Ceremonia Realizada
-	ID_APL_039	= 45  # - APL-039- Contestar Evaluación y Consulta de Proceso Implementación
-	ID_APL_040  = 35  # - APL-040-Asignar Responsable Elaborar Informe de Impacto
-	ID_APL_041  = 33  # - APL-041-Elaborar informe de impacto
-	ID_APL_042  = 31  # - APL-042-Revisar informe de impacto
-	ID_APL_043  = 32  # - APL-043- Contestar Evaluación y Consulta Proceso Implementación
 
-	COD_APL_001	=	'APL-001'	 #[1}		-	APL-001-Completar Manifestación de Interés
-	COD_APL_002	=	'APL-002'	 #[30}	-	APL-002-Asignar Revisor
-	COD_APL_003	=	'APL-003'	 #[34}	-	APL-003-Revisar Admisibilidad Manifestación de Interés
-	COD_APL_004	=	'APL-004'	 #[36}	-	APL-004-Resolver Observaciones Admisibilidad Manifestación de Interés
-	COD_APL_005	=	'APL-005'	 #[39}	-	APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés
-	COD_APL_006	=	'APL-006'	 #[41}	-	APL-006-Responder Condiciones u Observaciones Factibilidad y Pertinencia Manifestación de Interés
-	COD_APL_007	=	'APL-007'	 #[44}	-	APL-007-Cargar Hito de Prensa
-	COD_APL_008	=	'APL-008'	 #[46}	-	APL-008-Asignar Usuario a Cargo de Entregables Diagnóstico General
-	COD_APL_009	=	'APL-009'	 #[46}	- APL-009-Actualizar Mapa de Actores Acuerdo
-	COD_APL_010	=	'APL-010'	 #[46}	-	APL-010-Revisar Mapa de Actores Acuerdo
-	COD_APL_011	=	'APL-011'	 #[57}	-	APL-011-Preparar Convocatoria Taller o Reunión
-	COD_APL_012	=	'APL-012'	 #[58}	-	APL-012-Elaborar y Cargar Minuta, Acta y Asistencia
-	COD_APL_013	=	'APL-013'	 #[63}	-	APL-013-Cargar/Actualizar Entregables Diagnóstico General
-	COD_APL_014	=	'APL-014'	 #[66}	-	APL-014-Revisar Entregables Diagnóstico General
-	COD_APL_015	=	'APL-015'	 #[67}	-	APL-015-Contestar Encuesta Diagnóstico General
-	COD_APL_016	=	'APL-016'	 #[69}	-	APL-016-Convocar Negociación o Indicar paso a firma
-	COD_APL_017	=	'APL-017'	 #[72}	-	APL-017-Elaborar y Cargar Acta o Minuta y Asistencia
-	COD_APL_018	=	'APL-018'	 #[71}	-	APL-018- Actualizar Acuerdo, Mapa de Actores
-	COD_APL_019	=	'APL-019'	 #[70}	-	APL-019- Contestar Evaluación y Consulta Proceso Negociación
-	COD_APL_020	=	'APL-020'	 #[68}	- APL-020- Actualizar Cambios en Acuerdo, Mapa de Actores, Responder Observaciones
-	COD_APL_021	=	'APL-021'	 #[65}	-	APL-021- Actualizar Mapa de Actores, Realizar Convocatoria Firma
-	COD_APL_022	=	'APL-022'	 #[62}	-	APL-022- Cargar Acuerdo con Todas las Firmas
-	COD_APL_023	=	'APL-023'	 #[61}	-	APL-023- Actualizar Miembros Comité Coordinador y Acuerdo
-	COD_APL_024	=	'APL-024'	 #[60}	-	APL-024- Asignar Usuario a Cargar Entregables y Cargar Datos Empresas
-	COD_APL_025	=	'APL-025'	 #[59}	-	APL-025- Solicitar Adhesión, Admisión y Certificación
-	COD_APL_027	=	'APL-027'	 #[55}	-	APL-027- Elaborar y enviar reporte automatizado de Avance
-	COD_APL_028	=	'APL-028'	 #[54}	-	APL-028- Aprobar Adhesión, Admisión y Certificación
-	COD_APL_029	=	'APL-029'	 #[52}	-	APL-029- Cargar Datos Productivos Asociados a Elemento a Certificar
-	COD_APL_030	=	'APL-030'	 #[51}	-	APL-030- Preparar Convocatoria Comité Coordinador
-	COD_APL_031	=	'APL-031'	 #[50}	-	APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
-	COD_APL_032	=	'APL-032'	 #[48}	-	APL-032- Cargar Datos para Auditoría
-	COD_APL_033	=	'APL-033'	 #[47}	-	APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
-	COD_APL_034	=	'APL-034'	 #[45}	-	APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
-	COD_APL_037	=	'APL-037'	 #[40}	-	APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
-	COD_APL_038	=	'APL-038'	 #[38}	-	APL-038- Indicar Ceremonia Realizada
-	COD_APL_039	=	'APL-039'	 #[37}	-	APL-039- Contestar Evaluación y Consulta de Proceso Implementación
-	COD_APL_040	=	'APL-040'	 #[35}	- APL-040- Asignar Responsable Elaborar Informe de Impacto
-	COD_APL_041	=	'APL-041'	 #[33}	-	APL-041- Elaborar Informe de Impacto
-	COD_APL_042	=	'APL-042'	 #[31}	-	APL-042- Revisar Informe de Impacto
-	COD_APL_043	=	'APL-043'	 #[32}	-	APL-043- Contestar Evaluación y Consulta Proceso Implementación
+	#DZC APLs
+	ID_APL_001			=	1		# -	APL-001-Completar Manifestación de Interés
+	ID_APL_002			=	30	# - APL-002-Asignar Revisor
+	ID_APL_003_1		=	34	# - APL-003.1-Revisar Admisibilidad tecnica Manifestación de Interés
+	ID_APL_003_2		=	94	# - APL-003.2-Revisar Admisibilidad juridica Manifestación de Interés
+	ID_APL_004_1		=	36	# - APL-004.1-Resolver Observaciones Admisibilidad tecnica Manifestación de Interés
+	ID_APL_004_2		=	36	# - APL-004.2-Resolver Observaciones Admisibilidad juridica Manifestación de Interés
+	ID_APL_005			=	39	# - APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés
+	ID_APL_006			=	41	# - APL-006-Responder Condiciones u Observaciones Factibilidad y Pertinencia Manifestación de Interés
+	ID_APL_007			=	44	# - APL-007-Cargar Hito de Prensa
+	ID_APL_008			=	46	# - APL-008-Asignar Usuario a Cargo de Entregables Diagnóstico General
+	ID_APL_011			= 57  # - APL-011-Preparar Convocatoria Taller o Reunión
+	ID_APL_012			= 58  # - APL-012-Elaborar y Cargar Minuta, Acta y Asistencia
+	ID_APL_013			= 63  # - APL-013-Cargar/Actualizar Entregables Diagnóstico General
+	ID_APL_014			= 66  # - APL-014-Revisar Entregables Diagnóstico General 
+	ID_APL_015			= 67  # - APL-015-Contestar Encuesta Diagnóstico General
+	ID_APL_016			= 69  # - APL-016-Convocar Negociación o Indicar paso a firma
+	ID_APL_017			= 72  # - APL-017-Elaborar y Cargar Acta o Minuta y Asistencia
+	ID_APL_018			= 71  # - APL-018- Actualizar Acuerdo, Mapa de Actores
+	ID_APL_019			= 70  # - APL-019- Contestar Evaluación y Consulta Proceso Negociación
+	ID_APL_020			= 68  # - APL-020- Actualizar Cambios en Acuerdo, Mapa de Actores, Responder Observaciones
+	ID_APL_021			= 65  # - APL-021- Actualizar Mapa de Actores, Realizar Convocatoria Firma
+	ID_APL_022			= 62  # - APL-022- Cargar Acuerdo con Todas las Firmas
+	ID_APL_023			= 61  # - APL-023- Actualizar Miembros Comité Coordinador y Acuerdo
+	ID_APL_024			= 60  # - APL-024- Asignar Usuario a Cargar Entregables y Cargar Datos Empresas
+	ID_APL_025			= 59  # - APL-025- Solicitar Adhesión, Admisión y Certificación
+	ID_APL_025_1		= 97  # - APL-025.1- Solicitar Adhesión, Admisión y Certificación no logueado
+	ID_APL_025_2		= 98  # - APL-025.2- Solicitar Adhesión, Admisión y Certificación logueado sin empresas sin ser parte de proceso
+	ID_APL_025_3		= 99  # - APL-025.3- Solicitar Adhesión, Admisión y Certificación loqgueado con empresa sin ser parte de proceso
+	ID_APL_026			= 56  # - APL-026- Notificar Cierre Procesos Acuerdos
+	ID_APL_027			= 55  # - APL-027- Elaborar y enviar reporte automatizado de Avance
+	ID_APL_028			= 54  # - APL-028- Aprobar Adhesión, Admisión y Certificación
+	ID_APL_029			= 52  # - APL-029- Cargar Datos Productivos Asociados a Elemento a Certificar
+	ID_APL_030			= 51  # - APL-030- Preparar Convocatoria Comité Coordinador
+	ID_APL_031			= 50  # - APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
+	ID_APL_032			= 48  # - APL-032- Cargar Datos para Auditoría
+	ID_APL_032_1		= 100  # - APL-032- Cargar Datos para Auditoría
+	ID_APL_033			= 47  # - APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
+	ID_APL_034			= 45  # - APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
+	ID_APL_037			= 40  # - APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
+	ID_APL_038			= 45  # - APL-038- Indicar Ceremonia Realizada
+	ID_APL_039			= 45  # - APL-039- Contestar Evaluación y Consulta de Proceso Implementación
+	ID_APL_040  		= 35  # - APL-040-Asignar Responsable Elaborar Informe de Impacto
+	ID_APL_041  		= 33  # - APL-041-Elaborar informe de impacto
+	ID_APL_042  		= 31  # - APL-042-Revisar informe de impacto
+	ID_APL_043  		= 32  # - APL-043- Contestar Evaluación y Consulta Proceso Implementación
+	ID_APL_044  		= 96  # - APL-043- Contestar Evaluación y Consulta Proceso Implementación
+
+	COD_APL_001			=	'APL-001'	 #[1}		-	APL-001-Completar Manifestación de Interés
+	COD_APL_002			=	'APL-002'	 #[30}	-	APL-002-Asignar Revisor
+	COD_APL_003_1		=	'APL-003.1'	 #[34}	-	APL-003.1-Revisar Admisibilidad tecnica Manifestación de Interés
+	COD_APL_003_2		=	'APL-003.2'	 #[34}	-	APL-003.2-Revisar Admisibilidad juridica Manifestación de Interés
+	COD_APL_004_1		=	'APL-004.1'	 #[36}	-	APL-004.1-Resolver Observaciones Admisibilidad tecnica Manifestación de Interés
+	COD_APL_004_2		=	'APL-004.2'	 #[36}	-	APL-004.2-Resolver Observaciones Admisibilidad juridica Manifestación de Interés
+	COD_APL_005			=	'APL-005'	 #[39}	-	APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés
+	COD_APL_006			=	'APL-006'	 #[41}	-	APL-006-Responder Condiciones u Observaciones Factibilidad y Pertinencia Manifestación de Interés
+	COD_APL_007			=	'APL-007'	 #[44}	-	APL-007-Cargar Hito de Prensa
+	COD_APL_008			=	'APL-008'	 #[46}	-	APL-008-Asignar Usuario a Cargo de Entregables Diagnóstico General
+	COD_APL_009			=	'APL-009'	 #[46}	- APL-009-Actualizar Mapa de Actores Acuerdo
+	COD_APL_010			=	'APL-010'	 #[46}	-	APL-010-Revisar Mapa de Actores Acuerdo
+	COD_APL_011			=	'APL-011'	 #[57}	-	APL-011-Preparar Convocatoria Taller o Reunión
+	COD_APL_012			=	'APL-012'	 #[58}	-	APL-012-Elaborar y Cargar Minuta, Acta y Asistencia
+	COD_APL_013			=	'APL-013'	 #[63}	-	APL-013-Cargar/Actualizar Entregables Diagnóstico General
+	COD_APL_014			=	'APL-014'	 #[66}	-	APL-014-Revisar Entregables Diagnóstico General
+	COD_APL_015			=	'APL-015'	 #[67}	-	APL-015-Contestar Encuesta Diagnóstico General
+	COD_APL_016			=	'APL-016'	 #[69}	-	APL-016-Convocar Negociación o Indicar paso a firma
+	COD_APL_017			=	'APL-017'	 #[72}	-	APL-017-Elaborar y Cargar Acta o Minuta y Asistencia
+	COD_APL_018			=	'APL-018'	 #[71}	-	APL-018- Actualizar Acuerdo, Mapa de Actores
+	COD_APL_019			=	'APL-019'	 #[70}	-	APL-019- Contestar Evaluación y Consulta Proceso Negociación
+	COD_APL_020			=	'APL-020'	 #[68}	- APL-020- Actualizar Cambios en Acuerdo, Mapa de Actores, Responder Observaciones
+	COD_APL_021			=	'APL-021'	 #[65}	-	APL-021- Actualizar Mapa de Actores, Realizar Convocatoria Firma
+	COD_APL_022			=	'APL-022'	 #[62}	-	APL-022- Cargar Acuerdo con Todas las Firmas
+	COD_APL_023			=	'APL-023'	 #[61}	-	APL-023- Actualizar Miembros Comité Coordinador y Acuerdo
+	COD_APL_024			=	'APL-024'	 #[60}	-	APL-024- Asignar Usuario a Cargar Entregables y Cargar Datos Empresas
+	COD_APL_025			=	'APL-025'	 #[59}	-	APL-025- Solicitar Adhesión, Admisión y Certificación
+	COD_APL_025_1		=	'APL-025.1'	 #[59}	-	APL-025.1- Solicitar Adhesión, Admisión y Certificación
+	COD_APL_027			=	'APL-027'	 #[55}	-	APL-027- Elaborar y enviar reporte automatizado de Avance
+	COD_APL_028			=	'APL-028'	 #[54}	-	APL-028- Aprobar Adhesión, Admisión y Certificación
+	COD_APL_029			=	'APL-029'	 #[52}	-	APL-029- Cargar Datos Productivos Asociados a Elemento a Certificar
+	COD_APL_030			=	'APL-030'	 #[51}	-	APL-030- Preparar Convocatoria Comité Coordinador
+	COD_APL_031			=	'APL-031'	 #[50}	-	APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
+	COD_APL_032			=	'APL-032'	 #[48}	-	APL-032- Cargar Datos para Auditoría
+	COD_APL_032_1		=	'APL-032.1'	 #[48}	-	APL-032- Cargar Datos para Auditoría
+	COD_APL_033			=	'APL-033'	 #[47}	-	APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
+	COD_APL_034			=	'APL-034'	 #[45}	-	APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
+	COD_APL_037			=	'APL-037'	 #[40}	-	APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
+	COD_APL_038			=	'APL-038'	 #[38}	-	APL-038- Indicar Ceremonia Realizada
+	COD_APL_039			=	'APL-039'	 #[37}	-	APL-039- Contestar Evaluación y Consulta de Proceso Implementación
+	COD_APL_040			=	'APL-040'	 #[35}	- APL-040- Asignar Responsable Elaborar Informe de Impacto
+	COD_APL_041			=	'APL-041'	 #[33}	-	APL-041- Elaborar Informe de Impacto
+	COD_APL_042			=	'APL-042'	 #[31}	-	APL-042- Revisar Informe de Impacto
+	COD_APL_043			=	'APL-043'	 #[32}	-	APL-043- Contestar Evaluación y Consulta Proceso Implementación
+	COD_APL_044			=	'APL-044'	 #[32}	-	APL-043- Contestar Evaluación y Consulta Proceso Implementación
 	
 	#DZC FPLs
  	ID_FPL_001	=	2		# -	FPL-001-Revisar registro postulaciones y cargar nuevos proyectos 
@@ -311,5 +388,14 @@ class Tarea < ApplicationRecord
 	COD_PPF_022	=	'PPF-022'	 #[87}	-	PPF-022-Revisar Auditoría
 	COD_PPF_023	=	'PPF-023'	 #[88}	-	PPF-023-Encuesta de mitad de Ejecución					
 	COD_PPF_024	=	'PPF-024'	 #[21}	-	PPF-024-Responder Encuesta final sobre ejecución programa/proyecto	
+
+	
+	#etapas de acuerdo
+	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]
+	ETAPA_ACUERDO_DIAGNOSTICO = [ID_APL_007, ID_APL_008, ID_APL_011, ID_APL_012, ID_APL_013, ID_APL_014]
+	ETAPA_ACUERDO_PROPUESTA_ACUERDO = [ID_APL_016, ID_APL_017, ID_APL_018, ID_APL_019, ID_APL_020, ID_APL_021]
+	ETAPA_ACUERDO_ADHESION = [ID_APL_022, ID_APL_023, ID_APL_024, ID_APL_025, ID_APL_025_1, ID_APL_025_2, ID_APL_025_3, ID_APL_026, ID_APL_027, ID_APL_028]
+	ETAPA_ACUERDO_IMPLEMENTACION = [ID_APL_029, ID_APL_030, ID_APL_031, ID_APL_032, ID_APL_033, ID_APL_034]
+	ETAPA_ACUERDO_EVALUACION_FINAL_CUMPLIMIENTO = [ID_APL_034, ID_APL_037, ID_APL_038, ID_APL_039, ID_APL_040, ID_APL_041, ID_APL_042, ID_APL_043, ID_APL_044]
 
 end

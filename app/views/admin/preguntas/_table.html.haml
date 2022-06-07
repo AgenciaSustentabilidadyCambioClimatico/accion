@@ -34,11 +34,11 @@
               %td=t(record.tipo_respuestas)
               %td=record.base ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
 
-              %td.dos.iconos-acciones
-                %div
-                  - unless [1,2].include?(record.id)  #DZC se programa la imposibilidad de modificar las preguntas de evaluación
-                    = link_to edit_admin_pregunta_path(record) do
-                      %i.fa.fa-edit
-                    = link_to admin_pregunta_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:pregunta).downcase), remote: false } do
+              %td
+                .d-flex
+                  = link_to edit_admin_pregunta_path(record),class: "btn btn-tabla-sm" do
+                    %i.fa.fa-edit
+                  - unless Pregunta::PREGUNTAS_BLOQUEDAS.include?(record.id)  #DZC se programa la imposibilidad de modificar las preguntas de evaluación
+                    = link_to admin_pregunta_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:pregunta).downcase), remote: false },class: "btn btn-tabla-sm" do
                       %i.fa.fa-trash
               /%td=# check_box_tag "modificables[]", record[:id], true

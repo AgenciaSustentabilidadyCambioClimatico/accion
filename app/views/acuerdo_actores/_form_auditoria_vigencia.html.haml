@@ -1,0 +1,33 @@
+-puede_editar = puede_editar.nil? ? true : puede_editar
+-aud_id = aud_id.nil? ? 'id_temporal' : aud_id
+-nombre = nombre.nil? ? '' : nombre
+-plazo = plazo.nil? ? nil : plazo
+-auditoria_niveles = auditoria_niveles.nil? ? [] : auditoria_niveles
+.col-12.auditoria-row{"data-id" => aud_id}
+  .card.mb-1
+    .card-body.py-1
+      .d-flex.justify-content-between.align-items-center
+        %label.control-label.nombre-auditoria-vigencia{style: "width: 60%;"}=nombre
+        .d-flex.align-items-center.ml-0.pr-3.mr-3
+          = text_field_tag "informe_acuerdo[auditorias][#{aud_id}][plazo]", plazo, {class: "form-control numero vigencia-cert-intermedia-plazo", style: "width: 50px;", readonly: !puede_editar}
+          %label.control-label.ml-2 años
+        - if puede_editar
+          = link_to '#', onclick: "asociar_estandar('#{aud_id}');" do
+            %i.fa.fa-plus-circle
+            = t(:asociar_estándar)
+        -else
+          %span
+    .card-footer.p-0
+      %ul.list-group.list-group-flush.p-0.m-0.auditoria-niveles
+        -auditoria_niveles.each do |auditoria_nivel|
+          -begin
+            -nivel_id = auditoria_nivel.estandar_nivel.id
+            -nombre_estandar = auditoria_nivel.estandar_nivel.estandar_homologacion.nombre
+            -nombre_nivel = auditoria_nivel.estandar_nivel.nombre
+            -plazo = auditoria_nivel.plazo
+          -rescue
+            -nivel_id = auditoria_nivel[:id]
+            -nombre_estandar = auditoria_nivel[:nombre_estandar]
+            -nombre_nivel = auditoria_nivel[:nombre_nivel]
+            -plazo = auditoria_nivel[:plazo]
+          =render 'acuerdo_actores/form_auditoria_nivel', aud_id: aud_id, nivel_id: nivel_id, nombre_estandar: nombre_estandar, nombre_nivel: nombre_nivel, plazo: plazo, puede_editar: puede_editar

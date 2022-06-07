@@ -1,4 +1,42 @@
-- titulo "#{t(:bandeja_de_entrada)}<small>&nbsp;</small>".html_safe
+-if user_signed_in?
+  - titulo "#{t(:bandeja_de_entrada)}<small>&nbsp;</small>".html_safe
 
-/- if policy(@manifestacion).index?
-= render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true
+  /- if policy(@manifestacion).index?
+  = render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true
+-else
+  .row
+    -@clasificaciones_padre.datos.each do |data|
+      .col-12.col-lg-4.py-2.px-lg-2
+        .flip-card
+          .flip-card-inner
+            .flip-card-front{style: "background-image:url('#{data[:imagen]}');background-repeat:no-repeat;background-size:cover;"}
+              .d-flex.flex-column.h-100
+                .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
+                  %img{src: data[:icono]}
+                .flip-card-name-container{style: "background-color: #{data[:color]};"}
+                  =data[:nombre]
+            .flip-card-back
+              .d-flex.flex-column.h-100
+                .d-flex.mb-2
+                  .flip-card-name=data[:nombre]
+                  .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
+                    %img{src: data[:icono]}
+                .flip-card-description.mb-2=data[:descripcion]
+                .d-flex.w-100.justify-content-between
+                  .flip-number
+                    .number=data[:acuerdos]
+                    .title acuerdos
+                  .flip-number
+                    .number=data[:acciones]
+                    .title acciones
+                  .flip-number
+                    .number=data[:empresas]
+                    .title empresas
+                  .flip-number
+                    .number=data[:elementos]
+                    .title elementos totales
+                .d-flex.mt-auto.align-items-center
+                  =link_to "#", class: "flip-access mr-2 iniciar-sesion-header" do
+                    Ingresar
+                  =link_to acuerdos_firmados_path(clasificacion_id: data[:id]), class: "flip-more-info" do
+                    Más información

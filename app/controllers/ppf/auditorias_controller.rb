@@ -190,7 +190,7 @@ class Ppf::AuditoriasController < ApplicationController
       @ad_elementos = []  
       if meta.present? && meta.estado
         @elemento_adherido = @flujo.adhesion.adhesion_elementos.where(establecimiento_contribuyente_id: @establecimiento.id).first
-        set_metas_acciones = meta.set_metas_acciones.where(estado: 3, estado: 2)
+        set_metas_acciones = meta.set_metas_acciones.where(estado: [3, 2])
         set_metas_acciones.each do |sma|
           @ad_elementos << AuditoriaElemento.where(auditoria_id: @auditoria.id, set_metas_accion_id: sma.id, adhesion_elemento_id: elemento_adherido.id).first_or_create
         end

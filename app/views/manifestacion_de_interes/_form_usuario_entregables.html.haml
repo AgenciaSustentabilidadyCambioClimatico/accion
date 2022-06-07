@@ -6,7 +6,47 @@
       width: '100%'
     });
     htmlErrorToTooltip('top');
+
+    $('body').on('change','.contribuyente-radio',function() {
+      console.log('entro aca')
+      $('.seleccionar-contribuyente-button').removeAttr('disabled');
+    });
   });
+
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      $("#manifestacion_de_interes_institucion_entregables_id").val(data.id);
+      $("#manifestacion_de_interes_institucion_entregables_name").val(data.razon_social);
+
+      //cargo los usuarios de la tabla usuarios entregables
+      $.ajax({
+        url: "#{lista_usuarios_entregables_manifestacion_de_interes_index_path}",
+        type: "GET",
+        data: {
+          contribuyente_id: data.id,
+          tarea_pendiente_id: #{@tarea_pendiente.id}
+        }
+      });
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
+  $(document).on('click', '.seleccionar-usuario-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+      $("#manifestacion_de_interes_usuario_entregables_id").val(data.id);
+      $("#manifestacion_de_interes_usuario_entregable_name").val(data.nombre);
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
 - titulo t(:asignar_usuario_a_cargo_de_entregables_diagnostico_general)
 = simple_form_for @manifestacion_de_interes, url: usuario_entregables_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
@@ -24,16 +64,53 @@
           %h5.no-margin=datos_beneficiario.html_safe
         .card-body
           .row
+
             .col-12
-              = f.input :nombre_acuerdo, disabled: true, label: t(:nombre_de_acuerdo_que_requiere_diagnóstico_general)
-            .col-12
-              = f.input :usuario_entregables_id, collection: @manifestacion_de_interes.usuarios_entregables_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado"}, label: t(:usuario_encargado_de_entregables)
-            .col-12.col-lg-6
-              = f.input :usuario_entregables_comentario, required: true, as: :text, label: t(:comentarios), input_html: {class: "required-field"}
-            .col-12.col-lg-6
-              = f.input :usuario_entregables_otros, as: :text, label: t(:otros)
-            .col-12
-              = f.input :archivo_usuario_entregables, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
+              = f.input :nombre_acuerdo, disabled: true, label: t(:nombre_de_acuerdo_que_requiere_diagnóstico_general), input_html: { class: 'input-xs' }
+            .col-12.my-2
+              .ayuda-campo-div-48.alert.ayuda-div.small.mb-1.mt-1{style: "padding: 0.5rem 0.75rem;"}
+                %i.fa.fa-info-circle{style: "margin-right: 5px"}
+                Si la institución o persona a designar no aparece en el listado, comuníquese con el Administrador de la plataforma.
+            .col-12.col-lg-6.mb-2
+              .row.align-items.end
+                .col-12
+                  %label.string.control-label
+                    %abbr{title: :required}*
+                    = t(:elegir_institucion_entregables)
+                  .row
+                    .col-12.col-lg-2.pr-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-10.pl-1
+                      = f.input :institucion_entregables_id, as: :hidden, wrapper: false
+                      = f.input :institucion_entregables_name, required: true, readonly: true, label: false, input_html: {class: 'required-field'}
+            .col-12.col-lg-6.mb-2
+              .row.align-items.end
+                .col-12
+                  %label.string.control-label
+                    %abbr{title: :required}*
+                    = t(:elegir_encargado_entregables)
+                  .row
+                    .col-12.col-lg-2.pr-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-usuario", class: 'form-control btn btn-primary btn-sm' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-10.pl-1
+                      = f.input :usuario_entregables_id, as: :hidden, wrapper: false, label: false
+                      = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
+            .col-12.col-lg-6.mb-2
+              = f.input :usuario_entregables_comentario,  as: :text, label: t(:comentarios_encargado)
+            -#
+              .col-12.col-lg-6.mb-2
+                = f.input :usuario_entregables_otros, as: :text, label: t(:otros)
+              .col-12
+                = f.input :archivo_usuario_entregables, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary "
+
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+/ - @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: tipo_instrumento, solo_tabla: true
+= render 'admin/users/buscador', solo_tabla: true

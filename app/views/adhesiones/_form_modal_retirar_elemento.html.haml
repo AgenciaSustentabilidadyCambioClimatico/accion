@@ -1,0 +1,13 @@
+=simple_form_for @adhesion, url: retirar_elemento_adhesion_path(@tarea_pendiente.id), method: :post, remote: true do |f|
+  =f.hidden_field :elemento_retirado_id
+  .modal-header.p-3
+    %label.control-label=t(:documento_de_justificacion)
+  .modal-body
+    .row
+      .col-12
+        =f.input :documento_justificacion, as: :file, input_html: {class: 'form-control validado'}, label: t(:subir_documento_de_justificación)
+  .modal-footer
+    %button.btn.btn-primary.btn-sm#enviar_modal_retirar_elemento{type: :submit, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
+      Guardar
+    %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+      Cerrar

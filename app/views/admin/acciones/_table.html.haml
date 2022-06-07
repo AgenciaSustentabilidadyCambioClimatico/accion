@@ -27,8 +27,8 @@
             %th=t(:medio_verificación)
             %th=t(:acciones_relacionadas)
             %th=t(:clasificaciones)
-            - if @tarea_pendiente.blank? # DZC 2018-10-29 09:55:55 se permite edición y borrado solo desde el mantenedor de metas y acciones
-              %th.dos.iconos-acciones=t(:acciones)
+            -# if @tarea_pendiente.blank? # DZC 2018-10-29 09:55:55 se permite edición y borrado solo desde el mantenedor de metas y acciones
+            %th.dos.iconos-acciones=t(:acciones)
 
         %tbody
           -unless @acciones.blank? #DZC a menos que no haya acciones relacionadas...
@@ -36,7 +36,7 @@
               -
               - meta = record.meta.blank? ?  nil : record.meta
               - clasificaciones = record.accion_clasificaciones
-              - acciones_relacionadas = record.accion_relacionadas.map{|a|a.accion}
+              - acciones_relacionadas = record.accion_relacionadas.map{|a|a.accion_relacionada}
               %tr
                 %td=record.nombre
                 %td=record.descripcion
@@ -52,3 +52,8 @@
                         %i.fa.fa-edit
                       = link_to admin_accion_path(record), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:accion).downcase), remote: false } do
                         %i.fa.fa-trash
+                -else
+                  %td.dos.iconos-acciones
+                    = link_to utilizar_tarea_pendiente_manifestacion_de_interes_set_metas_acciones_path(@tarea_pendiente,@manifestacion_de_interes,record), class: "btn btn-tabla-sm", title: "Utilizar", method: :post, remote: true do
+                      %i.fa.fa-copy
+                  

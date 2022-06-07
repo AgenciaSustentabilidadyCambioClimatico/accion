@@ -1,0 +1,39 @@
+- titulo t(:consulta_pública_propuestas_de_acuerdo)
+.row
+  .col-12
+    .card
+      .card-body.pb-0
+      .card-body.p-0
+        %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
+          %thead
+            %tr
+              %th=t(:nombre_de_acuerdo)
+              %th=t(:estado_del_acuerdo)
+              %th=t(:acciones)
+          %tbody
+            - @acuerdos.each do |acuerdo|
+              %tr.accion
+                %td=acuerdo[:nombre_acuerdo]
+                %td=acuerdo[:estado_acuerdo]
+                %td
+                  =link_to evaluacion_negociacion_manifestacion_de_interes_path(acuerdo[:tarea_pendiente_id], acuerdo[:manifestacion_de_interes_id], acuerdo[:encuesta_id],consulta_publica: 1), class: "btn btn-tabla" do
+                    -if acuerdo[:disponible]
+                      =fa_icon 'edit'
+                      Responder consulta
+                    -else
+                      =fa_icon 'eye'
+                      Ver
+
+:javascript
+  $(document).ready(function() {
+    $('table.table-bordered').DataTable({
+      dom: '<"mr-3 mb-2"f>ti<"m-3"p>r',
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: true } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      fixedHeader: true
+    }); 
+  });

@@ -12,7 +12,7 @@ es:
   criterio_inclusión_exclusión: Criterio inclusión / exclusión
   guardar_cambios_temporales: Guardar cambios temporales
   archivo_minuta_reunion: Archivo minuta reunión
-  otros_objetivos_acuerdo: Otros objetivos acuerdo
+  otros_objetivos_acuerdo: Otros objetivos Acuerdo
   diagnóstico_seleccionado: Diagnóstico seleccionado
   estándar_seleccionado: Estándar seleccionado
   formato_carta_apoyo_y_compromiso: Formato carta apoyo y compromiso
@@ -24,7 +24,7 @@ es:
   nombre_elemento: Nombre elemento
   fecha_certificación: Fecha certificación
   vigencia_certificación: Vigencia certificación
-  nombre_acuerdo_estándar: Nombre acuerdo / estándar
+  nombre_acuerdo_estándar: Nombre Acuerdo / estándar
   seleccione_un_país: Seleccione un país
   seleccione_una_región: Seleccione una región
   seleccione_una_provincia: Seleccione una provincia
@@ -34,6 +34,7 @@ es:
   compartir: Compartir
   plazo_máximo_adhesión_en_meses: Plazo máximo adhesión (en meses)
   plazo_finalización_implementación: Plazo finalización implementación
+  plazo_finalización_implementación_meses: Plazo finalización implementación (meses)
   finalización_de_contrato_debe_ser_mayor_a_finalización_actividad: La fecha de finalización de contrato debe ser mayor a la fecha de finalización de la última actividad [ <b>%{fecha}</b> ]
   descargar_archivos_formatos: Descargar archivos formatos
   aceptar_cambios: Aceptar cambios
@@ -83,10 +84,10 @@ es:
   obligatorio: Obligatorio
   debe_responder_este_campo: Debe responder este campo
   actores: Actores
-  convocar_ceremonia_certificacion: Convocar ceremonia de certificacion 
-  rol_en_acuerdo: Rol en acuerdo
+  convocar_ceremonia_certificacion: Convocar ceremonia de certificacion
+  rol_en_acuerdo: Rol en Acuerdo
   rut_persona: Rut persona
-#DZC Agregado por nosotros  
+#DZC Agregado por nosotros
 # nombre_persona: Nombre persona
   nombre_completo_persona: Nombre completo persona
 #DZC
@@ -208,14 +209,14 @@ es:
   programa_proyecto_propuesta: Propuesta programa / proyecto
   tipo_de_propuesta: Tipo de propuesta
   objetivo_programa: Objetivo programa / proyecto
-  enviar_programa_proyecto_propuesta: Enviar propuesta programa / proyecto 
+  enviar_programa_proyecto_propuesta: Enviar propuesta programa / proyecto
   filtrar_modelo_por_clasificación: Filtrar %{m} por clasificación
   documentos_diagnosticos: Documentos diagnósticos
   tipo_documento_diagnostico: Tipo documento diagnostico
   público?: Es público?
   requiere_correcciones?: Requiere correcciones?
   documentos_diagnósticos: Documentos diagnósticos
-  propuestas_de_acuerdo: Propuestas de acuerdo
+  propuestas_de_acuerdo: Propuestas de Acuerdo
   cargar_actualizar_entregable_diagnóstico: Cargar/Actualizar entregable diagnóstico
   cargar_documentos_diagnostico: Cargar documentos diagnóstico
   materia: Materia
@@ -224,10 +225,10 @@ es:
 #DZC Agregado por nosotros
   adhesiones_rechazadas: Adhesiones rechazadas
   nombre_institución: Nombre institución
-  nombre_representante_legal: Nombre representante legal
-  rut_representante_legal: Rut representante legal
-  fono_representante_legal: Fono representante legal
-  mail_representante_legal: Mail representante legal
+  nombre_representante_legal: Nombre Encargado APL
+  rut_representante_legal: Rut Encargado APL
+  fono_representante_legal: Fono Encargado APL
+  email_representante_legal: Mail Encargado APL
 #DZC
   entregables: Entregables
   set_metas_accion: Set de metas y acciones
@@ -244,18 +245,18 @@ es:
   unidad_compatible: Unidad compatible
   actor_con_observaciones?: "¿Actor con observaciones?"
   fecha_y_hora: Fecha y hora
-  cargar_actualizar_miembros_comité_y_acuerdos: Cargar actualizar miembros comité y acuerdos
+  cargar_actualizar_miembros_comité_y_acuerdos: Cargar actualizar miembros comité y Acuerdos
   miembros_comite: Miembros comité
   actores_con_observaciones: Actores con observaciones
-  revisar_mapa_de_actores: Revisar mapa de actores
+  revisar_mapa_de_actores: Revisar listado de actores
   con_extension: ¿Con extensión?
-  actualizar_mapa_de_actores: Actualizar mapa de actores
+  actualizar_mapa_de_actores: Actualizar listado de actores
   contestar_evaluación_y_consultar_proceso_de_negociación: Contestar evaluación y consultar proceso de negociación
   evaluacion: Evaluación
   actualizar_mapa_de_actores_convocar_ceremonia_certificacion: Actualizar mapa de actores y convocar ceremonia de certificación
-  mapa_de_actores_correctamente_construido: "¿Se aprueba el Mapa de Actores?"
-  comentarios_y_observaciones_actualización_mapa_de_actores: Comentarios y observaciones en la actualización de mapa de actores
-  subir_mapa_de_actores_actualizado: Subir mapa de actores actualizado
+  mapa_de_actores_correctamente_construido: "¿Se aprueba el Listado de Actores?"
+  comentarios_y_observaciones_actualización_mapa_de_actores: Comentarios y observaciones en la actualización de listado de actores
+  subir_mapa_de_actores_actualizado: Subir listado de actores actualizado
   responder_encuesta: Responder encuesta
   es_una_encuesta: Es una encuesta
   tiempo_para_contestar: Tiempo para contestar
@@ -282,7 +283,7 @@ es:
   encuestas: Encuestas
   cargar_comprobante_de_documento_pdf_o_imagen: Cargar comprobante documento (PDF o IMG)
   seguimientos_fpl: Seguimientos FPL
-  proyectos_ppf: Programas y Proyectos de Financiamiento 
+  proyectos_ppf: Programas y Proyectos de Financiamiento
   fondo_producción_limpia: Fondo de Producción Limpia
   docs: Docs
   iniciar: Iniciar
@@ -295,8 +296,8 @@ es:
   revisar_entregable_diagnóstico: Revisar entregable diagnóstico
   aprueba_documentos_diagnostico: ¿Aprueba documentos diagnóstico?
   comentarios_y_observaciones_documento_diagnosticos: Comentarios y observaciones documentos diagnóstico
-  aprueba_set_metas_accion: ¿Aprueba propuesta de acuerdo?
-  comentarios_y_observaciones_set_metas_acciones: Comentarios y observaciones propuesta de acuerdo
+  aprueba_set_metas_accion: ¿Aprueba propuesta de Acuerdo?
+  comentarios_y_observaciones_set_metas_acciones: Comentarios y observaciones propuesta de Acuerdo
   formato_mapa_de_actores: Formato mapa de actores
   descagar_formato_mapa_de_actores: Descagar formato mapa de actores
   mapa_de_actores: Mapa de actores
@@ -306,22 +307,22 @@ es:
   rut_institucion: RUT institución
   institucion: Institución
   carta_de_interés: Carta de interés
-  institución_gestora_acuerdo: Institución gestora acuerdo
-  rut_institución_gestora_acuerdo: RUT institución gestora acuerdo
-  dirección_institución_gestora_acuerdo: Dirección institución gestora acuerdo
-  lugar_institución_gestora_acuerdo: Lugar institución gestora acuerdo
+  institución_gestora_acuerdo: Institución gestora Acuerdo
+  rut_institución_gestora_acuerdo: RUT institución gestora Acuerdo
+  dirección_institución_gestora_acuerdo: Dirección institución gestora Acuerdo
+  lugar_institución_gestora_acuerdo: Lugar institución gestora Acuerdo
   ubicación_exacta: Ubicación exacta
   tipo_contribuyente_de_institución_gestora: Tipo contribuyente de institución gestora
   número_de_socios_institución_gestora: Número de socios institución gestora
   experiencia_en_gestión_de_proyectos: Experiencia en gestión de proyectos
   fecha_creación_institución: Fecha creación institución
-  nombre_representante_para_acuerdo: Nombre representante para acuerdo
-  rut_representante_para_acuerdo: RUT representante para acuerdo
-  teléfono_representante_para_acuerdo: Teléfono representante para acuerdo
-  mail_representante_para_acuerdo: Mail representante para acuerdo
+  nombre_representante_para_acuerdo: Nombre representante para Acuerdo
+  rut_representante_para_acuerdo: RUT representante para Acuerdo
+  teléfono_representante_para_acuerdo: Teléfono representante para Acuerdo
+  mail_representante_para_acuerdo: Mail representante para Acuerdo
   subir_carta_de_interés_institución_gestora_firmada: Subir carta de interés institución gestora firmada
   subir_carta_de_interés_firmada: Subir carta de interés firmada
-  elegir_sectores_económicos: Elegir sectores económicos
+  elegir_sectores_económicos: Indicar las Principales Actividades Económicas involucradas en el Acuerdo
   selección_sector_realizada: Selección sector realizada
   elegir_territorios: Elegir territorios
   selección_territorio_realizada: Selección territorio realizada
@@ -358,7 +359,7 @@ es:
   operador: Operador
   otros_proyectos_del_desarrollador_operador_en_territorios_cercanos: Otros proyectos del desarrollador operador en territorios cercanos
   otros_estudios: Otros estudios
-  nombre_acuerdo: Nombre acuerdo
+  nombre_acuerdo: Nombre Acuerdo
   motivación_y_objetivos: Motivación y objetivos
   equipo_de_trabajo_comprometido: Equipo de trabajo comprometido
   organigrama: Organigrama
@@ -378,13 +379,20 @@ es:
   enviar_manifestación_de_interés: Enviar manifestación de interés
   asignar_revisor: Asignar revisor
   revisor: Revisor
-  revisar_admisibilidad: Revisar admisibilidad
-  admisibilidad: Admisibilidad
-  resultado_admisibilidad: Resultado admisibilidad
+  revisor_tecnico: Revisor técnico
+  revisor_juridico: Revisor jurídico
+  revisar_admisibilidad: Revisar admisibilidad técnica
+  admisibilidad: Admisibilidad técnica
+  resultado_admisibilidad: Resultado admisibilidad técnica
+  revisar_admisibilidad_juridica: Revisar admisibilidad jurídica
+  admisibilidad_juridica: Admisibilidad jurídica
+  resultado_admisibilidad_juridica: Resultado admisibilidad jurídica
   comentario_jefe_de_línea: Comentario jefe de línea
   observaciones_y_comentarios: Observaciones y comentarios
-  observaciones_admisibilidad: Observaciones admisibilidad
-  observación_admisibilidad: Observación admisibilidad
+  observaciones_admisibilidad: Observaciones admisibilidad técnica
+  observación_admisibilidad: Observación admisibilidad técnica
+  observaciones_admisibilidad_juridica: Observaciones admisibilidad jurídica
+  observación_admisibilidad_juridica: Observación admisibilidad jurídica
   pertinencia_factibilidad: Pertinencia factibilidad
   revisar_pertinencia_factibilidad: Revisar pertinencia y factibilidad
   resultado_de_la_pertinencia: Resultado de la revision de pertinencia y factibilidad
@@ -395,7 +403,7 @@ es:
   usuario_encargado_de_entregables_durante_diagnóstico_general: Usuario encargado de entregables durante diagnóstico general
   asignar_usuario_encargado_de_entregables: Asignar usuario encargado de entregables
   asignar_usuario_encargado_de_entregables_durante_diagnóstico_general: Asignar usuario encargado de entregables durante diagnóstico general
-  nombre_de_acuerdo_que_requiere_diagnóstico_general: Nombre de acuerdo que requiere diagnóstico general
+  nombre_de_acuerdo_que_requiere_diagnóstico_general: Nombre de Acuerdo que requiere diagnóstico general
   compromiso_a_solicitar: Compromiso a solicitar
   selección_de_coordinadores_subtipo_instrumento: Selección de coordinadores subtipo instrumento
   acepta_condiciones: ¿Acepta condiciones?
@@ -406,8 +414,8 @@ es:
   adjuntar_archivos: Adjuntar archivos
   convocatoria_firma: Convocatoria firma
   firmantes: Firmantes
-  formato_acuerdo: Formato acuerdo
-  adjuntar_acuerdo_firmado_e_indicar_firmantes: Adjuntar acuerdo firmado e indicar firmantes
+  formato_acuerdo: Formato Acuerdo
+  adjuntar_acuerdo_firmado_e_indicar_firmantes: Adjuntar Acuerdo firmado e indicar firmantes
   carga_de_auditoría: Carga de auditoría
   elementos_observados_o_rechazados: Elementos observados o rechazados
   elemento_auditado: Elemento auditado
@@ -436,7 +444,7 @@ es:
   objetivo_general_y_específico: Objetivo general y específico
   mecanismo_de_implementación: Mecanismo de implementación
   mecanismo_de_evaluación_de_cumplimiento: Mecanismo de evaluación de cumplimiento
-  derechos_y_obligaciones_de_las_partes_que_suscriben_el_acuerdo: Derechos y obligaciones de las partes que suscriben el acuerdo
+  derechos_y_obligaciones_de_las_partes_que_suscriben_el_acuerdo: Derechos y obligaciones de las partes que suscriben el Acuerdo
   difusión_promoción_incentivos_y_sanciones: Difusión, promoción, incentivos y sanciones
   personerías_ejemplares_y_firmas: Personerías, ejemplares y firmas
   guía_técnica_mapa_de_actores: Guía técnica mapa de actores
@@ -458,12 +466,13 @@ es:
   firmas: Firmas
   anexos: Anexos
   carga_resultados: Carga resultados
-  tipo_de_acuerdo: Tipo de acuerdo
-  datos_institución: Datos institución
-  datos_institucion: Datos institución
-  contexto_sector: Contexto sector
-  datos_proyecto: Datos proyecto
-  objetivo_acuerdo: Objetivo acuerdo
+  tipo_de_acuerdo: Tipo de Acuerdo
+  datos_institución: Datos Institución gestora
+  datos_institucion: Datos Institución gestora
+  contexto_sector: Contexto y antecedentes
+  datos_proyecto: Datos de Proyecto de Inversión
+  objetivo_acuerdo: Objetivos y marco estratégico del Acuerdo 
+  actores_y_partes_interesadas: Actores y partes interesadas
   resultado: Resultado
   acuerdos_pendientes: Acuerdos pendientes
   proyectos_pendientes: Programas y Proyectos pendientes
@@ -480,7 +489,7 @@ es:
   seleccione: Seleccione
   proponente: Proponente
   contribuyente: Contribuyente
-  descripción_acuerdo: Descripción acuerdo
+  descripción_acuerdo: Descripción Acuerdo
   traducciones_faltantes: Traducciones faltantes
   dirección: Dirección
   ciudad: Ciudad
@@ -495,9 +504,9 @@ es:
   auditoría_intermedia: Auditoría intermedia
   certificable_si_no: Certificable(si/no)
   hay_adhesiones_durante_esta_etapa: ¿Hay adhesiones durante esta etapa?
-  anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo: Anexos archivos que se pueden subir y que se anexan al final del texto completo de acuerdo
+  anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo: Anexos archivos que se pueden subir y que se anexan al final del texto completo de Acuerdo
   con_validación: ¿Con validación?
-  tipo_acuerdo: Tipo acuerdo
+  tipo_acuerdo: Plazo de implementación y certificación
   lugares: Lugares
   entidades: Entidades
   descriptores: Descriptores
@@ -664,7 +673,7 @@ es:
   recordatorio_frecuencia: Frecuencia recordatorio
   recordatorio_cuerpo: Cuerpo recordatorio
   acciones: Acciones
-  manifestación_de_acuerdo: Manifestación de acuerdo
+  manifestación_de_acuerdo: Manifestación de Acuerdo
   manifestacion: Manifestación
   bandeja_de_entrada: Bandeja de entrada
   tipo_instrumentos: Tipos de instrumentos
@@ -817,7 +826,7 @@ es:
   agendar_reunion: Agendar reunión
   fijar_calendario: Fijar calendario
   solicitar_pago: Solicitar pago
-  
+
   # DZC, para uso en vistas de convocatorias y anexas a ellas
   flujo_id: ID Flujo
   tarea_pendiente_id: Tarea pendiente
@@ -834,27 +843,27 @@ es:
   formato_acta_de_reunion: Formato de acta de reunión
   formato_lista_de_asistencia: Formato de lista de asistencia
   adjuntar_acta_minuta_reunion: Adjuntar acta/minuta de la reunión
-  adjuntar_acuerdo_firmado: Adjuntar acuerdo firmado
+  adjuntar_acuerdo_firmado: Adjuntar Acuerdo firmado
   adjuntar_lista_asistencia: Adjuntar lista de asistencia
   firmantes: Firmantes
   caracterizacion_convocatoria: Caracterización de la convocatoria
   caracterizacion_reunion: Caracterización de la reunión
   participantes: Participantes
-  personas_que_asistieron: Personas que asistieron a la reunión 
-  acuerdo_o_proyecto_o_programa: Nombre de acuerdo, proyecto o programa
+  personas_que_asistieron: Personas que asistieron a la reunión
+  acuerdo_o_proyecto_o_programa: Nombre de Acuerdo, proyecto o programa
   indicar_nombre_convocatoria: Indicar el nombre de la convocatoria
   nombre_convocatoria: Nombre de la convocatoria
-  confirma_poner_termino_diagnostico: ¿Esta seguro que desea poner término al proceso de diagnóstico y pasar al acuerdo? Recuerde que de ser así se considerarán como aprobados tanto el Mapa de Actores como los Documentos de Diagnóstico y el Set de metas y acciones.  
+  confirma_poner_termino_diagnostico: ¿Esta seguro que desea poner término al proceso de diagnóstico y pasar al Acuerdo? Recuerde que de ser así se considerarán como aprobados tanto el Mapa de Actores como los Documentos de Diagnóstico y el Set de metas y acciones.
   confirma_poner_termino_negociacion: ¿Está seguro que desea poner término al proceso de negociación?
   razon_social_contribuyente: Razón social Institución
   terminar_actualizacion: Terminar actualización
   terminar_diagnostico: Terminar proceso de diagnóstico
-  descargar_mapa_de_actores: Descargar mapa de actores
+  descargar_mapa_de_actores: Descargar listado de actores
   listado_convocatorias: Listado de convocatorias
   actualizar_actores_resolver_comentarios_set_metas_acciones: Actualizar mapa de actores y resolver comentarios en set de metas y acciones
-  terminar_carga_actualizacion_actores_en_acuerdo: Terminar actualizacion de mapa de actores y resolucíon de comentarios en propuestas de acuerdo
-  confirma_terminar_actualizacion_actores_resolucion_observaciones_propuestas: ¿Confirma que desea terminar tanto con la actualización del mapa de actores, como con la resolución de las observaciones a las propuestas de acuerdo?
-  actualizar_mapa_actores_convocatoria_firma: Actualizar mapa de actores y convocar a firma de acuerdo
+  terminar_carga_actualizacion_actores_en_acuerdo: Terminar actualizacion de mapa de actores y resolucíon de comentarios en propuestas de Acuerdo
+  confirma_terminar_actualizacion_actores_resolucion_observaciones_propuestas: ¿Confirma que desea terminar tanto con la actualización del mapa de actores, como con la resolución de las observaciones a las propuestas de Acuerdo?
+  actualizar_mapa_actores_convocatoria_firma: Actualizar listado de actores y convocar a Ceremonia de Certificación
   configuracion_datos_productivos: Configuración de datos productivos
   auditoria_plazos: Auditoría y plazos
   actualizar_actores_metas_acciones_auditoria_plazos: Actualizar mapa de actores, set de metas y acciones, auditoria y plazos
@@ -872,13 +881,16 @@ es:
   plazo_maximo_neto_iniciar_certificacion_final: Plazo máximo NETO para iniciar proceso de Certificación Final
   archivos_anexos_posteriores_a_la_firma: Archivos anexos posteriores a la firma
   metas_acciones_definidas_posterioridad_firma: Metas y acciones definidas con posterioridad a la firma
-  fecha_firma_acuerdo: Fecha de firma del acuerdo
+  fecha_firma_acuerdo: Fecha de firma del Acuerdo
   plazo_maximo_fecha: Plazo máximo para iniciar certificación final (fecha)
   plazo_maximo_neto_fecha: Plazo máximo NETO (fecha)
   plazo_meses: Plazo (meses)
-  terminar_acuerdo: Terminar acuerdo
-  comentarios_y_observaciones_termino_acuerdo: Comentarios y observaciones por el término del acuerdo
-  confirma_poner_termino_acuerdo: ¿Está seguro que desea poner término al acuerdo?
+  terminar_acuerdo: Terminar Acuerdo
+  comentarios_y_observaciones_termino_acuerdo: Comentarios y observaciones por el término del Acuerdo
+  confirma_poner_termino_acuerdo: ¿Está seguro que desea poner término al Acuerdo?
+  detener_acuerdo: Detener Acuerdo
+  comentarios_y_observaciones_detencion_acuerdo: Comentarios y observaciones por la detención del Acuerdo
+  confirma_detener_acuerdo: ¿Está seguro que desea detener el Acuerdo?
   auditoria_id: Auditoría ID
   elemento_auditado_id: Elemento auditado ID
   auditoria: Auditoría
@@ -907,12 +919,14 @@ es:
   instancia: Instancias de la tarea
   comuna_establecimiento: Comuna del establecimiento
   direccion_establecimiento: Dirección del establecimiento
+  comuna_elemento: Comuna del elemento
+  direccion_elemento: Dirección del elemento
   nombre_encargado: Nombre encargado
   fono_encargado: Teléfono encargado
   mail_encargado: eMail encargado
   advertencia: Advertencia
   descarga_set_metas_y_accion: Descarga set metas y acción
-  descarga_acuerdo: Descargar acuerdo
+  descarga_acuerdo: Descargar Acuerdo
   gestionar_mis_instrumentos: Gestionar mis instrumentos
   mis_instrumentos: Mis Instrumentos
   gestionar_instrumentos_asociados_al_usuario: Gestionar instrumentos asociados al usuario.
@@ -961,8 +975,14 @@ es:
   nombre_archivo: Nombre del archivo
   descargar: Descargar
   para_eliminar: Para eliminar
-  anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo: Archivos que se pueden subir y que se anexan al final del texto completo del acuerdo
+  anexos_archivos_que_se_pueden_subir_y_que_se_anexan_al_final_del_texto_completo_de_acuerdo: Archivos que se pueden subir y que se anexan al final del texto completo del Acuerdo
   descargar_archivos_anexos: Descargar archivos anexos
+  plazo_máximo_adhesión_desde_firma_acuerdo: Plazo máximo adhesión desde firma Acuerdo
+  plazo_máximo_adhesión_desde_firma_acuerdo_meses: Plazo máximo adhesión desde firma Acuerdo (meses)
+  auditoría: Auditoría
+  plazo_apertura_meses: Plazo Apertura (meses)
+  plazo_cierre_meses: Plazo Cierre (meses)
+  estándares_de_certificación_asociados_a_auditoría: Estándares de certificación asociados a auditoría
 
 
 
@@ -1015,6 +1035,7 @@ es:
   acuerdo_anterior: Acuerdo anterior
   documentos_diagnostico: Documentos diagnostico
   documentos_estándar_homologacion: Documentos estándar de homologación
+  documentos_informe_impacto: Documentos informe de impacto
   revision_propuesta: Revisión propuesta
   descargar_propuesta_inicial: Descargar propuesta inicial
   url_sistema_altenativo_seguimiento: Url sistema alternativo seguimiento de proyecto / programa
@@ -1059,10 +1080,39 @@ es:
   campo_de_aplicacion: Campo de aplicación
   objetivos_especificos: Objetivos específicos
   mecanismo_de_implementacion: Mecanismo de implementación
+  actualización_de_acuerdo: Actualización de Acuerdo
 
 
   #  ADAN
-  asignar_usuarios_a_cargo_de_entregables_certificación: Asignar usuarios a cargo de entregables certificación
+  responder_comentarios: Responder comentarios
+  comentarios_enviados: Comentarios enviados
+  ver_comentarios: Ver comentarios
+  asignar_usuario_cargara_datos: Asignar usuario que cargará datos
+  asignar_usuario_cargar_entregable_datos_empresas: Asignar Usuario para Cargar Entregables y Cargar Datos Empresas
+  FlujoTarea: Flujo tarea
+  respuesta_a_observaciones: Respuesta a observaciones
+  DescargableTarea: Descargable
+  duracion_en_dias: Duración en días
+  Tarea: Tarea
+  responder_observaciones_informe: Responder Observaciones de Informe
+  respuesta_observacion_meta_accion: Respuesta a Observaciones de Meta y Acción
+  enviar_observaciones_informe_metas_acciones: Enviar observaciones de Informe y de Metas y Acciones
+  observaciones_informe: Observaciones de Informe
+  observaciones_metas_acciones: Observaciones de metas y acciones
+  consulta_publica_borrador_final_propuesta_acuerdo: Consulta pública borrador final Propuesta de Acuerdo
+  publicar_respuestas_consulta_publica_terminar_proceso: Publicar respuestas a consulta pública y Terminar proceso de negociación
+  metas_accion: Metas y Acciones
+  informe: Informe
+  resolver_observaciones_consulta_publica_borrador_final: Resolver Observaciones  Consulta pública borrador final Propuesta de Acuerdo
+  Encuesta: Encuesta
+  Pregunta: Pregunta
+  editar_tipo_instrumento: Editar tipo de instrumento
+  TipoInstrumento: Tipo de instrumento
+  observaciones_comentarios_anteriores: Observaciones y comentarios anteriores
+  descargar_guia_de_actualizacion: Descargar guía de actualización
+  comentarios_coordinador_acuerdo: Comentarios del Coordinador del Acuerdo
+  observaciones_del_revisor: Observaciones del revisor
+  asignar_usuarios_a_cargo_de_entregables_certificación: Asignar usuarios a cargo de entregables
   institución_entregables: Institución entregables
   institución_carga_datos: Institución carga datos
   observaciones_coordinador: Observaciones coordinador
@@ -1177,8 +1227,233 @@ es:
   documentos: Documentos
   asunto_del_mensaje: Asunto del mensaje
   relation_cargo_establecimiento: Relación Cargo - Establecimiento
+  #DOSSA 12-07-2019
+  tooltips_tamanos: Tooltips, tamanos y validaciones
+  tarea_id: ID tarea
+  pestana: Pestaña de tarea
+  campo_nombre: Nombre de campo
+  campo_id: ID campo
+  campo_tooltip: Tootip
+  validacion_min: Ingrese número
+  validacion_max: Tamaño máximo
+  tiene_validaciones: ¿Tiene validaciones?
+  mantenedor_de_campos: Mantenedor de campos
+  nombre_tarea: Nombre tarea
+  #DOSSA 15-07-2019
+  visible: ¿Visible?
+  obligatorio: ¿Obligatorio?
+  validacion_activa: ¿Activas?
+  #DOSSA 17-07-2019
+  validacion_vacio_mensaje: Mensaje de campo obligatorio vacío
+  # DOSSA 18-07-2019
+  ayuda: Texto de ayuda del campo
+  validacion_min_activa_int: ¿Exigir valor mínimo? (Indique el valor en el recuadro de abajo)
+  validacion_max_activa_int: ¿Exigir valor máximo? (Indique el valor en el recuadro de abajo)
+  validacion_min_activa_text: ¿Exigir mínimo de caracteres? (Indique la cantidad en el recuadro de abajo)
+  validacion_max_activa_text: ¿Exigir máximo de caracteres? (Indique la cantidad en el recuadro de abajo)
+  validaciones_activas_text: ¿Validaciones de caracteres activas?
+  validaciones_activas_int: ¿Validaciones de valores activas?
+  # DOSSA 22-07-2019
+  nombre_obligatorio: Nombre de campo (Es un campo obligatorio)
+  tooltip: Tooltip
+  # DOSSA 23-07-2019
+  campos: Campos
+  lista_de_campos: Listado de campos en la tarea
+
+  # DOSSA 2019-10-09 11:19 Cuencas
+  cuenca: Cuenca
+  cuencas_subcuencas: Cuencas o subcuencas
+  cuenca_subcuenca: Cuenca o subcuenca
+  código_cuenca_subcuenca: Código cuenca o subcuenca
+  nombre_cuenca_subcuenca: Nombre cuenca o subcuenca
+  editar_cuenca_: Cuenca
+  codigo_cuenca: Código cuenca
+  nombre_cuenca: Nombre_cuenca
+
+  # DZC 2019-07-25 17:32:19 se agregan para claridad en la vista
+  lista_de_campos_en_tarea_: Lista de campos de la tarea '%{tarea}'
+  actualizar_campo_: Campo '%{campo}' de la tarea '%{tarea}'
+
+  # DOSSA 2019-07-29
+  ver_campos: Ver listado de campos
+  editar_campo: Editar campo
+
+  nueva_institución: Nueva Institución
+  deshacer: Deshacer
+  volver_a_lista: Volver a lista
+  nuevo_usuario: Nuevo usuario
+  nuevo_representante: Nuevo representante
+
+  tipo_instrumento_propuesto: Tipo de instrumento propuesto
+  selección_de_encargado_de_hitos_de_prensa: Seleccion de encargado de hitos de prensa
+  comentarios_sobre_condiciones_y_compromisos: Comentarios sobre condiciones y compromisos
+  tarea_documentos_asociados: Documentos asociados
+  respuesta_observaciones_admisibilidad: Respuesta observaciones
+  respuesta_observaciones_admisibilidad_juridica: Respuesta observaciones
+
+  cumplimientos_por_meta: Cumplimientos por meta
+  traspaso_de_instrumentos: Traspaso de instrumentos
+  new_traspaso_instrumento: Configurar nuevo traspaso de instrumentos
+  fuera_de_oficina: Fuera de oficina
+  heredado: Heredado
+  nombre_usuario_origen: Nombre usuario origen
+  nombre_usuario_destino: Nombre usuario destino
+  datos_de_traspaso: Datos de traspaso
+  listado_de_actores: Listado de actores
+  anular_y_eliminar: Anular y Eliminar
+  cumplimiento_de_acuerdo: Cumplimiento de Acuerdo
+  Responsable: Responsable
+  estándares_de_certificación: Estándares de certificación
+  estándar_de_certificación: Estándar de certificación
+  EstandarHomologacion: Estándar de Certificación
+  adjuntar_archivo_de_referencia_del_estándar: Adjuntar archivo de referencia del Estándar
+  añadir_url_de_referencia_del_estándar: Añadir url de referencia del Estándar
+  niveles_de_certificación: Niveles de certificación
+  agregar_nivel: Agregar nivel
+  porcentaje: Porcentaje
+  puntaje: Puntaje
+  obligatorio_para_nivel: Obligatorio para nivel
+  numero_nivel: Número nivel
+  tipo_documento_diagnostico: Tipo documento diagnóstico
+  tipos_documento_diagnostico: Tipos documento diagnóstico
+  TipoDocumentoDiagnostico: Tipo documento diagnóstico
+  documentos_diagnostico: Documentos diagnóstico
+  lista_de_actores: Lista de actores
+  criterio: Criterio
+  detalle: Detalle
+  SetMetasAccion: Acción
+  anadir: Añadir
+  url_referencia: Url referencia
+  iniciar_proceso_de_consulta_pública: Iniciar proceso de Consulta Pública
+  confirma_iniciar_proceso_de_consulta_pública: ¿Está seguro que desea iniciar proceso de Consulta Pública?
+  terminar_proceso_negociacion_y_resolucion_de_observaciones: Terminar proceso de negociación y resolución de observaciones en propuesta de Acuerdo
+  confirma_poner_termino_proceso_negociacion_y_resolucion_de_observaciones: ¿Esta seguro que desea poner término al proceso de negociación y resolución de observaciones en propuesta de Acuerdo?
+  consulta_pública_propuestas_de_acuerdo: Consulta Pública Propuestas de Acuerdo
+  nombre_de_acuerdo: Nombre de Acuerdo
+  estado_de_consulta: Estado de consulta
+  instrucciones_para_auditorías_plazos_y_certificaciones: Instrucciones para auditorías, plazos y certificaciones
+  vigencia_del_acuerdo_de_producción_limpia: Vigencia del Acuerdo de Producción Limpia
+  vigencia_del_acuerdo_anios: Vigencia del Acuerdo (Años)
+  mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento: Mecanismo de adhesión, implementación y evaluación de cumplimiento
+  vigencia_certificación: Vigencia Certificación
+  desde_firma_acuerdo: Desde firma Acuerdo
+  desde_aprobación_de_la_adhesión: Desde Aprobación de la Adhesión
+  plazo_de_implemetación_y_certificación: Plazo de Implementación y Certificación
+  plazo_apertura: Plazo Apertura
+  plazo_cierre: Plazo Cierre
+  mantención: Mantención
+  vigencia_certificación_final: Vigencia Certificación Final (años)
+  vigencia_certificaciones_intermedias: Vigencia Certificaciones Intermedias
+  asociar_estándar: Asociar Estándar
+  solicitud_de_adhesiones: Solicitud de adhesiones
+  comentarios_del_coordinador_del_acuerdo: Comentarios del Coordinador del Acuerdo
+  instrucciones_de_llenado: Instrucciones de llenado
+  documento_de_adhesión: Documento de adhesión
+  instrucciones_de_llenado_excel_elementos_a_adherir: Instrucciones de llenado excel elementos a adherir
+  actualizar_listado_de_actores_set_metas_y_acciones_auditorías_y_plazos: Actualizar listado de actores, set de metas y acciones, auditorías y plazos
+  metas_acciones_definidas_posterioridad_firma_parentesis: Metas y acciones definidas con posterioridad a la firma (Solo si el Acuerdo establece un mecanismo para ello)
+  acta_de_reunión: Acta de reunión
+  desde_firma_acuerdo_apl_023: Firma Acuerdo
+  desde_aprobación_de_la_adhesión_apl_023: Aprobación Adhesión
+  vigencia_acuerdo: Vigencia Acuerdo
+  vigencia_acuerdo_anios: Vigencia Acuerdo (años)
+  plazos_de_implementación_y_certificación_se_miden_desde: Plazos de implementación y certificación se miden desde
+  datos_encargado: Datos Encargado
+  observaciones_realizadas_por_revisor_del_informe: Observaciones realizadas por Revisor del informe
+  observaciones_sobre_el_documento_para_encargado_de_entregar_informe: Observaciones sobre el documento para Encargado de entregar informe
+  adjuntar_acuerdo_con_todas_las_firmas: Adjuntar Acuerdo con todas las firmas
+  asignar_responsable_elaborar_informe_impacto: Asignar Responsable Elaborar Informe de Impacto
+  comentarios_a_encargado_de_entregar_informe_de_impacto: Comentarios a encargado de entregar informe de impacto
+  elegir_institucion_encargada_de_entregar_informe_de_impacto: Elegir Institución encargada de entregar informe de impacto
+  elegir_encargado_de_entregar_informe_de_impacto: Elegir encargado de entregar informe de impacto
+  opciones_de_descarga: Opciones de descarga
+  archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones: Archivos de Adhesión y Documentación entregada por solicitante de Adhesiones
+  descargar_documentación: Descargar Documentación
+  clasificar_elementos: Clasificar elementos
+  justificacion_elementos: Justificación
+  retirar_del_acuerdo: Retirar del acuerdo
+  documento_de_justificacion: Documentos de justificación
+  subir_documento_de_justificación: Subir documentos de justificación
+  adhesiones_retiradas: Adhesiones retiradas
+  fecha_retiro: Fecha retiro
+  adjuntar_informes_o_documentos_de_revision: Adjuntar informes o documentos de revisión
+  adjuntar_documento_opcional: Adjuntar documento opcional
+  auditorias_ejecutadas: Auditorías ejecutadas
+  validar_elementos: Validar elementos
+  validacion_otorgada: Validación otorgada
+  adjuntar_oficio_y_o_informe_de_validacion: Adjuntar oficio y/o informe de validación
+  adjuntar_documento: Adjuntar documento
+  tareas_ejecutadas: Tareas ejecutadas
+  formato_de_datos_productivos: Formato de datos productivos
+  indicaciones_de_llenado: Indicaciones de llenado
+  descargar_indicaciones: Descargar indicaciones
+  nombre_acuerdo_que_requiere_informe_impacto: Nombre de Acuerdo que requiere informe de impacto
+  unidad: Unidad
+  imagen: Imagen
+  icono: Ícono
+  color: Color
+  crear_: Crear %{item}
+  acuerdos_firmados: Acuerdos firmados
+  estado_consulta_publica: Estado consulta pública
+  empresas_certificadas: Empresas certificadas
+  empresas_adheridas: Empresas adheridas
+  empresas_y_elementos_certificados: Empresas y Elementos Certificados
+  empresa: Empresa
+  rut_empresa: Rut empresa
+  otro_dato: Otro dato
+  fecha_certificacion: Fecha certificación
+  vigencia_certificacion: Vigencia certificación
+  logotipo: Logotipo
+  empresas_y_elementos_adheridos: Empresas y Elementos Adheridos
+  tamano_empresa: Tamaño empresa
+  configuracion_datos_publicos: Configuración de datos públicos
+  visibilidad_documentos_acuerdos_firmados: Visibilidad documentos en Acuerdos firmados
+  visibilidad_columnas_empresas_adheridas: Visibilidad columnas vista empresas adheridas
+  visibilidad_columnas_empresas_certificadas: Visibilidad columnas vista empresas certificadas
+  extension_reporte_sustentabilidad: Extensión del reporte de sustentabilidad
+  guardar: Guardar
+  MateriaRubroRelacion: Datos por Rubro y Materia / Sustancia
+  estado_de_solicitud_de_adhesion: Estado de solicitud de adhesión
+  adherir_a_un_acuerdo: Adherir a un Acuerdo
+  datos_solicitante: Datos solicitante
+  comuna_del_elemento: Comuna del elemento
+  direccion_del_elemento: Direccion del elemento
+  formulario_de_adhesion_y_documentacion_complementaria: Formulario de adhesión y documentación complementaria
+  consolidado_de_adhesiones_formato_excel: Consolidado de adhesiones (formato 'excel')
+  instrucciones_de_llenado_excel_consolidado_de_adhesiones: Instrucciones de llenado excel Consolidado de adhesiones
+  formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
+  formulario_de_adhesion: Formulario de adhesión
+  documentación: Documentación
+  mostrar_en_excel: Mostrar en excel
+  Rol: Rol
+  fecha_hora_activacion: Fecha/Hora activación
+  fecha_hora_ejecucion: Fecha/Hora ejecución
+  indicar_tipo_reunion: Indicar tipo reunión
+  indicar_enlace_web_reunion: Indicar enlace web de la reunión
+  descargar_certificado: Descargar Certificado
+  estado_del_acuerdo: Estado del acuerdo
+  config_reporte_sustentabilidad: Config. Reporte Sustentabilidad
+  configurar_reporte_sustentabilidad: Configurar Reporte Sustentabilidad
+  descargar_reporte_sustentabilidad: Descargar Reporte Sustentabilidad
+  archivos_de_auditoria_y_documentacion: Archivos de auditoría y documentación
+  metas: Metas
+  meta: Meta
+
   #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
+
+  # ALONSO 15-09-2020
+  elegir_institucion_entregables: Elegir Institución encargada entregables
+  elegir_encargado_entregables: Elegir encargado entregables
+  comentarios_encargado: Comentarios a encargado de entregable
+
+  #ALONSO 09-11-2020
+  asignar_usuario_carga_entregables_y_carga_datos_empresa: Asignar Usuario para Cargar Entregables y Cargar Datos Empresas
+  asignar_usuarios_carga_de_datos: Asignar usuario que cargará datos
+  elegir_institucion_carga_datos: Elegir Institución que cargará datos
+  elegir_encargado_carga_datos: Elegir cargador de datos
+  comentarios_encargado_carga_datos: Comentarios para cargador de datos
+
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:
@@ -1199,6 +1474,16 @@ es:
       user: Usuario
       responsable: Responsable
       tarea: Tarea
+    attributes:
+      informe_acuerdo:
+        tipo_acuerdo: Plazo de implementación y certificación
+      adhesion:
+        matriz_direccion: Dirección casa matriz
+        matriz_region_id: Región casa matriz
+        matriz_comuna_id: Comuna casa matriz
+      reporte_sustentabilidad:
+        titulo_intro: Título introducción
+        cuerpo_intro: Cuerpo introducción
     errors:
       messages:
         record_invalid: "La validación falló: %{errors}"
@@ -1218,7 +1503,7 @@ es:
             documento:
               blank: Seleccione el Documento a subir
             nombre_documento:
-              blank: Indique nombre del documento              
+              blank: Indique nombre del documento
             observacion:
               blank: Indique observaciones del documento
         programa_proyecto_propuesta:
@@ -1275,7 +1560,7 @@ es:
             archivo_observaciones_tecnicas:
               blank: Debe subir el archivo con las observaciones
             fecha_observaciones_tecnicas:
-              blank: Indique una fecha 
+              blank: Indique una fecha
             resultado_observaciones_tecnicas:
               blank: Indique el resulta de la observaciones
             proyecto_adjudicado:
@@ -1317,10 +1602,14 @@ es:
               blank: Indique el nombre del responsable de la coordinación postulación y seguimiento
             responsable_elaboracion_propuesta_y_seguimiento_id:
               blank: Indique el nombre del responsable de la elaboración propuesta y seguimiento
-            secciones_observadas_revision: 
+            secciones_observadas_revision:
               blank: Indique las secciones que tienen observaciones
             revisor_id:
               blank: Indique el nombre del revisor
+            revisor_tecnico_id:
+              blank: Indique el nombre del revisor técnico
+            revisor_juridico_id:
+              blank: Indique el nombre del revisor jurídico
             proponente:
               blank: Indique el nombre del proponente
             tipo_instrumento_id:
@@ -1411,15 +1700,15 @@ es:
               blank: Indique si este documento requiere correcciones
         manifestacion_de_interes:
           attributes:
-            tipo_instrumento_id: 
-              blank: Indique el tipo de instrumento asociado al acuerdo
-            proponente: 
-              blank: Indique el proponente del acuerdo
-            contribuyente_id: 
+            tipo_instrumento_id:
+              blank: Indique el tipo de instrumento asociado al Acuerdo
+            proponente:
+              blank: Indique el proponente del Acuerdo
+            contribuyente_id:
               blank: Indique el contribuyente
-            descripcion_acuerdo: 
-              blank: Indique la descripción del acuerdo
-            tipo_instrumento_id: 
+            descripcion_acuerdo:
+              blank: Indique la descripción del Acuerdo
+            tipo_instrumento_id:
               blank: Indique el tipo de instrumento
             carta_de_interes_institucion_gestora_firmada:
               blank: Debe subir la carta de interés firmada
@@ -1430,7 +1719,7 @@ es:
             caracterizacion_sector_territorio:
               blank: Indique la caracterización para el sector del territorio seleccionado
             principales_actores:
-              blank: Indique los principales actores 
+              blank: Indique los principales actores
             mapa_de_actores:
               blank: Debe cargar el mapa de actores (debe descargar el formato correspondiente)
             numero_empresas:
@@ -1444,7 +1733,7 @@ es:
             porcentaje_exportaciones:
               blank: Indique el porcentaje de la producción que es exportada a otros países
             principales_mercados:
-              blank: Indique los principales mercados de destino de la producción 
+              blank: Indique los principales mercados de destino de la producción
             numero_trabajadores:
               blank: Indique la cantidad de trabajadores del sector
             vulnerabilidad_al_cambio_climatico_del_sector:
@@ -1452,7 +1741,7 @@ es:
             principales_impactos_socioambientales_del_sector:
               blank: Indique los principales impactos negativos y positivos del sector en términos ambientales y sociales, intentar cuantificarlos de ser posible. Si de desconoce señalar que estos no son conocidos.
             principales_problemas_y_desafios:
-              blank: Indique los principales desafíos de competividad y productividad del sector, señalar aquellos puntos del proceso o de la cadena de valor que consideran crítico mejorar. Si se desconoce, señalar desconocido. 
+              blank: Indique los principales desafíos de competividad y productividad del sector, señalar aquellos puntos del proceso o de la cadena de valor que consideran crítico mejorar. Si se desconoce, señalar desconocido.
             principales_conflictos:
               blank: Indique los principales conflictos que ha tenido el territorio o sector en los últimos 5 años
             nombre_proyecto:
@@ -1490,7 +1779,7 @@ es:
             otro_datos_proyecto:
               blank: Indique otros datos del proyecto
             nombre_acuerdo:
-              blank: Indique el nombre del acuerdo
+              blank: Indique el nombre del Acuerdo
             motivacion_y_objetivos:
               blank: Indique la motivación y objetivos
             equipo_de_trabajo_comprometido:
@@ -1502,7 +1791,7 @@ es:
             organigrama:
               blank: Debe subir el archivo con el organigrama
             otros_recursos_comprometidos:
-              blank: Indique otros recursos comprometidos 
+              blank: Indique otros recursos comprometidos
             carta_de_apoyo_y_compromiso:
               blank: Debe subir cartas de apoyo y compromiso
             numero_participantes:
@@ -1520,21 +1809,21 @@ es:
             otros_estudios_relevantes:
               blank: Debe subir archivo con otros estudios relevantes
             otros_objetivos_acuerdo:
-              blank: Indique otros objetivos del acuerdo
-        pregunta: 
+              blank: Indique otros objetivos del Acuerdo
+        pregunta:
           attributes:
-            texto: 
+            texto:
               blank: Escriba la pregunta
               taken: Esta pregunta ya fue agregada para el tipo de respuesta indicado
-            tipo_respuestas: 
+            tipo_respuestas:
               blank: Indique el tipo de respuesta que debe tener la pregunta
-        encuesta: 
+        encuesta:
           attributes:
-            titulo: 
+            titulo:
               blank: Indique el título de la encuesta
-            valor_tiempo_para_contestar: 
+            valor_tiempo_para_contestar:
               blank: Indique el valor del tiempo que durará la encuesta
-            unidad_tiempo_para_contestar: 
+            unidad_tiempo_para_contestar:
               blank: Indique la unidad del tiempo que durará la encuesta
         encuesta_pregunta:
           attributes:
@@ -1544,18 +1833,18 @@ es:
               blank: Indique una pregunta
         rol:
           attributes:
-            nombre: 
+            nombre:
               blank: Indique el nombre del rol
-            descripcion: 
+            descripcion:
               blank: Indique una descripción para el rol
         comentario:
           attributes:
-            email_contacto: 
+            email_contacto:
               blank: Indique un correo para contactarlo
               invalid: Indique un correo válido
-            tipo_comentario_id: 
+            tipo_comentario_id:
               blank: Indique el tipo de comentario
-            comentario: 
+            comentario:
               blank: Escriba su comentario
         comentario_archivo:
             attributes:
@@ -1596,13 +1885,13 @@ es:
           attributes:
             tipo_de_medio_id:
               blank: Indique el tipo de medio
-            nombre: 
+            nombre:
               blank: Indique el nombre del hito
             medio:
               blank: Indique el nombre del medio
             tipo_medio_id:
               blank: Indique el tipo de medio
-            enlace: 
+            enlace:
               blank: Indique la URL
               taken: Esta URL ya fue asignada
             observaciones:
@@ -1650,9 +1939,9 @@ es:
               blank: Describa el cargo
         persona:
           attributes:
-            contribuyente_id: 
+            contribuyente_id:
               blank: Indique la institución a la que pertenece el usuario
-            email_institucional: 
+            email_institucional:
               blank: Indique el correo de la institución asociada
         documento_garantia:
           attributes:
@@ -1662,13 +1951,13 @@ es:
               blank: Indique el documento endoso
             numero_documento:
               blank: Indique el número de documento
-            fecha_vencimiento:      
+            fecha_vencimiento:
               blank: Indique fecha de vencimiento
             monto:
               blank: Indique el monto
         actividad_item:
           attributes:
-            nombre: 
+            nombre:
               blank: Indique el nombre del item
             monto:
               blank: Indique el monto del item
@@ -1874,9 +2163,9 @@ es:
             tarea_salida_id:
                 blank: Indique la tarea de salida
             mensaje_salida_asunto:
-                blank: Indique el asunto del mensaje de salida 
+                blank: Indique el asunto del mensaje de salida
             mensaje_salida_cuerpo:
-                blank: Indique el cuerpo del mensaje de salida  
+                blank: Indique el cuerpo del mensaje de salida
             condicion_de_salida:
                 blank: Indique la condición de salida
         tarea_pendiente:
@@ -1953,9 +2242,9 @@ es:
               blank: Indique el valor de la variable
         proyecto_pago:
           attributes:
-            numero_orden_pago: 
+            numero_orden_pago:
               blank: Indique número de orden de pago
-            fecha_pago_efectiva: 
+            fecha_pago_efectiva:
               blank: Indique fecha de pago efectiva
         proyecto:
           attributes:
@@ -1963,33 +2252,33 @@ es:
               blank: Suba un archivo de resolución
             archivo_contrato:
               blank: Suba un archivo de contrato
-            fecha_restitucion: 
+            fecha_restitucion:
               blank: Indique fecha de restitución
-            monto_restitucion: 
+            monto_restitucion:
               blank: Indique monto restitución
-            fecha_pago_efectiva: 
+            fecha_pago_efectiva:
               blank: Indique fecha de pago efectiva
-            coordinador_id: 
+            coordinador_id:
               blank: Indique coordinador
-            revisor_tecnico_id: 
+            revisor_tecnico_id:
               blank: Indique revisor técnico
-            centro_costos_id: 
+            centro_costos_id:
               blank: Indique centro de costos
-            fecha_inicio_contrato: 
+            fecha_inicio_contrato:
               blank: Indique fecha inicio de contrato
-            fecha_fin_contrato: 
+            fecha_fin_contrato:
               blank: Indique fecha fin de contrato
             comentario:
               blank: Indique un comentario antes de enviar esta modificación
-            total_nuevo_anticipo: 
+            total_nuevo_anticipo:
               blank: Indique el monto del nuevo anticipo
               greater_than: El nuevo anticipo debe ser mayor que %{count}
               not_a_number: El nuevo anticipo no es número válido
         proyecto_actividad:
           attributes:
-            nombre: 
+            nombre:
               blank: Indique el nombre
-            fecha_finalizacion: 
+            fecha_finalizacion:
               blank: Indique fecha de finalización
   date:
     abbr_day_names:
@@ -2026,6 +2315,7 @@ es:
       default: "%d-%m-%Y"
       long: "%d de %B de %Y"
       short: "%d de %b"
+      short_year: "%d %b de %Y"
       datepicker: '%d-%m-%Y'
     month_names:
     -
@@ -2094,25 +2384,26 @@ es:
       extension_whitelist_error: No está permitido subir archivos de tipo %{extension}, por favor suba un archivo de tipo %{allowed_types}
       carrierwave_integrity_error: No %{extension}, por favor suba un archivo de tipo %{allowed_types}
       accepted: debe ser aceptado
-      blank: no puede estar en blanco
+      blank: No puede estar en blanco
       present: debe estar en blanco
       confirmation: no coincide
       empty: no puede estar vacío
-      equal_to: debe ser igual a %{count}
+      equal_to: Debe ser igual a %{count}
       even: debe ser par
       exclusion: está reservado
       greater_than: debe ser mayor que %{count}
-      greater_than_or_equal_to: debe ser mayor que o igual a %{count}
+      greater_than_or_equal_to: Debe ser mayor que o igual a %{count}
       inclusion: no está incluido en la lista
       invalid: no es válido
       less_than: debe ser menor que %{count}
       less_than_or_equal_to: debe ser menor que o igual a %{count}
       model_invalid: "La validación falló: %{errors}"
-      not_a_number: no es un número
+      not_a_number: No es un número válido
       not_an_integer: debe ser un entero
       odd: debe ser impar
       required: debe existir
       taken: el valor ingresado ya existe en la base de datos
+      max_size_error: No está permitido subir archivos de un tamaño superior a %{max_size}
       too_long:
         one: es demasiado largo (1 caracter máximo)
         other: es demasiado largo (%{count} caracteres máximo)
@@ -2194,7 +2485,7 @@ es:
       September: Septiembre
       October: Octubre
       November: Noviembre
-      December: Diciembre 
+      December: Diciembre
     cortos:
       Jan: Ene
       Feb: Feb
@@ -2232,6 +2523,7 @@ es:
       complete: "%A, %d de %B de %Y a las %H:%M"
       long: "%d de %B de %Y %H:%M"
       short: "%d de %b %H:%M"
+      short_year: "%d %b de %Y"
       number: "%d%m%Y"
       datepicker: '%d-%m-%Y'
     pm: pm

@@ -10,14 +10,23 @@ class ApplicationController < ActionController::Base
   before_action :set_personas
   before_action :set_flash_trio
   before_action :set_default_url
+  before_action :clean_prev_redirect
+
+  def clean_prev_redirect
+    session.delete(:user_return_to) if request.path == session[:user_return_to]
+  end
 
   # DZC 2018-10-25 20:21:52 permite descargar zips, independiente de la clase, objeto y atributo donde se almacenan los archivos a comprimir
   def desacarga_zip
     # 
     clase = params[:clase].to_s.constantize
-    objeto_id = params[:objeto_id].to_i
-    objeto = clase.find_by(id: objeto_id)
-    atributo = objeto.send(params[:atributo].to_sym)
+    objeto_id = params[:objeto_id]
+    objeto = clase.find(objeto_id)
+    if params[:atributo].is_a?(Array)
+      atributo = params[:atributo]
+    else
+      atributo = objeto.send(params[:atributo].to_sym)
+    end
     send_data(objeto.genera_zip(atributo), type: 'application/zip',filename: "archivos_adjuntos.zip")
   end
   
@@ -174,20 +183,21 @@ class ApplicationController < ActionController::Base
         nuevo_set = set.dup
         nuevo_set.flujo_id = flujo_actual.id
         nuevo_set.estado = 1
-        
+        nuevo_set.id_referencia = set.id
+        nuevo_set.modelo_referencia = 'SetMetasAccion'
         nuevo_set.save
       end
       
-      manifestacion_actual.documento_diagnosticos.clear
-      documentos_diagnosticos = manifestacion.documento_diagnosticos 
-      documentos_diagnosticos.each do |documento| 
-        nuevo_documento = documento.dup
-        nuevo_documento.archivo = File.open(documento.archivo.file.file) if documento.archivo.present?
-        nuevo_documento.manifestacion_de_interes_id = manifestacion_actual.id
-        
-        nuevo_documento.desde_set_antiguo = true # DZC 2018-10-11 10:50:03 se modifica a efecto de que permita cargar documentos con tipo_diagnóstico nil
-        nuevo_documento.save
-      end
+      #manifestacion_actual.documento_diagnosticos.clear
+      #documentos_diagnosticos = manifestacion.documento_diagnosticos 
+      #documentos_diagnosticos.each do |documento| 
+      #  nuevo_documento = documento.dup
+      #  nuevo_documento.archivo = File.open(documento.archivo.file.file) if documento.archivo.present?
+      #  nuevo_documento.manifestacion_de_interes_id = manifestacion_actual.id
+      #  
+      #  nuevo_documento.desde_set_antiguo = true # DZC 2018-10-11 10:50:03 se modifica a efecto de que permita cargar documentos con tipo_diagnóstico nil
+      #  nuevo_documento.save
+      #end
     end
 
     #variable para determinar si posee el cargo encargado de institucion
@@ -233,7 +243,9 @@ class ApplicationController < ActionController::Base
         @acceso = :jefe_de_linea
       elsif current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO)
         @acceso = :revisor_tecnico
-      elsif params[:buscador][:flujo_id].present? && current_user.is_proponente?(params[:buscador][:flujo_id].to_i)
+      elsif params[:buscador].present? && params[:buscador][:flujo_id].present? && current_user.is_proponente?(params[:buscador][:flujo_id].to_i)
+        @acceso = :proponente
+      elsif params[:user].present? && params[:user][:flujo_id].present? && current_user.is_proponente?(params[:user][:flujo_id].to_i)
         @acceso = :proponente     
       else
         @acceso = :user

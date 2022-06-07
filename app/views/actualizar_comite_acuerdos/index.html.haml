@@ -1,58 +1,86 @@
 :javascript
-	$(document).ready(function() {
-		$('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
+  $(document).ready(function() {
+    $('#set-metas-accion-remote-modal-form').modal({backdrop:'static',show: false});
 
-		//DZC 2018-11-13 10:52:55 se comenta la funcionalidad para evitar duplicidad de ejecución
-		//$('#informe_acuerdo_archivos_anexos_posteriores_firmas').change(function (){
-			//$('#archivos_cargados').find(".parciales").remove();
-			//$.each(this.files,function(index, value){
-				//li = "<li class='list-group-item d-flex justify-content-between align-items-center parciales'>";
-				//li += "<input name='por_eliminar[]' type='checkbox' value='";
-				//li += this.name;
-				//li += "' />";
-				//li += this.name;
-				//li += "<span class='badge badge-pill'>";
-				//li += "<i class='fa fa-circle-o-notch fa-spin fa-2x'>";
-				//li += "</span></li>";
-				//$('#archivos_cargados').append(li);
-			//});
-		//});
+    //DZC 2018-11-13 10:52:55 se comenta la funcionalidad para evitar duplicidad de ejecución
+    //$('#informe_acuerdo_archivos_anexos_posteriores_firmas').change(function (){
+      //$('#archivos_cargados').find(".parciales").remove();
+      //$.each(this.files,function(index, value){
+        //li = "<li class='list-group-item d-flex justify-content-between align-items-center parciales'>";
+        //li += "<input name='por_eliminar[]' type='checkbox' value='";
+        //li += this.name;
+        //li += "' />";
+        //li += this.name;
+        //li += "<span class='badge badge-pill'>";
+        //li += "<i class='fa fa-circle-o-notch fa-spin fa-2x'>";
+        //li += "</span></li>";
+        //$('#archivos_cargados').append(li);
+      //});
+    //});
 
-		if (#{@informe.necesita_evidencia}){
-			$('#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma').modal('show');
-		}
+    if (#{@informe.necesita_evidencia}){
+      $('#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma').modal({backdrop: 'static',keyboard: false});
+    }
 
-	});
+  });
 
 
 - if @informe.necesita_evidencia
-	= render 'actualizar_comite_acuerdos/modal_archivos_anexos_posteriores_firmas', remote: true
-- else 
-	- titulo t(:actualizar_actores_metas_acciones_auditoria_plazos)
-	- (@tab_metas.present? && @tab_metas) ? tabs = { "mapa-de-actores": false, "set-metas-accion": true, "auditoria-plazos-remote-form": false  } : tabs = { "mapa-de-actores": true, "set-metas-accion": false, "auditoria-plazos-remote-form": false } # DZC 2018-11-02 20:50:54  se agrega para posicionar la vista en la pestaña set de metas y acciones
-	#tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
-		%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-			- tabs.each do |tab,active|
-				%li.nav-item
-					%a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-						=t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
-					- if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
-						%small.total-error
-							= @total_de_errores_por_tab[tab].size
-		#manifestacionContent.tab-content
-			#mapa-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"mapa-de-actores"], "aria-labelledby" => "mapa-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"mapa-de-actores"])}
-				.card
-					.card-body.p-0
-						#actores-remote-table
-							= render 'actores/table'
-						#actualizar-remote-form
-							= render 'actores/form', externo: true
-			#set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
-				.card
-					.card-body.p-0
-						#propuestas-de-acuerdo-remote-table
-							= render 'set_metas_acciones/table', externo: true
-						-# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
-						= render 'set_metas_acciones/modal'
-			#auditoria-plazos-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"miembros-comite-remote-form"], "aria-labelledby" => "miembros-comite-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"miembros-comite-remote-form"])}
-				= render 'form_auditoria_plazos'
+  = render 'actualizar_comite_acuerdos/modal_archivos_anexos_posteriores_firmas', remote: true
+- else
+  - titulo t(:actualizar_listado_de_actores_set_metas_y_acciones_auditorías_y_plazos)
+  .simple_form
+    .row
+      -if !@manifestacion_de_interes.detenido
+        .col-12.mb-3
+          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#detener-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
+            %i.fa.fa-file-text-o
+            =t(:detener_acuerdo)
+          = render 'detener_acuerdo', remote: true
+      .col-12
+        .card
+          .card-header.p-0
+            .p-3
+              %h5.no-margin
+                =titulo_instrumento.html_safe
+              - if @proyecto.blank?
+                %h5.no-margin
+                  =titulo_acuerdo.html_safe
+              - else
+                %h5.no-margin
+                  =titulo_proyecto.html_safe
+              %h5.no-margin
+                =datos_beneficiario.html_safe
+            .d-block.d-lg-none.d-flex.justify-content-end.pb-3.pr-3
+              = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+            .d-flex.justify-content-between
+              - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "set-metas-accion": true, "auditoria-plazos-remote-form": false  } : tabs = { "listado-de-actores": true, "set-metas-accion": false, "auditoria-plazos-remote-form": false } # DZC 2018-11-02 20:50:54  se agrega para posicionar la vista en la pestaña set de metas y acciones
+              #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
+                %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
+                  - tabs.each do |tab,active|
+                    %li.nav-item.tab-block
+                      %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                        =t(tab.to_s.gsub('-remote-form','').gsub('-','_'))
+                      - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                        %small.total-error
+                          = @total_de_errores_por_tab[tab].size
+              .d-none.d-lg-block.mr-2
+                = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+          .card-body.p-0.with-top
+            #manifestacionContent.tab-content
+              #listado-de-actores.tab-pane.fade{"aria-expanded" => tabs[:"listado-de-actores"], "aria-labelledby" => "listado-de-actores-tab", :role => "tabpanel", class: ("show active" if tabs[:"listado-de-actores"])}
+                .card.m-0
+                  .card-body.p-0
+                    #actores-remote-table
+                      = render 'actores/table', externo: true
+                    #actualizar-remote-form
+                      = render 'actores/form', externo: true
+              #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
+                .card.m-0
+                  .card-body.p-0
+                    #propuestas-de-acuerdo-remote-table
+                      = render 'set_metas_acciones/table', externo: true
+                    -# Para evitar confusiones, este modal debería ir dentro de 'set_metas_acciones/table' pero el re-render produce errores
+                    = render 'set_metas_acciones/modal'
+              #auditoria-plazos-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"miembros-comite-remote-form"], "aria-labelledby" => "miembros-comite-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"miembros-comite-remote-form"])}
+                = render 'form_auditoria_plazos'

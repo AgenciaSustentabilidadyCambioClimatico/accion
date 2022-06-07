@@ -3,26 +3,36 @@ class EstablecimientoContribuyente < ApplicationRecord
   #se edita relacion, dado que un establecieminto posee 1 set_metas, por flujo.-
   has_many :ppf_metas_establecimiento
 
-	belongs_to :contribuyente, optional: true
+	belongs_to :contribuyente, optional: true, inverse_of: :establecimiento_contribuyentes
 	belongs_to :pais, optional: true
 	belongs_to :region, optional: true
 	belongs_to :comuna, optional: true
 	has_many :adhesion_elementos
 	has_many :adhesiones, through: :adhesion_elementos
+  has_many :personas
+  has_many :persona_cargos
 
   validates :contribuyente, presence: true
 	validates :direccion, presence: true
-	#validates :ciudad, presence: true
+	validates :ciudad, presence: true, if: -> { !marked_for_destruction? }
 	validates :region, presence: true
 	validates :comuna, presence: true
-  validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, unless: -> {self.email.blank?}
-  validates :telefono, format: { with: /\A[+]\d{2}[-, ]\d{9}\z/ }, unless: -> {self.telefono.blank?}
+  validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> {! self.email.blank? && !contribuyente.temporal}
+  validates :telefono, format: { with: /\A[+]\d{2}[-, ]\d{9}\z/ }, if: -> { !self.telefono.blank? && !contribuyente.temporal}
 
   serialize :fields_visibility
 
-	validates_uniqueness_of :casa_matriz, scope: [:contribuyente_id], unless: proc{ self.casa_matriz.blank? }
+	#validates_uniqueness_of :casa_matriz, scope: [:contribuyente_id], if: proc{ !self.casa_matriz.blank? && !contribuyente.temporal}
 
   default_scope { where("fecha_eliminacion IS NULL") }
+  
+  def contribuyente
+    super || (Contribuyente.unscoped.find(self.contribuyente_id) if self.contribuyente_id.present?)
+  end
+
+  def no_esta_referenciado
+    return adhesion_elementos.count == 0 && personas.count == 0 && persona_cargos.count == 0
+  end
 
 	def nombre_and_direccion
 		if self.nombre_de_establecimiento.blank?

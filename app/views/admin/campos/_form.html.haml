@@ -1,0 +1,129 @@
+-# DOSSA 23-07-2019 se crea mantenedor para validaciones de campos
+= simple_form_for @campo, url: admin_actualiza_campos_path do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            = "Editar campo"
+        .card-body
+          .row.mb-6.abuelo
+            .col-lg-5.col-12
+              - nombre = f.object.validacion_contenido_obligatorio ? t(:nombre_obligatorio) : t(:campo_nombre)
+              = f.input :nombre, input_html: {class: "error-mantenedor"}, required: true, label: nombre
+              = f.input :tooltip_activo, as: :boolean, checked_value: 1, unchecked_value: 0, label: t(:tooltip), input_html: { class: "tooltip_check" }
+              = f.input :tooltip, as: :text, input_html: {:rows => 4, :columns => 8, class: "texto_tooltip error-mantenedor"}, label: false
+              - unless ["numero_empresas","produccion","ventas","porcentaje_exportaciones","numero_trabajadores"].include?(f.object.atributo)
+                = f.input :ayuda_activo, as: :boolean, checked_value: 1, unchecked_value: 0, label: t(:ayuda), input_html: { class: "ayuda_check" }
+                = f.input :ayuda, as: :text, input_html: {:rows => 5, :columns => 8, class: "texto_ayuda error-mantenedor"}, label: false
+            .col-sm-1.col-12
+            .col-lg-5.col-12
+              -if f.object.tipo == "text"
+                %br
+                - val_min = t(:validacion_min_activa_text)
+                - val_max = t(:validacion_max_activa_text)
+                - val_activas = t(:validaciones_activas_text)
+                = f.input :validaciones_activas, as: :boolean, checked_value: 1, unchecked_value: 0, label: val_activas, input_html: { class: "val_activa" }
+                = f.input :validacion_min_activa, as: :boolean, checked_value: 1, unchecked_value: 0, label: val_min, input_html: { class: "min_check" }
+                = f.input :validacion_min, label: false, input_html: { class: "error-mantenedor validacion_min", maxlength: 9 }, type: "number"
+                = f.input :validacion_max_activa, as: :boolean, checked_value: 1, unchecked_value: 0, label: val_max, input_html: { class: "max_check" }
+                = f.input :validacion_max, label: false, input_html: { class: "error-mantenedor validacion_max", maxlength: 9 }, type: "number"
+              =f.input :validacion_contenido_obligatorio, as: :boolean, checked_value: 1, unchecked_value: 0, label: t(:obligatorio), input_html: { class: "val_obligatorio" }
+              = f.input :validacion_vacio_mensaje, as: :text, label: false, input_html: {:rows => 4, :columns => 8, class: "error-mantenedor validacion_contenido_obligatorio "}
+  .float-right
+    = link_to t(:back), admin_lista_campos_path(@campo.tareas.first.id), class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+
+:javascript
+
+  //Función que devuelve el campo sobre el que deberá actuar el check, el cual debe encontrarse dentro del mismo row que el checkbox.
+  function set_vars(elemento, filtro_de_busqueda) {
+    elemento.parents('.abuelo').each(function(){
+      abuelo = $(this);
+      if (abuelo.find(elemento).length > 0){
+        abuelo_correcto = abuelo;
+      };
+    });
+    return abuelo_correcto.find(filtro_de_busqueda);
+  };
+
+  //Funcion encargada de agregar el atributo disabled a los campos correspondientes dependiendo del check.
+  function modificar_atributo(param, clase, val = 0){
+    //Se asigna parametro opcional para identificar al check con clase 'val_activa' el cual actúa habilitando/deshabilitando varios campos.
+    if ( val == 1 ){
+      if( param.is(':checked') == false ){
+        set_vars(param, '.min_check').attr('disabled','disabled');
+        set_vars(param, '.max_check').attr('disabled','disabled');
+        set_vars(param, '.validacion_min').attr('disabled','disabled');
+        set_vars(param, '.validacion_max').attr('disabled','disabled');
+      }else{
+        set_vars(param, '.min_check').removeAttr('disabled');
+        set_vars(param, '.max_check').removeAttr('disabled');
+        if( set_vars(param, '.min_check').is(':checked') == true ){
+          set_vars(param, '.validacion_min').removeAttr('disabled');
+        };
+        if( set_vars(param, '.max_check').is(':checked') == true ){
+          set_vars(param, '.validacion_max').removeAttr('disabled');
+        };
+      };
+    }else{
+      if ( clase == '.min_check'){
+        if( param.is(':checked') == false ){
+          set_vars(param, '.validacion_min').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.validacion_min').removeAttr('disabled');
+        };
+      }else if ( clase == '.max_check' ){
+        if( param.is(':checked') == false ){
+          set_vars(param, '.validacion_max').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.validacion_max').removeAttr('disabled');
+        };
+      }else if ( clase == '.ayuda_check'){
+        if( param.is(':checked') == false ){
+          set_vars(param, '.texto_ayuda').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.texto_ayuda').removeAttr('disabled');
+        };
+      }else if ( clase == '.val_obligatorio'){
+        if( param.is(':checked') == false ){
+          set_vars(param, '.validacion_contenido_obligatorio').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.validacion_contenido_obligatorio').removeAttr('disabled');
+        };
+      }else{
+        if( param.is(':checked') == false ){
+          set_vars(param, '.texto_tooltip').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.texto_tooltip').removeAttr('disabled');
+        };
+      };
+    };
+  };
+
+  //Función encargada de crear los listeners.
+  function checks(check_field){
+    $(check_field).change(function(){
+      modificar_atributo($(this), check_field);
+    }).trigger("change");
+  };
+
+  $(document).ready(function(){
+    htmlErrorToTooltip('top');
+    
+    //Se establecen listeners para checkbox del campo validaciones_activas.
+    $('.val_activa').each(function(){
+      modificar_atributo($(this), '.val_activa', 1);
+    });
+    $('.val_activa').change(function(){
+      modificar_atributo($(this), '.val_activa', 1);
+    });
+    
+    //Listeners de demás checkboxs.
+    checks('.min_check');
+    checks('.max_check');
+    checks('.ayuda_check');
+    checks('.tooltip_check');
+    checks('.val_obligatorio');
+
+  });

@@ -4,28 +4,37 @@
       .card-header
         %h5.no-margin=t(:adhesiones_revisadas)
       .card-body.p-0
-        %table.table.table-striped.table-bordered#adhesiones_rechazadas
+        %table.table.table-striped.table-bordered#adhesiones_revisadas{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
           %thead
             %tr
               %th=t(:rut_institucion)
               %th=t(:nombre_institución)
-              %th=t(:comuna_establecimiento)
-              %th=t(:direccion_establecimiento)
-              %th=t(:nombre_encargado)
-              %th=t(:fono_encargado)
-              %th=t(:mail_encargado)
+              %th=t(:alcance)
+              %th=t(:nombre_elemento)
+              %th=t(:comuna_elemento)
+              %th=t(:direccion_elemento)
+              %th=t(:datos_encargado)
               %th=t(:observaciones)
               %th=t(:estado)
+              %th=t(:retirar_del_acuerdo)
           %tbody
-            - @no_pendientes.each do |k,v|
-              - v.each do |fila|
-                %tr
-                  %td=fila[:rut_institucion]
-                  %td=fila[:nombre_institucion]
-                  %td=fila[:comuna_instalacion]
-                  %td=fila[:direccion_instalacion]
-                  %td=fila[:nombre_encargado]
-                  %td=fila[:fono_encargado]
-                  %td=fila[:email_encargado]
-                  %td=fila[:observaciones]
-                  %td=k.upcase
+            - @no_pendientes_todas.each do |adhesion_id, data|
+              -data.each do |k,v|
+                - v.each do |fila|
+                  %tr
+                    %td=fila[:rut_institucion]
+                    %td=fila[:nombre_institucion]
+                    %td=fila[:alcance]
+                    %td=fila[:nombre_elemento]
+                    %td=fila[:comuna_instalacion]
+                    %td=fila[:direccion_instalacion]
+                    %td
+                      %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                      %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                    %td=fila[:observaciones]
+                    %td=k.upcase
+                    %td.text-center
+                      -if k.upcase.to_s == "ACEPTADA"
+                        =link_to '#', class: "btn btn-tabla retirar-elemento", "data-id" => fila[:id], "data-target" => '#modal_retirar_elemento', 'data-toggle' => 'modal' do
+                          =fa_icon 'ban'

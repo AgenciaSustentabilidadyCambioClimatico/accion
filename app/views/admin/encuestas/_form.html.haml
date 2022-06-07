@@ -107,14 +107,14 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@encuesta)
+						= action_label_of_(@encuesta,true)
 				.card-body
 					.row
 						.col-12
 							= f.input :titulo, label: t(:título), input_html: { class: 'required-field' }, placeholder: "Indique un título", required: true
-						.col-lg-5.col-md-4.pr-md-0.col-12
+						.col-lg-6.col-md-6.pr-md-0.col-12
 							= f.input :valor_tiempo_para_contestar, label: t(:valor_tiempo_para_contestar), input_html: { class: 'required-field' , min: "1"}, required: true
-						.col-lg-5.col-md-5.col-12
+						.col-lg-6.col-md-6.col-12
 							= f.input :unidad_tiempo_para_contestar, collection: Encuesta.unidad_tiempo_para_contestar.map{|u,i|[t("_#{u}"),u]}, label: t(:unidad_tiempo_para_contestar), input_html: { class: 'required-field' }, required: true
 						= f.hidden_field :solo_dias_habiles, value: false #DZC Se instancia en false para eliminar por ahora la posibilidad de escoger que solo sean días hábiles. Eliminar si se decide habilitar esta opción 
 						-#DZC Se decide eleiminar la posibilidad de feriados, tentativamente
@@ -149,22 +149,20 @@
 											%tr.fields
 												- base = @preguntas_base.map{|i| i.id}.include?(ep.object.pregunta_id)
 												-if base
-													- orden_desde += 1
-													= ep.input :orden, as: :hidden, wrapper: false
+													-# enviamos los valores reales, pero igual mostramos el check y la pregunta
 													= ep.input :obligatorio, as: :hidden, wrapper: false
 													= ep.input :pregunta_id, as: :hidden, wrapper: false
-													%td.p-0.weight-cell
-														= ep.input :orden, label: false, as: :string, input_html: { class: 'm-0 required-field'}, disabled: base, required: true, wrapper_class: 'm-0'
-												-else
-													%td.p-0.weight-cell
-														= ep.input :orden, label: false, collection: (orden_desde...preguntas.size).map{|n|[n,n]}, input_html: { class: 'm-0 required-field ep-orden'}, disabled: base, required: true, wrapper_class: 'm-0'
-
-												- input_check = { class: 'im-not-required-check-the-others'}
-												- input_check[:checked] = true if base
+												%td.p-0.weight-cell
+													= ep.input :orden, label: false, collection: (orden_desde...preguntas.size).map{|n|[n,n]}, 
+														input_html: { class: 'm-0 required-field ep-orden'}, disabled: false, required: true, wrapper_class: 'm-0'
 												%td.p-0.required-cell
+													- input_check = { class: 'im-not-required-check-the-others'}
+													- input_check[:checked] = true if base
 													= ep.input :obligatorio, as: :boolean, label: false, input_html: input_check, disabled: base, wrapper: false
 												%td.p-0
-													= ep.input :pregunta_id, label: false, collection: preguntas, input_html: { class: 'm-0 ep-pregunta chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione una pregunta' }, disabled: base, required: true, wrapper_class: 'm-0'
+													= ep.input :pregunta_id, label: false, collection: preguntas, 
+														input_html: { class: 'm-0 ep-pregunta chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione una pregunta' }, 
+														disabled: base, required: true, wrapper_class: 'm-0'
 												%td.remove-cell
 													- if !base 
 														= ep.link_to_remove do

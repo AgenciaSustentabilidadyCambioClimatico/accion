@@ -18,7 +18,9 @@
 				ppp_iid = $("select#programa_proyecto_propuesta_institucion_a_la_cual_se_presentara_la_propuesta_id");
 				ppp_siid = $("select#programa_proyecto_propuesta_sucursal_institucion_a_la_cual_se_presentara_la_propuesta_id");
 				try {
-					data=JSON.parse($('.contribuyente-radio:checked').val());
+					//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+					//data=JSON.parse($('.contribuyente-radio:checked').val());
+					data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());					
 					$('#contribuyente-id-receptor').val(data.id);
 					ppp_iid.empty().append("<option value='"+data.id+"'>"+data.razon_social+"</option>");
 					if ( data.establecimientos.length > 0 ) {
@@ -34,10 +36,14 @@
 				}
 			});
 		}
+
 		function cogestor(){
 			$('.seleccionar-contribuyente-button').off().on('click', function() {
 				try {
-					data=JSON.parse($('.contribuyente-radio:checked').val());
+					//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+					//data=JSON.parse($('.contribuyente-radio:checked').val());
+					data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 					$("#programa_proyecto_propuesta_institucion_que_solicita_apoyo_id").val(data.id);
 					$("#programa_proyecto_propuesta_institucion_que_solicita_apoyo_id").change();
 				} catch(e) {
@@ -72,9 +78,20 @@
 			setTimeout(showModal, ((+minutos)*60*1000));
 			}, ((+minutos)*60*1000)
 		);
-
-	})
-
+		//DZC 2019-03-28 18:49:03 condiciona la visualización del asterisco al tipo de instrumento escogido
+		muestraOculta();
+		$('#programa_proyecto_propuesta_tipo_instrumento_id').change(function() {
+			muestraOculta();
+		});		
+	});
+	//DZC 2019-03-28 18:48:22 muestra u oculta el aeterisco de obligatoriedad de la pestaña 'Objetivo Propuesta'
+	function muestraOculta(){
+		if ($('#programa_proyecto_propuesta_tipo_instrumento_id').val() == "#{TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS}"){
+			$('.programa_proyecto_propuesta_documento_con_programa_proyecto_existente').find('abbr').show();
+		}else{
+			$('.programa_proyecto_propuesta_documento_con_programa_proyecto_existente').find('abbr').hide();
+		};
+	}
 = render 'modal_recuerde_guardar'
 #programa-proyecto-propuestaContent.tab-content
 	#tipo-de-propuesta.tab-pane.fade.disabled{"aria-expanded" => tabs[:"tipo-de-propuesta"], "aria-labelledby" => "tipo-de-propuesta-tab", :role => "tabpanel", class: ("show active" if tabs[:"tipo-de-propuesta"])}

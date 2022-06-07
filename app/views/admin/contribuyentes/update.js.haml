@@ -1,1 +1,11 @@
-= render 'layouts/remote_form', block: 'contribuyente'
+-if @contribuyente.temporal
+  $('#body-contribuyente-buscador').html("#{j render 'admin/contribuyentes/form_temporal', cont_temporal: @contribuyente_temporal}");
+  -if @contribuyente_temporal.errors.blank? && @error_extra.blank?
+    $('#buscar-contribuyente#{@custom_id}').modal("hide");
+    $("#manifestacion_de_interes_contribuyente_id").val(#{@contribuyente_temporal.id});
+    $("#manifestacion_de_interes_contribuyente_id").change();
+    $("#guardar-manifestacion-temporal-button").trigger("click");
+  -else
+    $('.loading-data').hide();
+-else
+  = render 'layouts/remote_form', block: 'contribuyente'

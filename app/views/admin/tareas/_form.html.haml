@@ -1,11 +1,7 @@
 - titulo t(:tarea)
 :javascript
 	$(document).ready(function() {
-		$('.chosen-control').chosen({
-			allow_single_deselect: true,
-			no_results_text: 'No se encontraron resultados',
-			width: '100%'
-		});
+		$('.chosen-control').chosen(chosenOptionsNoRemove);
 		var currentInput;
 		$('.recordatorio').each(function(k,v) {
 			currentInput=$(v);
@@ -33,23 +29,71 @@
 		}
 		$('#tarea_es_una_encuesta').click(function(){
 			if ( $(this).is(':checked')) {
-				$('div.tarea_encuesta_id').removeClass('d-none');
+				$('div.div-tarea').removeClass('d-none');
 				$('#tarea_encuesta_id').addClass('required-field');
 			} else {
-				$('div.tarea_encuesta_id').addClass('d-none');
+				$('div.div-tarea').addClass('d-none');
 				$('#tarea_encuesta_id').removeClass('required-field');
 			}
 		});
+		$('#tarea_limitar_duracion').click(function(){
+			if ( $(this).is(':checked')) {
+				$('div.tarea_duracion').removeClass('d-none');
+				$('#tarea_duracion').addClass('required-field');
+			} else {
+				$('div.tarea_duracion').addClass('d-none');
+				$('#tarea_duracion').removeClass('required-field');
+				$('#tarea_duracion').val('');
+			}
+		});
+		$('#tarea_duracion').on('focusout',function(e){
+			e.preventDefault();
+			if($(this).val() == ''){
+				// do nothing
+			}else if($(this).val() < 10){
+				$(this).val(10);
+			}
+		});
 		htmlErrorToTooltip('top');
+
+		$(document).on('nested:fieldAdded:encuesta_descarga_roles', function(e){
+			checkFieldValidity($('#tarea_nombre'));
+			$(e.target).find('select.edr-rol').chosen(chosenOptionsNoRemove);
+		});
+		
+		$(document).on('nested:fieldRemoved:encuesta_descarga_roles', function(e){
+			submitBtn = $(e.target).parents('form').find('.btn-disabled');
+			if ( $('select.edr-rol').parents('.fields:not([style="display: none;"])').length == 0 ) {
+				submitBtn.attr('disabled','disabled');
+			} else {
+				submitBtn.removeAttr('disabled');
+			}
+			checkFieldValidity($('#tarea_nombre'));
+		});
+
+		$(document).on('nested:fieldAdded:encuesta_ejecucion_roles', function(e){
+			checkFieldValidity($('#tarea_nombre'));
+			$(e.target).find('select.eer-rol').chosen(chosenOptionsNoRemove);
+		});
+		
+		$(document).on('nested:fieldRemoved:encuesta_ejecucion_roles', function(e){
+			submitBtn = $(e.target).parents('form').find('.btn-disabled');
+			if ( $('select.eer-rol').parents('.fields:not([style="display: none;"])').length == 0 ) {
+				submitBtn.attr('disabled','disabled');
+			} else {
+				submitBtn.removeAttr('disabled');
+			}
+			checkFieldValidity($('#tarea_nombre'));
+		});
 	});
 
-= simple_form_for [:admin,@tarea], remote: true, html: { autocomplete: :off } do |f|
+= simple_nested_form_for [:admin,@tarea], remote: true, html: { autocomplete: :off } do |f|
 	.row
 		.col-12
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@tarea)
+						= "Datos básicos"
 				.card-body
 					.row
 						.col-lg-6.pr-lg-0.col-12
@@ -66,24 +110,71 @@
 								.col-lg-6.col-12
 									= f.input :etapa_id, collection: Etapa.all.map{|m|[m.nombre,m.id]}, label: t(:etapa), input_html: { class: 'im-not-required-check-the-others' }
 								.col-12
-									= f.input :rol_id, collection: Rol.order(id: :asc).all.map{|m|[m.nombre,m.id]}, label: t(:role), input_html: { class: 'chosen-control required-field', type: :string, "data-placeholder"=>"Seleccione un rol" }, required: true
-								.col-12
 									= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), as: :grouped_select, collection: TipoInstrumento.por_padre(), group_method: :last, input_html: { class: 'required-field' }, required: true
-								.col-md-4.pr-lg-0.col-12
-									%label.string.control-label
-										=t(:posee_formulario)
-									= f.input :posee_formulario, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
-								.col-md-8.pr-lg-0.col-12
+								.col-12
+									= f.input :rol_id, collection: Rol.order(id: :asc).all.map{|m|[m.nombre,m.id]}, label: t(:role), input_html: { class: 'chosen-control required-field', type: :string, "data-placeholder"=>"Seleccione un rol" }, required: true
+								.col-md-12.pt-lg-2.col-12
 									%label.string.control-label
 										=t(:cualquiera_con_rol_o_usuario_asignado)
 									= f.input :cualquiera_con_rol_o_usuario_asignado, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
-								.col-md-3.pr-lg-0.col-12
+								.col-12.col-md-12.pt-lg-2.col-12
 									%label.string.control-label
-										=t(:es_una_encuesta)
-									= f.input :es_una_encuesta, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
-								.col-md-9.col-12
-									- es_una_encuesta = (f.object.es_una_encuesta==true)
-									= f.input :encuesta_id, collection: Encuesta.all.map{|m|[m.titulo,m.id]}, label: t(:encuesta), required: true, wrapper_class: (es_una_encuesta ? nil : 'd-none'), input_html: { class: (es_una_encuesta ? 'required-field' : nil) }
+										=t(:posee_formulario)
+									= f.input :posee_formulario, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
+								
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= "Configuración de tarea"
+				.card-body
+					.row
+						.col-lg-6.col-12
+							.col-12
+								%label.string.control-label
+									%i.fa.fa-exclamation-triangle.text-warning{title: "Realizar este cambio podría afectar al flujo del sistema"}
+									Limitar duración
+								= f.input :limitar_duracion, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others', checked: !f.object.duracion.blank? }
+							.col-12
+								= f.input :duracion, as: :string,label: t(:duracion_en_dias), input_html: { class: ' numero-dias-duracion' }, wrapper_class: (!f.object.duracion.blank? ? nil : 'd-none')
+						.col-lg-6.col-12
+							.col-12
+								%label.string.control-label
+									=t(:es_una_encuesta)
+								= f.input :es_una_encuesta, as: :boolean, wrapper: false, label: false, input_html: { class: 'im-not-required-check-the-others' }
+							.col-12.div-tarea{class: @tarea.es_una_encuesta ? '' : 'd-none'}
+								- es_una_encuesta = (f.object.es_una_encuesta==true)
+								= f.input :encuesta_id, collection: Encuesta.all.map{|m|[m.titulo,m.id]}, label: t(:encuesta), required: true, wrapper_class: (es_una_encuesta ? nil : 'd-none'), input_html: { class: (es_una_encuesta ? 'required-field' : nil) }
+							.col-12.div-tarea{class: @tarea.es_una_encuesta ? '' : 'd-none'}
+								%div.mt-3
+									%label.integer.float-left.m-0
+										= "Roles adicionales para ejecución"
+									= f.link_to_add :encuesta_ejecucion_roles, data: { target: "#encuesta-ejecucion-roles" }, class: 'float-right' do
+										%i.fa.fa-plus-circle
+								%table#encuesta-ejecucion-roles.table.table-striped.mb-0
+									%tbody
+										= f.fields_for :encuesta_ejecucion_roles, :wrapper => false  do |eer|
+											%tr.fields
+												%td.p-0
+													= eer.input :rol_id, label: false, collection: Rol.order(id: :asc).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'eer-rol chosen-control required-field', 'data-placeholder': 'Seleccione un rol' }, required: true, wrapper_class: 'm-0'
+												%td.accion.no-padding.remove-row
+													= eer.link_to_remove do
+														%i.fa.fa-times-circle.left.link-to-remove-row
+							.col-12.div-tarea{class: @tarea.es_una_encuesta ? '' : 'd-none'}
+								%div.mt-3
+									%label.integer.float-left.m-0
+										= "Roles autorizados a descargar encuesta"
+									= f.link_to_add :encuesta_descarga_roles, data: { target: "#encuesta-descarga-roles" }, class: 'float-right' do
+										%i.fa.fa-plus-circle
+								%table#encuesta-descarga-roles.table.table-striped.mb-0
+									%tbody
+										= f.fields_for :encuesta_descarga_roles, :wrapper => false  do |edr|
+											%tr.fields
+												%td.p-0
+													= edr.input :rol_id, label: false, collection: Rol.order(id: :asc).all.map{|m|[m.nombre,m.id]}, input_html: { class: 'edr-rol chosen-control required-field', 'data-placeholder': 'Seleccione un rol' }, required: true, wrapper_class: 'm-0'
+												%td.accion.no-padding.remove-row
+													= edr.link_to_remove do
+														%i.fa.fa-times-circle.left.link-to-remove-row
 		.col-12
 			.card
 				.card-header

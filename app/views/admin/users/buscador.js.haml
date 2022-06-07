@@ -1,4 +1,4 @@
-$('#usuarios-remote-table').html("#{j render 'tabla'}");
-$('#usuarios-form-buscar').html("#{j render 'form_buscar'}");
+$('##{@modal_id} .usuarios-remote-table').html("#{j render('tabla',modal_id: @modal_id)}");
+$('##{@modal_id} .usuarios-form-buscar').html("#{j render('form_buscar',modal_id: @modal_id)}");
 $('.loading-data').hide();
 closeAlertMessage();

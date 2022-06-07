@@ -24,4 +24,12 @@ class Admin::RegistrationsController < Devise::RegistrationsController
   def update
     super
   end
+
+  def after_update_path_for(resource)
+    session[:user_return_to].blank? ? signed_in_root_path(resource) : session[:user_return_to]
+  end
+
+  def update_resource(resource, params)
+    resource.update_without_password(params)
+  end
 end

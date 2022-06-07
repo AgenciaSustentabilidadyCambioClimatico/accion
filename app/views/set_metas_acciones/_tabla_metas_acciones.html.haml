@@ -1,0 +1,26 @@
+-if !@estandar.nil?
+  .mt-2
+    =render 'admin/estandar_homologaciones/buscador', editable: false
+-else
+  .table-responsive
+    %table.table.table-striped
+      %thead
+        %tr
+          %th= t(:accion)
+          %th= t(:materia)
+          %th= t(:meta)
+          %th= t(:alcance)
+          %th= t(:criterio)
+          %th= t(:descripcion)
+          %th= t(:detalle)
+      %tbody
+        -if !@metas_acciones.nil?
+          - @metas_acciones.each do |meta|
+            %tr.fields
+              %td= meta.accion.nombre
+              %td= meta.materia_sustancia.present? ? meta.materia_sustancia.nombre : ""
+              %td= meta.meta.nombre
+              %td= meta.alcance.nombre
+              %td= meta.criterio_inclusion_exclusion
+              %td= meta.descripcion_accion
+              %td= meta.detalle_medio_verificacion

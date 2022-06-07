@@ -3,11 +3,13 @@
 - tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES : tipo_instrumento
 - es_maquinaria = es_maquinaria.nil? ? false : es_maquinaria
 - data_table = data_table.nil? ? true : data_table
+- lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
 - if data_table
   - resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
   :javascript
     $(document).ready(function() {
-      $('table.contribuyentes').DataTable({
+      //DZC 2019-06-17 11:57:12 se modifica para considerar al contribuyente seleccionado en otra página
+      var tabla_de_contribuyentes = $('table.contribuyentes#{custom_id}').DataTable({
         lengthMenu: [[#{resultado_mostrados}], [#{resultado_mostrados}]],
         pageLength: #{resultado_mostrados},
         columnDefs: [ { targets: [2], orderable: false } ],
@@ -17,18 +19,18 @@
         responsive: true
       });
     });
-%table.table.contribuyentes.table-striped
+%table.table.table-striped{class: "contribuyentes#{custom_id}"}
   %thead
     %tr
       %th.rut=t(:rut)
       %th.razon-social=t(:razón_social)
-      - if es_para_seleccion
+      - if es_para_seleccion || seleccion_basica
         %th.iconos-acciones=t(:seleccione)
       - elsif current_user.is_admin? || current_user.posee_rol_ascc?([Rol::JEFE_DE_LINEA, Rol::REVISOR_TECNICO]) || @mis_instituciones
         %th.dos.iconos-acciones=t(:acciones)
 
   %tbody
-    - @contribuyentes.each do |i|
+    - lista_contribuyentes.each do |i|
       %tr
         %td= "#{i.rut}-#{i.dv}"
         %td= i.razon_social
@@ -37,14 +39,15 @@
           - actividades_economicas = i.actividad_economica_contribuyentes.map{|m|m.actividad_economica_id} 
           - establecimientos = i.establecimiento_contribuyentes.map{|m|["<label>#{m.direccion}</label> - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }".html_safe, m.id]}
           - es_maquinaria ? establecimientos_para_maquinaria = i.establecimiento_contribuyentes.map{|m|[m.nombre_and_direccion,m.id]} : establecimientos_para_maquinaria = []
+          -#DZC 2019-06-17 14:56:38 se corrige error en variable "#{PUTi.rut}-#{i.dv}" por "#{i.rut}-#{i.dv}"
           - data_contribuyente = { id: i.id, rut: "#{i.rut}-#{i.dv}", razon_social: i.razon_social, actividades_economicas: actividades_economicas, tipo_contribuyentes: tipo_contribuyentes, establecimientos: establecimientos, establecimientos_nombre_direccion: establecimientos_para_maquinaria, direccion_principal: i.direccion_principal }
           %td.iconos-acciones
-            = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio' }
+            = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio', name: "contribuyente_#{custom_id}" }
         - elsif seleccion_basica
           -if Responsable.__instituciones_con_rol(Rol::COGESTOR, tipo_instrumento, i.id)
             %td.iconos-acciones
               - data_contribuyente ={ id: i.id}
-              = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio' }
+              = radio_button_tag :contribuyente, data_contribuyente.to_json, false, { id: "contribuyente-#{i.id}", class: 'contribuyente-radio', name: "contribuyente_#{custom_id}" }
           -else
             %td.text-center
               %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"La institución no posee el rol Cogestor"}

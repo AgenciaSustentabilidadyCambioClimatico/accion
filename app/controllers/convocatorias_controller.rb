@@ -55,7 +55,8 @@ class ConvocatoriasController < ApplicationController
 				@tarea_pendiente.save
 				Minuta.create({
 					convocatoria_id: @convocatoria.id,
-					fecha: @convocatoria.fecha,
+					fecha_hora: @convocatoria.fecha_hora,
+					tipo_reunion: @convocatoria.tipo_reunion,
 					direccion: @convocatoria.direccion,
 					lat: @convocatoria.lat,
 					lng: @convocatoria.lng
@@ -96,7 +97,8 @@ class ConvocatoriasController < ApplicationController
 			if @convocatoria.update(convocatoria_params) #DZC no es necesario el merge por que el value preexiste desde el create, pero se deja como ilustración
 				#DZC actualiza los datos de la minuta
 				@convocatoria.minuta.assign_attributes({
-					fecha: @convocatoria.fecha,
+					fecha_hora: @convocatoria.fecha_hora,
+					tipo_reunion: @convocatoria.tipo_reunion,
 					direccion: @convocatoria.direccion,
 					lat: @convocatoria.lat,
 					lng: @convocatoria.lng
@@ -128,7 +130,39 @@ class ConvocatoriasController < ApplicationController
 
 	#**descarga de archivos copiado desde rendicion_actividades_controler.descargar_tecnicas
 	def descargar_adjuntos
-			send_data(@convocatoria.genera_zip(@convocatoria.archivo_adjunto), type: 'application/zip',filename: "archivos_adjuntos.zip")
+		require 'zip'
+		archivos = []
+		archivos += @convocatoria.archivo_adjunto if !@convocatoria.archivo_adjunto.blank?
+		if !@convocatoria.minuta.nil?
+			archivos << @convocatoria.minuta.lista_asistencia if !@convocatoria.minuta.lista_asistencia.blank?
+			archivos << @convocatoria.minuta.acta if !@convocatoria.minuta.acta.blank?
+		end
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      archivos.each do |archivo|
+        if archivo.is_a?(String)
+          archivo_path = "#{Rails.root}/public#{archivo}"
+          if File.exists?(archivo_path)
+            split = archivo_path.split('/')
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read(archivo_path)
+          end
+        else
+          if File.exists?(archivo.path)
+            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
+            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip.rewind
+		send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos.zip")
 	end
 
 	#DZC REVISAR UTILIDAD
@@ -168,7 +202,8 @@ class ConvocatoriasController < ApplicationController
 	  def convocatoria_params
 			parametros=params.require(:convocatoria).permit(
 				:nombre,
-        :fecha,
+        :fecha_hora,
+        :tipo_reunion,
         :direccion,
         :lat,
         :lng,
@@ -231,9 +266,9 @@ class ConvocatoriasController < ApplicationController
 			#DZC se copia desde TAREA APL-021
 			case action_name
 			when "new", "create"
-				@fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone.to_date : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
+				@fecha_hora = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
 				# DZC 2018-10-05 11:14:28 se elimina el agregar la dirección de la última convocatoria a la nueva
-				@convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha: @fecha, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo)
+				@convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha_hora: @fecha_hora, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo)
 			when "edit", "update", "destroy", "descargar_adjuntos"
 				@convocatoria = Convocatoria.find(params[:id])
 			end

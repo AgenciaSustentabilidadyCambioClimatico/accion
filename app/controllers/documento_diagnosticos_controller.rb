@@ -1,7 +1,7 @@
 class DocumentoDiagnosticosController < ApplicationController
-	before_action :authenticate_user!
-	before_action :set_tarea_pendiente
-	before_action :set_manifestacion_de_interes
+	before_action :authenticate_user!, except: [:descarga_estandar_acuerdo_informe]
+	before_action :set_tarea_pendiente, except: [:descarga, :descarga_estandar_acuerdo_informe]
+	before_action :set_manifestacion_de_interes, except: [:descarga_estandar_acuerdo_informe]
 	before_action :set_documento_diagnostico, only: [:actualizacion,:actualizar,:revision,:enviar_revision]
 
 	def actualizacion
@@ -56,12 +56,11 @@ class DocumentoDiagnosticosController < ApplicationController
 				@manifestacion_de_interes.update(enviar_revision_update_documento_diagnostico_params)
 
 				continua_flujo_segun_tipo_tarea #DZC agregamos nuevamente la tarea pendiente para el revisado 
-
 				format.js {
-				@comentarios = @manifestacion_de_interes.comentarios_diagnostico_ordenados
-				# (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
-				@manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos = nil
-				flash.now[:success] = "Documentos diagnóstico correctamente actualizados"
+					@comentarios = @manifestacion_de_interes.comentarios_diagnostico_ordenados
+					# (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
+					@manifestacion_de_interes.comentarios_y_observaciones_documento_diagnosticos = nil
+					flash.now[:success] = "Documentos diagnóstico correctamente actualizados"
 				}
 			else
 				format.js {
@@ -76,9 +75,39 @@ class DocumentoDiagnosticosController < ApplicationController
 	def continua_flujo_segun_tipo_tarea #DZC generalización de condiciones de continuación de flujo
 		case @tarea.codigo
 		when Tarea::COD_APL_013
+			@tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
 			@tarea_pendiente.pasar_a_siguiente_tarea 'A',{},false
 		when Tarea::COD_APL_014
 			@tarea_pendiente.pasar_a_siguiente_tarea 'B',{},false
+		end
+	end
+
+
+	def descarga_estandar_acuerdo_informe
+		estandar = params['estandar_id'].present? ? params['estandar_id'].to_i : nil
+		acuerdo_antiguo = params['acuerdo_id'].present? ? params['acuerdo_id'].to_i : nil
+		informe_impacto = params['informe_id'].present? ? params['informe_id'].to_i : nil
+		if acuerdo_antiguo.present?
+			mia = ManifestacionDeInteres.find(acuerdo_antiguo)
+			archivos = []
+			mia.documento_diagnosticos.each do |doc|
+				archivos << doc.archivo
+			end
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_diagnostico.zip")
+		end
+		if estandar.present?
+			estandar = EstandarHomologacion.find(estandar)
+			archivos = estandar.referencias
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_estandar.zip")
+		end
+		if informe_impacto.present?
+			informe = InformeImpacto.find(informe_impacto)
+			archivos = []
+			archivos << informe.documento
+			zip = helpers.generar_zip archivos
+			send_data(zip, type: 'application/zip',filename: "documentos_informe_impacto.zip")
 		end
 	end
 
@@ -135,7 +164,10 @@ class DocumentoDiagnosticosController < ApplicationController
 				:publico,
 				:archivo,
 				:archivo_cache,
-				:_destroy
+				:_destroy,
+				:estandar_id,
+				:acuerdo_id,
+				:informe_id
 			]
 		)
 	end

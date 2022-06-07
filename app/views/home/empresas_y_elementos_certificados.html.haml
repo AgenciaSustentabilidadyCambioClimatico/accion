@@ -1,0 +1,87 @@
+.row.mt-2
+  .col-12.mb-2
+    -back_path = root_path
+    -back_path = acuerdo_seleccionado_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]) if !params[:acuerdo_id].blank?
+    =link_to back_path, class: "btn btn-outline-home" do
+      .d-flex.align-items-center
+        %i.fa.fa-arrow-left
+        =t(:back)
+  .col-12
+    .card
+      .card-body
+        -if !@manifestacion_de_interes.nil?
+          .title-empresas-y-elementos.mb-3=@manifestacion_de_interes.nombre_acuerdo
+        .card.card-home
+          .card-header.d-flex.flex-column.flex-md-row.justify-content-between.align-items-center
+            .title=t(:empresas_y_elementos_certificados)
+            .input-buscar-home
+              %i.fa.fa-search
+              %input#buscar_custom{placeholder: :Buscar}
+          .card-body.p-0.m-0
+            .table-responsive
+              %table.table.table-home{cellspacing: "0"}
+                %thead
+                  %tr
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
+                      %th=t(:nombre_acuerdo)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("1")
+                      %th=t(:empresa)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("2")
+                      %th=t(:rut_empresa)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("3")
+                      %th=t(:region)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("4")
+                      %th=t(:comuna)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("5")
+                      %th=t(:nombre_elemento)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("6")
+                      %th=t(:tipo)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("7")
+                      %th=t(:otro_dato)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("9")
+                      %th=t(:fecha_certificacion)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("10")
+                      %th=t(:vigencia_certificacion)
+                    -if @datos_publicos.visibilidad_empresas_certificadas.include?("11")
+                      %th=t(:descargar_certificado)
+                %tbody
+                  -@elementos_certificados.datos.each do |elem|
+                    %tr
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("8")
+                        %td=elem[:nombre_acuerdo]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("1")
+                        %td=elem[:nombre_institucion]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("2")
+                        %td=elem[:rut_institucion]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("3")
+                        %td=elem[:region]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("4")
+                        %td=elem[:comuna]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("5")
+                        %td=elem[:nombre_elemento]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("6")
+                        %td=elem[:tipo_elemento]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("7")
+                        %td=elem[:otro_dato]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("9")
+                        %td=elem[:fecha_certificacion]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("10")
+                        %td=elem[:vigencia_certificacion]
+                      -if @datos_publicos.visibilidad_empresas_certificadas.include?("11")
+                        %td
+                          -if elem[:vigente]
+                            = link_to certificado_admin_elementos_certificados_path(elem[:auditoria_id], elem[:id_elemento], elem[:nivel_id]),class: "btn btn-tabla-sm mx-auto", target: '_blank' do
+                              %i.fa.fa-download
+                          -else
+                            No tiene certificado por descargar
+:javascript
+  $(document).ready(function(){
+    $('.table-home').DataTable({
+      dom: "<'d-none'f>ti",
+      paging: false,
+    });
+
+    $('#buscar_custom').on('input paste', function(){
+      $('.dataTables_filter input').val(this.value).trigger("input");
+    });
+  });

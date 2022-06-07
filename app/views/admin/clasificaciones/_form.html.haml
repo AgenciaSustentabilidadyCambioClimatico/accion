@@ -1,29 +1,45 @@
 - titulo t(:clasificación)
 = simple_form_for [:admin, @clasificacion], remote: true, html: { autocomplete: :off } do |f|
-	.row
-		.col-12
-			.card
-				.card-header
-					%h5.no-margin
-						= action_label_of_(@clasificacion)
-				.card-body
-					.row
-						.col-lg-6.pr-lg-0.col-12
-							= f.input :clasificacion_id, collection: Clasificacion.mientras_no_sea_(:clasificacion_id,@clasificacion.id).all.map{|c|[c.nombre, c.id]}, label: t(:clasificación_padre), input_html: { class: 'im-not-required-check-the-others' }
-						.col-lg-6.col-12
-							= f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Indique un nombre", required: true
-						.col-lg-6.pr-lg-0.col-12
-							= f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una descripción", required: true
-						.col-lg-6.col-12
-							= f.input :referencia, label: t(:referencia), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una referencia", required: true
-						.col-12
-							.form-group.boolean.required.clasificacion_es_meta{class: ('has-error' if f.object.errors.messages.has_key?(:es_meta))}
-								%label.boolean.required{:for => "clasificacion_es_meta"}
-									%abbr{:title => "required"} *
-									= t(:es_meta)
-								.radio-buttons
-									= f.collection_radio_buttons :es_meta, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, input_html: { class: 'required' }
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            = action_label_of_(@clasificacion)
+        .card-body
+          .row
+            .col-lg-6.pr-lg-0.col-12
+              = f.input :clasificacion_id, collection: Clasificacion.mientras_no_sea_(:clasificacion_id,@clasificacion.id).all.map{|c|[c.nombre, c.id]}, label: t(:clasificación_padre), input_html: { class: 'im-not-required-check-the-others' }
+            .col-lg-6.col-12
+              = f.input :nombre, label: t(:nombre), input_html: { class: 'required-field' }, placeholder: "Indique un nombre", required: true
+            .col-lg-6.pr-lg-0.col-12
+              = f.input :descripcion, label: t(:descripción), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una descripción", required: true
+            .col-lg-6.col-12
+              = f.input :referencia, label: t(:referencia), input_html: { class: 'required-field', rows: 6 }, placeholder: "Indique una referencia", required: true
+            .col-12.col-lg-6
+              .form-group.boolean.required.clasificacion_es_meta{class: ('has-error' if f.object.errors.messages.has_key?(:es_meta))}
+                %label.boolean.required{:for => "clasificacion_es_meta"}
+                  %abbr{:title => "required"} *
+                  = t(:es_meta)
+                .radio-buttons
+                  = f.collection_radio_buttons :es_meta, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, input_html: { class: 'required' }
+            .col-12.col-lg-6
+              =f.input :color, as: :string, input_html: {class: 'form-control py-0', type: :color, style: 'height: 1.85rem;'}, label: t(:color)
+            .col-12.col-lg-6
+              .row
+                .col-12.col-lg-10
+                  =f.input :imagen, as: :file, input_html: {class: 'form-control'}, label: t(:imagen)
+                  =f.input :imagen_cache, as: :hidden
+                .col-12.col-lg-2
+                  =__descargar_archivo(f.object.imagen, f.object, true, false)
+            .col-12.col-lg-6
+              .row
+                .col-12.col-lg-10
+                  =f.input :icono, as: :file, input_html: {class: 'form-control'}, label: t(:icono)
+                  =f.input :icono_cache, as: :hidden
+                .col-12.col-lg-2
+                  =__descargar_archivo(f.object.icono, f.object, true, false)
 
-	.float-right
-		= link_to t(:back), admin_clasificaciones_path, class: 'btn btn-sm btn-warning'
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+  .float-right
+    = link_to t(:back), admin_clasificaciones_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

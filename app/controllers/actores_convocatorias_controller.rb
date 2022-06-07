@@ -11,6 +11,7 @@ class ActoresConvocatoriasController < ApplicationController
 	#DZC TAREA APL-021
 	def index
 		@convocatoria_existe = !@tarea_pendiente.data.blank? && @tarea_pendiente.data.has_key?(:convocatoria_id)
+		@actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
 	end
 
 	def reset_convocatoria
@@ -35,7 +36,8 @@ class ActoresConvocatoriasController < ApplicationController
 					minuta=Minuta.find_or_create_by({
 						convocatoria_id: @convocatoria.id})
 					minuta.update({
-						fecha: @convocatoria.fecha,
+						fecha_hora: @convocatoria.fecha_hora,
+						tipo_reunion: @convocatoria.tipo_reunion,
 						direccion: @convocatoria.direccion,
 						lat: @convocatoria.lat,
 						lng: @convocatoria.lng})
@@ -69,7 +71,8 @@ class ActoresConvocatoriasController < ApplicationController
 					minuta = Minuta.find_or_create_by({
 						convocatoria_id: @convocatoria.id})
 					minuta.assign_attributes({
-						fecha: @convocatoria.fecha,
+						fecha_hora: @convocatoria.fecha_hora,
+						tipo_reunion: @convocatoria.tipo_reunion,
 						direccion: @convocatoria.direccion,
 						lat: @convocatoria.lat,
 						lng: @convocatoria.lng
@@ -87,11 +90,12 @@ class ActoresConvocatoriasController < ApplicationController
 						rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
 					ConvocatoriaMailer.delay.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:06:07 se corrige error en nombre de variable rgc.id
 					end
+					TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).where({"tareas.codigo" => [Tarea::COD_APL_018.to_s]}).update(estado_tarea_pendiente_id: 2)
 					continua_flujo_segun_tipo_tarea
-					flash.now[:success] = "Convocatoria modificada"
+					flash[:success] = "Convocatoria modificada"
 					render js: "window.location='#{actores_convocatorias_manifestacion_de_interes_path(@tarea_pendiente, @flujo.manifestacion_de_interes)}'"
 		    else
-		    	flash[:error] = "Convocatoria NO modificada"		
+		    	flash.now[:error] = "Convocatoria NO modificada"		
 		    end
 		  }
 	  end
@@ -141,11 +145,11 @@ class ActoresConvocatoriasController < ApplicationController
 			case action_name
 			when "nueva_convocatoria", "reset_convocatoria"
 				if Convocatoria.where(flujo_id: @flujo.id, tarea_codigo: @tarea.codigo).blank? || @tarea_pendiente.data.has_key?(:auditoria_id)
-					@fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone.to_date : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
+					@fecha = Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? DateTime.now.in_time_zone : Convocatoria.fecha_ultima_convocatoria(@flujo.id, @tarea.codigo)
 					@direccion = Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo).blank? ? nil : Convocatoria.direccion_ultima_convocatoria(@flujo.id, @tarea.codigo)
 					# DZC 2018-11-07 10:42:10  se agrega nombre de la manifestación al nombre de la convocatoria, por tratarse de la firma del acuerdo
 					@nombre = "Firma de Acuerdo" + (@manifestacion_de_interes.nombre_acuerdo.present? ? +" "+@manifestacion_de_interes.nombre_acuerdo : nil)				
-					@convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha: @fecha, direccion: @direccion, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo, nombre: @nombre)
+					@convocatoria = Convocatoria.new(flujo_id: @flujo.id, fecha_hora: @fecha, direccion: @direccion, tipo: tipo_convocatoria_id, tarea_codigo: @tarea.codigo, nombre: @nombre)
 					@convocatoria.save(validate: false)
 				else
 					@convocatoria = Convocatoria.where(flujo_id: @flujo.id, tarea_codigo: @tarea.codigo).first
@@ -182,7 +186,8 @@ class ActoresConvocatoriasController < ApplicationController
 			parametros=params.require(:convocatoria).permit(
 				:flujo_id,
 				:nombre,
-	      :fecha,
+	      :fecha_hora,
+	      :tipo_reunion,
 	      :direccion,
 	      :lat,
 	      :lng,

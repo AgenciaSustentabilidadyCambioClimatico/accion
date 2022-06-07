@@ -1,0 +1,17 @@
+=simple_form_for @reporte_sustentabilidad, url: admin_reporte_sustentabilidad_path, method: :patch, remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:configurar_reporte_sustentabilidad)
+        .card-body
+          .row
+            .col-12
+              =f.input :titulo_intro, input_html: {class: 'form-control'}, required: true
+            .col-12
+              =f.label t("activerecord.attributes.reporte_sustentabilidad.cuerpo_intro")
+              = f.input :cuerpo_intro, as: :ckeditor, input_html: {ckeditor: {height: 500}}, required: true, label: false
+
+    .col-12
+      .float-right
+        =f.submit t(:guardar), class: "btn btn-sm btn-primary"

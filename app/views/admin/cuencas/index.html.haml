@@ -1,0 +1,36 @@
+- titulo t(:cuencas_subcuencas)
+:javascript
+  $(document).ready(function() {
+    $('table.cuencas').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      "order":[]
+    });
+  });
+= link_to t(:agregar_, item: t(:cuenca_subcuenca).downcase), new_admin_cuenca_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:cuencas_subcuencas).downcase)
+  .card-body
+    %table.table.cuencas.table-striped
+      %thead
+        %tr
+          %th.codigo-cuenca=t(:código_cuenca_subcuenca)
+          %th.nombre-cuenca=t(:nombre_cuenca_subcuenca)
+          %th.region=t(:región)
+          %th.dos.iconos-acciones=t(:acciones)
+
+      %tbody
+        - @cuencas.each do |record|
+          %tr
+            %td=record.codigo_cuenca
+            %td=record.nombre_cuenca
+            %td=record.region
+            %td.dos.iconos-acciones
+              = link_to edit_admin_cuenca_path(record) do
+                %i.fa.fa-edit

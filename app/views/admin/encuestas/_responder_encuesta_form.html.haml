@@ -20,7 +20,7 @@
         - if @desactivado
           = "Encuesta resuelta".html_safe
         -else
-          = "Recuerde que tiene hasta el <b>#{@encuesta.dia_de_expiracion(@tarea_pendiente.created_at).strftime('%d %b de %Y')}</b> para contestar esta encuesta".html_safe
+          = "Recuerde que tiene hasta el <b>#{l(@encuesta.dia_de_expiracion(@tarea_pendiente.created_at), format: :short_year)}</b> para contestar esta encuesta".html_safe
 
   - @encuesta.encuesta_preguntas.sort_by{|ep|ep.orden}.each do |ep|
     - pregunta        = ep.pregunta
@@ -30,7 +30,7 @@
     - field_name      = "encuesta_user_respuesta[preguntas_y_respuestas][#{pregunta.id}][#{ep.obligatorio}]"
     - field_id        = "encuesta_user_respuesta_preguntas_y_respuestas_#{pregunta.id}"
     - has_error       = 'has-error' if @encuesta_user_respuesta.tiene_errores? && @encuesta_user_respuesta.errores.has_key?(pregunta.id.to_s)
-    - rp              = EncuestaUserRespuesta.where(encuesta_id: @encuesta.id).where(user_id: current_user.id, flujo_id: @flujo.id).where(pregunta_id: ep.pregunta_id).first
+    - rp              = EncuestaUserRespuesta.where(encuesta_id: @encuesta.id).where(user_id: current_user.id, flujo_id: @flujo.id, tarea_pendiente_id: @tarea_pendiente.id).where(pregunta_id: ep.pregunta_id).first
     - respuesta       = rp.nil? ? nil : rp.respuesta
 
     .card.mb-2

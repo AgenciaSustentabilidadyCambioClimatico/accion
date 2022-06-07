@@ -70,7 +70,18 @@ class Admin::TareasController < ApplicationController
         :cualquiera_con_rol_o_usuario_asignado,
         :condicion_de_acceso,
         :es_una_encuesta,
-        :encuesta_id
+        :encuesta_id,
+        :duracion,
+        encuesta_ejecucion_roles_attributes: [
+          :id,
+          :rol_id,
+          :_destroy
+        ],
+        encuesta_descarga_roles_attributes: [
+          :id,
+          :rol_id,
+          :_destroy
+        ]
       )
     end
 end

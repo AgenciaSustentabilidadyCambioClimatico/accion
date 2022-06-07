@@ -1,34 +1,27 @@
 .modal.fade{id: :"advertencia-cambio", tabindex: "-1", role: :dialog, "aria-labelledby": :terminarActualizarAcuerdoActoresModalLabel, "aria-hidden": true}
-	.modal-dialog.animated{role: :document}
-		.modal-content
-			= form_tag tarea_pendiente_manifestacion_de_interes_establecer_tipo_meta_path(@tarea_pendiente, @manifestacion_de_interes) do
-				= hidden_field_tag :tipo
-				.modal-header
-					.m-auto
-						%h5.no-margin
-							= t(:advertencia)					
-				.modal-body
-					#tipo-vista-1
-						.alert.alert-info
-							%small
-								%i.fa.fa-question-circle.fa-1-5x
-									Al elegir Crear propio Set de Metas y Acciones, se borrarán todas las acciones elegidas previamente. ¿Está seguro que desea continuar?.
-					#tipo-vista-2
-						.alert.alert-info
-							%small
-								%i.fa.fa-question-circle.fa-1-5x
-									Al elegir un Estándar, se borrarán todas las acciones elegidas previamente y no podrá agregar nuevas acciones. ¿Está seguro que desea continuar?.
-						.mt-3
-							= select_tag :estandar_adherido, options_from_collection_for_select(EstandarHomologacion.all, "id", "nombre"), { class: 'form-control required-field',:prompt => "Seleccionar estandar", required: true}
-					#tipo-vista-3
-						.alert.alert-info
-							%small
-								%i.fa.fa-question-circle.fa-1-5x
-									Al elegir Metas y Acciones de otro acuerdo, se borrarán todas las acciones elegidas previamente. ¿Está seguro que desea continuar?.
-						.mt-3
-							= select_tag :diagnostico_adherido, options_from_collection_for_select( ManifestacionDeInteres.where.not(diagnostico_fecha_termino: nil), "id", "nombre_acuerdo"), { class: 'form-control required-field',:prompt => "Seleccionar un acuerdo antiguo", required: true}
-				.modal-footer
-					%div.m-auto
-						%button.btn.btn-sm.btn-secondary#cierre-modal-advertencia{type: :button, "data-dismiss"=>:modal}
-							Cerrar
-						= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-warning btn-disabled button-send", disabled: false
+  .modal-dialog.modal-xl.animated{role: :document}
+    .modal-content
+      = form_tag tarea_pendiente_manifestacion_de_interes_establecer_tipo_meta_path(@tarea_pendiente, @manifestacion_de_interes) do
+        = hidden_field_tag :tipo
+        .modal-body.p-0
+          .card.m-0
+            .card-header
+              %h5.control-label.tipo-vista-2 Agregar desde estándar de certificación
+              %h5.control-label.tipo-vista-3 Agregar desde otro Acuerdo
+            .card-body
+              .row
+                .col-12.col-lg-6
+                  .tipo-vista-2
+                    = select_tag :estandar_adherido, options_from_collection_for_select(EstandarHomologacion.all, "id", "nombre"), { class: 'form-control selector-tipo-meta required-field',:prompt => "Seleccionar un Estándar de certificación"}
+                  .tipo-vista-3
+                    = select_tag :diagnostico_adherido, options_from_collection_for_select( ManifestacionDeInteres.where.not(diagnostico_fecha_termino: nil), "id", "nombre_acuerdo"), { class: 'form-control selector-tipo-meta required-field',:prompt => "Seleccionar un Acuerdo"}
+                .col-12
+                  %hr.my-3
+                  %hr
+                .col-12
+                  #modal-tipo-meta-tabla
+                .col-12
+                  .pull-right
+                    = button_tag t(:anadir), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled button-send agregar-metas-acciones-relacionados", disabled: false
+                    %button.btn.btn-sm.btn-secondary#cierre-modal-advertencia{type: :button, "data-dismiss"=>:modal}
+                      Cerrar

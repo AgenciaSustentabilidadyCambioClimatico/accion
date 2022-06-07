@@ -24,14 +24,22 @@
 		$('#buscar-contribuyente').on('show.bs.modal', function (e) {
 			rowFields = $(e.relatedTarget).parents('.card');
 		})
-		$('body').on('change','.contribuyente-radio',function(){
-			$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		});
+
+		//DZC 2019-06-17 14:01:19 se modifica para usar la función verificarModal()
+		//$('body').on('change','.contribuyente-radio',function(){
+		//	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
+
 		$('.seleccionar-contribuyente-button').click(function() {
 			try {
 				var establecimientos_html = "Seleccione un establecimiento^$^";
 				cs=rowFields.find('.contribuyente-selector');
-				data=JSON.parse($('.contribuyente-radio:checked').val());
+
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
 				cs.removeClass('border-error').removeAttr('data-original-title');
 				cs.append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
 				cs.val(data.id);
@@ -89,7 +97,7 @@
 				.card-body
 					.row
 						.col-lg-2.pr-lg-0.col-12
-							= f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, disabled: ! @user.new_record? 
+							= f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, disabled: ! @user.new_record? && !@user.rut.blank?
 						.col-lg-4.pr-lg-0.col-12
 							= f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'required-field' }, readonly: (@acceso != :admin)
 						.col-lg-3.pr-lg-0.col-12
@@ -120,72 +128,73 @@
 						
 			.row#user-personas
 				-if @acceso == :admin
-					- @personas_acceso = @user.personas
+					- @personas_acceso = @user.personas.sin_temporales.pluck(:id)
 				-else
-					- @personas_acceso = @user.personas.where(contribuyente_id: current_user.instituciones_donde_es_admin)
-				= f.fields_for :personas, @personas_acceso, :wrapper => false  do |p|
-					.col-lg-6.col-12.fields
-						.card
-							- c = p.object.contribuyente
-							- if c.blank?
-								- ic = []
-								- ec = []
-							- else
-								- ic = [[c.razon_social,c.id]]
-								- ec_d = "Seleccione un establecimiento^$^"
-								- ec = []
-								- c.establecimiento_contribuyentes.each do |m|
-									- ec_d += "^*^#{m.direccion} - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }^$^#{m.id}"
-									- ec << ["#{m.direccion} - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }", m.id]
-							=p.input :establecimientos_data, as: :hidden, input_html: { value: ec_d, class: "establecimientos_data" }, wrapper: false
-							.card-header
-								-if @acceso == :admin
+					- @personas_acceso = @user.personas.sin_temporales.where(contribuyente_id: current_user.instituciones_donde_es_admin).pluck(:id)
+				= f.fields_for :personas, :wrapper => false  do |p|
+					-if p.object.new_record? || @personas_acceso.include?(p.object.id)
+						.col-lg-6.col-12.fields{class: p.object.marked_for_destruction? ? 'd-none' : ''}
+							.card
+								- c = p.object.contribuyente
+								- if c.blank?
+									- ic = []
+									- ec = []
+								- else
+									- ic = [[c.razon_social,c.id]]
+									- ec_d = "Seleccione un establecimiento^$^"
+									- ec = []
+									- c.establecimiento_contribuyentes.each do |m|
+										- ec_d += "^*^#{m.direccion} - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }^$^#{m.id}"
+										- ec << ["#{m.direccion} - #{m.casa_matriz ? 'Casa Matriz' : 'Sucursal' }", m.id]
+								=p.input :establecimientos_data, as: :hidden, input_html: { value: ec_d, class: "establecimientos_data" }, wrapper: false
+								.card-header
+									-if @acceso == :admin
+										%h5.no-margin.float-left
+											= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
+												=t(:buscar)
+												%i.fa.fa-search-plus
+										%h5.no-margin.float-left
+											&nbsp;
+											&#47;
+											&nbsp;
 									%h5.no-margin.float-left
-										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
-											=t(:buscar)
-											%i.fa.fa-search-plus
-									%h5.no-margin.float-left
-										&nbsp;
-										&#47;
-										&nbsp;
-								%h5.no-margin.float-left
-									- if @user.editable?
-										= p.link_to_remove class: 'text-danger' do
-											=t(:eliminar)
-											%i.fa.fa-times-circle.left.link-to-remove-row
-									- else
-										= p.link_to_remove class: 'text-danger', data: { confirm: t(:confirma_eliminar_persona), remote: false }  do
-											=t(:eliminar)
-											%i.fa.fa-times-circle.left.link-to-remove-row
-							.card-body
-								.row
-									.col-12
-										= p.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'contribuyente-selector', id: "#hidden_#{p.object.id}_user_persona_contribuyente_id" }
-										= p.input :contribuyente_id, label: t(:institución), collection: ic, input_html: { class: 'contribuyente-selector not-required-if-other-like-me-is-present float-left' }, required: true, prompt: pick_a_institucion
-										%i.fa.fa-times.deseleccionar-contribuyente
-									.col-12
-										= p.input :email_institucional, required: true, label: t(:email_institucional), placeholder: "Ingresar email institucional", input_html: { class: 'required-field' }
-									.col-12
-										= p.input :telefono_institucional, label: t(:teléfono_institucional), placeholder: "Ingresar teléfono institucional", input_html: { class: 'not-required-if-other-like-me-is-present numero validado' }
-									.col-12
-										.form-group.append-group
-											-if @acceso == :admin
-												%label.control-label
-													= p.link_to_add :persona_cargos, data: { target: ".persona-cargos" } do
-														%i.fa.fa-plus-circle
-														= t(:agregar_, item: t(:relation_cargo_establecimiento).downcase)
-												.persona-cargos
-													= p.fields_for :persona_cargos, :wrapper => false  do |pc|
-														.row.fields
-															.col-12.col-md-5.m-0
-																= pc.input :establecimiento_contribuyente_id, collection: ec, input_html: { class: 'chosen-control establecimiento-select' }, required: true, prompt: "Seleccione un establecimiento", label: false, wrapper_class: 'no-margin'
-															.col-md-1.d-none.d-md-block.m-0.pl-0.text-center
-																=" - "
-															.col-10.col-md-5.m-0.pl-md-0
-																= pc.input :cargo_id, collection: Cargo.__select, input_html: { class: 'chosen-control' }, required: true, prompt: "Seleccione un cargo", label: false, wrapper_class: 'no-margin'
-															.col-2.col-md-1.m-0.p-0
-																= pc.link_to_remove do
-																	%i.fa.fa-times-circle.left.link-to-remove-row
+										- if @user.editable?
+											= p.link_to_remove class: 'text-danger' do
+												=t(:eliminar)
+												%i.fa.fa-times-circle.left.link-to-remove-row
+										- else
+											= p.link_to_remove class: 'text-danger', data: { confirm: t(:confirma_eliminar_persona), remote: false }  do
+												=t(:eliminar)
+												%i.fa.fa-times-circle.left.link-to-remove-row
+								.card-body
+									.row
+										.col-12
+											= p.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'contribuyente-selector', id: "#hidden_#{p.object.id}_user_persona_contribuyente_id" }
+											= p.input :contribuyente_id, label: t(:institución), collection: ic, input_html: { class: 'contribuyente-selector not-required-if-other-like-me-is-present float-left' }, required: true, prompt: pick_a_institucion
+											%i.fa.fa-times.deseleccionar-contribuyente
+										.col-12
+											= p.input :email_institucional, required: true, label: t(:email_institucional), placeholder: "Ingresar email institucional", input_html: { class: 'required-field' }
+										.col-12
+											= p.input :telefono_institucional, label: t(:teléfono_institucional), placeholder: "Ingresar teléfono institucional", input_html: { class: 'not-required-if-other-like-me-is-present numero validado' }
+										.col-12
+											.form-group.append-group
+												-if @acceso == :admin
+													%label.control-label
+														= p.link_to_add :persona_cargos, data: { target: ".persona-cargos" } do
+															%i.fa.fa-plus-circle
+															= t(:agregar_, item: t(:relation_cargo_establecimiento).downcase)
+													.persona-cargos
+														= p.fields_for :persona_cargos, :wrapper => false  do |pc|
+															.row.fields{class: pc.object.marked_for_destruction? ? 'd-none' : ''}
+																.col-12.col-md-5.m-0
+																	= pc.input :establecimiento_contribuyente_id, collection: ec, input_html: { class: 'chosen-control establecimiento-select' }, required: true, prompt: "Seleccione un establecimiento", label: false, wrapper_class: 'no-margin'
+																.col-md-1.d-none.d-md-block.m-0.pl-0.text-center
+																	=" - "
+																.col-10.col-md-5.m-0.pl-md-0
+																	= pc.input :cargo_id, collection: Cargo.__select, input_html: { class: 'chosen-control' }, required: true, prompt: "Seleccione un cargo", label: false, wrapper_class: 'no-margin'
+																.col-2.col-md-1.m-0.p-0
+																	= pc.link_to_remove do
+																		%i.fa.fa-times-circle.left.link-to-remove-row
 			.float-right
 				= link_to t(:back), admin_users_path, class: 'btn btn-sm btn-warning'
 				- if @user.editable?

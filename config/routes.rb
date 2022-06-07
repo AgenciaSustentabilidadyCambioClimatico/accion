@@ -22,7 +22,9 @@ Rails.application.routes.draw do
   #################################################################################################
   # Configuración relativa al sistema base y no ha verifact (excepto root_to)
   #################################################################################################
-  devise_for :users, :controllers => { sessions: 'admin/sessions', invitations: 'admin/invitations' }, path_names: { sign_in: 'login', sign_out: 'logout' }, :skip => [:registrations]
+  devise_for :users, :controllers => { sessions: 'admin/sessions', invitations: 'admin/invitations', passwords: 'admin/passwords' }, path_names: { sign_in: 'login', sign_out: 'logout' }, :skip => [:registrations]
+
+
 
   as :user do
     get 'account' => 'admin/registrations#edit', :as => 'edit_user_registration'    
@@ -30,8 +32,25 @@ Rails.application.routes.draw do
     authenticated :user do
       root :to => "home#index", :as => "authenticated_user_home"
     end
-    root to: 'devise/sessions#new'
+    #root to: 'devise/sessions#new'
+    root :to => "home#index"
   end
+
+  get 'consulta-publica-propuestas-acuerdo', to: "home#consulta_publica_propuestas_acuerdo", as: :consulta_publica_propuestas_acuerdo
+
+  #no logeado
+  get 'adherir-a-un-acuerdo', to: "home#adherir_a_un_acuerdo", as: :adherir_a_un_acuerdo
+  get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
+  get 'get_comunas', to: "home#get_comunas", as: :get_comunas
+  post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
+  get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
+  get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
+  get 'empresas-y-elementos-adheridos', to: "home#empresas_y_elementos_adheridos", as: :empresas_y_elementos_adheridos
+  get 'empresas-y-elementos-certificados', to: "home#empresas_y_elementos_certificados", as: :empresas_y_elementos_certificados
+
+  #Clave única
+  get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
+
 
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
@@ -110,6 +129,7 @@ Rails.application.routes.draw do
         end
         member do
           get :acciones_relacionadas
+          post :duplicar
         end
       end 
 
@@ -174,6 +194,12 @@ Rails.application.routes.draw do
     end
     resources :tipo_aportes, path: "tipo-aportes", except: [:show] do
     end
+
+    # DOSSA 23-07-2019 rutas para mantenedor de campos
+    get 'campos', to: "campos#index", as: :campos
+    get ':id/actualizar_campos', to: "campos#actualizar_campos", as: :actualizar_campos
+    get ':id/lista_campos', to: "campos#lista_campos", as: :lista_campos
+    patch ':id/actualiza_campos', to: "campos#actualiza_campos", as: :actualiza_campos
     
     resources :cargos, except: [:show] do
     end
@@ -182,6 +208,7 @@ Rails.application.routes.draw do
       collection do
         put :privacidad
         get :buscador
+        get :edit_modal
       end
     end
     
@@ -194,6 +221,7 @@ Rails.application.routes.draw do
         post :search_contribuyente
         get :mis_instituciones
         get :region_comunas 
+        get :edit_modal
       end
     end
 
@@ -236,6 +264,7 @@ Rails.application.routes.draw do
     resources :elementos_certificados, only: [:index] do
       collection do
         get :filtro_institucion
+        get ':auditoria_id/:adhesion_elemento_id/certificado(/:auditoria_nivel_id)', to: 'elementos_certificados#certificado', as: 'certificado'
       end
     end
 
@@ -278,6 +307,12 @@ Rails.application.routes.draw do
     resources :actividades_economicas do 
     end
 
+    # DOSSA 2019-10-09 11:05 se añade para mantenedor de CUENCAS
+    resources :cuencas, except: [:destroy] do
+    end
+
+    resources :tipo_documento_diagnosticos
+
     resources :hitos_de_prensa, path: "hitos-de-prensa" do
       collection do
         put :search
@@ -306,6 +341,7 @@ Rails.application.routes.draw do
         get 'ppf/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#ppf_set_metas_acciones", as: :ppf_set_metas_acciones
         get 'fpl/:id/set_metas_acciones/', to: "gestionar_mis_instrumentos#fpl_set_metas_acciones", as: :fpl_set_metas_acciones
         get 'fpl/:id/rendiciones/', to: "gestionar_mis_instrumentos#fpl_rendiciones", as: :fpl_rendiciones
+        get 'descargar_reporte_sustentabilidad(/:id)', to: "gestionar_mis_instrumentos#descargar_reporte_sustentabilidad", as: :descargar_reporte_sustentabilidad
       end
     end
 
@@ -313,6 +349,13 @@ Rails.application.routes.draw do
     resources :historial_instrumentos, path: "historial_instrumentos" do
       collection do
         get 'cargar_instrumento'
+        get ':manifestacion_de_interes_id/descargar_observaciones_informe_metas_acciones', to: "historial_instrumentos#descargar_observaciones_informe_metas_acciones", as: :descargar_observaciones_informe_metas_acciones
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_diagnostico', to: "historial_instrumentos#descargar_respuesta_encuesta_diagnostico", as: :descargar_respuesta_encuesta_diagnostico
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta/:tarea_id', to: "historial_instrumentos#descargar_respuesta_encuesta", as: :descargar_respuesta_encuesta
+        get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_auditoria/:tarea_id/:auditoria_id', to: "historial_instrumentos#descargar_respuesta_encuesta_auditoria", as: :descargar_respuesta_encuesta_auditoria
+        get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
+        post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
+        get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
       end
     end     
 
@@ -345,6 +388,13 @@ Rails.application.routes.draw do
         get :get_estandar
       end
     end
+
+    get '/datos_publicos/edit', to: "datos_publicos#edit", as: :edit_datos_publico
+    match '/datos_publicos', to: "datos_publicos#update", as: :datos_publico, via: [:patch, :put]
+
+    get '/reporte_sustentabilidad/edit', to: "reporte_sustentabilidad#edit", as: :edit_reporte_sustentabilidad
+    match '/reporte_sustentabilidad', to: "reporte_sustentabilidad#update", as: :reporte_sustentabilidad, via: [:patch, :put]
+
   end
   #end namespace admin
 
@@ -356,10 +406,23 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :traspaso_instrumentos do
+    collection do
+      get :usuario_flujos
+    end
+  end
+
   # ToDo GABM - Mayo 29 2018 : Quitar params: :tarea_pendiente_id al resources de manifestacion_de_interes y agrupar todo el resources con
   # scope '/:tarea_pendientes_id' do. Luego quitar todos lo :id de cada metodo declarado y quitar :tarea_pendiente del grupo collection.
   resources :manifestacion_de_interes, param: :tarea_pendiente_id, path: "manifestacion-de-interes", except: [:show,:index,:create,:edit,:update] do
-
+    collection do
+      get :lista_usuarios_entregables
+      get :lista_usuarios_carga_datos
+      patch 'iniciar-flujo', to: "manifestacion_de_interes#iniciar_flujo", as: :iniciar_flujo
+      get ':tarea_pendiente_id/:descargable_tarea_id/descargable', to: "manifestacion_de_interes#descargable", as: :descargable
+      get ':tarea_pendiente_id/descargar/mapa-de-actores', to: "manifestacion_de_interes#descargar_mapa_de_actores", as: :descargar_mapa_de_actores
+    end
+    
     member do
 
       #DZC TAREA APL-024
@@ -374,11 +437,10 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-040
       # usuarios cargo_informe CERTIFICACION
-      post 'usuarios_cargo_informe/entregables', to: "usuarios_cargo_informe#filtro_entregables", as: :usuarios_cargo_informe_entregables
       post 'usuarios_cargo_informe/carga_datos', to: "usuarios_cargo_informe#filtro_carga_datos", as: :usuarios_cargo_informe_carga_datos
       match 'usuarios_cargo_informe/update', to: 'usuarios_cargo_informe#update', as: :update_usuarios_cargo_informe, via: [:post,:patch]
-      #DZC TAREA APL-024 propiamente tal
-      get 'usuarios_cargo_informe', to: 'usuarios_cargo_informe#index', as: :usuarios_cargo_informe      
+      #DZC TAREA APL-040 propiamente tal
+      get 'usuarios_cargo_informe', to: 'usuarios_cargo_informe#index', as: :usuarios_cargo_informe 
       
       #DZC TAREA APL-041, TAREA APL-042 
       get 'informe_impacto/revisar', to: 'informe_impactos#revisar'
@@ -386,7 +448,7 @@ Rails.application.routes.draw do
       resources :informe_impactos, except: [:show,:new,:edit]
 
       #DZC Tarea APL-001
-      post '', to: "manifestacion_de_interes#create", as: :create_from_tarea_pendiente #DZC Iniciar proceso APL
+      match '', to: "manifestacion_de_interes#create", as: :create_from_tarea_pendiente, via: [:get, :post] #DZC Iniciar proceso APL
       get ':id/edit(.:format)', to: "manifestacion_de_interes#edit", as: :edit #DZC Manifestacion instanciada
       match ':id/edit(.:format)', to: "manifestacion_de_interes#update", as: :tarea_pendiente, via: [:get, :post, :patch]
 
@@ -394,13 +456,21 @@ Rails.application.routes.draw do
       get ':id/revisor', to: "manifestacion_de_interes#revisor", as: :revisor
       patch ':id/revisor', to: "manifestacion_de_interes#asignar_revisor"
 
-      #DZC TAREA APL-003
+      #DZC TAREA APL-003.1
       get ':id/admisibilidad', to: "manifestacion_de_interes#admisibilidad", as: :admisibilidad
       patch ':id/admisibilidad', to: "manifestacion_de_interes#revisar_admisibilidad"
 
-      #DZC TAREA APL-004
+      #DZC TAREA APL-003.2
+      get ':id/admisibilidad-juridica', to: "manifestacion_de_interes#admisibilidad_juridica", as: :admisibilidad_juridica
+      patch ':id/admisibilidad-juridica', to: "manifestacion_de_interes#revisar_admisibilidad_juridica"
+
+      #DZC TAREA APL-004.1
       get ':id/observaciones-admisibilidad', to: "manifestacion_de_interes#observaciones_admisibilidad", as: :observaciones_admisibilidad
       patch ':id/observaciones-admisibilidad', to: "manifestacion_de_interes#resolver_observaciones_admisibilidad"
+
+      #DZC TAREA APL-004.2
+      get ':id/observaciones-admisibilidad-juridica', to: "manifestacion_de_interes#observaciones_admisibilidad_juridica", as: :observaciones_admisibilidad_juridica
+      patch ':id/observaciones-admisibilidad-juridica', to: "manifestacion_de_interes#resolver_observaciones_admisibilidad_juridica"
 
       #DZC TAREA APL-005
       get ':id/pertinencia-factibilidad', to: "manifestacion_de_interes#pertinencia_factibilidad", as: :pertinencia_factibilidad
@@ -427,10 +497,11 @@ Rails.application.routes.draw do
       get ':manifestacion_de_interes_id/documentos-diagnosticos/revision', to: "documento_diagnosticos#revision", as: :revision_documento_diagnosticos
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/enviar-revision', to: "documento_diagnosticos#enviar_revision", as: :enviar_revision_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga', to: "documento_diagnosticos#descarga", as: :descarga_documento_diagnosticos
+      get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga_estandar_acuerdo_informe', to: "documento_diagnosticos#descarga_estandar_acuerdo_informe", as: :descarga_estandar_o_acuerdo_documento_diagnosticos
 
       #APL-013 APL-014 APL-018 APL-020 APL-023
       get 'pdf_set_metas', to: 'set_metas_acciones#pdf_set_metas', as: :pdf_set_metas
-      #DZC TAREA APL-013
+      #DZC TAREA 3
       get ':id/cargar-actualizar-entregable-diagnostico', to: "manifestacion_de_interes#cargar_actualizar_entregable_diagnostico", as: :cargar_actualizar_entregable_diagnostico
 
       #DZC TAREA APL-014
@@ -443,8 +514,11 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-019 
       get ':id/evaluacion-negociacion/:encuesta_id', to: 'manifestacion_de_interes#evaluacion_negociacion', as: :evaluacion_negociacion
-
+      post ':id/evaluacion-negociacion/:encuesta_id/enviar-observaciones/:informe_id', to: 'manifestacion_de_interes#observaciones_informe', as: :observaciones_informe
+      patch ':tarea_pendiente_id/envia-observaciones-metas-acciones-informe(.:format)', to: 'manifestacion_de_interes#envia_observaciones_metas_acciones_informe', as: :envia_observaciones_metas_acciones_informe
+      
       #DZC TAREA APL-020
+      patch ':id/actualizar-acuerdos-actores/responder-observaciones/:informe_id', to: 'manifestacion_de_interes#responder_observaciones_informe', as: :responder_observaciones_informe
       get ':id/actualizar-acuerdos-actores', to: 'manifestacion_de_interes#actualizar_acuerdos_actores', as: :actualizar_acuerdos_actores
       
       #DZC TAREA APL-023
@@ -453,6 +527,8 @@ Rails.application.routes.draw do
       # get ':id/actualizar-comite-acuerdos/reload-informe', to: 'actualizar_comite_acuerdos#reload_informe', as: :reload_informe_actualizar_comite_acuerdos_actores
       patch ':id/actualizar-comite-acuerdos/guardar_archivos_anexos_posteriores_firmas(.:format)', to: 'actualizar_comite_acuerdos#guardar_archivos_anexos_posteriores_firmas', as: :guardar_archivos_anexos_posteriores_firmas_actualizar_acuerdos_actores
 
+      #DZC TAREA APL-016 y APL-023 pausa acuerdo
+      patch 'detener-acuerdo(.:format)', to: "manifestacion_de_interes#detener_acuerdo", as: :detener_acuerdo
       #DZC TAREA APL-023 continua con el flujo al presionar terminar acuerdo
       patch 'terminar-acuerdo(.:format)', to: "manifestacion_de_interes#terminar_acuerdo", as: :terminar_acuerdo
 
@@ -472,6 +548,7 @@ Rails.application.routes.draw do
 
       #DZC TAREA APL-032
       get ':id/auditoria/descargar', to: "auditorias#descargar", as: :descargar_auditorias
+      get ':id/auditoria/descargar_compilado', to: "auditorias#descargar_compilado", as: :descargar_compilado_auditorias
       get ':id/auditoria/actualizar', to: "auditorias#actualizar", as: :actualizar_auditorias
       get ':id/auditoria/revisar', to: "auditorias#revisar", as: :revisar_auditorias
       get ':id/auditoria/validar', to: "auditorias#validar", as: :validar_auditorias
@@ -491,12 +568,6 @@ Rails.application.routes.draw do
       post ':id/reload-informe', to: "acuerdo_actores#reload_informe", as: :reload_informe
       post ':id/mostrar-informe', to: "acuerdo_actores#mostrar_informe", as: :mostrar_informe
       patch ':id/guardar-informe', to: "acuerdo_actores#guardar_informe", as: :guardar_informe
-
-    end
-    collection do
-      patch 'iniciar-flujo', to: "manifestacion_de_interes#iniciar_flujo", as: :iniciar_flujo
-      get ':tarea_pendiente_id/:descargable_tarea_id/descargable', to: "manifestacion_de_interes#descargable", as: :descargable
-      get ':tarea_pendiente_id/descargar/mapa-de-actores', to: "manifestacion_de_interes#descargar_mapa_de_actores", as: :descargar_mapa_de_actores
     end
 
   end
@@ -508,14 +579,20 @@ Rails.application.routes.draw do
     resources :set_metas_acciones, path: 'set_metas_acciones', except: [:show] do  
       member do
         get 'acciones-relacionadas', to: 'set_metas_acciones#acciones_relacionadas', as: :acciones_relacionadas
+        post 'duplicar', to: 'set_metas_acciones#duplicar', as: :duplicar
         #DZC APL-013, 3era pestaña
         get 'actualizacion', to: "set_metas_acciones#actualizacion", as: :actualizacion
         #DZC APL-014, 3era pestaña
         get 'revision', to: "set_metas_acciones#revision", as: :revision
       end
+      collection do
+        post 'utilizar/:accion_id', to: 'set_metas_acciones#utilizar', as: :utilizar
+      end
     end
       patch 'set-metas-acciones/enviar-revision', to: "set_metas_acciones#enviar_revision", as: :enviar_revision
       post 'set-metas-acciones/establecer_tipo_meta', to: "set_metas_acciones#establecer_tipo_meta", as: :establecer_tipo_meta
+      post 'metas_acciones_tipo_meta', to: "set_metas_acciones#metas_acciones_tipo_meta", as: :metas_acciones_tipo_meta
+      get 'eliminar_grupo_combi', to: "set_metas_acciones#eliminar_grupo_combi", as: :eliminar_grupo_combi
   end
 
   resources :instrumentos do
@@ -629,6 +706,7 @@ Rails.application.routes.draw do
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   # Obtener el archivo del acuerdo para APL-022
   get ":tarea_pendiente_id/:flujo/archivo-apl-022", to: "minutas#archivo", as: :obtener_archivo_apl_022, format: 'docx'
+  get ":flujo/archivo-acuerdo-anexos-zip", to: "minutas#archivo_acuerdo_anexos_zip", as: :obtener_archivo_acuerdo_anexos_zip
 
 
   #DZC APL-020 termina tarea y continúa el flujo
@@ -682,7 +760,9 @@ Rails.application.routes.draw do
   get ':tarea_pendiente_id/adhesion/revisar', to: "adhesiones#revisar", as: :revisar_adhesion #DZC APL-028, PPF-017
   patch ':tarea_pendiente_id/adhesion/actualizar_guardar', to: "adhesiones#actualizar_guardar", as: :guardar_actualizar_adhesion
   patch ':tarea_pendiente_id/adhesion/actualizar_revisar', to: "adhesiones#revisar_guardar", as: :guardar_revisar_adhesion
+  post ':tarea_pendiente_id/auditoria/retirar_elemento', to: "adhesiones#retirar_elemento", as: :retirar_elemento_adhesion
   get ':tarea_pendiente_id/adhesion/descargar', to: "adhesiones#descargar", as: :descargar_adhesion
+  get ':tarea_pendiente_id/adhesion/descargar_compilado', to: "adhesiones#descargar_compilado", as: :descargar_compilado_adhesion
 
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos

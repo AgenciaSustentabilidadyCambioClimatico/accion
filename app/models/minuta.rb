@@ -2,12 +2,23 @@ class Minuta < ApplicationRecord
 	# has_one :convocatoria
 	belongs_to :convocatoria
 
-	validates :fecha, :direccion, :lat, :lng,  :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
+	enum tipo_reunion: [:presencial, :virtual]
+
+	validates :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
 	validate :direccion_en_mapa
 	validate :acta, :lista_asistencia, on: :update, unless: -> {self.convocatoria.tarea_codigo == Tarea::COD_APL_021} #DZC necesario para condiciones de flujo 'A' y 'B' en APL-022
+	#validate :acta, on: :update, if: -> {self.convocatoria.tarea_codigo != Tarea::COD_APL_021 && self.convocatoria.tarea_codigo == Tarea::COD_APL_022}
 
 	mount_uploader :lista_asistencia, ArchivoListaAsistenciaMinutaUploader
 	mount_uploader :acta, ArchivoActaMinutaUploader
+
+	before_save :actualizar_campos_extras
+
+	def actualizar_campos_extras
+		if !self.fecha_hora.blank?
+			self.fecha = self.fecha_hora.to_date
+		end
+	end
 
 	#DZC 2018-10-26 12:56:14 devuelve el listado de archivos como array
 	# def get_archivos
@@ -65,7 +76,7 @@ class Minuta < ApplicationRecord
 		else
 			nombre_acuerdo = 'Proceso sin nombre'
 		end
-		self.mensaje_encabezado = "Documentos relativos a la reunión titulada '#{convocatoria_tipo.descripcion}', realizada con fecha '#{self.fecha}', en #{nombre_acuerdo}'"
+		self.mensaje_encabezado = "Documentos relativos a la reunión titulada '#{convocatoria_tipo.descripcion}', realizada con fecha #{self.fecha_hora.strftime("%d-%m-%Y")} a las #{self.fecha_hora.strftime("%H:%M")}, en #{nombre_acuerdo}'"
 	end
 
 	def establece_mensaje_cuerpo
@@ -78,7 +89,7 @@ class Minuta < ApplicationRecord
 	end
 
 	def direccion_en_mapa
-		if self.lat.blank? || self.lng.blank?
+		if self.presencial? && (self.lat.blank? || self.lng.blank?)
 			errors.add(:direccion, "Debe ubicar la dirección en el mapa")
 		end
 	end

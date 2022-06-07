@@ -11,6 +11,11 @@ class Otro < ApplicationRecord
   mount_uploaders :imagen, ArchivosImagenOtroUploader
 
   default_scope { where("fecha_eliminacion IS NULL") }
+  
+  
+  def contribuyente
+    super || (Contribuyente.unscoped.find(self.contribuyente_id) if self.contribuyente_id.present?)
+  end
 
   def adherido_activo?
     flujos_asociados = Flujo.where(id: self.adhesiones.pluck('flujo_id')).where(terminado: false)

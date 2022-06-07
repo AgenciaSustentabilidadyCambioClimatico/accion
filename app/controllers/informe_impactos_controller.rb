@@ -5,10 +5,10 @@ class InformeImpactosController < ApplicationController
 
   # GET /informe_impactos
   def index
-    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion.id})
+    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion_de_interes.id})
   end
   def revisar
-    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion.id})
+    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion_de_interes.id})
   end
 
   # GET /informe_impactos/1
@@ -17,7 +17,7 @@ class InformeImpactosController < ApplicationController
 
   # GET /informe_impactos/new
   def new
-    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion.id})
+    @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion_de_interes.id})
   end
 
   # GET /informe_impactos/1/edit
@@ -98,14 +98,15 @@ class InformeImpactosController < ApplicationController
       @tarea = TareaPendiente.includes([:flujo]).find(params[:tarea_pendiente_id])
       autorizado? @tarea
       @flujo = @tarea.flujo
-      @manifestacion = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
-      @manifestacion.update(tarea_codigo: @tarea.tarea.codigo) unless @manifestacion.blank?
-      @manifestacion_id = @manifestacion.id
+      @tipo_instrumento = @flujo.tipo_instrumento
+      @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
+      @manifestacion_de_interes.update(tarea_codigo: @tarea.tarea.codigo) unless @manifestacion_de_interes.blank?
+      @manifestacion_id = @manifestacion_de_interes.id
       @descargable_tareas = DescargableTarea.where(tarea_id: @tarea.tarea_id).order(id: :asc).all
     end
     # Use callbacks to share common setup or constraints between actions.
     def set_informe_impacto
-      @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion.id})
+      @informe_impacto = InformeImpacto.find_or_initialize_by({manifestacion_de_interes_id: @manifestacion_de_interes.id})
     end
 
     # Only allow a trusted parameter "white list" through.

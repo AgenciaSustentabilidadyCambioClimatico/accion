@@ -567,7 +567,7 @@ module Admin::CargasHistoricasHelper
 							firma_fecha: fila[:fecha_firma_apl], #19
 							texto_apl: texto_apl_validado[0], #20
 							auditoria_historicos_attributes: auditorias_historicas, #21-38
-							ceremonia_certificacion_fecha: fila[:fecha_ceremonia_certificacion], #39
+							ceremonia_certificacion_fecha_hora: fila[:fecha_ceremonia_certificacion], #39
 							informe_impacto_attributes: informe_impacto #40-41
 						}]
       		
@@ -1049,7 +1049,9 @@ module Admin::CargasHistoricasHelper
 					if !fila[:rut_institucion].to_s.rut_valid?
 						@errores[:rut_institucion] << fila[:rut_institucion]
 					else
-						contribuyente = Contribuyente.find_by(rut: fila[:rut_institucion].to_s.split('-')[0])
+						fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub("k","K").gsub(".","")
+						rut_institucion = fila[:rut_institucion]
+						contribuyente = Contribuyente.find_by(rut: rut_institucion.split('-')[0])
 						if contribuyente.nil?
 							if fila[:direccion_casa_matriz].blank?
 								@errores[:direccion_casa_matriz] << (posicion+2)
@@ -1077,7 +1079,7 @@ module Admin::CargasHistoricasHelper
 					if !fila[:rut_encargado].to_s.rut_valid?
 						errores[:rut_encargado] << fila[:rut_encargado]
 					else 
-						user = User.find_by(rut: fila[:rut_encargado].to_s)
+						user = User.find_by(rut: fila[:rut_encargado].to_s.gsub("k", 'K').gsub(".",""))
 						if user.nil?
 							if fila[:nombre_encargado].blank? || fila[:fono_encargado].blank? || fila[:email_encargado].blank?
 								@errores[:encargado] << (posicion+2)
@@ -1308,7 +1310,7 @@ module Admin::CargasHistoricasHelper
 				archivos_por_codigo = []
 				adhesion_excell[1].each do |elemento|
 					#metodo que se reutiliza para cargar las adhesiones_elementos.-
-					adhesion_elemento = adhesion.poblar_data elemento, adhesion.flujo
+					adhesion_elemento = adhesion.poblar_data elemento, adhesion.flujo, adhesion.archivos_adhesion_y_documentacion, adhesion
 					#Para guardar las certificaciones.-
 					cah = CertificacionAdhesionHistorico.new
 					cah.adhesion_elemento_id = adhesion_elemento.id
@@ -1381,7 +1383,7 @@ module Admin::CargasHistoricasHelper
 					@errores[:codigo] << (posicion+2)
 				else
 					# valida que exista la persona, o solicita sus datos
-					usuario = User.find_by(rut: fila[:rut_persona].to_s.gsub(/k/,'K'))
+					usuario = User.find_by(rut: fila[:rut_persona].to_s.gsub("k",'K').gsub(".",""))
 					if usuario.blank?
 						if !fila[:rut_persona].to_s.rut_valid?
 							@errores[:rut_persona] << fila[:rut_persona]

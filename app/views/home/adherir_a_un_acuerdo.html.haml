@@ -1,0 +1,44 @@
+-if user_signed_in?
+  - titulo t(:adherir_a_un_acuerdo)
+.row
+  -if !user_signed_in?
+    .col-12.mt-2
+      %h1.titulo=t(:adherir_a_un_acuerdo)
+  .col-12
+    .card
+      .card-body.pb-0
+      .card-body.p-0
+        %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
+          %thead
+            %tr
+              %th=t(:nombre_de_acuerdo)
+              %th=t(:estado_de_solicitud_de_adhesion)
+              %th=t(:accion)
+          %tbody
+            - @acuerdos.each do |acuerdo|
+              -fecha_maxima_adhesion = acuerdo.informe_acuerdo.calcula_fecha_plazo_maximo_adhesion
+              %tr.accion
+                %td=acuerdo.nombre_acuerdo
+                %td=(fecha_maxima_adhesion >= Date.today ? "Abiertas hasta #{l(fecha_maxima_adhesion, format: "%A %d de %B del %Y")}" : "Finalizadas el #{l(fecha_maxima_adhesion, format: "%A %d de %B del %Y")}")
+                %td
+                  -if fecha_maxima_adhesion >= Date.today
+                    =link_to solicitar_adhesion_path(acuerdo.id), class: "btn btn-tabla" do
+                      =fa_icon 'edit'
+                      Adherir al Acuerdo
+                  -else
+                    Plazo para adherir finalizado
+
+:javascript
+  $(document).ready(function() {
+    $('table.table-bordered').DataTable({
+      dom: '<"mr-3 mb-2"f>ti<"m-3"p>r',
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: true } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      order: [],
+      fixedHeader: true
+    }); 
+  });

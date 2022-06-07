@@ -6,7 +6,11 @@ class ArchivoCartasManifestacionDeInteresUploader < CarrierWave::Uploader::Base
   end
 
   def extension_whitelist
-    %w(pdf)
+    %w(jpg jpeg png pdf zip rar xls xlsx doc docx)
+  end
+
+  def size_range
+    1.byte..200.megabytes
   end
 
 end

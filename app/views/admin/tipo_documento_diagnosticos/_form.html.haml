@@ -1,0 +1,17 @@
+- titulo t(:tipos_documento_diagnostico)
+= simple_form_for [:admin,@tipo_documento_diagnostico], remote: true, html: { autocomplete: :off } do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            = action_label_of_(@tipo_documento_diagnostico, true)
+        .card-body
+          .row
+            .col-12
+              = f.input :nombre, label: t(:name), placeholder: "Ingrese nombre del tipo documento", input_html: { class: 'required-field' }, required: true
+            .col-12
+              = f.input :descripcion, label: t(:description), input_html: { class: 'required-field', rows: 6 }, placeholder: "Ingrese una descripción para este tipo documento", required: true
+  .float-right
+    = link_to t(:back), admin_tipo_documento_diagnosticos_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

@@ -3,7 +3,7 @@ class Admin::ActividadesEconomicasController < ApplicationController
 	before_action :set_actividad_economica, only: [:edit, :update, :destroy]
 
 	def index
-		@actividades_economicas = ActividadEconomica.order(id: :asc).all
+		@actividades_economicas = ActividadEconomica.where.not(codigo_ciiuv4: nil).order(id: :asc).all
 	end
 
   def new

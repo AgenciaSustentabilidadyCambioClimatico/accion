@@ -4,10 +4,12 @@ class Auditoria < ApplicationRecord
   belongs_to :flujo
   has_many :auditoria_elementos, foreign_key: :auditoria_id, dependent: :destroy
   has_many :convocatoria, dependent: :destroy #DZC 2018-11-07 06:55:59 se agrega para las convocatorias de la ceremonia de certificación
+  has_many :auditoria_niveles, dependent: :destroy
 
   accepts_nested_attributes_for :auditoria_elementos
 
   mount_uploaders :ceremonia_certificacion_archivo, ArchivoCeremoniaCertificacionAuditoriaUploader
+  mount_uploader :archivo_revision, ArchivoRevisionAuditoriasUploader
 
   attr_accessor :archivo_auditorias, :archivos_informe, :archivos_evidencia, :archivo_carga_auditoria
 
@@ -34,7 +36,7 @@ class Auditoria < ApplicationRecord
 
   #DZC se obtienen label para reporte automatizado de avances
   def nombre_para_raa
-    return "ID #{self.id} - #{(self.nombre.blank? ? 'Auditoria sin nombre': self.nombre)} - #{self.flujo.tipo_de_flujo} - #{self.flujo.nombre_instrumento}"
+    return "ID #{self.id} - #{(self.nombre.blank? ? 'Auditoria sin nombre': self.nombre)}"
   end
 
   def valid_extensions
@@ -63,6 +65,18 @@ class Auditoria < ApplicationRecord
         end
       end
     end
+  end
+
+  def obtiene_porcentaje_avance(set_meta_accion, adhesion_elemento=nil)
+    _auditoria_elementos = self.auditoria_elementos.where(set_metas_accion_id: set_meta_accion.id)
+    _auditoria_elementos = _auditoria_elementos.where(adhesion_elemento_id: adhesion_elemento.id) if !adhesion_elemento.nil?
+    porcentaje_avance = nil
+    if _auditoria_elementos.present?
+      total_auditorias_aplica = _auditoria_elementos.where(aplica: true).size.to_f
+      porcentaje = (total_auditorias_aplica > 0)? (total_auditorias_aplica/_auditoria_elementos.length.to_f).to_f : 0.to_f
+      porcentaje_avance = (porcentaje*100.0)
+    end
+    porcentaje_avance
   end
 
 end

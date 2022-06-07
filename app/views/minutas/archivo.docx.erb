@@ -1,104 +1,137 @@
+<%
+partes = @partes.blank? ? partes : @partes
+fundamentos = @fundamentos.blank? ? fundamentos : @fundamentos
+antecedentes = @antecedentes.blank? ? antecedentes : @antecedentes
+normativas_aplicables = @normativas_aplicables.blank? ? normativas_aplicables : @normativas_aplicables
+alcance = @alcance.blank? ? alcance : @alcance
+campo_de_aplicacion = @campo_de_aplicacion.blank? ? campo_de_aplicacion : @campo_de_aplicacion
+definiciones = @definiciones.blank? ? definiciones : @definiciones
+objetivo_general = @objetivo_general.blank? ? objetivo_general : @objetivo_general
+objetivo_especifico = @objetivo_especifico.blank? ? objetivo_especifico : @objetivo_especifico
+set_metas = @set_metas.blank? ? set_metas : @set_metas
+mecanismo_de_implementacion = @mecanismo_de_implementacion.blank? ? mecanismo_de_implementacion : @mecanismo_de_implementacion
+tipo_de_acuerdo = @tipo_de_acuerdo.blank? ? tipo_de_acuerdo : @tipo_de_acuerdo
+auditorias = @auditorias.blank? ? auditorias : @auditorias
+informe_de_acuerdo = @informe_de_acuerdo.blank? ? informe_de_acuerdo : @informe_de_acuerdo
+personeria = @personeria.blank? ? personeria : @personeria
+firmas = @firmas.blank? ? firmas : @firmas
+%>
+
 <html lang="es">
 <head>
 	
 </head>
 <body>
-	<div> <%= @partes %></div>
+	<div> <%= partes %></div>
 	<br>
 	<div>Fundamentos:</div>
-	<div> <%= (@fundamentos.blank? ? "INGRESAR FUNDAMENTOS" : @fundamentos.html_safe).html_safe %></div>
+	<div> <%= (fundamentos.blank? ? "INGRESAR FUNDAMENTOS" : fundamentos.html_safe).html_safe %></div>
 	<br>
 	<div>Antecedentes:</div>
-	<div> <%= (@antecedentes.blank? ? "INGRESAR ANTECEDENTES" : @antecedentes).html_safe %></div>
+	<div> <%= (antecedentes.blank? ? "INGRESAR ANTECEDENTES" : antecedentes).html_safe %></div>
 	<br>
 	<div>Normativas aplicables:</div>
-	<div> <%= (@normativas_aplicables.blank? ? "INGRESAR NORMATIVAS APLICABLES" : @normativas_aplicables).html_safe %></div>
+	<div> <%= (normativas_aplicables.blank? ? "INGRESAR NORMATIVAS APLICABLES" : normativas_aplicables).html_safe %></div>
 	<br>
 	<div>Alcance:</div>
-	<div> <%= (@alcance.blank? ? "INGRESAR ALCANCE" : @alcance).html_safe %></div>
+	<div> <%= (alcance.blank? ? "INGRESAR ALCANCE" : alcance).html_safe %></div>
 	<br>
 	<div>Campo de aplicación:</div>
-	<div> <%= (@campo_de_aplicacion.blank? ? "INGRESE CAMPO DE APLICACION" : @campo_de_aplicacion).html_safe %></div>
+	<div> <%= (campo_de_aplicacion.blank? ? "INGRESE CAMPO DE APLICACION" : campo_de_aplicacion).html_safe %></div>
 	<br>
 	<div>Definiciones:</div>
-	<div> <%= (@definiciones.blank? ? "INGRESE DEFINICIONES" : @definiciones).html_safe %></div>
+	<div> <%= (definiciones.blank? ? "INGRESE DEFINICIONES" : definiciones).html_safe %></div>
 	<br>
 	<div>Objetivo general:</div>
-	<div> <%= (@objetivo_general.blank? ? "INGRESE OBJETIVO GENERAL" : @objetivo_general).html_safe %></div>
+	<div> <%= (objetivo_general.blank? ? "INGRESE OBJETIVO GENERAL" : objetivo_general).html_safe %></div>
 	<br>
 	<div>Objetivo específico:</div>
-	<div> <%= (@objetivo_especifico.blank? ? "INGRESE OBJETIVO ESPECIFICO" : @objetivo_especifico).html_safe %></div>
+	<div> <%= (objetivo_especifico.blank? ? "INGRESE OBJETIVO ESPECIFICO" : objetivo_especifico).html_safe %></div>
 	<br>
 	<div>Metas, acciones y plazos de cumplimiento:</div>
-	<% @set_metas.each_with_index do  |(key, value), posicion| %>
-		<div>Meta <%= posicion+1 %>: <%= key %> </div>
-		<% value.each_with_index do  |val, pos| %>
-			<% if val.plazo_unidad_tiempo == 1 %>
-				<% medida_singular = 'mes' %>
-				<% medida_plural = 'meses' %>
-			<% else %>
-				<% medida_singular = 'año' %>
-				<% medida_plural = 'años' %>
+	<% if !set_metas.blank? %>
+		<% set_metas.each_with_index do  |(key, value), posicion| %>
+			<div>Meta <%= posicion+1 %>: <%= key %> </div>
+			<% value.each_with_index do  |val, pos| %>
+				<% if val.plazo_unidad_tiempo == 1 %>
+					<% medida_singular = 'mes' %>
+					<% medida_plural = 'meses' %>
+				<% else %>
+					<% medida_singular = 'año' %>
+					<% medida_plural = 'años' %>
+				<% end %>
+				<div>	Acción <%= (posicion+1).to_s + "." + (pos+1).to_s %>: <%= val.descripcion_accion %> </div>
+				<div>		Plazo: <%= pluralize(val.plazo_valor, medida_singular, medida_plural) %> </div>
+				<div>		Método de verificación: <%= val.detalle_medio_verificacion %> </div>
 			<% end %>
-			<div>	Acción <%= (posicion+1).to_s + "." + (pos+1).to_s %>: <%= val.descripcion_accion %> </div>
-			<div>		Plazo: <%= pluralize(val.plazo_valor, medida_singular, medida_plural) %> </div>
-			<div>		Método de verificación: <%= val.detalle_medio_verificacion %> </div>
+			<br>
 		<% end %>
-		<br>
 	<% end %>
 	<br>
-	<div>Mecanismo de implementación:</div>
-	<div> <%= (@mecanismo_de_implementacion.blank? ? "INGRESE MECANISMO DE IMPLEMENTACION" : @mecanismo_de_implementacion).html_safe %></div><br>
+	<div>Mecanismo de adhesión, implementación y evaluación de cumplimiento:</div>
+	<div> <%= (mecanismo_de_implementacion.blank? ? "INGRESE MECANISMO DE ADHESIÓN, IMPLEMENTACIÓN Y EVALUACIÓN" : mecanismo_de_implementacion).html_safe %></div><br>
 	<div>Tipo de Acuerdo:</div>
-	<div> <%= (@tipo_de_acuerdo.blank? ? "INGRESE TIPO DE ACUERDO" : @tipo_de_acuerdo).html_safe %></div><br>
+	<div> <%= (tipo_de_acuerdo.blank? ? "INGRESE TIPO DE ACUERDO" : t(tipo_de_acuerdo)).html_safe %></div><br>
 	<div>Auditorias:</div>
-	<% @auditorias.each do |auditoria| %>
-		<div>	Nombre auditoría: <%= (auditoria.nombre.blank? ? "INGRESE EL NOMBRE DE LA AUDITORIA" : auditoria.nombre) %> </div> 
-		<div>	Plazo auditoría: <%= (auditoria.plazo.blank? ? "INGRESE EL PLAZO DE LA AUDITORIA" : pluralize(auditoria.plazo, 'mes', 'meses')) %> </div>
-		<div>	Certificación auditoría: <%= (auditoria.con_certificacion.blank? ? "INDIQUE SI LA AUDITORIA ES CON CERTIFICACION" : (auditoria.con_certificacion ? "Con certificación" : "Sin certificación")) %> </div>
-		<div>	Validación auditoría: <%= (auditoria.con_validacion.blank? ? "INGRESE SI LA AUDITORIA TIENE VALIDACION" : (auditoria.con_validacion ? "Con validación" : "Sin validación")) %> </div>
-		<div>	Tipo de auditoría: <%= (auditoria.final.blank? ? "INGRESE EL TIPO DE AUDITORIA" : (auditoria.final ? "Final" : "Intermedia"))%> </div> <br>
+	<% if !auditorias.blank? %>
+		<% auditorias.each do |auditoria| %>
+			<div>	Nombre auditoría: <%= (auditoria.nombre.blank? ? "INGRESE EL NOMBRE DE LA AUDITORIA" : auditoria.nombre) %> </div> 
+			<div>	Plazo apertura: <%= (auditoria.plazo_apertura.blank? ? "INGRESE EL PLAZO APERTURA DE LA AUDITORIA" : pluralize(auditoria.plazo_apertura, 'mes', 'meses')) %> </div>
+			<div>	Plazo cierre: <%= (auditoria.plazo_cierre.blank? ? "INGRESE EL PLAZO CIERRE DE LA AUDITORIA" : pluralize(auditoria.plazo_cierre, 'mes', 'meses')) %> </div>
+			<div>	Certificación auditoría: <%= (auditoria.con_certificacion ? "Con certificación" : "Sin certificación") %> </div>
+			<div>	Validación auditoría: <%= (auditoria.con_validacion ? "Con validación" : "Sin validación") %> </div>
+			<div>	Tipo de auditoría: <%= (auditoria.final ? "Final" : "Intermedia")%> </div>
+			<div>	Mantención auditoría: <%= (auditoria.con_mantencion ? "Con mantención" : "Sin mantención")%> </div> <br>
+		<% end %>
 	<% end %>
-	<div>Obligaciones de las partes que suscriben el acuerdo:</div>
-	<div> <%= (@informe_de_acuerdo.obligaciones.blank? ? "INGRESE LAS OBLIGACIONES DE LAS PARTES" : @informe_de_acuerdo.obligaciones).html_safe %></div><br>
+	<div>Obligaciones de las partes que suscriben el Acuerdo:</div>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.obligaciones.blank? ? "INGRESE LAS OBLIGACIONES DE LAS PARTES" : informe_de_acuerdo.obligaciones).html_safe %></div><br>
 	<div>Difusión:</div>
-	<div> <%= (@informe_de_acuerdo.difusion.blank? ? "INGRESE DIFUSION" : @informe_de_acuerdo.difusion).html_safe %></div><br>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.difusion.blank? ? "INGRESE DIFUSION" : informe_de_acuerdo.difusion).html_safe %></div><br>
 	<div>Promoción:</div>
-	<div> <%= (@informe_de_acuerdo.promocion.blank? ? "INGRESE PROMOCION" : @informe_de_acuerdo.promocion).html_safe %></div><br>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.promocion.blank? ? "INGRESE PROMOCION" : informe_de_acuerdo.promocion).html_safe %></div><br>
 	<div>Incentivos:</div>
-	<div> <%= (@informe_de_acuerdo.incentivos.blank? ? "INGRESE INCENTIVOS" : @informe_de_acuerdo.incentivos).html_safe %></div><br>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.incentivos.blank? ? "INGRESE INCENTIVOS" : informe_de_acuerdo.incentivos).html_safe %></div><br>
 	<div>Sanciones:</div>
-	<div> <%= (@informe_de_acuerdo.sanciones.blank? ? "INGRESE SANCIONES" : @informe_de_acuerdo.sanciones).html_safe %></div><br>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.sanciones.blank? ? "INGRESE SANCIONES" : informe_de_acuerdo.sanciones).html_safe %></div><br>
 	<div>Plazos:</div>
-	<div> Plazo Máximo de Adhesión: <%= (@informe_de_acuerdo.plazo_maximo_adhesion.blank? ? "INGRESE PLAZO MAXIMO DEL ACUERDO" : pluralize(@informe_de_acuerdo.plazo_maximo_adhesion, 'mes', 'meses')) %></div>
-	<div> Plazo Finalización Implementación: <%= (@informe_de_acuerdo.plazo_finalizacion_implementacion.blank? ? "INGRESE PLAZO DE FINALIZACION DE IMPLEMENTACION" : pluralize(@informe_de_acuerdo.plazo_finalizacion_implementacion, 'mes', 'meses')) %></div>
-	<div> Plazo Máximo Neto para iniciar Proceso de Certificación Final: <%= (@informe_de_acuerdo.plazo_maximo_neto.blank? ? "INGRESE PLAZO MAXINO NETO" : pluralize(@informe_de_acuerdo.plazo_maximo_neto, 'mes', 'meses')) %></div>
-	<div> Plazo Máximo para iniciar Proceso de Certificación Final: <%= (@informe_de_acuerdo.plazo_maximo.blank? ? "INGRESE PLAZO MAXIMO" : pluralize(@informe_de_acuerdo.plazo_maximo, 'mes', 'meses')) %></div><br>
+	<div> Plazo Vigencia Acuerdo: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.plazo_vigencia_acuerdo.blank? ? "INGRESE PLAZO VIGENCIA ACUERDO" : pluralize(informe_de_acuerdo.plazo_vigencia_acuerdo, 'año', 'años')) %></div>
+	<div> Plazo Máximo de Adhesión: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.plazo_maximo_adhesion.blank? ? "INGRESE PLAZO MAXIMO DEL ACUERDO" : pluralize(informe_de_acuerdo.plazo_maximo_adhesion, 'mes', 'meses')) %></div>
+	<div> Plazo Finalización Implementación: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.plazo_finalizacion_implementacion.blank? ? "INGRESE PLAZO DE FINALIZACION DE IMPLEMENTACION" : pluralize(informe_de_acuerdo.plazo_finalizacion_implementacion, 'mes', 'meses')) %></div>
+	<div> Vigencia Certificación Final: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.vigencia_certificacion_final.blank? ? "INGRESE VIGENCIA DE CERTIFICACIÓN FINAL" : pluralize(informe_de_acuerdo.vigencia_certificacion_final, 'año', 'años')) %></div>
+	<%
+=begin%>
+	<div> Plazo Máximo Neto para iniciar Proceso de Certificación Final: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.plazo_maximo_neto.blank? ? "INGRESE PLAZO MAXINO NETO" : pluralize(informe_de_acuerdo.plazo_maximo_neto, 'mes', 'meses')) %></div>
+	<div> Plazo Máximo para iniciar Proceso de Certificación Final: <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.plazo_maximo.blank? ? "INGRESE PLAZO MAXIMO" : pluralize(informe_de_acuerdo.plazo_maximo, 'mes', 'meses')) %></div><br>
+	<% 
+=end %>
 	<div>Personerías:</div>
-	<div> <%= (@personeria.blank? ? "INGRESE PERSONERIA" : @personeria).html_safe %></div><br>
+	<div> <%= (personeria.blank? ? "INGRESE PERSONERIA" : personeria).html_safe %></div><br>
 	<div>Ejemplares:</div>
-	<div> <%= (@informe_de_acuerdo.ejemplares.blank? ? "INGRESE EJEMPLARES" : @informe_de_acuerdo.ejemplares).html_safe %></div><br>
+	<div> <%= (informe_de_acuerdo.blank? || informe_de_acuerdo.ejemplares.blank? ? "INGRESE EJEMPLARES" : informe_de_acuerdo.ejemplares).html_safe %></div><br>
 	<div>Firmantes:</div>
-	<% @firmas.each do |firma| %>
-		<div>
-			<br>
-			<br>
-			<br>
-			<div>	______________________________</div>
-			<div>	<%= firma[0] %></div>
-			<div>	<%= firma[1] %></div>
-			<div>	<%= firma[2] %></div>
-			<br>
-			<br>
-			<br>
-		</div>
+	<% if !firmas.blank? %>
+		<% firmas.each do |firma| %>
+			<div>
+				<br>
+				<br>
+				<br>
+				<div>	______________________________</div>
+				<div>	<%= firma[0] %></div>
+				<div>	<%= firma[1] %></div>
+				<div>	<%= firma[2] %></div>
+				<br>
+				<br>
+				<br>
+			</div>
+		<% end %>
 	<% end %>
 	<br>
 	<div>Archivos anexos:</div>
 	<div>
 		<br>
-		<% if @informe_de_acuerdo.archivos_anexos.present? %>
-			<% @informe_de_acuerdo.archivos_anexos.each do |f| %>
+		<% if !informe_de_acuerdo.blank? && informe_de_acuerdo.archivos_anexos.present? %>
+			<% informe_de_acuerdo.archivos_anexos.each do |f| %>
 				<br>
 				<%= f.file.filename.html_safe %>
 				<br>

@@ -1,0 +1,9 @@
+-if @adhesion.errors.blank?
+  $('#modal_retirar_elemento').modal("hide");
+  setTimeout(function(){
+  $('.loading-data').show();
+  }, 100);
+  window.location.href='#{revisar_adhesion_path(@tarea_pendiente.id)}';
+-else
+  $("#modal-retirar-elem-remote-form").html("#{j render 'form_modal_retirar_elemento'}");
+  htmlErrorToTooltip('top');

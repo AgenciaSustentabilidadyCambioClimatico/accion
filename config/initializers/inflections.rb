@@ -60,6 +60,17 @@ ActiveSupport::Inflector.inflections do |inflect|
 	inflect.irregular 'reporte', 'reportes'
 	inflect.irregular 'reporte_automatizado_avance', 'reporte_automatizado_avances'
 	inflect.irregular 'registro_apertura_correo', 'registro_apertura_correos'	
+	inflect.irregular 'tooltips_tamano', 'tooltips_tamanos'		
+	inflect.irregular 'campo', 'campos'
+	inflect.irregular 'campo_tooltip', 'campo_tooltips'
+	inflect.irregular 'campo_tarea', 'campo_tareas'
+	inflect.irregular 'nivel', 'niveles'
+	inflect.irregular 'estandar_nivel', 'estandar_niveles'
+	inflect.irregular 'auditoria_nivel', 'auditoria_niveles'
+	inflect.irregular 'validacion', 'alidaciones'
+	inflect.irregular 'auditoria_validacion', 'auditoria_validaciones'
+	inflect.irregular 'meta', 'metas'
+	inflect.irregular 'materia_sustancia_meta', 'materia_sustancia_metas'
 	inflect.uncountable %w(unidad_tiempo_para_contestar)
 	#inflect.uncountable %w( interes )
 	#inflect.irregular 'actividad', 'actividades'

@@ -6,17 +6,17 @@
 			.card
 				.card-header
 					%h5.no-margin
-						= action_label_of_(@pregunta)
+						= action_label_of_(@pregunta,true)
 				.card-body
 					.row
 						.col-12
 							= f.input :texto, label: t(:texto), input_html: { class: 'required-field' }, placeholder: "Indique la pregunta", required: true
 						.col-12
-							= f.input :tipo_respuestas, collection: Pregunta.tipo_respuestas.map{|u,i|[t("#{u}"),u]}, label: t(:tipo_respuestas), input_html: { class: 'required-field' }, required: true
+							= f.input :tipo_respuestas, collection: Pregunta.tipo_respuestas.map{|u,i|[t("#{u}"),u]}, label: t(:tipo_respuestas), input_html: { class: 'required-field' }, required: true, disabled: Pregunta::PREGUNTAS_BLOQUEDAS.include?(@pregunta.id)
 						.col-12
 							%label.control-label
 								=t(:es_pregunta_base)
-							= f.input :base, label: false, input_html: { class: 'form-control' }, wrapper: false, disabled: [1,2].include?(@pregunta.id)
+							= f.input :base, label: false, wrapper: false, disabled: Pregunta::PREGUNTAS_BLOQUEDAS.include?(@pregunta.id)
 
 	.float-right
 		= link_to t(:back), admin_preguntas_path, class: 'btn btn-sm btn-warning'

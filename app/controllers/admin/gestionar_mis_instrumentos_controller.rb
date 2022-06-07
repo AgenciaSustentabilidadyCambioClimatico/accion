@@ -35,6 +35,26 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
   def fpl_rendiciones
   end
 
+  def descargar_reporte_sustentabilidad
+
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id]) if !params[:id].blank?
+
+    if !@manifestacion_de_interes.nil? || current_user.is_admin?
+
+      @datos_publicos = DatosPublico.load
+
+      @adhesion_elemento = AdhesionElemento.find(params[:ae_id]) if !params[:ae_id].blank?
+
+      @contribuyente = Contribuyente.find(params[:c_id]) if !params[:c_id].blank?
+
+      archivo = CreaReporteSustentabilidad.new(request, @manifestacion_de_interes, @adhesion_elemento, current_user, @contribuyente).crear_reporte
+
+      send_data archivo, disposition: "attachment", filename: "Reporte Sustentabilidad.#{@datos_publicos.extension_reporte}"
+    else
+      redirect_to root_path, alert: "No tiene permiso para acceder a esta página"
+    end
+  end
+
   private
 
     #DZC define las variables a instanciar para el usuario específico. Determina el flujo dependiendo de los flujos de los contribuyentes a los que esta asociado el usuario. Si el usuario tiene el rol Rol::ADMIN de la ASCC, entonces accede a todos los instrumentos
@@ -42,7 +62,7 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
       personas = current_user.personas
       personas_id = personas.pluck(:id)
       user_actores = MapaDeActor.where(persona_id: personas.pluck(:id))
-      @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq)
+      @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :desc)
       unless @instrumentos.blank?
         @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
         @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
@@ -51,7 +71,7 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
         @instrumentos.each do |i|
           @instancias += i.datos_para_gestionar(personas_id)       
         end
-        @instancias = @instancias.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_instrumento]]}
+        #@instancias = @instancias.sort_by { |hsh| hsh[:id_instrumento]}
       else
         flash[:warning] = "Usted no tiene instrumentos asociados."
         redirect_to root_path

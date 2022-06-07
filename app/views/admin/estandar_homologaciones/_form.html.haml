@@ -1,139 +1,299 @@
 :javascript
-	$(document).on('ready', function(){
-		var acciones_descritas = #{raw json_escape Accion.descritas.to_json}
-		var materia_sustancia_descritas = #{raw json_escape MateriaSustancia.descritas.to_json}
-		var metas_descritas = #{raw json_escape Clasificacion.descritas(true).to_json}
-		var acciones_descritas_por_clasificacion = #{raw json_escape Clasificacion.acciones_descritas.to_json}
-		var materia_sustancia_descritas_por_clasificacion = #{raw json_escape Clasificacion.materia_sustancia_descritas.to_json}
-		var mtSelector;
-		var msSelector;
 
-		$('.accion_select').change(function(){
-			var mtSelector = $(this).closest('tr').find('.meta select');
-			var msSelector = $(this).closest('tr').find('.materia select');
-			var descripcion = $(this).closest('tr').find('.descripcion input');
-			var medio_verif = $(this).closest('tr').find('.medio_verif input');
-			verificar_si_necesita_agregar_materia_sustancia($(this).val(), mtSelector, msSelector, descripcion, medio_verif);
-		});
-		
-		$('.materia_select').change(function(){
-			var acSelector = $(this).closest('tr').find('.accion select');
-			var mtSelector = $(this).closest('tr').find('.meta select');
-			actualizar_metas(acSelector.val(), mtSelector,$(this).val());
-		});
+  var acciones_descritas = #{raw json_escape Accion.descritas.to_json}
+  var materia_sustancia_descritas = #{raw json_escape MateriaSustancia.descritas.to_json}
+  var metas_descritas = #{raw json_escape Clasificacion.descritas(true).to_json}
+  var acciones_descritas_por_clasificacion = #{raw json_escape Clasificacion.acciones_descritas.to_json}
+  var materia_sustancia_descritas_por_clasificacion = #{raw json_escape Clasificacion.materia_sustancia_descritas.to_json}
+  var mtSelector;
+  var msSelector;
+  var mensaje_confirmado = false;
 
-		verificar_si_necesita_agregar_materia_sustancia = function(accion_id, mtSelector, msSelector, descripcion, medio_verif) {
-			if (accion_id != "" && accion_id != undefined) {
-				ac = acciones_descritas[accion_id];
-				actualizar_metas(accion_id, mtSelector)
-				descripcion.val(ac.descripcion);
-				medio_verif.val(ac.medio_de_verificacion_generico);
-				if(ac.debe_asociar_materia_sustancia == true){
-					msSelector.removeAttr('disabled').addClass('required-field');
-					$('label[for="set_metas_accion_materia_sustancia_ud"] > abbr').show();
-					$('#set_metas_accion_clasificacion_para_filtro.cpf-materia-sustancia').removeAttr('disabled');
-				} else {
-					msSelector.attr('disabled','disabled').removeClass('required-field').val("");
-					$('label[for="set_metas_accion_materia_sustancia_ud"] > abbr').hide();
-					$('#set_metas_accion_clasificacion_para_filtro.cpf-materia-sustancia').attr('disabled','disabled');
-				}
-			} else {
-				descripcion.val("");
-				mtSelector.empty().attr('disabled','disabled');
-				msSelector.val("").attr('disabled','disabled');
-			}
-		}
-		
-		actualizar_metas = function(accion_id, mtSelector,materia_sustancia_id) {
-			accion = acciones_descritas[accion_id];
-			materia_sustancia = materia_sustancia_descritas[materia_sustancia_id];
-			metas = { }
-			activarSelectorMetas = false
-			if (accion != undefined && accion.meta_id != undefined && accion.meta_id != null){
-				metas[accion.meta_id] = metas_descritas[accion.meta_id].nombre;
-				activarSelectorMetas = true;
-			}
-			if (materia_sustancia !== undefined && accion.meta_id != materia_sustancia.meta_id) {
-				metas[materia_sustancia.meta_id] = metas_descritas[materia_sustancia.meta_id].nombre;
-				activarSelectorMetas = true;
-			}
-			mtSelector.empty();
-			$.each(metas,function(meta_id,meta_nombre){
-				mtSelector.append("<option value='"+meta_id+"'>"+meta_nombre+"</option>");
-			});
+  verificar_si_necesita_agregar_materia_sustancia = function(accion_id, mtSelector, msSelector, descripcion, medio_verif) {
+    if (accion_id != "" && accion_id != undefined) {
+      ac = acciones_descritas[accion_id];
+      actualizar_metas(accion_id, mtSelector)
+      descripcion.val(ac.descripcion);
+      medio_verif.val(ac.medio_de_verificacion_generico);
+      if(ac.debe_asociar_materia_sustancia == true){
+        msSelector.removeAttr('disabled').addClass('required-field');
+        msSelector.parents("tr").find('.estandar_homologacion_estandar_set_metas_acciones_materia_sustancia_id abbr').show();
+      } else {
+        msSelector.attr('disabled','disabled').removeClass('required-field');
+        msSelector.parents("tr").find('.estandar_homologacion_estandar_set_metas_acciones_materia_sustancia_id abbr').hide();
+      }
+    } else {
+      descripcion.val("");
+      medio_verif.val("");
+      mtSelector.empty().attr('disabled','disabled').removeClass('required-field');
+      msSelector.attr('disabled','disabled').removeClass('required-field');
+    }
+  }
+  
+  actualizar_metas = function(accion_id, mtSelector,materia_sustancia_id) {
+    accion = acciones_descritas[accion_id];
+    materia_sustancia = materia_sustancia_descritas[materia_sustancia_id];
+    metas = { }
+    activarSelectorMetas = false
+    if (accion != undefined && accion.meta_id != undefined && accion.meta_id != null){
+      metas[accion.meta_id] = metas_descritas[accion.meta_id].nombre;
+      activarSelectorMetas = true;
+    }
+    if (materia_sustancia !== undefined && materia_sustancia.metas_ids.length > 0) {
+      $.each(materia_sustancia.metas_ids, function(index, meta_id){
+        if(!activarSelectorMetas || meta_id != accion.meta_id){
+          metas[meta_id] = metas_descritas[meta_id].nombre;
+        }
+      });
+      activarSelectorMetas = true;
+    }
+    mtSelector.empty();
+    if ( activarSelectorMetas) {
+      $.each(metas,function(meta_id,meta_nombre){
+        mtSelector.append("<option value='"+meta_id+"'>"+meta_nombre+"</option>");
+      });
+      mtSelector.removeAttr('disabled').addClass('required-field');
+      mtSelector.parents("tr").find('.estandar_homologacion_estandar_set_metas_acciones_meta_id abbr').show();
+    } else {
+      mtSelector.empty().attr('disabled','disabled').removeClass('required-field');
+      mtSelector.parents("tr").find('.estandar_homologacion_estandar_set_metas_acciones_meta_id abbr').hide();
+    }
+  }
 
-			if ( activarSelectorMetas) {
-				mtSelector.removeAttr('disabled');
-			} else {
-				mtSelector.attr('disabled','disabled');
-			}
-		}
-	});
-	$(document).on('nested:fieldAdded:estandar_set_metas_acciones', function(event){
-	  checkFieldValidity($('#estandar_homologacion_nombre'));
-	  $('.accion_select').change(function(){
-			var mtSelector = $(this).closest('tr').find('.meta select');
-			var msSelector = $(this).closest('tr').find('.materia select');
-			var descripcion = $(this).closest('tr').find('.descripcion input');
-			var medio_verif = $(this).closest('tr').find('.medio_verif input');
-			verificar_si_necesita_agregar_materia_sustancia($(this).val(), mtSelector, msSelector, descripcion, medio_verif);
-		});
-		$('.materia_select').change(function(){
-			var acSelector = $(this).closest('tr').find('.accion select');
-			var mtSelector = $(this).closest('tr').find('.meta select');
-			actualizar_metas(acSelector.val(), mtSelector,$(this).val());
-		});
-	})
-- titulo t(:estándar_homologación)
+  $(document).on('change', '.accion_select', function(){
+    var mtSelector = $(this).closest('tr').find('.meta select');
+    var msSelector = $(this).closest('tr').find('.materia select');
+    var descripcion = $(this).closest('tr').find('.descripcion input');
+    var medio_verif = $(this).closest('tr').find('.medio_verif input');
+    verificar_si_necesita_agregar_materia_sustancia($(this).val(), mtSelector, msSelector, descripcion, medio_verif);
+    chosen_update_acciones();
+  });
+  
+  $(document).on('change', '.materia_select', function(){
+    var acSelector = $(this).closest('tr').find('.accion select');
+    var mtSelector = $(this).closest('tr').find('.meta select');
+    actualizar_metas(acSelector.val(), mtSelector,$(this).val());
+    chosen_update_acciones();
+  });
+
+  $(document).on('nested:fieldAdded:estandar_set_metas_acciones', function(event){
+    $('.accion_select').change(function(){
+      var mtSelector = $(this).closest('tr').find('.meta select');
+      var msSelector = $(this).closest('tr').find('.materia select');
+      var descripcion = $(this).closest('tr').find('.descripcion input');
+      var medio_verif = $(this).closest('tr').find('.medio_verif input');
+      verificar_si_necesita_agregar_materia_sustancia($(this).val(), mtSelector, msSelector, descripcion, medio_verif);
+    });
+    chosen_elementos();
+
+    setear_obligatorio_nivel(event.field.find('.accion-estandar-nivel'));
+    iniciarAutoNumeric();
+    checkFieldValidity($('#estandar_homologacion_nombre'));
+  });
+
+  $(document).on('nested:fieldAdded:estandar_niveles', function(event){
+    virtual_id = event.field.data("id");
+    nombre = event.field.find('.nivel-nombre').val();
+    $('.accion-estandar-nivel').append('<option value="'+virtual_id+'">'+nombre+'</option>');
+
+    if($('#estandares-niveles tr').length == 1){
+      event.field.find("td:last-child").empty();
+      event.field.find(".porcentaje").val("100").attr("readonly", true);
+      iniciarAutoNumeric();
+      event.field.find(".porcentaje").trigger("keypress");
+    }
+
+    chosen_update_acciones();
+
+    chosen_elementos();
+    setear_numero_niveles();
+    iniciarAutoNumeric();
+    checkFieldValidity($('#estandar_homologacion_nombre'));
+  });
+  $(document).on('click', '#estandares-niveles .fake-remove-nested-fields', function(event){
+    virtual_id = $(this).parents('tr').data("id");
+    boton_eliminar = $(this);
+    if($('.accion-estandar-nivel option[value="'+virtual_id+'"]:selected').length > 0){
+      dataConfirmModal.confirm({
+        title: 'Confirme antes de continuar',
+        text: "Este nivel tiene acciones obligatorios asociadas. ¿Eliminar de todas formas?",
+        commit: 'Si',
+        cancel: 'No',
+        zIindex: 10099,
+        onConfirm: function() {
+          boton_eliminar.parents('tr').find('.remove_nested_fields').trigger("click");
+        },
+        onCancel:  function() {
+        },
+        onHide:    function() {
+        }
+      });
+      return;
+    }else{
+      boton_eliminar.parents('tr').find('.remove_nested_fields').trigger("click");
+    }
+  });
+
+  $(document).on('nested:fieldRemoved:estandar_niveles', function(event){
+    virtual_id = event.field.data("id");
+    $('.accion-estandar-nivel option[value="'+virtual_id+'"]').remove();
+
+    chosen_update_acciones();
+    setear_numero_niveles();
+    checkFieldValidity($('#estandar_homologacion_nombre'));
+  });
+
+  $(document).on('input paste', '.nivel-nombre', function(e){
+    virtual_id = $(this).parents('tr').data("id");
+    $('.accion-estandar-nivel option[value="'+virtual_id+'"]').html(this.value);
+    chosen_update_acciones();
+  });
+
+  function chosen_elementos(){
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true
+    });
+  }
+
+  function chosen_update_acciones(){
+    $('.chosen-control').each(function(){
+      $(this).trigger('chosen:updated');
+    });
+  }
+
+  function setear_numero_niveles(){
+    last_index = 0;
+    $.each($('tr[style!="display: none;"] .nivel-numero'), function(index, elem){
+      $(this).find('.nivel-numero-input').val(index+1);
+      $(this).find('.nivel-numero-label').html(index+1);
+      last_index = (index+1);
+    });
+    if(last_index == 10){
+      $('.add_nested_fields[data-target="#estandares-niveles"]').hide();
+    }else{
+      $('.add_nested_fields[data-target="#estandares-niveles"]').show();
+    }
+  }
+
+  function setear_obligatorio_nivel(elementos){
+    $.each(elementos, function(index, elem){
+      nivel_select = $(elem).closest('td').data('nivel-id');
+      $.each($('#estandares-niveles tr[style!="display: none;"]'), function(index2, elem_nivel){
+        virtual_id = $(elem_nivel).data("id");
+        nombre = $(elem_nivel).find('.nivel-nombre').val();
+        $(elem).append('<option value="'+virtual_id+'" '+(virtual_id == nivel_select ? 'selected' : '')+'>'+nombre+'</option>');
+      });
+    });
+    chosen_update_acciones();
+  }
+  
+  $(document).on('ready', function(){
+
+    chosen_elementos();
+    setear_numero_niveles();
+    setear_obligatorio_nivel($('tr[style!="display: none;"] .accion-estandar-nivel'));
+    
+  });
+- titulo t(:estándar_de_certificación)
 = simple_nested_form_for [:admin,@estandar], remote: true, html: { autocomplete: :off, multipart: true  }  do |f|
-	.row.justify-content-center
-		.col-lg-12
-			.row
-				.col-12
-					.card
-						.card-header
-							%h5.no-margin
-							%b
-								= action_label_of_(@estandar)
-						.card-body
-							.row
-								.col-6
-									= f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre del Estándar", input_html: { class: 'required-field' }, required: true
-								.col-3.pr-0
-									= f.input :referencias, as: :file, input_html: {class: "form-control form-control border-right-0 required-field", multiple: true}, label: t(:adjuntar_archivos), required: true
-								.col-3.pl-0
-									= __archivos_status(f.object,:referencias)
-		.col-lg-12
-			.row
-				.col-12
-					.card
-						.card-header
-							%h5.no-margin
-								=t(:acciones)
-								= f.link_to_add :estandar_set_metas_acciones, data: { target: "#estandares-metas" }, class: 'float-right add-data-target' do
-									%i.fa.fa-plus-circle
-									=t(:agregar)
-						.card-body.table
-							.row
-								.col-12
-									%table#estandares-metas.table.table-striped.mb-0
-										%tbody
-											= f.fields_for :estandar_set_metas_acciones, :wrapper => false  do |meta|
-												%tr.fields
-													%td.align-bottom.accion
-														= meta.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field accion_select' }, required: true
-													- if meta.object.persisted? && meta.object.materia_sustancia_id.present?
-														%td.align-bottom.materia= meta.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field' }, required: true
-													-else
-														%td.align-bottom.materia= meta.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field materia_select', disabled: true }, required: true
-													%td.align-bottom.meta= meta.input :meta_id, label: t(:meta), collection: Clasificacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field' }, required: true
-													%td.align-bottom= meta.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field' }, required: true
-													%td.align-bottom= meta.input :criterio_inclusion_exclusion	, label: t(:criterio_inclusión_exclusión)
-													%td.align-bottom.descripcion= meta.input :descripcion_accion	, label: t(:descripción_acción), input_html: { class: 'required-field' }, required: true
-													%td.align-bottom.medio_verif= meta.input :detalle_medio_verificacion	, label: t(:detalle_medio_verificación), input_html: { class: 'required-field' }, required: true
-													%td.align-middle.accion.no-padding.remove-row.p-0
-														= meta.link_to_remove do
-															%i.fa.fa-times-circle.left.link-to-remove-row
-	.float-right
-		= link_to t(:back), admin_estandar_homologaciones_path, class: 'btn btn-sm btn-warning'
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+  .row.justify-content-center
+    .col-lg-12
+      .row
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin.control-label
+                = action_label_of_(@estandar,true)
+            .card-body
+              .row
+                .col-12.col-lg-6
+                  = f.input :nombre, label: t(:nombre), placeholder: "Ingrese nombre del Estándar", input_html: { class: 'required-field' }, required: true
+                .col-12.col-lg-6
+                  = f.input :descripcion, label: t(:descripcion), placeholder: "Ingrese descripción del Estándar", input_html: { class: 'required-field' }, required: true
+                .col-12.col-lg-3.pr-lg-2
+                  = f.input :referencias, as: :file, label: t(:adjuntar_archivo_de_referencia_del_estándar), input_html: {class: 'form-control validado', multiple: true}
+                .col-12.col-lg-3.pl-lg-2
+                  =__descargar_archivo(f.object.referencias, f.object, true, false)
+                .col-12.col-lg-6
+                  = f.input :url_referencia, as: :string, label: t(:añadir_url_de_referencia_del_estándar), placeholder: "Ingrese url de referencia del Estándar"
+    .col-lg-12
+      .row
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin
+                =t(:niveles_de_certificación)
+                = f.link_to_add :estandar_niveles, data: { target: "#estandares-niveles" }, class: 'float-right add-data-target' do
+                  %i.fa.fa-plus-circle
+                  =t(:agregar_nivel)
+            .card-body.table
+              .row
+                .col-12
+                  %table#estandares-niveles.table.table-striped.mb-0.estandar-tabla
+                    %tbody
+                      = f.fields_for :estandar_niveles, :wrapper => false  do |nivel|
+                        %tr.fields{"data-id" => (nivel.object.id.blank? ? nivel.index : nivel.object.id)}
+                          %td.align-top.nivel-numero
+                            =nivel.input :numero, as: :hidden, wrapper: false, input_html: { class: 'nivel-numero-input' }
+                            .form-group
+                              %label.control-label=t(:numero_nivel)
+                              %div.py-2.nivel-numero-label
+
+                          %td.align-bottom
+                            = nivel.input :nombre, label: t(:nombre), input_html: { class: 'required-field nivel-nombre' }, required: true
+                          %td.align-bottom
+                            = nivel.input :porcentaje, as: :string, label: t(:porcentaje), input_html: { class: 'required-field porcentaje' }, required: true, readonly: nivel.index == 0
+                          %td.align-bottom
+                            = nivel.input :archivo, as: :file, label: t(:archivo), input_html: {class: 'form-control validado'}
+                          %td.align-bottom{style:"width: 100px !important;"}
+                            =__descargar_archivo(nivel.object.archivo, nivel.object, true, false)
+                          %td.align-middle.accion.no-padding.remove-row.p-0
+                            -if nivel.index != 0
+                              .d-none
+                                = nivel.link_to_remove do
+                                  %i.fa.fa-times-circle.left.link-to-remove-row
+                              %a.fake-remove-nested-fields.mx-3.mt-2{href: "javascript:void(0)"}
+                                %i.fa.fa-times-circle.left.link-to-remove-row
+    .col-lg-12
+      .row
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin
+                =t(:acciones)
+                = f.link_to_add :estandar_set_metas_acciones, data: { target: "#estandares-metas" }, class: 'float-right add-data-target' do
+                  %i.fa.fa-plus-circle
+                  =t(:agregar)
+            .card-body.table
+              .row
+                .col-12
+                  %table#estandares-metas.table.table-striped.mb-0.estandar-tabla
+                    %tbody
+                      = f.fields_for :estandar_set_metas_acciones, :wrapper => false do |meta|
+                        %tr.fields
+                          =meta.input :estandar_nivel_id, as: :hidden, wrapper: false, input_html: {value: '0'}
+                          %td.align-bottom.accion
+                            = meta.input :accion_id, label: t(:acción), collection: Accion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field accion_select chosen-control', "data-placeholder" => "Seleccione una acción" }, required: true
+                          - if meta.object.materia_sustancia_id.present?
+                            %td.align-bottom.materia= meta.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field chosen-control', "data-placeholder" => "Seleccione una materia" }, required: true
+                          -else
+                            %td.align-bottom.materia= meta.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'materia_select chosen-control', disabled: true, "data-placeholder" => "Seleccione una materia" }, required: true
+                          - if meta.object.meta_id.present?
+                            %td.align-bottom.meta= meta.input :meta_id, label: t(:meta), collection: Clasificacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field chosen-control', "data-placeholder" => "Seleccione una meta" }, required: true
+                          - else
+                            %td.align-bottom.meta= meta.input :meta_id, label: t(:meta), collection: Clasificacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'chosen-control', "data-placeholder" => "Seleccione una meta", disabled: true }, required: true
+                          %td.align-bottom= meta.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field chosen-control', "data-placeholder" => "Seleccione un alcance" }, required: true
+                          %td.align-bottom= meta.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión)
+                          %td.align-bottom.descripcion= meta.input :descripcion_accion, label: t(:descripción_acción), input_html: { class: 'required-field' }, required: true
+                          %td.align-bottom.medio_verif= meta.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), required: false
+                          %td.align-bottom= meta.input :puntaje, as: :string, input_html: { class: 'numero-1-100' },label: t(:puntaje)
+                          %td.align-bottom{"data-nivel-id" => meta.object.estandar_nivel_id}= meta.input :obligatorio_para_nivel, collection: [], label: t(:obligatorio_para_nivel), input_html: {class: 'chosen-control accion-estandar-nivel', "data-placeholder" => "Seleccione un nivel"}
+                          %td.align-middle.accion.no-padding.remove-row.p-0
+                            = meta.link_to_remove do
+                              %i.fa.fa-times-circle.left.link-to-remove-row
+  .float-right
+    = link_to t(:back), admin_estandar_homologaciones_path, class: 'btn btn-sm btn-warning'
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
