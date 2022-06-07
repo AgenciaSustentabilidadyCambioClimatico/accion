@@ -36,7 +36,7 @@ class FlujoTarea < ApplicationRecord
 		end
 	end
 
-	def self.metodos(user, reunion=nil)
+	def self.metodos(user, reunion=nil, mdi=nil)
 		{
 			"[asunto]": "Mensaje de salida",
 			"[nombre]": user.nombre_completo,
@@ -44,7 +44,8 @@ class FlujoTarea < ApplicationRecord
 			"[email]": user.email,
 			"[rut]": user.rut,
 			"[fecha_reunion]": reunion.nil? ? "[fecha_reunion]" : reunion.fecha,
-			"[lugar_reunion]": reunion.nil? ? "[lugar_reunion]" : reunion.direccion
+			"[lugar_reunion]": reunion.nil? ? "[lugar_reunion]" : reunion.direccion,
+			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo
 		}
 	end
 
@@ -70,11 +71,18 @@ class FlujoTarea < ApplicationRecord
 					persona_id: nil
 				})
 			else
+				flujo = Flujo.find(flujo_id)
 				if sig_tarea.cualquiera_con_rol_o_usuario_asignado
 									 
 					#DZC en realidad si este booleano es true, se deberia enviar la tarea solo a los usuarios contenidos en el mapa de actores que posean el rol escogido por el administrador en el mantenedor de tareas
 					
-					MapaDeActor.where(flujo_id: flujo_id).where(rol_id: sig_tarea.rol_id).each do |actor| #DZC modificado para que asigne la tarea a cada actor contenido en el mapa de actores
+					#si tarea es encuesta, utiliza los roles adiocionales de ejecución
+					roles_ids = [sig_tarea.rol_id]
+					if sig_tarea.es_una_encuesta
+						roles_ids += sig_tarea.encuesta_ejecucion_roles.pluck(:rol_id)
+					end
+
+					MapaDeActor.where(flujo_id: flujo_id).where(rol_id: roles_ids).each do |actor| #DZC modificado para que asigne la tarea a cada actor contenido en el mapa de actores
 						#DZC obtiene los id de auditorias para instanciar idéntica cantidad de tareas   pendientes si se trata de tarea siguiente APL-032
 						
 						auditorias = []
@@ -100,10 +108,15 @@ class FlujoTarea < ApplicationRecord
 									})
 									if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
 										rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
-
+										
+										begin
+											mdi = flujo.manifestacion_de_interes
+										rescue
+											mdi = nil
+										end
 										FlujoMailer.delay.enviar(
-											self.asunto_format(actor.persona.user), 
-											self.cuerpo_format(actor.persona.user), 
+											self.asunto_format(actor.persona.user, mdi), 
+											self.cuerpo_format(actor.persona.user, mdi), 
 											actor.persona.email_institucional, 
 											rgc.id)
 									end
@@ -146,10 +159,14 @@ class FlujoTarea < ApplicationRecord
 								# })
 								if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
 									rgc = RegistroAperturaCorreo.create(user_id: ut.user_id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
-
+									begin
+										mdi = flujo.manifestacion_de_interes
+									rescue
+										mdi = nil
+									end
 									FlujoMailer.delay.enviar(
-										self.asunto_format(ut.user), 
-										self.cuerpo_format(ut.user), 
+										self.asunto_format(ut.user,mdi), 
+										self.cuerpo_format(ut.user,mdi), 
 										ut.email_institucional,
 										rgc.id) #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
 								end
@@ -164,17 +181,17 @@ class FlujoTarea < ApplicationRecord
 		end
 	end
 
-	def asunto_format user
+	def asunto_format user,mdi=nil
 		asunto = self.mensaje_salida_asunto
-		FlujoTarea.metodos(user).each do |key, value|
+		FlujoTarea.metodos(user,nil,mdi).each do |key, value|
 			asunto = asunto.gsub(key.to_s, value.to_s)
 		end
 		asunto
 	end
 
-	def cuerpo_format user
+	def cuerpo_format user,mdi=nil
 		cuerpo = self.mensaje_salida_cuerpo
-		FlujoTarea.metodos(user).each do |key, value|
+		FlujoTarea.metodos(user,nil,mdi).each do |key, value|
 			cuerpo = cuerpo.gsub(key.to_s, value.to_s)
 		end
 		cuerpo

@@ -8,7 +8,7 @@ class Flujo < ApplicationRecord
   belongs_to :manifestacion_de_interes, optional: true, dependent: :destroy #dependencia creada para poder instanciar y usar el id de manifestación dentro de la vista _table en tarea_pendiente 
   belongs_to :ppp, foreign_key: :programa_proyecto_propuesta_id, class_name: :ProgramaProyectoPropuesta, optional: true, dependent: :destroy
   has_one :adhesion, dependent: :destroy
-  has_many :adhesion_elementos, through: :adhesion #DZC 2018-11-05 13:09:56 se agrega relación para efectos de la bandeja de entrada de la APL-032
+  #has_many :adhesion_elementos, through: :adhesion #DZC 2018-11-05 13:09:56 se agrega relación para efectos de la bandeja de entrada de la APL-032
   has_many :ppf_metas_establecimientos, dependent: :destroy
 
   has_many :auditorias, dependent: :destroy
@@ -33,6 +33,13 @@ class Flujo < ApplicationRecord
   FPL = 'Fondo de Producción Limpia'
   PPF = 'Programas y Proyectos de Financiamiento'
 
+  def adhesiones
+    Adhesion.unscoped.where(flujo_id: self.id)
+  end
+
+  def adhesion_elementos
+    AdhesionElemento.where(adhesion_id: self.adhesiones.pluck(:id))
+  end
 
 
   def plazo_maximo_acciones_meses
@@ -131,12 +138,6 @@ class Flujo < ApplicationRecord
     #  nuevo_documento.desde_estandar = true
     #  nuevo_documento.save
     #end
-  end
-
-  def elementos_adheridos
-    self.adhesiones.each do |f|
-      
-    end
   end
 
   # DZC 2018-10-17 13:03:17 devuelve la matriz de datos para la vista 'gestionar mis instumentos', para el array de personas_id del mismo usuario
@@ -299,8 +300,9 @@ class Flujo < ApplicationRecord
   #DZC devuelve la matriz de instancias históricas por flujo
   def instancias_del_flujo current_user
     instancias = []
+    ascc = Contribuyente.find_by_rut(75980060)
     #Si es admin veo todo
-    puedo_ver_tareas = current_user.is_admin?
+    puedo_ver_tareas = current_user.is_admin? || current_user.is_ascc?
     personas = current_user.personas
     personas_id = personas.pluck(:id)
     if !puedo_ver_tareas
@@ -325,6 +327,8 @@ class Flujo < ApplicationRecord
       tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
       estado = tarea_pend.estado_tarea_pendiente.nombre_historial
       pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : nil
+      activacion = tarea_pend.created_at.strftime("%F %T")
+      ejecucion = tarea_pend.created_at != tarea_pend.updated_at ? tarea_pend.updated_at.strftime("%F %T") : ""
       #finalmente solo puede ver la tarea en especifico si es el que la respondio
       puedo_ver_tarea = puedo_ver_tareas
       puedo_ver_tarea = tarea_pend.user_id == current_user.id if !puedo_ver_tarea
@@ -367,7 +371,23 @@ class Flujo < ApplicationRecord
           documentos_asociados = {nombre: 'Informe de Impacto', url: self.manifestacion_de_interes.informe_impacto.documento.url}
         end
       elsif t.codigo == Tarea::COD_APL_039
-        if current_user.is_admin?
+        #admin, usuario con cargo encargado encuestas de ascc y roles de tarea autorizados
+        allow = current_user.is_admin?
+        if !allow
+          #evaluo si tiene cargo descrito
+          personas.where(contribuyente_id: ascc.id).each do |p|
+
+            allow = p.persona_cargos.where(cargo_id: Cargo::ENCARGADO_ENCUESTAS).count > 0
+            break if allow
+          end
+        end
+        if !allow
+          #evaluo si tiene rol de flujo autorizado
+          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+        end
+
+        if allow
           documentos_asociados = {nombre: 'Encuestas diagnóstico general', url: "modal"}
           lista = {}
           self.tarea_pendientes.where(tarea_id: t.id).each do |tp|
@@ -377,8 +397,22 @@ class Flujo < ApplicationRecord
           documentos_asociados[:lista] = lista.values
         end
       elsif t.es_una_encuesta && t.codigo != Tarea::COD_APL_039
-        #solo si es admin puede descargar el documento
-        if current_user.is_admin?
+        #admin, usuario con cargo encargado encuestas de ascc y roles de tarea autorizados
+        allow = current_user.is_admin?
+        if !allow
+          #evaluo si tiene cargo descrito
+          personas.where(contribuyente_id: ascc.id).each do |p|
+            allow = p.persona_cargos.where(cargo_id: Cargo::ENCARGADO_ENCUESTAS).count > 0
+            break if allow
+          end
+        end
+        if !allow
+          #evaluo si tiene rol de flujo autorizado
+          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+        end
+
+        if allow
           nombre_boton = "Resultado encuesta"
           nombre_boton = "Encuesta diagnóstico general" if t.codigo == Tarea::COD_APL_015
 
@@ -418,7 +452,9 @@ class Flujo < ApplicationRecord
         pendiente: pendiente,
         puedo_ver_tarea: puedo_ver_tarea,
         auditorias_tarea_033: tareas_auditoria,
-        validaciones_tarea_034: tareas_validaciones
+        validaciones_tarea_034: tareas_validaciones,
+        activacion: activacion,
+        ejecucion: ejecucion
       } 
     end
     instancias

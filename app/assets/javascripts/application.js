@@ -74,6 +74,11 @@ var chosenOptions = {
   no_results_text: 'No se encontraron resultados',
   width: '100%'
 }
+var chosenOptionsNoRemove = {
+  allow_single_deselect: false,
+  no_results_text: 'No se encontraron resultados',
+  width: '100%'
+}
 $(document).ready(function() {
   checkFieldValidity($('form').find('*').filter(':input:visible:first'));
   initDateTimePicker();
@@ -306,6 +311,12 @@ function htmlErrorToTooltip(placement) {
     else if(campo.hasClass('chosen-control')) {
       campo = $(this).find('.chosen-container');
     }
+    else if(campo.hasClass('select2-hidden-accessible')){
+      campo = campo.closest('div').find('span.select2-container');
+    }
+    else if(campo.hasClass('ckeditor')){
+      campo = campo.closest('div');
+    }
     mensaje = error.text();
     showTooltipError(mensaje, campo, placement);
   });
@@ -350,7 +361,9 @@ var basicOptions = {
         $($i[0].form).find('input[type="submit"]').trigger('click');
       }
     }
-  }
+  },
+  scrollMonth: false,
+  scrollInput: false
 }
 var anotherDateFormatOption = {
   i18n:{
@@ -369,7 +382,30 @@ var anotherDateFormatOption = {
         $($i[0].form).find('input[type="submit"]').trigger('click');
       }
     }
-  }
+  },
+  scrollMonth: false,
+  scrollInput: false
+}
+var dateTimeFormatOption = {
+  i18n:{
+    es:{
+     months:[ "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"],
+     dayOfWeek:[ "Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+    }
+  },
+  dayOfWeekStart: 1,
+  timepicker:true,
+  format:'d-m-Y H:i',
+  onSelectDate:function(ct,$i){
+    if ( $i.val() != currentDateSelected ) {
+      currentDateSelected = $i.val();
+      if ( $i.hasClass('auto-save') && $($i[0].form).attr('data-remote') == 'true'  ) {
+        $($i[0].form).find('input[type="submit"]').trigger('click');
+      }
+    }
+  },
+  scrollMonth: false,
+  scrollInput: false
 }
 
 function initDateTimePicker() {
@@ -377,6 +413,7 @@ function initDateTimePicker() {
 
   $('.basic-datetimepicker').datetimepicker(basicOptions);
   $('.alternative-datetimepicker').datetimepicker(anotherDateFormatOption);
+  $('.full-datetimepicker').datetimepicker(dateTimeFormatOption);
   $('.basic-datetimepicker-max-year-this').datetimepicker($.extend({},basicOptions,{yearEnd: (new Date).getFullYear()}));
   $('.basic-datetimepicker-max-today').datetimepicker($.extend({},basicOptions,{maxDate: 0}));
   $('.basic-datetimepicker-min-today').datetimepicker($.extend({},basicOptions,{minDate: 0}));
@@ -807,6 +844,24 @@ function beauty_tree_selector(){
 
   $('.card-preview-seleccionados').each(function(){
     set_seleccionados_tree($(this));
+  });
+
+  $('.beauty-tree-content .search').on('input paste', function(){
+    search = this.value;
+    padre = $(this).parents(".beauty-tree-content");
+    padre.find('label').each(function(){
+      content = $(this).text();
+      if(search != "" && !content.toLowerCase().includes(search.toLowerCase())){
+        $(this).parent('li').addClass("d-none");
+      }else{
+        $(this).parent('li').removeClass("d-none");
+        $(this).parent('li').parents('li').each(function(){
+          if($(this).hasClass("d-none")){
+            $(this).removeClass("d-none");
+          }
+        });
+      }
+    });
   });
 }
 

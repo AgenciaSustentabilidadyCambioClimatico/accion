@@ -577,7 +577,7 @@ campo.tareas = Tarea.where(id: 1)
 atributos_obligatorios = {
    clase: "ManifestacionDeInteres",
    atributo: "numero_empresas",
-   tipo: "integer"
+   tipo: "text"
 }
 atributos_opcionales = {
    nombre: "Número de Empresas por tamaño",
@@ -591,7 +591,7 @@ atributos_opcionales = {
    tooltip: "Indicar Número de Empresas por tamaño de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    ayuda: "Indicar Número de Empresas por tamaño de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    id_referencial: "12.1",
-   ayuda_activo: false
+   ayuda_activo: true
 }
 campo = Campo.find_by(atributos_obligatorios)
 campo = campo.present? ? campo : Campo.new(atributos_obligatorios)
@@ -604,7 +604,7 @@ campo.tareas = Tarea.where(id: 1)
 atributos_obligatorios = {
    clase: "ManifestacionDeInteres",
    atributo: "produccion",
-   tipo: "integer"
+   tipo: "text"
 }
 atributos_opcionales = {
    nombre: "Productos y volumen de producción",
@@ -618,7 +618,7 @@ atributos_opcionales = {
    tooltip: "Indicar volumen de los principales productos de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s) (Indicar unidad de medida)",
    ayuda: "Indicar volumen de los principales productos de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s) (Indicar unidad de medida)",
    id_referencial: "12.2",
-   ayuda_activo: false
+   ayuda_activo: true
 }
 campo = Campo.find_by(atributos_obligatorios)
 campo = campo.present? ? campo : Campo.new(atributos_obligatorios)
@@ -635,7 +635,7 @@ atributos_obligatorios = {
 }
 atributos_opcionales = {
    nombre: "Unidad",
-   validacion_contenido_obligatorio: true,
+   validacion_contenido_obligatorio: false,
    validaciones_activas: false,
     validacion_vacio_mensaje: "Campo no puede estar vacío",
    validacion_min: 50,
@@ -658,7 +658,7 @@ campo.tareas = Tarea.where(id: 1)
 atributos_obligatorios = {
    clase: "ManifestacionDeInteres",
    atributo: "ventas",
-   tipo: "integer"
+   tipo: "text"
 }
 atributos_opcionales = {
    nombre: "Ventas",
@@ -672,7 +672,7 @@ atributos_opcionales = {
    tooltip: "Indicar Ventas de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s) en el último año en pesos $.",
    ayuda: "Indicar Ventas de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s) en el último año en pesos $.",
    id_referencial: "12.3",
-   ayuda_activo: false
+   ayuda_activo: true
 }
 campo = Campo.find_by(atributos_obligatorios)
 campo = campo.present? ? campo : Campo.new(atributos_obligatorios)
@@ -685,7 +685,7 @@ campo.tareas = Tarea.where(id: 1)
 atributos_obligatorios = {
    clase: "ManifestacionDeInteres",
    atributo: "porcentaje_exportaciones",
-   tipo: "double"
+   tipo: "text"
 }
 atributos_opcionales = {
    nombre: "Exportaciones",
@@ -699,7 +699,7 @@ atributos_opcionales = {
    tooltip: "Indicar Porcentaje de la producción que es exportada a otros países de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    ayuda: "Indicar Porcentaje de la producción que es exportada a otros países de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    id_referencial: "12.4",
-   ayuda_activo: false
+   ayuda_activo: true
 }
 campo = Campo.find_by(atributos_obligatorios)
 campo = campo.present? ? campo : Campo.new(atributos_obligatorios)
@@ -738,7 +738,7 @@ campo.tareas = Tarea.where(id: 1)
 atributos_obligatorios = {
    clase: "ManifestacionDeInteres",
    atributo: "numero_trabajadores",
-   tipo: "integer"
+   tipo: "text"
 }
 atributos_opcionales = {
    nombre: "Número de trabajadores",
@@ -752,7 +752,7 @@ atributos_opcionales = {
    tooltip: "Indicar cantidad de Trabajadores de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    ayuda: "Indicar cantidad de Trabajadores de la(s) Principal(es) Actividad(es) Económica(s) involucrada(s)",
    id_referencial: "12.6",
-   ayuda_activo: false
+   ayuda_activo: true
 }
 campo = Campo.find_by(atributos_obligatorios)
 campo = campo.present? ? campo : Campo.new(atributos_obligatorios)

@@ -2,9 +2,14 @@ class Tarea < ApplicationRecord
 	# DZC 2019-07-15 11:28:38 se agrega relación con tabla 'campo_tooltips'
 	has_many :campo_tareas, dependent: :delete_all
 	has_many :campos, through: :campo_tareas
+	has_many :encuesta_descarga_roles
+	has_many :encuesta_ejecucion_roles
 
 	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
 	accepts_nested_attributes_for :campos
+
+	accepts_nested_attributes_for :encuesta_descarga_roles, allow_destroy: true
+	accepts_nested_attributes_for :encuesta_ejecucion_roles, allow_destroy: true
 
 	belongs_to :tipo_instrumento, -> { includes :tipo }
 	belongs_to :rol
@@ -33,12 +38,20 @@ class Tarea < ApplicationRecord
 
 	validate :frecuencia
 
+	attr_accessor :limitar_duracion
+
+	before_save :check_encuesta_data
 	after_commit :update_crontab
 
 	# AON: no se sabe si será obligatorio
 	# validate :dias_duracion, if: -> { posee_formulario == true}
 
-
+	def check_encuesta_data
+		if !self.es_una_encuesta
+			self.encuesta_id = nil
+			self.encuesta_descarga_roles.destroy_all
+		end
+	end
 
   def get_descargables
 
@@ -69,12 +82,13 @@ class Tarea < ApplicationRecord
 		( ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_cuerpo.blank? )
 	end
 
-	def metodos(o)
+	def metodos(o,mdi=nil)
 		metodos = {
 			"[nombre]": o.nombre_completo,
 			"[telefono]": o.telefono, 
 			"[email]": o.email, 
-			"[rut]": o.rut
+			"[rut]": o.rut,
+			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo
 		}
 	end
 
@@ -134,8 +148,12 @@ class Tarea < ApplicationRecord
 		# instrumento_base_id = self.tipo_instrumento.tipo_instrumento_id.blank? ? self.tipo_instrumento.id : self.tipo_instrumento.tipo_instrumento_id
 		# instrumentos_id = TipoInstrumento.where(tipo_instrumento_id: instrumento_base_id).pluck(:id)
 		# instrumentos_id << instrumento_base_id
+		roles_ids = [self.rol_id]
+		if self.es_una_encuesta
+			roles_ids += self.encuesta_ejecucion_roles.pluck(:rol_id)
+		end
 		
-	  Responsable.__personas_responsables(self.rol_id, self.tipo_instrumento.id)
+	  Responsable.__personas_responsables(roles_ids, self.tipo_instrumento.id)
 	end
 
 	def puedo_ver user, flujo_id
@@ -183,8 +201,9 @@ class Tarea < ApplicationRecord
 
 	#DZC para determinacion de historial de instrumentos
 	def es_auditoria?
-		[Tarea::ID_APL_032, Tarea::ID_APL_033, Tarea::ID_APL_034, Tarea::ID_PPF_021, Tarea::ID_PPF_022].include? self.id 
+		[Tarea::ID_APL_032,Tarea::ID_APL_032_1, Tarea::ID_APL_033, Tarea::ID_APL_034, Tarea::ID_PPF_021, Tarea::ID_PPF_022].include? self.id 
 	end
+
 
 	#DZC APLs
 	ID_APL_001			=	1		# -	APL-001-Completar Manifestación de Interés
@@ -222,6 +241,7 @@ class Tarea < ApplicationRecord
 	ID_APL_030			= 51  # - APL-030- Preparar Convocatoria Comité Coordinador
 	ID_APL_031			= 50  # - APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
 	ID_APL_032			= 48  # - APL-032- Cargar Datos para Auditoría
+	ID_APL_032_1		= 100  # - APL-032- Cargar Datos para Auditoría
 	ID_APL_033			= 47  # - APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
 	ID_APL_034			= 45  # - APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
 	ID_APL_037			= 40  # - APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
@@ -267,6 +287,7 @@ class Tarea < ApplicationRecord
 	COD_APL_030			=	'APL-030'	 #[51}	-	APL-030- Preparar Convocatoria Comité Coordinador
 	COD_APL_031			=	'APL-031'	 #[50}	-	APL-031- Elaborar y Cargar Acta o Minuta y Asistencia
 	COD_APL_032			=	'APL-032'	 #[48}	-	APL-032- Cargar Datos para Auditoría
+	COD_APL_032_1		=	'APL-032.1'	 #[48}	-	APL-032- Cargar Datos para Auditoría
 	COD_APL_033			=	'APL-033'	 #[47}	-	APL-033- Revisar Auditoría y Otorgar Certificado si no hay validación
 	COD_APL_034			=	'APL-034'	 #[45}	-	APL-034- Validar Auditoría y otorgar certificados si validaciones coinciden
 	COD_APL_037			=	'APL-037'	 #[40}	-	APL-037- Actualizar Mapa Actores, Convocar Ceremonia Certificación
@@ -367,5 +388,14 @@ class Tarea < ApplicationRecord
 	COD_PPF_022	=	'PPF-022'	 #[87}	-	PPF-022-Revisar Auditoría
 	COD_PPF_023	=	'PPF-023'	 #[88}	-	PPF-023-Encuesta de mitad de Ejecución					
 	COD_PPF_024	=	'PPF-024'	 #[21}	-	PPF-024-Responder Encuesta final sobre ejecución programa/proyecto	
+
+	
+	#etapas de acuerdo
+	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]
+	ETAPA_ACUERDO_DIAGNOSTICO = [ID_APL_007, ID_APL_008, ID_APL_011, ID_APL_012, ID_APL_013, ID_APL_014]
+	ETAPA_ACUERDO_PROPUESTA_ACUERDO = [ID_APL_016, ID_APL_017, ID_APL_018, ID_APL_019, ID_APL_020, ID_APL_021]
+	ETAPA_ACUERDO_ADHESION = [ID_APL_022, ID_APL_023, ID_APL_024, ID_APL_025, ID_APL_025_1, ID_APL_025_2, ID_APL_025_3, ID_APL_026, ID_APL_027, ID_APL_028]
+	ETAPA_ACUERDO_IMPLEMENTACION = [ID_APL_029, ID_APL_030, ID_APL_031, ID_APL_032, ID_APL_033, ID_APL_034]
+	ETAPA_ACUERDO_EVALUACION_FINAL_CUMPLIMIENTO = [ID_APL_034, ID_APL_037, ID_APL_038, ID_APL_039, ID_APL_040, ID_APL_041, ID_APL_042, ID_APL_043, ID_APL_044]
 
 end

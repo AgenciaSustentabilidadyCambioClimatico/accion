@@ -5,6 +5,16 @@
     //$(".disabled *:not('.fa')").prop('disabled',true);
     //$(".disabled *:not('.fa')").off();
 
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+
     $('#manifestacion_de_interes_resultado_pertinencia').change(function(){
       carga_por_resultado();
     });
@@ -112,9 +122,10 @@
 - titulo t(:revisar_pertinencia_factibilidad)
 = simple_form_for @manifestacion_de_interes, url: pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.hidden_field :update_pertinencia, as: :boolean, value: true
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
   = f.submit "", class: 'd-none'
-  = f.input :update_pertinencia, as: :hidden, wrapper: false, input_html: { value: true }
   .row
     .col-12
       .card
@@ -206,24 +217,24 @@
                               =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_pertinencia_factibilidad)
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :compromiso_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:compromiso_a_solicitar)
+                          = f.input :compromiso_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: "Condiciones y/o compromisos a solicitar"
                         -else
                           .form-group
                             -no_data = f.object.compromiso_pertinencia_factibilidad.blank?
-                            %label.control-label.string=t(:compromiso_a_solicitar)
+                            %label.control-label.string="Condiciones y/o compromisos a solicitar"
                             %p#manifestacion_de_interes_compromiso_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                               =(no_data ? 'No se ingresó respuesta' : f.object.compromiso_pertinencia_factibilidad)
                       .col-12.col-lg-6
                         .row
                           .col-12
                             -if !solo_lectura
-                              = f.input :coordinador_subtipo_instrumento_id, collection: @responsables_coordinador.map{|p| [p.user.nombre_completo, p.id]}, label: t(:selección_de_coordinadores_subtipo_instrumento), input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione un Coordinador"}
+                              = f.input :coordinador_subtipo_instrumento_id, collection: @responsables_coordinador.map{|p| [p.user.nombre_completo, p.id]}, label: "Seleccionar Coordinador del Acuerdo", input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione un Coordinador"}
                             -else
                               .form-group
                                 -mapa_coordinador = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::COORDINADOR).first
                                 -rev_coordinador = mapa_coordinador.nil? ? nil : mapa_coordinador.persona.user.nombre_completo
                                 -no_data = rev_coordinador.nil?
-                                %label.control-label.string=t(:coordinador_subtipo_instrumento)
+                                %label.control-label.string="Coordinador del Acuerdo"
                                 %p#manifestacion_de_interes_coordinador_subtipo_instrumento_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                                   =(no_data ? 'No se ingresó respuesta' : rev_coordinador)
                           .col-12
@@ -241,10 +252,10 @@
                             %p#manifestacion_de_interes_encargado_hitos_prensa_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                               =(no_data ? 'No se ingresó respuesta' : rev_prensa)
                       .col-12.col-lg-6
-                        .row
+                        .row.align-items-end
                           -if !solo_lectura
                             .col-12.col-lg-6
-                              = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: t(:adjuntar_archivo)
+                              = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: "Adjuntar Ficha de Manifestación de Interés (Consejo Directivo)"
                               = f.input :archivo_pertinencia_factibilidad_cache, as: :hidden
                             .col-12.col-lg-6
                               .form-group
@@ -252,7 +263,7 @@
                           -else
                             .col-12
                               .form-group
-                                = label_tag 'Archivo pertinencia factibilidad', nil, class: 'string mb-0'
+                                = label_tag "Adjuntar Ficha de Manifestación de Interés (Consejo Directivo)", nil, class: 'string mb-0'
                                 = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
 
                       .col-lg-6.d-none.d-lg-block
@@ -280,10 +291,14 @@
                       -if !@manifestacion_de_interes.archivo_respuesta_pertinencia_factibilidad.blank?
                         .col-12.col-lg-6
                           .form-group
-                            %label.string.control-label Archivo respuesta pertinencia y factibilidad
+                            %label.string.control-label Archivo complementario a respuesta de pertinencia y factibilidad (opcional)
                             = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object, false)
     -if !solo_lectura
       .col-12
         .float-right
           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
+          
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+            %i.fa.fa-arrow-circle-right
+            =t(:enviar)

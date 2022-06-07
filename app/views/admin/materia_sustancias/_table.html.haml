@@ -21,20 +21,20 @@
             %th=t(:nombre)
             %th=t(:descripción)
             %th=t(:magnitud_física_asociada)
-            %th=t(:meta_asociada)
+            %th=t(:metas)
             %th=t(:clasificaciones)
             %th.dos.iconos-acciones=t(:acciones)
 
         %tbody
           - @materia_sustancias.each do |record|
-            - meta = record.meta
             - unidad_base = record.unidad_base
+            - metas = record.materia_sustancia_metas
             - clasificaciones = record.materia_sustancia_clasificaciones
             %tr
               %td=record.nombre
               %td=record.descripcion
               %td=record.posee_una_magnitud_fisica_asociada == true ? record.unidad_base : t(:no_posee)
-              %td=meta.blank? ? '--' : meta.nombre
+              %td=metas.map{|m|m.clasificacion.nombre}.join(", ")
               %td=clasificaciones.map{|m|m.clasificacion.nombre}.join(", ")
               %td.dos.iconos-acciones
                 %div

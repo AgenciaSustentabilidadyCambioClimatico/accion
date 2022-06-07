@@ -71,14 +71,16 @@ class Admin::RolesController < ApplicationController
     def rol_params
       params.require(:rol).permit(
       	:nombre,
-        :descripcion
+        :descripcion,
+        :mostrar_en_excel
       )
     end
 
     def rol_update_params
       params.require(:rol).permit(
         :nombre,
-        :descripcion
+        :descripcion,
+        :mostrar_en_excel
       )
     end
 end

@@ -3,17 +3,19 @@ class AuditoriaElemento < ApplicationRecord
 	belongs_to :auditoria
 	belongs_to :adhesion_elemento, optional: true
 	belongs_to :set_metas_accion, optional: true
+	#belongs_to :archivo_informe, class_name: "AuditoriaElementoArchivo" 
+	#belongs_to :archivo_evidencia, class_name: "AuditoriaElementoArchivo" 
 
 	mount_uploader :archivo_informe, ArchivoInformeEvidenciaAuditoriasUploader
 	mount_uploader :archivo_evidencia, ArchivoInformeEvidenciaAuditoriasUploader
-	validates :archivo_informe, presence: true, on: :update
-	validates :archivo_evidencia, presence: true, on: :update
+	#validates :archivo_informe, presence: true, on: :update
+	#validates :archivo_evidencia, presence: true, on: :update
 
 	attr_accessor :archivo_auditorias, :archivos_informe, :archivos_evidencia, :archivo_carga_auditoria
 
 	validate :valid_extensions, if: -> { archivo_carga_auditoria.present? }
 	#validate :data_auditoria, if: -> { archivo_carga_auditoria.present? }
-	validate :archivo_vacio, on: :update #, unless: -> { action_name == "revisar_guardar"}
+	#validate :archivo_vacio, on: :update #, unless: -> { action_name == "revisar_guardar"}
 
 	after_validation :aceptada_or_rechazada
 
@@ -142,39 +144,45 @@ class AuditoriaElemento < ApplicationRecord
 					end
 				else
 
-					auditoria_elemento = AuditoriaElemento.find(fila[:auditoria_elemento_id])          
-					if fila[:aplica].to_s == "NO" && fila[:motivo].blank?
-						auditoria.errors.add(:archivo_auditorias, "Debe completar la celda Motivo para fila #{(posicion+1)}")
-					end
-					nombres_archivos_informe = auditoria.archivos_informe.map{|f| f.original_filename}
-					unless nombres_archivos_informe.include?(fila[:nombre_archivo_informe])
-						unless auditoria_elemento.archivo_informe_identifier == fila[:nombre_archivo_informe]
-							auditoria.errors.add(:archivo_auditorias, "El Archivo informe #{fila[:nombre_archivo_informe]} no fue encontrado para fila #{(posicion+1)}")
+					auditoria_elemento = AuditoriaElemento.find_by(id: fila[:auditoria_elemento_id])
+					if auditoria_elemento.nil? || auditoria_elemento.auditoria_id != auditoria.id
+						auditoria.errors.add(:archivo_auditorias, "El elemento #{fila[:auditoria_elemento_id]} no pertenece a esta auditoría para fila #{(posicion+1)}")
+					else
+						if fila[:aplica].to_s == "NO" && fila[:motivo].blank?
+							auditoria.errors.add(:archivo_auditorias, "Debe completar la celda Motivo para fila #{(posicion+1)}")
 						end
-					end
-					nombres_archivos_evidencia = auditoria.archivos_evidencia.map{|f| f.original_filename}
-					unless nombres_archivos_evidencia.include?(fila[:nombre_archivo_evidencia])
-						unless auditoria_elemento.archivo_evidencia_identifier == fila[:nombre_archivo_evidencia]
-							auditoria.errors.add(:archivo_auditorias, "El Archivo evidencia #{fila[:nombre_archivo_evidencia]} no fue encontrado para fila #{(posicion+1)}")
+						nombres_archivos_informe = auditoria.archivos_informe.map{|f| f.original_filename}
+						unless nombres_archivos_informe.include?(fila[:nombre_archivo_informe])
+							unless auditoria_elemento.archivo_informe_identifier == fila[:nombre_archivo_informe]
+								auditoria.errors.add(:archivo_auditorias, "El Archivo informe #{fila[:nombre_archivo_informe]} no fue encontrado para fila #{(posicion+1)}")
+							end
 						end
-					end
-					ext_extra = ["zip", "rar", "pdf", "jpg", "jpeg", "png"]
-					extension = fila[:nombre_archivo_informe].split(".").last
-					unless ext_extra.include?(extension)
-						auditoria.errors.add(:archivo_auditorias, "El Archivo informe #{fila[:nombre_archivo_informe]} posee un tipo no válido, para la posición #{(posicion+1)}")
-					end
-					extension = fila[:nombre_archivo_evidencia].split(".").last
-					unless ext_extra.include?(extension)
-						auditoria.errors.add(:archivo_auditorias, "El Archivo evidencia #{fila[:nombre_archivo_evidencia]} posee un tipo no válido, para la posición #{(posicion+1)}")
-					end
+						nombres_archivos_evidencia = auditoria.archivos_evidencia.map{|f| f.original_filename}
+						unless nombres_archivos_evidencia.include?(fila[:nombre_archivo_evidencia])
+							unless auditoria_elemento.archivo_evidencia_identifier == fila[:nombre_archivo_evidencia]
+								auditoria.errors.add(:archivo_auditorias, "El Archivo evidencia #{fila[:nombre_archivo_evidencia]} no fue encontrado para fila #{(posicion+1)}")
+							end
+						end
+						ext_extra = ["zip", "rar", "pdf", "jpg", "jpeg", "png"]
+						extension = fila[:nombre_archivo_informe].split(".").last
+						unless ext_extra.include?(extension)
+							auditoria.errors.add(:archivo_auditorias, "El Archivo informe #{fila[:nombre_archivo_informe]} posee un tipo no válido, para la posición #{(posicion+1)}")
+						end
+						extension = fila[:nombre_archivo_evidencia].split(".").last
+						unless ext_extra.include?(extension)
+							auditoria.errors.add(:archivo_auditorias, "El Archivo evidencia #{fila[:nombre_archivo_evidencia]} posee un tipo no válido, para la posición #{(posicion+1)}")
+						end
 
-					unless fila[:fecha_auditoria].to_s.date_valid?
-						errores[:fecha_auditoria] << fila[:fecha_auditoria]
-					else            
-						fecha_adhesion = auditoria_elemento.adhesion_elemento.created_at.to_date
-						if fecha_adhesion > Date.parse(fila[:fecha_auditoria])
-							fecha_format = fecha_adhesion.strftime("%F")
-							auditoria.errors.add(:archivo_auditorias, "La Fecha auditoria (#{fila[:fecha_auditoria]}) es menor a la fecha de adhesion (#{fecha_format}) para fila #{(posicion+1)}")
+						unless fila[:fecha_auditoria].to_s.date_valid?
+							errores[:fecha_auditoria] << fila[:fecha_auditoria]
+						else
+							_fecha_adh = fila[:fecha_adhesion]
+							_fecha_adh = auditoria_elemento.adhesion_elemento.fila[:fecha_adhesion] if _fecha_adh.blank?
+							fecha_adhesion = _fecha_adh.to_date
+							if fecha_adhesion > Date.parse(fila[:fecha_auditoria])
+								fecha_format = fecha_adhesion.strftime("%F")
+								auditoria.errors.add(:archivo_auditorias, "La Fecha auditoria (#{fila[:fecha_auditoria]}) es menor a la fecha de adhesion (#{fecha_format}) para fila #{(posicion+1)}")
+							end
 						end
 					end
 
@@ -191,25 +199,36 @@ class AuditoriaElemento < ApplicationRecord
 			end
 			
 			if auditoria.errors.size == 0
+
+				archivos_informe = {}
+				auditoria.archivos_informe.each do |f|
+					#creo archivo
+					archivo = AuditoriaElementoArchivo.create({
+						archivo: f,
+						auditoria_id: auditoria.id
+					})
+					#agrego a arreglo para asociar aud_elem
+					archivos_informe[f.original_filename] = archivo.id
+				end
+
+				archivos_evidencia = {}
+				auditoria.archivos_evidencia.each do |f|
+					#creo archivo
+					archivo = AuditoriaElementoArchivo.create({
+						archivo: f,
+						auditoria_id: auditoria.id
+					})
+					#agrego a arreglo para asociar aud_elem
+					archivos_evidencia[f.original_filename] = archivo.id
+				end
+
 				data.each do |fila|
 					auditoria_elemento = AuditoriaElemento.find(fila[:auditoria_elemento_id])
 					auditoria_elemento.aplica = (fila[:aplica].to_s == "SI")
 					auditoria_elemento.motivo = fila[:motivo].to_s
 					auditoria_elemento.cumple = (fila[:cumple].to_s == "SI")
-					unless auditoria_elemento.archivo_informe_identifier == fila[:nombre_archivo_informe]
-						auditoria.archivos_informe.each do |f|
-							if f.original_filename == fila[:nombre_archivo_informe].to_s
-								auditoria_elemento.archivo_informe = f
-							end
-						end
-					end
-					unless auditoria_elemento.archivo_evidencia_identifier == fila[:nombre_archivo_evidencia]
-						auditoria.archivos_evidencia.each do |f|
-							if f.original_filename == fila[:nombre_archivo_evidencia].to_s
-								auditoria_elemento.archivo_evidencia = f
-							end
-						end
-					end
+					auditoria_elemento.archivo_informe_id = archivos_informe[fila[:nombre_archivo_informe]]
+					auditoria_elemento.archivo_evidencia_id = archivos_evidencia[fila[:nombre_archivo_evidencia]]
 					auditoria_elemento.fecha_auditoria = fila[:fecha_auditoria].to_s
 					auditoria_elemento.rut_auditor = fila[:rut_auditor].to_s
 					auditoria_elemento.estado = 2
@@ -226,13 +245,18 @@ class AuditoriaElemento < ApplicationRecord
 		}
 	end
 
-	def self.datos manif_de_interes, auditoria
+	def self.datos manif_de_interes, auditoria, adhesion
 		
 		datos = []
 		flujo = Flujo.find_by(manifestacion_de_interes_id: manif_de_interes.id)
 		elems_id = []
 		# DZC 2018-11-05 14:15:31 se cambia dependencia de manif_de_interes a flujo
-		flujo.adhesion.adhesion_elementos.each do |ae|
+		if adhesion.externa
+			elementos = adhesion.adhesion_elemento_externos
+		else
+			elementos = adhesion.adhesion_elementos
+		end
+		elementos.each do |ae|
 			elems_id << ae.id
 			propuestas = SetMetasAccion.where(flujo_id: flujo.id).where(alcance_id: ae.alcance_id).all
 
@@ -243,6 +267,9 @@ class AuditoriaElemento < ApplicationRecord
 				})
 			end
 		end
+
+		aud_elem_archivos = AuditoriaElementoArchivo.where(auditoria_id: auditoria.id)
+    archivos_auditoria = aud_elem_archivos.count > 0 ? aud_elem_archivos.map{|aea| {aea.id => aea.archivo.file.original_filename}}.inject(:merge) : {}
 
 		auditorias = AuditoriaElemento.where(adhesion_elemento_id: elems_id)
 																	.where(auditoria_id: auditoria.id)
@@ -262,33 +289,39 @@ class AuditoriaElemento < ApplicationRecord
 			datos_audit << audit.id #3
 			case alcance.id
 			when Alcance::ORGANIZACION
-				datos_audit << "" #4 
-				datos_audit << "" #5
-				datos_audit << elem.created_at.strftime("%F") #6
+				datos_audit << elem.fila[:nombre_elemento] #4 
+				datos_audit << elem.fila[:tipo_elemento] #5
+				datos_audit << elem.fila[:fecha_adhesion] #6
 				casa_matriz = cont.direccion_casa_matriz(false, true)
 				datos_audit << casa_matriz[:direccion] #7
 				datos_audit << casa_matriz[:comuna] #8
 			when Alcance::ESTABLECIMIENTO
-				datos_audit << "" #4 
+				datos_audit << elem.fila[:nombre_elemento] #4 
+				datos_audit << elem.fila[:tipo_elemento] #5
 				ec = elem.establecimiento_contribuyente
-				datos_audit << ec.tipo_de_establecimiento #5
-				datos_audit << elem.created_at.strftime("%F") #6
+				datos_audit << elem.fila[:fecha_adhesion] #6
 				datos_audit << ec.direccion #7
 				datos_audit << ec.comuna.nombre #8
 			when Alcance::MAQUINARIA
 				maq = elem.maquinaria
 				datos_audit << maq.nombre_maquinaria #4 
 				datos_audit << maq.tipo #5
-				datos_audit << elem.created_at.strftime("%F") #6
-				datos_audit << "" #7
-				datos_audit << "" #8
+				datos_audit << elem.fila[:fecha_adhesion] #6
+				datos_audit << elem.fila[:direccion_instalacion] #7
+				datos_audit << elem.fila[:comuna_instalacion] #8
 			when Alcance::PRODUCTO
 				otro = elem.otro
 				datos_audit << otro.nombre #4 
 				datos_audit << otro.tipo #5
-				datos_audit << elem.created_at.strftime("%F") #6
-				datos_audit << "" #7
-				datos_audit << "" #8
+				datos_audit << elem.fila[:fecha_adhesion] #6
+				datos_audit << elem.fila[:direccion_instalacion] #7
+				datos_audit << elem.fila[:comuna_instalacion] #8
+			else
+				datos_audit << elem.fila[:nombre_elemento] #4 
+				datos_audit << elem.fila[:tipo_elemento] #5
+				datos_audit << elem.fila[:fecha_adhesion] #6
+				datos_audit << elem.fila[:direccion_instalacion] #7
+				datos_audit << elem.fila[:comuna_instalacion] #8
 			end
 			datos_audit << persona.user.nombre_completo #9
 			datos_audit << persona.persona_cargos.first.cargo.nombre #10
@@ -306,8 +339,8 @@ class AuditoriaElemento < ApplicationRecord
 			datos_audit << audit.cumple_excell #21
 			# DZC 2018-11-13 15:43:11 se corrige para el despliegue correcto de los nombres
 			
-			datos_audit << (audit.archivo_informe.present? ? audit.archivo_informe.file.filename : "") #22
-			datos_audit << (audit.archivo_evidencia.present? ? audit.archivo_evidencia.file.filename : "") #23
+			datos_audit << (audit.archivo_informe_id.present? ? archivos_auditoria[audit.archivo_informe_id] : "") #22
+			datos_audit << (audit.archivo_evidencia_id.present? ? archivos_auditoria[audit.archivo_evidencia_id] : "") #23
 
 			datos_audit << audit.fecha_auditoria || "" #24
 			datos_audit << audit.rut_auditor || "" #25

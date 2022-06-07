@@ -6,7 +6,7 @@ class RegistroAperturaCorreosController < ApplicationController
       registro.fecha_apertura_correo = DateTime.now
       registro.save
     end
-    send_file "#{Rails.root}/public/uploads/registro_apertura_correos/imagen/pixel.png", :type => 'image/png', :disposition => 'inline'
+    send_file "#{Rails.root}/public/pixel.png", :type => 'image/png', :disposition => 'inline'
   end
   def test
   	r = RegistroAperturaCorreo.create(user_id: 18)

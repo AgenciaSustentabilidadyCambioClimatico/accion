@@ -39,14 +39,16 @@
       metas[accion.meta_id] = metas_descritas[accion.meta_id].nombre;
       activarSelectorMetas = true;
     }
-    if (materia_sustancia !== undefined && accion.meta_id != materia_sustancia.meta_id) {
-      metas[materia_sustancia.meta_id] = metas_descritas[materia_sustancia.meta_id].nombre;
+    if (materia_sustancia !== undefined && materia_sustancia.metas_ids.length > 0) {
+      $.each(materia_sustancia.metas_ids, function(index, meta_id){
+        if(!activarSelectorMetas || meta_id != accion.meta_id){
+          metas[meta_id] = metas_descritas[meta_id].nombre;
+        }
+      });
       activarSelectorMetas = true;
     }
     mtSelector.empty();
-
     if ( activarSelectorMetas) {
-    
       $.each(metas,function(meta_id,meta_nombre){
         mtSelector.append("<option value='"+meta_id+"'>"+meta_nombre+"</option>");
       });

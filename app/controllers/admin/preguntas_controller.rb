@@ -18,11 +18,11 @@ class Admin::PreguntasController < ApplicationController
     @pregunta = Pregunta.new(pregunta_params)
     respond_to do |format|
       if @pregunta.save
+        @pregunta = Pregunta.new({base: false})
         format.js { 
           flash.now[:success] = 'Pregunta correctamente creada.'
-          @pregunta = Pregunta.new
         }
-        format.html { redirect_to edit_admin_pregunta_url(@pregunta), notice: 'Pregunta correctamente creada.' }
+        format.html { redirect_to new_admin_pregunta_url, notice: 'Pregunta correctamente creada.' }
       else
         format.html { render :new }
         format.js
@@ -43,8 +43,12 @@ class Admin::PreguntasController < ApplicationController
   end
 
   def destroy
-    @pregunta.destroy
-    redirect_to admin_preguntas_url, notice: 'Pregunta correctamente eliminada.'
+    begin
+      @pregunta.destroy
+      redirect_to admin_preguntas_url, notice: 'Pregunta correctamente eliminada.'
+    rescue
+      redirect_to admin_preguntas_url, alert: 'Pregunta no puede ser eliminada porque está siendo utilizada en una encuesta.'
+    end
   end
 
   private

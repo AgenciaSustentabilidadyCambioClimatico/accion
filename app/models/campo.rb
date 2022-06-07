@@ -8,25 +8,19 @@ class Campo < ApplicationRecord
   # DZC 2019-07-25 17:00:03 se agrega para ejecutar la asignación de valores a tributos booleanos en el caso de que el navegador no envíe el parámetro por ser false
   before_validation :set_valores_de_verdad
 
-  # DZC 2019-07-25 16:50:47 se modifica para poblar la tabla desde el seed sin validaciones
-  with_options unless: :sin_validaciones do |validando|
-    validando.validates :nombre, presence: true
-    validando.with_options if: :validaciones_activas do |validacion_activa|
-      validacion_activa.validates :validacion_min, numericality: {
-       greater_than_or_equal_to: 1,
-        less_than_or_equal_to: 9223372036854775807
-      }, presence: true, if: :validacion_min_activa
-      validacion_activa.validates :validacion_max, numericality: { 
-        greater_than_or_equal_to: 1,
-        less_than_or_equal_to: 9223372036854775807
-      }, presence: true, if: :validacion_max_activa
-      validacion_activa.validate :max_lower?
-      # validacion_activa.validate :largo_min_max
-    end
-    validando.validates :validacion_vacio_mensaje, presence: true, if: :validacion_contenido_obligatorio
-    validando.validates :ayuda, presence: true, if: :ayuda_activo
-    validando.validates :tooltip, presence: true, if: :tooltip_activo
-  end
+  validates :nombre, presence: true, if: -> { !self.sin_validaciones } 
+  validates :validacion_vacio_mensaje, presence: true, if: -> { !self.sin_validaciones && self.validacion_contenido_obligatorio }
+  validates :ayuda, presence: true, if: -> { !self.sin_validaciones && self.ayuda_activo }
+  validates :tooltip, presence: true, if: -> { !self.sin_validaciones && self.tooltip_activo }
+  validates :validacion_min, numericality: {
+    greater_than_or_equal_to: 1,
+    less_than_or_equal_to: 9223372036854775807
+  }, presence: true, if: -> { !self.sin_validaciones && self.validaciones_activas && self.validacion_min_activa }
+  validates :validacion_max, numericality: { 
+    greater_than_or_equal_to: 1,
+    less_than_or_equal_to: 9223372036854775807
+  }, presence: true, if: -> { !self.sin_validaciones && self.validaciones_activas && self.validacion_max_activa }
+  validate :max_lower?, if: -> { !self.sin_validaciones && self.validaciones_activas }
 
   # DZC 2019-07-25 16:53:31 ajusta los valores booleanos para el caso de que el navegador no envíe el parámetro por ser false
   def set_valores_de_verdad

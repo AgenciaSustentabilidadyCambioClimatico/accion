@@ -197,24 +197,26 @@ class Adhesion < ApplicationRecord
 								if fila[:direccion_casa_matriz].blank?
 									errores[:direccion_casa_matriz] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
 								elsif fila[:nombre_institucion].blank?
-									errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"
-								else
-									if ActividadEconomica.where(codigo_ciiuv4: fila[:sector_productivo]).first.nil?
-										errores[:sector_productivo] << fila[:sector_productivo]
-									end
-									if TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
-										errores[:tipo_institucion] << fila[:tipo_institucion]
-									end
-									tamano_empresa_split = fila[:tamaño_empresa].split('-')
-									if RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last).nil?
-										errores[:tamaño_empresa] << fila[:tamaño_empresa]
-									end
-									if Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
-										errores[:comuna_casa_matriz] << fila[:comuna_casa_matriz]
-									end
+									errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"									
 								end
 							else
-								data[posicion][:nombre_institucion] = contribuyente.razon_social
+								if contribuyente.razon_social.blank? && fila[:nombre_institucion].blank?
+									errores[:nombre_institucion] << " Debe completar la celda Nombre institucion para línea #{(posicion+2)}"
+								else
+									data[posicion][:nombre_institucion] = contribuyente.razon_social
+								end
+							end
+							if fila[:sector_productivo].blank? || ActividadEconomica.where(codigo_ciiuv4: fila[:sector_productivo]).first.nil?
+								errores[:sector_productivo] << " El archivo contiene una actividad económica inválida, para la fila #{(posicion+2)}"
+							end
+							if fila[:tipo_institucion].blank? || TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
+								errores[:tipo_institucion] << " El archivo contiene un tipo contribuyente inválido, para la fila #{(posicion+2)}"
+							end
+							if fila[:tamaño_empresa].blank? || RangoVentaContribuyente.find_by(venta_anual_en_uf: fila[:tamaño_empresa].split('-').last).nil?
+								errores[:tamaño_empresa] << " El archivo contiene un rango empresa inválido, para la fila #{(posicion+2)}"
+							end
+							if fila[:comuna_casa_matriz].blank? || Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
+								errores[:comuna_casa_matriz] << " El archivo contiene una comuna casa matriz inválida, para la fila #{(posicion+2)}"
 							end
 						end
 					end
@@ -250,26 +252,25 @@ class Adhesion < ApplicationRecord
 							if User.find_by(email: fila[:email_encargado].to_s).present?
 								# errores[:email_encargado] << fila[:email_encargado]
 								# errors.add(:archivo_elementos, "El eMail del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios")
-								errores[:email_encargado] << " El eMail del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios, asociado a otro usuario"	
+								errores[:email_encargado] << " El email del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios, asociado a otro usuario"	
 							elsif User.find_by(rut: rut_encargado).present?
 								# errores[:rut_encargado] << fila[:rut_encargado]
 								# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios")
-								errores[:rut_encargado] << " El RUT del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios"	
+								errores[:rut_encargado] << " El RUT del encargado para la línea #{(posicion+2)}, ya existe en la base de datos de usuarios, asociado a otro email"	
 							elsif fila[:nombre_encargado].blank? || fila[:fono_encargado].blank? || fila[:email_encargado].blank?
 								# errors.add(:archivo_elementos, "Debe completar las celdas Nombre encargado, Fono encargado y Email encargado para la línea #{(posicion+2)}")
 								errores[:nombre_encargado] << " Debe completar las celdas Nombre encargado, Fono encargado y Email encargado para la línea #{(posicion+2) }"	
-							else
-								if Cargo.find_by(nombre: fila[:cargo_encargado]).blank?
-									errores[:cargo_encargado] << fila[:cargo_encargado]
-								end
-
-								unless fila[:fono_encargado].to_s.phone_valid?
-									errores[:fono_encargado] << fila[:fono_encargado]
-								end
 							end
 						else
 							data[posicion][:nombre_encargado] = user.nombre_completo
 							data[posicion][:fono_encargado] = user.telefono
+						end
+						if fila[:cargo_encargado].blank? || Cargo.find_by(nombre: fila[:cargo_encargado]).blank?
+							errores[:cargo_encargado] << " El archivo contiene un cargo encargado inválido, para la fila #{(posicion+2)}"
+						end
+
+						unless fila[:fono_encargado].to_s.phone_valid?
+							errores[:fono_encargado] << " El fono del encargado para la línea #{(posicion+2)} es inválido"
 						end
 					end
 
@@ -549,10 +550,10 @@ class Adhesion < ApplicationRecord
 
 		archivo_adhesion = nil
 		archivo_respaldo = nil
-    archivos.each do |f|
-    	archivo_adhesion = f if f.file.filename.split(".")[0] == "adhesion"
-      archivo_respaldo = f if f.file.filename == fila[:nombre_archivo]
-    end
+    #archivos.each do |f|
+    #	archivo_adhesion = f if f.file.filename.split(".")[0] == "adhesion"
+    #  archivo_respaldo = f if f.file.filename == fila[:nombre_archivo]
+    #end
 
     # DZC 2019-06-11 15:41:28 se agrega para evitar errores en lectura y problamiento de tablas
     fila_identificador = fila[:identificador].present? ? fila[:identificador].to_s : fila[:identificador]
@@ -570,6 +571,8 @@ class Adhesion < ApplicationRecord
 				razon_social: fila[:nombre_institucion].to_s
 				)
 			contribuyente.save(validate: false)
+		else
+			contribuyente.update(razon_social: fila[:nombre_institucion].to_s)
 		end
 
 		actividad_economica = ActividadEconomica.find_by(codigo_ciiuv4: fila[:sector_productivo])
@@ -736,7 +739,8 @@ class Adhesion < ApplicationRecord
 			end
 		end
 
-    adhesion_elemento = self.adhesion_elementos.new({
+    adhesion_elemento = AdhesionElemento.new({
+    	adhesion_id: self.id.blank? ? externa.id : self.id,
     	persona_id: persona.id,
     	alcance_id: alcance.id,
     	establecimiento_contribuyente_id: establecimiento_alcance.nil? ? nil : establecimiento_alcance.id,
@@ -778,16 +782,18 @@ class Adhesion < ApplicationRecord
 		    				par_materia_alcance << "#{ms.id}-#{alcance}"
 				    		#Busco todas las MateriasRubroRelacions existen deacuerdo a la materia y las actividades economicas del contribuyente.-
 				    		actividades_economicas.each do |ae|
-				    			ae_ids = [ae.actividad_economica_id]
-				    			ae_ids += ae.actividad_economica.get_parents.map{|_ae| _ae.id }
-				    			materia_rubro_relaciones = MateriaRubroRelacion.where(materia_sustancia_id: ms.id, actividad_economica_id: ae_ids)
-				    			materia_rubro_relaciones.each do |mrr|
-					    			#Obtengo todos los datos relacionadoes segun el rubro y materia.-
-					    			materia_rubro_dato_relaciones = mrr.materia_rubro_dato_relacions
-					    			materia_rubro_dato_relaciones.each do |mrdr|
-					    				mrdr.dato_recolectado.dato_productivo_elemento_adheridos.find_or_create_by(adhesion_elemento_id: adhesion_elemento.id, set_metas_accion_id: propuesta.id)
-					    			end
-						    	end
+				    			if !ae.actividad_economica_id.blank?
+					    			ae_ids = [ae.actividad_economica_id]
+					    			ae_ids += ae.actividad_economica.get_parents.map{|_ae| _ae.id }
+					    			materia_rubro_relaciones = MateriaRubroRelacion.where(materia_sustancia_id: ms.id, actividad_economica_id: ae_ids)
+					    			materia_rubro_relaciones.each do |mrr|
+						    			#Obtengo todos los datos relacionadoes segun el rubro y materia.-
+						    			materia_rubro_dato_relaciones = mrr.materia_rubro_dato_relacions
+						    			materia_rubro_dato_relaciones.each do |mrdr|
+						    				mrdr.dato_recolectado.dato_productivo_elemento_adheridos.find_or_create_by(adhesion_elemento_id: adhesion_elemento.id, set_metas_accion_id: propuesta.id)
+						    			end
+							    	end
+							    end
 				    		end
 				    	end
 			    	end
@@ -878,7 +884,7 @@ class Adhesion < ApplicationRecord
 			tarea_id: Tarea::ID_APL_025, 
 			estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
 			user_id: propietario_user.id, 
-			data: {},
+			data: {externa: true},
 			persona_id: propietario_persona.id
 		})
 

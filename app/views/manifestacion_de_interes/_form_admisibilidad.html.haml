@@ -4,6 +4,16 @@
     //$(".disabled *:not('.fa')").prop('disabled',true);
     //$(".disabled *:not('.fa')").off();
 
+
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
     error_soa = '#{@manifestacion_de_interes.errors.messages[:secciones_observadas_admisibilidad].first}';
 
     observacion_obligatoria();
@@ -12,6 +22,7 @@
       showTooltipError(error_soa, $('.manifestacion_de_interes_secciones_observadas_admisibilidad'), 'top');
     }
     $('#manifestacion_de_interes_resultado_admisibilidad').change( function(){observacion_obligatoria()});
+
 
     function observacion_obligatoria(){
       resultado = $('#manifestacion_de_interes_resultado_admisibilidad').val()
@@ -74,13 +85,15 @@
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
+
     
   });
-
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:revisar_admisibilidad)
 = simple_form_for @manifestacion_de_interes, url: admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.hidden_field :update_admisibilidad, as: :boolean, value: true
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'tipo-de-acuerdo-tab' : f.object.current_tab) }
   = f.submit "", class: 'd-none'
   .row
@@ -119,8 +132,6 @@
                             =t(tab.to_s.gsub('-','_'))
                             -#%span.badge.badge-danger.badge-pill 1
 
-            =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
-            = f.input :update_admisibilidad, as: :hidden, wrapper: false, input_html: { value: true }
             = render "form_manifestacion_de_interes", tabs: tabs, f: f, solo_lectura: true do
               #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
                 .card
@@ -158,13 +169,13 @@
                             %p#manifestacion_de_interes_tipo_instrumento_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                               =(no_data ? 'No se ingresó respuesta' : f.object.tipo_instrumento.nombre)
                       .col-12.col-lg-6
-                        = label_tag 'Archivo admisibilidad', nil, class: 'string mb-0'
+                        = label_tag 'Archivo complementario a respuesta de admisibilidad', nil, class: 'string mb-0'
                         -#
                           = __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad, false)
                         = __descargar_archivo(f.object.archivo_admisibilidad, f.object, false)
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :resultado_admisibilidad, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [w.humanize, w] }, required: true, label: t(:resultado_admisibilidad)
+                          = f.input :resultado_admisibilidad, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [(w == "en_observación" ? "Con observaciones" : w.humanize), w] }, required: true, label: t(:resultado_admisibilidad)
                         -else
                           .form-group
                             -no_data = f.object.resultado_admisibilidad.blank?
@@ -193,4 +204,7 @@
       .col-12
         .float-right
           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+            %i.fa.fa-arrow-circle-right
+            =t(:enviar)

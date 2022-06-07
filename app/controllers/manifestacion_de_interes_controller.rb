@@ -406,7 +406,7 @@ class ManifestacionDeInteresController < ApplicationController
           end
           if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
             @manifestacion_de_interes.mapa_de_actores_data = nil
-            @manifestacion_de_interes.mapa_de_actores_archivo.remove!
+            #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
             @manifestacion_de_interes.mapa_de_actores_archivo = nil
           end
           format.js { }
@@ -557,6 +557,7 @@ class ManifestacionDeInteresController < ApplicationController
   def admisibilidad #DZC TAREA APL-003
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
 
+    @manifestacion_de_interes.temp_siguientes = "true"
     @manifestacion_de_interes.seleccion_de_radios
 
     unless @manifestacion_de_interes.contribuyente_id.nil?
@@ -610,33 +611,39 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save # Al estar comentada no guardaba los comentarios.-
         #En caso de seleecionar como representante a un usuario que no se encuentra dentro de la institucion cogestora, se debe agreagrar.-
-        if @nuevo_usuario
-          usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-          contribuyente = @manifestacion_de_interes.contribuyente_id
-          persona = usuario.persona_segun_(contribuyente)
-          if persona.present?
-            persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-          else
-            persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
-            persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+        if @manifestacion_de_interes.temp_siguientes.to_s != "true"
+          if @nuevo_usuario
+            usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+            contribuyente = @manifestacion_de_interes.contribuyente_id
+            persona = usuario.persona_segun_(contribuyente)
+            if persona.present?
+              persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+            else
+              persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
+              persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+            end
           end
+          # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+          if @tarea_pendiente.save
+            continua_flujo_segun_tipo_tarea
+            # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
+            # case @manifestacion_de_interes.resultado_admisibilidad
+            # when "aceptado"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+            # when "en_observación"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+            # when "rechazado"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
+            # end
+          end
+          format.js { flash.now[:success] = 'Admisibilidad Técnica enviada correctamente'
+            render js: "window.location='#{root_path}'"}
+          format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica enviada correctamente' }}
+        else
+          format.js { flash.now[:success] = 'Admisibilidad Técnica guardada correctamente'
+            render js: "window.location='#{admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
+          format.html { redirect_to admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Admisibilidad Técnica guardada correctamente' }}
         end
-        # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-        if @tarea_pendiente.save
-          continua_flujo_segun_tipo_tarea
-          # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-          # case @manifestacion_de_interes.resultado_admisibilidad
-          # when "aceptado"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-          # when "en_observación"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-          # when "rechazado"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
-          # end
-        end
-        format.js { flash.now[:success] = 'Admisibilidad Técnica enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica enviada correctamente' }}
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
@@ -748,33 +755,39 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save # Al estar comentada no guardaba los comentarios.-
         #En caso de seleecionar como representante a un usuario que no se encuentra dentro de la institucion cogestora, se debe agreagrar.-
-        if @nuevo_usuario
-          usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-          contribuyente = @manifestacion_de_interes.contribuyente_id
-          persona = usuario.persona_segun_(contribuyente)
-          if persona.present?
-            persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-          else
-            persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
-            persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+        if @manifestacion_de_interes.temp_siguientes != "true"
+          if @nuevo_usuario
+            usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+            contribuyente = @manifestacion_de_interes.contribuyente_id
+            persona = usuario.persona_segun_(contribuyente)
+            if persona.present?
+              persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+            else
+              persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
+              persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
+            end
           end
+          # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+          if @tarea_pendiente.save
+            continua_flujo_segun_tipo_tarea
+            # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
+            # case @manifestacion_de_interes.resultado_admisibilidad
+            # when "aceptado"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+            # when "en_observación"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+            # when "rechazado"
+            #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
+            # end
+          end
+          format.js { flash.now[:success] = 'Admisibilidad Jurídica enviada correctamente'
+            render js: "window.location='#{root_path}'"}
+          format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica enviada correctamente' }}
+        else
+          format.js { flash.now[:success] = 'Admisibilidad Jurídica guardada correctamente'
+            render js: "window.location='#{admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
+          format.html { redirect_to admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Admisibilidad Jurídica guardada correctamente' }}
         end
-        # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-        if @tarea_pendiente.save
-          continua_flujo_segun_tipo_tarea
-          # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-          # case @manifestacion_de_interes.resultado_admisibilidad
-          # when "aceptado"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-          # when "en_observación"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-          # when "rechazado"
-          #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
-          # end
-        end
-        format.js { flash.now[:success] = 'Admisibilidad Jurídica enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica enviada correctamente' }}
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
@@ -1030,7 +1043,7 @@ class ManifestacionDeInteresController < ApplicationController
             end
           else
             @mantener_temporal = manifestacion_params[:temporal]
-            success = 'Manifestación actualizada'
+            success = 'Admisibilidad Técnica Guardada correctamente'
             format.js { flash.now[:success] = success }
             format.html { redirect_to observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), notice: success }
           end
@@ -1055,7 +1068,7 @@ class ManifestacionDeInteresController < ApplicationController
 
         if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
           @manifestacion_de_interes.mapa_de_actores_data = nil
-          @manifestacion_de_interes.mapa_de_actores_archivo.remove!
+          #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
           @manifestacion_de_interes.mapa_de_actores_archivo = nil
         end
         format.js { flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos" }
@@ -1265,7 +1278,7 @@ class ManifestacionDeInteresController < ApplicationController
             format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica Enviada correctamente' }}
           else
             @mantener_temporal = manifestacion_params[:temporal]
-            success = 'Manifestación actualizada'
+            success = 'Admisibilidad Jurídica Guardada correctamente'
             format.js { flash.now[:success] = success }
             format.html { redirect_to observaciones_admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), notice: success }
           end
@@ -1290,7 +1303,7 @@ class ManifestacionDeInteresController < ApplicationController
 
         if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
           @manifestacion_de_interes.mapa_de_actores_data = nil
-          @manifestacion_de_interes.mapa_de_actores_archivo.remove!
+          #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
           @manifestacion_de_interes.mapa_de_actores_archivo = nil
         end
         format.js { flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos" }
@@ -1359,43 +1372,49 @@ class ManifestacionDeInteresController < ApplicationController
       ##ToDo: fecha limite
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save
-        
         if @tarea_pendiente.save
-          #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-          case @manifestacion_de_interes.resultado_pertinencia
-          when "aceptada"
-            MapaDeActor.find_or_create_by({
-              flujo_id: @tarea_pendiente.flujo_id,
-              rol_id: Rol::COORDINADOR,
-              persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
-            })
-            MapaDeActor.find_or_create_by({
-              flujo_id: @tarea_pendiente.flujo_id,
-              rol_id: Rol::PRENSA,
-              persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
-            })
-            actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-            MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
+          if @manifestacion_de_interes.temp_siguientes != "true"
+            #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
+            case @manifestacion_de_interes.resultado_pertinencia
+            when "aceptada"
+              MapaDeActor.find_or_create_by({
+                flujo_id: @tarea_pendiente.flujo_id,
+                rol_id: Rol::COORDINADOR,
+                persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
+              })
+              MapaDeActor.find_or_create_by({
+                flujo_id: @tarea_pendiente.flujo_id,
+                rol_id: Rol::PRENSA,
+                persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
+              })
+              actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+              MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
-            #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
-            @manifestacion_de_interes.confirmar_temporales_a_definitivos
+              #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
+              @manifestacion_de_interes.confirmar_temporales_a_definitivos
 
-            @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-            #Cargar set de metas si se adherio a estandar o diagnostico.-
-            if @manifestacion_de_interes.estandar_de_certificacion_id.present?
-              @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
-            elsif @manifestacion_de_interes.diagnostico_id.present?
-              set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
+              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+              #Cargar set de metas si se adherio a estandar o diagnostico.-
+              if @manifestacion_de_interes.estandar_de_certificacion_id.present?
+                @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
+              elsif @manifestacion_de_interes.diagnostico_id.present?
+                set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
+              end
+            when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
+              @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+            when "no_aceptada"
+              @tarea_pendiente.pasar_a_siguiente_tarea 'C'
             end
-          when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
-            @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-          when "no_aceptada"
-            @tarea_pendiente.pasar_a_siguiente_tarea 'C'
+            format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente'
+              render js: "window.location='#{root_path}'"}
+            format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
+          else
+            msj = 'Pertinencia-factibilidad guardada correctamente'
+            format.js { flash.now[:success] = msj
+              render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
+            format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
           end
         end
-        format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
@@ -1639,7 +1658,7 @@ class ManifestacionDeInteresController < ApplicationController
           carga_de_representantes
 
           if manifestacion_responder_pertinencia_params.key?(:update_respuesta_pertinencia)
-            if @tarea_pendiente.save && manifestacion_responder_pertinencia_params[:update_respuesta_pertinencia] == "true"
+            if @tarea_pendiente.save && manifestacion_responder_pertinencia_params[:update_respuesta_pertinencia] == "true" && @manifestacion_de_interes.temporal != "true"
               if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
                 case @manifestacion_de_interes.acepta_condiciones_pertinencia
                 when true
@@ -1654,8 +1673,8 @@ class ManifestacionDeInteresController < ApplicationController
                 render js: "window.location='#{root_path}'"}
               format.html { redirect_to root_path, flash: {notice: 'Respuesta a las observaciones sobre pertinencia y factibilidad enviada correctamente' }}
             else #Toma este camino si solo se actualiza la manifestacion
-              format.js { flash.now[:success] = 'Manifestación actualizada'}
-              format.html { redirect_to responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Manifestación actualizada' }}
+              format.js { flash.now[:success] = 'Respuesta a las observaciones sobre pertinencia y factibilidad guardada correctamente'}
+              format.html { redirect_to responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Respuesta a las observaciones sobre pertinencia y factibilidad guardada correctamente' }}
             end
           end
         else
@@ -1674,7 +1693,7 @@ class ManifestacionDeInteresController < ApplicationController
 
         if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
           @manifestacion_de_interes.mapa_de_actores_data = nil
-          @manifestacion_de_interes.mapa_de_actores_archivo.remove!
+          #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
           @manifestacion_de_interes.mapa_de_actores_archivo = nil
         end
         format.js { }
@@ -2119,8 +2138,25 @@ class ManifestacionDeInteresController < ApplicationController
       #DZC da por terminadas TODAS las tareas tareas del flujo
       TareaPendiente.where(flujo_id: @flujo.id).includes([:tarea]).all.update(estado_tarea_pendiente_id: 2)
       @flujo.update(terminado: true) #DZC termina el flujo
-      format.js { flash.now[:success] = 'Se puso término al Acuerdo'; render js: "window.location='#{root_path}'" }
+      format.js { flash[:success] = 'Se puso término al Acuerdo'; render js: "window.location='#{root_path}'" }
       format.html { redirect_to root_path, flash: {notice: 'Se puso término al Acuerdo' }}
+    end
+  end
+
+  def detener_acuerdo #DZC APL-016 y APL-023 pausa acuerdo y tareas no se cierran
+    respond_to do |format|
+
+      #DZC agrega el comentario sobre el término al campo respectivo de la manifestación
+      @manifestacion = @flujo.manifestacion_de_interes
+      @manifestacion.temporal = true #DZC eliminar cuando se pase a produccion
+      @manifestacion.fecha_detencion_acuerdo = Time.now.utc
+      @manifestacion.detenido = true
+      @manifestacion.assign_attributes(manifestacion_detiene_acuerdo_params)
+      @manifestacion.save
+      #al guardar esto las funciones encargadas de cerrar tareas segun su programación se pausa
+
+      format.js { flash[:success] = 'Se detuvo el Acuerdo correctamente'; render js: "window.location='#{root_path}'" }
+      format.html { redirect_to root_path, flash: {notice: 'Se detuvo el Acuerdo correctamente' }}
     end
   end
 
@@ -2221,11 +2257,7 @@ class ManifestacionDeInteresController < ApplicationController
     when Tarea::COD_APL_003_1
       case @manifestacion_de_interes.resultado_admisibilidad
       when "aceptado"
-        if @manifestacion_de_interes.resultado_admisibilidad_juridica == "aceptado"
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
-        else
-          TareaPendiente.where(flujo_id: @tarea_pendiente.flujo_id).where(tarea_id: @tarea_pendiente.tarea_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
-        end
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
       when "en_observación"
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
       when "rechazado"
@@ -2235,11 +2267,7 @@ class ManifestacionDeInteresController < ApplicationController
     when Tarea::COD_APL_003_2
       case @manifestacion_de_interes.resultado_admisibilidad_juridica
       when "aceptado"
-        if @manifestacion_de_interes.resultado_admisibilidad == "aceptado"
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
-        else
-          TareaPendiente.where(flujo_id: @tarea_pendiente.flujo_id).where(tarea_id: @tarea_pendiente.tarea_id).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
-        end
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
       when "en_observación"
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
       when "rechazado"
@@ -2289,6 +2317,7 @@ class ManifestacionDeInteresController < ApplicationController
       @manifestacion_de_interes.current_user = current_user
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
       @manifestacion_de_interes.temporal = true
+      @manifestacion_de_interes.temp_siguientes = true
       @manifestacion_de_interes.save
       checked = @manifestacion_de_interes.set_checked
       @rpc_checked = checked[:rpc_checked]
@@ -2362,12 +2391,12 @@ class ManifestacionDeInteresController < ApplicationController
       )
       #Permite parsear el formato de nùmero para que el motor de base datos pueda almacenar nùmeros con punto (ex. 1.000). al momento se realiza para los montos de tipo moneda.-
       parameters[:monto_total_comprometido] = parameters[:monto_total_comprometido].gsub('.','') unless parameters[:monto_total_comprometido].nil?
-      parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
+      #parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
       parameters[:monto_inversion] = parameters[:monto_inversion].gsub(/[\.$]/,'') unless parameters[:monto_inversion].nil?
-      parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
+      #parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
       parameters[:numero_de_socios_institucion_gestora] = parameters[:numero_de_socios_institucion_gestora].gsub('.','') unless parameters[:numero_de_socios_institucion_gestora].nil?
-      parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
-      parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
+      #parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
+      #parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
       parameters
     end
 
@@ -2402,6 +2431,7 @@ class ManifestacionDeInteresController < ApplicationController
         :observaciones_admisibilidad,
         :temporal,
         :update_admisibilidad,
+        :temp_siguientes,
         secciones_observadas_admisibilidad: []
       )
       if @manifestacion_de_interes.fecha_observaciones_admisibilidad.nil?
@@ -2415,6 +2445,7 @@ class ManifestacionDeInteresController < ApplicationController
         :resultado_admisibilidad_juridica,
         :observaciones_admisibilidad_juridica,
         :temporal,
+        :temp_siguientes,
         :update_admisibilidad_juridica,
         secciones_observadas_admisibilidad_juridica: []
       )
@@ -2442,18 +2473,19 @@ class ManifestacionDeInteresController < ApplicationController
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
         :respuesta_observaciones_admisibilidad,:archivo_admisibilidad,:archivo_admisibilidad_cache,:update_obs_admisibilidad,
+        :temp_siguientes,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},
       )
       #Permite parsear el formato de nùmero para que el motor de base datos pueda almacenar nùmeros con punto (ex. 1.000). al momento se realiza para los montos de tipo moneda.-
       parameters[:monto_total_comprometido] = parameters[:monto_total_comprometido].gsub('.','') unless parameters[:monto_total_comprometido].nil?
-      parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
+      #parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
       parameters[:monto_inversion] = parameters[:monto_inversion].gsub(/[\.$]/,'') unless parameters[:monto_inversion].nil?
-      parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
+      #parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
       parameters[:numero_de_socios_institucion_gestora] = parameters[:numero_de_socios_institucion_gestora].gsub('.','') unless parameters[:numero_de_socios_institucion_gestora].nil?
-      parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
-      parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
+      #parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
+      #parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
       parameters
     end
 
@@ -2475,18 +2507,19 @@ class ManifestacionDeInteresController < ApplicationController
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
         :respuesta_observaciones_admisibilidad_juridica,:archivo_admisibilidad_juridica,:archivo_admisibilidad_juridica_cache,:update_obs_admisibilidad_juridica,
+        :temp_siguientes,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},
       )
       #Permite parsear el formato de nùmero para que el motor de base datos pueda almacenar nùmeros con punto (ex. 1.000). al momento se realiza para los montos de tipo moneda.-
       parameters[:monto_total_comprometido] = parameters[:monto_total_comprometido].gsub('.','') unless parameters[:monto_total_comprometido].nil?
-      parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
+      #parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
       parameters[:monto_inversion] = parameters[:monto_inversion].gsub(/[\.$]/,'') unless parameters[:monto_inversion].nil?
-      parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
+      #parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
       parameters[:numero_de_socios_institucion_gestora] = parameters[:numero_de_socios_institucion_gestora].gsub('.','') unless parameters[:numero_de_socios_institucion_gestora].nil?
-      parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
-      parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
+      #parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
+      #parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
       parameters
     end
 
@@ -2503,6 +2536,7 @@ class ManifestacionDeInteresController < ApplicationController
         :archivo_pertinencia_factibilidad,
         :archivo_pertinencia_factibilidad_cache,
         :temporal,
+        :temp_siguientes,
         :update_pertinencia,
         secciones_observadas_pertinencia_factibilidad: []
       )
@@ -2530,18 +2564,19 @@ class ManifestacionDeInteresController < ApplicationController
         :sucursal_ligada,:justificacion_de_seleccion,:registro_en_linea,:proponente,:proponente_institucion_id,
         :unidad_de_medida_volumen,
         :acepta_condiciones_pertinencia, :respuesta_observaciones_pertinencia_factibilidad, :respuesta_otros_pertinencia_factibilidad, :archivo_respuesta_pertinencia_factibilidad, :archivo_respuesta_pertinencia_factibilidad_cache, :update_respuesta_pertinencia,
+        :temp_siguientes,
         actividad_economicas_ids: [], comunas_ids: [], cuencas_ids: [],
         programas_o_proyectos_relacionados_ids: [],
         sectores_economicos:{},territorios_regiones:{},territorios_provincias:{},territorios_comunas:{},
       )
       #Permite parsear el formato de nùmero para que el motor de base datos pueda almacenar nùmeros con punto (ex. 1.000). al momento se realiza para los montos de tipo moneda.-
       parameters[:monto_total_comprometido] = parameters[:monto_total_comprometido].gsub('.','') unless parameters[:monto_total_comprometido].nil?
-      parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
+      #parameters[:ventas] = parameters[:ventas].gsub(/[\.$]/,'') unless parameters[:ventas].nil?
       parameters[:monto_inversion] = parameters[:monto_inversion].gsub(/[\.$]/,'') unless parameters[:monto_inversion].nil?
-      parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
+      #parameters[:numero_empresas] = parameters[:numero_empresas].gsub('.','') unless parameters[:numero_empresas].nil?
       parameters[:numero_de_socios_institucion_gestora] = parameters[:numero_de_socios_institucion_gestora].gsub('.','') unless parameters[:numero_de_socios_institucion_gestora].nil?
-      parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
-      parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
+      #parameters[:produccion] = parameters[:produccion].gsub('.','') unless parameters[:produccion].nil?
+      #parameters[:numero_trabajadores] = parameters[:numero_trabajadores].gsub('.','') unless parameters[:numero_trabajadores].nil?
       parameters
     end
 
@@ -2589,6 +2624,14 @@ class ManifestacionDeInteresController < ApplicationController
         :comentarios_y_observaciones_termino_acuerdo
       )
       parametros[:fecha_termino_acuerdo]=Time.now.utc #agrega nuevo campo al hash, lo que permite instanciar ese campo en la tabla al momento de ejecutar el patch (update)
+      parametros
+    end
+
+    # DZC APL-016 y APL-023 PAUSA
+    def manifestacion_detiene_acuerdo_params
+      parametros=params.require(:manifestacion_de_interes).permit(
+        :comentarios_y_observaciones_detencion_acuerdo
+      )
       parametros
     end
 

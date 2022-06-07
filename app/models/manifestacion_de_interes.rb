@@ -34,6 +34,7 @@ class ManifestacionDeInteres < ApplicationRecord
   attr_accessor :anulado
 
   attr_accessor :envia_termino_proceso
+  attr_accessor :temp_siguientes
 
   belongs_to :tipo_instrumento, optional: true
   #belongs_to :contribuyente, optional: true
@@ -120,34 +121,34 @@ class ManifestacionDeInteres < ApplicationRecord
 
   #validates :sectores_economicos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :territorios_regiones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :tipo_instrumento_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" } 
-  validates :contribuyente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" } 
+  #validates :contribuyente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :descripcion_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :carta_de_interes_institucion_gestora_firmada, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :proponente_institucion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :mapa_de_actores_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :proponente_institucion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }numero_trabajadores
+  #validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :mapa_de_actores_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
-  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present?} 
+  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true"} 
 
   # DZC 2019-06-25 16:26:07 se agrega para manejar monto máximo a ingresar
-  validates :numero_empresas, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.numero_empresas.present? || temporal.to_s != "true" }
+  validates :numero_empresas, presence: true, on: :update, if: -> { self.numero_empresas.present? && temporal.to_s != "true" }
 
   #validates :porcentaje_mipymes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :produccion, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, unless: -> { self.produccion.present? || temporal.to_s == "true" }
+  validates :produccion, presence: true, on: :update, if: -> { self.produccion.present? && temporal.to_s != "true" }
 
   # DZC 2019-06-25 16:20:54 se agrega para manejar monto máximo a ingresar
-  validates :ventas, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.ventas.present? || temporal.to_s != "true" }
+  validates :ventas, presence: true, on: :update, if: -> { self.ventas.present? && temporal.to_s != "true" }
   
-  validates :porcentaje_exportaciones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :porcentaje_exportaciones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :principales_mercados, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :cadena_de_valor, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 
   # DZC 2019-06-25 16:20:35 se agrega para manejar monto máximo a ingresar
-  validates :numero_trabajadores, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.numero_trabajadores.present? || temporal.to_s != "true" }
+  validates :numero_trabajadores, presence: true, on: :update, if: -> { self.numero_trabajadores.present? && temporal.to_s != "true" }
 
   validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :principales_impactos_socioambientales_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
@@ -181,7 +182,7 @@ class ManifestacionDeInteres < ApplicationRecord
   # validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 
   #validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :otros_recursos_comprometidos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :otros_recursos_comprometidos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # validates :carta_de_apoyo_y_compromiso, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   
   # DOSSA 2019-10-10 12:02 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
@@ -199,20 +200,8 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :revisor_tecnico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
   validates :revisor_juridico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
   validates :comentario_jefe_de_linea, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
-  validates :resultado_admisibilidad, presence: true, on: :update, if: -> {update_admisibilidad.present?}
-  validates :tipo_instrumento_id, presence: true, on: :update, if: -> {update_admisibilidad.present?}
-  validates :resultado_admisibilidad_juridica, presence: true, on: :update, if: -> {update_admisibilidad_juridica.present?}
-  validates :respuesta_observaciones_admisibilidad, presence: true, on: :update, if: -> {update_obs_admisibilidad == "true"}
-  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, on: :update, if: -> {update_obs_admisibilidad_juridica == "true"}
-  validate :is_observaciones_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? }
-  validate :is_compromiso_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? }
-  validate :pertinencia_secciones_observadas, on: :update, if: -> { update_pertinencia.present? }
-  validates :coordinador_subtipo_instrumento_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present?}
-  validates :encargado_hitos_prensa_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present?}
-  validates :resultado_pertinencia, presence: true, on: :update, if: -> { update_pertinencia.present? }
+  
   #validates :respuesta_resultado_pertinencia, presence: true, on: :update, if: -> { update_respuesta_pertinencia.present? } El campo ya no corresponde al apl-006
-  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones")}
-  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones")}
 
   validates :institucion_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
   validates :institucion_entregables_name, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
@@ -227,15 +216,34 @@ class ManifestacionDeInteres < ApplicationRecord
 
   validate :data_mapa_de_actores, on: :update, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
-  #apl-003 
-  validates :observaciones_admisibilidad,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad)}
-  validate :secciones_observadas_admisibilidad_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad)}
+  #apl-003.1
+  validates :resultado_admisibilidad, presence: true, on: :update, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_instrumento_id, presence: true, on: :update, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
   #apl-003.2
-  validates :observaciones_admisibilidad_juridica,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica)}
-  validate :secciones_observadas_admisibilidad_juridica_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica)}
+  validates :resultado_admisibilidad_juridica, presence: true, on: :update, if: -> {update_admisibilidad_juridica.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad_juridica,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_juridica_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  #apl-004.1
+  validates :respuesta_observaciones_admisibilidad, presence: true, on: :update, if: -> {update_obs_admisibilidad == "true" && temp_siguientes.to_s != "true"}
+  #apl-004.2
+  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, on: :update, if: -> {update_obs_admisibilidad_juridica == "true" && temp_siguientes.to_s != "true"}
+  #apl-005
+  validate :is_observaciones_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :is_compromiso_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :pertinencia_secciones_observadas, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :coordinador_subtipo_instrumento_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :encargado_hitos_prensa_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :resultado_pertinencia, presence: true, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  #apl-006
+  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  
+
 
   # DOSSA 2019-11-28 12:53 se añade ya que campo no se encuentra en mantenedor, sin embargo, es obligatorio
-  validates :unidad_de_medida_volumen, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :unidad_de_medida_volumen, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 
   before_save :procesar_archivos_google_maps
   
@@ -244,12 +252,20 @@ class ManifestacionDeInteres < ApplicationRecord
   # DZC 2019-07-09 16:39:51 prueba de validación genérica de tamaños minimos y maximos contenido de campos
   validate :valida_largo_campos, on: :update, unless: -> { temporal.to_s == "true" }
 
-  validate :tree_selectors, on: :update, if: -> { temporal.to_s != "true"}
+  #validate :tree_selectors, on: :update, if: -> { temporal.to_s != "true"}
 
   #DZC se indisponibiliza por necesidad de pasar @tarea_codigo al método, para la realización de validaciones de actores indispensables
   # after_save :parsear_mapa_de_actores
 
   after_save :seleccion_de_radios
+
+  after_save :log_deleted_file
+
+  def log_deleted_file
+    if !self.mapa_de_actores_archivo.file.nil? && !self.mapa_de_actores_archivo.file.exists?
+      File.open(Rails.root.join('log','deleted_file.log'), 'a') {|f| f.write("\nID: #{self.id} - DT: #{DateTime.now.to_s}") }
+    end
+  end
 
   def secciones_observadas_admisibilidad_requerido
     errors.add(:secciones_observadas_admisibilidad, 'Debe seleccionar al menos uno') if self.secciones_observadas_admisibilidad.size == 1
@@ -274,9 +290,35 @@ class ManifestacionDeInteres < ApplicationRecord
     super || (Contribuyente.unscoped.find(self.proponente_institucion_id) if self.proponente_institucion_id.present?)
   end
 
+  def estado_acuerdo
+    tareas_ids = self.flujo.tarea_pendientes.pluck(:tarea_id)
+    auditorias_34 = self.flujo.tarea_pendientes.where(tarea_id: Tarea::ID_APL_034).map{|tp| tp.data[:auditoria_id]}
+    auditoria_final = Auditoria.where(id: auditorias_34, final: true).first
+    estado_inicial = ""
+    if !(Tarea::ETAPA_ACUERDO_MANIFESTACION_INTERES & tareas_ids).blank?
+      estado_inicial = "Manifestación de interés"
+    end
+    if !(Tarea::ETAPA_ACUERDO_DIAGNOSTICO & tareas_ids).blank?
+      estado_inicial = "Diagnóstico General"
+    end
+    if !(Tarea::ETAPA_ACUERDO_PROPUESTA_ACUERDO & tareas_ids).blank?
+      estado_inicial = "Propuesta de Acuerdo"
+    end
+    if !(Tarea::ETAPA_ACUERDO_ADHESION & tareas_ids).blank?
+      estado_inicial = "Adhesión"
+    end
+    if !(Tarea::ETAPA_ACUERDO_IMPLEMENTACION & tareas_ids).blank? && auditoria_final.nil?
+      estado_inicial = "Implementación"
+    end
+    if !(Tarea::ETAPA_ACUERDO_EVALUACION_FINAL_CUMPLIMIENTO & tareas_ids).blank? && !auditoria_final.nil?
+      estado_inicial = "Evaluación Final de Acuerdo"
+    end
+    estado_inicial
+  end
+
   def tree_selectors
-    errors.add(:actividad_economicas_ids, "No puede estar en blanco") if actividad_economicas_ids.blank? || (!actividad_economicas_ids.blank? && actividad_economicas_ids.size <= 1)
-    errors.add(:comunas_ids, "No puede estar en blanco") if !acuerdo_de_alcance_nacional && (comunas_ids.blank? || (!comunas_ids.blank? && comunas_ids.size <= 1))
+    #errors.add(:actividad_economicas_ids, "No puede estar en blanco") if actividad_economicas_ids.blank? || (!actividad_economicas_ids.blank? && actividad_economicas_ids.size <= 1)
+    #errors.add(:comunas_ids, "No puede estar en blanco") if !acuerdo_de_alcance_nacional && (comunas_ids.blank? || (!comunas_ids.blank? && comunas_ids.size <= 1))
   end
 
   def seleccion_de_radios
@@ -400,7 +442,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
         # DZC 2018-10-26 15:20:58 se reemplaza validación de eMail repetidos por validación eMail + RUT implementada por Ricardo 
         # validaciones del encargado
-        emails = data.map{|d| d[:email_institucional]}
+        emails = data.map{|d| d[:email_institucional]} - ["no"]
         if emails.include?(fila[:email_institucional])
           temp = data.map{|d| [d[:rut_persona].to_s.gsub("k","K").gsub(".",""),d[:email_institucional]]}
           #obtengo todos los que hacen match con el email
@@ -607,24 +649,24 @@ class ManifestacionDeInteres < ApplicationRecord
     validaciones = {ruts_invalidos: nil, emails_invalidos: nil, telefonos_invalidos: nil, correcto: nil, completo: true}
     validaciones[:completo] = !fila.any?{|c|c.blank?}
 
-    unless fila[:rut_persona].to_s.rut_valid?
+    if fila[:rut_persona].to_s != "no" && !fila[:rut_persona].to_s.rut_valid?
       validaciones[:ruts_invalidos] = fila[:ruts_invalidos]
     end
 
-    unless fila[:email_institucional].to_s.email_valid?
+    if fila[:email_institucional].to_s != "no" && !fila[:email_institucional].to_s.email_valid?
       validaciones[:emails_invalidos] = fila[:email_institucional]
     end
 
     ## 
     # DZC 2018-10-20 21:05:30 se agrega la validación para el caso de que el rut y/o el eMail prexistan 
     # en la tabla de usuarios, en registros distintos
-    if validaciones[:ruts_invalidos].nil? && validaciones[:emails_invalidos].nil?
+    if validaciones[:ruts_invalidos].nil? && validaciones[:emails_invalidos].nil? && fila[:email_institucional].to_s != "no" && fila[:rut_persona].to_s != "no"
       ##
       # DZC 2019-08-08 13:17:17 se modifica para solo se considera el hecho de que el un usuario con rut 
       # distinto tenga el mismo email, pues los demás casos son irrelevantes.
-      user = User.find_by(rut: fila[:rut_persona].to_s.gsub("k","K").gsub(".","")) 
+      #user = User.find_by(rut: fila[:rut_persona].to_s.gsub("k","K").gsub(".","")) 
       email = User.find_by(email: fila[:email_institucional].to_s)
-      if user.blank? && email.present?
+      if email.present? && email.rut.to_s.gsub("k","K").gsub(".","") != fila[:rut_persona].to_s.gsub("k","K").gsub(".","")
         validaciones[:emails_invalidos] = "El eMail #{fila[:email_institucional]} ya existe en la base de datos de usuarios y dicho usuario tiene asociado otro RUT."
       end
     end
@@ -701,22 +743,8 @@ class ManifestacionDeInteres < ApplicationRecord
         :diagnostico_id,
         :informe_de_acuerdo_anterior,
         :acuerdo_previo_con_informe_id,
-        :programas_o_proyectos_relacionados_ids,
       ],
       "datos-institucion": [
-       #  :institucion_gestora_acuerdo,
-       #  :rut_institucion_gestora_acuerdo,
-       #  :direccion_institucion_gestora_acuerdo,
-       #  :lugar_institucion_gestora_acuerdo,
-       #  :ubicacion_exacta,
-       #  :tipo_contribuyente_de_institucion_gestora,
-       #  :numero_de_socios_institucion_gestora,
-        # :fecha_creacion_institucion,
-        # :experiencia_en_gestion_de_proyectos,
-        # :nombre_representante_para_acuerdo,
-        # :rut_representante_para_acuerdo,
-        # :telefono_representante_para_acuerdo,
-        # :email_representante_para_acuerdo,
         :proponente,
         :proponente_institucion_id,
         :institucion_gestora_acuerdo,
@@ -741,12 +769,15 @@ class ManifestacionDeInteres < ApplicationRecord
         :actividad_economicas_ids,
         :numero_empresas,
         :produccion,
+        :unidad_de_medida_volumen,
         :ventas,
         :porcentaje_exportaciones,
         :numero_trabajadores,
+        :comentarios_cifras,
         :principales_mercados,
         :cadena_de_valor,
         :otras_caracteristicas_relevantes,
+        :acuerdo_de_alcance_nacional,
         :comunas_ids,
         :cuencas_ids,
         :caracterizacion_sector_territorio,
@@ -755,29 +786,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :principales_problemas_y_desafios,
         :principales_conflictos,
         :otro_contexto_sector,
-        :estudios_sectoriales_territoriales_relevantes,
-        :comentarios_cifras,
-        :unidad_de_medida_volumen
-        # :sectores_economicos,
-        # :territorios_regiones,
-        # :caracterizacion_sector_territorio,
-        # :principales_actores,
-        # :numero_empresas,
-        # :porcentaje_mipymes,
-        # :produccion,
-        # :ventas,
-        # :porcentaje_exportaciones,
-        # :principales_mercados,
-        # :numero_trabajadores,
-        # :vulnerabilidad_al_cambio_climatico_del_sector,
-        # :principales_impactos_socioambientales_del_sector,
-        # :principales_problemas_y_desafios,
-        # :principales_conflictos,
-        # :otro_contexto_sector,
-        # :estudios_sectoriales_territoriales_relevantes,
-        # :mapa_de_actores_archivo,
-        # :cadena_de_valor,
-        # :otras_caracteristicas_relevantes
+        :estudios_sectoriales_territoriales_relevantes
       ],
       "datos-proyecto": [
         :nombre_proyecto,
@@ -888,7 +897,8 @@ class ManifestacionDeInteres < ApplicationRecord
 
   def fecha_firma_formateada
     # DZC 2018-11-08 12:41:30 se modifica para el caso de que el campo tenga valor nil
-    firma_fecha.blank? ? nil : (I18n.localize firma_fecha, format: :long)
+    _firma_fecha = firma_fecha_hora.blank? ? firma_fecha : firma_fecha_hora
+    _firma_fecha.blank? ? nil : (I18n.localize _firma_fecha, format: :long)
     # I18n.localize firma_fecha, format: :long
   end
 
@@ -1119,7 +1129,7 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :produccion, validaciones)
       self.pdf_contenido_formato(pdf, :unidad_de_medida_volumen, validaciones)
       self.pdf_contenido_formato_custom(pdf, :ventas, ActionController::Base.helpers.number_to_currency(self.ventas), validaciones)
-      self.pdf_contenido_formato_custom(pdf, :porcentaje_exportaciones, self.porcentaje_exportaciones.to_s+"%", validaciones)
+      self.pdf_contenido_formato_custom(pdf, :porcentaje_exportaciones, self.porcentaje_exportaciones, validaciones)
       self.pdf_contenido_formato(pdf, :numero_trabajadores, validaciones)
       self.pdf_contenido_formato(pdf, :comentarios_cifras, validaciones)
       self.pdf_separador(pdf, 11)
@@ -1152,7 +1162,7 @@ class ManifestacionDeInteres < ApplicationRecord
       #PESTAÑA 4
       self.pdf_titulo_formato(pdf, I18n.t(:datos_institucion), "Datos Institución Gestora Acuerdo que actuará como contraparte de los organismos públicos firmantes")
       self.pdf_contenido_formato(pdf, :proponente, validaciones)
-      self.pdf_contenido_formato_custom(pdf, :proponente_institucion_id, (self.proponente_institucion.razon_social.blank? ? "Sin razón social. RUT: #{self.proponente_institucion.rut_completo}".upcase : self.proponente_institucion.razon_social), validaciones, true)
+      self.pdf_contenido_formato_custom(pdf, :proponente_institucion_id, (self.proponente_institucion.blank? || self.proponente_institucion.razon_social.blank? ? "Sin razón social." : self.proponente_institucion.razon_social), validaciones, true)
       self.pdf_contenido_formato(pdf, :institucion_gestora_acuerdo, validaciones)
       self.pdf_contenido_formato(pdf, :rut_institucion_gestora_acuerdo, validaciones)
       self.pdf_contenido_formato(pdf, :fecha_creacion_institucion, validaciones)
@@ -1396,7 +1406,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
   def elementos_adheridos
     elementos_adheridos = []
-    adhesiones_ids = Adhesion.where(flujo_id: self.flujo.id).pluck(:id)
+    adhesiones_ids = Adhesion.unscoped.where(flujo_id: self.flujo.id).pluck(:id)
     AdhesionElemento.where(adhesion_id: adhesiones_ids).each do |elem|
       institucion = Contribuyente.find_by(rut: elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
       dir_principal = institucion.direccion_principal
@@ -1409,7 +1419,7 @@ class ManifestacionDeInteres < ApplicationRecord
         comuna: dir_principal.comuna.nombre,
         tamano_empresa: elem.fila[:tamaño_empresa],
         tipo_elemento: elem.alcance.nombre,
-        nombre_elemento: elem.nombre_segun_alcance,
+        nombre_elemento: elem.nombre_del_elemento_v2,
         otro_dato: elem.otro_dato
       }
     end
@@ -1418,103 +1428,137 @@ class ManifestacionDeInteres < ApplicationRecord
 
   def elementos_certificados
     elementos_certificados = []
-    adhesiones_ids = Adhesion.where(flujo_id: self.flujo.id).pluck(:id)
-    # DZC 2018-11-14 14:57:42 obtenemos los elementos adheridos
-    adhesion_elementos = AdhesionElemento.joins([:persona, :adhesion]).where(adhesion_id: adhesiones_ids)
+    adhesiones = Adhesion.unscoped.where(flujo_id: self.flujo.id)
+    #obtengo elementos
+    AdhesionElemento.where(adhesion_id: adhesiones.pluck(:id)).each do |adhesion_elemento|
+        
+      institucion = Contribuyente.find_by(rut: adhesion_elemento.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
 
-    # DZC 2018-11-14 14:58:01 obtenemos las auditorias con certificacion y ceremonia
-    auditorias = Auditoria.where(flujo_id: adhesion_elementos.pluck("adhesiones.flujo_id").uniq, con_certificacion: true)
+      auditorias = Auditoria.where(flujo_id: self.flujo.id, con_certificacion: true).order(plazo_cierre: :desc)
+      auditoria = nil
+      niveles = {}
+      fecha_certificacion = "Pendiente"
+      vigencia_certificacion = "Pendiente"
+      vigente = false
+      auditorias.each do |aud|
+        flujo = aud.flujo
+        convocatoria_id = aud.convocatoria_id
+        if convocatoria_id.present?
+          #si esta la convocatoria es porque se hace entrega de certificado, mientras no esta certificado?
+          minuta_ceremonia = Minuta.find_by(convocatoria_id: convocatoria_id)
 
-    # DZC 2018-11-14 18:23:57 obtenemos los elementos de auditoria correspondientes a la auditoria y elementos adheridos
-    auditoria_elementos = AuditoriaElemento.where(auditoria_id: auditorias.pluck(:id), adhesion_elemento_id: adhesion_elementos.pluck(:id)).uniq
 
-    # DZC 2018-11-14 18:18:28 obtenemos un array de elementos a revisar por la dupla auditoria y elemento adherido de la tabla auditoria_elementos
-    elementos_por_revisar = auditoria_elementos.map do |aud_elem|
-      {auditoria_id: aud_elem[:auditoria_id], adhesion_elemento_id: aud_elem[:adhesion_elemento_id]}
-    end
-    # DZC 2018-11-14 18:19:16 revisamos el cumplimiento de cada elemento adherido en funcion a la auditoría asociada y al set de metas y acciones respectivo
-    elementos_por_revisar.uniq.each do |ear|
-      
-      auditoria = auditorias.select do |a|
-        a[:id] == ear[:auditoria_id]
-      end
-      auditoria = auditoria.first
-      adhesion_elemento = adhesion_elementos.select do |adh_elem|
-        adh_elem[:id] == ear[:adhesion_elemento_id]
-      end
-      adhesion_elemento = adhesion_elemento.first
+          if auditoria.nil? && !minuta_ceremonia.nil? && !minuta_ceremonia.fecha_acta.blank?
+            if adhesion_elemento.calcula_porcentaje_cumplimiento(aud, true) == 1
+              #primero obtengo la ultima auditoria en la que está certificado
+              auditoria = aud
 
-      cumplimiento = adhesion_elemento.calcula_porcentaje_cumplimiento(auditoria, true)
-      if cumplimiento == 1
-        institucion = Contribuyente.find_by(rut: adhesion_elemento.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
-        otro_dato = ""
-        if adhesion_elemento.alcance_id == Alcance::MAQUINARIA
-          otro_dato = [adhesion_elemento.maquinaria.numero_serie,adhesion_elemento.maquinaria.patente].join("/")
-        elsif adhesion_elemento.alcance_id == Alcance::PRODUCTO
-          otro_dato = adhesion_elemento.otro.identificador_unico
-        elsif adhesion_elemento.alcance_id == Alcance::ESTABLECIMIENTO
-          ec_elem = adhesion_elemento.establecimiento_contribuyente
-          otro_dato = [ec_elem.direccion,ec_elem.comuna.nombre,ec_elem.comuna.provincia.region.nombre].join(", ")
-        else
-          ec_elem = institucion.direccion_principal
-          otro_dato = [ec_elem.direccion,ec_elem.comuna.nombre,ec_elem.comuna.provincia.region.nombre].join(", ")
-        end
-        # DZC 2018-11-14 18:21:24 obtenemos la fecha de certificación en función a la fecha del acta de la ceremonia
-        convocatoria_id = auditoria.convocatoria_id
-        minuta_ceremonia = convocatoria_id.present? ? Minuta.find_by(convocatoria_id: convocatoria_id) : nil
-        if (minuta_ceremonia.present? && minuta_ceremonia.fecha_acta.present?)
-          flujo = auditoria.flujo
-          # DZC 2018-11-15 15:15:22 contemplamos el caso de que el plazo de certificación sea "con_e"
-          #tiene_extension = (flujo.manifestacion_de_interes.present? && flujo.manifestacion_de_interes.informe_acuerdo.present? && flujo.manifestacion_de_interes.informe_acuerdo.con_extension)
-          fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
-          #tiempo = tiene_extension ? 6 : 3
-          #ToDo: definir cuando es con nivel y tomar plazo de nivel
-          if auditoria.final
-            #si es audit final tomo valor general de informe
-            tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final
-          else
-            #si no el plazo cargado en lista de plazos
-            tiempo = auditoria.plazo
-            #si no esta en la lista de plazos utilizo el de auditoria final
-            tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if tiempo.blank?
+              fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
+              if auditoria.final
+                #si es audit final tomo valor general de informe
+                tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final
+              else
+                #si no el plazo cargado en lista de plazos
+                tiempo = auditoria.plazo
+                #si no esta en la lista de plazos utilizo el de auditoria final
+                tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if tiempo.blank?
+              end
+              tiempo_calculado = 0
+              if tiempo.blank?
+                #para version antigua (utilizaba meses)
+                tiempo = auditoria.plazo if tiempo.blank?
+                #si no existe dato se fuerza a el plazo minimo (1 año/12 meses)
+                tiempo = 12 if tiempo.blank?
+                tiempo_calculado = tiempo
+              else
+                #años a meses
+                tiempo_calculado = tiempo * 12
+              end
+              vigencia_certificacion = (minuta_ceremonia.fecha_acta + tiempo_calculado.months)
+              vigente = vigencia_certificacion >= Date.today
+              vigencia_certificacion = vigencia_certificacion.strftime("%F")
+            end
           end
-          tiempo_calculado = 0
-          if tiempo.blank?
-            #para version antigua (utilizaba meses)
-            tiempo = auditoria.plazo if tiempo.blank?
-            #si no existe dato se fuerza a el plazo minimo (1 año/12 meses)
-            tiempo = 12 if tiempo.blank?
-            tiempo_calculado = tiempo
-          else
-            #años a meses
-            tiempo_calculado = tiempo * 12
+
+          nivel = adhesion_elemento.cumple_nivel(aud)
+          if !nivel.nil?
+            _fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
+            
+            #cargo el plazo del nivel
+            _tiempo = nivel.plazo
+            #si nivel no tiene cargo el de auditoria
+            _tiempo = aud.plazo if _tiempo.blank?
+            #si auditoria no tiene cargo el de aud final
+            _tiempo = aud.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if _tiempo.blank?
+            #si no existe plazo final se fuerza al minimo 1 año/12 meses
+            _tiempo = 1 if _tiempo.blank?
+
+            _tiempo_calculado = _tiempo * 12
+
+            _vigencia_certificacion = (minuta_ceremonia.fecha_acta + _tiempo_calculado.months)
+            _vigente = _vigencia_certificacion >= Date.today
+            _vigencia_certificacion = _vigencia_certificacion.strftime("%F")
+
+            if !niveles.has_key?(nivel.id)
+              #evito que niveles se repitan
+              niveles[nivel.id] = {aud_nivel: nivel, auditoria: aud, fecha_certificacion: _fecha_certificacion, vigencia_certificacion: _vigencia_certificacion, vigente: _vigente}
+            end
           end
-          vigencia_certificacion = (minuta_ceremonia.fecha_acta + tiempo_calculado.months).strftime("%F")
         else
-          fecha_certificacion = "Pendiente"
-          vigencia_certificacion = "Pendiente"
+          #nada
         end
-        nivel = auditoria
-        # DZC 2018-11-14 18:21:50 agregamos los datos correspondientes al elemento certificado
+      end
+
+      auditoria = auditorias.last if auditoria.nil?
+
+      if !auditoria.nil? && vigencia_certificacion != "Pendiente"
+
+        #este es de validacion general
         elementos_certificados << {
           auditoria_id: auditoria.id,
           auditoria_nombre: auditoria.nombre,
           tipo_elemento: adhesion_elemento.alcance.nombre,
           id_elemento: adhesion_elemento.id,
-          nombre_elemento: adhesion_elemento.nombre_segun_alcance,
+          nombre_elemento: adhesion_elemento.nombre_del_elemento_v2,
           fecha_certificacion: fecha_certificacion,
           con_extension: "No",
           vigencia_certificacion: vigencia_certificacion, 
           nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
+          nombre_estandar: nil,
           nombre_institucion: institucion.razon_social,
           rut_institucion: adhesion_elemento.fila[:rut_institucion],
           region: institucion.direccion_principal.comuna.provincia.region.nombre,
           comuna: institucion.direccion_principal.comuna.nombre,
-          otro_dato: otro_dato,
-          logo_nivel: "" #url imagen cargada en nivel
+          vigente: vigente,
+          nivel_id: nil,
+          otro_dato: adhesion_elemento.otro_dato
+        }
+      end
+
+      #este es de validacion por nivel
+      niveles.each do |nivel_id, data|
+        elementos_certificados << {
+          auditoria_id: data[:auditoria].id,
+          auditoria_nombre: data[:auditoria].nombre,
+          tipo_elemento: adhesion_elemento.alcance.nombre,
+          id_elemento: adhesion_elemento.id,
+          nombre_elemento: adhesion_elemento.nombre_segun_alcance,
+          fecha_certificacion: data[:fecha_certificacion],
+          con_extension: "No",
+          vigencia_certificacion: data[:vigencia_certificacion], 
+          nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
+          nombre_estandar: data[:aud_nivel].estandar_nivel.estandar_homologacion.nombre+"-"+data[:aud_nivel].estandar_nivel.nombre, 
+          nombre_institucion: institucion.razon_social,
+          rut_institucion: adhesion_elemento.fila[:rut_institucion],
+          region: institucion.direccion_principal.comuna.provincia.region.nombre,
+          comuna: institucion.direccion_principal.comuna.nombre,
+          vigente: data[:vigente],
+          nivel_id: nivel_id,
+          otro_dato: adhesion_elemento.otro_dato
         }
       end
     end
+
     elementos_certificados
   end
 

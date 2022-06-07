@@ -28,8 +28,8 @@
                 = f.input :validacion_min, label: false, input_html: { class: "error-mantenedor validacion_min", maxlength: 9 }, type: "number"
                 = f.input :validacion_max_activa, as: :boolean, checked_value: 1, unchecked_value: 0, label: val_max, input_html: { class: "max_check" }
                 = f.input :validacion_max, label: false, input_html: { class: "error-mantenedor validacion_max", maxlength: 9 }, type: "number"
-              -if (f.object.validacion_contenido_obligatorio)
-                = f.input :validacion_vacio_mensaje, as: :text, input_html: {:rows => 4, :columns => 8, class: "error-mantenedor validacion_contenido_obligatorio "}, label: t(:validacion_vacio_mensaje), required: true
+              =f.input :validacion_contenido_obligatorio, as: :boolean, checked_value: 1, unchecked_value: 0, label: t(:obligatorio), input_html: { class: "val_obligatorio" }
+              = f.input :validacion_vacio_mensaje, as: :text, label: false, input_html: {:rows => 4, :columns => 8, class: "error-mantenedor validacion_contenido_obligatorio "}
   .float-right
     = link_to t(:back), admin_lista_campos_path(@campo.tareas.first.id), class: 'btn btn-sm btn-warning'
     = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
@@ -85,6 +85,12 @@
         }else{
           set_vars(param, '.texto_ayuda').removeAttr('disabled');
         };
+      }else if ( clase == '.val_obligatorio'){
+        if( param.is(':checked') == false ){
+          set_vars(param, '.validacion_contenido_obligatorio').attr('disabled','disabled');
+        }else{
+          set_vars(param, '.validacion_contenido_obligatorio').removeAttr('disabled');
+        };
       }else{
         if( param.is(':checked') == false ){
           set_vars(param, '.texto_tooltip').attr('disabled','disabled');
@@ -93,19 +99,14 @@
         };
       };
     };
-  }; 
-
+  };
 
   //Función encargada de crear los listeners.
   function checks(check_field){
     $(check_field).change(function(){
       modificar_atributo($(this), check_field);
-    });
-    $(check_field).each(function(){
-      modificar_atributo($(this), check_field);
-    });
+    }).trigger("change");
   };
-
 
   $(document).ready(function(){
     htmlErrorToTooltip('top');
@@ -123,5 +124,6 @@
     checks('.max_check');
     checks('.ayuda_check');
     checks('.tooltip_check');
+    checks('.val_obligatorio');
 
   });

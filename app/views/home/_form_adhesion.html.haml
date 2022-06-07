@@ -60,15 +60,15 @@
           .row
             .col-12
               %label.string
-                %b Datos representante
+                %b Datos Encargado APL
             .col-12.col-lg
-              =f.input :rut_representante_legal, input_html: {class: 'validado check-boton-llenado identificacion', value: (user_signed_in? ? current_user.rut : '')}, readonly: user_signed_in?
+              =f.input :rut_representante_legal, input_html: {class: 'validado check-boton-llenado identificacion', value: (user_signed_in? ? current_user.rut : '')}, readonly: user_signed_in?, label: t(:rut_representante_legal)
             .col-12.col-lg-4
-              =f.input :nombre_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.nombre_completo : '')}, readonly: user_signed_in?
+              =f.input :nombre_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.nombre_completo : '')}, readonly: user_signed_in?, label: t(:nombre_representante_legal)
             .col-12.col-lg
-              =f.input :fono_representante_legal, as: :string, input_html: {class: 'validado numero check-boton-llenado', value: (user_signed_in? ? current_user.telefono : '')}
+              =f.input :fono_representante_legal, as: :string, input_html: {class: 'validado numero check-boton-llenado', value: (user_signed_in? ? current_user.telefono : '')}, label: t(:fono_representante_legal)
             .col-12.col-lg
-              =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.email : '')}
+              =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.email : '')}, label: t(:email_representante_legal)
 
     -#
       .col-12

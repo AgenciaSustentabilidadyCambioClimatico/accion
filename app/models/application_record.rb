@@ -9,32 +9,52 @@ class ApplicationRecord < ActiveRecord::Base
     #campos = Campo.where(clase: self.class.name, validaciones_activas: true) # DZC 2019-07-30 se modifica para disociar validaciones_activas de campo obligatorio
     campos = Campo.where(clase: self.class.name)
     campos = filtro_tarea.present? ? campos.select{|v| v.tareas.where(filtro_tarea)} : campos
+    campos_no_atributos_pero_validables = ["actividad_economicas_ids","comunas_ids","cuencas_ids"]
+    campos_con_dependencia = ["estandar_certificable","estandar_de_certificacion_id","diagnostico_de_acuerdo_anterior","diagnostico_id","informe_de_acuerdo_anterior","acuerdo_previo_con_informe_id",
+                              "comunas_ids","cuencas_ids"]
     campos.each do |c|
       #min = c[:validacion_min]
       #max = c[:validacion_max]
-      if self.attributes.keys.include?(c.atributo) # DZC 2019-07-26 15:06:34 se agrega para evitar error de ejecución de método sobre objeto nulo, con motivo de campos nuevos agregados en tabla 'campos'.
+      if self.attributes.keys.include?(c.atributo.to_s) || campos_no_atributos_pero_validables.include?(c.atributo.to_s) # DZC 2019-07-26 15:06:34 se agrega para evitar error de ejecución de método sobre objeto nulo, con motivo de campos nuevos agregados en tabla 'campos'.
         if c.tipo == "boolean"
           errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s) if self[c.atributo.to_sym].nil? && c.validacion_contenido_obligatorio
         else
-          if self[c.atributo.to_sym].blank? && c.validacion_contenido_obligatorio
-            errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+          if (self.send(c.atributo.to_s).blank? || (self.send(c.atributo.to_s).class == Array && self.send(c.atributo.to_s).length < 2)) && c.validacion_contenido_obligatorio
+            #revisar dependencias campos
+            if(campos_con_dependencia.include?(c.atributo.to_s))
+              if ((self.radio_estandar.to_i == 3 && (c.atributo.to_s == "estandar_certificable" || c.atributo.to_s == "estandar_de_certificacion_id")) || (self.radio_estandar.to_i == 0 && c.atributo.to_s == "estandar_certificable") || (self.radio_estandar.to_i == 1 && c.atributo.to_s == "estandar_de_certificacion_id"))
+                #7.1 y #7.2
+                errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+              elsif ((self.radio_diagnostico.to_i == 3 && (c.atributo.to_s == "diagnostico_de_acuerdo_anterior" || c.atributo.to_s == "diagnostico_id")) || (self.radio_diagnostico.to_i == 0 && c.atributo.to_s == "diagnostico_de_acuerdo_anterior") || (self.radio_diagnostico.to_i == 1 && c.atributo.to_s == "diagnostico_id"))
+                #8.1 y 8.2
+                errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+              elsif ((self.radio_informe.to_i == 3 && (c.atributo.to_s == "informe_de_acuerdo_anterior" || c.atributo.to_s == "acuerdo_previo_con_informe_id")) || (self.radio_informe.to_i == 0 && c.atributo.to_s == "informe_de_acuerdo_anterior") || (self.radio_informe.to_i == 1 && c.atributo.to_s == "acuerdo_previo_con_informe_id"))
+                #8.1 y 8.2
+                errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+              elsif (self.acuerdo_de_alcance_nacional == false && (c.atributo.to_s == "comunas_ids" || c.atributo.to_s == "cuencas_ids"))
+                #8.3 y #8.4, valido directamente que sea false, porque directo, si esta blanco tambien es false, y no me sirve
+                errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+              end
+            else
+              errors.add(c.atributo.to_sym, c.validacion_vacio_mensaje.to_s)
+            end
           elsif c.validaciones_activas.present? && c.validaciones_activas
             min = c[:validacion_min]
             max = c[:validacion_max]
             unless self[c.atributo.to_sym].blank?
               case c.tipo
                 when "text"
-                  if c.validacion_min_activa && (self[c.atributo.to_sym].gsub(/\n/, '').length < min)
+                  if c.validacion_min_activa && (self.send(c.atributo.to_s).gsub(/\n/, '').length < min)
                     errors.add(c.atributo.to_sym, "El texto ingresado no debe ser menor a #{min} caracteres")
                   end
-                  if c.validacion_max_activa && (self[c.atributo.to_sym].gsub(/\n/, '').length > max)
+                  if c.validacion_max_activa && (self.send(c.atributo.to_s).gsub(/\n/, '').length > max)
                     errors.add(c.atributo.to_sym, "El texto ingresado no debe ser mayor a #{max} caracteres")
                   end
                 when "integer", "double"
-                  if c.validacion_min_activa && (self[c.atributo.to_sym].to_d < min)
+                  if c.validacion_min_activa && (self.send(c.atributo.to_s).to_d < min)
                     errors.add(c.atributo.to_sym, "El número ingresado no debe ser menor a #{min}")
                   end
-                  if c.validacion_max_activa && (self[c.atributo.to_sym].to_d > max)
+                  if c.validacion_max_activa && (self.send(c.atributo.to_s).to_d > max)
                     errors.add(c.atributo.to_sym, "El número ingresado no debe ser mayor a #{max}")
                   end
               end

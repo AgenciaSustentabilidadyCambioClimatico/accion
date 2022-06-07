@@ -2,6 +2,7 @@
 %tr.auditoria-row{"data-id" => 'id_temporal'}
   %td{style: "width:70px;min-width:70px;max-width:70px;"}
     %input.form-control.auditoria-orden{type: :text, disabled: true}
+    = hidden_field_tag "informe_acuerdo[auditorias][id_temporal][id]", "no"
   %td
     = text_field_tag "informe_acuerdo[auditorias][id_temporal][nombre]", nil, {class: "form-control informe_acuerdo_auditoria_nombre", onkeyup: "cambio_nombre_auditoria('id_temporal');"}
   %td{style: "width:90px;min-width:90px;max-width:90px;"}
@@ -22,7 +23,3 @@
   %td
     = hidden_field_tag "informe_acuerdo[auditorias][id_temporal][con_mantencion]", false
     = check_box_tag "informe_acuerdo[auditorias][id_temporal][con_mantencion]", true, false, {class: "form-control con-mantencion", disabled: true}
-  %td
-    = hidden_field_tag "informe_acuerdo[auditorias][id_temporal][id]", "no"
-    = link_to '#', {class: 'remove-auditoria', onclick: "remover_auditoria('id_temporal');"} do
-      %i.fa.fa-times-circle.link-to-remove-row

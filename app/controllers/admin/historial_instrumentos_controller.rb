@@ -141,11 +141,11 @@ class Admin::HistorialInstrumentosController < ApplicationController
       user_actores = MapaDeActor.where(persona_id: personas.pluck(:id))
 
       # contribuyentes = Contribuyente.where(id: personas.pluck(:contribuyente_id))
-      if current_user.is_admin? #DZC se trata del admin de la ASCC
-        @instrumentos = Flujo.order(id: :asc)
+      if current_user.is_admin? || current_user.is_ascc? #DZC se trata del admin de la ASCC
+        @instrumentos = Flujo.order(id: :desc)
       else
         # @instrumentos = Flujo.where(contribuyente_id: contribuyentes.pluck(:id), terminado: [false, nil]).order(id: :asc).all
-        @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :asc)
+        @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :desc)
       end
       # @tareas_pendientes = TareaPendiente.where(flujo_id: @instrumentos.pluck(:id))
       @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
@@ -174,7 +174,7 @@ class Admin::HistorialInstrumentosController < ApplicationController
       end
       @instrumento = Flujo.find_by(id: instrumento_id)
       if @instrumentos.pluck(:id).include?(instrumento_id) #DZC 2018-10-17 16:49:01 evita que se muestren instrumentos a los que no se debería tener acceso
-        @instancias = @instrumento.instancias_del_flujo(current_user).sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
+        @instancias = @instrumento.instancias_del_flujo(current_user)#.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
       else
         @instancias = []
         flash.now[:warning] = "Usted no tiene permiso para acceder al historial del instrumento '#{instrumento_id}'."

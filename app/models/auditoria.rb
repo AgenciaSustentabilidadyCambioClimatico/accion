@@ -67,8 +67,9 @@ class Auditoria < ApplicationRecord
     end
   end
 
-  def obtiene_porcentaje_avance(set_meta_accion)
+  def obtiene_porcentaje_avance(set_meta_accion, adhesion_elemento=nil)
     _auditoria_elementos = self.auditoria_elementos.where(set_metas_accion_id: set_meta_accion.id)
+    _auditoria_elementos = _auditoria_elementos.where(adhesion_elemento_id: adhesion_elemento.id) if !adhesion_elemento.nil?
     porcentaje_avance = nil
     if _auditoria_elementos.present?
       total_auditorias_aplica = _auditoria_elementos.where(aplica: true).size.to_f

@@ -89,7 +89,7 @@
 														= f.fields_for :accion_clasificaciones, :wrapper => false  do |ac|
 															%tr.fields
 																%td.p-0
-																	= ac.input :clasificacion_id, label: false, collection: Clasificacion.where(es_meta: false).all.map{|c|[c.nombre,c.id]}, input_html: { class: 'a-clasificacion chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione una clasificación' }, required: true, wrapper_class: 'm-0'
+																	= ac.input :clasificacion_id, label: false, collection: Clasificacion.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'a-clasificacion chosen-control required-field', type: :string, 'data-placeholder': 'Seleccione una clasificación' }, required: true, wrapper_class: 'm-0'
 																%td.accion.no-padding.remove-row
 																	= ac.link_to_remove do
 																		%i.fa.fa-times-circle.left.link-to-remove-row

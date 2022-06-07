@@ -5,8 +5,10 @@
       $('#enviar-manifestacion-button').removeAttr('data-disable-with');
     });
     $('#enviar-manifestacion-button').click(function(){
-      $('#manifestacion_de_interes_temporal').val(false);
-      $('#guardar-manifestacion-temporal-button').removeAttr('data-disable-with');
+      if(confirm("¿Está seguro que desea enviar?")){
+        $('#manifestacion_de_interes_temporal').val(false);
+        $('#guardar-manifestacion-temporal-button').removeAttr('data-disable-with');
+      }
     });
     $('#anular_y_eliminar').click(function(e){
       if(!anular_confirmado){
@@ -70,6 +72,7 @@
   -if !solo_lectura
     .float-left
       = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
+      = link_to "Descargar manifestación de interés", descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
     .float-right
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
       -#

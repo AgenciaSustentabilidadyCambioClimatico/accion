@@ -1,4 +1,5 @@
 :javascript
+  var fecha_firma = new Date('#{@informe.fecha_firma.strftime("%F")} 00:00:00');
   $(document).ready(function() {
 
     $('.add-auditoria').click(function(){
@@ -29,6 +30,64 @@
           $('input[type="hidden"][name="'+$(elem).prop("name")+'"]').prop('disabled', true);
         }
       });
+    });
+
+    if(#{@informe.desde_firma_acuerdo?}){
+      $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('update', {vMax: $('#informe_acuerdo_plazo_finalizacion_implementacion').val()});
+    }else{
+      $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('update', {vMax: 10000000000000});
+    }
+
+    $('#informe_acuerdo_plazo_finalizacion_implementacion').on('input paste keyup', function(){
+      if(#{@informe.desde_firma_acuerdo?}){
+        if(this.value == "" || parseInt(this.value) < parseInt($('#informe_acuerdo_plazo_maximo_adhesion').val())){
+          $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('set', '');
+        }
+        $('#informe_acuerdo_plazo_maximo_adhesion').autoNumeric('update', {vMax: this.value});
+      }
+    });
+
+    $('#informe_acuerdo_vigencia_certificacion_final').on('input paste keyup', function(){
+      upd_value = this.value;
+      $(".vigencia-cert-intermedia-plazo").each(function(index,elem){
+        if(upd_value == "" || parseInt(elem.value) > parseInt(upd_value)){
+          $(elem).autoNumeric('set', '');
+        }
+        $(elem).autoNumeric('update', {vMax: upd_value});
+      });
+    });
+
+    $('#informe_acuerdo_plazo_vigencia_acuerdo').on('input paste keyup', function(){
+      plazo_vigencia_fecha = new Date(fecha_firma.getFullYear(), fecha_firma.getMonth(), fecha_firma.getDate());
+      if(this.value != ""){
+        plazo_vigencia_fecha.setFullYear(plazo_vigencia_fecha.getFullYear() + parseInt(this.value));
+      }
+      year = plazo_vigencia_fecha.getFullYear();
+      month = ("0"+(plazo_vigencia_fecha.getMonth()+1)).slice("-2");
+      day = ("0"+plazo_vigencia_fecha.getDate()).slice("-2");
+      $('#informe_acuerdo_fecha_vigencia_acuerdo').val(day+"/"+month+"/"+year);
+    });
+
+    $('#informe_acuerdo_plazo_maximo_adhesion').on('input paste keyup', function(){
+      plazo_maximo_adhesion_fecha = new Date(fecha_firma.getFullYear(), fecha_firma.getMonth(), fecha_firma.getDate());
+      if(this.value != ""){
+        plazo_maximo_adhesion_fecha.setMonth(plazo_maximo_adhesion_fecha.getMonth() + parseInt(this.value));
+      }
+      year = plazo_maximo_adhesion_fecha.getFullYear();
+      month = ("0"+(plazo_maximo_adhesion_fecha.getMonth()+1)).slice("-2");
+      day = ("0"+plazo_maximo_adhesion_fecha.getDate()).slice("-2");
+      $('#informe_acuerdo_fecha_plazo_maximo_adhesion').val(day+"/"+month+"/"+year);
+    });
+
+    $('#informe_acuerdo_plazo_finalizacion_implementacion').on('input paste keyup', function(){
+      plazo_finalizacion_implementacion_fecha = new Date(fecha_firma.getFullYear(), fecha_firma.getMonth(), fecha_firma.getDate());
+      if(this.value != ""){
+        plazo_finalizacion_implementacion_fecha.setMonth(plazo_finalizacion_implementacion_fecha.getMonth() + parseInt(this.value));
+      }
+      year = plazo_finalizacion_implementacion_fecha.getFullYear();
+      month = ("0"+(plazo_finalizacion_implementacion_fecha.getMonth()+1)).slice("-2");
+      day = ("0"+plazo_finalizacion_implementacion_fecha.getDate()).slice("-2");
+      $('#informe_acuerdo_fecha_plazo_finalizacion_implementacion').val(day+"/"+month+"/"+year);
     });
 
   });
@@ -160,10 +219,14 @@
   }
 
   function actualiza_fecha_de_plazo_auditoria(clase, element){
-    var d = new Date('#{@informe.fecha_firma.strftime("%F")}');
-    d.setMonth(d.getMonth() + parseInt(element.value));
-    //console.log((d.getDate())+"/"+(d.getMonth()+1)+"/"+(d.getFullYear()));
-    $(element).siblings('.'+clase).html(d.getDate().toString().padStart(2, "0")+"/"+(d.getMonth()+1).toString().padStart(2, "0")+"/"+d.getFullYear());
+    temp_fecha = new Date(fecha_firma.getFullYear(), fecha_firma.getMonth(), fecha_firma.getDate());
+    if(element.value != ""){
+      temp_fecha.setMonth(temp_fecha.getMonth() + parseInt(element.value));
+    }
+    year = temp_fecha.getFullYear();
+    month = ("0"+(temp_fecha.getMonth()+1)).slice("-2");
+    day = ("0"+temp_fecha.getDate()).slice("-2");
+    $(element).siblings('.'+clase).html(day+"/"+month+"/"+year);
   }
 
 
@@ -180,7 +243,6 @@
               = link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
                 %i.fa.fa-file-text-o
                 Terminar Acuerdo
-
         .col-12
           .card
             .card-header
@@ -188,12 +250,12 @@
             .card-body{style: "font-size: 14px;"}
               .row
                 .col-12.col-lg-3
-                  = f.input :fecha_firma, as: :string, input_html: {value: (@informe.fecha_firma.strftime("%d/%m/%Y"))}, label: t(:fecha_firma_acuerdo), required: false, disabled: true
+                  = f.input :fecha_firma, as: :string, input_html: {value: (@informe.calcula_fecha_firma.strftime("%d/%m/%Y"))}, label: t(:fecha_firma_acuerdo), required: false, disabled: true
                 .col-12.col-lg-5
                   = f.label t(:vigencia_acuerdo_anios), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
-                      = f.input :plazo_vigencia_acuerdo, as: :string, label: false, required: false, disabled: true, wrapper: false
+                      = f.input :plazo_vigencia_acuerdo, as: :string, label: false, required: true, wrapper: false, input_html: {class: "numero"}
                     .col-12.col-lg-6.d-flex.align-items-center
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_vigencia_acuerdo, as: :string, input_html: {value: @informe.fecha_vigencia_acuerdo.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
@@ -206,7 +268,7 @@
                   = f.label t(:plazo_máximo_adhesión_desde_firma_acuerdo_meses), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
-                      = f.input :plazo_maximo_adhesion, as: :string, label: false, required: false, disabled: true, wrapper: false
+                      = f.input :plazo_maximo_adhesion, as: :string, label: false, required: true, wrapper: false, input_html: {class: "numero"}
                     .col-12.col-lg-6.d-flex.align-items-center
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_plazo_maximo_adhesion, as: :string, input_html: {value: @informe.fecha_plazo_maximo_adhesion.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
@@ -214,7 +276,7 @@
                   = f.label t(:plazo_finalización_implementación_meses), class: "mb-1"
                   .row
                     .col-12.col-lg-6.d-flex.align-items-center
-                      = f.input :plazo_finalizacion_implementacion, as: :string, label: false, required: false, disabled: true, wrapper: false
+                      = f.input :plazo_finalizacion_implementacion, as: :string, label: false, required: true, wrapper: false, input_html: {class: "numero"}
                     .col-12.col-lg-6.d-flex.align-items-center
                       .mr-1.texto-hasta Hasta:
                       = f.input :fecha_plazo_finalizacion_implementacion, as: :string, input_html: {value: @informe.fecha_plazo_finalizacion_implementacion.strftime("%d/%m/%Y")}, label: false, required: false, disabled: true, wrapper: false
@@ -238,27 +300,27 @@
                       %th=t(:con_validación)
                       %th=t(:final)
                       %th=t(:mantención)
-                      %th
                   %tbody
                     - @auditorias.order(created_at: :asc).each do |aud|
                       -puede_editar = true
-                      -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
+                      -#if @informe.tipo_acuerdo == "desde_firma_acuerdo"
                         -puede_editar = Date.today <= (@informe.fecha_firma + aud.plazo_cierre.months)
-                      -else
+                      -#else
                         -puede_editar = Date.today <= @informe.fecha_plazo_maximo_adhesion
                       %tr.auditoria-row{"data-id" => aud.id}
                         %td{style: "width:70px;min-width:70px;max-width:70px;"}
                           %input.form-control.auditoria-orden{type: :text, disabled: true}
+                          = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][id]", aud.id, class: 'auditoria-id'
                         %td
                           = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][nombre]", aud.nombre, {class: "form-control informe_acuerdo_auditoria_nombre", onkeyup: "cambio_nombre_auditoria('#{aud.id}');", readonly: !puede_editar}
                         %td{style: "width:90px;min-width:90px;max-width:90px;"}
                           = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_apertura]", aud.plazo_apertura, class: "form-control numero", readonly: !puede_editar, onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_apertura_fecha', this);"
                           -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
-                            .plazo_apertura_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.fecha_firma + aud.plazo_apertura.months).strftime("%d/%m/%Y")
+                            .plazo_apertura_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.calcula_fecha_firma + aud.plazo_apertura.months).strftime("%d/%m/%Y")
                         %td{style: "width:90px;min-width:90px;max-width:90px;"}
                           = text_field_tag "informe_acuerdo[auditorias][#{aud.id}][plazo_cierre]", aud.plazo_cierre, class: "form-control numero", readonly: !puede_editar, onkeyup: "actualiza_fecha_de_plazo_auditoria('plazo_cierre_fecha', this);"
                           -if @informe.tipo_acuerdo == "desde_firma_acuerdo"
-                            .plazo_cierre_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.fecha_firma + aud.plazo_cierre.months).strftime("%d/%m/%Y")
+                            .plazo_cierre_fecha.mt-2{style: "white-space: nowrap;"}=(@informe.calcula_fecha_firma + aud.plazo_cierre.months).strftime("%d/%m/%Y")
                         %td
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", (!puede_editar && aud.con_certificacion?)
                           = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_certificacion]", true, aud.con_certificacion?, class: "form-control con-certificacion", onclick: "certificacion_activa_validacion('#{aud.id}');", disabled: !puede_editar
@@ -271,11 +333,6 @@
                         %td
                           = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][con_validacion]", (!puede_editar && aud.con_mantencion?)
                           = check_box_tag "informe_acuerdo[auditorias][#{aud.id}][con_mantencion]", true, aud.con_mantencion?, {class: "form-control auditoria-final con-mantencion", disabled: (!aud.final? || !puede_editar)}
-                        %td
-                          = hidden_field_tag "informe_acuerdo[auditorias][#{aud.id}][id]", aud.id, class: 'auditoria-id'
-                          -if puede_editar
-                            = link_to '#', {class: 'remove-auditoria', onclick: "remover_auditoria('#{aud.id}');"} do
-                              %i.fa.fa-times-circle.link-to-remove-row
         .col-12
           .card
             .card-header
@@ -283,7 +340,7 @@
             .card-body.p-0
               .row
                 .col-12
-                  = f.input :vigencia_certificacion_final, label: t(:vigencia_certificación_final), input_html: { class: "numero-1-7" }, as: :string, wrapper_html: {class: "p-3"}, readonly: true
+                  = f.input :vigencia_certificacion_final, label: t(:vigencia_certificación_final), input_html: { class: "numero-1-7" }, as: :string, wrapper_html: {class: "p-3"}
                 .col-12#div-certificaciones-intermedias
                   .table-responsive-sm
                     .row#auditorias-vigencia

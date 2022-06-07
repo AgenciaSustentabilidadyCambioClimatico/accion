@@ -2,6 +2,8 @@ class Admin::SessionsController < Devise::SessionsController
 
   # GET /resource/sign_in
   def new
+    @header = ReporteriaDato.find_by(ruta: nil)
+
     self.resource = resource_class.new(sign_in_params)
     clean_up_passwords(resource)
     yield resource if block_given?
@@ -15,6 +17,8 @@ class Admin::SessionsController < Devise::SessionsController
 
   # POST /resource/sign_in
   def create
+    @header = ReporteriaDato.find_by(ruta: nil)
+
     respond_to do |format|
       format.html {
         self.resource = warden.authenticate!(auth_options)
@@ -46,7 +50,7 @@ class Admin::SessionsController < Devise::SessionsController
   	resource.session[:cargos] = cargos.blank? ? [] : cargos[0]
     resource.session[:personas] = personas.blank? ? [] : personas.map{|p|p.attributes.to_json.as_hash}
   	resource.save
-    root_path
+    session[:user_return_to].blank? ? root_path : session[:user_return_to]
   end
 
   def after_sign_out_path_for(resource)

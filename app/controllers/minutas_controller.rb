@@ -82,15 +82,17 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 #DZC agrega al campo data de la tarea_pendiente 
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
-    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015
+    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015,Tarea::COD_APL_011,Tarea::COD_APL_016 #agrego tareas de padre, porque podrian venir de ahi y no funcionaria
       @convocatoria.update({terminada: true})
     when Tarea::COD_APL_022, Tarea::COD_APL_038 #DZC minuta de firma de acuerdo APL-022, y de ceremonia de certificación APL-038
       tipo_campo = (@tarea.codigo==Tarea::COD_APL_022) ? 'firma' : 'ceremonia_certificacion'
-      if !@minuta.fecha.blank? && !@minuta.direccion.blank? #DZC verifica cumplimiento de condición 'B' y termina tareas pendientes correspondientes a las convocatorias de todos los actores. 
+      if !@minuta.fecha_hora.blank? && !@minuta.direccion.blank? #DZC verifica cumplimiento de condición 'B' y termina tareas pendientes correspondientes a las convocatorias de todos los actores. 
         #DZC guarda datos significativos de firma de acuerdo en @manifestación
         
         @manifestacion_de_interes.assign_attributes({
-          (tipo_campo + '_fecha').to_sym => minuta_params[:fecha],
+          (tipo_campo + '_fecha').to_sym => @minuta.fecha,
+          (tipo_campo + '_fecha_hora').to_sym => minuta_params[:fecha_hora],
+          (tipo_campo + '_tipo_reunion').to_sym => minuta_params[:tipo_reunion],
           (tipo_campo + '_direccion').to_sym => minuta_params[:direccion],
           (tipo_campo + '_lat').to_sym => minuta_params[:lat],
           (tipo_campo + '_lng').to_sym => minuta_params[:lng],
@@ -281,7 +283,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     @mecanismo_de_implementacion = @flujo.manifestacion_de_interes.informe_acuerdo.mecanismo_de_implementacion if @flujo.manifestacion_de_interes.informe_acuerdo.present?
     @tipo_de_acuerdo = @flujo.manifestacion_de_interes.informe_acuerdo.tipo_acuerdo if @flujo.manifestacion_de_interes.informe_acuerdo.present?
     @auditorias = @flujo.auditorias
-    @set_metas = @flujo.set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
+    @set_metas = @flujo.set_metas_acciones.includes('meta').group_by{|p| (p.meta['nombre'] rescue "") }
 
     html_acuerdo = render_to_string(
         template: 'minutas/archivo.docx.erb', 
@@ -321,7 +323,8 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     def minuta_params #hay que tener presente 
       parametros=params.require(:minuta).permit(
         :convocatoria_id,
-        :fecha,
+        :fecha_hora,
+        :tipo_reunion,
         :direccion,
         :lat,
         :lng,
@@ -377,6 +380,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 
     def set_tipo
       @tipo=ConvocatoriaTipo.where(tarea_codigo: @convocatoria.tarea_codigo).first
+      @tipo_conv=ConvocatoriaTipo.where(tarea_codigo: @tarea.codigo).first
     end
 
     def set_minuta #asigna al objeto los valores correspondientes a los campos del registro que calza con el id obtenido como parámetro de la URL

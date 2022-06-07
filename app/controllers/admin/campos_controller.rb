@@ -43,6 +43,7 @@ class Admin::CamposController < ApplicationController
         :id, 
         :nombre,
         :validaciones_activas, 
+        :validacion_contenido_obligatorio,
         :validacion_vacio_mensaje,
         :validacion_min,
         :validacion_min_activa,

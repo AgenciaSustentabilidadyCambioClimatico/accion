@@ -208,7 +208,7 @@ class InformeAcuerdo < ApplicationRecord
       #dentro de begin porque puede darse el caso que algo no exista, si es asi no se puede obtener fecha nomas
       if self.tipo_acuerdo == "desde_firma_acuerdo"
         #si es desde firma tomo la fecha firma
-        fecha_comparativa = self.manifestacion_de_interes.firma_fecha
+        fecha_comparativa = self.manifestacion_de_interes.firma_fecha_hora.nil? ? self.manifestacion_de_interes.firma_fecha : self.manifestacion_de_interes.firma_fecha_hora
       else
         #si es desde fecha aprobacion de adhesion
         #apl-028 es la que dice si fue aprobada la adhesion ¿y como?, si al menos un elemento fue aprobado
@@ -236,7 +236,7 @@ class InformeAcuerdo < ApplicationRecord
   end
 
   def calcula_fecha_firma
-    self.fecha_firma = self.manifestacion_de_interes.firma_fecha
+    self.fecha_firma = self.manifestacion_de_interes.firma_fecha_hora.nil? ? self.manifestacion_de_interes.firma_fecha : self.manifestacion_de_interes.firma_fecha_hora
   end
 
   def calcula_fecha_vigencia_acuerdo(anios=self.plazo_vigencia_acuerdo)
@@ -255,13 +255,7 @@ class InformeAcuerdo < ApplicationRecord
   def calcula_fecha_plazo_finalizacion_implementacion(meses=self.plazo_finalizacion_implementacion)
     
     meses = meses.blank? ? 0 : meses
-    if self.tipo_acuerdo == :simultáneo.to_s
-      self.fecha_plazo_finalizacion_implementacion = self.calcula_fecha_firma + meses.months
-    else
-      # DZC 2018-11-07 11:31:47 se previene posibilidad del que plazo_maximo_adhesion sea nil
-      # DZC 2018-11-07 11:37:45 TODO: precaver posibilidad de que al adherirse a un standar los campos asociados a plazos en informe vengan nil
-      self.fecha_plazo_finalizacion_implementacion = self.calcula_fecha_firma + ((self.plazo_maximo_adhesion.blank? ? 0 : self.plazo_maximo_adhesion) + meses).months
-    end
+    self.fecha_plazo_finalizacion_implementacion = self.calcula_fecha_firma + meses.months
   end
 
   def calcula_fecha_plazo_maximo(meses=self.plazo_maximo)

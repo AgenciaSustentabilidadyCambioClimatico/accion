@@ -652,7 +652,7 @@
 
           .col-12.col-md-4
             -if !solo_lectura
-              = f.input :nombre_representante_para_acuerdo, input_html: { class: 'required-field'}, readonly: true
+              = f.input :nombre_representante_para_acuerdo, input_html: { class: 'required-field'}, readonly: true, required: true
             -else
               .form-group
                 -no_data = f.object.nombre_representante_para_acuerdo.blank?
@@ -739,7 +739,7 @@
                       %i.fa.fa-chevron-right
                 .card-body.py-0.group-hide.required{style: 'padding-left: 15px; padding-right: 15px;', class: (solo_lectura ? 'd-none' : '')}
                   .row
-                    .col-12.aeconomicas-list.p-0.border-0
+                    .col-12.aeconomicas-list.beauty-tree-content.p-0.border-0
                       =beauty_tree_selector(f.object.actividades_economicas_beauty_tree_selector ,"manifestacion_de_interes[actividad_economicas_ids][]", "ae")
                       - if f.object.errors.messages.has_key?(:actividad_economicas_ids)
                         %span.help-block
@@ -788,9 +788,9 @@
             .ayuda-campo-div-9997.alert.ayuda-div.small{style: "display: none"}
               =@validaciones[:manifestacion_de_interes][:titulo_cifras_sectores_economicos][:ayuda].html_safe
 
-          .col-12.col-md
+          .col-12.col-md-6
             -if !solo_lectura
-              = f.input :numero_empresas, as: :string, input_html: { class: 'numero-en-miles mount_with_separator' }, label: @validaciones[:manifestacion_de_interes][:numero_empresas][:nombre], required: true
+              = f.input :numero_empresas, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:numero_empresas][:nombre], required: true
             -else
               -no_data = f.object.numero_empresas.blank?
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_empresas][:nombre]
@@ -800,15 +800,15 @@
             .col-lg-4.pr-lg-0.col-12
               - f.object.porcentaje_mipymes=(f.object.porcentaje_mipymes.blank? ? 0 : f.object.porcentaje_mipymes)
               = f.input :porcentaje_mipymes, input_html: { type: :range, class: '', min: 0.0, max: 100, step: 0.1 }, label: t(:with_range_values_, label: t(:porcentaje_mipymes), init: f.object.porcentaje_mipymes ).html_safe, wrapper_class: 'range-slider', required: true
-          .col-12.col-md
+          .col-12.col-md-6
             -if !solo_lectura
-              = f.input :produccion, as: :string, input_html: { class: 'numero-en-miles' }, label: @validaciones[:manifestacion_de_interes][:produccion][:nombre], required: true
+              = f.input :produccion, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:produccion][:nombre], required: true
             -else
               -no_data = f.object.produccion.blank?
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:produccion][:nombre]
               %p#manifestacion_de_interes_produccion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.produccion)
-          .col-12.col-md-1
+          -#.col-12.col-md-1
             -if !solo_lectura
               = f.input :unidad_de_medida_volumen, collection: ManifestacionDeInteres.unidades_de_medida_para_volumen, input_html: { class: ''}, label: false, required: true
             -else
@@ -816,41 +816,41 @@
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:unidad_de_medida_volumen][:nombre]
               %p#manifestacion_de_interes_unidad_de_medida_volumen.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.unidad_de_medida_volumen)
-          .col-12.col-md
+          .col-12.col-md-6
             -if !solo_lectura
-              = f.input :ventas, as: :string, input_html: { class: 'moneda' }, label: @validaciones[:manifestacion_de_interes][:ventas][:nombre], required: true
+              = f.input :ventas, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:ventas][:nombre], required: true
             -else
               -no_data = f.object.ventas.blank?
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:ventas][:nombre]
               %p#manifestacion_de_interes_ventas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : number_to_currency(f.object.ventas))
-          .col-12.col-md
+          .col-12.col-md-6
             -if !solo_lectura
-              = f.input :porcentaje_exportaciones, as: :string, input_html: { class: 'porcentaje'}, label: @validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre], required: true
+              = f.input :porcentaje_exportaciones, input_html: { class: 'text-fixed-size'}, label: @validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre], required: true
             -else
               -no_data = f.object.porcentaje_exportaciones.blank?
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre]
               %p#manifestacion_de_interes_porcentaje_exportaciones.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                =(no_data ? 'No se ingresó respuesta' : f.object.porcentaje_exportaciones.to_s+"%")
-          .col-12.col-md
+                =(no_data ? 'No se ingresó respuesta' : f.object.porcentaje_exportaciones)
+          .col-12.col-md-6
             -if !solo_lectura
-              = f.input :numero_trabajadores, as: :string, input_html: { class: 'numero-en-miles' }, label: @validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre], required: true
+              = f.input :numero_trabajadores, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre], required: true
             -else
               -no_data = f.object.numero_trabajadores.blank?
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre]
               %p#manifestacion_de_interes_numero_trabajadores.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.numero_trabajadores)
-        .col-12.col-md-6.pl-0
-          -if !solo_lectura
-            = f.input :comentarios_cifras, input_html: { class: 'text-fixed-size' }, label: false, required: false
-          -else
-            .form-group
-              -no_data = f.object.comentarios_cifras.blank?
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:comentarios_cifras][:nombre]
-              %p#manifestacion_de_interes_comentarios_cifras.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                =(no_data ? 'No se ingresó respuesta' : f.object.comentarios_cifras)
-        .col-12
-          %hr{style: 'display: block;'}
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :comentarios_cifras, input_html: { class: 'text-fixed-size' }, label: false, required: false
+            -else
+              .form-group
+                -no_data = f.object.comentarios_cifras.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:comentarios_cifras][:nombre]
+                %p#manifestacion_de_interes_comentarios_cifras.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.comentarios_cifras)
+          .col-12
+            %hr{style: 'display: block;'}
         %br
         .row
           .col-12
@@ -925,7 +925,7 @@
                         %i.fa.fa-chevron-right#boton_expandir_territorios
                   .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
                     .row
-                      .col-lg-4.pr-lg-0.p-0{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
+                      .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
                         =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
                       .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
                         = f.input :coordernadas_territorios, as: :hidden, wrapper: false, input_html: {class: ""}
@@ -957,7 +957,7 @@
                       %span
                   .card-body.py-0.group-hide.required{class: (solo_lectura ? 'd-none' : '')}
                     .row
-                      .col-12.aeconomicas-list.p-0.border-0
+                      .col-12.aeconomicas-list.beauty-tree-content.p-0.border-0
                         =beauty_tree_selector(f.object.cuencas_beauty_tree_selector ,"manifestacion_de_interes[cuencas_ids][]", "cuencas")
                         - if f.object.errors.messages.has_key?(:cuencas_ids)
                           %span.help-block
@@ -1283,7 +1283,7 @@
                   =(no_data ? 'No se ingresó respuesta' : f.object.tecnologia)
           .col-lg-6.col-12
             -if !solo_lectura
-              = f.input :operador
+              = f.input :operador, required: true
             -else
               .form-group
                 -no_data = f.object.operador.blank?
@@ -1292,7 +1292,7 @@
                   =(no_data ? 'No se ingresó respuesta' : f.object.operador)
           .col-lg-6.col-12
             -if !solo_lectura
-              = f.input :monto_inversion, as: :string, input_html: { class: 'moneda' }
+              = f.input :monto_inversion, as: :string, input_html: { class: 'moneda' }, required: true
             -else
               .form-group
                 -no_data = f.object.monto_inversion.blank?
@@ -1456,7 +1456,7 @@
                 =(no_data ? 'No se ingresó respuesta' : f.object.otras_iniciativas_relacionadas_en_ejecucion)
           .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
             -if !solo_lectura
-              = f.input :programas_o_proyectos_relacionados_ids, collection: ManifestacionDeInteres.ppp_aprobados, input_html: { class: 'select-ppp', multiple: true }, label: @validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre]
+              = f.input :programas_o_proyectos_relacionados_ids, collection: ManifestacionDeInteres.ppp_aprobados, input_html: { class: 'select-ppp', multiple: true }, label: @validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre], required: true
               #selection-container
                 -f.object.programas_o_proyectos_relacionados.each do |ppr|
                   .selection-list-boxes{value: ppr.id}
@@ -1531,7 +1531,7 @@
                   .row.align-items-end
                     .col-auto.pr-0
                       %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_estandar]", checked: f.object.radio_estandar.to_i == 1}
-                  = f.input :estandar_de_certificacion_id, collection: EstandarHomologacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'mt-auto select-diagnostico-estandar-informe' }, label: false, disabled: true
+                  = f.input :estandar_de_certificacion_id, collection: EstandarHomologacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'mt-auto select-diagnostico-estandar-informe' }, label: false, disabled: true, required: true
                 .col-md-4.col-12.descargable-select.d-none
                   .form-group.mt-1
                     = label_tag nil, @validaciones[:manifestacion_de_interes][:descarga_estandar_seleccionado][:nombre], class: "string mb-1"
@@ -1594,7 +1594,7 @@
                   .row.align-items-end
                     .col-auto.pr-0{style:"align-self: flex-start;"}
                       %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_diagnostico]", checked: f.object.radio_diagnostico.to_i == 1}
-                  = f.input :diagnostico_id, collection: ManifestacionDeInteres.con_diagnostico, input_html: { class: 'select-diagnostico-estandar-informe' }, label: false, disabled: true
+                  = f.input :diagnostico_id, collection: ManifestacionDeInteres.con_diagnostico, input_html: { class: 'select-diagnostico-estandar-informe' }, label: false, disabled: true, required: true
                 .col-md-4.col-12.descargable-select.d-none
                   .form-group.mt-3
                     = label_tag nil, t(:documentos_diagnostico), class: "string mb-1"
@@ -1644,7 +1644,7 @@
                   .row.align-items-end
                     .col-auto.pr-0{style:"align-self: flex-start;"}
                       %input.radios-selector-subida{type: :radio, value: 1, name: "manifestacion_de_interes[radio_informe]", checked: f.object.radio_informe.to_i == 1}
-                  = f.input :acuerdo_previo_con_informe_id, collection: ManifestacionDeInteres.informe_de_impactos_selector, input_html: { class: 'select-informe-de-impacto'}, label: false, disabled: true
+                  = f.input :acuerdo_previo_con_informe_id, collection: ManifestacionDeInteres.informe_de_impactos_selector, input_html: { class: 'select-informe-de-impacto'}, label: false, disabled: true, required: true
                 .col-md-4.col-12.mb-3.descargable-select.d-none
                   .form-group.mt-3
                     = label_tag nil, t(:documentos_informe_impacto), class: "string mb-1"
