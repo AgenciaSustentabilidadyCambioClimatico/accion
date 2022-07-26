@@ -3,7 +3,11 @@ class ComentariosController < ApplicationController
   before_action :set_comentario, only: [:show,:read,:solved]
 
   def index
-    @comentarios = Comentario.order(created_at: :desc).all
+    if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+      @comentarios = Comentario.order(created_at: :desc).all
+    else
+      redirect_to root_path, alert: "No tiene permiso para acceder a esta vista"
+    end
   end
 
   def show

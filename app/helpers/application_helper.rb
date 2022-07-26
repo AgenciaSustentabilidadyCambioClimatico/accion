@@ -549,7 +549,7 @@ module ApplicationHelper
     data[:icon] = "<i class='fa fa-edit'></i>"
   elsif pendiente.es_minuta? && !pendiente.data.nil? #DZC Común para todas las minutas
     convocatoria = pendiente.determina_convocatoria
-    data[:url] = edit_tarea_pendiente_convocatoria_minuta_path(pendiente, convocatoria)
+    data[:url] = edit_tarea_pendiente_convocatoria_minuta_path(pendiente, convocatoria) if !convocatoria.nil?
     data[:icon] = "<i class='fa fa-edit'></i>"
   elsif tarea.es_una_encuesta && tarea.codigo != Tarea::COD_APL_019#DZC Común para todas las encuestas, salvo APL-019, en teoria la 19 ya no es encuesta, asique no seria necesario agregarla en el if
     if tarea.codigo == Tarea::COD_APL_039 || tarea.codigo == Tarea::COD_APL_043
