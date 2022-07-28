@@ -228,6 +228,7 @@ class TareaPendiente < ApplicationRecord
     tareas_pendientes.each do |pend|
       manif = pend.flujo.manifestacion_de_interes
       next if !manif.nil? && manif.detenido
+      next if ![Tarea::COD_APL_015, Tarea::COD_APL_025, Tarea::COD_APL_032, Tarea::COD_APL_032_1, Tarea::COD_APL_039, Tarea::COD_APL_043, Tarea::COD_PPF_023, Tarea::COD_PPF_024].include?(pend.tarea.codigo) && pend.tarea.duracion.blank?
       case pend.tarea.codigo
       when Tarea::COD_APL_004_1
         pend.pasar_a_siguiente_tarea 'B' if !pend.plazo_vigente?(pend.created_at, pend.tarea.duracion)
@@ -338,7 +339,7 @@ class TareaPendiente < ApplicationRecord
     duracion_tarea = self.tarea.duracion
     salida = false
     # si tiene duracion asignada vemos si venció
-    unless duracion_tarea.nil?
+    unless duracion_tarea.blank?
       # definimos fecha fin segun duracion
       fecha_limite = self.created_at + duracion_tarea.days
       # indicamos si esta vencida, para cerrarla
