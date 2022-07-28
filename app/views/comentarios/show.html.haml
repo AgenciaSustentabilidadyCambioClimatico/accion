@@ -20,5 +20,6 @@
 			%p.mb-0.small
 				Fecha del comentario:
 				= l @comentario.created_at, format: :long
-.float-right
-	= link_to t(:back), comentarios_path, class: 'btn btn-sm btn-warning'
+- if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+	.float-right
+		= link_to t(:back), comentarios_path, class: 'btn btn-sm btn-warning'

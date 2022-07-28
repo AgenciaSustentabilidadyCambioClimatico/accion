@@ -19,7 +19,7 @@ class ConvocatoriasController < ApplicationController
   		
 	  	if @convocatoria.destroy
 		  	# TareaPendiente.where(data: {convocatoria_id: @convocatoria.id}).update_all(estado_tarea_pendiente_id: 2)
-		  	TareaPendiente.where("data ILIKE ?", "%:convocatoria_id: #{convocatoria_id}\n:convocatoria_tarea_pendiente%").update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+		  	TareaPendiente.where("data ILIKE ?", "%:convocatoria_id: #{convocatoria_id}\n:convocatoria_tarea_pendiente%").destroy_all
 		  	# TareaPendiente.where(data: {convocatoria_id: convocatoria_id, convocatoria_tarea_pendiente_id: @tarea_pendiente.id}).update_all(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)  	
 	  		format.html { redirect_to url, flash: {warning: 'Convocatoria eliminada' } } # DZC 2018-10-11 15:04:36 se relimina el redireccionamiento
 	  		format.js {
