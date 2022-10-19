@@ -455,3 +455,5 @@ BinaryBag es una empresa chilena del tipo “Boutique” formada con el espírit
 BinaryBag ha desarrollado una sólida línea de trabajo en proyectos de ingeniería informática, haciendo posible que las nuevas tecnologías sean de uso diario en las organizaciones ampliando las posibilidades de ellas y haciendo más eficientes todos los procesos que ellas desarrollan.
 
 Nuestra empresa se ha especializado en dar servicios de alto valor agregado contando con experiencia en el desarrollo exitoso de diversos proyectos. Poseemos experiencias recientes que nos posicionan de manera importante y diferenciada en el mercado.
+
+
