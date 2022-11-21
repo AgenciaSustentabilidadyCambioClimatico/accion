@@ -69,3 +69,4 @@ tables/*
 __controller.rb
 /app/views/admin/__
 .env*
+.env*
