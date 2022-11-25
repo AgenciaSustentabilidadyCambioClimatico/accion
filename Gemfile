@@ -56,6 +56,7 @@ gem 'select2-rails'
 gem 'wicked_pdf'  
 gem 'wkhtmltopdf-binary'
 gem 'mini_magick'
+gem 'globalid', '~> 1.0'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
