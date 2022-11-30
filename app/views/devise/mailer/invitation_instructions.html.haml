@@ -1,12 +1,23 @@
 %p
-  ¡Bienvenido #{@resource.nombre_completo}!
+  #{@resource.nombre_completo}
 %p
-  Se ha creado un usuario en el sistema, puedes finalizar la creación de tu cuenta en el siguiente enlace:
+  En el marco de la mejora contínua de la gestión de los <strong>  Acuerdos de ProducciónLimpia(APL), la Agencia de Sustentabilidad y CambioClimático(ASCC)</strong> ha puesto en marcha una plataforma informática <strong> (Sistemade Gestión de APL) </strong> quepermite gestionar las distintas etapas de un APL. Esta plataforma le permitirárevisar los avances y actividades ligadas a los APL en que usted participe
 %p
-  %a{href: accept_invitation_url(@resource, :invitation_token => @token)} Aceptar Invitación
+  En virtud de lo anterior, usted ha sido agregado/a como participante del:
+%p APL [Nombre_APL]
+
+%p por lo que ya cuenta con un perfil deusuario/a enelSistema de Gestión de APL de laASCC.
+
+%p Puede finalizar la creación de su cuenta en el siguiente enlace:
+
+%a{href: accept_invitation_url(@resource, :invitation_token => @token)} Aceptar Invitación
 
 %p
   Si usted no se identifica con la información enviada, por favor ignore este correo electrónico.
 
 %p
-  Saludos cordiales
+  Cordialmente,
+%p
+  Sistema Informático de Soporte de la Gestión,
+%p
+  Agencia de Sustentabilidad y Cambio Climático.
