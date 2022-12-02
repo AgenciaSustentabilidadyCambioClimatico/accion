@@ -1,23 +1,26 @@
-%p
-  #{@resource.nombre_completo}
-%p
-  En el marco de la mejora contínua de la gestión de los <strong>  Acuerdos de ProducciónLimpia(APL), la Agencia de Sustentabilidad y CambioClimático(ASCC)</strong> ha puesto en marcha una plataforma informática <strong> (Sistemade Gestión de APL) </strong> quepermite gestionar las distintas etapas de un APL. Esta plataforma le permitirárevisar los avances y actividades ligadas a los APL en que usted participe
-%p
-  En virtud de lo anterior, usted ha sido agregado/a como participante del:
-%p APL [Nombre_APL]
+%tbody
+  =image_tag 'https://res.cloudinary.com/dye9yotct/image/upload/v1669987805/Copia_de_logo-ascc_tlkdl2.jpg'
+  %p
+    #{@resource.nombre_completo}
+  %p
+    En el marco de la mejora contínua de la gestión de los <strong>Acuerdos de ProducciónLimpia(APL), la Agencia de Sustentabilidad y Cambio Climático(ASCC)</strong> ha puesto en marcha una plataforma informática <strong>(Sistemade Gestión de APL)</strong> que permite gestionar las distintas etapas de un APL. Esta plataforma le permitirá revisar los avances y actividades ligadas a los APL en que usted participe.
+  %p
+    En virtud de lo anterior, usted ha sido agregado/a como participante del:
 
-%p por lo que ya cuenta con un perfil deusuario/a enelSistema de Gestión de APL de laASCC.
+    - u = Persona.where(user_id: @resource.id)
+    - m = MapaDeActor.where(persona_id: u.first.id)
+    - f = ManifestacionDeInteres.find(m.first.flujo_id)
+  %p APL #{f.nombre_acuerdo}
 
-%p Puede finalizar la creación de su cuenta en el siguiente enlace:
+  %p por lo que ya cuenta con un perfil de usuario/a en el <strong>Sistema de Gestión de APL</strong> de la <strong>ASCC</strong>.
 
-%a{href: accept_invitation_url(@resource, :invitation_token => @token)} Aceptar Invitación
+  %p Puede finalizar la creación de su cuenta en el siguiente enlace:
 
-%p
-  Si usted no se identifica con la información enviada, por favor ignore este correo electrónico.
+  / %a{href: accept_invitation_url(@resource, :invitation_token => @token)} Aceptar Invitación
+  %p
+    Si usted no se identifica con la información enviada, por favor ignore este correo electrónico.
 
-%p
-  Cordialmente,
-%p
-  Sistema Informático de Soporte de la Gestión,
-%p
-  Agencia de Sustentabilidad y Cambio Climático.
+  %style
+    img { width: 265px; object-fit: cover; }
+    body { width: 55%; margin: 0 auto; border: 1px solid #f6f6f6; padding: 10px;}
+    p { font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; line-height: 1.5em;}
