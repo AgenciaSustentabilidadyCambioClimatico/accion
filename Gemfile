@@ -22,7 +22,8 @@ gem 'data-confirm-modal'
 gem 'datejs-rails'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
-gem 'devise'
+gem "bcrypt", "3.1.16"
+gem 'devise', "4.7.3"
 gem 'devise_invitable'
 gem 'font-awesome-rails'
 gem 'geocoder'
