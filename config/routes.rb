@@ -40,6 +40,7 @@ Rails.application.routes.draw do
 
   #no logeado
   get 'adherir-a-un-acuerdo', to: "home#adherir_a_un_acuerdo", as: :adherir_a_un_acuerdo
+  get 'registro-proveedores', to: "home#registro_proveedores", as: :registo_proveedores
   get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
   get 'get_comunas', to: "home#get_comunas", as: :get_comunas
   post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
@@ -147,7 +148,7 @@ Rails.application.routes.draw do
   end
   ##############################################################################################################
   # End PPF
-
+  resources :registro_proveedores
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml

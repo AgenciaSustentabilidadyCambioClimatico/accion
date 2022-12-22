@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20220503145219) do
+ActiveRecord::Schema.define(version: 20221221205200) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1514,6 +1514,28 @@ ActiveRecord::Schema.define(version: 20220503145219) do
     t.index ["user_id"], name: "index_registro_apertura_correos_on_user_id"
   end
 
+  create_table "registro_proveedores", force: :cascade do |t|
+    t.string "rut"
+    t.string "nombre"
+    t.string "apellido"
+    t.string "email"
+    t.string "telefono"
+    t.string "profesion"
+    t.string "direccion"
+    t.string "region"
+    t.string "comuna"
+    t.string "ciudad"
+    t.boolean "terminos_y_servicion", default: false
+    t.boolean "asociar_institucion", default: false
+    t.string "documentos"
+    t.bigint "contribuyente_id"
+    t.bigint "tipo_contribuyente_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
+    t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
+  end
+
   create_table "rendiciones", force: :cascade do |t|
     t.integer "proyecto_id"
     t.date "fecha_rendicion"
@@ -1890,6 +1912,7 @@ ActiveRecord::Schema.define(version: 20220503145219) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
+  add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
@@ -1954,6 +1977,8 @@ ActiveRecord::Schema.define(version: 20220503145219) do
   add_foreign_key "registro_apertura_correos", "flujo_tareas"
   add_foreign_key "registro_apertura_correos", "flujos"
   add_foreign_key "registro_apertura_correos", "users"
+  add_foreign_key "registro_proveedores", "contribuyentes"
+  add_foreign_key "registro_proveedores", "tipo_contribuyentes"
   add_foreign_key "responsables", "actividad_economicas"
   add_foreign_key "responsables", "cargos"
   add_foreign_key "responsables", "contribuyentes"
