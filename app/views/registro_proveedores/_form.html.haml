@@ -32,6 +32,14 @@
                 =f.input :ciudad
               .col-12
                 =f.input :asociar_institucion, as: :boolean
+                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [[tc.descripcion, tc.id], tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
+              .col-12
+                =f.fields_for :contribuyente do |m|
+                  =m.input :rut
+                  =m.input :razon_social
+                  =m.input :dv
+
+
       .col-12
         .card
           .card-header
@@ -52,12 +60,20 @@
                 / =f.input :materias_relacionadas, collection: MateriaSustancia.all.map{|r| [r.nombre, r.id]}, wrapper: false
 
                 / =f.input :sector_industrial, collection: ActividadEconomica.all.map{|r| [r.nombre, r.id]}, wrapper: false
-              .col-12
-                / =f.input :documentación
-
-              .col-12
                 .pt-3
                   =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro'
   .float-right
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
-    =f.submit
+    =f.submit 'Enviar', class: 'btn btn-primary'
+
+:javascript
+
+  $(document).ready(function(){
+    $('#registro_proveedor_contribuyente_id').chosen({
+        allow_single_deselect: false,
+        no_results_text: 'No se encontraron resultados',
+        width: '100%',
+        search_contains: true,
+        placeholder_text_single: "Seleccione un contribuyente",
+      });
+  })

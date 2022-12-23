@@ -10,6 +10,7 @@ class RegistroProveedoresController < ApplicationController
 
   def new
     @registro_proveedor = RegistroProveedor.new
+    @registro_proveedor.build_contribuyente
   end
 
   def create
@@ -17,12 +18,9 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.save
         format.js {
-
-
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
         }
-
       else
         format.html { render :new }
         format.js
@@ -30,10 +28,12 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
+
   private
 
   def registro_proveedores_params
-    params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :terminos_y_servicion)
+    params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
+     contribuyente_attributes: [:rut, :razon_social, :dv] )
   end
 
   def datos_header_no_signed
