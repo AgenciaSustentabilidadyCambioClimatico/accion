@@ -59,6 +59,7 @@ gem 'wkhtmltopdf-binary'
 gem 'mini_magick'
 gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
+gem "cocoon"
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

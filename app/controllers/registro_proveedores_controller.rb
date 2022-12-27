@@ -11,6 +11,7 @@ class RegistroProveedoresController < ApplicationController
   def new
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.build_contribuyente
+    @registro_proveedor.certificado_proveedores.build
   end
 
   def create
@@ -33,7 +34,7 @@ class RegistroProveedoresController < ApplicationController
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-     contribuyente_attributes: [:rut, :razon_social, :dv] )
+     contribuyente_attributes: [:rut, :razon_social, :dv], certificado_proveedores_attributes: [:materia_sustancia_id, :_destroy])
   end
 
   def datos_header_no_signed

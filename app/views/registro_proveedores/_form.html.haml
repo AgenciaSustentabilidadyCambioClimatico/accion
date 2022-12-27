@@ -32,14 +32,11 @@
                 =f.input :ciudad
               .col-12
                 =f.input :asociar_institucion, as: :boolean
-                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [[tc.descripcion, tc.id], tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
               .col-12
                 =f.fields_for :contribuyente do |m|
                   =m.input :rut
                   =m.input :razon_social
                   =m.input :dv
-
-
       .col-12
         .card
           .card-header
@@ -48,10 +45,12 @@
           .card-body
             .row
               .col-12.col-lg-4
-                %p A que postula?
-                / =f.input :a_que_postula?, collection: ['Algo']
+                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [[tc.descripcion, tc.id], tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
               .col-12
-                =f.label :certificado_de_experiencia
+                = f.simple_fields_for :certificado_proveedores do |certificado|
+                  = render 'certificado_proveedor_fields', f: certificado
+                .links
+                  = link_to_add_association 'add certificado', f, :certificado_proveedores
               .col-12.col-lg-3
                 %p numero de fila
               .col-12.col-lg-6

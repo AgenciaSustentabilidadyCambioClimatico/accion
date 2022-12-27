@@ -1,0 +1,4 @@
+.nested-fields
+  =f.input :materia_sustancia_id, collection: MateriaSustancia.all.map{|r| [r.nombre, r.id]}, wrapper: false
+  =f.input :actividad_economica_id, collection: ActividadEconomica.all.map{|r| [r.nombre, r.id]}, wrapper: false
+  = link_to_remove_association "remove certificado", f

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20221221205200) do
+ActiveRecord::Schema.define(version: 20221223145454) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -333,6 +333,18 @@ ActiveRecord::Schema.define(version: 20221221205200) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
+  end
+
+  create_table "certificado_proveedores", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.bigint "materia_sustancia_id"
+    t.bigint "actividad_economica_id"
+    t.string "archivo_certificado"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_economica_id"], name: "index_certificado_proveedores_on_actividad_economica_id"
+    t.index ["materia_sustancia_id"], name: "index_certificado_proveedores_on_materia_sustancia_id"
+    t.index ["registro_proveedor_id"], name: "index_certificado_proveedores_on_registro_proveedor_id"
   end
 
   create_table "ckeditor_assets", force: :cascade do |t|
@@ -1857,6 +1869,9 @@ ActiveRecord::Schema.define(version: 20221221205200) do
   add_foreign_key "campo_tareas", "campos"
   add_foreign_key "campo_tareas", "tareas"
   add_foreign_key "certificacion_adhesion_historicos", "adhesion_elementos"
+  add_foreign_key "certificado_proveedores", "actividad_economicas"
+  add_foreign_key "certificado_proveedores", "materia_sustancias"
+  add_foreign_key "certificado_proveedores", "registro_proveedores"
   add_foreign_key "clasificaciones", "clasificaciones"
   add_foreign_key "comentario_archivos", "comentarios"
   add_foreign_key "comentarios", "tipo_comentarios"

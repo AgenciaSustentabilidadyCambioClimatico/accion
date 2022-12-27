@@ -136,6 +136,7 @@ GEM
     choice (0.2.0)
     chronic (0.10.2)
     climate_control (0.2.0)
+    cocoon (1.2.15)
     coderay (1.1.2)
     colorize (0.8.1)
     concurrent-ruby (1.1.10)
@@ -402,6 +403,7 @@ DEPENDENCIES
   caxlsx_rails
   chartkick
   ckeditor!
+  cocoon
   colorize
   crontab_syntax_checker
   daemons
