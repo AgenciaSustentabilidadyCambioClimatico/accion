@@ -50,20 +50,13 @@
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
                 .links
-                  = link_to_add_association 'add certificado', f, :certificado_proveedores
-              .col-12.col-lg-3
-                %p numero de fila
-              .col-12.col-lg-6
-                = f.input :archivos, label: t(:formulario_de_adhesion_y_documentacion_complementaria), as: :file, input_html: {class: "validado form-control auto-save disabled", multiple: true}, required: true
-              .col-12.col-lg-3
-                / =f.input :materias_relacionadas, collection: MateriaSustancia.all.map{|r| [r.nombre, r.id]}, wrapper: false
-
-                / =f.input :sector_industrial, collection: ActividadEconomica.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+              .col-12
                 .pt-3
                   =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro'
   .float-right
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
-    =f.submit 'Enviar', class: 'btn btn-primary'
+    =f.submit 'Enviar', class: 'btn btn-primary btn-sm'
 
 :javascript
 
