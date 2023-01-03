@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20221223145454) do
+ActiveRecord::Schema.define(version: 20230103185753) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -631,6 +631,15 @@ ActiveRecord::Schema.define(version: 20221223145454) do
     t.index ["estado_documento_garantia_id"], name: "index_documento_garantias_on_estado_documento_garantia_id"
     t.index ["proyecto_id"], name: "index_documento_garantias_on_proyecto_id"
     t.index ["tipo_documento_garantia_id"], name: "index_documento_garantias_on_tipo_documento_garantia_id"
+  end
+
+  create_table "documento_registro_proveedores", force: :cascade do |t|
+    t.string "archivo"
+    t.string "description"
+    t.bigint "registro_proveedor_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["registro_proveedor_id"], name: "index_documento_registro_proveedores_on_registro_proveedor_id"
   end
 
   create_table "ejecucion_presupuestarias", force: :cascade do |t|
@@ -1544,8 +1553,17 @@ ActiveRecord::Schema.define(version: 20221223145454) do
     t.bigint "tipo_contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "rut_institucion"
+    t.string "nombre_institucion"
+    t.integer "tipo_contribuyente"
+    t.string "direccion_casa_matriz"
+    t.string "region_casa_matriz"
+    t.string "comuna_casa_matriz"
+    t.string "ciudad_casa_matriz"
+    t.bigint "tipo_proveedor_id"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
+    t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
   end
 
   create_table "rendiciones", force: :cascade do |t|
@@ -1901,6 +1919,7 @@ ActiveRecord::Schema.define(version: 20221223145454) do
   add_foreign_key "documento_garantias", "estado_documento_garantias"
   add_foreign_key "documento_garantias", "proyectos"
   add_foreign_key "documento_garantias", "tipo_documento_garantias"
+  add_foreign_key "documento_registro_proveedores", "registro_proveedores"
   add_foreign_key "ejecucion_presupuestarias", "centro_de_costos"
   add_foreign_key "ejecucion_presupuestarias", "programa_proyecto_propuestas"
   add_foreign_key "encuesta_descarga_roles", "roles"
@@ -1994,6 +2013,7 @@ ActiveRecord::Schema.define(version: 20221223145454) do
   add_foreign_key "registro_apertura_correos", "users"
   add_foreign_key "registro_proveedores", "contribuyentes"
   add_foreign_key "registro_proveedores", "tipo_contribuyentes"
+  add_foreign_key "registro_proveedores", "tipo_proveedores"
   add_foreign_key "responsables", "actividad_economicas"
   add_foreign_key "responsables", "cargos"
   add_foreign_key "responsables", "contribuyentes"

@@ -31,13 +31,24 @@
               .col-12.col-lg-4
                 =f.input :ciudad
               .col-12
-                =f.input :asociar_institucion, as: :boolean
+                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "guillo()"}
               .col-12
-                =f.fields_for :contribuyente do |m|
-                  =m.input :rut
-                  =m.input :razon_social
-                  =m.input :dv
-      .col-12
+                .contribuyente_fields{style: "display: none"}
+                  .row
+                    .col-12.col-lg-4
+                      =f.input :rut_institucion
+                    .col-12.col-lg-4
+                      =f.input :nombre_institucion
+                    .col-12.col-lg-4
+                      =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                    .col-12
+                      =f.input :direccion_casa_matriz
+                    .col-12.col-lg-4
+                      =f.input :region_casa_matriz, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                    .col-12.col-lg-4
+                      =f.input :comuna_casa_matriz, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                    .col-12.col-lg-4
+                      =f.input :ciudad_casa_matriz
         .card
           .card-header
             %h5.no-margin
@@ -45,13 +56,24 @@
           .card-body
             .row
               .col-12.col-lg-4
-                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [[tc.descripcion, tc.id], tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
+                =f.input :tipo_contribuyente_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              %b Documentacion
+          .card-body
+            .row
               .col-12
+                = f.simple_fields_for :documento_registro_proveedores do |documento|
+                  = render 'documento_registro_proveedor_fields', f: documento
+                .links
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
                   =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro'
   .float-right
@@ -69,3 +91,16 @@
         placeholder_text_single: "Seleccione un contribuyente",
       });
   })
+
+  function guillo() {
+    console.log('click');
+    const contribuyente = document.querySelector('.contribuyente_fields');
+    if (contribuyente.style.display === "none") {
+      contribuyente.style.display = "block";
+    } else {
+      contribuyente.style.display = "none";
+    }
+  }
+%style{media: "screen"}
+
+

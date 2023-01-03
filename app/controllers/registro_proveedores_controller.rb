@@ -9,12 +9,15 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def new
+    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.build_contribuyente
     @registro_proveedor.certificado_proveedores.build
+    @registro_proveedor.documento_registro_proveedores.build
   end
 
   def create
+    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     respond_to do |format|
       if @registro_proveedor.save
@@ -22,6 +25,7 @@ class RegistroProveedoresController < ApplicationController
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
         }
+        RegistroProveedorMailer.delay.enviar(@registro_proveedor)
       else
         format.html { render :new }
         format.js
@@ -34,7 +38,8 @@ class RegistroProveedoresController < ApplicationController
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-     contribuyente_attributes: [:rut, :razon_social, :dv], certificado_proveedores_attributes: [:materia_sustancia_id, :archivo_certificado, :_destroy])
+      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz,
+      certificado_proveedores_attributes: [:materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :_destroy], documento_registro_proveedores_attributes: [:description, :archivo, :_destroy])
   end
 
   def datos_header_no_signed
