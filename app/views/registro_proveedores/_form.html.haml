@@ -36,11 +36,11 @@
                 .contribuyente_fields{style: "display: none"}
                   .row
                     .col-12.col-lg-4
-                      =f.input :rut_institucion
+                      =f.input :rut_institucion, required: true
                     .col-12.col-lg-4
                       =f.input :nombre_institucion
                     .col-12.col-lg-4
-                      =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                      / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
                     .col-12
                       =f.input :direccion_casa_matriz
                     .col-12.col-lg-4

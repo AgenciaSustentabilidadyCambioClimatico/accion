@@ -5,7 +5,6 @@ class RegistroProveedor < ApplicationRecord
   has_many :certificado_proveedores, dependent: :destroy
   has_many :documento_registro_proveedores, dependent: :destroy
 
-  accepts_nested_attributes_for :contribuyente, :reject_if => :all_blank
   accepts_nested_attributes_for :certificado_proveedores, allow_destroy: true
   accepts_nested_attributes_for :documento_registro_proveedores, allow_destroy: true
 
@@ -19,4 +18,17 @@ class RegistroProveedor < ApplicationRecord
   validates :region, presence: true
   validates :comuna, presence: true
   validates :ciudad, presence: true
+  validates :rut_institucion, presence: true, if: :asociar_institucion_true?
+
+  validate :terms_of_service_value
+
+  def terms_of_service_value
+    if terminos_y_servicion != true
+      errors.add(:terminos_y_servicion, "Debes aceptar los terminos y servicios")
+    end
+  end
+
+  def asociar_institucion_true?
+    self.asociar_institucion == true
+  end
 end

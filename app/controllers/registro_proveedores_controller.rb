@@ -11,7 +11,6 @@ class RegistroProveedoresController < ApplicationController
   def new
     @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new
-    @registro_proveedor.build_contribuyente
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
   end
