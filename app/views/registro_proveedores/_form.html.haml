@@ -1,3 +1,5 @@
+- pick_a_institucion="Seleccione una institución desde el buscador"
+- pick_a_contribuyente="Seleccione un establecimiento"
 = simple_form_for @registro_proveedor, remote: true do |f|
   .row
     .col-12.mt-3
@@ -11,7 +13,7 @@
           .card-body
             .row
               .col-12.col-lg-3
-                =f.input :rut
+                = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
               .col-12.col-lg-4
                 =f.input :nombre, error: "algo nuevo"
               .col-12.col-lg-4
@@ -35,8 +37,21 @@
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .row
+                    - ic = []
+                    %h5.no-margin.float-left
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
+                        =t(:buscar)
+                        %i.fa.fa-search-plus
+                    %h5.no-margin.float-left
+                      &nbsp;
+                      &#47;
+                      &nbsp;
+                    .col-12
+
+                      %i.fa.fa-times.deseleccionar-contribuyente
+                      = f.select :contribuyente_id, class: "form-control select2", style: "width:50%;"
                     .col-12.col-lg-4
-                      =f.input :rut_institucion, required: true
+                      = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
                     .col-12.col-lg-4
                       =f.input :nombre_institucion
                     .col-12.col-lg-4
@@ -80,9 +95,21 @@
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
     =f.submit 'Enviar', class: 'btn btn-primary btn-sm'
 
+  / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
+
 :javascript
 
   $(document).ready(function(){
+
+    $('.select2').select2({
+      ajax: {
+        url: 'https://api.github.com/search/repositories',
+        dataType: 'json'
+      }
+      });
+
+    $('.jorge').select2();
+
     $('#registro_proveedor_contribuyente_id').chosen({
         allow_single_deselect: false,
         no_results_text: 'No se encontraron resultados',

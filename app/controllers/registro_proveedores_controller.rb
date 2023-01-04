@@ -1,4 +1,5 @@
 class RegistroProveedoresController < ApplicationController
+  include ApplicationHelper
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create]
 
@@ -13,6 +14,8 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
+    @contribuyente    = Contribuyente.new
+    @contribuyentes  = []
   end
 
   def create
