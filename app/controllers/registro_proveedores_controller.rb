@@ -1,7 +1,7 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create]
+  before_action :authenticate_user!, except: [:new, :create, :search]
 
   def index
   end
@@ -15,18 +15,30 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
     @contribuyente    = Contribuyente.new
-    @contribuyentes  = []
+    @contribuyentes  = Contribuyente.last(1000)
+  end
+
+  def search
+    if params[:query].present?
+      render json: Contribuyente.last(10)
+    end
   end
 
   def create
     @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
+    if params[:region].present? && params[:comuna].present?
+      @registro_proveedor.region = Region.find(params[:region].to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(params[:comuna].to_i).nombre
+    end
+
     respond_to do |format|
       if @registro_proveedor.save
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
         }
+
         RegistroProveedorMailer.delay.enviar(@registro_proveedor)
       else
         format.html { render :new }
@@ -40,7 +52,7 @@ class RegistroProveedoresController < ApplicationController
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz,
+      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz,
       certificado_proveedores_attributes: [:materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :_destroy], documento_registro_proveedores_attributes: [:description, :archivo, :_destroy])
   end
 

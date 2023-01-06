@@ -47,7 +47,7 @@ Rails.application.routes.draw do
   get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
   get 'empresas-y-elementos-adheridos', to: "home#empresas_y_elementos_adheridos", as: :empresas_y_elementos_adheridos
   get 'empresas-y-elementos-certificados', to: "home#empresas_y_elementos_certificados", as: :empresas_y_elementos_certificados
-
+  get 'registro-proveedor', to: 'registro_proveedores#search'
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 

@@ -27,29 +27,22 @@
               .col-12
                 =f.input :direccion
               .col-12.col-lg-4
-                =f.input :region, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                = f.label 'Region'
+                = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno'}
               .col-12.col-lg-4
-                =f.input :comuna, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                = f.label 'Comuna'
+                = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
               .col-12.col-lg-4
-                =f.input :ciudad
+                =f.label 'Ciudad'
+                =f.input :ciudad, label: false, class: 'form-control'
               .col-12
                 =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "guillo()"}
               .col-12
                 .contribuyente_fields{style: "display: none"}
+                  .col-12
+                    = f.label 'Contribuyente'
+                    = select_tag :contribuyente_id, options_from_collection_for_select(Contribuyente.last(20000), "id", "razon_social"), { class: 'form-control select2', required: true, label: 'Guillermo'}
                   .row
-                    - ic = []
-                    %h5.no-margin.float-left
-                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
-                        =t(:buscar)
-                        %i.fa.fa-search-plus
-                    %h5.no-margin.float-left
-                      &nbsp;
-                      &#47;
-                      &nbsp;
-                    .col-12
-
-                      %i.fa.fa-times.deseleccionar-contribuyente
-                      = f.select :contribuyente_id, class: "form-control select2", style: "width:50%;"
                     .col-12.col-lg-4
                       = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
                     .col-12.col-lg-4
@@ -71,7 +64,7 @@
           .card-body
             .row
               .col-12.col-lg-4
-                =f.input :tipo_contribuyente_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A que postula?',input_html: {class: 'validado chosen-control check-boton-llenado'}
+                =f.input :tipo_proveedor_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A que postula?',input_html: {class: ''}
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
@@ -101,14 +94,8 @@
 
   $(document).ready(function(){
 
-    $('.select2').select2({
-      ajax: {
-        url: 'https://api.github.com/search/repositories',
-        dataType: 'json'
-      }
-      });
+    $('.select2').select2({minimumInputLength: 7});
 
-    $('.jorge').select2();
 
     $('#registro_proveedor_contribuyente_id').chosen({
         allow_single_deselect: false,
