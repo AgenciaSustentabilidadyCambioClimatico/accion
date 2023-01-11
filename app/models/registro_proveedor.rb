@@ -9,18 +9,24 @@ class RegistroProveedor < ApplicationRecord
   accepts_nested_attributes_for :documento_registro_proveedores, allow_destroy: true
 
   validates :rut, presence: true
+  validates :rut, uniqueness: true
   validates :nombre, presence: true
   validates :apellido, presence: true
   validates :profesion, presence: true
   validates :email, presence: true
   validates :telefono, presence: true
+  validates :telefono, numericality: true, length: {in: 8..11}
   validates :direccion, presence: true
   validates :region, presence: true
   validates :comuna, presence: true
   validates :ciudad, presence: true
-  validates :rut_institucion, presence: true, if: :asociar_institucion_true?
-
+  validates :rut_institucion, :nombre_institucion, presence: true, if: :asociar_institucion_present?
+  validates :nombre_institucion, presence: true, if: :asociar_institucion_present?
+  validates :direccion_casa_matriz, presence: true, if: :asociar_institucion_present?
+  validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
+
+  before_validation :normalizar_rut
 
   def terms_of_service_value
     if terminos_y_servicion != true
@@ -28,7 +34,11 @@ class RegistroProveedor < ApplicationRecord
     end
   end
 
-  def asociar_institucion_true?
-    self.asociar_institucion == true
+  def normalizar_rut
+    self.rut = self.rut.to_s.upcase.gsub(/[^0-9\-K]/,'') unless self.rut.blank?
+  end
+
+  def asociar_institucion_present?
+    self.asociar_institucion == true && !self.contribuyente_id.present?
   end
 end

@@ -28,35 +28,38 @@
                 =f.input :direccion
               .col-12.col-lg-4
                 = f.label 'Region'
-                = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno'}
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false
+                / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
                 = f.label 'Comuna'
-                = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
               .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "guillo()"}
+                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
                     = f.label 'Contribuyente'
-                    = select_tag :contribuyente_id, options_from_collection_for_select(Contribuyente.last(20000), "id", "razon_social"), { class: 'form-control select2', required: true, label: 'Guillermo'}
-                  .row
-                    .col-12.col-lg-4
-                      = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
-                    .col-12.col-lg-4
-                      =f.input :nombre_institucion
-                    .col-12.col-lg-4
-                      / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
-                    .col-12
-                      =f.input :direccion_casa_matriz
-                    .col-12.col-lg-4
-                      =f.input :region_casa_matriz, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
-                    .col-12.col-lg-4
-                      =f.input :comuna_casa_matriz, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
-                    .col-12.col-lg-4
-                      =f.input :ciudad_casa_matriz
+                    = f.input_field :contribuyente_id, collection: Contribuyente.last(100), label_method: lambda { |p| p.rut }, value_method: :id, required: true, selected: @registro_proveedor.contribuyente_id.presence, prompt:'seleccione', wrapper: false, class: "form-control select2", label: false, style: "width: 75%"
+                  .contribuyente_footer_fields
+                    .row
+                      .col-12.col-lg-4
+                        = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
+                      .col-12.col-lg-4
+                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }
+                      .col-12.col-lg-4
+                        / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                      .col-12
+                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }
+                      .col-12.col-lg-4
+                        =f.input :region_casa_matriz, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                      .col-12.col-lg-4
+                        =f.input :comuna_casa_matriz, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                      .col-12.col-lg-4
+                        =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
         .card
           .card-header
             %h5.no-margin
@@ -94,21 +97,60 @@
 
   $(document).ready(function(){
 
-    $('.select2').select2({minimumInputLength: 7});
+    $('.select2').select2({
+      // minimumInputLength: 7,
+      placeholder: "Select an option",
+      allowClear: true,
+      tags: true
+    })
 
 
-    $('#registro_proveedor_contribuyente_id').chosen({
-        allow_single_deselect: false,
-        no_results_text: 'No se encontraron resultados',
-        width: '100%',
-        search_contains: true,
-        placeholder_text_single: "Seleccione un contribuyente",
-      });
+    $("#registro_proveedor_contribuyente_id").select2({
+      placeholder: "Ingrese el rut de la institucion",
+      allowClear: true,
+      tags: true
+    })
+
+    if ($("#registro_proveedor_contribuyente_id").val() === '') {
+      $('.contribuyente_footer_fields').show()
+    } else {
+      $('.contribuyente_footer_fields').hide()
+    }
+
+
+
+
+
+    if ($('#registro_proveedor_asociar_institucion').is(':checked')) {
+      console.log('true')
+      $('.contribuyente_fields').toggle()
+    } else {
+      console.log('false')
+      $('.contribuyente_fields').hide()
+    }
+
+    $( "#registro_proveedor_contribuyente_id" ).change(function() {
+      if ($(this).val() === '') {
+        console.log('vacio');
+        $('.contribuyente_footer_fields').show()
+      } else {
+        $('.contribuyente_footer_fields').hide()
+      }
+    });
+    // $('#registro_proveedor_contribuyente_id').chosen({
+    //     allow_single_deselect: false,
+    //     no_results_text: 'No se encontraron resultados',
+    //     width: '100%',
+    //     search_contains: true,
+    //     placeholder_text_single: "Seleccione un contribuyente",
+    //   });
+
   })
 
-  function guillo() {
+  function HideOrShowFields() {
     console.log('click');
     const contribuyente = document.querySelector('.contribuyente_fields');
+
     if (contribuyente.style.display === "none") {
       contribuyente.style.display = "block";
     } else {
