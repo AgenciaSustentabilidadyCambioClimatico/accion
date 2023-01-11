@@ -86,10 +86,29 @@
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
-                  =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro'
+                  =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
+        .row
+          .col-12.col-lg-6
+            .card
+              .card-header
+                %h5.m-0
+                  Formatos
+              .card-body
+                .row
+                  .col-12
+                    =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-001",t(:formulario_de_adhesion))
+                  .col-12
+                    .form-group
+                      %label.string.control-label
+                        = t(:formato_excel_de_consolidado_de_adhesiones)
+                      = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado mt-0' do
+                        %i.fa.fa-download
+                        = t(:descargar)
+                      %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
+                        %i.fa.fa-ban
   .float-right
-    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
-    =f.submit 'Enviar', class: 'btn btn-primary btn-sm'
+    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
+    =f.submit 'Enviar', class: 'btn btn-primary'
 
   / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
 
@@ -99,7 +118,7 @@
 
     $('.select2').select2({
       // minimumInputLength: 7,
-      placeholder: "Select an option",
+      placeholder: "Selecciona uno",
       allowClear: true,
       tags: true
     })
@@ -158,5 +177,3 @@
     }
   }
 %style{media: "screen"}
-
-

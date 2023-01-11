@@ -16,6 +16,12 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor.documento_registro_proveedores.build
     @contribuyente    = Contribuyente.new
     @contribuyentes  = Contribuyente.last(1000)
+
+    if current_user.nil?
+      @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    elsif current_user.personas.count == 0
+      @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    end
   end
 
   def search
@@ -25,7 +31,11 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def create
-
+    if current_user.nil?
+      @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    elsif current_user.personas.count == 0
+      @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    end
     @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:region].present? && params[:comuna].present?
