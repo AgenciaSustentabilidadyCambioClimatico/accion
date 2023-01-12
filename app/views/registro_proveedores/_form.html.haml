@@ -21,7 +21,7 @@
               .col-12.col-lg-6
                 =f.input :email, error: true, input_html: {class: "form-control help-block"}
               .col-12.col-lg-6
-                =f.input :telefono
+                =f.input :telefono, as: :integer
               .col-12.col-lg-4
                 =f.input :profesion
               .col-12
@@ -43,6 +43,7 @@
                 .contribuyente_fields{style: "display: none"}
                   .col-12
                     = f.label 'Contribuyente'
+                    / = f.select :contribuyente_id, [], {}, {class: "select2"}, style: "width: 75%"
                     = f.input_field :contribuyente_id, collection: Contribuyente.last(100), label_method: lambda { |p| p.rut }, value_method: :id, required: true, selected: @registro_proveedor.contribuyente_id.presence, prompt:'seleccione', wrapper: false, class: "form-control select2", label: false, style: "width: 75%"
                   .contribuyente_footer_fields
                     .row
@@ -67,7 +68,7 @@
           .card-body
             .row
               .col-12.col-lg-4
-                =f.input :tipo_proveedor_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A que postula?',input_html: {class: ''}
+                =f.input :tipo_proveedor_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A qué postula?',input_html: {class: ''}
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
@@ -123,6 +124,29 @@
       tags: true
     })
 
+    // $("#registro_proveedor_contribuyente_id").select2({
+    //   minimumInputLength: 7,
+    //   ajax: {
+    //     url: "/get_contribuyentes", //URL for searching companies
+    //     dataType: "json",
+    //     delay: 200,
+    //     data: function (params) {
+    //       return {
+    //         search: params.term, //params send to companies controller
+    //       };
+    //     },
+    //     processResults: function (data) {
+    //       `${console.log(data)}`
+    //       return {
+    //         results: data
+
+    //       };
+    //     },
+    //     cache: true
+    //   },
+    // });
+
+
 
     $("#registro_proveedor_contribuyente_id").select2({
       placeholder: "Ingrese el rut de la institucion",
@@ -135,8 +159,6 @@
     } else {
       $('.contribuyente_footer_fields').hide()
     }
-
-
 
 
 

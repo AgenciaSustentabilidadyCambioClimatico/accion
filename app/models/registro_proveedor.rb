@@ -13,7 +13,7 @@ class RegistroProveedor < ApplicationRecord
   validates :nombre, presence: true
   validates :apellido, presence: true
   validates :profesion, presence: true
-  validates :email, presence: true
+  validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
   validates :telefono, presence: true
   validates :telefono, numericality: true, length: {in: 8..11}
   validates :direccion, presence: true

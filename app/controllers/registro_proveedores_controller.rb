@@ -1,7 +1,7 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :search]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
 
   def index
   end
@@ -27,6 +27,17 @@ class RegistroProveedoresController < ApplicationController
   def search
     if params[:query].present?
       render json: Contribuyente.last(10)
+    end
+  end
+
+  def get_contribuyentes
+    if params[:search]
+      @contribuyentes = Contribuyente.where(rut: params[:search])
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render :json =>{:results => @contribuyentes.to_json(only: [:id, :rut]) }}
     end
   end
 
