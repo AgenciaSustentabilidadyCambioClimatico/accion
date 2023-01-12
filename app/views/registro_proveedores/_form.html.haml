@@ -43,8 +43,7 @@
                 .contribuyente_fields{style: "display: none"}
                   .col-12
                     = f.label 'Contribuyente'
-                    / = f.select :contribuyente_id, [], {}, {class: "select2"}, style: "width: 75%"
-                    = f.input_field :contribuyente_id, collection: Contribuyente.last(100), label_method: lambda { |p| p.rut }, value_method: :id, required: true, selected: @registro_proveedor.contribuyente_id.presence, prompt:'seleccione', wrapper: false, class: "form-control select2", label: false, style: "width: 75%"
+                    = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
                   .contribuyente_footer_fields
                     .row
                       .col-12.col-lg-4
@@ -118,48 +117,46 @@
   $(document).ready(function(){
 
     $('.select2').select2({
-      // minimumInputLength: 7,
       placeholder: "Selecciona uno",
       allowClear: true,
       tags: true
     })
 
-    // $("#registro_proveedor_contribuyente_id").select2({
-    //   minimumInputLength: 7,
-    //   ajax: {
-    //     url: "/get_contribuyentes", //URL for searching companies
-    //     dataType: "json",
-    //     delay: 200,
-    //     data: function (params) {
-    //       return {
-    //         search: params.term, //params send to companies controller
-    //       };
-    //     },
-    //     processResults: function (data) {
-    //       `${console.log(data)}`
-    //       return {
-    //         results: data
-
-    //       };
-    //     },
-    //     cache: true
-    //   },
-    // });
-
-
-
     $("#registro_proveedor_contribuyente_id").select2({
-      placeholder: "Ingrese el rut de la institucion",
+      minimumInputLength: 7,
+      ajax: {
+        url: "/get_contribuyentes", //URL for searching companies
+        dataType: "json",
+        delay: 200,
+        data: function (params) {
+          return {
+            search: params.term, //params send to companies controller
+          };
+        },
+        processResults: function (data) {
+          var arr = []
+          $.each(data, function (index, value) {
+            arr.push({
+              id: value.id,
+              text: `${value.rut} - ${value.razon_social}`
+            })
+          })
+          return {
+            results: arr
+          };
+        },
+        cache: true
+      },
+      placeholder: 'Ingrese un rut',
       allowClear: true,
-      tags: true
-    })
+    });
 
-    if ($("#registro_proveedor_contribuyente_id").val() === '') {
+
+    if ($("#registro_proveedor_contribuyente_id").val() === null) {
       $('.contribuyente_footer_fields').show()
     } else {
       $('.contribuyente_footer_fields').hide()
     }
-
 
 
     if ($('#registro_proveedor_asociar_institucion').is(':checked')) {
@@ -171,20 +168,13 @@
     }
 
     $( "#registro_proveedor_contribuyente_id" ).change(function() {
-      if ($(this).val() === '') {
+      if ($(this).val() === null) {
         console.log('vacio');
         $('.contribuyente_footer_fields').show()
       } else {
         $('.contribuyente_footer_fields').hide()
       }
     });
-    // $('#registro_proveedor_contribuyente_id').chosen({
-    //     allow_single_deselect: false,
-    //     no_results_text: 'No se encontraron resultados',
-    //     width: '100%',
-    //     search_contains: true,
-    //     placeholder_text_single: "Seleccione un contribuyente",
-    //   });
 
   })
 

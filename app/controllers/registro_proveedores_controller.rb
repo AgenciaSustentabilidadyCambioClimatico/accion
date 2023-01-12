@@ -32,12 +32,13 @@ class RegistroProveedoresController < ApplicationController
 
   def get_contribuyentes
     if params[:search]
-      @contribuyentes = Contribuyente.where(rut: params[:search])
+      params_contribuyente = params[:search].gsub(/[^0-9\-K]/,'').chop
+      @contribuyentes = Contribuyente.where(rut: params_contribuyente)
     end
 
     respond_to do |format|
       format.html
-      format.json { render :json =>{:results => @contribuyentes.to_json(only: [:id, :rut]) }}
+      format.json { render :json => @contribuyentes }
     end
   end
 
