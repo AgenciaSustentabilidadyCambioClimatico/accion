@@ -15,7 +15,7 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
     @contribuyente    = Contribuyente.new
-    @contribuyentes  = Contribuyente.last(1000)
+    @contribuyentes  = Contribuyente.last(100)
 
     if current_user.nil?
       @tarea = Tarea.find(Tarea::ID_APL_025_1)
