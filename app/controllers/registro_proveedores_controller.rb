@@ -21,6 +21,8 @@ class RegistroProveedoresController < ApplicationController
       @tarea = Tarea.find(Tarea::ID_APL_025_1)
     elsif current_user.personas.count == 0
       @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    else
+      @tarea = Tarea.find(Tarea::ID_APL_025_3)
     end
   end
 
@@ -47,6 +49,8 @@ class RegistroProveedoresController < ApplicationController
       @tarea = Tarea.find(Tarea::ID_APL_025_1)
     elsif current_user.personas.count == 0
       @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    else
+      @tarea = Tarea.find(Tarea::ID_APL_025_3)
     end
     @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
