@@ -8,16 +8,16 @@
     %p
       En virtud de lo anterior, usted ha sido agregado/a como participante del:
 
-      - u = Persona.where(user_id: @resource.id)
-      - m = MapaDeActor.where(persona_id: u.first.id)
-      - f = ManifestacionDeInteres.find(m.first.flujo_id)
-    %p{:style => 'text-align: center; font-weight: bold;'} #{f.nombre_acuerdo}
+    - u = Flujo.find(@resource.web_o_red_social_1)
+    - results = u.manifestacion_de_interes.nombre_acuerdo
+
+    %p{:style => 'text-align: center; font-weight: bold;'} #{results.nombre_acuerdo}
 
     %p por lo que ya cuenta con un perfil de usuario/a en el <strong>Sistema de Gestión de APL</strong> de la <strong>ASCC</strong>.
 
     %p Puede finalizar la creación de su cuenta en el siguiente enlace:
 
-    %a{href: accept_invitation_url(@resource, :invitation_token => @token)} Aceptar Invitación
+
     %p
       Si usted no se identifica con la información enviada, por favor ignore este correo electrónico.
 
