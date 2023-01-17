@@ -8,6 +8,11 @@
     %p
       En virtud de lo anterior, usted ha sido agregado/a como participante del:
 
+    - u = Flujo.find(@resource.web_o_red_social_1.to_i)
+    - results = u.manifestacion_de_interes.nombre_acuerdo
+
+    %p{:style => 'text-align: center; font-weight: bold;'} #{results.nombre_acuerdo}
+
     %p por lo que ya cuenta con un perfil de usuario/a en el <strong>Sistema de Gestión de APL</strong> de la <strong>ASCC</strong>.
 
     %p Puede finalizar la creación de su cuenta en el siguiente enlace:
