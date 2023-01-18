@@ -27,13 +27,13 @@
     });
 
 
-    // hideTareas();
+    hideTareas();
 
   })
 
   function unfoldTareas(evento) {
-    const gui = document.querySelectorAll("#" + `${event.path[1].id}`)
-    const g = document.querySelectorAll("." + `${event.path[1].id}`)
+    const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
+    const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
     gui.forEach((e, index) => {
       if ( index != 0 ) { e.classList.toggle("d-none"); };
 
@@ -76,7 +76,7 @@
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
               %td
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff;' }
+                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
                 =flujo.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
               %td
