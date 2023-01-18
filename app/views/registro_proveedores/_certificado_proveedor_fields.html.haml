@@ -1,0 +1,10 @@
+.nested-fields
+  .row
+    .col-12.col-lg-5
+      =f.input :archivo_certificado, input_html: {class: "validado form-control"}
+    .col-12.col-lg-3
+      =f.input :materia_sustancia_id, collection: MateriaSustancia.all.map{|r| [r.nombre, r.id]}, wrapper: false
+    .col-12.col-lg-3
+      =f.input :actividad_economica_id, collection: @actividad_economica.map{|r| ["#{r.codigo_ciiuv2} - #{r.nombre}", r.id]}, wrapper: false
+    .col-12.col-lg-1
+      = link_to_remove_association raw('<i class="fa fa-minus"></i>'), f, class: 'btn btn-danger btn-sm mt-4'

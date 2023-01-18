@@ -1,0 +1,13 @@
+%body{:style => 'background-color: #f6f6f6;'}
+  %div{:style => 'width: 50%; margin: 50px auto; background-color: white; padding: 20px; border: 1px solid lightgrey'}
+    =image_tag 'https://res.cloudinary.com/dye9yotct/image/upload/v1669987805/Copia_de_logo-ascc_tlkdl2.jpg'
+    %p
+      Hola #{@registro_proveedor.nombre} #{@registro_proveedor.apellido}
+    %p
+      Su postulación al registro de "tipo_Proveedor" ha sido recibida
+    %p
+      Si usted no se identifica con la información enviada, por favor ignore este correo electrónico.
+
+    %style
+      img { width: 265px; object-fit: cover; }
+      p { font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; line-height: 1.5em;}

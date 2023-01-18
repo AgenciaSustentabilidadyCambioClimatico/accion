@@ -47,6 +47,9 @@ class HomeController < ApplicationController
     
   end
 
+  def registro_proveedores
+  end
+
   def solicitar_adhesion_guardar
     @adhesion.assign_attributes(adhesion_params)
     @adhesion.current_user = current_user

@@ -4,6 +4,7 @@ git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
   "https://github.com/#{repo_name}.git"
 end
+ruby '2.7.6'
 
 gem 'caracal-rails'
 gem "animate-rails"
@@ -34,7 +35,7 @@ gem 'jquery-datatables'
 gem 'jquery-rails'
 gem 'nested_form'
 gem 'pg'
-gem 'prawn', '~>2.2.2'
+gem 'prawn', '~>2.4.0'
 gem 'prawn-table', '~> 0.2.2'
 gem 'puma', '~> 3.7'
 gem 'pundit'
@@ -56,12 +57,17 @@ gem 'select2-rails'
 gem 'wicked_pdf'  
 gem 'wkhtmltopdf-binary'
 gem 'mini_magick'
+gem 'globalid', '~> 1.0'
+gem 'letter_opener', group: :development
+gem "cocoon"
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
 end
+
+gem "dotenv-rails", groups: [:development, :test]
 
 group :development do
   gem 'awesome_print'

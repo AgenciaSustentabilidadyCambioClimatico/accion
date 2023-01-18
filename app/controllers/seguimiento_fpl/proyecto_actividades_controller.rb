@@ -1,6 +1,6 @@
 class SeguimientoFpl::ProyectoActividadesController < ApplicationController
-  before_action :authenticate_user!
   protect_from_forgery with: :exception, unless: proc{action_name == 'enviar_pago'}
+  before_action :authenticate_user!
   before_action :set_flash_messages_vars
   #before_action :set_proyecto, except: [:crear_actividad,:index,:solicitud_pago,:calendario,:actualizar_calendario, :editar_actividad, :guardar_actividad, :eliminar_actividad, :agregar_actividad] #only: [:mostrar_ocultar, :iniciar_syc, :enviar_pago, :restitucion, :actualizar_restitucion, :resolucion_contrato, :actualizar_resolucion_contrato, :fecha_efectiva_pago, :actualizar_fecha_efectiva_pago]
   before_action :set_proyecto, only: [:index,:modificar_calendario,:actualizar_rendiciones,:nuevo_anticipo, :modificaciones]
