@@ -12,7 +12,7 @@ gem "hashid-rails", "~> 1.0"
 gem 'activerecord-session_store'
 gem 'autonumeric-rails'
 gem 'caxlsx_rails'
-gem 'bootstrap', '~> 4.0.0'
+gem 'bootstrap', '~> 4.3.1'
 gem 'carrierwave', '~> 1.0'
 gem 'chartkick'
 gem 'ckeditor', github: 'galetahub/ckeditor'
