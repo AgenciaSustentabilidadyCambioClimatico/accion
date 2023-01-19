@@ -27,13 +27,13 @@
     });
 
 
-    // hideTareas();
+    hideTareas();
 
   })
 
   function unfoldTareas(evento) {
-    const gui = document.querySelectorAll("#" + `${event.path[1].id}`)
-    const g = document.querySelectorAll("." + `${event.path[1].id}`)
+    const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
+    const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
     gui.forEach((e, index) => {
       if ( index != 0 ) { e.classList.toggle("d-none"); };
 

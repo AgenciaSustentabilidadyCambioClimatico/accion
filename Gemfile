@@ -60,6 +60,7 @@ gem 'mini_magick'
 gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
 gem "cocoon"
+gem "dotenv-rails", groups: [:development, :test]
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -67,7 +68,6 @@ group :development, :test do
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
 end
 
-gem "dotenv-rails", groups: [:development, :test]
 
 group :development do
   gem 'awesome_print'
