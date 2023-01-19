@@ -21,13 +21,13 @@
               .col-12.col-lg-6
                 =f.input :email, error: true, input_html: {class: "form-control help-block"}
               .col-12.col-lg-6
-                =f.input :telefono, as: :integer
+                =f.input :telefono, as: :integer, label: 'Teléfono'
               .col-12.col-lg-4
-                =f.input :profesion
+                =f.input :profesion, label: 'Profesión'
               .col-12
-                =f.input :direccion
+                =f.input :direccion, label: 'Dirección'
               .col-12.col-lg-4
-                = f.label 'Region'
+                = f.label 'Región'
                 = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false
                 / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
@@ -38,26 +38,29 @@
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
               .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}
+                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
                     = f.label 'Contribuyente'
                     = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
                   .contribuyente_footer_fields
+                    = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
                     .row
                       .col-12.col-lg-4
-                        = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
+                        = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, label: 'RUT institución'
                       .col-12.col-lg-4
-                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }
+                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }, label: 'Nombre institución'
                       .col-12.col-lg-4
                         / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
                       .col-12
-                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }
+                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }, label: 'Dirección casa matriz'
                       .col-12.col-lg-4
-                        =f.input :region_casa_matriz, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                        = f.label 'Región casa matriz'
+                        = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
-                        =f.input :comuna_casa_matriz, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                        = f.label 'Comuna casa matriz'
+                        = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
         .card
@@ -77,7 +80,7 @@
         .card
           .card-header
             %h5.no-margin
-              %b Documentacion
+              %b Documentación
           .card-body
             .row
               .col-12
@@ -86,7 +89,7 @@
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
-                  =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
+                  =f.input :terminos_y_servicion, as: :boolean, label: 'Acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
         .row
           .col-12.col-lg-6
             .card
@@ -188,4 +191,3 @@
       contribuyente.style.display = "none";
     }
   }
-%style{media: "screen"}
