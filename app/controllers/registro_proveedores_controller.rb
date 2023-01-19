@@ -10,12 +10,11 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def new
-    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
+    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv4) = 2")
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
-    @contribuyente    = Contribuyente.new
-    @contribuyentes  = Contribuyente.last(100)
+    @tipo_de_proveedores = TipoProveedor.where(solo_asignable_por_ascc: true)
 
     if current_user.nil?
       @tarea = Tarea.find(Tarea::ID_APL_025_1)
@@ -52,8 +51,9 @@ class RegistroProveedoresController < ApplicationController
     else
       @tarea = Tarea.find(Tarea::ID_APL_025_3)
     end
-    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
+    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv4) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
+    @tipo_de_proveedores = TipoProveedor.where(solo_asignable_por_ascc: true)
     if params[:region].present? && params[:comuna].present?
       @registro_proveedor.region = Region.find(params[:region].to_i).nombre
       @registro_proveedor.comuna = Comuna.find(params[:comuna].to_i).nombre
