@@ -64,7 +64,6 @@ class RegistroProveedor::CreateService
     region = Region.where(nombre: @registro_proveedor.region).first
     comuna = Comuna.where(nombre: @registro_proveedor.comuna).first
     institucion = Contribuyente.find(@registro_proveedor.contribuyente_id)
-    binding.pry
     actividad_economica = ActividadEconomica.where(codigo_ciiuv4: '702000')
     ActividadEconomicaContribuyente.create(actividad_economica_id: actividad_economica.first, contribuyente_id: institucion.id)
     establecimiento = EstablecimientoContribuyente.create(contribuyente_id: institucion.id, direccion: @registro_proveedor.direccion,  comuna_id: comuna.id, region_id: region.id , ciudad: @registro_proveedor.ciudad, casa_matriz: false)
