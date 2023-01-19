@@ -28,6 +28,7 @@
 // = require dataTables.fixedHeader.min
 // = require_tree .
 // = require select2-full
+// = require cocoon
 
 dataConfirmModal.setDefaults({
   title: 'Confirme antes de continuar',

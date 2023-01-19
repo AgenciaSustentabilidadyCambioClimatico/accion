@@ -1,6 +1,6 @@
 class SeguimientoFpl::ProyectosController < ApplicationController
-  before_action :authenticate_user!
   protect_from_forgery with: :exception, unless: proc{action_name == 'enviar_pago'}
+  before_action :authenticate_user!
   before_action :set_proyecto, except: [:crear_actividad,:index,:calendario,:actualizar_calendario] #only: [:mostrar_ocultar, :iniciar_syc, :enviar_pago, :restitucion, :actualizar_restitucion, :resolucion_contrato, :actualizar_resolucion_contrato, :fecha_efectiva_pago, :actualizar_fecha_efectiva_pago]
 	before_action :set_proyecto_calendario, only: [:calendario,:actualizar_calendario]
 	before_action :set_tarea_pendiente, only: [:responsables,:actualizar_responsables, 
