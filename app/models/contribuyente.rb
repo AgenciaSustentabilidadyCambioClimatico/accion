@@ -26,7 +26,7 @@ class Contribuyente < ApplicationRecord
 	validate :rut_dv, if: proc{!self.filter_mode}
 
 	#Se añade ya que se deben excluir las insituciones temporales
-	validate :rut_unico, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
+	# validate :rut_unico, if: proc{!self.filter_mode && self.contribuyente_id.nil?}
 
 	alias_attribute :nombre, :razon_social
 

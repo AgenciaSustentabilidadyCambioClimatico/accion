@@ -1,0 +1,2 @@
+module RegistroProveedoresHelper
+end

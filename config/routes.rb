@@ -42,12 +42,13 @@ Rails.application.routes.draw do
   get 'adherir-a-un-acuerdo', to: "home#adherir_a_un_acuerdo", as: :adherir_a_un_acuerdo
   get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
   get 'get_comunas', to: "home#get_comunas", as: :get_comunas
+  get 'get_contribuyentes', to: "registro_proveedores#get_contribuyentes", as: :get_contribuyentes
   post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
   get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
   get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
   get 'empresas-y-elementos-adheridos', to: "home#empresas_y_elementos_adheridos", as: :empresas_y_elementos_adheridos
   get 'empresas-y-elementos-certificados', to: "home#empresas_y_elementos_certificados", as: :empresas_y_elementos_certificados
-
+  get 'registro-proveedor', to: 'registro_proveedores#search'
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 
@@ -147,7 +148,7 @@ Rails.application.routes.draw do
   end
   ##############################################################################################################
   # End PPF
-
+  resources :registro_proveedores
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml

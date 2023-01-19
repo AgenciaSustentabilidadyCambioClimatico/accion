@@ -209,7 +209,7 @@ class MapaDeActor < ApplicationRecord
 	end
 
 	def self.actualiza_tablas_mapa_actores (data, flujo=nil, tarea_pendiente=nil, historico = false) #DZC SOLO LLAMAR DESDE USO DE REST POR EDITOR
-		pem_lista = {}
+    pem_lista = {}
 		usuarios_vacios_procesados = []
 		if !flujo.nil?
 			manifestacion = flujo.manifestacion_de_interes
@@ -367,6 +367,7 @@ class MapaDeActor < ApplicationRecord
 				end
 			end
 			unless usuario.present?
+
 				##
 				# DZC 2019-08-08 15:20:37
 				# Se precave posibilidad de que se produzca un error en la creación del usuario por existir otro
@@ -376,7 +377,8 @@ class MapaDeActor < ApplicationRecord
 						rut: rut_persona,
 						nombre_completo: fila[:nombre_completo_persona].to_s,
 						telefono: fila[:telefono_institucional].to_s,
-						email: fila[:email_institucional].to_s
+						email: fila[:email_institucional].to_s,
+            web_o_red_social_1: Flujo.find_by_codigo(fila[:codigo]).id
 					)
 					# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
 					usuario.save(validate: false)
@@ -391,7 +393,6 @@ class MapaDeActor < ApplicationRecord
 						)
 				end
 			end
-
 			##
 			# DZC 2018-10-23 15:28:19 se determina la persona relacionada con ese usuario y contribuyente
 			# (solo puede haber una persona por institución para el usuario)
