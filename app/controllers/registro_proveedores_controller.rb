@@ -14,9 +14,8 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
+
   end
-
-
 
   def create
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
@@ -50,6 +49,16 @@ class RegistroProveedoresController < ApplicationController
       format.html
       format.json { render :json => @contribuyentes }
     end
+  end
+
+  def registro_get_comunas
+    @region = Region.find params[:id]
+    @comunas = @region.comunas.order('nombre').vigente?
+  end
+
+  def registro_get_comunas_casa_matriz
+    @region = Region.find params[:id]
+    @comunas = @region.comunas.order('nombre').vigente?
   end
 
 

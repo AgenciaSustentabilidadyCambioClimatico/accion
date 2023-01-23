@@ -32,8 +32,9 @@
                 / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
                 = f.label 'Comuna'
-                = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
-                / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2'}
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
@@ -60,7 +61,8 @@
                         = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         = f.label 'Comuna casa matriz'
-                        = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
+                        =f.input :comuna_casa_matriz, collection: {},label: false, input_html: {class: 'select2', style: "width: 100%"}
+                        / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
         .card
@@ -178,6 +180,22 @@
         $('.contribuyente_footer_fields').hide()
       }
     });
+
+    $('#registro_proveedor_region').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    $('#registro_proveedor_region_casa_matriz').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_casa_matriz_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
 
   })
 
