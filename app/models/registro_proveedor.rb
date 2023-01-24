@@ -41,4 +41,8 @@ class RegistroProveedor < ApplicationRecord
   def asociar_institucion_present?
     self.asociar_institucion == true && !self.contribuyente_id.present?
   end
+
+  def nombre_completo
+    "#{self.nombre} #{self.apellido}"
+  end
 end

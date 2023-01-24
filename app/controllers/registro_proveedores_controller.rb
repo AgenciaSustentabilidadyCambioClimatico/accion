@@ -4,6 +4,8 @@ class RegistroProveedoresController < ApplicationController
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
 
   def index
+    @registro_proveedores = RegistroProveedor.all
+    @users = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
   end
 
   def show
