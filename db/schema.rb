@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230125191306) do
+ActiveRecord::Schema.define(version: 20230103185753) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1561,8 +1561,6 @@ ActiveRecord::Schema.define(version: 20230125191306) do
     t.string "comuna_casa_matriz"
     t.string "ciudad_casa_matriz"
     t.bigint "tipo_proveedor_id"
-    t.integer "estado", default: 0
-    t.integer "user_encargado"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"

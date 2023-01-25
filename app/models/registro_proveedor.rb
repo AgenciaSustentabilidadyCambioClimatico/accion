@@ -26,8 +26,6 @@ class RegistroProveedor < ApplicationRecord
   validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
 
-  enum estado: [:enviado, :aceptado]
-
   before_validation :normalizar_rut
 
   def terms_of_service_value
