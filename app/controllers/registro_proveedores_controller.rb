@@ -41,7 +41,7 @@ class RegistroProveedoresController < ApplicationController
 
   def get_contribuyentes
     if params[:search]
-      params_contribuyente = params[:search].gsub(/[^0-9\-K]/,'').chop
+      params_contribuyente = params[:search].tr('^0-9', '').chop
       @contribuyentes = Contribuyente.where(rut: params_contribuyente)
     end
 

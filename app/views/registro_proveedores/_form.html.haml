@@ -28,13 +28,13 @@
                 =f.input :direccion, label: 'Dirección'
               .col-12.col-lg-4
                 = f.label 'Región'
-                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%'
                 / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
                 = f.label 'Comuna'
                 / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
                 / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
-                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2'}
+                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2', style: "width: 100%"}
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
@@ -72,7 +72,7 @@
           .card-body
             .row
               .col-12.col-lg-4
-                = f.label 'A qué postula?'
+                <label class="string optional">¿A qué postulas?</label>
                 = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
@@ -127,13 +127,18 @@
       allowClear: true
     })
 
+    $('body').on('keyup blur','.select2-search__field',function() {
+      $(this).val($.formatRut($(this).val()) );
+    });
+
     $("#registro_proveedor_contribuyente_id").select2({
-      minimumInputLength: 7,
+      minimumInputLength: 10,
       ajax: {
         url: "/get_contribuyentes", //URL for searching companies
         dataType: "json",
         delay: 200,
         data: function (params) {
+          console.log(params.term)
           return {
             search: params.term, //params send to companies controller
           };
@@ -143,7 +148,7 @@
           $.each(data, function (index, value) {
             arr.push({
               id: value.id,
-              text: `${value.rut} - ${value.razon_social}`
+              text: `${value.rut}-${value.dv} - ${value.razon_social}`
             })
           })
           return {
@@ -155,6 +160,8 @@
       placeholder: 'Ingrese un rut',
       allowClear: true,
     });
+
+
 
 
     if ($("#registro_proveedor_contribuyente_id").val() === null) {
