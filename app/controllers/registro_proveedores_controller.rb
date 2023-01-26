@@ -8,6 +8,7 @@ class RegistroProveedoresController < ApplicationController
     # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
     # habilitado = user.select { |f| f.id == current_user.id }
     # if habilitado.present?
+    # if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.all
       @users = Responsable.__personas_responsables(Rol::REVISOR_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
     # else
