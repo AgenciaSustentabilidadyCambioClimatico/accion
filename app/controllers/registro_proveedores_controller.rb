@@ -4,11 +4,34 @@ class RegistroProveedoresController < ApplicationController
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
 
   def index
-    @registro_proveedores = RegistroProveedor.all
-    @users = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+    # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
+    # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+    # habilitado = user.select { |f| f.id == current_user.id }
+    # if habilitado.present?
+      @registro_proveedores = RegistroProveedor.all
+      @users = Responsable.__personas_responsables(Rol::REVISOR_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+    # else
+    #   redirect_to root_path
+    #   flash.now[:success] = "Registro enviado correctamente"
+    # end
   end
 
   def show
+  end
+
+  def asignar_revisor
+    encargados = params[:encargado]
+    fff = encargados.select { |k, v| v.present? }
+
+    fff.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(user_encargado: value)
+    end
+
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def new

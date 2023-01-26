@@ -47,4 +47,12 @@ class RegistroProveedor < ApplicationRecord
   def nombre_completo
     "#{self.nombre} #{self.apellido}"
   end
+
+  def nombre_user_encargado
+    if self.user_encargado.present?
+      user = self.user_encargado
+      user_encargado = User.find(self.user_encargado).nombre_completo
+      "#{user_encargado}"
+    end
+  end
 end
