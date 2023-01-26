@@ -86,6 +86,7 @@ class ComentariosController < ApplicationController
       respond_to do |format|
         if @comentario.save
           ComentarioMailer.nuevo(@comentario).deliver_later
+          ComentarioMailer.nuevo_para_revisor(@comentario).deliver_now
           format.js { 
             flash.now[:success] = success_message
             @comentario = Comentario.new
