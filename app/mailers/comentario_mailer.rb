@@ -5,10 +5,9 @@ class ComentarioMailer < ApplicationMailer
     mail(to: comentario.email_contacto, subject: 'Nuevo comentario del sitio ASCC')
   end
 
-  def nuevo_para_revisor(comentario)
-    users = @users = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+  def nuevo_para_revisor(comentario, user)
     @comentario = comentario
-    mail(to: users.last.email_institucional, subject: 'Nuevo comentario del sitio ASCC')
+    mail(to: user.email_institucional, subject: 'Nuevo comentario del sitio ASCC')
   end
 
   def welcome(recipient)
