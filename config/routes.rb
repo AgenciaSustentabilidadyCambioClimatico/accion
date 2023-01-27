@@ -149,7 +149,7 @@ Rails.application.routes.draw do
   ##############################################################################################################
   # End PPF
   resources :registro_proveedores
-  get 'revision', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
+  get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml

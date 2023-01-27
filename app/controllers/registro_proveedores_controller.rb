@@ -27,7 +27,7 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def revision
-    @registro_proveedor = RegistroProveedor.all
+    @registro_proveedores = RegistroProveedor.all
   end
 
 
