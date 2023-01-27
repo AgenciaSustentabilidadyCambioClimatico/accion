@@ -110,10 +110,13 @@
                       %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
                         %i.fa.fa-ban
   .float-right
+    = link_to 'fffff', revision_registro_proveedores_path, class: 'btn btn-warning'
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
     =f.submit 'Enviar', class: 'btn btn-primary'
 
   / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
+
+
 
 :javascript
 

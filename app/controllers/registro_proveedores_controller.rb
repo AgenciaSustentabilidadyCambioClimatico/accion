@@ -6,8 +6,8 @@ class RegistroProveedoresController < ApplicationController
   def index
   end
 
-  def show
-  end
+  # def show
+  # end
 
   def new
     @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
@@ -25,6 +25,11 @@ class RegistroProveedoresController < ApplicationController
       @tarea = Tarea.find(Tarea::ID_APL_025_3)
     end
   end
+
+  def revision
+    @registro_proveedor = RegistroProveedor.all
+  end
+
 
   def search
     if params[:query].present?
