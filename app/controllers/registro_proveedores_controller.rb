@@ -27,7 +27,12 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def revision
+    # if user.con este rol
+    # @registro_proveedores = RegistroProveedor.where(usuario_responsable: current_user.id)
     @registro_proveedores = RegistroProveedor.all
+    # else
+    #   redirect_to root_path
+    # end
   end
 
 

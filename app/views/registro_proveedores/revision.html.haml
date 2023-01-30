@@ -1,3 +1,30 @@
-- titulo 'Registro Proveedor Revision'
-- @registro_proveedores.each do |registro_proveedor|
-  = registro_proveedor.id
+- titulo 'Registro Proveedores'
+.card-header
+  .d-flex.justify-content-between.align-items-center
+    %h5.no-margin Revisar postulaciones
+.card-body.p-0
+  %table.table.table-striped.table-bordered#adhesiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+    %thead
+      %tr
+        %th
+        %th Tipo de Proveedor
+        %th RUT postulante
+        %th Nombre Postulante
+        %th RUT institución
+        %th Nombre institución
+        %th Materia
+        %th Actividad Economica
+        %th Seleccionar
+    %tbody
+      - @registro_proveedores.each_with_index do |registro, index|
+        %tr{"data-id" => "#{registro.id}"}
+          %td=index + 1
+          %td= registro.tipo_proveedor_id.present? ? TipoProveedor.find(registro.tipo_proveedor_id).nombre : 'not found'
+          %td=registro.rut
+          %td
+          %td=registro.rut_institucion.present? ? registro.rut_institucion : registro.contribuyente&.rut_completo
+          %td=registro.nombre_institucion.present? ? registro.nombre_institucion : registro.contribuyente&.razon_social
+          %td Materia
+          %td Actividad Economica
+
+
