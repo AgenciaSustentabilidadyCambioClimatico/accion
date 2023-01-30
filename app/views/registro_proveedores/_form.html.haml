@@ -43,8 +43,9 @@
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
-                    = f.label 'Contribuyente'
-                    = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
+                    #contribuyente_rut_fields
+                      = f.label 'Contribuyente'
+                      = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
                   .contribuyente_footer_fields
                     = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
                     .row
@@ -127,7 +128,11 @@
       allowClear: true
     })
 
-    $('body').on('keyup blur','.select2-search__field',function() {
+    $('#contribuyente_rut_fields').on('click' ,function() {
+      $('.select2-search__field').attr('id','contribuyente_rut');
+    });
+
+    $('body').on('keyup blur','#contribuyente_rut',function() {
       $(this).val($.formatRut($(this).val()) );
     });
 
