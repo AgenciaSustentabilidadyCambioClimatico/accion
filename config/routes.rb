@@ -150,7 +150,7 @@ Rails.application.routes.draw do
   # End PPF
   resources :registro_proveedores
   get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
-
+  patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta

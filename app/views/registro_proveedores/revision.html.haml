@@ -1,30 +1,127 @@
-- titulo 'Registro Proveedores'
-.card-header
-  .d-flex.justify-content-between.align-items-center
-    %h5.no-margin Revisar postulaciones
-.card-body.p-0
-  %table.table.table-striped.table-bordered#adhesiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
-    %thead
-      %tr
-        %th
-        %th Tipo de Proveedor
-        %th RUT postulante
-        %th Nombre Postulante
-        %th RUT institución
-        %th Nombre institución
-        %th Materia
-        %th Actividad Economica
-        %th Seleccionar
-    %tbody
-      - @registro_proveedores.each_with_index do |registro, index|
-        %tr{"data-id" => "#{registro.id}"}
-          %td=index + 1
-          %td= registro.tipo_proveedor_id.present? ? TipoProveedor.find(registro.tipo_proveedor_id).nombre : 'not found'
-          %td=registro.rut
-          %td
-          %td=registro.rut_institucion.present? ? registro.rut_institucion : registro.contribuyente&.rut_completo
-          %td=registro.nombre_institucion.present? ? registro.nombre_institucion : registro.contribuyente&.razon_social
-          %td Materia
-          %td Actividad Economica
+=render 'modal_revisar_pertinencia'
+- titulo 'Registro Proveedor'
+= simple_form_for 'registro_proveedor', url: revisar_pertinencia_path, method: :patch do |f|
+  .card-header
+    .d-flex.justify-content-between.align-items-center
+      %h5.no-margin Postulaciones Recibidas
+      %div
+        %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_revisar_pertinencia", disabled: true} Asignar Revisor
+        %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+        %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
+  .card-body.p-0
+    %table.table.table-striped.table-bordered#adhesiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+      %thead
+        %tr
+          %th
+          %th Tipo de Proveedor
+          %th RUT postulante
+          %th Nombre Postulante
+          %th RUT institución
+          %th Nombre institución
+          %th Asignado a
+          %th Seleccionar
+      %tbody
+        - @registro_proveedores.each_with_index do |registro, index|
+          %tr{"data-id" => "#{registro.id}"}
+            %td=index + 1
+            %td= registro.tipo_proveedor_id.present? ? TipoProveedor.find(registro.tipo_proveedor_id).nombre : 'not found'
+            %td=registro.rut
+            %td=registro.nombre
+            %td=registro.rut_institucion.present? ? registro.rut_institucion : registro.contribuyente&.rut_completo
+            %td=registro.nombre_institucion.present? ? registro.nombre_institucion : registro.contribuyente&.razon_social
+            %td
+              - if registro.user_encargado.present?
+                'Guillermo'
+              - else
+                %label.estado-elem Pendiente
+                = f.input :user_encargado, as: :hidden, input_html: { name: "encargado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+                = f.input '#', as: :hidden, input_html: { name: "justificacion[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+
+            %td.text-center
+              %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
+    .float-right
+      = volver_root
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+:javascript
+
+  function cambio_estado_check(){
+    check_length = $('.seleccionar-elemento-adhesion:checked').length
+    total_length = $('.seleccionar-elemento-adhesion').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
+  }
+
+  function activar_guardar_modal_clasificar(){
+    console.log('guillo')
+    $('#enviar_modal_revisar_pertinencia').prop('disabled', true);
+    console.log(`${$('#adhesion_estado_elementos').val()}`);
+    if($('#adhesion_estado_elementos').val() != ""){
+      if($('#adhesion_estado_elementos').val() == "true"){
+        $('#enviar_modal_revisar_pertinencia').prop('disabled', false);
+      }else{
+        if($('#adhesion_justificacion_elementos').val() != ""){
+          $('#enviar_modal_revisar_pertinencia').prop('disabled', false);
+        }
+      }
+    }
+  }
+
+  $(document).ready(function(){
+    $('.seleccionar-elemento-adhesion').click(function(){
+      cambio_estado_check();
+    });
+
+    $('#boton_sel_todos').click(function(){
+      $('.seleccionar-elemento-adhesion').prop("checked", true);
+      cambio_estado_check();
+    });
+
+    $('#boton_desel_todos').click(function(){
+      $('.seleccionar-elemento-adhesion').prop("checked", false);
+      cambio_estado_check();
+    });
+
+    $('#adhesion_estado_elementos').change(function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#adhesion_justificacion_elementos').on('input paste', function(){
+      activar_guardar_modal_clasificar();
+    });
+
+    $('#enviar_modal_revisar_pertinencia').click(function(){
+      estado = $('#adhesion_estado_elementos option:selected');
+      estado_val = estado.prop("value");
+      estado_nombre = estado.text();
+      justificacion = $('#adhesion_justificacion_elementos').val();
+
+      $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
+        posicion = elem.value;
+        tr = $('#adhesiones_pendientes tr[data-id="'+posicion+'"]');
+        console.log(tr);
+        tr.find(".estado-elem").html(estado_nombre);
+        console.log(`${tr.find("input[name='aceptado["+posicion+"]']")}`)
+        tr.find("input[name='encargado["+posicion+"]']").val(estado_val)
+        tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
+        tr.find("input[name='justificacion["+posicion+"]']").val(justificacion);
+      });
+
+      $('.seleccionar-elemento-adhesion').attr("checked", false);
+      $('#boton_clasificar').prop('disabled', true);
+      $('#modal_revisar_pertinencia').modal("hide");
+      $('#adhesion_estado_elementos').val("");
+      $('#adhesion_justificacion_elementos').val("");
+      $('#enviar_modal_revisar_pertinencia').prop("disabled", true);
+      $('#enviar_button').prop("disabled", false);
+    });
+  });
+
+
 
 

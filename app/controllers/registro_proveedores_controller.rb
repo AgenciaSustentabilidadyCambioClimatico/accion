@@ -35,6 +35,22 @@ class RegistroProveedoresController < ApplicationController
     # end
   end
 
+  def revisar_pertinencia
+    # encargados = params[:encargado]
+    # fff = encargados.select { |k, v| v.present? }
+
+    # fff.each do |k, v|
+    #   key = k
+    #   value = v
+    #   @registro_proveedor = RegistroProveedor.find(key)
+    #   @registro_proveedor.update!(user_encargado: value)
+    # end
+
+    # redirect_to root_path
+    # flash.now[:success] = "Registro enviado correctamente"
+    binding.pry
+  end
+
 
   def search
     if params[:query].present?
