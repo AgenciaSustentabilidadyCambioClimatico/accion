@@ -18,6 +18,7 @@
           %th Nombre Postulante
           %th RUT institución
           %th Nombre institución
+          %th Documentos
           %th Asignado a
           %th Seleccionar
       %tbody
@@ -29,6 +30,9 @@
             %td=registro.nombre
             %td=registro.rut_institucion.present? ? registro.rut_institucion : registro.contribuyente&.rut_completo
             %td=registro.nombre_institucion.present? ? registro.nombre_institucion : registro.contribuyente&.razon_social
+            %td.text-center
+              = link_to descargar_documentos_proveedores_path(registro), class: 'btn btn-tabla' do
+                %i.fa.fa-download
             %td
               - if registro.user_encargado.present?
                 'Guillermo'

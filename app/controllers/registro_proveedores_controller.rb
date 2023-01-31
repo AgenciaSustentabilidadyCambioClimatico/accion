@@ -48,7 +48,39 @@ class RegistroProveedoresController < ApplicationController
 
     # redirect_to root_path
     # flash.now[:success] = "Registro enviado correctamente"
-    binding.pry
+  end
+
+  def descargar_documentos_proveedores
+    require 'zip'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
+      documentos = registro_proveedor.documento_registro_proveedores
+      documentos.each do |documento|
+        if File.exists?(documento.archivo.path)
+          #nombre = documento.archivo.file.identifier
+          nombre = "#{registro_proveedor.rut} - #{registro_proveedor.nombre} - #{documento.archivo.file.identifier}"
+          # rename the file
+          stream.put_next_entry(nombre)
+          # add file to zip
+          stream.write IO.read((documento.archivo.current_path rescue documento.archivo.path))
+        end
+      end
+      certificados = registro_proveedor.certificado_proveedores
+      certificados.each do |certificado|
+        if File.exists?(certificado.archivo_certificado.path)
+          #nombre = certificado.archivo_certificado.file.identifier
+          nombre = "certificado"
+          # rename the file
+          stream.put_next_entry(nombre)
+          # add file to zip
+          stream.write IO.read((certificado.archivo_certificado.current_path rescue certificado.archivo_certificado.path))
+        end
+      end
+    end
+
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
 
