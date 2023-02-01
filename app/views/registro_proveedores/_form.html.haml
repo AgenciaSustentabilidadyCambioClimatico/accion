@@ -19,7 +19,7 @@
               .col-12.col-lg-4
                 =f.input :apellido, required: true, input_html: {class: "validado check-boton-llenado"}
               .col-12.col-lg-6
-                =f.input :email, error: true, input_html: {class: "form-control help-block"}
+                =f.input :email, error: true, input_html: {class: "form-control help-block email_validator"}
               .col-12.col-lg-6
                 =f.input :telefono, as: :integer, label: 'Teléfono'
               .col-12.col-lg-4
@@ -28,12 +28,13 @@
                 =f.input :direccion, label: 'Dirección'
               .col-12.col-lg-4
                 = f.label 'Región'
-                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%'
                 / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
                 = f.label 'Comuna'
-                = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
-                / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2', style: "width: 100%"}
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
@@ -42,8 +43,9 @@
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
-                    = f.label 'Contribuyente'
-                    = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
+                    #contribuyente_rut_fields
+                      = f.label 'Contribuyente'
+                      = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
                   .contribuyente_footer_fields
                     = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
                     .row
@@ -60,7 +62,8 @@
                         = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         = f.label 'Comuna casa matriz'
-                        = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
+                        =f.input :comuna_casa_matriz, collection: {},label: false, input_html: {class: 'select2', style: "width: 100%"}
+                        / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
         .card
@@ -70,7 +73,8 @@
           .card-body
             .row
               .col-12.col-lg-4
-                =f.input :tipo_proveedor_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A qué postula?',input_html: {class: ''}
+                <label class="string optional">¿A qué postulas?</label>
+                = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
@@ -121,17 +125,25 @@
 
     $('.select2').select2({
       placeholder: "Selecciona uno",
-      allowClear: true,
-      tags: true
+      allowClear: true
     })
 
+    $('#contribuyente_rut_fields').on('click' ,function() {
+      $('.select2-search__field').attr('id','contribuyente_rut');
+    });
+
+    $('body').on('keyup blur','#contribuyente_rut',function() {
+      $(this).val($.formatRut($(this).val()) );
+    });
+
     $("#registro_proveedor_contribuyente_id").select2({
-      minimumInputLength: 7,
+      minimumInputLength: 10,
       ajax: {
         url: "/get_contribuyentes", //URL for searching companies
         dataType: "json",
         delay: 200,
         data: function (params) {
+          console.log(params.term)
           return {
             search: params.term, //params send to companies controller
           };
@@ -141,7 +153,7 @@
           $.each(data, function (index, value) {
             arr.push({
               id: value.id,
-              text: `${value.rut} - ${value.razon_social}`
+              text: `${value.rut}-${value.dv} - ${value.razon_social}`
             })
           })
           return {
@@ -153,6 +165,8 @@
       placeholder: 'Ingrese un rut',
       allowClear: true,
     });
+
+
 
 
     if ($("#registro_proveedor_contribuyente_id").val() === null) {
@@ -178,6 +192,22 @@
         $('.contribuyente_footer_fields').hide()
       }
     });
+
+    $('#registro_proveedor_region').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    $('#registro_proveedor_region_casa_matriz').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_casa_matriz_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
 
   })
 

@@ -1,0 +1,5 @@
+var select_comuna = "#registro_proveedor_comuna_casa_matriz";
+$(select_comuna).find('option').not(':first').remove();
+-@comunas.each do |comuna|
+  $(select_comuna).append("<option value='#{comuna.id}'>#{comuna.nombre}</option>");
+$(select_comuna).trigger('chosen:updated');

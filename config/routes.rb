@@ -52,6 +52,8 @@ Rails.application.routes.draw do
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 
+  get 'registro_get_comunas', to: "registro_proveedores#registro_get_comunas", as: :registro_get_comunas
+  get 'registro_get_comunas_casa_matriz', to: "registro_proveedores#registro_get_comunas_casa_matriz", as: :registro_get_comunas_casa_matriz
 
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
