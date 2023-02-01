@@ -9,13 +9,13 @@ class RegistroProveedoresController < ApplicationController
     # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
     # habilitado = user.select { |f| f.id == current_user.id }
     # if habilitado.present?
-    # if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
+    if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.all
       @users = Responsable.__personas_responsables(Rol::REVISOR_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-    # else
-    #   redirect_to root_path
-    #   flash.now[:success] = "Registro enviado correctamente"
-    # end
+    else
+      redirect_to root_path
+      flash.now[:success] = "Registro enviado correctamente"
+    end
   end
 
   def show
@@ -23,9 +23,9 @@ class RegistroProveedoresController < ApplicationController
 
   def asignar_revisor
     encargados = params[:encargado]
-    fff = encargados.select { |k, v| v.present? }
+    encargados_seleccionados = encargados.select { |k, v| v.present? }
 
-    fff.each do |k, v|
+    encargados_seleccionados.each do |k, v|
       key = k
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
