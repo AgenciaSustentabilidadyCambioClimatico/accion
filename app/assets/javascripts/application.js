@@ -123,6 +123,7 @@ $(document).ready(function() {
     }
   }
   validarRutEnTiempoReal();
+  validarEmail();
 
   //DZC Fuerza la elección del plazo minimo al valor de 1 o más
   $('body').on('change','.numero-natural', function(e) {
@@ -437,6 +438,44 @@ function checkRutValidity(input) {
   rut = $.trim(input.val());
   return Fn.validaRut(rut);
 }
+
+function checkEmailValidity(input) {
+  email = $.trim(input.val());
+  return validaEmail(email);
+}
+
+function validaEmail (e) {
+  var filter = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+    if (!filter.test(e)) {
+      return false;
+    } else {
+      return true
+    }
+}
+
+
+function validarEmail(mensaje) {
+  if (mensaje===undefined) { mensaje="El Email ingresado es INCORRECTO." }
+    $('body').on('change focusout','.email_validator',function() {
+      console.log('jose');
+      divAcceso=$(this).parent('div');
+      inputAcceso=divAcceso.find('.email_validator');
+      if (checkEmailValidity(inputAcceso)) { $('.check-validity').removeAttr('disabled');
+    } else { $('.check-validity').attr('disabled','disabled'); }
+    if ( $(this).val() == "" || checkEmailValidity(inputAcceso) ) {
+      divAcceso.removeClass('error field_with_errors');
+      inputAcceso.removeClass('border-error');inputAcceso.tooltip('hide');
+      inputAcceso.removeAttr('title');inputAcceso.siblings('span.error').hide().tooltip('destroy');
+    } else {
+      divAcceso.addClass('error');
+      inputAcceso.addClass('border-error'); inputAcceso.attr("title", mensaje);
+      inputAcceso.tooltip({
+        template: '<div class="tooltip error" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
+        trigger: 'manual'
+      }).tooltip('show');
+    }
+  });
+ }
 
 function validarRutEnTiempoReal(mensaje) {
   if (mensaje===undefined) { mensaje="El R.U.T ingresado es INCORRECTO." }
