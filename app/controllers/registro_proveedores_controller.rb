@@ -31,30 +31,32 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(user_encargado: value)
     end
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def revision
     # if user.con este rol
-    # @registro_proveedores = RegistroProveedor.where(usuario_responsable: current_user.id)
-    @registro_proveedores = RegistroProveedor.all
+     @registro_proveedores = RegistroProveedor.where(user_encargado: current_user.id)
     # else
     #   redirect_to root_path
     # end
   end
 
   def revisar_pertinencia
-    # encargados = params[:encargado]
-    # fff = encargados.select { |k, v| v.present? }
 
-    # fff.each do |k, v|
-    #   key = k
-    #   value = v
-    #   @registro_proveedor = RegistroProveedor.find(key)
-    #   @registro_proveedor.update!(user_encargado: value)
-    # end
+    estados = params[:estado]
+    fff = estados.select { |k, v| v.present? }
 
-    # redirect_to root_path
-    # flash.now[:success] = "Registro enviado correctamente"
+    fff.each do |k, v|
+      key = k
+      value = v.to_i
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(estado: value)
+    end
+
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def descargar_documentos_proveedores

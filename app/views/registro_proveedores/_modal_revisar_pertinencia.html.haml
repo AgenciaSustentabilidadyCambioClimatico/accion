@@ -2,15 +2,16 @@
   .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
     .modal-content
       .modal-header.p-3
-        %label.control-label Revisar Pertinencia
+        %label.control-label Resultado de Pertinencia
       .modal-body
         .row
           .col-12
             .form-group
               %select.form-control.validado.select2#adhesion_estado_elementos
-                %option{value: ""} Seleccione un estado de revisión
-                %option{value: "1", selected: '1'} Aceptado
-                %option{value: "2", selected: '2'} Observado
+                %option{value: "",  selected: ''} Seleccione un estado de revisión
+                %option{value: "1" } Recomendado
+                %option{value: "2" } Con Observaciones
+                %option{value: "3" } Rechazado
           .col-12
             .form-group
               %label.control-label Justificar
