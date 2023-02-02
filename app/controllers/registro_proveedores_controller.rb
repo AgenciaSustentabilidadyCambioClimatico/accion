@@ -31,6 +31,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(user_encargado: value)
     end
+  end
 
   def revision
     # if user.con este rol
@@ -89,18 +90,10 @@ class RegistroProveedoresController < ApplicationController
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
-
-  def search
-    if params[:query].present?
-      render json: Contribuyente.last(10)
-    end
-  end
-
   def new
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
-
   end
 
   def create
