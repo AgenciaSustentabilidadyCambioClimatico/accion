@@ -98,9 +98,9 @@ class RegistroProveedoresController < ApplicationController
 
   def create
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
-    if params[:region].present? && params[:comuna].present?
-      @registro_proveedor.region = Region.find(params[:region].to_i).nombre
-      @registro_proveedor.comuna = Comuna.find(params[:comuna].to_i).nombre
+    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
+      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
     end
 
     respond_to do |format|
