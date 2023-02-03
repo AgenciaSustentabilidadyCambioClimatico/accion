@@ -44,15 +44,31 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def revisar_pertinencia
-
     estados = params[:estado]
-    fff = estados.select { |k, v| v.present? }
+    estados_seleccionados = estados.select { |k, v| v.present? }
 
-    fff.each do |k, v|
+    estados_seleccionados.each do |k, v|
       key = k
       value = v.to_i
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(estado: value)
+      if value == 3
+        @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
+      end
+      # if @registro_proveedor.rechazo > 1
+      #   @registro_proveedor.update!(estado: 5)
+      #   Mail para avisar que no puede mandar mas
+      # end
+    end
+
+    comentarios = params[:comentario]
+    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+
+    comentarios_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(comentario: value)
     end
 
     redirect_to root_path

@@ -5,7 +5,7 @@
     .d-flex.justify-content-between.align-items-center
       %h5.no-margin Postulaciones Recibidas
       %div
-        %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_revisar_pertinencia", disabled: true} Ingresar Resultado
+        %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_revisar_pertinencia", disabled: true} Clasificar
         %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
         %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
   .card-body.p-0
@@ -34,10 +34,12 @@
               = link_to descargar_documentos_proveedores_path(registro), class: 'btn btn-tabla' do
                 %i.fa.fa-download
             %td
-              %label.estado-elem Pendiente
-              = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
-              = f.input '#', as: :hidden, input_html: { name: "justificacion[#{registro.id}]", class: "elemento-estado"}, wrapper: false
-
+              - if registro.estado == "con_observaciones" || registro.estado == "rechazado"
+                = registro.estado
+              - else
+                %label.estado-elem Pendiente
+                = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+                = f.input :comentario, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
     .float-right
@@ -59,11 +61,10 @@
   }
 
   function activar_guardar_modal_clasificar(){
-    console.log('guillo')
     $('#enviar_modal_revisar_pertinencia').prop('disabled', true);
     console.log(`${$('#adhesion_estado_elementos').val()}`);
     if($('#adhesion_estado_elementos').val() != ""){
-      if($('#adhesion_estado_elementos').val() == "true"){
+      if($('#adhesion_estado_elementos').val() == "1"){
         $('#enviar_modal_revisar_pertinencia').prop('disabled', false);
       }else{
         if($('#adhesion_justificacion_elementos').val() != ""){
@@ -100,7 +101,7 @@
       estado = $('#adhesion_estado_elementos option:selected');
       estado_val = estado.prop("value");
       estado_nombre = estado.text();
-      justificacion = $('#adhesion_justificacion_elementos').val();
+      comentario = $('#adhesion_justificacion_elementos').val();
 
       $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
         posicion = elem.value;
@@ -110,7 +111,7 @@
         console.log(`${tr.find("input[name='aceptado["+posicion+"]']")}`)
         tr.find("input[name='estado["+posicion+"]']").val(estado_val)
         tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
-        tr.find("input[name='justificacion["+posicion+"]']").val(justificacion);
+        tr.find("input[name='comentario["+posicion+"]']").val(comentario);
       });
 
       $('.seleccionar-elemento-adhesion').attr("checked", false);
