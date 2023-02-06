@@ -55,10 +55,6 @@ class RegistroProveedoresController < ApplicationController
       if value == 3
         @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
       end
-      # if @registro_proveedor.rechazo > 1
-      #   @registro_proveedor.update!(estado: 5)
-      #   Mail para avisar que no puede mandar mas
-      # end
     end
 
     comentarios = params[:comentario]
@@ -69,6 +65,15 @@ class RegistroProveedoresController < ApplicationController
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario: value)
+
+      if @registro_proveedor.estado == 'rechazo'
+        RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
+      end
+
+      if @registro_proveedor.rechazo > 1
+        @registro_proveedor.update!(estado: 5)
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+      end
     end
 
     redirect_to root_path
