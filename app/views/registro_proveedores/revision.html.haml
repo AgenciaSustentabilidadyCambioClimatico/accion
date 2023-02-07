@@ -46,7 +46,8 @@
             %td.text-center
               = link_to descargar_documentos_proveedores_path(registro), class: 'btn btn-tabla' do
                 %i.fa.fa-download
-            %td Experiencias
+            %td
+              %button.btn.btn-primary.btn-sm#boton_experiencia{type: :button, "data-toggle" => "modal", "data-target" => "#modal_experiencia-#{registro.id}"} Ver
             %td.text-center
               = link_to '#', class: 'btn btn-tabla' do
                 %i.fa.fa-file-pdf-o
@@ -60,10 +61,12 @@
                 = f.input :comentario, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
+            =render "modal_experiencia", registro: registro
 
     .float-right
       = volver_root
       = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+
 :javascript
 
   function cambio_estado_check(){
