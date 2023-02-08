@@ -1,6 +1,6 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
-  before_action :set_registro_proveedor, only: [:new, :create]
+  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
 
@@ -18,8 +18,11 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  # def show
-  # end
+  def edit
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+  end
 
   def asignar_revisor
     encargados = params[:encargado]

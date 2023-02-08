@@ -150,6 +150,8 @@ Rails.application.routes.draw do
   end
   ##############################################################################################################
   # End PPF
+
+  #Registro Proveedores routes.
   resources :registro_proveedores
 
   get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
