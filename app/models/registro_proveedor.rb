@@ -8,6 +8,9 @@ class RegistroProveedor < ApplicationRecord
   accepts_nested_attributes_for :certificado_proveedores, allow_destroy: true
   accepts_nested_attributes_for :documento_registro_proveedores, allow_destroy: true
 
+
+  mount_uploader :archivo_respuesta_rechazo, ArchivoRespuestaRechazoProveedorUploader
+
   validates :rut, presence: true
   validates :rut, uniqueness: true
   validates :nombre, presence: true

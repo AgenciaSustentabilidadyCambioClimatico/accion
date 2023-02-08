@@ -8,6 +8,22 @@
         .card
           .card-header
             %h5.no-margin
+              - if @registro_proveedor.estado == 'con_observaciones'
+                %b Postulación con observaciones
+              - elsif @registro_proveedor.estado == 'rechazado'
+                %b Postulación Rechazada. Puede Apelar
+            %h5.no-margin=titulo_acuerdo.html_safe
+          .card-body
+            .row
+              .col-12
+                = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Observaciones y comentarios', input_html: { style: 'width: 100%', rows: 5 }
+              .col-12
+                = f.input :respuesta_comentario, as: :text, as: :text, label: 'Respuesta comentarios proveedores', input_html: { style: 'width: 100%', rows: 5 }
+              .col-12.col-lg-5
+                =f.input :archivo_respuesta_rechazo,label: 'Archivo complementario a respuesta rechazo', input_html: {class: "validado form-control"}
+        .card
+          .card-header
+            %h5.no-margin
               %b Datos Solicitante
             %h5.no-margin=titulo_acuerdo.html_safe
           .card-body

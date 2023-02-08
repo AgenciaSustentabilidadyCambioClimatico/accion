@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230203132612) do
+ActiveRecord::Schema.define(version: 20230208185020) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1565,6 +1565,8 @@ ActiveRecord::Schema.define(version: 20230203132612) do
     t.integer "user_encargado"
     t.integer "rechazo", default: 0
     t.string "comentario"
+    t.string "respuesta_comentario"
+    t.string "archivo_respuesta_rechazo"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
