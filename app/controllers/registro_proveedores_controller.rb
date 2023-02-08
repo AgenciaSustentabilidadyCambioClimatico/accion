@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
   def index
     # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
@@ -45,9 +45,9 @@ class RegistroProveedoresController < ApplicationController
 
   def create
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
-    if params[:region].present? && params[:comuna].present?
-      @registro_proveedor.region = Region.find(params[:region].to_i).nombre
-      @registro_proveedor.comuna = Comuna.find(params[:comuna].to_i).nombre
+    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
+      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
     end
 
     respond_to do |format|
