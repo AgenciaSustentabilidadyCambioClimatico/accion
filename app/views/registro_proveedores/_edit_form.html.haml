@@ -3,7 +3,7 @@
 = simple_form_for @registro_proveedor, remote: true do |f|
   .row
     .col-12.mt-3
-      %h1.titulo='Editar Solicitud de Registro'
+      %h1.titulo='Responder Observaciones'
       .col-12
         .card
           .card-header
@@ -16,11 +16,11 @@
           .card-body
             .row
               .col-12
-                = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Observaciones y comentarios', input_html: { style: 'width: 100%', rows: 5 }
+                = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Comentario de Revisor', input_html: { style: 'width: 100%', rows: 5 }
               .col-12
-                = f.input :respuesta_comentario, as: :text, as: :text, label: 'Respuesta comentarios proveedores', input_html: { style: 'width: 100%', rows: 5 }
+                = f.input :respuesta_comentario, as: :text, as: :text, label: 'Respuesta a comentarios', input_html: { style: 'width: 100%', rows: 5 }
               .col-12.col-lg-5
-                =f.input :archivo_respuesta_rechazo,label: 'Archivo complementario a respuesta rechazo', input_html: {class: "validado form-control"}
+                =f.input :archivo_respuesta_rechazo,label: 'Archivo complementario a respuesta', input_html: {class: "validado form-control"}
         .card
           .card-header
             %h5.no-margin

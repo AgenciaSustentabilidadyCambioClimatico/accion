@@ -158,6 +158,7 @@ Rails.application.routes.draw do
   patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
   get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
   patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
+  post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml

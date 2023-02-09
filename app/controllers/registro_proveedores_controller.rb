@@ -89,7 +89,7 @@ class RegistroProveedoresController < ApplicationController
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
-        if File.exists?(documento.archivo.path)
+        unless documento.archivo.path.nil?
           #nombre = documento.archivo.file.identifier
           nombre = "#{registro_proveedor.rut} - #{registro_proveedor.nombre} - #{documento.archivo.file.identifier}"
           # rename the file
@@ -100,7 +100,7 @@ class RegistroProveedoresController < ApplicationController
       end
       certificados = registro_proveedor.certificado_proveedores
       certificados.each do |certificado|
-        if File.exists?(certificado.archivo_certificado.path)
+        unless certificado.archivo_certificado.path.nil?
           #nombre = certificado.archivo_certificado.file.identifier
           nombre = "certificado"
           # rename the file
@@ -142,6 +142,12 @@ class RegistroProveedoresController < ApplicationController
         format.js
       end
     end
+  end
+
+  def descargar_registro_proveedor_pdf_archivo
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    pdf = @registro_proveedor.generar_pdf
+    send_data pdf.render, type: "application/pdf", disposition: "attachment", filename: "Registro Proveedor.pdf"
   end
 
   def get_contribuyentes
