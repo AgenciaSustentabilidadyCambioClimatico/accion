@@ -10,7 +10,7 @@
               %select.form-control.validado.select2#adhesion_estado_elementos
                 %option{value: ""} Seleccione un Usuario
                 - @users.each do |u|
-                  %option{value: u.user.id, selected: u.user.nombre_completo} #{u.user.nombre_completo}
+                  %option{value: u.user.id} #{u.user.nombre_completo}
       .modal-footer
         %button.btn.btn-primary.btn-sm#enviar_modal_asignar_revisor{type: :button, disabled: true}
           Guardar

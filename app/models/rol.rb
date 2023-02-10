@@ -31,6 +31,8 @@ class Rol < ApplicationRecord
   REVISOR_JURIDICO                     = 34
   JEFE_DE_LINEA_PROVEEDORES            = 35
   REVISOR_PROVEEDORES                  = 36
+  REVISOR_COMENTARIOS                  = 37
+
   
   #ENCARGADO_ENTREGABLES_DIAGNOSTICO   = 10
   #REVISOR_TECNICO_INFORME_DE_IMPACTOS = 20
@@ -65,6 +67,7 @@ class Rol < ApplicationRecord
   STR_REVISOR_JURIDICO                     = "Revisor jurídico"
   STR_JEFE_DE_LINEA_PROVEEDORES            = "Jefe de linea proveedores"
   STR_REVISOR_PROVEEDORES                  = "Revisor proveedores"
+  STR_REVISOR_COMENTARIOS                  = "Revisor de comentarios"
   
 
   def self.__select

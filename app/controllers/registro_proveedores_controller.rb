@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
   def index
     # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
