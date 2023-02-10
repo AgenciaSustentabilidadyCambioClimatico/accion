@@ -152,7 +152,7 @@ Rails.application.routes.draw do
   # End PPF
 
   #Registro Proveedores routes.
-  resources :registro_proveedores
+  resources :registro_proveedores, only: [:index, :show, :new, :create, :edit, :update]
 
   get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
   patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia

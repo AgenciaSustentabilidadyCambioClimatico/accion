@@ -18,10 +18,57 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
+  def show
+  end
+
+  def new
+    @registro_proveedor = RegistroProveedor.new
+    @registro_proveedor.certificado_proveedores.build
+    @registro_proveedor.documento_registro_proveedores.build
+  end
+
+  def create
+    @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
+    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
+      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
+    end
+
+    respond_to do |format|
+      if @registro_proveedor.save
+        RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
+        format.js {
+          render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
+        }
+        RegistroProveedorMailer.delay.enviar(@registro_proveedor)
+      else
+        format.html { render :new }
+        format.js
+      end
+    end
+  end
+
   def edit
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+  end
+
+  def update
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    respond_to do |format|
+      if @registro_proveedor.update(registro_proveedores_params)
+        # RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params).perform
+        format.js {
+          render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
+        }
+      else
+        format.html { render :edit }
+        format.js
+      end
+    end
   end
 
   def asignar_revisor
@@ -116,33 +163,7 @@ class RegistroProveedoresController < ApplicationController
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
-  def new
-    @registro_proveedor = RegistroProveedor.new
-    @registro_proveedor.certificado_proveedores.build
-    @registro_proveedor.documento_registro_proveedores.build
-  end
 
-  def create
-    @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
-    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
-      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
-      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
-    end
-
-    respond_to do |format|
-      if @registro_proveedor.save
-        RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
-        format.js {
-          render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
-        }
-        RegistroProveedorMailer.delay.enviar(@registro_proveedor)
-      else
-        format.html { render :new }
-        format.js
-      end
-    end
-  end
 
   def descargar_registro_proveedor_pdf_archivo
     @registro_proveedor = RegistroProveedor.find(params[:id])
