@@ -1,5 +1,6 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
+  before_action :set_registro_proveedor, only: [:new, :create]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
 
@@ -10,49 +11,13 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def new
-    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
-    @contribuyente    = Contribuyente.new
-    @contribuyentes  = Contribuyente.last(100)
 
-    if current_user.nil?
-      @tarea = Tarea.find(Tarea::ID_APL_025_1)
-    elsif current_user.personas.count == 0
-      @tarea = Tarea.find(Tarea::ID_APL_025_2)
-    else
-      @tarea = Tarea.find(Tarea::ID_APL_025_3)
-    end
-  end
-
-  def search
-    if params[:query].present?
-      render json: Contribuyente.last(10)
-    end
-  end
-
-  def get_contribuyentes
-    if params[:search]
-      params_contribuyente = params[:search].gsub(/[^0-9\-K]/,'').chop
-      @contribuyentes = Contribuyente.where(rut: params_contribuyente)
-    end
-
-    respond_to do |format|
-      format.html
-      format.json { render :json => @contribuyentes }
-    end
   end
 
   def create
-    if current_user.nil?
-      @tarea = Tarea.find(Tarea::ID_APL_025_1)
-    elsif current_user.personas.count == 0
-      @tarea = Tarea.find(Tarea::ID_APL_025_2)
-    else
-      @tarea = Tarea.find(Tarea::ID_APL_025_3)
-    end
-    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv2) = 2")
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:region].present? && params[:comuna].present?
       @registro_proveedor.region = Region.find(params[:region].to_i).nombre
@@ -60,7 +25,6 @@ class RegistroProveedoresController < ApplicationController
     end
 
     respond_to do |format|
-
       if @registro_proveedor.save
         RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
         format.js {
@@ -75,8 +39,42 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
+  def get_contribuyentes
+    if params[:search]
+      params_contribuyente = params[:search].tr('^0-9', '').chop
+      @contribuyentes = Contribuyente.where(rut: params_contribuyente)
+    end
+
+    respond_to do |format|
+      format.html
+      format.json { render :json => @contribuyentes }
+    end
+  end
+
+  def registro_get_comunas
+    @region = Region.find params[:id]
+    @comunas = @region.comunas.order('nombre').vigente?
+  end
+
+  def registro_get_comunas_casa_matriz
+    @region = Region.find params[:id]
+    @comunas = @region.comunas.order('nombre').vigente?
+  end
+
 
   private
+
+  def set_registro_proveedor
+    if current_user.nil?
+      @tarea = Tarea.find(Tarea::ID_APL_025_1)
+    elsif current_user.personas.count == 0
+      @tarea = Tarea.find(Tarea::ID_APL_025_2)
+    else
+      @tarea = Tarea.find(Tarea::ID_APL_025_3)
+    end
+    @actividad_economica = ActividadEconomica.where("LENGTH(codigo_ciiuv4) = 2").sort
+    @tipo_de_proveedores = TipoProveedor.where(solo_asignable_por_ascc: true)
+  end
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
