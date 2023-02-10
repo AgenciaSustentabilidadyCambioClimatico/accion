@@ -372,8 +372,7 @@ class MapaDeActor < ApplicationRecord
 				# DZC 2019-08-08 15:20:37
 				# Se precave posibilidad de que se produzca un error en la creación del usuario por existir otro
 				# con el mismo email.
-        d = Flujo.find_by_codigo(fila[:codigo])
-        apl = d.manifestacion_de_interes.nombre_acuerdo
+        apl = flujo.manifestacion_de_interes.nombre_acuerdo
 				begin
 					usuario = User.invite!(
 						rut: rut_persona,
