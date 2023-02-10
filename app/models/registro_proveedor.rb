@@ -26,6 +26,8 @@ class RegistroProveedor < ApplicationRecord
   validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
 
+  enum estado: [:enviado, :aceptado]
+
   before_validation :normalizar_rut
 
   def terms_of_service_value
@@ -40,5 +42,17 @@ class RegistroProveedor < ApplicationRecord
 
   def asociar_institucion_present?
     self.asociar_institucion == true && !self.contribuyente_id.present?
+  end
+
+  def nombre_completo
+    "#{self.nombre} #{self.apellido}"
+  end
+
+  def nombre_user_encargado
+    if self.user_encargado.present?
+      user = self.user_encargado
+      user_encargado = User.find(self.user_encargado).nombre_completo
+      "#{user_encargado}"
+    end
   end
 end

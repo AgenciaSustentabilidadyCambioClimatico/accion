@@ -2,12 +2,38 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
   def index
+    # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
+    # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+    # habilitado = user.select { |f| f.id == current_user.id }
+    # if habilitado.present?
+    if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
+      @registro_proveedores = RegistroProveedor.all
+      @users = Responsable.__personas_responsables(Rol::REVISOR_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+    else
+      redirect_to root_path
+      flash.now[:success] = "Registro enviado correctamente"
+    end
   end
 
   def show
+  end
+
+  def asignar_revisor
+    encargados = params[:encargado]
+    encargados_seleccionados = encargados.select { |k, v| v.present? }
+
+    encargados_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(user_encargado: value)
+    end
+
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def new
@@ -19,9 +45,9 @@ class RegistroProveedoresController < ApplicationController
 
   def create
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
-    if params[:region].present? && params[:comuna].present?
-      @registro_proveedor.region = Region.find(params[:region].to_i).nombre
-      @registro_proveedor.comuna = Comuna.find(params[:comuna].to_i).nombre
+    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
+      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
     end
 
     respond_to do |format|
