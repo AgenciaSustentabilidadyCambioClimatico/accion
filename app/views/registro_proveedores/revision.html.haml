@@ -24,7 +24,7 @@
           %th Documentación ZIP
           %th Experiencias
           %th PDF
-          %th Comentario
+          %th Información Extra
           %th Resultado
           %th Seleccionar
       %tbody
@@ -51,7 +51,10 @@
             %td.text-center
               = link_to descargar_pdf_proveedores_path(registro), method: :post, class: 'btn btn-tabla' do
                 %i.fa.fa-file-pdf-o
-            %td= registro.comentario ? registro.comentario : '-'
+            %td
+              / = registro.comentario ? registro.comentario : '-'
+              = registro.respuesta_comentario ? "Respuesta comentario: #{registro.respuesta_comentario}" : ''
+              = registro.archivo_respuesta_rechazo ? registro.archivo_respuesta_rechazo : ''
             %td
               - if registro.estado == "con_observaciones" || registro.estado == "rechazado"
                 = registro.estado.capitalize

@@ -35,7 +35,7 @@
               .col-12.col-lg-4
                 =f.input :apellido, required: true, input_html: {class: "validado check-boton-llenado"}
               .col-12.col-lg-6
-                =f.input :email, error: true, input_html: {class: "form-control help-block email_validator"}
+                =f.input :email, error: true, input_html: {class: "form-control help-block email_validator", disabled: true}
               .col-12.col-lg-6
                 =f.input :telefono, as: :integer, label: 'Teléfono'
               .col-12.col-lg-4

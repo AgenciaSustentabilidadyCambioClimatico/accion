@@ -57,9 +57,10 @@ class RegistroProveedoresController < ApplicationController
 
   def update
     @registro_proveedor = RegistroProveedor.find(params[:id])
+    # RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params).perform
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
-        # RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params).perform
+
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"

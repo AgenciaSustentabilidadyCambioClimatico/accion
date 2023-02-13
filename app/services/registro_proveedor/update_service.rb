@@ -6,14 +6,14 @@ class RegistroProveedor::UpdateService
 
   def perform
     update_registro_proveedor
-    update_user
-    if @registro_proveedor.asociar_institucion == false
-      create_institucion
-    elsif @registro_proveedor.asociar_institucion == true && @registro_proveedor.contribuyente_id.present?
-      find_institucion
-    elsif @registro_proveedor.asociar_institucion == true && !@registro_proveedor.contribuyente_id.present?
-      create_institucion_with_user_data
-    end
+    # update_user
+    # if @registro_proveedor.asociar_institucion == false
+    #   create_institucion
+    # elsif @registro_proveedor.asociar_institucion == true && @registro_proveedor.contribuyente_id.present?
+    #   find_institucion
+    # elsif @registro_proveedor.asociar_institucion == true && !@registro_proveedor.contribuyente_id.present?
+    #   create_institucion_with_user_data
+    # end
   end
 
   def update_registro_proveedor
@@ -21,13 +21,12 @@ class RegistroProveedor::UpdateService
   end
 
   def update_user
+    rut = @registro_proveedor.rut
     nombre_completo = "#{@registro_proveedor.nombre} #{@registro_proveedor.apellido}"
     telefono = @registro_proveedor.telefono
     email = @registro_proveedor.email
     user_proveedor = User.find_by(rut: rut)
-    if user_proveedor.nil?
-      user = User.create(rut: rut, nombre_completo: nombre_completo, telefono: telefono, email: email, password: '123456')
-    end
+    user_proveedor.update(nombre_completo: nombre_completo, telefono: telefono, email: email)
   end
 
   def create_institucion
