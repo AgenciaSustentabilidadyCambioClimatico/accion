@@ -131,6 +131,16 @@ class RegistroProveedoresController < ApplicationController
     flash.now[:success] = "Registro enviado correctamente"
   end
 
+
+  def resultado_revision
+    if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
+      @registro_proveedores = RegistroProveedor.where(estado: 'rechazado')
+    else
+      redirect_to root_path
+      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    end
+  end
+
   def descargar_documentos_proveedores
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|

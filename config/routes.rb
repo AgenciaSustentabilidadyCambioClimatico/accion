@@ -159,7 +159,7 @@ Rails.application.routes.draw do
   get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
   patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
   post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
-
+  get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
