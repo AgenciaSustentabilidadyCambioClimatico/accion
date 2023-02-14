@@ -1,6 +1,8 @@
 class RegistroProveedorMailer < ApplicationMailer
   def enviar(registro_proveedor)
     @registro_proveedor = registro_proveedor
+    tipo_proveeedor = registro_proveedor.tipo_proveedor_id
+    @tipo_proveedor = TipoProveedor.find(tipo_proveeedor).nombre
     user = registro_proveedor.email
     encabezado = 'Postulacion enviada'
     mail(to: user, subject: encabezado)

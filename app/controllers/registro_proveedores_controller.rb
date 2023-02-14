@@ -41,7 +41,7 @@ class RegistroProveedoresController < ApplicationController
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
         }
-        RegistroProveedorMailer.delay.enviar(@registro_proveedor)
+        RegistroProveedorMailer.enviar(@registro_proveedor).deliver_later
       else
         format.html { render :new }
         format.js
