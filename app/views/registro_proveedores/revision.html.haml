@@ -24,7 +24,7 @@
           %th Documentación ZIP
           %th Experiencias
           %th PDF
-          %th Información Extra
+          %th Respuesta a Observaciones
           %th Resultado
           %th Seleccionar
       %tbody
@@ -53,7 +53,7 @@
                 %i.fa.fa-file-pdf-o
             %td
               / = registro.comentario ? registro.comentario : '-'
-              = registro.respuesta_comentario ? "Respuesta comentario: #{registro.respuesta_comentario}" : ''
+              = registro.respuesta_comentario ? "Comentario: #{registro.respuesta_comentario}" : ''
               = registro.archivo_respuesta_rechazo ? registro.archivo_respuesta_rechazo : ''
             %td
               - if registro.estado == "con_observaciones" || registro.estado == "rechazado"
@@ -88,8 +88,11 @@
   function activar_guardar_modal_clasificar(){
     $('#enviar_modal_revisar_pertinencia').prop('disabled', true);
     console.log(`${$('#adhesion_estado_elementos').val()}`);
+    $('abbr').remove();
     if($('#adhesion_estado_elementos').val() != ""){
+      $("<abbr title='Campo requerido'>*</abbr>").insertBefore("#comentario_label");
       if($('#adhesion_estado_elementos').val() == "1"){
+        $('abbr').remove();
         $('#enviar_modal_revisar_pertinencia').prop('disabled', false);
       }else{
         if($('#adhesion_justificacion_elementos').val() != ""){
@@ -121,6 +124,8 @@
     $('#adhesion_justificacion_elementos').on('input paste', function(){
       activar_guardar_modal_clasificar();
     });
+
+
 
     $('#adhesiones_pendientes').DataTable({
       dom: 't',
