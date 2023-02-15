@@ -54,7 +54,7 @@
             %td
               / = registro.comentario ? registro.comentario : '-'
               = registro.respuesta_comentario ? "Comentario: #{registro.respuesta_comentario}" : ''
-              = registro.archivo_respuesta_rechazo ? registro.archivo_respuesta_rechazo : ''
+              = registro.archivo_respuesta_rechazo ?  __descargar_archivo(registro.archivo_respuesta_rechazo,registro.archivo_respuesta_rechazo) : ''
             %td
               - if registro.estado == "con_observaciones" || registro.estado == "rechazado"
                 = registro.estado.capitalize
