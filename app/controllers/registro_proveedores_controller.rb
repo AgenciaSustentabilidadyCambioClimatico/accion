@@ -57,10 +57,13 @@ class RegistroProveedoresController < ApplicationController
 
   def update
     @registro_proveedor = RegistroProveedor.find(params[:id])
-    # RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params).perform
-    respond_to do |format|
-      if @registro_proveedor.update(registro_proveedores_params)
+    asociar_institucion = @registro_proveedor.asociar_institucion
+    contribuyente_id = @registro_proveedor.contribuyente_id
+    rut_institucion = @registro_proveedor.rut_institucion
 
+    respond_to do |format|
+      if @registro_proveedor.update(@params)
+        RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
@@ -222,7 +225,7 @@ class RegistroProveedoresController < ApplicationController
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
       :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario, :archivo_respuesta_rechazo,
-      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :_destroy])
+      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
   end
 
   def datos_header_no_signed

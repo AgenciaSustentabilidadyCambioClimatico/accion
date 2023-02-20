@@ -93,7 +93,7 @@
                 = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
-                  = render 'certificado_proveedor_fields', f: certificado
+                  = render 'certificado_proveedor_fields_edit', f: certificado
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
       .col-12
@@ -105,7 +105,7 @@
             .row
               .col-12
                 = f.simple_fields_for :documento_registro_proveedores do |documento|
-                  = render 'documento_registro_proveedor_fields', f: documento
+                  = render 'documento_registro_fields_edit', f: documento
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
@@ -183,6 +183,12 @@
     });
 
 
+    $('form').on('cocoon:after-insert', function() {
+      $('.select2').select2({
+        placeholder: "Selecciona uno",
+        allowClear: true
+      })
+    });
 
 
     if ($("#registro_proveedor_contribuyente_id").val() === null) {
