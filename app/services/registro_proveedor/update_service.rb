@@ -62,12 +62,12 @@ class RegistroProveedor::UpdateService
   end
 
   def update_region_and_comuna
-    region = Region.find(params[:registro_proveedor][:region].to_i).nombre
-    comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
+    region = Region.find(@params[:region].to_i).nombre
+    comuna = Comuna.find(@params[:comuna].to_i).nombre
     @registro_proveedor.update(region: region, comuna: comuna)
-    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
-      region_casa_matriz = Region.find(params[:registro_proveedor][:region_casa_matriz].to_i).nombre
-      comuna_casa_matriz = Comuna.find(params[:registro_proveedor][:comuna_casa_matriz].to_i).nombre
+    if @params[:region_casa_matriz].present? && @params[:comuna_casa_matriz].present?
+      region_casa_matriz = Region.find(@params[:region_casa_matriz].to_i).nombre
+      comuna_casa_matriz = Comuna.find(@params[:comuna_casa_matriz].to_i).nombre
       @registro_proveedor.update(region_casa_matriz: region_casa_matriz, comuna_casa_matriz: comuna_casa_matriz)
     end
   end

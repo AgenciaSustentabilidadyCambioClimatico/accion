@@ -62,7 +62,7 @@ class RegistroProveedoresController < ApplicationController
     rut_institucion = @registro_proveedor.rut_institucion
 
     respond_to do |format|
-      if @registro_proveedor.update(@params)
+      if @registro_proveedor.update(registro_proveedores_params)
         RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
         format.js {
           render js: "window.location='#{root_path}'"
