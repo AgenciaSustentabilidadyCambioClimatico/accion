@@ -190,6 +190,10 @@ class RegistroProveedoresController < ApplicationController
         RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
       end
 
+      if @registro_proveedor.estado == 'aprobado'
+        RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
+      end
+
       if @registro_proveedor.rechazo_directiva > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later

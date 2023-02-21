@@ -28,4 +28,14 @@ class RegistroProveedorMailer < ApplicationMailer
     encabezado = 'Postulacion rechazada'
     mail(to: user, subject: encabezado)
   end
+
+
+  def aprobado_directiva(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    tipo_proveeedor = registro_proveedor.tipo_proveedor_id
+    @tipo_proveedor = TipoProveedor.find(tipo_proveeedor).nombre
+    user = registro_proveedor.email
+    encabezado = 'Postulacion aprobada'
+    mail(to: user, subject: encabezado)
+  end
 end
