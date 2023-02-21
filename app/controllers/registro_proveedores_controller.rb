@@ -1,6 +1,6 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
-  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update]
+  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
@@ -191,6 +191,17 @@ class RegistroProveedoresController < ApplicationController
 
     redirect_to root_path
     flash.now[:success] = "Registro enviado correctamente"
+  end
+
+  #PRO-006
+  def edit_proveedor
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+  end
+
+  #PRO-006
+  def update_proveedor
   end
 
   def descargar_documentos_proveedores
