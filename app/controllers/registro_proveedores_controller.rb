@@ -101,12 +101,12 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario: value)
 
-      if @registro_proveedor.estado == 'rechazo'
+      if @registro_proveedor.estado == 'rechazado'
         RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
       end
 
       if @registro_proveedor.rechazo > 1
-        @registro_proveedor.update!(estado: 5)
+        @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
       end
     end
@@ -120,6 +120,13 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    # if current_user.rut == @registro_proveedor.rut
+    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    # else
+    #   redirect_to root_path
+    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    # end
   end
 
   #PRO-004
@@ -165,7 +172,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
 
       if value == 2
-        @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
+        @registro_proveedor.update!(rechazo_directiva: @registro_proveedor.rechazo_directiva + 1)
         @registro_proveedor.update!(estado: 5)
       end
     end
@@ -195,6 +202,13 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-006
   def edit_proveedor
+    # if current_user.rut == @registro_proveedor.rut
+    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    # else
+    #   redirect_to root_path
+    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    # end
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
@@ -202,6 +216,19 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-006
   def update_proveedor
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    respond_to do |format|
+      if @registro_proveedor.update(registro_proveedores_params)
+        @registro_proveedor.update(estado: 1)
+        format.js {
+          render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
+        }
+      else
+        format.html { render :edit }
+        format.js
+      end
+    end
   end
 
   def descargar_documentos_proveedores
@@ -281,7 +308,8 @@ class RegistroProveedoresController < ApplicationController
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario, :archivo_respuesta_rechazo,
+      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
+      :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva,
       certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
   end
 

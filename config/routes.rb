@@ -162,6 +162,7 @@ Rails.application.routes.draw do
   get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
   patch 'registro_proveedor/resultado_de_revision', to: "registro_proveedores#resultado_de_revision", as: :resultado_de_revision
   get 'registro_proveedores/:id/edit_proveedor', to: "registro_proveedores#edit_proveedor", as: :edit_proveedor
+  patch 'registro_proveedores/:id/update_proveedor', to: "registro_proveedores#update_proveedor", as: :update_proveedor
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
