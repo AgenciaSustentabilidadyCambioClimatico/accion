@@ -10,6 +10,7 @@ class RegistroProveedor < ApplicationRecord
 
 
   mount_uploader :archivo_respuesta_rechazo, ArchivoRespuestaRechazoProveedorUploader
+  mount_uploader :archivo_respuesta_rechazo_directiva, ArchivoRespuestaRechazoDirectivaProveedorUploader
 
   validates :rut, presence: true
   validates :rut, uniqueness: true
@@ -29,7 +30,7 @@ class RegistroProveedor < ApplicationRecord
   validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
 
-  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado ]
+  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo]
 
   before_validation :normalizar_rut
 

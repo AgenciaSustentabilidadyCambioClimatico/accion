@@ -1567,6 +1567,10 @@ ActiveRecord::Schema.define(version: 20230208185020) do
     t.string "comentario"
     t.string "respuesta_comentario"
     t.string "archivo_respuesta_rechazo"
+    t.string "comentario_directiva"
+    t.string "respuesta_comentario_directiva"
+    t.string "archivo_respuesta_rechazo_directiva"
+    t.integer "rechazo_directiva", default: 0
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"

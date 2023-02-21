@@ -1,3 +1,4 @@
+/PRO-001
 - pick_a_institucion="Seleccione una institución desde el buscador"
 - pick_a_contribuyente="Seleccione un establecimiento"
 = simple_form_for @registro_proveedor, remote: true do |f|
@@ -166,8 +167,42 @@
       allowClear: true,
     });
 
+    $('form').on('cocoon:after-insert', function() {
+      $('.select2').select2({
+        placeholder: "Selecciona uno",
+        allowClear: true
+      })
 
-
+      $("#registro_proveedor_contribuyente_id").select2({
+        minimumInputLength: 10,
+        ajax: {
+          url: "/get_contribuyentes", //URL for searching companies
+          dataType: "json",
+          delay: 200,
+          data: function (params) {
+            console.log(params.term)
+            return {
+              search: params.term, //params send to companies controller
+            };
+          },
+          processResults: function (data) {
+            var arr = []
+            $.each(data, function (index, value) {
+              arr.push({
+                id: value.id,
+                text: `${value.rut}-${value.dv} - ${value.razon_social}`
+              })
+            })
+            return {
+              results: arr
+            };
+          },
+          cache: true
+        },
+        placeholder: 'Ingrese un rut',
+        allowClear: true,
+      });
+    });
 
     if ($("#registro_proveedor_contribuyente_id").val() === null) {
       $('.contribuyente_footer_fields').show()

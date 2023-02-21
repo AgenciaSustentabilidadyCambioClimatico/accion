@@ -21,4 +21,11 @@ class RegistroProveedorMailer < ApplicationMailer
     encabezado = 'Postulacion rechazada definitivamente'
     mail(to: user, subject: encabezado)
   end
+
+  def primer_rechazo_directiva(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    user = registro_proveedor.email
+    encabezado = 'Postulacion rechazada'
+    mail(to: user, subject: encabezado)
+  end
 end

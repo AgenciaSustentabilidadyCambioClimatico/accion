@@ -4,6 +4,7 @@ class RegistroProveedoresController < ApplicationController
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
+  #PRO-002
   def index
     # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
     # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
@@ -21,12 +22,14 @@ class RegistroProveedoresController < ApplicationController
   def show
   end
 
+  #PRO-001
   def new
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
   end
 
+  #PRO-001
   def create
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
@@ -49,32 +52,7 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  def edit
-    @registro_proveedor = RegistroProveedor.find(params[:id])
-    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
-  end
-
-  def update
-    @registro_proveedor = RegistroProveedor.find(params[:id])
-    asociar_institucion = @registro_proveedor.asociar_institucion
-    contribuyente_id = @registro_proveedor.contribuyente_id
-    rut_institucion = @registro_proveedor.rut_institucion
-
-    respond_to do |format|
-      if @registro_proveedor.update(registro_proveedores_params)
-        RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
-        format.js {
-          render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
-        }
-      else
-        format.html { render :edit }
-        format.js
-      end
-    end
-  end
-
+  #PRO-002
   def asignar_revisor
     encargados = params[:encargado]
     encargados_seleccionados = encargados.select { |k, v| v.present? }
@@ -89,14 +67,17 @@ class RegistroProveedoresController < ApplicationController
     flash.now[:success] = "Registro enviado correctamente"
   end
 
+  #PRO-003
   def revision
-    # if user.con este rol
-     @registro_proveedores = RegistroProveedor.where(user_encargado: current_user.id)
-    # else
-    #   redirect_to root_path
-    # end
+    if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
+     @registro_proveedores = RegistroProveedor.where(user_encargado: current_user.id, estado: 'enviado')
+     else
+      redirect_to root_path
+      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    end
   end
 
+  #PRO-003
   def revisar_pertinencia
     estados = params[:estado]
     estados_seleccionados = estados.select { |k, v| v.present? }
@@ -134,14 +115,82 @@ class RegistroProveedoresController < ApplicationController
     flash.now[:success] = "Registro enviado correctamente"
   end
 
+  #PRO-004
+  def edit
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+  end
 
+  #PRO-004
+  def update
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    asociar_institucion = @registro_proveedor.asociar_institucion
+    contribuyente_id = @registro_proveedor.contribuyente_id
+    rut_institucion = @registro_proveedor.rut_institucion
+
+    respond_to do |format|
+      if @registro_proveedor.update(registro_proveedores_params)
+        RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
+        format.js {
+          render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
+        }
+      else
+        format.html { render :edit }
+        format.js
+      end
+    end
+  end
+
+  #PRO-005
   def resultado_revision
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
-      @registro_proveedores = RegistroProveedor.where(estado: 'rechazado')
+      @registro_proveedores = RegistroProveedor.where(estado: 'recomendado')
+      @rechazo_aprobado = RegistroProveedor.select { |registro| registro.estado == 'aprobado' || registro.estado == 'rechazado_directiva'}
     else
       redirect_to root_path
       flash.now[:success] = "No tienes permiso para acceder a esta pagina"
     end
+  end
+
+  #PRO-005
+  def resultado_de_revision
+    estados = params[:estado]
+    estados_seleccionados = estados.select { |k, v| v.present? }
+
+    estados_seleccionados.each do |k, v|
+      key = k
+      value = v.to_i
+      @registro_proveedor = RegistroProveedor.find(key)
+
+      if value == 2
+        @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
+        @registro_proveedor.update!(estado: 5)
+      end
+    end
+
+    comentarios = params[:comentario]
+    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+
+    comentarios_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(comentario_directiva: value)
+
+      if @registro_proveedor.estado == 'rechazo_directiva'
+        RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
+      end
+
+      if @registro_proveedor.rechazo_directiva > 1
+        @registro_proveedor.update!(estado: 6)
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+      end
+    end
+
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def descargar_documentos_proveedores
@@ -177,8 +226,6 @@ class RegistroProveedoresController < ApplicationController
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
-
-
   def descargar_registro_proveedor_pdf_archivo
     @registro_proveedor = RegistroProveedor.find(params[:id])
     pdf = @registro_proveedor.generar_pdf
@@ -206,7 +253,6 @@ class RegistroProveedoresController < ApplicationController
     @region = Region.find params[:id]
     @comunas = @region.comunas.order('nombre').vigente?
   end
-
 
   private
 

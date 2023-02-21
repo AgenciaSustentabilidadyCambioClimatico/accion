@@ -1,9 +1,10 @@
+/PRO-005
 =render 'modal_resultado_revision'
 - titulo 'Registro Proveedor'
-= simple_form_for 'registro_proveedor', url: revisar_pertinencia_path, method: :patch do |f|
+= simple_form_for 'registro_proveedor', url: resultado_de_revision_path, method: :patch do |f|
   .card-header
     .d-flex.justify-content-between.align-items-center
-      %h5.no-margin Postulaciones
+      %h5.no-margin Postulaciones Pendientes
       %div
         %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_resultado_revision", disabled: true} Clasificar
         %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
@@ -54,9 +55,9 @@
             %td
               / = registro.comentario ? registro.comentario : '-'
               = registro.respuesta_comentario ? "Respuesta comentario: #{registro.respuesta_comentario}" : ''
-              = registro.archivo_respuesta_rechazo ? registro.archivo_respuesta_rechazo : ''
+              = registro.archivo_respuesta_rechazo ? __descargar_archivo(registro.archivo_respuesta_rechazo,registro.archivo_respuesta_rechazo) : ''
             %td
-              %label.estado-elem Pendiente
+              %label.estado-elem= registro.rechazo_directiva > 0 ? 'Apeló' : 'Pendiente'
               = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
               = f.input :comentario, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
@@ -66,6 +67,9 @@
     .float-right
       = volver_root
       = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+
+#aceptadas.mt-5
+  =render "aceptados_rechazados"
 
 :javascript
 
@@ -82,13 +86,21 @@
     }
   }
 
+
   function activar_guardar_modal_clasificar(){
     $('#enviar_modal_resultado_revision').prop('disabled', true);
     console.log(`${$('#adhesion_estado_elementos').val()}`);
+    $('#aprobado_fields').css("display", "none");
+    $('#comentario_div').css("display", "none");
     if($('#adhesion_estado_elementos').val() != ""){
       if($('#adhesion_estado_elementos').val() == "1"){
+        $('#aprobado_fields').toggle();
+        $('#comentario_div').css("display", "none");
         $('#enviar_modal_resultado_revision').prop('disabled', false);
-      }else{
+      } else if($('#adhesion_estado_elementos').val() == "2") {
+        $('#comentario_div').toggle();
+        $('#enviar_modal_resultado_revision').prop('disabled', false);
+      } else{
         if($('#adhesion_justificacion_elementos').val() != ""){
           $('#enviar_modal_resultado_revision').prop('disabled', false);
         }
@@ -120,6 +132,25 @@
     });
 
     $('#adhesiones_pendientes').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
+    $('#adhesiones_revisadas').DataTable({
       dom: 't',
       paging: false,
       responsive: {
