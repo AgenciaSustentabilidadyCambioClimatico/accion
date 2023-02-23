@@ -54,8 +54,8 @@
                 %i.fa.fa-file-pdf-o
             %td
               / = registro.comentario ? registro.comentario : '-'
-              = registro.respuesta_comentario ? "Respuesta comentario: #{registro.respuesta_comentario}" : ''
-              = registro.archivo_respuesta_rechazo ? __descargar_archivo(registro.archivo_respuesta_rechazo,registro.archivo_respuesta_rechazo) : ''
+              = registro.respuesta_comentario_directiva ? "Respuesta comentario: #{registro.respuesta_comentario_directiva}" : ''
+              = registro.archivo_respuesta_rechazo_directiva ? __descargar_archivo(registro.archivo_respuesta_rechazo_directiva,registro.archivo_respuesta_rechazo_directiva) : ''
             %td
               %label.estado-elem= registro.rechazo_directiva > 0 ? 'Apeló' : 'Pendiente'
               = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
