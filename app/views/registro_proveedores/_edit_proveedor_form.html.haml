@@ -80,7 +80,7 @@
                   .col-12
                     =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-001",'Plantilla de Apelación')
   .float-right
-    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
+    = link_to t(:back), root_path, class: 'btn btn-warning '
     =f.submit 'Enviar', class: 'btn btn-primary'
 
   / = render 'admin/contribuyentes/buscador', es_para_seleccion: true

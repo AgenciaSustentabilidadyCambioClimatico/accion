@@ -66,8 +66,9 @@
 
     .float-right
       = volver_root
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
-
+      %button.btn.btn-primary.btn-sm#enviar_button{type: :button, "data-toggle" => "modal", "data-target" => "#modal_enviar", disabled: true} Enviar
+      / = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+      =render "modal_enviar"
 #aceptadas.mt-5
   =render "aceptados_rechazados"
 

@@ -95,6 +95,25 @@
       activar_guardar_modal_clasificar();
     });
 
+    $('#adhesiones_pendientes').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1, orderable: false },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
+
     $('#enviar_modal_asignar_revisor').click(function(){
       estado = $('#adhesion_estado_elementos option:selected');
       estado_val = estado.prop("value");
