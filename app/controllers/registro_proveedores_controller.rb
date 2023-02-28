@@ -1,6 +1,6 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
-  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor]
+  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
 
@@ -252,6 +252,42 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         @registro_proveedor.update(estado: 1)
+        format.js {
+          render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
+        }
+      else
+        format.html { render :edit }
+        format.js
+      end
+    end
+  end
+
+  #PRO-007
+  def actualizar_proveedor
+    # if current_user.rut == @registro_proveedor.rut
+    #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    # else
+    #   redirect_to root_path
+    #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    # end
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+  end
+
+  #PRO-006
+  def update_plazo_proveedor
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    respond_to do |format|
+      if @registro_proveedor.update(registro_proveedores_params)
+        @registro_proveedor.update(estado: 9)
+        if @registro_proveedor.region.present? && @registro_proveedor.comuna.present?
+          @registro_proveedor.region = Region.find(@registro_proveedor.region.to_i).nombre
+          @registro_proveedor.comuna = Comuna.find(@registro_proveedor.comuna.to_i).nombre
+          @registro_proveedor.save
+        end
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
