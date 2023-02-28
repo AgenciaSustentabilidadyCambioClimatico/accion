@@ -11,6 +11,7 @@ class RegistroProveedor < ApplicationRecord
 
   mount_uploader :archivo_respuesta_rechazo, ArchivoRespuestaRechazoProveedorUploader
   mount_uploader :archivo_respuesta_rechazo_directiva, ArchivoRespuestaRechazoDirectivaProveedorUploader
+  mount_uploader :archivo_aprobado_directiva, ArchivoAprobadoDirectivaProveedorUploader
 
   validates :rut, presence: true
   validates :rut, uniqueness: true

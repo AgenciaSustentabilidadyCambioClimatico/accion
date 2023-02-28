@@ -60,6 +60,8 @@
               %label.estado-elem= registro.rechazo_directiva > 0 ? 'Apeló' : 'Pendiente'
               = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
               = f.input :comentario, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+              = f.input :fecha_aprobado, as: :hidden, input_html: { name: "fecha[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+              = f.input :archivo_aprobado_directiva, as: :hidden, input_html: { name: "archivo[#{registro.id}]" }
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
             =render "modal_experiencia", registro: registro
@@ -99,6 +101,7 @@
         $('#comentario_div').css("display", "none");
         $('#enviar_modal_resultado_revision').prop('disabled', false);
       } else if($('#adhesion_estado_elementos').val() == "2") {
+        console.log('guillo: pasa esto');
         $('#comentario_div').toggle();
         $('#enviar_modal_resultado_revision').prop('disabled', false);
       } else{
@@ -175,16 +178,19 @@
       estado_val = estado.prop("value");
       estado_nombre = estado.text();
       comentario = $('#adhesion_justificacion_elementos').val();
-
+      fecha = $('#adhesion_fecha').val();
+      archivo = $('#adhesion_archivo').val();
+      console.log(archivo);
       $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
         posicion = elem.value;
         tr = $('#adhesiones_pendientes tr[data-id="'+posicion+'"]');
         console.log(tr);
         tr.find(".estado-elem").html(estado_nombre);
-        console.log(`${tr.find("input[name='aceptado["+posicion+"]']")}`)
         tr.find("input[name='estado["+posicion+"]']").val(estado_val)
         tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
         tr.find("input[name='comentario["+posicion+"]']").val(comentario);
+        tr.find("input[name='fecha["+posicion+"]']").val(fecha);
+        tr.find("input[name='archivo["+posicion+"]']").val(archivo);
       });
 
       $('.seleccionar-elemento-adhesion').attr("checked", false);
@@ -192,6 +198,7 @@
       $('#modal_resultado_revision').modal("hide");
       $('#adhesion_estado_elementos').val("");
       $('#adhesion_justificacion_elementos').val("");
+      $('#adhesion_fecha').val("");
       $('#enviar_modal_resultado_revision').prop("disabled", true);
       $('#enviar_button').prop("disabled", false);
     });

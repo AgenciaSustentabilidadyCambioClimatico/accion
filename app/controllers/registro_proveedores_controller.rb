@@ -171,6 +171,10 @@ class RegistroProveedoresController < ApplicationController
       value = v.to_i
       @registro_proveedor = RegistroProveedor.find(key)
 
+      if value == 1
+        @registro_proveedor.update!(estado: 4)
+      end
+
       if value == 2
         @registro_proveedor.update!(rechazo_directiva: @registro_proveedor.rechazo_directiva + 1)
         @registro_proveedor.update!(estado: 5)
@@ -190,15 +194,39 @@ class RegistroProveedoresController < ApplicationController
         RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
       end
 
-      if @registro_proveedor.estado == 'aprobado'
-        RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
-      end
-
       if @registro_proveedor.rechazo_directiva > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
       end
     end
+
+    fechas = params[:fecha]
+    fechas_seleccionados = fechas.select { |k, v| v.present? }
+
+    fechas_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(fecha_aprobado: value)
+
+      if @registro_proveedor.estado == 'aprobado'
+        RegistroProveedorMailer.aprobado_directiva(@registro_proveedor).deliver_later
+      end
+
+    end
+
+    archivos = params[:archivo]
+    archivos_seleccionados = archivos.select { |k, v| v.present? }
+
+    archivos_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.archivo_respuesta_rechazo_directiva = value
+      @registro_proveedor.save!
+    end
+
+
 
     redirect_to root_path
     flash.now[:success] = "Registro enviado correctamente"
@@ -253,8 +281,8 @@ class RegistroProveedoresController < ApplicationController
       certificados = registro_proveedor.certificado_proveedores
       certificados.each do |certificado|
         unless certificado.archivo_certificado.path.nil?
-          #nombre = certificado.archivo_certificado.file.identifier
-          nombre = "certificado"
+          nombre = certificado.archivo_certificado.file.identifier
+          # nombre = "certificado"
           # rename the file
           stream.put_next_entry(nombre)
           # add file to zip
@@ -313,7 +341,7 @@ class RegistroProveedoresController < ApplicationController
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
       :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
-      :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva,
+      :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva, :fecha_aprobado, :fecha_actualizado,
       certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
   end
 

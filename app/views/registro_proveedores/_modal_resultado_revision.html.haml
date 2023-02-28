@@ -19,11 +19,10 @@
             .col-12
               .form-group.mb-3.mt-3
                 %label.control-label Fecha
-                %input#adhesion_justificacion_elementos{:type => 'date'}
+                %input#adhesion_fecha{:type => 'date'}
             .col-12
-              .custom-file
-                %label.custom-file-label Elegi un archivo
-                %file.custom-file-input.validado#adhesion_justificacion_elementos
+              .custom-file.mb-3.mt-3
+                %input#adhesion_archivo{:type => 'file', :name => 'file'}
       .modal-footer
         %button.btn.btn-primary.btn-sm#enviar_modal_resultado_revision{type: :button, disabled: true}
           Guardar
