@@ -31,7 +31,7 @@ class RegistroProveedor < ApplicationRecord
   validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
 
-  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo]
+  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido]
 
   before_validation :normalizar_rut
 
