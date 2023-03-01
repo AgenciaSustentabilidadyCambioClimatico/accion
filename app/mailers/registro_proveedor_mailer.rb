@@ -29,7 +29,6 @@ class RegistroProveedorMailer < ApplicationMailer
     mail(to: user, subject: encabezado)
   end
 
-
   def aprobado_directiva(registro_proveedor)
     @registro_proveedor = registro_proveedor
     tipo_proveeedor = registro_proveedor.tipo_proveedor_id
@@ -54,4 +53,21 @@ class RegistroProveedorMailer < ApplicationMailer
     encabezado = 'Postulacion vencida'
     mail(to: user, subject: encabezado)
   end
+
+  def revision_positiva(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    tipo_proveeedor = registro_proveedor.tipo_proveedor_id
+    @tipo_proveedor = TipoProveedor.find(tipo_proveeedor).nombre
+    user = registro_proveedor.email
+    encabezado = 'Actualizar postulacion'
+    mail(to: user, subject: encabezado)
+  end
+
+  def revision_negativa(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    user = registro_proveedor.email
+    encabezado = 'Actualizar postulacion'
+    mail(to: user, subject: encabezado)
+  end
+
 end

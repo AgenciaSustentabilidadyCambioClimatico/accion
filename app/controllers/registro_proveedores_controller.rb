@@ -277,7 +277,7 @@ class RegistroProveedoresController < ApplicationController
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
   end
 
-  #PRO-006
+  #PRO-007
   def update_plazo_proveedor
     @registro_proveedor = RegistroProveedor.find(params[:id])
     respond_to do |format|
@@ -297,6 +297,55 @@ class RegistroProveedoresController < ApplicationController
         format.js
       end
     end
+  end
+
+  #PRO-008
+  def resultado_actualizacion
+    if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
+      @registro_proveedores = RegistroProveedor.where(estado: 'actualizar')
+    else
+      redirect_to root_path
+      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+    end
+  end
+
+  #PRO-008
+  def resultado_de_actualizacion
+    estados = params[:estado]
+    estados_seleccionados = estados.select { |k, v| v.present? }
+
+    estados_seleccionados.each do |k, v|
+      key = k
+      value = v.to_i
+      @registro_proveedor = RegistroProveedor.find(key)
+
+      if value == 1
+        @registro_proveedor.update!(estado: 9)
+      end
+
+      if value == 2
+        @registro_proveedor.update!(estado: 8)
+        RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_now
+      end
+    end
+
+    fechas = params[:fecha]
+    fechas_seleccionados = fechas.select { |k, v| v.present? }
+
+    fechas_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+
+      if @registro_proveedor.estado == 'actualizado'
+        @registro_proveedor.update!(fecha_revalidacion: value)
+        RegistroProveedorMailer.revision_positiva(@registro_proveedor).deliver_now
+      end
+
+    end
+
+    redirect_to root_path
+    flash.now[:success] = "Registro enviado correctamente"
   end
 
   def descargar_documentos_proveedores
