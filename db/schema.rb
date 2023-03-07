@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230227184427) do
+ActiveRecord::Schema.define(version: 20230307132459) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -825,6 +825,7 @@ ActiveRecord::Schema.define(version: 20230227184427) do
     t.integer "programa_proyecto_propuesta_id"
     t.boolean "terminado", default: false
     t.string "codigo"
+    t.integer "registro_proveedor_id"
   end
 
   create_table "glosas", force: :cascade do |t|
@@ -1963,6 +1964,7 @@ ActiveRecord::Schema.define(version: 20230227184427) do
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
+  add_foreign_key "flujos", "registro_proveedores"
   add_foreign_key "flujos", "tipo_instrumentos"
   add_foreign_key "hito_de_prensa_archivos", "hitos_de_prensa", column: "hitos_de_prensa_id"
   add_foreign_key "hito_de_prensa_instrumentos", "flujos"

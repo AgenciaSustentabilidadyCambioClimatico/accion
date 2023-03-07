@@ -62,6 +62,10 @@ class RegistroProveedoresController < ApplicationController
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(user_encargado: value)
+      flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+      tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+      tarea = Tarea.where(nombre: "PRO-003").first
+      tarea_pendiente.update(tarea_id: tarea.id, user_id: value)
     end
     redirect_to root_path
     flash.now[:success] = "Registro enviado correctamente"
@@ -87,7 +91,12 @@ class RegistroProveedoresController < ApplicationController
       value = v.to_i
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(estado: value)
-      if value == 3
+      if value == 1
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-005").first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: value)
+      elsif value == 3
         @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
       end
     end
@@ -101,13 +110,23 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario: value)
 
-      if @registro_proveedor.estado == 'rechazado'
+
+      if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
         RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-004").first
+        user = User.where(rut: @registro_proveedor.rut).first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: user.id)
       end
 
       if @registro_proveedor.rechazo > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea_pendiente.destroy
+        flujo.destroy
       end
     end
 

@@ -796,6 +796,20 @@ module ApplicationHelper
     when Tarea::COD_FPL_018
     data[:url] = restitucion_seguimiento_fpl_proyecto_path(pendiente, proyecto)
     data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_002
+    data[:url] = registro_proveedores_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_003
+    data[:url] = revision_registro_proveedores_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_004
+    user_rut = User.find(pendiente.user_id).rut
+    registro_proveedor = RegistroProveedor.where(rut: user_rut).last
+    data[:url] = edit_registro_proveedor_path(registro_proveedor.id)
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_005
+    data[:url] = revision_registro_proveedores_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
     end
   end
   data

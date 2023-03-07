@@ -74,6 +74,7 @@
             - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
             - subtipo_instrumento = flujo.subtipo_de_instrumento
             - manifestacion_de_interes = flujo.manifestacion_de_interes
+            - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
               %td
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff;' }
@@ -97,7 +98,7 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td=manifestacion_de_interes&.estado_acuerdo
+                %td=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores.estado
               %td.dos.iconos-acciones
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
