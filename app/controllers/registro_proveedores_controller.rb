@@ -95,7 +95,7 @@ class RegistroProveedoresController < ApplicationController
         flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
         tarea = Tarea.where(nombre: "PRO-005").first
-        tarea_pendiente.update(tarea_id: tarea.id, user_id: value)
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
       elsif value == 3
         @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
       end
@@ -158,6 +158,10 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-003").first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
@@ -192,6 +196,11 @@ class RegistroProveedoresController < ApplicationController
 
       if value == 1
         @registro_proveedor.update!(estado: 4)
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-007").first
+        user = User.where(rut: @registro_proveedor.rut).first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: user.id)
       end
 
       if value == 2
@@ -209,13 +218,22 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario_directiva: value)
 
-      if @registro_proveedor.estado == 'rechazo_directiva'
+      if @registro_proveedor.estado == 'rechazado_directiva'
         RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-006").first
+        user = User.where(rut: @registro_proveedor.rut).first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: user.id)
       end
 
       if @registro_proveedor.rechazo_directiva > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea_pendiente.destroy
+        # flujo.destroy
       end
     end
 
@@ -245,8 +263,6 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.save!
     end
 
-
-
     redirect_to root_path
     flash.now[:success] = "Registro enviado correctamente"
   end
@@ -271,6 +287,10 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         @registro_proveedor.update(estado: 1)
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-005").first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
         format.js {
           render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"

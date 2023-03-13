@@ -128,13 +128,14 @@
             - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
             - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
             - subtipo_instrumento = flujo.subtipo_de_instrumento
+            - registro_proveedores = flujo.registro_proveedor
             %tr
               %td=flujo.id
               - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
                 %td=pendiente.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
               %td=tipo_instrumento
-              %td=subtipo_instrumento              
+              %td= registro_proveedores.present? ? registro_proveedores.estado : subtipo_instrumento
               %td
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?

@@ -28,10 +28,11 @@ class RegistroProveedor::CreateService
   end
 
   def create_flujo
-    f = Flujo.create(contribuyente_id: u.contribuyentes.first.id, tipo_instrumento_id: 26, registro_proveedor_id: @registro_proveedor.id)
+    user = User.where(rut: @registro_proveedor.rut).first
+    f = Flujo.create(contribuyente_id: user.contribuyentes.first.id, tipo_instrumento_id: 26, registro_proveedor_id: @registro_proveedor.id)
     tarea = Tarea.where(nombre: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
-    t = TareaPendiente.new(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id : u.id)
+    t = TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id)
   end
 
   def create_institucion
