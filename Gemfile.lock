@@ -411,8 +411,8 @@ DEPENDENCIES
   datejs-rails
   delayed_job
   delayed_job_active_record
-  devise
-  devise_invitable
+  devise (~> 4.4.3)
+  devise_invitable (~> 1.7.4)
   dotenv-rails
   faker!
   font-awesome-rails
