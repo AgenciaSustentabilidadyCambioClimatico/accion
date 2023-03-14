@@ -58,6 +58,7 @@ gem 'select2-rails'
 gem 'wicked_pdf'  
 gem 'wkhtmltopdf-binary'
 gem 'mini_magick'
+gem 'multi_json', '~> 1.14.1'
 gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
 gem "cocoon"
