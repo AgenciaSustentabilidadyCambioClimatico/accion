@@ -322,6 +322,10 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         @registro_proveedor.update(estado: 9)
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea = Tarea.where(nombre: "PRO-008").first
+        tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
         if @registro_proveedor.region.present? && @registro_proveedor.comuna.present?
           @registro_proveedor.region = Region.find(@registro_proveedor.region.to_i).nombre
           @registro_proveedor.comuna = Comuna.find(@registro_proveedor.comuna.to_i).nombre
@@ -365,6 +369,10 @@ class RegistroProveedoresController < ApplicationController
       if value == 2
         @registro_proveedor.update!(estado: 8)
         RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_now
+        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        tarea_pendiente.destroy
+        # flujo.destroy
       end
     end
 
