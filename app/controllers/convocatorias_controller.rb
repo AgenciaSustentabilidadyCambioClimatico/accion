@@ -50,6 +50,31 @@ class ConvocatoriasController < ApplicationController
 		@convocatoria.assign_attributes(convocatoria_params)
 		respond_to do |format|
 		  if @convocatoria.save
+			#Generar Google meeting solo si hay destinatarios
+			if params[:seleccionados].present?
+				logger.info "------------------------------------------------------------------------> creando evento"
+				service = Google::Apis::CalendarV3::CalendarService.new
+  				service.authorization = GoogleCalendar.authorization
+				meet = Google::Apis::CalendarV3::Event.new({
+					summary: @convocatoria.nombre,
+					start_time: @convocatoria.fecha_hora,
+					attendees: params[:seleccionados].map { |seleccionado| { email: 'cristobal.zambrano@rialis.cl' } },
+					conference_data: {
+					  create_request: {
+						conference_solution_key: {
+						  type: 'hangoutsMeet'
+						},
+						request_id: SecureRandom.uuid
+					  }
+					}
+				  })
+				result = service.insert_event('primary', meet, conference_data_version: 1)
+
+				# Assign the Google Meet link to the hangout_link attribute of the event
+				@convocatoria.direccion = result.conference_data.entry_points[0].uri if result.conference_data.present?
+			end
+
+
 				#crea minuta relacionada con esta convocatoria
 				@tarea_pendiente.data = {convocatoria_id: @convocatoria.id} #DZC permite almacenar el id de la convocatoria
 				@tarea_pendiente.save
