@@ -1,3 +1,5 @@
+require Rails.root.join('config', 'initializers', 'google_calendar')
+
 class ConvocatoriasController < ApplicationController
 	protect_from_forgery with: :exception, unless: proc{action_name == 'reset_convocatoria'}
 	before_action :authenticate_user!
@@ -68,7 +70,7 @@ class ConvocatoriasController < ApplicationController
 					  }
 					}
 				  })
-				result = service.insert_event('primary', meet, conference_data_version: 1)
+				result = service.insert_event('cristobal.zambrano@rialis.cl', meet, conference_data_version: 1, send_notifications: true)
 
 				# Assign the Google Meet link to the hangout_link attribute of the event
 				@convocatoria.direccion = result.conference_data.entry_points[0].uri if result.conference_data.present?
