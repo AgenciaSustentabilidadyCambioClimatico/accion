@@ -69,12 +69,12 @@
             .row
               .col-12.col-lg-4
                 <label class="string optional">¿A qué postulas?</label>
-                = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
+                = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, disabled: true, style: "width: 100%; margin-bottom: 100px;"
               .col-12
-                = f.simple_fields_for :certificado_proveedores do |certificado|
-                  = render 'certificado_proveedor_fields_edit', f: certificado
+                = f.simple_fields_for :certificado_proveedor_extras do |certificado|
+                  = render 'certificado_proveedor_extra_fields', f: certificado
                 .links
-                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedor_extras, class: 'btn btn-success btn-sm px-3 mt-3'
       .col-12
         .card
           .card-header
@@ -83,10 +83,10 @@
           .card-body
             .row
               .col-12
-                = f.simple_fields_for :documento_registro_proveedores do |documento|
-                  = render 'documento_registro_fields_edit', f: documento
+                = f.simple_fields_for :documento_proveedor_extras do |documento|
+                  = render 'documento_proveedor_extra_fields', f: documento
                 .links
-                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_proveedor_extras, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
                   =f.input :terminos_y_servicion, as: :boolean, label: 'Acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
         .row

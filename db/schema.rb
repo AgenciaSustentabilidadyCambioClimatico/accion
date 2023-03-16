@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230307132459) do
+ActiveRecord::Schema.define(version: 20230314190321) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -335,6 +335,18 @@ ActiveRecord::Schema.define(version: 20230307132459) do
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
   end
 
+  create_table "certificado_proveedor_extras", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.bigint "materia_sustancia_id"
+    t.bigint "actividad_economica_id"
+    t.string "archivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_economica_id"], name: "index_certificado_proveedor_extras_on_actividad_economica_id"
+    t.index ["materia_sustancia_id"], name: "index_certificado_proveedor_extras_on_materia_sustancia_id"
+    t.index ["registro_proveedor_id"], name: "index_certificado_proveedor_extras_on_registro_proveedor_id"
+  end
+
   create_table "certificado_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "materia_sustancia_id"
@@ -631,6 +643,15 @@ ActiveRecord::Schema.define(version: 20230307132459) do
     t.index ["estado_documento_garantia_id"], name: "index_documento_garantias_on_estado_documento_garantia_id"
     t.index ["proyecto_id"], name: "index_documento_garantias_on_proyecto_id"
     t.index ["tipo_documento_garantia_id"], name: "index_documento_garantias_on_tipo_documento_garantia_id"
+  end
+
+  create_table "documento_proveedor_extras", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.string "archivo"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["registro_proveedor_id"], name: "index_documento_proveedor_extras_on_registro_proveedor_id"
   end
 
   create_table "documento_registro_proveedores", force: :cascade do |t|
@@ -1901,6 +1922,9 @@ ActiveRecord::Schema.define(version: 20230307132459) do
   add_foreign_key "campo_tareas", "campos"
   add_foreign_key "campo_tareas", "tareas"
   add_foreign_key "certificacion_adhesion_historicos", "adhesion_elementos"
+  add_foreign_key "certificado_proveedor_extras", "actividad_economicas"
+  add_foreign_key "certificado_proveedor_extras", "materia_sustancias"
+  add_foreign_key "certificado_proveedor_extras", "registro_proveedores"
   add_foreign_key "certificado_proveedores", "actividad_economicas"
   add_foreign_key "certificado_proveedores", "materia_sustancias"
   add_foreign_key "certificado_proveedores", "registro_proveedores"
@@ -1933,6 +1957,7 @@ ActiveRecord::Schema.define(version: 20230307132459) do
   add_foreign_key "documento_garantias", "estado_documento_garantias"
   add_foreign_key "documento_garantias", "proyectos"
   add_foreign_key "documento_garantias", "tipo_documento_garantias"
+  add_foreign_key "documento_proveedor_extras", "registro_proveedores"
   add_foreign_key "documento_registro_proveedores", "registro_proveedores"
   add_foreign_key "ejecucion_presupuestarias", "centro_de_costos"
   add_foreign_key "ejecucion_presupuestarias", "programa_proyecto_propuestas"

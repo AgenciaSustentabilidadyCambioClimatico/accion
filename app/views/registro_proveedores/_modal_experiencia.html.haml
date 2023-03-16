@@ -9,6 +9,12 @@
             - registro.certificado_proveedores.each do |certificado|
               %p= "Materia: #{MateriaSustancia.find(certificado.materia_sustancia_id).nombre}"
               %p= "Actividad Económica: #{ActividadEconomica.find(certificado.actividad_economica_id).descripcion_ciiuv4}"
+        - if registro.certificado_proveedor_extras.present?
+          .col-12
+            %h4 Experiencias Extras
+            - registro.certificado_proveedor_extras.each do |certificado|
+              %p= "Materia: #{MateriaSustancia.find(certificado.materia_sustancia_id).nombre}"
+              %p= "Actividad Económica: #{ActividadEconomica.find(certificado.actividad_economica_id).descripcion_ciiuv4}"
       .modal-footer
         %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
           Cerrar

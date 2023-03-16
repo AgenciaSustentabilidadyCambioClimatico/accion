@@ -311,7 +311,10 @@ class RegistroProveedoresController < ApplicationController
     #   redirect_to root_path
     #   flash.now[:success] = "No tienes permiso para acceder a esta pagina"
     # end
+
     @registro_proveedor = RegistroProveedor.find(params[:id])
+    @registro_proveedor.certificado_proveedor_extras.build
+    @registro_proveedor.documento_proveedor_extras.build
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
   end
@@ -345,7 +348,7 @@ class RegistroProveedoresController < ApplicationController
   #PRO-008
   def resultado_actualizacion
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
-      @registro_proveedores = RegistroProveedor.where(estado: 'actualizar')
+      @registro_proveedores = RegistroProveedor.where(estado: 'actualizado')
     else
       redirect_to root_path
       flash.now[:success] = "No tienes permiso para acceder a esta pagina"
@@ -474,7 +477,8 @@ class RegistroProveedoresController < ApplicationController
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
       :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
       :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva, :fecha_aprobado, :fecha_actualizado,
-      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
+      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
+      certificado_proveedor_extras_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo, :archivo_cache, :_destroy], documento_proveedor_extras_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
   end
 
   def datos_header_no_signed

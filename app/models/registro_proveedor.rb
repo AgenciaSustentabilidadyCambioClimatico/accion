@@ -4,10 +4,14 @@ class RegistroProveedor < ApplicationRecord
   belongs_to :tipo_proveedor
   has_many :certificado_proveedores, dependent: :destroy
   has_many :documento_registro_proveedores, dependent: :destroy
+  has_many :certificado_proveedor_extras, dependent: :destroy
+  has_many :documento_proveedor_extras, dependent: :destroy
 
   accepts_nested_attributes_for :certificado_proveedores, allow_destroy: true
   accepts_nested_attributes_for :documento_registro_proveedores, allow_destroy: true
 
+  accepts_nested_attributes_for :certificado_proveedor_extras, allow_destroy: true
+  accepts_nested_attributes_for :documento_proveedor_extras, allow_destroy: true
 
   mount_uploader :archivo_respuesta_rechazo, ArchivoRespuestaRechazoProveedorUploader
   mount_uploader :archivo_respuesta_rechazo_directiva, ArchivoRespuestaRechazoDirectivaProveedorUploader
@@ -119,6 +123,23 @@ class RegistroProveedor < ApplicationRecord
       self.documento_registro_proveedores.each do |documento|
         self.pdf_contenido_formato(pdf, 'Descripción', documento.description)
         self.pdf_contenido_formato(pdf, 'Archivo', documento.archivo)
+      end
+      if self.certificado_proveedor_extras.present?
+        self.pdf_separador(pdf, 11)
+        self.pdf_titulo_formato(pdf, 'Extras', "")
+        self.certificado_proveedor_extras.each do |certificado|
+          self.pdf_contenido_formato(pdf, 'Archivo', certificado.archivo)
+          self.pdf_contenido_formato(pdf, 'Materia', MateriaSustancia.find(certificado.materia_sustancia_id).nombre)
+          self.pdf_contenido_formato(pdf, 'Actividad Económica:', ActividadEconomica.find(certificado.actividad_economica_id).descripcion_ciiuv4)
+        end
+      end
+      if self.documento_proveedor_extras.present?
+        self.pdf_separador(pdf, 11)
+        self.pdf_titulo_formato(pdf, 'Documentación Extra', "")
+        self.documento_proveedor_extra.each do |documento|
+          self.pdf_contenido_formato(pdf, 'Descripción', documento.description)
+          self.pdf_contenido_formato(pdf, 'Archivo', documento.archivo)
+        end
       end
     end
 
