@@ -98,7 +98,7 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores.estado
+                %td=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
               %td.dos.iconos-acciones
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)

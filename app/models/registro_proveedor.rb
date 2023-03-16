@@ -136,7 +136,7 @@ class RegistroProveedor < ApplicationRecord
       if self.documento_proveedor_extras.present?
         self.pdf_separador(pdf, 11)
         self.pdf_titulo_formato(pdf, 'Documentación Extra', "")
-        self.documento_proveedor_extra.each do |documento|
+        self.documento_proveedor_extras.each do |documento|
           self.pdf_contenido_formato(pdf, 'Descripción', documento.description)
           self.pdf_contenido_formato(pdf, 'Archivo', documento.archivo)
         end
