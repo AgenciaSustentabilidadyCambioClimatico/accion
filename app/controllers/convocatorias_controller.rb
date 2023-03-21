@@ -1,5 +1,4 @@
-require Rails.root.join('config', 'initializers', 'google_calendar')
-
+require_relative '../../config/initializers/google_calendar.rb'
 class ConvocatoriasController < ApplicationController
 	protect_from_forgery with: :exception, unless: proc{action_name == 'reset_convocatoria'}
 	before_action :authenticate_user!
@@ -41,6 +40,7 @@ class ConvocatoriasController < ApplicationController
 
 	# GET /convocatoria/new
 	def new
+		
 	end
 
 	# POST /convocatorias
@@ -51,16 +51,23 @@ class ConvocatoriasController < ApplicationController
 		# @convocatoria.nombre = 'Convocar a comité coordinador' if @tarea.codigo == Tarea::COD_APL_030
 		@convocatoria.assign_attributes(convocatoria_params)
 		respond_to do |format|
-		  if @convocatoria.save
-			#Generar Google meeting solo si hay destinatarios
-			if params[:seleccionados].present?
-				logger.info "------------------------------------------------------------------------> creando evento"
-				service = Google::Apis::CalendarV3::CalendarService.new
-  				service.authorization = GoogleCalendar.authorization
+		
+		if @convocatoria.save
+
+			#Generar Google meeting solo si hay destinatario
+			if  @convocatoria.virtual? && params[:virtual_meeting]
+				service = GoogleCalendar.get_service
 				meet = Google::Apis::CalendarV3::Event.new({
 					summary: @convocatoria.nombre,
-					start_time: @convocatoria.fecha_hora,
-					attendees: params[:seleccionados].map { |seleccionado| { email: 'cristobal.zambrano@rialis.cl' } },
+					start: {
+						date_time: @convocatoria.fecha_hora.to_time.utc.iso8601,
+						time_zone: 'America/Santiago'
+					  },
+					end: {
+						date_time: (@convocatoria.fecha_hora.to_time + 2.hour).utc.strftime('%FT%T%:z'),
+						time_zone: 'America/Santiago'
+					},
+					attendees: pamas[:seleccionados].map { |seleccionado| { email: seleccionado[:email]} },
 					conference_data: {
 					  create_request: {
 						conference_solution_key: {
@@ -70,11 +77,15 @@ class ConvocatoriasController < ApplicationController
 					  }
 					}
 				  })
-				result = service.insert_event('cristobal.zambrano@rialis.cl', meet, conference_data_version: 1, send_notifications: true)
+				  result = service.insert_event("cristobal.zambrano@rialis.cl", meet, conference_data_version: 1, send_notifications: true)
+				
+					
+				  @convocatoria.update(direccion: result.conference_data.entry_points[0].uri) if result.conference_data.present?
+				  @convocatoria.update(mensaje_cuerpo: @convocatoria.mensaje_cuerpo + result.conference_data.entry_points[0].uri)
 
-				# Assign the Google Meet link to the hangout_link attribute of the event
-				@convocatoria.direccion = result.conference_data.entry_points[0].uri if result.conference_data.present?
 			end
+
+
 
 
 				#crea minuta relacionada con esta convocatoria
@@ -85,7 +96,7 @@ class ConvocatoriasController < ApplicationController
 					fecha_hora: @convocatoria.fecha_hora,
 					tipo_reunion: @convocatoria.tipo_reunion,
 					direccion: @convocatoria.direccion,
-					lat: @convocatoria.lat,
+					lat: @convocatoria.lat,	
 					lng: @convocatoria.lng
 				})
 		  	params[:seleccionados].uniq.each do |dest|

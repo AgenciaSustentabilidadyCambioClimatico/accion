@@ -24,7 +24,7 @@
 		$('#convocatoria_direccion').on('keyup',function(){
 			if($('.tipo-reunion:checked').val() == "presencial"){
 				if($(this).val() != ""){
-					$('#btn_mostrar_mapa').removeClass('d-none');
+					$('#btn_mostrar_mapa').removeClass('d-none');					
 				}else{
 					$('#btn_mostrar_mapa').addClass('d-none');
 				}
@@ -34,13 +34,32 @@
 		$('#convocatoria_fecha_hora').on('change',function(){
 		});
 
+		$('#virtual_meeting').on('change',function(){
+			if (this.checked){
+				$("input[name='convocatoria[direccion]']").prop('type', "hidden")
+				$('.string.required.virtual-label').hide()
+				if ($("input[name='convocatoria[direccion]']").val() == " "){
+				$("input[name='convocatoria[direccion]']").prop('value', "true")
+				}
+			}else{
+				$("input[name='convocatoria[direccion]']").prop('type', "text")
+				$('.string.required.virtual-label').show()
+				if ($("input[name='convocatoria[direccion]']").val() == " "){
+				$("input[name='convocatoria[direccion]']").prop('value', " ")
+				}
+			}
+		});
+
 		$('#seleccionar').change(function(){
 			$("input[name='seleccionados[]']").prop('checked', $(this).is(':checked'));
 		});
 
 		$('.tipo-reunion').click(function(){
 			if(this.value == 'presencial'){
+				$("input[name='virtual_meeting']").prop('checked', false); //uncheck google calendar
 				$('.presencial').removeClass('d-none');
+				$("input[name='convocatoria[direccion]']").prop('type', "text")
+				$('.string.required.virtual-label').show()
 				$('.virtual').addClass('d-none');
 			}else{
 				$('.presencial').addClass('d-none');
@@ -159,10 +178,14 @@
 											= f.label tipo_reu.to_s.titleize
 								.col-12
 									.presencial{class: @convocatoria.virtual? ? 'd-none' : ''}
-										=f.label t(:indicar_lugar_reunion), required: true
+										= f.label t(:indicar_lugar_reunion), required: true
+										
 									.virtual{class: @convocatoria.presencial? ? 'd-none' : ''}
-										=f.label t(:indicar_enlace_web_reunion), required: true
-									= f.input :direccion, label: false, required: true, input_html: { class: 'required-field'}
+										= check_box_tag 'virtual_meeting', '1', false
+										= f.label t(:crear_en_google_calendar)
+										%br
+										= f.label t(:indicar_lugar_reunion), required: true, class: 'virtual-label'
+									= f.input :direccion, label: false , required: true, input_html: { class: 'required-field' }
 									= f.hidden_field :lat
 									= f.hidden_field :lng
 								.col-12
