@@ -7,6 +7,6 @@ class ConvocatoriaMailer < ApplicationMailer
 	archivos.each do |archivo| 
 		attachments[archivo.identifier]= File.read(archivo.current_path) if !archivo.current_path.blank? #adiciona el archivo adjunto 
 	end
-	mail(to: 'cazambra99@gmail.com', subject: encabezado)
+	mail(to: convocatoria_destinatario.destinatario.email_institucional, subject: encabezado)
   end
 end

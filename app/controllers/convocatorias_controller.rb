@@ -51,11 +51,15 @@ class ConvocatoriasController < ApplicationController
 		# @convocatoria.nombre = 'Convocar a comité coordinador' if @tarea.codigo == Tarea::COD_APL_030
 		@convocatoria.assign_attributes(convocatoria_params)
 		respond_to do |format|
-		
 		if @convocatoria.save
-
 			#Generar Google meeting solo si hay destinatario
 			if  @convocatoria.virtual? && params[:virtual_meeting]
+				seleccionados = []
+				params[:seleccionados].each do |id|
+					persona = Persona.find(id)
+					seleccionados << persona
+				end
+
 				service = GoogleCalendar.get_service
 				meet = Google::Apis::CalendarV3::Event.new({
 					summary: @convocatoria.nombre,
@@ -67,7 +71,7 @@ class ConvocatoriasController < ApplicationController
 						date_time: (@convocatoria.fecha_hora.to_time + 2.hour).utc.strftime('%FT%T%:z'),
 						time_zone: 'America/Santiago'
 					},
-					attendees: pamas[:seleccionados].map { |seleccionado| { email: seleccionado[:email]} },
+					attendees: seleccionados.map { |seleccionado| { email: seleccionado[:email_institucional]} },
 					conference_data: {
 					  create_request: {
 						conference_solution_key: {
@@ -77,15 +81,13 @@ class ConvocatoriasController < ApplicationController
 					  }
 					}
 				  })
-				  result = service.insert_event("cristobal.zambrano@rialis.cl", meet, conference_data_version: 1, send_notifications: true)
+				  result = service.insert_event("sistemaaccion@ascc.cl", meet, conference_data_version: 1, send_notifications: true)
 				
 					
 				  @convocatoria.update(direccion: result.conference_data.entry_points[0].uri) if result.conference_data.present?
 				  @convocatoria.update(mensaje_cuerpo: @convocatoria.mensaje_cuerpo + result.conference_data.entry_points[0].uri)
 
 			end
-
-
 
 
 				#crea minuta relacionada con esta convocatoria

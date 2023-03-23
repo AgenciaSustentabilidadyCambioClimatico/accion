@@ -44,7 +44,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: email['default_url_options_host'], port: email['default_url_options_port'] }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true
-  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.asset_host = email['asset_host']
   config.action_mailer.asset_host = email['default_url_options_host']
   config.action_mailer.smtp_settings = {
@@ -79,4 +79,7 @@ Rails.application.configure do
   # Use an evented file watcher to asynchronously detect changes in source code,
   # routes, locales, etc. This feature depends on the listen gem.
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
+
+  #oob_uri for Google Calendar authentication
+  config.oob_uri = 'http://localhost:3999/oauth2callback'
 end

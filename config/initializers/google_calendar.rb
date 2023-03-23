@@ -8,7 +8,7 @@ require 'googleauth/stores/file_token_store'
 module GoogleCalendar
   class << self
 
-    OOB_URI = 'http://localhost:3999'.freeze
+    OOB_URI = Rails.application.config.oob_uri.freeze
     APPLICATION_NAME = 'accion'.freeze
     CREDENTIALS_PATH = Rails.root.join('config', 'client_secret.json').freeze
     TOKEN_PATH = Rails.root.join('tmp', 'google_token.yaml').to_s.freeze
@@ -18,14 +18,14 @@ module GoogleCalendar
       client_id = Google::Auth::ClientId.from_file(CREDENTIALS_PATH)
       token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
       authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
-      user_id = 'cristobal.zambrano@rialis.cl'
+      user_id = 'sistemaaccion@ascc.cl'
       credentials = authorizer.get_credentials(user_id)
 
       if credentials.nil?
         url = authorizer.get_authorization_url(base_url: OOB_URI )
         puts "Open the following URL in the browser and enter the " \
             "resulting code after authorization:\n" + url
-        code = '4/0AWtgzh5vUOi2rVqlQhBcqmmfpvyu5i-SUOhS72U8M09f4Guj0xLVo847XB4R_ZRz6rgqUA'
+        code = '4/0AVHEtk6vSgvqu5o1A7X-ntQJAnB9Lr9s5_TAlbmowHn338ZCcbCqyytpPMThdhZFtN1wig'
         credentials = authorizer.get_and_store_credentials_from_code(user_id: user_id, code: code, base_url: OOB_URI )
       end
 

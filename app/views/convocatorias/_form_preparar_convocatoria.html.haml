@@ -38,14 +38,14 @@
 			if (this.checked){
 				$("input[name='convocatoria[direccion]']").prop('type', "hidden")
 				$('.string.required.virtual-label').hide()
-				if ($("input[name='convocatoria[direccion]']").val() == " "){
+				if ($("input[name='convocatoria[direccion]']").val() == ""){
 				$("input[name='convocatoria[direccion]']").prop('value', "true")
 				}
 			}else{
 				$("input[name='convocatoria[direccion]']").prop('type', "text")
 				$('.string.required.virtual-label').show()
-				if ($("input[name='convocatoria[direccion]']").val() == " "){
-				$("input[name='convocatoria[direccion]']").prop('value', " ")
+				if ($("input[name='convocatoria[direccion]']").val() == "true"){
+				$("input[name='convocatoria[direccion]']").prop('value', "")
 				}
 			}
 		});
