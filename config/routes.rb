@@ -52,6 +52,8 @@ Rails.application.routes.draw do
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 
+  get 'registro_get_comunas', to: "registro_proveedores#registro_get_comunas", as: :registro_get_comunas
+  get 'registro_get_comunas_casa_matriz', to: "registro_proveedores#registro_get_comunas_casa_matriz", as: :registro_get_comunas_casa_matriz
 
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
@@ -149,6 +151,7 @@ Rails.application.routes.draw do
   ##############################################################################################################
   # End PPF
   resources :registro_proveedores
+  patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
