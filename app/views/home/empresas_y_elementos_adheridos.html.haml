@@ -22,6 +22,7 @@
               %table.table.table-home{cellspacing: "0"}
                 %thead
                   %tr
+                    %th
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("1")
                       %th=t(:fecha_adhesion)
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("2")
@@ -41,8 +42,9 @@
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("9")
                       %th=t(:otro_dato)
                 %tbody
-                  -@elementos_adheridos.datos.each do |elem|
+                  -@elementos_adheridos.datos.each_with_index do |elem, index|
                     %tr
+                      %td= index + 1
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("1")
                         %td=elem[:fecha_adhesion]
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("2")
