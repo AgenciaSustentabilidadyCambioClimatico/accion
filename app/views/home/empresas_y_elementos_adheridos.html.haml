@@ -6,6 +6,10 @@
       .d-flex.align-items-center
         %i.fa.fa-arrow-left
         =t(:back)
+    - if @elementos_adheridos.datos.count > 0
+      = link_to '#', class: "btn btn-outline-home ml-3" do
+        .d-flex.align-items-center
+          = "Elementos adheridos: #{@elementos_adheridos.datos.count}"
   .col-12
     .card
       .card-body
@@ -13,7 +17,7 @@
           .title-empresas-y-elementos.mb-3=@manifestacion_de_interes.nombre_acuerdo
         .card.card-home
           .card-header.d-flex.flex-column.flex-md-row.justify-content-between.align-items-center
-            .title=t(:empresas_y_elementos_adheridos)
+            .title Adhesiones
             .input-buscar-home
               %i.fa.fa-search
               %input#buscar_custom{placeholder: :Buscar}
