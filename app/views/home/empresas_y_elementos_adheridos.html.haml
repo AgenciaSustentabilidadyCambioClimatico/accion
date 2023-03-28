@@ -2,13 +2,15 @@
   .col-12.mb-2
     -back_path = root_path
     -back_path = acuerdo_seleccionado_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]) if !params[:acuerdo_id].blank?
-    =link_to back_path, class: "btn btn-outline-home" do
-      .d-flex.align-items-center
-        %i.fa.fa-arrow-left
-        =t(:back)
-    - if @elementos_adheridos.datos.count > 0
-      = link_to '#', class: "btn btn-outline-home ml-3" do
+    .d-flex.align-items-center
+      =link_to back_path, class: "btn btn-outline-home" do
         .d-flex.align-items-center
+          %i.fa.fa-arrow-left
+          =t(:back)
+      - if @elementos_adheridos.datos.count > 0
+        .py-3.px-2
+          = @acuerdo_seleccionado.nil? ? "Empresas adheridas: #{@header.datos[:empresas_adheridas]}" : "Empresas adheridas: #{@acuerdo_seleccionado.datos[:empresas_adheridas]}"
+        .py-3.px-2
           = "Elementos adheridos: #{@elementos_adheridos.datos.count}"
   .col-12
     .card
@@ -33,10 +35,8 @@
                       %th=t(:empresa)
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("3")
                       %th=t(:rut_empresa)
-                    -if @datos_publicos.visibilidad_empresas_adheridas.include?("4")
-                      %th=t(:region)
-                    -if @datos_publicos.visibilidad_empresas_adheridas.include?("5")
-                      %th=t(:comuna)
+                    -if @datos_publicos.visibilidad_empresas_adheridas.include?("4") && @datos_publicos.visibilidad_empresas_adheridas.include?("5")
+                      %th="#{t(:region)} - #{t(:comuna)}"
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("6")
                       %th=t(:tamano_empresa)
                     -if @datos_publicos.visibilidad_empresas_adheridas.include?("7")
@@ -55,10 +55,8 @@
                         %td=elem[:nombre_institucion]
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("3")
                         %td=elem[:rut_institucion]
-                      -if @datos_publicos.visibilidad_empresas_adheridas.include?("4")
-                        %td=elem[:region]
-                      -if @datos_publicos.visibilidad_empresas_adheridas.include?("5")
-                        %td=elem[:comuna]
+                      -if @datos_publicos.visibilidad_empresas_adheridas.include?("4") && @datos_publicos.visibilidad_empresas_adheridas.include?("5")
+                        %td="#{elem[:region]} | #{elem[:comuna]}"
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("6")
                         %td=elem[:tamano_empresa]
                       -if @datos_publicos.visibilidad_empresas_adheridas.include?("7")
