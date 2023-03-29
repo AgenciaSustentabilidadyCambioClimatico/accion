@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz]
 
   #PRO-002
   def index
@@ -12,7 +12,7 @@ class RegistroProveedoresController < ApplicationController
     # if habilitado.present?
     if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.all
-      @users = Responsable.__personas_responsables(Rol::REVISOR_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+      @users = Responsable.responsables_por_rol(Rol::REVISOR_PROVEEDORES)
     else
       redirect_to root_path
       flash.now[:success] = "Registro enviado correctamente"
@@ -37,12 +37,17 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
     end
 
+    if params[:registro_proveedor][:region_casa_matriz].present? && params[:registro_proveedor][:comuna_casa_matriz].present?
+      @registro_proveedor.region_casa_matriz = Region.find(params[:registro_proveedor][:region_casa_matriz].to_i).nombre
+      @registro_proveedor.comuna_casa_matriz = Comuna.find(params[:registro_proveedor][:comuna_casa_matriz].to_i).nombre
+    end
+
     respond_to do |format|
       if @registro_proveedor.save
         RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
         format.js {
-          render js: "window.location='#{root_path}'"
           flash.now[:success] = "Registro enviado correctamente"
+          render js: "window.location='#{root_path}'"
         }
         RegistroProveedorMailer.enviar(@registro_proveedor).deliver_later
       else
