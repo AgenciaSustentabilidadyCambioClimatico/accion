@@ -11,7 +11,7 @@ class RegistroProveedoresController < ApplicationController
     # habilitado = user.select { |f| f.id == current_user.id }
     # if habilitado.present?
     if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
-      @registro_proveedores = RegistroProveedor.all
+      @registro_proveedores = RegistroProveedor.where(user_encargado: nil)
       @users = Responsable.responsables_por_rol(Rol::REVISOR_PROVEEDORES)
     else
       redirect_to root_path
@@ -46,8 +46,8 @@ class RegistroProveedoresController < ApplicationController
       if @registro_proveedor.save
         RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
         format.js {
-          flash.now[:success] = "Registro enviado correctamente"
           render js: "window.location='#{root_path}'"
+          flash.now[:success] = "Registro enviado correctamente"
         }
         RegistroProveedorMailer.enviar(@registro_proveedor).deliver_later
       else
@@ -131,7 +131,7 @@ class RegistroProveedoresController < ApplicationController
         flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
         tarea_pendiente.destroy
-        flujo.destroy
+        # flujo.destroy
       end
     end
 
