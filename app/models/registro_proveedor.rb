@@ -160,7 +160,7 @@ class RegistroProveedor < ApplicationRecord
         end
       elsif valor.class.superclass == CarrierWave::Uploader::Base
         #pdf.text "<link href='"+valor.url+"'>"+valor.file.filename+"</link>", size: 9, color: '007BFF', inline_format: true
-        self.pdf_boton_descarga(pdf, valor.url, valor.file.filename)
+        self.pdf_boton_descarga(pdf, "https://accion.ascc.cl#{valor.url}", valor.file.filename)
       elsif([String,Integer].include?(valor.class))
         pdf.text valor.to_s, size: 9, color: '555555', align: :justify
       elsif(valor.class == Symbol)

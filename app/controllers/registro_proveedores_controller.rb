@@ -47,7 +47,7 @@ class RegistroProveedoresController < ApplicationController
         RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
         format.js {
           render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
+          flash[:success] = "Registro enviado correctamente"
         }
         RegistroProveedorMailer.enviar(@registro_proveedor).deliver_later
       else
@@ -73,7 +73,7 @@ class RegistroProveedoresController < ApplicationController
       tarea_pendiente.update(tarea_id: tarea.id, user_id: value)
     end
     redirect_to root_path
-    flash.now[:success] = "Registro enviado correctamente"
+    flash[:success] = "Registro enviado correctamente"
   end
 
   #PRO-003
@@ -82,7 +82,7 @@ class RegistroProveedoresController < ApplicationController
      @registro_proveedores = RegistroProveedor.where(user_encargado: current_user.id, estado: 'enviado')
      else
       redirect_to root_path
-      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+      flash[:success] = "No tienes permiso para acceder a esta pagina"
     end
   end
 
@@ -136,7 +136,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     redirect_to root_path
-    flash.now[:success] = "Registro enviado correctamente"
+    flash[:success] = "Registro enviado correctamente"
   end
 
   #PRO-004
@@ -169,7 +169,7 @@ class RegistroProveedoresController < ApplicationController
         tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
         format.js {
           render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
+          flash[:success] = "Registro enviado correctamente"
         }
       else
         format.html { render :edit }
@@ -185,7 +185,7 @@ class RegistroProveedoresController < ApplicationController
       @rechazo_aprobado = RegistroProveedor.select { |registro| registro.estado == 'aprobado' || registro.estado == 'rechazado_directiva'}
     else
       redirect_to root_path
-      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+      flash[:success] = "No tienes permiso para acceder a esta pagina"
     end
   end
 
@@ -269,7 +269,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     redirect_to root_path
-    flash.now[:success] = "Registro enviado correctamente"
+    flash[:success] = "Registro enviado correctamente"
   end
 
   #PRO-006
@@ -298,7 +298,7 @@ class RegistroProveedoresController < ApplicationController
         tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
         format.js {
           render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
+          flash[:success] = "Registro enviado correctamente"
         }
       else
         format.html { render :edit }
@@ -341,7 +341,7 @@ class RegistroProveedoresController < ApplicationController
         end
         format.js {
           render js: "window.location='#{root_path}'"
-          flash.now[:success] = "Registro enviado correctamente"
+          flash[:success] = "Registro enviado correctamente"
         }
       else
         format.html { render :edit }
@@ -356,7 +356,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedores = RegistroProveedor.where(estado: 'actualizado')
     else
       redirect_to root_path
-      flash.now[:success] = "No tienes permiso para acceder a esta pagina"
+      flash[:success] = "No tienes permiso para acceder a esta pagina"
     end
   end
 
@@ -376,7 +376,7 @@ class RegistroProveedoresController < ApplicationController
 
       if value == 2
         @registro_proveedor.update!(estado: 8)
-        RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_now
+        RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_later
         flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
         tarea_pendiente.destroy
@@ -400,7 +400,7 @@ class RegistroProveedoresController < ApplicationController
     end
 
     redirect_to root_path
-    flash.now[:success] = "Registro enviado correctamente"
+    flash[:success] = "Registro enviado correctamente"
   end
 
   def descargar_documentos_proveedores
