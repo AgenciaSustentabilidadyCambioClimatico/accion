@@ -403,6 +403,10 @@ class RegistroProveedoresController < ApplicationController
     flash[:success] = "Registro enviado correctamente"
   end
 
+  #PRO-009
+  def evaluacion_proveedores
+  end
+
   def descargar_documentos_proveedores
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
