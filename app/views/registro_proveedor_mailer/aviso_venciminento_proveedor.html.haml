@@ -1,0 +1,18 @@
+%body{:style => 'background-color: #f6f6f6;'}
+  %div{:style => 'width: 50%; margin: 50px auto; background-color: white; padding: 20px; border: 1px solid lightgrey'}
+    =image_tag 'https://res.cloudinary.com/dye9yotct/image/upload/v1669987805/Copia_de_logo-ascc_tlkdl2.jpg'
+    %p Estimado/a.
+
+    %p Esperando que se encuentren bien, por medio del presente se le informa que dentro de 30 días vencerá su vigencia en el Registro de #{@tipo_proveedor} de la ASCC.
+
+    %p La Agencia le solicita ingresar a la plataforma #{ link_to 'https://accion.ascc.cl', 'accion.ascc.cl', target: '_blank'}, dirigirse a la tarea "Actualizar Datos" y completar nuevamente sus datos de contacto actualizados, junto con presentar al menos dos nuevas experiencias comprobables y un certificado de antecedentes actualizado. En caso que usted haya realizado estudios de especialización posteriores podrá agregarlo a sus antecedentes.
+
+    %p De no completar esta información dentro de los próximos 30 días corridos, será removido del listado de la ASCC.
+
+    %p Saludos Cordiales.
+
+    %p Comité Evaluador
+
+%style
+  img { width: 265px; object-fit: cover; }
+  p { font-family: "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif; line-height: 1.5em;}

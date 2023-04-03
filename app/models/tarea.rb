@@ -21,7 +21,7 @@ class Tarea < ApplicationRecord
 	#validates :etapa_id, presence: true
 	validates :tipo_instrumento_id, presence: true
 	validates :rol_id, presence: true
-	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL)-[\0-9]{3}(\.[0-9])?\Z/ }
+	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL|PRO)-[\0-9]{3}(\.[0-9])?\Z/ }
 	validates :nombre, presence: true
 	validates :descripcion, presence: true
 
@@ -389,7 +389,14 @@ class Tarea < ApplicationRecord
 	COD_PPF_023	=	'PPF-023'	 #[88}	-	PPF-023-Encuesta de mitad de Ejecución					
 	COD_PPF_024	=	'PPF-024'	 #[21}	-	PPF-024-Responder Encuesta final sobre ejecución programa/proyecto	
 
-	
+  COD_PRO_002 = 'PRO-002'  #[02}  - PRO-002-Asignar Revisor Proveedores
+	COD_PRO_003 = 'PRO-003'
+  COD_PRO_004 = 'PRO-004'
+  COD_PRO_005 = 'PRO-005'
+  COD_PRO_006 = 'PRO-006'
+  COD_PRO_007 = 'PRO-007'
+  COD_PRO_008 = 'PRO-008'
+
 	#etapas de acuerdo
 	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]
 	ETAPA_ACUERDO_DIAGNOSTICO = [ID_APL_007, ID_APL_008, ID_APL_011, ID_APL_012, ID_APL_013, ID_APL_014]
