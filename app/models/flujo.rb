@@ -6,6 +6,7 @@ class Flujo < ApplicationRecord
   belongs_to :tipo_instrumento
   belongs_to :proyecto, optional: true, dependent: :destroy
   belongs_to :manifestacion_de_interes, optional: true, dependent: :destroy #dependencia creada para poder instanciar y usar el id de manifestación dentro de la vista _table en tarea_pendiente 
+  belongs_to :registro_proveedor, optional: true, dependent: :destroy #dependencia creada para poder instanciar y usar el id de registro_proveedor dentro de la vista _table en tarea_pendiente
   belongs_to :ppp, foreign_key: :programa_proyecto_propuesta_id, class_name: :ProgramaProyectoPropuesta, optional: true, dependent: :destroy
   has_one :adhesion, dependent: :destroy
   #has_many :adhesion_elementos, through: :adhesion #DZC 2018-11-05 13:09:56 se agrega relación para efectos de la bandeja de entrada de la APL-032
