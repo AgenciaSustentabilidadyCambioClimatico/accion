@@ -107,7 +107,7 @@
 											%th.codigo-acteco=t(:código_descripción)
 											%th
 									%tbody
-										= snf.fields_for :actividad_economica_contribuyentes, :wrapper => false  do |actecos|
+										= snf.fields_for :actividad_economica_contribuyentes, snf.object.actividad_economica_contribuyentes.select('DISTINCT actividad_economica_id'), :wrapper => false  do |actecos|
 											%tr.fields{class: (actecos.object.marked_for_destruction? ? 'd-none' : '')}
 												%td.no-padding
 													= actecos.input :actividad_economica_id, collection: (no_acceso ? actecos.object.actividad_economica.para_lista : ActividadEconomica.__select), input_html: { class: 'form-control-sm  contribuyente-acteco desactivado required-field', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}

@@ -1,0 +1,18 @@
+- form_partial = form_partial.nil? ? 'edit_form' : form_partial.to_s
+- tooltip_errors = tooltip_errors.nil? ? true : tooltip_errors
+- message_block = message_block.nil? ? 'messages' : message_block.to_s
+$("#registro_proveedor-remote-form").html("#{j render form_partial, local_assigns}");
+- if tooltip_errors
+  htmlErrorToTooltip('top');
+initDateTimePicker();
+$("##{message_block}-remote-block").html("#{j render 'layouts/messages'}");
+$('.loading-data').hide();
+closeAlertMessage();
+iniciarAutoNumeric();
+beauty_tree_selector();
+$('form').on('cocoon:after-insert', function() {
+$('.select2').select2({
+placeholder: "Selecciona uno",
+allowClear: true
+})
+});

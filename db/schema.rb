@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230125192131) do
+ActiveRecord::Schema.define(version: 20230314190321) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -335,6 +335,18 @@ ActiveRecord::Schema.define(version: 20230125192131) do
     t.index ["adhesion_elemento_id"], name: "index_certificacion_adhesion_historicos_on_adhesion_elemento_id"
   end
 
+  create_table "certificado_proveedor_extras", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.bigint "materia_sustancia_id"
+    t.bigint "actividad_economica_id"
+    t.string "archivo"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_economica_id"], name: "index_certificado_proveedor_extras_on_actividad_economica_id"
+    t.index ["materia_sustancia_id"], name: "index_certificado_proveedor_extras_on_materia_sustancia_id"
+    t.index ["registro_proveedor_id"], name: "index_certificado_proveedor_extras_on_registro_proveedor_id"
+  end
+
   create_table "certificado_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "materia_sustancia_id"
@@ -633,6 +645,15 @@ ActiveRecord::Schema.define(version: 20230125192131) do
     t.index ["tipo_documento_garantia_id"], name: "index_documento_garantias_on_tipo_documento_garantia_id"
   end
 
+  create_table "documento_proveedor_extras", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.string "archivo"
+    t.string "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["registro_proveedor_id"], name: "index_documento_proveedor_extras_on_registro_proveedor_id"
+  end
+
   create_table "documento_registro_proveedores", force: :cascade do |t|
     t.string "archivo"
     t.string "description"
@@ -825,6 +846,7 @@ ActiveRecord::Schema.define(version: 20230125192131) do
     t.integer "programa_proyecto_propuesta_id"
     t.boolean "terminado", default: false
     t.string "codigo"
+    t.integer "registro_proveedor_id"
   end
 
   create_table "glosas", force: :cascade do |t|
@@ -1563,6 +1585,17 @@ ActiveRecord::Schema.define(version: 20230125192131) do
     t.bigint "tipo_proveedor_id"
     t.integer "estado", default: 0
     t.integer "user_encargado"
+    t.integer "rechazo", default: 0
+    t.string "comentario"
+    t.string "respuesta_comentario"
+    t.string "archivo_respuesta_rechazo"
+    t.string "comentario_directiva"
+    t.string "respuesta_comentario_directiva"
+    t.string "archivo_respuesta_rechazo_directiva"
+    t.integer "rechazo_directiva", default: 0
+    t.date "fecha_aprobado"
+    t.date "fecha_revalidacion"
+    t.string "archivo_aprobado_directiva"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -1889,6 +1922,9 @@ ActiveRecord::Schema.define(version: 20230125192131) do
   add_foreign_key "campo_tareas", "campos"
   add_foreign_key "campo_tareas", "tareas"
   add_foreign_key "certificacion_adhesion_historicos", "adhesion_elementos"
+  add_foreign_key "certificado_proveedor_extras", "actividad_economicas"
+  add_foreign_key "certificado_proveedor_extras", "materia_sustancias"
+  add_foreign_key "certificado_proveedor_extras", "registro_proveedores"
   add_foreign_key "certificado_proveedores", "actividad_economicas"
   add_foreign_key "certificado_proveedores", "materia_sustancias"
   add_foreign_key "certificado_proveedores", "registro_proveedores"
@@ -1921,6 +1957,7 @@ ActiveRecord::Schema.define(version: 20230125192131) do
   add_foreign_key "documento_garantias", "estado_documento_garantias"
   add_foreign_key "documento_garantias", "proyectos"
   add_foreign_key "documento_garantias", "tipo_documento_garantias"
+  add_foreign_key "documento_proveedor_extras", "registro_proveedores"
   add_foreign_key "documento_registro_proveedores", "registro_proveedores"
   add_foreign_key "ejecucion_presupuestarias", "centro_de_costos"
   add_foreign_key "ejecucion_presupuestarias", "programa_proyecto_propuestas"
@@ -1952,6 +1989,7 @@ ActiveRecord::Schema.define(version: 20230125192131) do
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
+  add_foreign_key "flujos", "registro_proveedores"
   add_foreign_key "flujos", "tipo_instrumentos"
   add_foreign_key "hito_de_prensa_archivos", "hitos_de_prensa", column: "hitos_de_prensa_id"
   add_foreign_key "hito_de_prensa_instrumentos", "flujos"

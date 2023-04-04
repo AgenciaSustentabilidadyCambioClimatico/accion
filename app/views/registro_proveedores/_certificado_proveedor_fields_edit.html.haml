@@ -1,9 +1,9 @@
 .nested-fields
   .row.mt-3
-    .col-12.col-lg-4
+    .col-12.col-lg-3
       =f.input :archivo_certificado, input_html: {class: "validado form-control"}
       = f.input :archivo_certificado_cache, as: :hidden
-    .col-12.col-lg-1
+    .col-12.col-lg-2
       = __descargar_archivo(f.object.archivo_certificado,f.object.archivo_certificado)
     .col-12.col-lg-3
       = f.label 'Materia'
@@ -16,12 +16,5 @@
 
 
 
-/ :javascript
 
-/   $(document).ready(function(){
 
-/     $('.select2').select2({
-/       placeholder: "Selecciona uno",
-/       allowClear: true
-/     })
-/   });

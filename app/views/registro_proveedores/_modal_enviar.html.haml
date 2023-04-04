@@ -1,0 +1,8 @@
+.modal.fade#modal_enviar{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3.text-center{style: 'font-weight: bold;'} Confirmar envío
+      .modal-footer{style: "display: flex; align_items: center; justify-content: center;"}
+        = button_tag 'Enviar', 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-primary"
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Volver

@@ -1,10 +1,10 @@
 .nested-fields
   .row.mt-3
     .col-12.col-lg-4
-      =f.input :archivo_certificado, input_html: {class: "validado form-control"}
-      = f.input :archivo_certificado_cache, as: :hidden
+      =f.input :archivo, input_html: {class: "validado form-control"}
+      = f.input :archivo, as: :hidden
     .col-12.col-lg-1
-      = __descargar_archivo(f.object.archivo_certificado,f.object.archivo_certificado)
+      = __descargar_archivo(f.object.archivo,f.object.archivo)
     .col-12.col-lg-3
       = f.label 'Materia'
       = f.input_field :materia_sustancia_id, collection: MateriaSustancia.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "select2", label: false, style: "width: 100%"
@@ -13,15 +13,3 @@
       = f.input_field :actividad_economica_id, collection: @actividad_economica.map{|r| ["#{r.codigo_ciiuv4} - #{r.descripcion_ciiuv4}", r.id]}, required: true, wrapper: false, class: "select2", label: false, style: "width: 100%"
     .col-12.col-lg-1
       = link_to_remove_association raw('<i class="fa fa-minus"></i>'), f, class: 'btn btn-danger btn-sm mt-4'
-
-
-
-/ :javascript
-
-/   $(document).ready(function(){
-
-/     $('.select2').select2({
-/       placeholder: "Selecciona uno",
-/       allowClear: true
-/     })
-/   });

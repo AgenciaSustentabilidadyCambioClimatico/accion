@@ -1,0 +1,23 @@
+.modal.fade#modal_evaluar{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label Evaluar Proveedor
+      .modal-body
+        .row
+          .col-12
+            .form-group
+              %select.form-control.validado.select2#adhesion_estado_elementos
+                %option{value: "",  selected: ''} Seleccione una nota
+                %option{value: "1" } 1.0
+                %option{value: "1" } 2.0
+                %option{value: "1" } 3.0
+                %option{value: "1" } 4.0
+                %option{value: "1" } 5.0
+                %option{value: "1" } 6.0
+                %option{value: "1" } 7.0
+      .modal-footer
+        %button.btn.btn-primary.btn-sm#enviar_modal_evaluar{type: :button, disabled: true}
+          Guardar
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

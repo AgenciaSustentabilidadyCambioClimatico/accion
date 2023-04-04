@@ -1,0 +1,30 @@
+.modal.fade#modal_resultado_revision{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label Resultado Revisión
+      .modal-body
+        .row
+          .col-12
+            .form-group.mb-3
+              %select.form-control.validado.select2#adhesion_estado_elementos
+                %option{value: "",  selected: ''} Seleccione un resultado de revisión
+                %option{value: "1" } Aceptado
+                %option{value: "2" } Rechazado
+          .col-12
+            .form-group#comentario_div{style: 'display: none'}
+              %label.control-label#comentario_label Comentarios
+              %textarea.form-control.validado#adhesion_justificacion_elementos
+          .div#aprobado_fields{style: 'display: none'}
+            .col-12
+              .form-group.mb-3.mt-3
+                %label.control-label Fecha
+                %input#adhesion_fecha{:type => 'date'}
+            .col-12
+              .custom-file.mb-3.mt-3
+                %input#adhesion_archivo{:type => 'file', :name => 'file'}
+      .modal-footer
+        %button.btn.btn-primary.btn-sm#enviar_modal_resultado_revision{type: :button, disabled: true}
+          Guardar
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

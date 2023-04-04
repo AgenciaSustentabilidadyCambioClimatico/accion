@@ -796,6 +796,35 @@ module ApplicationHelper
     when Tarea::COD_FPL_018
     data[:url] = restitucion_seguimiento_fpl_proyecto_path(pendiente, proyecto)
     data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_002
+    data[:url] = registro_proveedores_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_003
+    data[:url] = revision_registro_proveedores_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_004
+    user_rut = User.find(pendiente.user_id).rut
+    registro_proveedor = RegistroProveedor.where(rut: user_rut).last
+    data[:url] = edit_registro_proveedor_path(registro_proveedor.id)
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_005
+    data[:url] = resultado_revision_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_006
+    user_rut = User.find(pendiente.user_id).rut
+    registro_proveedor = RegistroProveedor.where(rut: user_rut).last
+    data[:url] = edit_proveedor_path(registro_proveedor.id)
+    data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_007
+    user_rut = User.find(pendiente.user_id).rut
+    registro_proveedor = RegistroProveedor.where(rut: user_rut).last
+      if registro_proveedor.fecha_aprobado + (2.year + 11.month) <= Date.today && registro_proveedor.fecha_aprobado + 3.year >= Date.today
+        data[:url] = actualizar_proveedor_path(registro_proveedor.id)
+        data[:icon] = "<i class='fa fa-edit'></i>"
+      end
+    when Tarea::COD_PRO_008
+    data[:url] = resultado_actualizacion_path
+    data[:icon] = "<i class='fa fa-edit'></i>"
     end
   end
   data

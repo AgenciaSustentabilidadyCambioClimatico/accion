@@ -150,8 +150,27 @@ Rails.application.routes.draw do
   end
   ##############################################################################################################
   # End PPF
-  resources :registro_proveedores
+
+  #Registro Proveedores routes.
+  resources :registro_proveedores, only: [:index, :show, :new, :create, :edit, :update]
+
+  get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
+  patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
+  get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
   patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
+  post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
+  get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
+  patch 'registro_proveedor/resultado_de_revision', to: "registro_proveedores#resultado_de_revision", as: :resultado_de_revision
+  get 'registro_proveedores/:id/edit_proveedor', to: "registro_proveedores#edit_proveedor", as: :edit_proveedor
+  patch 'registro_proveedores/:id/update_proveedor', to: "registro_proveedores#update_proveedor", as: :update_proveedor
+  #PRO-007
+  get 'registro_proveedores/:id/actualizar_proveedor', to: "registro_proveedores#actualizar_proveedor", as: :actualizar_proveedor
+  patch 'registro_proveedores/:id/update_plazo_proveedor', to: "registro_proveedores#update_plazo_proveedor", as: :update_plazo_proveedor
+  #PRO-008
+  get 'resultado_actualizacion', to: 'registro_proveedores#resultado_actualizacion', as: "resultado_actualizacion"
+  patch 'registro_proveedor/resultado_de_actualizacion', to: "registro_proveedores#resultado_de_actualizacion", as: :resultado_de_actualizacion
+  #PRO-009
+  get 'evaluacion_proveedores', to: 'registro_proveedores#evaluacion_proveedores', as: "evaluacion_proveedores"
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
