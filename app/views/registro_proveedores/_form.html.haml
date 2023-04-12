@@ -244,6 +244,30 @@
         });
       });
 
+    const $rutField = $("#registro_proveedor_rut");
+    const $nameField = $("#registro_proveedor_nombre");
+    const $emailField = $("#registro_proveedor_email");
+    const $phoneField = $("#registro_proveedor_telefono");
+
+    $('#registro_proveedor_rut').on("focusout", ()=> {
+      let rut = $rutField.val();
+      rut = rut.replace(/\./g, ''); // Remove the dots 
+      $.ajax({
+      url: "/get_by_rut",
+      dataType: "json",
+      data: { rut: rut },
+      success: (user) => { if (user) {
+          $nameField.val(user.nombre_completo);
+          $emailField.val(user.email);
+          $phoneField.val(user.telefono);
+        } 
+      },
+       error: (xhr, status, error) => {
+        console.error("Error:", status, error);
+      },
+    });
+  });
+
   })
 
   function HideOrShowFields() {
