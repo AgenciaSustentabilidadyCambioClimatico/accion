@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut]
 
   #PRO-002
   def index
@@ -455,6 +455,14 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       format.html
       format.json { render :json => @contribuyentes }
+    end
+  end
+
+  def get_by_rut
+    @user = User.find_by(rut: params[:rut])
+    respond_to do |format|
+      format.html
+      format.json { render :json => @user}
     end
   end
 

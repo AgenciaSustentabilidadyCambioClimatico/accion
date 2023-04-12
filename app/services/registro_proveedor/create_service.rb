@@ -5,7 +5,7 @@ class RegistroProveedor::CreateService
   end
 
   def perform
-    create_user
+      create_user
     if @registro_proveedor.asociar_institucion == false
       create_institucion
     elsif @registro_proveedor.asociar_institucion == true && @registro_proveedor.contribuyente_id.present?
@@ -13,7 +13,7 @@ class RegistroProveedor::CreateService
     elsif @registro_proveedor.asociar_institucion == true && !@registro_proveedor.contribuyente_id.present?
       create_institucion_with_user_data
     end
-    create_flujo
+      create_flujo
   end
 
   def create_user
@@ -24,6 +24,8 @@ class RegistroProveedor::CreateService
     user_proveedor = User.find_by(rut: rut)
     if user_proveedor.nil?
       user = User.create(rut: rut, nombre_completo: nombre_completo, telefono: telefono, email: email, password: '123456')
+    else
+      user = user_proveedor
     end
   end
 
@@ -32,8 +34,7 @@ class RegistroProveedor::CreateService
     f = Flujo.create(contribuyente_id: user.contribuyentes.first.id, tipo_instrumento_id: 26, registro_proveedor_id: @registro_proveedor.id)
     tarea = Tarea.where(nombre: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
-    t = TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id)
-  end
+    t = TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id)  end
 
   def create_institucion
     rut = @registro_proveedor.rut
@@ -80,6 +81,10 @@ class RegistroProveedor::CreateService
     persona = Persona.create(user_id: user.id , contribuyente_id: institucion.id, email_institucional: @registro_proveedor.email , telefono_institucional: @registro_proveedor.telefono)
     cargo = Cargo.where(nombre: 'Profesional Técnico')
     PersonaCargo.create(persona_id: persona.id, cargo_id: cargo.first.id, establecimiento_contribuyente_id: establecimiento.id)
+  end
+
+  def user_exists? (rut)
+    User.find_by(rut: rut).present?
   end
 
 

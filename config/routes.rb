@@ -16,7 +16,7 @@ Rails.application.routes.draw do
  #  resources :users, except: [:show] do
  #  end
  #  resources :cargos, except: [:show] do
- #  end
+ 
  #end
 
   #################################################################################################
@@ -43,6 +43,7 @@ Rails.application.routes.draw do
   get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
   get 'get_comunas', to: "home#get_comunas", as: :get_comunas
   get 'get_contribuyentes', to: "registro_proveedores#get_contribuyentes", as: :get_contribuyentes
+  get 'get_by_rut', to: 'registro_proveedores#get_by_rut', as: :get_by_rut
   post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
   get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
   get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
