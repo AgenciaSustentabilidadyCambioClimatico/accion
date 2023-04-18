@@ -1,4 +1,9 @@
-require_relative '../../config/initializers/google_calendar.rb'
+require 'google/apis/calendar_v3'
+require 'googleauth'
+require 'googleauth/stores/file_token_store'
+require 'googleauth/user_authorizer'
+require 'google/apis/calendar_v3'
+
 class ConvocatoriasController < ApplicationController
 	protect_from_forgery with: :exception, unless: proc{action_name == 'reset_convocatoria'}
 	before_action :authenticate_user!
@@ -59,8 +64,13 @@ class ConvocatoriasController < ApplicationController
 					persona = Persona.find(id)
 					seleccionados << persona
 				end
-
-				service = GoogleCalendar.get_service
+				token_path = Rails.root.join('tmp', 'google_token.yaml').to_s.freeze
+				token_store = Google::Auth::Stores::FileTokenStore.new(file: token_path)
+				credentials_json = token_store.load("sistemaaccion@ascc.cl")
+				credentials_hash = JSON.parse(credentials_json)
+				credentials = Signet::OAuth2::Client.new(credentials_hash)
+				service = Google::Apis::CalendarV3::CalendarService.new
+				service.authorization = credentials
 				meet = Google::Apis::CalendarV3::Event.new({
 					summary: @convocatoria.nombre,
 					start: {

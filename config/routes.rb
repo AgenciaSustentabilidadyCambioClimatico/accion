@@ -799,4 +799,9 @@ Rails.application.routes.draw do
   #Para identificar la lectura de los correos enviados registro_apertura_correos
   get 'registro_apertura/:id' => 'registro_apertura_correos#image', as: 'registro_apertura_correos'
   get 'test_registro_apertura' => 'registro_apertura_correos#test', as: 'test_registro_apertura_correos'
+
+  #Añadido para autorización de google calendar
+  get '/auth/google', to: 'google_auth_controller#authorize', as: :google_authorize
+  get '/oauth2callback', to: 'google_auth_controller#oauth2callback'
+
 end

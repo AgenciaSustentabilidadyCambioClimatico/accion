@@ -493,6 +493,7 @@ DEPENDENCIES
   geoxml-rails
   globalid (~> 1.0)
   google-api-client
+  googleauth
   haml
   haml-rails (~> 1.0)
   hashid-rails (~> 1.0)
