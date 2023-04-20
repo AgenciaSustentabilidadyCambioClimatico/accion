@@ -32,12 +32,20 @@ class GoogleAuthControllerController < ApplicationController
         token_store = Google::Auth::Stores::FileTokenStore.new(file: TOKEN_PATH)
         authorizer = Google::Auth::UserAuthorizer.new(client_id, SCOPE, token_store)
         user_id = 'sistemaaccion@ascc.cl'
-        logger.info "--------------------->#{params[:code]}"
         credentials = authorizer.get_and_store_credentials_from_code(
         user_id: user_id,
         code: params[:code],
-        base_url: OOB_URI
-        )
+        base_url: OOB_URI,
+        authorization_uri: 'https://accounts.google.com/o/oauth2/auth',
+        token_credential_uri: 'https://oauth2.googleapis.com/token',
+        redirect_uri: 'http://localhost:3000/oauth2callback'
+              )
+        credentials.expires_at = Time.now + 10.years
+				credentials.expiry = 10.years.to_i
+        # almacena las credenciales actualizadas
+        token_store.store(user_id, credentials.to_json)
+
+
         redirect_to root_path
         
       end

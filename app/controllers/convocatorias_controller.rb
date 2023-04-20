@@ -71,6 +71,9 @@ class ConvocatoriasController < ApplicationController
 				credentials = Signet::OAuth2::Client.new(credentials_hash)
 				service = Google::Apis::CalendarV3::CalendarService.new
 				service.authorization = credentials
+				
+				credentials.refresh!
+
 				meet = Google::Apis::CalendarV3::Event.new({
 					summary: @convocatoria.nombre,
 					start: {
