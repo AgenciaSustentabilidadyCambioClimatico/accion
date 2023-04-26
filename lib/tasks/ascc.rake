@@ -284,6 +284,25 @@ namespace :ascc do
     end
   end
 
+  desc "Envía correos de aviso registro proveedores"
+  task :envia_correos_aviso_registro_proveedores => :environment do |task, args|
+    hoy =  Date.today
+    #notifico que se puede actualizar el registro proveedor o que se vencio
+    registro_proveedores = RegistroProveedor.where(estado: 'aprobado')
+    registro_proveedores.each do |registro_proveedor|
+      fecha = registro_proveedor.fecha_aprobado
+      plazo = 3.years
+      aviso = 3.years + 11.months
+      if fecha + aviso == hoy
+        registro_proveedor.update!(estado: 'actualizar')
+        RegistroProveedorMailer.aviso_venciminento_proveedor(registro_proveedor).deliver_now!
+      elsif fecha + plazo <= hoy
+        registro_proveedor.update!(estado: 'vencido')
+        RegistroProveedorMailer.aviso_vencido_proveedor(registro_proveedor).deliver_now!
+      end
+    end
+  end
+
   desc "Genera vistas de reporteria"
   task :genera_data_reporteria => :environment do |task, args|
     #header

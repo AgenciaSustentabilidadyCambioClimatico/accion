@@ -74,6 +74,7 @@
             - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
             - subtipo_instrumento = flujo.subtipo_de_instrumento
             - manifestacion_de_interes = flujo.manifestacion_de_interes
+            - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
               %td
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
@@ -97,7 +98,7 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td=manifestacion_de_interes&.estado_acuerdo
+                %td=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
               %td.dos.iconos-acciones
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
@@ -127,13 +128,14 @@
             - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
             - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
             - subtipo_instrumento = flujo.subtipo_de_instrumento
+            - registro_proveedores = flujo.registro_proveedor
             %tr
               %td=flujo.id
               - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
                 %td=pendiente.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
               %td=tipo_instrumento
-              %td=subtipo_instrumento              
+              %td= registro_proveedores.present? ? registro_proveedores.estado : subtipo_instrumento
               %td
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?

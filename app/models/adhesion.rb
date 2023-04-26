@@ -547,7 +547,6 @@ class Adhesion < ApplicationRecord
 	end
 
 	def poblar_data(fila, flujo, archivos, externa) #PPF-017 APL-028
-
 		archivo_adhesion = nil
 		archivo_respaldo = nil
     #archivos.each do |f|
@@ -627,18 +626,19 @@ class Adhesion < ApplicationRecord
 		end
 
 		# DZC (5) se busca la existencia del usuario y persona, en caso de ausencia se crean.
-
 		# DZC 2018-10-20 19:45:45 se consideran el rut y el email en conjunto para la búsqueda del usuario
 		fila[:rut_encargado] = fila[:rut_encargado].to_s.gsub('k', 'K').gsub(".", "")
 		rut_encargado = fila[:rut_encargado]
 		usuario = User.find_by(rut: rut_encargado, email: fila[:email_encargado].to_s)
 		if usuario.blank?
+      apl = flujo.manifestacion_de_interes.nombre_acuerdo
 			# Crea un usuario sin password y le envia la invitación al email
 			usuario = User.invite!(
 				rut: rut_encargado,
 				nombre_completo: fila[:nombre_encargado].to_s,
 				telefono: fila[:fono_encargado].to_s,
-				email: fila[:email_encargado].to_s)
+				email: fila[:email_encargado].to_s,
+        web_o_red_social_1: apl)
 		end
 		persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
 		if persona.nil?
@@ -805,7 +805,6 @@ class Adhesion < ApplicationRecord
 	end	
 
 	def crear_data_nuevas_tareas_25
-
 		_rut_institucion_adherente = rut_institucion_adherente.gsub(".","").gsub("k","K").split('-')
 		contribuyente = Contribuyente.find_by(rut: _rut_institucion_adherente.first)
 		if contribuyente.nil?
@@ -845,10 +844,10 @@ class Adhesion < ApplicationRecord
 				)
 			establecimiento_contribuyente.save(validate: false)
 		end
-
 		#agrego usuario que ingreso por 25.1
 		propietario_user = User.find_by(rut: rut_representante_legal.gsub(".","").gsub("k","K"))
 		if propietario_user.nil?
+
 			propietario_user = User.invite!(
 				rut: rut_representante_legal.gsub(".","").gsub("k","K"),
 				nombre_completo: nombre_representante_legal,

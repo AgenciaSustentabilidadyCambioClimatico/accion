@@ -1,3 +1,4 @@
+/PRO-001
 - pick_a_institucion="Seleccione una institución desde el buscador"
 - pick_a_contribuyente="Seleccione un establecimiento"
 = simple_form_for @registro_proveedor, remote: true do |f|
@@ -19,45 +20,51 @@
               .col-12.col-lg-4
                 =f.input :apellido, required: true, input_html: {class: "validado check-boton-llenado"}
               .col-12.col-lg-6
-                =f.input :email, error: true, input_html: {class: "form-control help-block"}
+                =f.input :email, error: true, input_html: {class: "form-control help-block email_validator"}
               .col-12.col-lg-6
-                =f.input :telefono, as: :integer
+                =f.input :telefono, as: :integer, label: 'Teléfono'
               .col-12.col-lg-4
-                =f.input :profesion
+                =f.input :profesion, label: 'Profesión'
               .col-12
-                =f.input :direccion
+                =f.input :direccion, label: 'Dirección'
               .col-12.col-lg-4
-                = f.label 'Region'
-                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false
+                = f.label 'Región'
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%'
                 / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
               .col-12.col-lg-4
                 = f.label 'Comuna'
-                = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
-                / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2', style: "width: 100%"}
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
               .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}
+                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
-                    = f.label 'Contribuyente'
-                    = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
+                    #contribuyente_rut_fields
+                      = f.label 'Contribuyente'
+                      = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
                   .contribuyente_footer_fields
+                    = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
                     .row
                       .col-12.col-lg-4
-                        = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
+                        = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, label: 'RUT institución'
                       .col-12.col-lg-4
-                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }
+                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }, label: 'Nombre institución'
                       .col-12.col-lg-4
                         / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
                       .col-12
-                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }
+                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }, label: 'Dirección casa matriz'
                       .col-12.col-lg-4
-                        =f.input :region_casa_matriz, collection: Region.all.map{|r| [r.nombre, r.id]}, wrapper: false
+                        = f.label 'Región casa matriz'
+                        = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
-                        =f.input :comuna_casa_matriz, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                        = f.label 'Comuna casa matriz'
+                        =f.input :comuna_casa_matriz, collection: {},label: false, input_html: {class: 'select2', style: "width: 100%"}
+                        / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
         .card
@@ -67,7 +74,8 @@
           .card-body
             .row
               .col-12.col-lg-4
-                =f.input :tipo_proveedor_id, collection: TipoProveedor.all.map{|tc| [tc.nombre, tc.id] } , label: 'A qué postula?',input_html: {class: ''}
+                <label class="string optional">¿A qué postulas?</label>
+                = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
               .col-12
                 = f.simple_fields_for :certificado_proveedores do |certificado|
                   = render 'certificado_proveedor_fields', f: certificado
@@ -77,7 +85,7 @@
         .card
           .card-header
             %h5.no-margin
-              %b Documentacion
+              %b Documentación
           .card-body
             .row
               .col-12
@@ -86,7 +94,7 @@
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
-                  =f.input :terminos_y_servicion, as: :boolean, label: 'acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
+                  =f.input :terminos_y_servicion, as: :boolean, label: 'Acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
         .row
           .col-12.col-lg-6
             .card
@@ -95,17 +103,9 @@
                   Formatos
               .card-body
                 .row
-                  .col-12
-                    =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-001",t(:formulario_de_adhesion))
-                  .col-12
-                    .form-group
-                      %label.string.control-label
-                        = t(:formato_excel_de_consolidado_de_adhesiones)
-                      = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado mt-0' do
-                        %i.fa.fa-download
-                        = t(:descargar)
-                      %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
-                        %i.fa.fa-ban
+                  - @descargables_tarea.each do |descargable|
+                    .col-12
+                      = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
   .float-right
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
     =f.submit 'Enviar', class: 'btn btn-primary'
@@ -118,17 +118,25 @@
 
     $('.select2').select2({
       placeholder: "Selecciona uno",
-      allowClear: true,
-      tags: true
+      allowClear: true
     })
 
+    $('#contribuyente_rut_fields').on('click' ,function() {
+      $('.select2-search__field').attr('id','contribuyente_rut');
+    });
+
+    $('body').on('keyup blur','#contribuyente_rut',function() {
+      $(this).val($.formatRut($(this).val()) );
+    });
+
     $("#registro_proveedor_contribuyente_id").select2({
-      minimumInputLength: 7,
+      minimumInputLength: 10,
       ajax: {
         url: "/get_contribuyentes", //URL for searching companies
         dataType: "json",
         delay: 200,
         data: function (params) {
+          console.log(params.term)
           return {
             search: params.term, //params send to companies controller
           };
@@ -138,7 +146,7 @@
           $.each(data, function (index, value) {
             arr.push({
               id: value.id,
-              text: `${value.rut} - ${value.razon_social}`
+              text: `${value.rut}-${value.dv} - ${value.razon_social}`
             })
           })
           return {
@@ -151,6 +159,42 @@
       allowClear: true,
     });
 
+    $('form').on('cocoon:after-insert', function() {
+      $('.select2').select2({
+        placeholder: "Selecciona uno",
+        allowClear: true
+      })
+
+      $("#registro_proveedor_contribuyente_id").select2({
+        minimumInputLength: 10,
+        ajax: {
+          url: "/get_contribuyentes", //URL for searching companies
+          dataType: "json",
+          delay: 200,
+          data: function (params) {
+            console.log(params.term)
+            return {
+              search: params.term, //params send to companies controller
+            };
+          },
+          processResults: function (data) {
+            var arr = []
+            $.each(data, function (index, value) {
+              arr.push({
+                id: value.id,
+                text: `${value.rut}-${value.dv} - ${value.razon_social}`
+              })
+            })
+            return {
+              results: arr
+            };
+          },
+          cache: true
+        },
+        placeholder: 'Ingrese un rut',
+        allowClear: true,
+      });
+    });
 
     if ($("#registro_proveedor_contribuyente_id").val() === null) {
       $('.contribuyente_footer_fields').show()
@@ -176,6 +220,46 @@
       }
     });
 
+    $('#registro_proveedor_region').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    $('#registro_proveedor_region_casa_matriz').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_casa_matriz_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    const $rutField = $("#registro_proveedor_rut");
+    const $nameField = $("#registro_proveedor_nombre");
+    const $emailField = $("#registro_proveedor_email");
+    const $phoneField = $("#registro_proveedor_telefono");
+
+    $('#registro_proveedor_rut').on("focusout", ()=> {
+      let rut = $rutField.val();
+      rut = rut.replace(/\./g, ''); // Remove the dots 
+      $.ajax({
+      url: "/get_by_rut",
+      dataType: "json",
+      data: { rut: rut },
+      success: (user) => { if (user) {
+          $nameField.val(user.nombre_completo);
+          $emailField.val(user.email);
+          $phoneField.val(user.telefono);
+        } 
+      },
+       error: (xhr, status, error) => {
+        console.error("Error:", status, error);
+      },
+    });
+  });
+
   })
 
   function HideOrShowFields() {
@@ -188,4 +272,3 @@
       contribuyente.style.display = "none";
     }
   }
-%style{media: "screen"}

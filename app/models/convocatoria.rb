@@ -21,7 +21,7 @@ class Convocatoria < ApplicationRecord
 			_mensaje_cuerpo = _mensaje_cuerpo.gsub("[fecha]", self.fecha_hora.strftime("%d-%m-%Y"))
 			_mensaje_cuerpo = _mensaje_cuerpo.gsub("[hora]", self.fecha_hora.strftime("%H:%M"))
 			_tipo_reunion = "presencial en #{self.direccion}" if self.presencial?
-			_tipo_reunion = "virtual a través del enlace #{self.direccion}" if self.virtual?
+			_tipo_reunion = "virtual a través del enlace " if self.virtual?
 			_mensaje_cuerpo = _mensaje_cuerpo.gsub("[tipo_reunion]", _tipo_reunion)
 			self.mensaje_cuerpo = _mensaje_cuerpo
 		end

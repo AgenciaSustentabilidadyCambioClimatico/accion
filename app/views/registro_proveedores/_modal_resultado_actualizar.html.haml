@@ -1,0 +1,22 @@
+.modal.fade#modal_resultado_actualizar{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label Clasificar Proveedor
+      .modal-body
+        .row
+          .col-12
+            .form-group
+              %select.form-control.validado.select2#adhesion_estado_elementos
+                %option{value: "",  selected: ''} Seleccione un estado de revisión
+                %option{value: "1" } Positiva
+                %option{value: "2" } Negativa
+          .col-12
+            .form-group.mb-3.mt-3
+              %label.control-label#comentario_label Fecha
+              %input.validado#adhesion_justificacion_elementos{:type => 'date'}
+      .modal-footer
+        %button.btn.btn-primary.btn-sm#enviar_modal_resultado_actualizar{type: :button, disabled: true}
+          Guardar
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

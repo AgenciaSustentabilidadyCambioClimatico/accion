@@ -86,6 +86,10 @@ class ComentariosController < ApplicationController
       respond_to do |format|
         if @comentario.save
           ComentarioMailer.nuevo(@comentario).deliver_later
+          @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+          @users.each do |user|
+            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_later
+          end
           format.js { 
             flash.now[:success] = success_message
             @comentario = Comentario.new

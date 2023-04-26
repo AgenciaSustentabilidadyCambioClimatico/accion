@@ -16,7 +16,7 @@ Rails.application.routes.draw do
  #  resources :users, except: [:show] do
  #  end
  #  resources :cargos, except: [:show] do
- #  end
+ 
  #end
 
   #################################################################################################
@@ -43,6 +43,7 @@ Rails.application.routes.draw do
   get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
   get 'get_comunas', to: "home#get_comunas", as: :get_comunas
   get 'get_contribuyentes', to: "registro_proveedores#get_contribuyentes", as: :get_contribuyentes
+  get 'get_by_rut', to: 'registro_proveedores#get_by_rut', as: :get_by_rut
   post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
   get 'acuerdos-firmados', to: "home#acuerdos_firmados", as: :acuerdos_firmados
   get 'acuerdo-seleccionado', to: "home#acuerdo_seleccionado", as: :acuerdo_seleccionado
@@ -52,6 +53,8 @@ Rails.application.routes.draw do
   #Clave única
   get 'claveunica', to: "admin/clave_unica#callback", as: 'claveunica_callback' 
 
+  get 'registro_get_comunas', to: "registro_proveedores#registro_get_comunas", as: :registro_get_comunas
+  get 'registro_get_comunas_casa_matriz', to: "registro_proveedores#registro_get_comunas_casa_matriz", as: :registro_get_comunas_casa_matriz
 
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
@@ -148,7 +151,27 @@ Rails.application.routes.draw do
   end
   ##############################################################################################################
   # End PPF
-  resources :registro_proveedores
+
+  #Registro Proveedores routes.
+  resources :registro_proveedores, only: [:index, :show, :new, :create, :edit, :update]
+
+  get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
+  patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
+  get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
+  patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
+  post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
+  get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
+  patch 'registro_proveedor/resultado_de_revision', to: "registro_proveedores#resultado_de_revision", as: :resultado_de_revision
+  get 'registro_proveedores/:id/edit_proveedor', to: "registro_proveedores#edit_proveedor", as: :edit_proveedor
+  patch 'registro_proveedores/:id/update_proveedor', to: "registro_proveedores#update_proveedor", as: :update_proveedor
+  #PRO-007
+  get 'registro_proveedores/:id/actualizar_proveedor', to: "registro_proveedores#actualizar_proveedor", as: :actualizar_proveedor
+  patch 'registro_proveedores/:id/update_plazo_proveedor', to: "registro_proveedores#update_plazo_proveedor", as: :update_plazo_proveedor
+  #PRO-008
+  get 'resultado_actualizacion', to: 'registro_proveedores#resultado_actualizacion', as: "resultado_actualizacion"
+  patch 'registro_proveedor/resultado_de_actualizacion', to: "registro_proveedores#resultado_de_actualizacion", as: :resultado_de_actualizacion
+  #PRO-009
+  get 'evaluacion_proveedores', to: 'registro_proveedores#evaluacion_proveedores', as: "evaluacion_proveedores"
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
@@ -776,4 +799,9 @@ Rails.application.routes.draw do
   #Para identificar la lectura de los correos enviados registro_apertura_correos
   get 'registro_apertura/:id' => 'registro_apertura_correos#image', as: 'registro_apertura_correos'
   get 'test_registro_apertura' => 'registro_apertura_correos#test', as: 'test_registro_apertura_correos'
+
+  #Añadido para autorización de google calendar
+  get '/auth/google', to: 'google_auth_controller#authorize', as: :google_authorize
+  get '/oauth2callback', to: 'google_auth_controller#oauth2callback'
+
 end

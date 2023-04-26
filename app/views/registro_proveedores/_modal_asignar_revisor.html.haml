@@ -1,0 +1,18 @@
+.modal.fade#modal_asignar_revisor{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label Asignar Revisor
+      .modal-body
+        .row
+          .col-12
+            .form-group
+              %select.form-control.validado.select2#adhesion_estado_elementos
+                %option{value: ""} Seleccione un Usuario
+                - @users.each do |u|
+                  %option{value: u.user.id} #{u.user.nombre_completo}
+      .modal-footer
+        %button.btn.btn-primary.btn-sm#enviar_modal_asignar_revisor{type: :button, disabled: true}
+          Guardar
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

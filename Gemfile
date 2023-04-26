@@ -15,18 +15,20 @@ gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.0.0'
 gem 'carrierwave', '~> 1.0'
 gem 'chartkick'
-gem 'ckeditor', github: 'galetahub/ckeditor'
+gem 'ckeditor', git: 'https://github.com/galetahub/ckeditor.git', ref: 'dc2cef2c2c3358124ebd86ca2ef2335cc898b41f'
 gem 'crontab_syntax_checker'
 gem 'daemons'
 gem 'data-confirm-modal'
 gem 'datejs-rails'
 gem 'delayed_job'
 gem 'delayed_job_active_record'
-gem 'devise'
-gem 'devise_invitable'
+gem 'devise', '~> 4.4.3'
+gem 'devise_invitable', '~> 1.7.4'
 gem 'font-awesome-rails'
 gem 'geocoder'
 gem 'geoxml-rails'
+gem 'google-api-client'
+gem 'googleauth', '~> 1.5.2'
 gem 'haml'
 gem 'haml-rails', '~> 1.0'
 gem 'htmltoword'
@@ -57,9 +59,11 @@ gem 'select2-rails'
 gem 'wicked_pdf'  
 gem 'wkhtmltopdf-binary'
 gem 'mini_magick'
+gem 'multi_json', '~> 1.14.1'
 gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
 gem "cocoon"
+gem "dotenv-rails", groups: [:development, :test]
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -67,7 +71,6 @@ group :development, :test do
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
 end
 
-gem "dotenv-rails", groups: [:development, :test]
 
 group :development do
   gem 'awesome_print'
@@ -79,7 +82,7 @@ group :development do
   gem 'capistrano3-nginx'
   gem 'capistrano3-puma'
   gem 'colorize'
-  gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'master'
+  gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'main'
   gem 'listen', '>= 3.0.5', '< 3.2'
   gem 'pry'
   gem 'rails-erd'
