@@ -1211,6 +1211,7 @@ es:
   indicar_fecha_reunion: Indicar fecha de la reunión
   indicar_lugar: Indicar lugar
   indicar_lugar_reunion: Indicar lugar de la reunión
+  crear_en_google_calendar: Crear evento en Google Calendar
   encabezado_mensaje: Encabezado mensaje
   mensaje: Mensaje
   destinatarios: Destinatarios
