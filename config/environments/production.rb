@@ -108,5 +108,5 @@ Rails.application.configure do
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
   #oob_uri for Google Calendar authentication
-  config.oob_uri = 'https://accion.ascc.cl/oauth2callback
+  config.oob_uri = 'https://accion.ascc.cl/oauth2callback'
 end
