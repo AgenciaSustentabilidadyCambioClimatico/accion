@@ -50,7 +50,7 @@ class Admin::DescargableTareasController < ApplicationController
   end
 
   def descargar
-    authenticate_user! if @tarea.id != Tarea::ID_APL_025_1
+    authenticate_user! if @tarea.id != Tarea::ID_APL_025_1 && @tarea.id != 101
     # DZC 2018-10-04 19:35:51 se corrige error en funcionamiento del método en la vista del mantenedor de descargables
     if params["tarea_pendiente"].present?
       tarea_pendiente = TareaPendiente.find(params["tarea_pendiente"])
