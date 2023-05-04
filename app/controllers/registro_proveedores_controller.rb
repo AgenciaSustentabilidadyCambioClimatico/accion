@@ -33,6 +33,8 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-001
   def create
+    @tarea = Tarea.find(101)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
       @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
@@ -117,9 +119,12 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(comentario: value)
 
-
       if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
-        RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
+        if @registro_proveedor.estado == 'rechazado'
+          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
+        elsif @registro_proveedor.estado == 'con_observaciones'
+          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_later
+        end
         flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
         tarea = Tarea.where(nombre: "PRO-004").first
