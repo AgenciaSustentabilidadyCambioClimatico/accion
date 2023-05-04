@@ -389,8 +389,9 @@ class Tarea < ApplicationRecord
 	COD_PPF_023	=	'PPF-023'	 #[88}	-	PPF-023-Encuesta de mitad de Ejecución					
 	COD_PPF_024	=	'PPF-024'	 #[21}	-	PPF-024-Responder Encuesta final sobre ejecución programa/proyecto	
 
+  COD_PRO_001 = 'PRO-001'	
   COD_PRO_002 = 'PRO-002'  #[02}  - PRO-002-Asignar Revisor Proveedores
-	COD_PRO_003 = 'PRO-003'
+  COD_PRO_003 = 'PRO-003'
   COD_PRO_004 = 'PRO-004'
   COD_PRO_005 = 'PRO-005'
   COD_PRO_006 = 'PRO-006'
