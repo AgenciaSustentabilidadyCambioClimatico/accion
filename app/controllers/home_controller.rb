@@ -219,6 +219,8 @@ class HomeController < ApplicationController
   def empresas_y_elementos_adheridos
     #si seleccione acuerdo cargo su institucion,
     #si la institucion es temporal cargo la original
+    @acuerdo_seleccionado = ReporteriaDato.find_by(ruta: 'acuerdo-seleccionado', acuerdo_id: params[:acuerdo_id])
+    @header = ReporteriaDato.find_by(ruta: nil)
     @elementos_adheridos = ReporteriaDato.find_by(ruta: "empresas-y-elementos-adheridos", acuerdo_id: params[:acuerdo_id])
   end
 

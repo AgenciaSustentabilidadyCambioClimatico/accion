@@ -21,6 +21,10 @@
             =link_to empresas_y_elementos_certificados_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
               .numero="#{@acuerdo_seleccionado.datos[:empresas_certificadas]} "
               empresas certificadas
+          -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
+            =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+              .numero="#{@acuerdo_seleccionado.datos[:elementos_adheridos].count} "
+              elementos adheridos
           -if !user_signed_in?
             .btn-group.ml-lg-auto.mt-1.mt-lg-0
               =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
