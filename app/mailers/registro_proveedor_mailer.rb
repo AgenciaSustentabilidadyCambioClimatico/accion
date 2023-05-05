@@ -15,6 +15,13 @@ class RegistroProveedorMailer < ApplicationMailer
     mail(to: user, subject: encabezado)
   end
 
+  def con_observaciones(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    user = registro_proveedor.email
+    encabezado = 'Postulacion observada'
+    mail(to: user, subject: encabezado)
+  end
+
   def rechazo_definitivo(registro_proveedor)
     @registro_proveedor = registro_proveedor
     user = registro_proveedor.email

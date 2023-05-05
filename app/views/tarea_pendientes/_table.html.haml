@@ -77,7 +77,7 @@
             - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
               %td
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff;' }
+                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
                 =flujo.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
               %td
