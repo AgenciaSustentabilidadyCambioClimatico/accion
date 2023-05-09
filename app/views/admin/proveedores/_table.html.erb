@@ -1,0 +1,75 @@
+<%# <script>
+  $(document).ready(function() {
+
+    // Add the modal click event listener here
+  $(document).on("click",".modal-link", function(e) {
+    e.preventDefault();
+    var target = $(this).data("target");
+    $(target).modal("show");
+  });
+  });
+</script> %>
+<div class="card">
+  <div class="card-header">
+    <h5 class="no-margin">
+      <%= t(:lista_de_, items: t(:proveedores).downcase) %>
+    </h5>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table proveedores table-striped">
+        <thead>
+          <tr data-target="#proveedor-detalles">
+            <th><%= t(:tipo_proveedor) %></th>
+            <th><%= t(:nombre) %></th>
+            <th><%= t(:empresa) %></th>
+            <th><%= t(:profesion) %></th>
+            <th><%= t(:region) %></th>
+            <th><%= t(:telefono) %></th>
+            <th><%= t(:correo_electronico) %></th>
+            <th><%= t(:detalles) %></th>
+            <th class="dos iconos-acciones"><%= t(:acciones) %></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @registro_proveedores.each do |record| %>
+            <% tipo = record.tipo_proveedor.nombre %>
+            <% empresa = record.nombre_institucion %>
+            <% nombre = record.nombre %>
+            <% profesion = record.profesion %>
+            <% region = record.region %>
+            <% telefono = record.telefono %>
+            <% email = record.email %>
+            <tr>
+              <td><%= tipo.blank? ? '--' : tipo %></td>
+              <td><%= nombre.blank? ? '--' : nombre %></td>
+              <td><%= empresa.blank? ? '--' : empresa %></td>
+              <td><%= profesion.blank? ? '--' : profesion %></td>
+              <td><%= region.blank? ? '--' : region %></td>
+              <td><%= telefono.blank? ? '--' : telefono %></td>
+              <td><%= email.blank? ? '--' : email %></td>
+              <td class="dos iconos-acciones">
+              <div>
+                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+
+                  <i class="fa fa-industry"></i> 
+                   
+               <% end %>
+              </div>
+
+            
+                 
+
+                  </td>
+              <td class="dos iconos-acciones">
+               
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+       <%= render 'modal_proveedor_detalles'%>
+
+</div>
