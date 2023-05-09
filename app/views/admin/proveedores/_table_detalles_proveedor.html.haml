@@ -1,0 +1,38 @@
+%div.d-flex
+  %div.flex{style: "width: 300px;"}
+    %div.flex{style: "width: 250px;"}
+      -if @cv
+        =__descargar_archivo(@cv.archivo, @cv, true, false, "Descargar CV")
+      -else
+        %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "No se subió CV"}
+          %i.fa.fa-ban
+      .card
+        .card-header
+          %h5.no-margin APL en donde ha participado
+        .table-responsive
+          %table.table.detalles
+            %tbody
+              - @apls.each do |record|
+                %tr
+                  %td= record
+  %div.flex{style: 'margin-top:62px; margin-left: 20px; width: 700px'}
+    .card
+      .card-header
+        %h5.no-margin Experiencias
+      .table-responsive
+        %table.table.detalles
+          %thead
+            %tr
+              %th.materia= t(:materia_sustancia)
+              %th.actividad= t(:actividad_economica)
+              %th= "Archivo"
+
+          %tbody
+            - @experiencias.each do |record|
+              %tr
+                %td= record.materia_sustancia.nombre
+                %td= record.actividad_economica.nombre 
+                -if record.archivo_certificado.present?
+                  %td{style: "display: flex; justify-content: center; align-items: center;"}
+                    =__descargar_archivo(record.archivo_certificado, record, true, false, nil, nil, true)
+

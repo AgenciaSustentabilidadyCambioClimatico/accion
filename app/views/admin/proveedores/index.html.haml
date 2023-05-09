@@ -1,4 +1,5 @@
 - titulo t(:proveedores)
-= link_to t(:agregar_, item: t(:proveedor).downcase), new_admin_proveedor_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-#proveedor-remote-table
+- if current_user.is_admin?
+	= link_to t(:agregar_, item: t(:proveedor).downcase), new_admin_proveedor_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#proveedor-remote-table 
 	= render 'table'

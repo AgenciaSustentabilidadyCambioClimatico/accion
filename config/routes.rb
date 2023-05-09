@@ -67,6 +67,9 @@ Rails.application.routes.draw do
   #DZC agregado para acceso a menú de historiales
   get 'historial_instrumentos' => 'admin/historial_instrumentos#index'
 
+  # agregado para acceso a proveedores
+  get 'proveedores' => 'admin/proveedores#index'
+
   if Rails.env.production?
     post "geo-localization/coordinates" => "geo_localization#coordinates"
   else
@@ -186,6 +189,7 @@ Rails.application.routes.draw do
       #  end
       #end
     end
+    get 'get_apls_registro/:id', to: 'proveedores#get_apls_registro', as: :get_apls_registro
     resources :preguntas, except: [:show] do
     end
     resources :acciones, except: [:show] do
@@ -199,6 +203,7 @@ Rails.application.routes.draw do
     resources :proveedores, except: [:show] do
       collection do
         match 'establecimientos/:id(.:format)', to: 'proveedores#establecimientos', as: :establecimientos, via: [:post, :get] #DZC match permite que rails escoja cual vervo REST es el mas adecuado según necesidad
+        get 'get_apls_registro/:id', to: 'proveedores#get_apls_registro', as: :get_apls_registro
       end
     end
 

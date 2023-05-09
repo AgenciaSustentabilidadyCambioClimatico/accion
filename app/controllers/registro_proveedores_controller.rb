@@ -3,6 +3,7 @@ class RegistroProveedoresController < ApplicationController
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut]
+  before_action :get_apl, only: [:get_apl]
 
   #PRO-002
   def index
@@ -482,6 +483,8 @@ class RegistroProveedoresController < ApplicationController
     @region = Region.find params[:id]
     @comunas = @region.comunas.order('nombre').vigente?
   end
+
+
 
   private
 

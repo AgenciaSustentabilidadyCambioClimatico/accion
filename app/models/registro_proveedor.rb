@@ -44,6 +44,12 @@ class RegistroProveedor < ApplicationRecord
       errors.add(:terminos_y_servicion, "Debes aceptar los terminos y servicios")
     end
   end
+  
+  def get_apl
+    @flujo = Flujo.joins(mapa_de_actores: { persona: :user }).where(users: { rut: self.rut })
+    @nombre = @flujo.joins(:manifestacion_de_interes).order('manifestacion_de_intereses.created_at DESC').pluck('manifestacion_de_intereses.nombre_acuerdo')
+    @nombres = @nombre.uniq.take(20)
+  end
 
   def normalizar_rut
     self.rut = self.rut.to_s.upcase.gsub(/[^0-9\-K]/,'') unless self.rut.blank?

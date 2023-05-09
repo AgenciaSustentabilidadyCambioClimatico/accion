@@ -1,7 +1,9 @@
 class Admin::ProveedoresController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_variables_del_usuario
   before_action :set_proveedor, only: [:show, :edit, :update, :destroy, :establecimientos]
   before_action :set_new_contribuyente, only: [:new, :edit, :create, :update]
+  before_action :get_apls_registro, only: [:get_apls_registro]
 
   def index
     @proveedores = Proveedor.includes([:proveedor_tipo_proveedores]).order(id: :desc).all
@@ -10,6 +12,7 @@ class Admin::ProveedoresController < ApplicationController
       p.calcula_evaluacion
     end
     @proveedor  = Proveedor.new
+    @registro_proveedores = RegistroProveedor.where(estado: 4)
   end
 
   def new
@@ -60,9 +63,25 @@ class Admin::ProveedoresController < ApplicationController
       format.html { }
     end
   end
+  def get_apls_registro
+    respond_to do |format|
+      registro = RegistroProveedor.find(params[:id])
+      @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id).first
+      @experiencias = CertificadoProveedor.where(registro_proveedor_id: registro.id)
+      @apls = registro.get_apl
+      format.js {}
+      format.json { render :json => @apls}
+    end
 
+  end
 
   private
+    def set_variables_del_usuario
+      @tipos_proveedor = TipoProveedor.all
+      @regiones = Region.all
+    end
+
+
     def set_proveedor
       @proveedor = Proveedor.find(params[:id])
       contribuyente = @proveedor.contribuyente
@@ -71,10 +90,14 @@ class Admin::ProveedoresController < ApplicationController
       #DZC se agregan los establecimientos del proveedor
     end
 
+
     def set_new_contribuyente
       @contribuyente    = Contribuyente.new
       @contribuyentes  = []
     end
+
+   
+
 
     def proveedor_params
       params.require(:proveedor).permit(
