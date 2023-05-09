@@ -65,7 +65,7 @@
             <th><%= t(:telefono) %></th>
             <th><%= t(:correo_electronico) %></th>
             <th><%= t(:detalles) %></th>
-            <% if current_user.is_admin?%>
+            <% if current_user && current_user.is_admin?%>
               <th class="dos iconos-acciones"><%= t(:acciones) %></th>
             <% end %>
           </tr>
@@ -97,7 +97,7 @@
               </div>
 
               </td> 
-              <% if current_user.is_admin?%>
+              <% if current_user && current_user.is_admin?%>
                 <td class="dos iconos-acciones"></td>
               <%end%>
             </tr>
