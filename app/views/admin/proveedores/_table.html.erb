@@ -74,7 +74,7 @@
           <% @registro_proveedores.each do |record| %>
             <% tipo = record.tipo_proveedor.nombre %>
             <% empresa = record.nombre_institucion %>
-            <% nombre = record.nombre %>
+            <% nombre = record.nombre + ' '+ record.apellido %>
             <% profesion = record.profesion %>
             <% region = record.region %>
             <% telefono = record.telefono %>
