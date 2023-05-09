@@ -1,0 +1,111 @@
+<script>
+  $(document).ready(function() {
+    console.log("aa")
+    $('table.proveedores').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+    $('#tipo-proveedor-select, #region-select').change(function() {
+      console.log("selected")
+      var tipoProveedor = $('#tipo-proveedor-select').val();
+      console.log(tipoProveedor)
+      var region = $('#region-select').val();
+      console.log(region)
+
+      // Show all rows if no filters are selected
+      if (tipoProveedor === '' && region === '') {
+        $('table.proveedores tbody tr').show();
+        return;
+      }
+
+     // Filter the rows based on the selected values
+      $('tr:not(.headers)').hide();
+      if (tipoProveedor !== '' && region === '') {
+        $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
+    } else if (tipoProveedor === '' && region !== '') {
+        $('tr[data-region="' + region + '"]').show();
+    } else {
+      // If both filters are selected, show the rows that match both filters
+        $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
+    }
+});
+    
+  });
+</script>
+<div class="card">
+  <div class="card-header">
+    <h5 class="no-margin">
+      <%= t(:lista_de_, items: t(:proveedores).downcase) %>
+    </h5>
+  </div>
+  <div class="card-body pb-0">
+    <div class="row justify-content-left">
+      <div class="col-md-6">
+      <%= select_tag :tipo_proveedor, options_from_collection_for_select(@tipos_proveedor, "nombre", "nombre", :selected=>@tipo_proveedor), { class: 'form-control', :prompt => 'Seleccione un tipo de proveedor', id: 'tipo-proveedor-select' } %>
+      </div>
+    <div class="col-md-6">
+      <%= select_tag :region, options_from_collection_for_select(@regiones, "nombre", "nombre", :selected=>@region), { class: 'form-control', :prompt => 'Seleccione una región', id: 'region-select' } %>
+    </div>
+  </div>
+</div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table proveedores table-striped">
+        <thead>
+          <tr class = "headers" data-target="#proveedor-detalles">
+            <th><%= t(:tipo_proveedor) %></th>
+            <th><%= t(:nombre) %></th>
+            <th><%= t(:empresa) %></th>
+            <th><%= t(:profesion) %></th>
+            <th><%= t(:region) %></th>
+            <th><%= t(:telefono) %></th>
+            <th><%= t(:correo_electronico) %></th>
+            <th><%= t(:detalles) %></th>
+            <% if current_user.is_admin?%>
+              <th class="dos iconos-acciones"><%= t(:acciones) %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @registro_proveedores.each do |record| %>
+            <% tipo = record.tipo_proveedor.nombre %>
+            <% empresa = record.nombre_institucion %>
+            <% nombre = record.nombre %>
+            <% profesion = record.profesion %>
+            <% region = record.region %>
+            <% telefono = record.telefono %>
+            <% email = record.email %>
+            <tr data-region="<%= region %>" data-tipo-proveedor="<%= tipo %>" >
+              <td><%= tipo.blank? ? '--' : tipo %></td>
+              <td><%= nombre.blank? ? '--' : nombre %></td>
+              <td><%= empresa.blank? ? '--' : empresa %></td>
+              <td><%= profesion.blank? ? '--' : profesion %></td>
+              <td><%= region.blank? ? '--' : region %></td>
+              <td><%= telefono.blank? ? '--' : telefono %></td>
+              <td><%= email.blank? ? '--' : email %></td>
+              <td class="dos iconos-acciones">
+              <div>
+                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+
+                  <i class="fa fa-info-circle"></i>
+                   
+               <% end %>
+              </div>
+
+              </td> 
+              <% if current_user.is_admin?%>
+                <td class="dos iconos-acciones"></td>
+              <%end%>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+       <%= render 'modal_proveedor_detalles'%>
+
+</div>

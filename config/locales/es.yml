@@ -609,6 +609,8 @@ es:
   proveedor: Proveedor
   tipos_proveedores: Tipos de proveedores
   monto_asignacion: Monto de la asignación
+  correo_electronico: Correo electrónico
+  profesion: Profesión
   ano_asignacion: Año de la asignación
   unidad_base: Unidad base
   meta: Meta
