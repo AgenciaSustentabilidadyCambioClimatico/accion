@@ -1,5 +1,5 @@
 class Admin::ProveedoresController < ApplicationController
-  before_action :authenticate_user!, except: [:index]
+  before_action :authenticate_user!, except: [:index, :get_apls_registro]
   before_action :set_variables_del_usuario
   before_action :set_proveedor, only: [:show, :edit, :update, :destroy, :establecimientos]
   before_action :set_new_contribuyente, only: [:new, :edit, :create, :update]
