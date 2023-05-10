@@ -1,20 +1,12 @@
 <script>
   $(document).ready(function() {
-    console.log("aa")
-    $('table.proveedores').DataTable({
-      responsive: true,
-      lengthMenu: [[30], [30]],
-      columnDefs: [ { targets: [-1], orderable: false } ],
-      language: {
-        url: "#{asset_path('spanish.json')}"
-      }
-    });
+
+  
+    // filtro proveedores
     $('#tipo-proveedor-select, #region-select').change(function() {
-      console.log("selected")
       var tipoProveedor = $('#tipo-proveedor-select').val();
-      console.log(tipoProveedor)
-      var region = $('#region-select').val();
-      console.log(region)
+      var region = $('#region-select').val()
+    
 
       // Show all rows if no filters are selected
       if (tipoProveedor === '' && region === '') {
@@ -39,31 +31,50 @@
 <div class="card">
   <div class="card-header">
     <h5 class="no-margin">
+    <% if local_assigns[:retirados] %>
+      <%= t(:lista_de_, items: t(:proveedores_retirados).downcase) %>
+    <% else %>
       <%= t(:lista_de_, items: t(:proveedores).downcase) %>
+    <% end %>
     </h5>
   </div>
+ 
   <div class="card-body pb-0">
     <div class="row justify-content-left">
+     <% if !local_assigns[:retirados] %>
       <div class="col-md-6">
       <%= select_tag :tipo_proveedor, options_from_collection_for_select(@tipos_proveedor, "nombre", "nombre", :selected=>@tipo_proveedor), { class: 'form-control', :prompt => 'Seleccione un tipo de proveedor', id: 'tipo-proveedor-select' } %>
       </div>
     <div class="col-md-6">
       <%= select_tag :region, options_from_collection_for_select(@regiones, "nombre", "nombre", :selected=>@region), { class: 'form-control', :prompt => 'Seleccione una región', id: 'region-select' } %>
     </div>
+  <% end %>
   </div>
 </div>
   <div class="card-body">
     <div class="table-responsive">
+  
       <table class="table proveedores table-striped">
+      
         <thead>
           <tr class = "headers" data-target="#proveedor-detalles">
             <th><%= t(:tipo_proveedor) %></th>
             <th><%= t(:nombre) %></th>
-            <th><%= t(:empresa) %></th>
+            <% if !local_assigns[:retirados]%>
+              <th><%= t(:empresa) %></th>
+            <% end %>
             <th><%= t(:profesion) %></th>
             <th><%= t(:region) %></th>
             <th><%= t(:telefono) %></th>
             <th><%= t(:correo_electronico) %></th>
+            <% if current_user && current_user.is_admin? %>
+              <th><%= t(:evaluacion) %> </th> 
+              <th><%= t(:fecha_ingreso_registro) %></th>
+              <th><%= t(:fecha_ultima_revalidacion) %> </th>
+              <% if local_assigns[:retirados]%>
+                <th> <%= t(:fecha_retiro) %> </th>
+              <% end %>
+            <% end %>
             <th><%= t(:detalles) %></th>
             <% if current_user.is_admin?%>
               <th class="dos iconos-acciones"><%= t(:acciones) %></th>
@@ -71,7 +82,9 @@
           </tr>
         </thead>
         <tbody>
-          <% @registro_proveedores.each do |record| %>
+          <% registro = (local_assigns[:retirados] ? @registro_vencido : @registro_proveedores)%>
+
+          <% registro.each do |record| %>
             <% tipo = record.tipo_proveedor.nombre %>
             <% empresa = record.nombre_institucion %>
             <% nombre = record.nombre %>
@@ -79,14 +92,27 @@
             <% region = record.region %>
             <% telefono = record.telefono %>
             <% email = record.email %>
+            <% fecha_ingreso = record.fecha_aprobado%>
+            <% fecha_revalidacion = record.fecha_revalidacion%>
+            <% fecha_retiro = record.updated_at.strftime('%F') %>
             <tr data-region="<%= region %>" data-tipo-proveedor="<%= tipo %>" >
               <td><%= tipo.blank? ? '--' : tipo %></td>
               <td><%= nombre.blank? ? '--' : nombre %></td>
-              <td><%= empresa.blank? ? '--' : empresa %></td>
+              <% if !local_assigns[:retirados]%>
+                <td><%= empresa.blank? ? '--' : empresa %></td>
+              <% end %>
               <td><%= profesion.blank? ? '--' : profesion %></td>
               <td><%= region.blank? ? '--' : region %></td>
               <td><%= telefono.blank? ? '--' : telefono %></td>
               <td><%= email.blank? ? '--' : email %></td>
+              <% if current_user && current_user.is_admin? %>
+                  <td>5.0</td>
+                  <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                  <% if local_assigns[:retirados] %>
+                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
+                  <% end %>
+              <% end %>
               <td class="dos iconos-acciones">
               <div>
                 <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
@@ -97,9 +123,16 @@
               </div>
 
               </td> 
-              <% if current_user.is_admin?%>
-                <td class="dos iconos-acciones"></td>
-              <%end%>
+              <% if current_user && current_user.is_admin?%>
+                <td class="dos iconos-acciones">
+                <div>
+                <%= link_to edit_registro_proveedor_path(record.id) do %>
+                  <i class='fa fa-edit'></i>
+                  </td>
+                <% end %>
+              </div>
+              <% end %>
+                 
             </tr>
           <% end %>
         </tbody>
