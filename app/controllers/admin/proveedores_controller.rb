@@ -13,6 +13,7 @@ class Admin::ProveedoresController < ApplicationController
     end
     @proveedor  = Proveedor.new
     @registro_proveedores = RegistroProveedor.where(estado: 4)
+    @registro_vencido = RegistroProveedor.where(estado: 8)
   end
 
   def new

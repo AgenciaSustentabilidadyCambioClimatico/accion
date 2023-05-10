@@ -610,6 +610,10 @@ es:
   tipos_proveedores: Tipos de proveedores
   monto_asignacion: Monto de la asignación
   correo_electronico: Correo electrónico
+  proveedores_retirados: Proveedores retirados
+  detalles: Detalles
+  fecha_ingreso_registro: Fecha ingreso registro
+  fecha_ultima_revalidacion: Fecha última revalidación
   profesion: Profesión
   ano_asignacion: Año de la asignación
   unidad_base: Unidad base
