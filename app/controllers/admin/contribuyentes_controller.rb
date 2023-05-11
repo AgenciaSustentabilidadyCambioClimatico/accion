@@ -221,7 +221,8 @@ class Admin::ContribuyentesController < ApplicationController
         if @contribuyente.temporal
           @contribuyente_temporal = @contribuyente
         else
-          flash[:error] = @error_extra unless @error_extra.nil?
+          flash.now[:error] = @error_extra unless @error_extra.nil?
+          format.js { flash.now[:error] = @contribuyente.errors.messages }
           format.html { render :new }
         end
         format.js

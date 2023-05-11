@@ -24,7 +24,7 @@ class RegistroProveedor < ApplicationRecord
   validates :profesion, presence: true
   validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
   validates :telefono, presence: true
-  validates :telefono, numericality: true, length: {in: 8..11}
+  validates :telefono, numericality: true, length: { in: 8..11 }
   validates :direccion, presence: true
   validates :region, presence: true
   validates :comuna, presence: true
@@ -95,7 +95,7 @@ class RegistroProveedor < ApplicationRecord
       end
     end
 
-    ##CONTENIDO
+    # #CONTENIDO
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width  => pdf.bounds.width do
       #PESTAÑA 1
