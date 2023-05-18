@@ -5,7 +5,7 @@ class RegistroProveedoresController < ApplicationController
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut]
   before_action :get_apl, only: [:get_apl]
 
-  #PRO-002
+  # PRO-002
   def index
     # @registro_proveedor = RegistroProveedor.find(params[:registro_proveedor_id])
     # user = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_PROVEEDORES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
@@ -20,22 +20,21 @@ class RegistroProveedoresController < ApplicationController
     end
   end
 
-  def show
-  end
+  def show; end
 
-  #PRO-001
+  # PRO-001
   def new
-    @tarea = Tarea.find(104)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+    @tarea = Tarea.find(101)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
   end
 
-  #PRO-001
+  # PRO-001
   def create
-    @tarea = Tarea.find(104)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+    @tarea = Tarea.find(101)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
       @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
