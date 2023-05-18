@@ -55,8 +55,8 @@
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
-              .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
+              / .col-12
+              /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
