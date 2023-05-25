@@ -5,7 +5,7 @@ class RegistroProveedor::CreateService
   end
 
   def perform
-      create_user
+    create_user
     if @registro_proveedor.asociar_institucion == false
       create_institucion
     elsif @registro_proveedor.asociar_institucion == true && @registro_proveedor.contribuyente_id.present?
@@ -13,7 +13,7 @@ class RegistroProveedor::CreateService
     elsif @registro_proveedor.asociar_institucion == true && !@registro_proveedor.contribuyente_id.present?
       create_institucion_with_user_data
     end
-      create_flujo
+    create_flujo
   end
 
   def create_user
@@ -30,11 +30,12 @@ class RegistroProveedor::CreateService
   end
 
   def create_flujo
-    user = User.where(rut: @registro_proveedor.rut).first
-    f = Flujo.create(contribuyente_id: user.contribuyentes.first.id, tipo_instrumento_id: 26, registro_proveedor_id: @registro_proveedor.id)
+    # user = User.where(rut: @registro_proveedor.rut).first
+    f = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
     tarea = Tarea.where(nombre: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
-    t = TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id)  end
+    TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id, data: @registro_proveedor.id)
+  end
 
   def create_institucion
     rut = @registro_proveedor.rut
@@ -46,9 +47,9 @@ class RegistroProveedor::CreateService
     institucion = Institucion.find_or_create_by(rut: rut_para_institucion, dv: dv, razon_social: razon_social)
     actividad_economica = ActividadEconomica.where(codigo_ciiuv4: '702000')
     ActividadEconomicaContribuyente.create(actividad_economica_id: actividad_economica.first, contribuyente_id: institucion.id)
-    establecimiento = EstablecimientoContribuyente.create(contribuyente_id: institucion.id, direccion: @registro_proveedor.direccion,  comuna_id: comuna.id, region_id: region.id , ciudad: @registro_proveedor.ciudad, casa_matriz: true)
+    establecimiento = EstablecimientoContribuyente.create(contribuyente_id: institucion.id, direccion: @registro_proveedor.direccion, comuna_id: comuna.id, region_id: region.id , ciudad: @registro_proveedor.ciudad, casa_matriz: true)
     user = User.where(rut: @registro_proveedor.rut).first
-    persona = Persona.create(user_id: user.id , contribuyente_id: institucion.id, email_institucional: @registro_proveedor.email , telefono_institucional: @registro_proveedor.telefono)
+    persona = Persona.create(user_id: user.id, contribuyente_id: institucion.id, email_institucional: @registro_proveedor.email, telefono_institucional: @registro_proveedor.telefono)
     cargo = Cargo.where(nombre: 'Representante Legal')
     PersonaCargo.create(persona_id: persona.id, cargo_id: cargo.first.id, establecimiento_contribuyente_id: establecimiento.id)
   end
