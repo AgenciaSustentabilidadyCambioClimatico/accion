@@ -58,6 +58,7 @@ class Admin::ProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.save
         RegistroProveedor::AdminCreateService.new(@registro_proveedor, registro_proveedores_params).perform
+        @registro_proveedor.update(fecha_aprobado: params[:registro_proveedor][:fecha_aprobado])
         format.js {
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
