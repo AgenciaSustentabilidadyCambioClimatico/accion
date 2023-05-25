@@ -71,7 +71,7 @@ class RegistroProveedoresController < ApplicationController
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(user_encargado: value)
-      flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+      flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
       tarea = Tarea.where(nombre: 'PRO-003').first
       TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: value, data: @registro_proveedor.id)
       tarea_previa = Tarea.where(nombre: 'PRO-002').first
@@ -103,7 +103,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
       @registro_proveedor.update!(estado: value)
       if value == 1
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: "PRO-005").first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(nombre: 'PRO-003').first
@@ -129,7 +129,7 @@ class RegistroProveedoresController < ApplicationController
         elsif @registro_proveedor.estado == 'con_observaciones'
           RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_later
         end
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: 'PRO-004').first
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
@@ -141,7 +141,7 @@ class RegistroProveedoresController < ApplicationController
       if @registro_proveedor.rechazo > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_previa = Tarea.where(nombre: 'PRO-003').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
         tarea_pendiente.first.delete
@@ -178,7 +178,7 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
         tarea_pendiente.destroy
         tarea = Tarea.where(nombre: "PRO-003").first
@@ -217,7 +217,7 @@ class RegistroProveedoresController < ApplicationController
 
       if value == 1
         @registro_proveedor.update!(estado: 4)
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: 'PRO-007').first
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id, data: @registro_proveedor.id)
@@ -243,7 +243,7 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.estado == 'rechazado_directiva'
         RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: 'PRO-006').first
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
@@ -310,7 +310,7 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         @registro_proveedor.update(estado: 1)
-        flujo = Flujo.where(id: 800, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
         tarea_pendiente.destroy
         tarea = Tarea.where(nombre: 'PRO-005').first
