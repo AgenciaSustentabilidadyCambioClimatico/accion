@@ -39,7 +39,7 @@
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
               .col-12.col-lg-4
-                =f.input :fecha_aprobado, as: :date, required: true, input_html: { class: 'required-field form-control' }
+                =f.input :fecha_aprobado, as: :date, required: true, html5: true, input_html: { class: 'required-field form-control' }
               .col-12.col-lg-4
                 =f.label 'Archivo Resolución'
                 =f.input :archivo_aprobado_directiva, label: false, input_html: {class: "validado form-control"}
@@ -111,7 +111,7 @@
                   = f.hidden_field :terminos_y_servicion, as: :boolean, value: 'true'
                   / =f.input :terminos_y_servicion, as: :boolean, label: 'Acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
   .float-right
-    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
+    = link_to t(:back), admin_proveedores_path, class: 'btn btn-warning '
     =f.submit 'Enviar', class: 'btn btn-primary'
 
   / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
