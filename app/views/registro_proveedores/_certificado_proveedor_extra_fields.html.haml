@@ -1,7 +1,8 @@
 .nested-fields
   .row.mt-3
     .col-12.col-lg-4
-      =f.input :archivo, input_html: {class: "validado form-control"}
+      =f.label 'Archivos de certificados de experiencia o cartas de recomendación'
+      =f.input :archivo, input_html: {class: "validado form-control"}, label: false
       = f.input :archivo, as: :hidden
     .col-12.col-lg-1
       = __descargar_archivo(f.object.archivo,f.object.archivo)
