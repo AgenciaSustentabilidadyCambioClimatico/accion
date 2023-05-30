@@ -69,12 +69,18 @@
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
                         -if ins[:estado] == "Ejecutada"
+                          =ins[:pendiente][:id]
+                          =ins[:tarea][:id]
+                          =@instrumento.id
                           -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
                           =link_to data_url[:url], class: "btn-tabla-instrumentos" do
                             =fa_icon 'eye'
                             =ins[:estado]
                         -else
                           =ins[:estado]
+                          =ins[:tarea_pendiente]
+                          =ins[:tarea][:id]
+                          =@instrumento.id
                       -elsif !ins[:auditorias_tarea_033].blank?
                         =render 'modal_auditorias_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:auditorias_tarea_033]
                         =link_to '#', "data-target" => "#modal_auditorias_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
