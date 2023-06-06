@@ -11,6 +11,7 @@ class ApplicationController < ActionController::Base
   before_action :set_flash_trio
   before_action :set_default_url
   before_action :clean_prev_redirect
+  before_action :set_header
 
   def clean_prev_redirect
     session.delete(:user_return_to) if request.path == session[:user_return_to]
@@ -47,6 +48,9 @@ class ApplicationController < ActionController::Base
         :web_o_red_social_2,
         :fields_visibility => {}
       ]
+    end
+    def set_header
+      @header = ReporteriaDato.find_by(ruta: nil)
     end
 
     def set_personas

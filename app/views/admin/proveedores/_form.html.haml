@@ -1,178 +1,278 @@
-- titulo t(:proveedor)
-- if @proveedor.contribuyente_id.blank?
-	- sin_contribuyente = true
-- else
-	- contribuyente = @proveedor.contribuyente
-- i_collection=contribuyente ? [[contribuyente.razon_social,contribuyente.id]] : []
+- pick_a_institucion="Seleccione una institución desde el buscador"
+- pick_a_contribuyente="Seleccione un establecimiento"
+= simple_form_for @registro_proveedor, url: admin_proveedores_path, remote: true do |f|
+  .row
+    .col-12.mt-3
+      %h1.titulo='Solicitud de Registro'
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              %b Datos Solicitante
+            %h5.no-margin=titulo_acuerdo.html_safe
+          .card-body
+            .row
+              .col-12.col-lg-3
+                = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
+              .col-12.col-lg-4
+                =f.input :nombre
+              .col-12.col-lg-4
+                =f.input :apellido, required: true, input_html: {class: "validado check-boton-llenado"}
+              .col-12.col-lg-6
+                =f.input :email, error: true, input_html: {class: "form-control help-block email_validator"}
+              .col-12.col-lg-6
+                =f.input :telefono, as: :integer, label: 'Teléfono'
+              .col-12.col-lg-4
+                =f.input :profesion, label: 'Profesión'
+              .col-12
+                =f.input :direccion, label: 'Dirección'
+              .col-12.col-lg-4
+                = f.label 'Región'
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%'
+                / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
+              .col-12.col-lg-4
+                = f.label 'Comuna'
+                / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2', style: "width: 100%"}
+              .col-12.col-lg-4
+                =f.label 'Ciudad'
+                =f.input :ciudad, label: false, class: 'form-control'
+              .col-12.col-lg-4
+                =f.input :fecha_aprobado, as: :date, required: true, html5: true, input_html: { class: 'required-field form-control' }
+              .col-12.col-lg-4
+                =f.label 'Archivo Resolución'
+                =f.input :archivo_aprobado_directiva, label: false, input_html: {class: "validado form-control"}
+                = f.input :archivo_aprobado_directiva_cache, as: :hidden
+              .col-12.col-lg-1
+                = __descargar_archivo(f.object.archivo_aprobado_directiva,f.object.archivo_aprobado_directiva)
+              / .col-12
+              /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
+              .col-12
+                .contribuyente_fields{style: "display: none"}
+                  .col-12
+                    #contribuyente_rut_fields
+                      = f.label 'Contribuyente'
+                      = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
+                  .contribuyente_footer_fields
+                    = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
+                    .row
+                      .col-12.col-lg-4
+                        / = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, label: 'RUT institución'
+                      .col-12.col-lg-4
+                        =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }, label: 'Nombre institución'
+                      .col-12.col-lg-4
+                        / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                      .col-12
+                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }, label: 'Dirección casa matriz'
+                      .col-12.col-lg-4
+                        = f.label 'Región casa matriz'
+                        = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
+                      .col-12.col-lg-4
+                        = f.label 'Comuna casa matriz'
+                        =f.input :comuna_casa_matriz, collection: {},label: false, input_html: {class: 'select2', style: "width: 100%"}
+                        / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
+                      .col-12.col-lg-4
+                        =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
+                      .col-12.col-lg-4
+                        =f.input :fecha_aprobado, required: true, input_html: { class: 'required-field' }
+                      .col-12.col-lg-4
+                        =f.input :archivo_aprobado_directiva, input_html: {class: "validado form-control"}
+                        = f.input :archivo_aprobado_directiva_cache, as: :hidden
+                      .col-12.col-lg-1
+                        = __descargar_archivo(f.object.archivo_aprobado_directiva,f.object.archivo_aprobado_directiva)
+        .card
+          .card-header
+            %h5.no-margin
+              %b Registro
+          .card-body
+            .row
+              .col-12.col-lg-4
+                <label class="string optional">¿A qué postulas?</label>
+                = f.input_field :tipo_proveedor_id, collection: @tipo_de_proveedores, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2 mb-5", label: false, style: "width: 100%; margin-bottom: 100px;"
+              .col-12
+                = f.simple_fields_for :certificado_proveedores do |certificado|
+                  = render 'certificado_proveedor_fields', f: certificado
+                .links
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :certificado_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              %b Documentación
+          .card-body
+            .row
+              .col-12
+                = f.simple_fields_for :documento_registro_proveedores do |documento|
+                  = render 'documento_registro_proveedor_fields', f: documento
+                .links
+                  = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
+                .pt-3
+                  = f.hidden_field :terminos_y_servicion, as: :boolean, value: 'true'
+                  / =f.input :terminos_y_servicion, as: :boolean, label: 'Acepto que la información proporcionada con motivo de la presente postulación sea publicada por la ASCC en el correspondiente registro', class: 'form-check-label'
+  .float-right
+    = link_to t(:back), admin_proveedores_path, class: 'btn btn-warning '
+    =f.submit 'Enviar', class: 'btn btn-primary'
+
+  / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
 
 :javascript
-	var valor_previo;
-	var nombre_previo;
 
-	$(document).ready(function() {
-		$('.chosen-control').chosen({
-			allow_single_deselect: true,
-			no_results_text: 'No se encontraron resultados',
-			width: '100%'
-		});
-		/*$("i.deseleccionar-contribuyente").click(function() {
-			$("select#proveedor_contribuyente_id option:not([value=''])").remove();
-			checkFieldValidity($("input#proveedor_contribuyente_id"));
-			$(this).hide();
-		});*/
+  $(document).ready(function(){
 
-		//DZC 2019-06-17 13:59:36 se modifica para usar la función verificarModal()
-		//$('body').on('change','.contribuyente-radio',function() {
-		// 	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
-		//});
-		verificarModal();
+    $('.select2').select2({
+      placeholder: "Selecciona uno",
+      allowClear: true
+    })
 
-		$('body').on('focus','.tp-proveedor',function() {
-			valor_previo = this.value;
-			nombre_previo = $(this).find("option:selected").text();
-		});
+    $('#contribuyente_rut_fields').on('click' ,function() {
+      $('.select2-search__field').attr('id','contribuyente_rut');
+    });
 
-		$('body').on('change','.tp-proveedor',function() {
-			var elem = $(this);
-			if(valor_previo == ""){
-				if(this.value != ""){
-					$(".tp-proveedor:visible").each(function(){
-						if($(this).prop("id") != elem.prop("id")){
-	  					$(this).find("option[value='"+elem.val()+"']").remove();
-						}
-					});
-				}
-			}else{
-				if(this.value == ""){
-					$(".tp-proveedor:visible").each(function(){
-						if($(this).prop("id") != elem.prop("id")){
-							$(this).append("<option value='"+valor_previo+"'>"+nombre_previo+"</option>");
-						}
-					});
-				}else if(valor_previo != this.value){
-					$(".tp-proveedor:visible").each(function(){
-						if($(this).prop("id") != elem.prop("id")){
-							$(this).append("<option value='"+valor_previo+"'>"+nombre_previo+"</option>");
-						}
-					});
-					$(".tp-proveedor:visible").each(function(){
-						if($(this).prop("id") != elem.prop("id")){
-	  					$(this).find("option[value='"+elem.val()+"']").remove();
-						}
-					});
-				}
-			}
-		});
-		
-		$('.seleccionar-contribuyente-button').click(function() {
-			try {
-				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
-				//data=JSON.parse($('.contribuyente-radio:checked').val());
-				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+    $('body').on('keyup blur','#contribuyente_rut',function() {
+      $(this).val($.formatRut($(this).val()) );
+    });
 
-				$("input#proveedor_contribuyente_id").val(data.id);
-				$("input#proveedor_rut_contribuyente").val(data.rut);
-				$("input#proveedor_nombre_contribuyente").val(data.razon_social);
-				checkFieldValidity($("input#proveedor_contribuyente_id"));
-				//$("i.deseleccionar-contribuyente").show();
-			} catch(e) {
-				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-			}
-		});
-		htmlErrorToTooltip('top');
-		$(".tp-proveedor:visible").each(function(){
-			var elem = $(this);
-			$(".tp-proveedor:visible").each(function(){
-				if($(this).prop("id") != elem.prop("id")){
-					$(this).find("option[value='"+elem.val()+"']").remove();
-				}
-			});
-		});
+    $("#registro_proveedor_contribuyente_id").select2({
+      minimumInputLength: 10,
+      ajax: {
+        url: "/get_contribuyentes", //URL for searching companies
+        dataType: "json",
+        delay: 200,
+        data: function (params) {
+          console.log(params.term)
+          return {
+            search: params.term, //params send to companies controller
+          };
+        },
+        processResults: function (data) {
+          var arr = []
+          $.each(data, function (index, value) {
+            arr.push({
+              id: value.id,
+              text: `${value.rut}-${value.dv} - ${value.razon_social}`
+            })
+          })
+          return {
+            results: arr
+          };
+        },
+        cache: true
+      },
+      placeholder: 'Ingrese un rut',
+      allowClear: true,
+    });
 
-	});
+    $('form').on('cocoon:after-insert', function() {
+      $('.select2').select2({
+        placeholder: "Selecciona uno",
+        allowClear: true
+      })
 
-	$(document).on('nested:fieldAdded:proveedor_tipo_proveedores', function(e){
-	  checkFieldValidity($('#contribuyente_id'));
-	  //Se borran los que ya estan seleccionados en otros
-		var agregado = $(e.target).find(".tp-proveedor");
-	  $(".tp-proveedor:visible").filter(function() { return $(this).val() != ""; }).each(function(){
-	  	agregado.find("option[value='"+this.value+"']").remove();
-	  });
-	});
-	$(document).on('nested:fieldRemoved:proveedor_tipo_proveedores', function(e){
-		$(e.target).closest('tr').addClass('nested-row-removed');
-		submitBtn = $(e.target).parents('form').find('.btn-disabled');
-		if ( $('select.tp-proveedor').parents('.fields:not([style="display: none;"])').length == 0 ) {
-			submitBtn.attr('disabled','disabled');
-		}
-		//Se agrega opcion de elemento eliminado
-		var eliminado = $(e.target).find(".tp-proveedor");
-		var valor = eliminado.val();
-		if(valor != ""){
-			var nombre = eliminado.find('option:selected').text();
-			$(".tp-proveedor:visible").each(function(){
-				$(this).append("<option value='"+valor+"'>"+nombre+"</option>");
-			});
-		}
-	});
+      $("#registro_proveedor_contribuyente_id").select2({
+        minimumInputLength: 10,
+        ajax: {
+          url: "/get_contribuyentes", //URL for searching companies
+          dataType: "json",
+          delay: 200,
+          data: function (params) {
+            console.log(params.term)
+            return {
+              search: params.term, //params send to companies controller
+            };
+          },
+          processResults: function (data) {
+            var arr = []
+            $.each(data, function (index, value) {
+              arr.push({
+                id: value.id,
+                text: `${value.rut}-${value.dv} - ${value.razon_social}`
+              })
+            })
+            return {
+              results: arr
+            };
+          },
+          cache: true
+        },
+        placeholder: 'Ingrese un rut',
+        allowClear: true,
+      });
+    });
 
-= simple_nested_form_for [:admin,@proveedor], remote: true, html: { autocomplete: :off, class: 'proveedor-form' } do |f|
-	= f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { class: 'required-field' }
-	.row
-		.col-12
-			.card
-				.card-header
-					%h5.no-margin
-						= action_label_of_(@proveedor)
-				.card-body
-					.row
-						.col-lg-7.pr-lg-0.col-12
-							.row
-								.col-lg-2.pr-0.col-md-2.col-4
-									.form-group.integer.required.proveedor_contribuyente_id
-										%label.string.control-label.required
-											%abbr{title: :required}*
-											= t(:institución)
-										= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary' do
-											%i.fa.fa-search-plus
-											Buscar
-								.col-lg-0.col-md-10.col-8
-									= f.input :rut_contribuyente, label: t(:rut), input_html: { class: 'required-field' }, readonly: true, placeholder: "12345678-9", required: true
-									//%i.fa.fa-times.deseleccionar-contribuyente
-								.col-12
-									= f.input :nombre_contribuyente, label: t(:nombre_institución), input_html: { class: 'required-field' }, readonly: true, placeholder: "Razón social de la institución", required: true
-								.col-12
-									= f.input :tipo_instrumento_id, label: t(:tipo_instrumento), as: :grouped_select, collection: TipoInstrumento.por_padre, group_method: :last, input_html: { class: 'im-not-required-check-the-others' }, required: false
-								.col-12
-									= f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
-								.col-12
-									= f.input :clasificacion_id, label: t(:clasificacion), collection: Clasificacion.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
-								.col-12
-									= f.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'im-not-required-check-the-others' }, required: false
-						.col-lg-5.col-12
-							.row
-								.col-12
-									.form-group
-										.card.mb-0
-											.card-header.p-1.pr-3
-												%label.integer.float-left.m-0
-													%abbr{:title => "required"} *
-													= t(:tipo_proveedor)
-												= f.link_to_add :proveedor_tipo_proveedores, data: { target: "#proveedor-tipo-proveedores" }, class: 'float-right' do
-													%i.fa.fa-plus-circle
-											.card-body.p-0
-												%table#proveedor-tipo-proveedores.table.table-striped.mb-0
-													%tbody
-														= f.fields_for :proveedor_tipo_proveedores, :wrapper => false  do |ptp|
-															%tr.fields
-																%td.p-0
-																	= ptp.input :tipo_proveedor_id, label: false, collection: TipoProveedor.all.map{|c|[c.nombre,c.id]}, input_html: { class: 'tp-proveedor required-field' }, required: true, wrapper_class: 'm-0'
-																%td.accion.no-padding.remove-row
-																	= ptp.link_to_remove do
-																		%i.fa.fa-times-circle.left.link-to-remove-row
+    if ($("#registro_proveedor_contribuyente_id").val() === null) {
+      $('.contribuyente_footer_fields').show()
+    } else {
+      $('.contribuyente_footer_fields').hide()
+    }
 
-	.float-right
-		= link_to t(:back), admin_proveedores_path, class: 'btn btn-sm btn-warning'
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
 
-= render 'admin/contribuyentes/buscador', es_para_seleccion: true, buscar_por_actividad_economica: true, resultado_mostrados: 10
+    if ($('#registro_proveedor_asociar_institucion').is(':checked')) {
+      console.log('true')
+      $('.contribuyente_fields').toggle()
+    } else {
+      console.log('false')
+      $('.contribuyente_fields').hide()
+    }
+
+    $( "#registro_proveedor_contribuyente_id" ).change(function() {
+      if ($(this).val() === null) {
+        console.log('vacio');
+        $('.contribuyente_footer_fields').show()
+      } else {
+        $('.contribuyente_footer_fields').hide()
+      }
+    });
+
+    $('#registro_proveedor_region').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    $('#registro_proveedor_region_casa_matriz').change(function(){
+        $.ajax({
+          url: "#{registro_get_comunas_casa_matriz_path}",
+          method: 'get',
+          data: {id: this.value}
+        });
+      });
+
+    const $rutField = $("#registro_proveedor_rut");
+    const $nameField = $("#registro_proveedor_nombre");
+    const $emailField = $("#registro_proveedor_email");
+    const $phoneField = $("#registro_proveedor_telefono");
+
+    $('#registro_proveedor_rut').on("focusout", ()=> {
+      let rut = $rutField.val();
+      rut = rut.replace(/\./g, ''); // Remove the dots
+      $.ajax({
+      url: "/get_by_rut",
+      dataType: "json",
+      data: { rut: rut },
+      success: (user) => { if (user) {
+          $nameField.val(user.nombre_completo);
+          $emailField.val(user.email);
+          $phoneField.val(user.telefono);
+        }
+      },
+       error: (xhr, status, error) => {
+        console.error("Error:", status, error);
+      },
+    });
+  });
+
+  })
+
+  function HideOrShowFields() {
+    console.log('click');
+    const contribuyente = document.querySelector('.contribuyente_fields');
+
+    if (contribuyente.style.display === "none") {
+      contribuyente.style.display = "block";
+    } else {
+      contribuyente.style.display = "none";
+    }
+  }

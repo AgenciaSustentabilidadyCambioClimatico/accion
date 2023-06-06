@@ -33,7 +33,7 @@
           %tr{"data-id" => "#{registro.id}","id" => "#{registro.id}"}
             %td=index + 1
             %td=registro.rut
-            %td=registro.nombre
+            %td="#{registro.nombre} #{registro.apellido}"
             %td= registro.tipo_proveedor_id.present? ? TipoProveedor.find(registro.tipo_proveedor_id).nombre : 'not found'
             %td
               =registro.telefono

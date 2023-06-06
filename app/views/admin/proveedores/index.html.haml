@@ -1,4 +1,23 @@
 - titulo t(:proveedores)
-= link_to t(:agregar_, item: t(:proveedor).downcase), new_admin_proveedor_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-#proveedor-remote-table
+- if current_user && current_user.is_admin?
+	= link_to t(:agregar_, item: t(:proveedor).downcase), new_admin_proveedor_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+#proveedor-remote-table 
 	= render 'table'
+	%script
+		$(document).ready(function() {
+		$('table.proveedores').DataTable({
+		responsive: true,
+		lengthMenu: [[30], [30]],
+		columnDefs: [ { targets: [-1], orderable: false } ],
+		language: {
+		url: "#{asset_path('spanish.json')}"
+		}
+		});
+		});
+
+- if current_user && current_user.is_admin?
+	#proveedor-remote-table
+		= render 'table', retirados: true
+
+
+	

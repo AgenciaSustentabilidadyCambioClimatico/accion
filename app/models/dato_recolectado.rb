@@ -6,7 +6,6 @@ class DatoRecolectado < ApplicationRecord
 
   validates :nombre, presence: true
   validates :descripcion, presence: true
-  validates :cpc, presence: true
   validates :medios_verificacion, presence: true
   validates :unidad_base, presence: true
   validates :unidades_compatibles, presence: true

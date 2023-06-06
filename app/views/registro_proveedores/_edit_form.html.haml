@@ -55,8 +55,8 @@
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
-              .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
+              / .col-12
+              /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
                 .contribuyente_fields{style: "display: none"}
                   .col-12
@@ -119,17 +119,10 @@
                   Formatos
               .card-body
                 .row
-                  .col-12
-                    =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-001",t(:formulario_de_adhesion))
-                  .col-12
-                    .form-group
-                      %label.string.control-label
-                        = t(:formato_excel_de_consolidado_de_adhesiones)
-                      = link_to '#', class: 'btn btn-sm btn-descargar btn-block d-none boton-llenado mt-0' do
-                        %i.fa.fa-download
-                        = t(:descargar)
-                      %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
-                        %i.fa.fa-ban
+                  - @descargables_tarea.each do |descargable|
+                    .col-12
+                      = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
+                 
   .float-right
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
     =f.submit 'Enviar', class: 'btn btn-primary'

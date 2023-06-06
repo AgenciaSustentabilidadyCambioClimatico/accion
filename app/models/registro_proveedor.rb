@@ -24,7 +24,7 @@ class RegistroProveedor < ApplicationRecord
   validates :profesion, presence: true
   validates :email, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
   validates :telefono, presence: true
-  validates :telefono, numericality: true, length: {in: 8..11}
+  validates :telefono, numericality: true, length: { in: 8..11 }
   validates :direccion, presence: true
   validates :region, presence: true
   validates :comuna, presence: true
@@ -43,6 +43,12 @@ class RegistroProveedor < ApplicationRecord
     if terminos_y_servicion != true
       errors.add(:terminos_y_servicion, "Debes aceptar los terminos y servicios")
     end
+  end
+  
+  def get_apl
+    @flujo = Flujo.joins(mapa_de_actores: { persona: :user }).where(users: { rut: self.rut })
+    @nombre = @flujo.joins(:manifestacion_de_interes).order('manifestacion_de_intereses.created_at DESC').pluck('manifestacion_de_intereses.nombre_acuerdo')
+    @nombres = @nombre.uniq.take(20)
   end
 
   def normalizar_rut
@@ -89,7 +95,7 @@ class RegistroProveedor < ApplicationRecord
       end
     end
 
-    ##CONTENIDO
+    # #CONTENIDO
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], :width  => pdf.bounds.width do
       #PESTAÑA 1
