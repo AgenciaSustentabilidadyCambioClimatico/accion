@@ -174,19 +174,23 @@ class RegistroProveedoresController < ApplicationController
     asociar_institucion = @registro_proveedor.asociar_institucion
     contribuyente_id = @registro_proveedor.contribuyente_id
     rut_institucion = @registro_proveedor.rut_institucion
+    registro_proveedores_params_sin_editar = registro_proveedores_params.except(:editar)
 
     respond_to do |format|
-      if @registro_proveedor.update(registro_proveedores_params)
+      if @registro_proveedor.update(registro_proveedores_params_sin_editar)
         RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
-        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
-        tarea_pendiente.destroy
-        tarea = Tarea.where(nombre: "PRO-003").first
-        TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
+        if params[:registro_proveedor][:editar] != 'true'
+          flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+          tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
+          tarea_pendiente.destroy
+          tarea = Tarea.where(nombre: "PRO-003").first
+          TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
+        end
         format.js {
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
         }
+       
       else
         format.html { render :edit }
         format.js
@@ -512,9 +516,9 @@ class RegistroProveedoresController < ApplicationController
 
   def registro_proveedores_params
     params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
+      :rut_institucion, :nombre_institucion, :tipo_contribuyente, :editar, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
       :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva, :fecha_aprobado, :fecha_actualizado, :archivo_aprobado_directiva, :archivo_aprobado_directiva_cache,
-      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
+      certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id,  :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
       certificado_proveedor_extras_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo, :archivo_cache, :_destroy], documento_proveedor_extras_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
   end
 
