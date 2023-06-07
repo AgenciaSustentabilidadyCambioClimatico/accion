@@ -89,8 +89,11 @@
           .card-body
             .row
               .col-12
+                - first_documento = true
                 = f.simple_fields_for :documento_registro_proveedores do |documento|
-                  = render 'documento_registro_proveedor_fields', f: documento
+                  - cv = first_documento ? true : false
+                  - first_documento = false
+                  = render 'documento_registro_proveedor_fields', f: documento, cv: cv 
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
@@ -235,6 +238,10 @@
           data: {id: this.value}
         });
       });
+
+
+
+
 
     const $rutField = $("#registro_proveedor_rut");
     const $nameField = $("#registro_proveedor_nombre");

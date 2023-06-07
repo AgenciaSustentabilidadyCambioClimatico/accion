@@ -1,0 +1,25 @@
+<div class="nested-fields">
+  <div class="row">
+    <div class="col-12 col-lg-4">
+    <% if local_assigns[:cv]   %>
+        <%= f.input :description, label: 'Descripción documento', input_html: { value: 'Curriculum Vitae', readonly: true } %>
+    <% else %>
+      <%= f.input :description, label: 'Descripción documento' %>
+    <% end %>
+    </div>
+    <div class="col-12 col-lg-5">
+      <% if local_assigns[:cv]   %>
+        <%= f.input :archivo, input_html: { class: "validado form-control archivo-field", required: true } %>
+      <% else %>
+        <%= f.input :archivo, input_html: { class: "validado form-control" } %>
+      <% end %>
+      <%= f.input :archivo_cache, as: :hidden %>
+    </div>
+    <div class="col-12 col-lg-2">
+      <%= __descargar_archivo(f.object.archivo, f.object.archivo) %>
+    </div>
+    <div class="col-12 col-lg-1">
+      <%= link_to_remove_association raw('<i class="fa fa-minus"></i>'), f, class: 'btn btn-danger btn-sm mt-4' %>
+    </div>
+  </div>
+</div>
