@@ -103,8 +103,14 @@
           .card-body
             .row
               .col-12
-                = f.simple_fields_for :documento_registro_proveedores do |documento|
+                = f.fields_for :documento_registro_proveedores, f.object.documento_registro_proveedores.build do |documento|
+                  = render 'documento_registro_proveedor_fields', f: documento, cv: true 
+
+                %h5
+                %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos
+                = f.fields_for :documento_registro_proveedores, f.object.documento_registro_proveedores.build do |documento|
                   = render 'documento_registro_proveedor_fields', f: documento
+                  
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3

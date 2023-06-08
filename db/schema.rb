@@ -1985,6 +1985,7 @@ ActiveRecord::Schema.define(version: 20230314190321) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
+  add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"

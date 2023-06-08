@@ -111,8 +111,17 @@
           .card-body
             .row
               .col-12
+                - first_documento = true
                 = f.simple_fields_for :documento_registro_proveedores do |documento|
-                  = render 'documento_registro_fields_edit', f: documento
+                  - if first_documento
+                    - cv = first_documento ? true : false
+                    - first_documento = false
+                    = render 'documento_registro_proveedor_fields', f: documento, cv: cv 
+                  - else
+                    %h5
+                    %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos
+                    = render 'documento_registro_proveedor_fields', f: documento
+                  
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
