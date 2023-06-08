@@ -117,9 +117,9 @@
                     - cv = first_documento ? true : false
                     - first_documento = false
                     = render 'documento_registro_proveedor_fields', f: documento, cv: cv 
-                  - else
                     %h5
                     %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos
+                  - else
                     = render 'documento_registro_proveedor_fields', f: documento
                   
                 .links
