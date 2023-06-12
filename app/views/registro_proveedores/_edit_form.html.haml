@@ -4,13 +4,14 @@
 = simple_form_for @registro_proveedor, url: "/registro_proveedores/#{@registro_proveedor.id}", method: :patch, remote: true do |f|
   .row
     .col-12.mt-3
-      - if params[:editar] != 'true'
+      - if (@editar || local_assigns[:editar])  != 'true'
         %h1.titulo='Responder Observaciones'
       - else
         %h1.titulo='Editando Proveedor'
+        
     
       .col-12
-        - if params[:editar] != 'true'
+        - if (@editar || local_assigns[:editar])  != 'true'
           .card
             .card-header
               %h5.no-margin
@@ -88,7 +89,8 @@
                         / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
-                        = f.hidden_field :editar, value: 'true'
+                        - if (@editar || local_assigns[:editar]) == "true"
+                          = f.hidden_field :editar, value: 'true'
         .card
           .card-header
             %h5.no-margin
@@ -134,12 +136,13 @@
                   Formatos
               .card-body
                 .row
+                - if !@descargable_tareas.nil?
                   - @descargables_tarea.each do |descargable|
                     .col-12
                       = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
                  
-  
-  - if params[:editar] != 'true'
+   
+  - if (@editar || local_assigns[:editar])  != 'true'
     .float-right
       = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
       =f.submit 'Enviar', class: 'btn btn-primary'

@@ -154,11 +154,14 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-004
   def edit
+    @editar = params[:editar]
+
     @tarea = Tarea.find(104)
     @descargables_tarea = DescargableTarea.where(tarea_id: 104)
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+
     # if current_user.rut == @registro_proveedor.rut
     #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     #   @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
@@ -170,6 +173,7 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-004
   def update
+    @editar = params[:editar]
     @registro_proveedor = RegistroProveedor.find(params[:id])
     asociar_institucion = @registro_proveedor.asociar_institucion
     contribuyente_id = @registro_proveedor.contribuyente_id
@@ -179,6 +183,7 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params_sin_editar)
         RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
+
         if params[:registro_proveedor][:editar] != 'true'
           flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
           tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
