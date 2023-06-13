@@ -14,6 +14,7 @@ class RegistroProveedor::CreateService
       create_institucion_with_user_data
     end
     create_flujo
+    send_message
   end
 
   def create_user
@@ -35,6 +36,15 @@ class RegistroProveedor::CreateService
     tarea = Tarea.where(nombre: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
     TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id, data: @registro_proveedor.id)
+  end
+
+  def send_message
+    tarea = Tarea.where(nombre: "PRO-002").first
+    u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
+    mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
+    mensajes.each do |mensaje|
+      RegistroProveedorMensajeMailer.paso_de_tarea_uno(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_now
+    end
   end
 
   def create_institucion
