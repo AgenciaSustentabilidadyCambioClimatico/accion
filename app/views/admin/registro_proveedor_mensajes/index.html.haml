@@ -1,0 +1,37 @@
+:javascript
+  $(document).ready(function() {
+    $('table.tareas').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+    });
+  });
+- titulo 'Mensajes'
+= link_to 'Agregar Mensaje', new_admin_registro_proveedor_mensaje_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+.card
+  .card-header
+    %h5.no-margin
+      = 'Mensajes Registro Proveedores'
+  .card-body
+    .table-responsive
+      %table.table.tareas.table-striped
+        %thead
+          %tr
+            %th=t(:id)
+            %th='Tarea nombre'
+            %th='Asunto'
+            %th='Ver Mensaje'
+            %th='Editar Mensaje'
+        %tbody
+          - @registro_proveedor_mensajes.each do |mensaje|
+            %tr
+              %td.text-center=mensaje.id
+              %td=mensaje.tarea.nombre
+              %td=mensaje.asunto
+              %td= link_to 'Ver', '#'
+              %td
+                = link_to edit_admin_registro_proveedor_mensaje_path(mensaje) do
+                  %i.fa.fa-edit

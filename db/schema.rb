@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230314190321) do
+ActiveRecord::Schema.define(version: 20230613141246) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1557,6 +1557,15 @@ ActiveRecord::Schema.define(version: 20230314190321) do
     t.index ["user_id"], name: "index_registro_apertura_correos_on_user_id"
   end
 
+  create_table "registro_proveedor_mensajes", force: :cascade do |t|
+    t.text "body"
+    t.string "asunto"
+    t.bigint "tarea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tarea_id"], name: "index_registro_proveedor_mensajes_on_tarea_id"
+  end
+
   create_table "registro_proveedores", force: :cascade do |t|
     t.string "rut"
     t.string "nombre"
@@ -2051,6 +2060,7 @@ ActiveRecord::Schema.define(version: 20230314190321) do
   add_foreign_key "registro_apertura_correos", "flujo_tareas"
   add_foreign_key "registro_apertura_correos", "flujos"
   add_foreign_key "registro_apertura_correos", "users"
+  add_foreign_key "registro_proveedor_mensajes", "tareas"
   add_foreign_key "registro_proveedores", "contribuyentes"
   add_foreign_key "registro_proveedores", "tipo_contribuyentes"
   add_foreign_key "registro_proveedores", "tipo_proveedores"
