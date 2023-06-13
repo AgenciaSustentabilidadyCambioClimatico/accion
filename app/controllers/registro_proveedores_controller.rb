@@ -195,7 +195,6 @@ class RegistroProveedoresController < ApplicationController
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
         }
-       
       else
         format.html { render :edit }
         format.js
