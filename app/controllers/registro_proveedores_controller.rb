@@ -435,8 +435,50 @@ class RegistroProveedoresController < ApplicationController
   #PRO-009
   def evaluacion_proveedores
     registro_proveedor = RegistroProveedor.where(estado: 'aprobado')
-    registro_proveedor_con_notas = registro_proveedor.select { |f| f.nota_registro_proveedores.present? }
+    registro_proveedor_con_notas = registro_proveedor.select { |f| f.nota_registro_proveedores.present? && f.calificado }
     @registro_proveedores = registro_proveedor_con_notas
+  end
+
+  def clasificar_proveedores
+    estados = params[:estado]
+    estados_seleccionados = estados.select { |k, v| v.present? }
+
+    estados_seleccionados.each do |k, v|
+      key = k
+      value = v.to_i
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(calificado: false)
+      if value == 2
+        @registro_proveedor.update!(estado: 6)
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+      elsif value == 3
+        @registro_proveedor.update!(estado: 10)
+      end
+    end
+
+    comentarios = params[:comentario]
+    comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+
+    comentarios_seleccionados.each do |k, v|
+      key = k
+      value = v
+      @registro_proveedor = RegistroProveedor.find(key)
+      @registro_proveedor.update!(comentario_negativo: value)
+
+      if @registro_proveedor.estado == 'calificacion_negativa'
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        tarea = Tarea.where(nombre: 'PRO-010').first
+        user = User.where(rut: @registro_proveedor.rut).first
+        TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
+        # tarea_previa = Tarea.where(nombre: 'PRO-009').first
+        # tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
+        # tarea_pendiente.first.delete
+      end
+    end
+
+    redirect_to root_path
+    flash[:success] = "Registro enviado correctamente"
+
   end
 
   def descargar_documentos_proveedores

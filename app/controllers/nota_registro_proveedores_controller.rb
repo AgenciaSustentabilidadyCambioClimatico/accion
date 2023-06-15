@@ -14,7 +14,9 @@ class NotaRegistroProveedoresController < ApplicationController
       key = k
       value = v.to_i
       @nota = NotaRegistroProveedor.find(key)
+      @registro_proveedor = @nota.registro_proveedor
       @nota.update!(nota: value)
+      @registro_proveedor.update!(calificado: true)
     end
     redirect_to root_path
     flash[:success] = 'Nota enviada correctamente'

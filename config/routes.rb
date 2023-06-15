@@ -175,7 +175,7 @@ Rails.application.routes.draw do
   patch 'registro_proveedor/resultado_de_actualizacion', to: "registro_proveedores#resultado_de_actualizacion", as: :resultado_de_actualizacion
   #PRO-009
   get 'evaluacion_proveedores', to: 'registro_proveedores#evaluacion_proveedores', as: "evaluacion_proveedores"
-
+  patch 'clasificar_proveedores', to: 'registro_proveedores#clasificar_proveedores', as: "clasificar_proveedores"
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta

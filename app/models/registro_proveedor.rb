@@ -37,7 +37,7 @@ class RegistroProveedor < ApplicationRecord
   validate :terms_of_service_value
 
 
-  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado]
+  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado, :calificacion_negativa]
 
   before_validation :normalizar_rut
 

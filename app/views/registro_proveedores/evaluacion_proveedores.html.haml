@@ -1,7 +1,7 @@
 /PRO-009
 =render 'modal_evaluar'
 - titulo 'Clasificar Proveedores'
-= simple_form_for 'registro_proveedor', url: "#", method: :patch do |f|
+= simple_form_for 'registro_proveedor', url: clasificar_proveedores_path, method: :patch do |f|
   .card-header
     .d-flex.justify-content-between.align-items-center
       %h5.no-margin Proveedores
@@ -17,7 +17,7 @@
           %th RUT Proveedor
           %th Tipo de Proveedor
           %th Evaluaciones Anteriores
-          %th Nota
+          %th Calificación
           %th Seleccionar
       %tbody
         - @registro_proveedores.each_with_index do |registro, index|
@@ -28,12 +28,9 @@
             %td
               %button.btn.btn-primary.btn-sm#boton_evaluacion{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluacion"} Ver
             %td
-              / - if nota.nota > 0
-              /   .text-center
-              /     = nota.nota
-              / - else
-              /   %label.estado-elem Pendiente
-              /
+              %label.estado-elem Pendiente
+              = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+              = f.input :comentario_negativo, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
           =render "modal_evaluacion"
