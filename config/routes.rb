@@ -180,6 +180,12 @@ Rails.application.routes.draw do
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
   post 'guardar-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#guardar', as: :guardar_admin_encuesta
+
+  #------------------------------------------------------------------------------------------------------------#
+
+  resources :nota_registro_proveedores, only: [:index]
+  patch 'nota_registro_proveedor/evaluacion', to: 'nota_registro_proveedores#evaluacion', as: :evaluacion
+
   namespace :admin do
     resources :encuestas, except: [:show] do
       #scope '(:tarea_pendiente_id)' do

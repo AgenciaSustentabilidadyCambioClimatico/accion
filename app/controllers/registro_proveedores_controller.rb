@@ -434,6 +434,9 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-009
   def evaluacion_proveedores
+    registro_proveedor = RegistroProveedor.where(estado: 'aprobado')
+    registro_proveedor_con_notas = registro_proveedor.select { |f| f.nota_registro_proveedores.present? }
+    @registro_proveedores = registro_proveedor_con_notas
   end
 
   def descargar_documentos_proveedores
