@@ -27,7 +27,7 @@
             %td=nota.registro_proveedor.tipo_proveedor.nombre
             %td=nota.manifestacion_de_interes.nombre_acuerdo
             %td
-              %button.btn.btn-primary.btn-sm#boton_evaluacion{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluacion"} Ver
+              %button.btn.btn-primary.btn-sm#boton_evaluacion{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluacion-#{nota.id}"} Ver
             %td
               - if nota.nota > 0
                 .text-center
@@ -37,7 +37,7 @@
                 = f.input :nota, as: :hidden, input_html: { name: "nota[#{nota.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: nota.id}
-          =render "modal_evaluaciones_pasadas"
+          =render "modal_evaluaciones_pasadas", nota: nota
     .float-right
       = volver_root
       = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
