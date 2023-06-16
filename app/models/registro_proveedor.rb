@@ -6,6 +6,7 @@ class RegistroProveedor < ApplicationRecord
   has_many :documento_registro_proveedores, dependent: :destroy
   has_many :certificado_proveedor_extras, dependent: :destroy
   has_many :documento_proveedor_extras, dependent: :destroy
+  has_many :nota_registro_proveedores
 
   accepts_nested_attributes_for :certificado_proveedores, allow_destroy: true
   accepts_nested_attributes_for :documento_registro_proveedores, allow_destroy: true
@@ -36,7 +37,7 @@ class RegistroProveedor < ApplicationRecord
   validate :terms_of_service_value
 
 
-  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado]
+  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado, :calificacion_negativa]
 
   before_validation :normalizar_rut
 
