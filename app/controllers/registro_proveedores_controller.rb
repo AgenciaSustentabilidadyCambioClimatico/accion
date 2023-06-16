@@ -434,9 +434,14 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-009
   def evaluacion_proveedores
-    registro_proveedor = RegistroProveedor.where(estado: 'aprobado')
-    registro_proveedor_con_notas = registro_proveedor.select { |f| f.nota_registro_proveedores.present? && f.calificado }
-    @registro_proveedores = registro_proveedor_con_notas
+    if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
+      registro_proveedor = RegistroProveedor.where(estado: 'aprobado')
+      registro_proveedor_con_notas = registro_proveedor.select { |f| f.nota_registro_proveedores.present? && f.calificado }
+      @registro_proveedores = registro_proveedor_con_notas
+    else
+      redirect_to root_path
+      flash[:success] = 'No tienes permiso para acceder a esta pagina'
+    end
   end
 
   def clasificar_proveedores

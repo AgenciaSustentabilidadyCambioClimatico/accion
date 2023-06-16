@@ -15,8 +15,10 @@
         %tr
           %th
           %th RUT Proveedor
+          %th Nombre Postulante
           %th Tipo de Proveedor
-          %th Evaluaciones Anteriores
+          %th Evaluacion Anterior
+          %th Evaluaciones menores a 4
           %th Calificación
           %th Seleccionar
       %tbody
@@ -24,9 +26,10 @@
           %tr{"data-id" => "#{registro.id}","id" => "#{registro.id}"}
             %td=index + 1
             %td=registro.rut
+            %td="#{registro.nombre} #{registro.apellido}"
             %td=registro.tipo_proveedor.nombre
-            %td
-              %button.btn.btn-primary.btn-sm#boton_evaluacion{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluacion"} Ver
+            %td=registro.nota_registro_proveedores.last.nota
+            %td=registro.nota_registro_proveedores.select { |f| f.nota <= 4 }&.count
             %td
               %label.estado-elem Pendiente
               = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
