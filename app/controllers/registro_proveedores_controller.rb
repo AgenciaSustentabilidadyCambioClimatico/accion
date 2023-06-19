@@ -175,6 +175,7 @@ class RegistroProveedoresController < ApplicationController
   def update
     @editar = params[:editar]
     @registro_proveedor = RegistroProveedor.find(params[:id])
+    puts "--------> #{@registro_proveedor.inspect}"
     asociar_institucion = @registro_proveedor.asociar_institucion
     contribuyente_id = @registro_proveedor.contribuyente_id
     rut_institucion = @registro_proveedor.rut_institucion
@@ -499,6 +500,13 @@ class RegistroProveedoresController < ApplicationController
 
     redirect_to root_path
     flash[:success] = "Registro enviado correctamente"
+
+  end
+
+  #PRO-010
+  def enviar_carta_compromiso
+    @registro_proveedor = RegistroProveedor.find(params[:id])
+    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
 
   end
 
