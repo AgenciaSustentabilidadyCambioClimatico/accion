@@ -1,0 +1,74 @@
+/PRO-010
+= simple_form_for @registro_proveedor, url: "/registro_proveedores/#{@registro_proveedor.id}", method: :patch, remote: true, authenticity_token: true do |f|
+  .row  
+    .col-12.col-lg-6
+      %h1.titulo='Envío Carta de Compromiso'
+
+  
+  .row  
+    .col-12 
+      .card
+        .card-header
+          %h5.no-margin
+            %b Comentario Evaluador
+        .card-body
+          .row
+            .col-12
+              = f.input :comentario_negativo, as: :text, as: :text, disabled: true, label: 'Comentario de Revisor', input_html: { style: 'width: 100%', rows: 5 }
+  .row  
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            %b Subir Carta
+        .card-body
+          .row
+            .col-12.col-lg-4
+              = f.input :carta_compromiso, input_html: { class: "validado form-control archivo-field" } 
+              = f.input :carta_compromiso_cache, as: :hidden
+            .col-12.col-lg-4
+              = __descargar_archivo(f.object.carta_compromiso,f.object.carta_compromiso)
+                
+
+  .row
+    .col-12.col-lg-6
+      .card
+        .card-header
+          %h5.m-0
+            Formatos
+        .card-body
+          .row
+            - @descargables_tarea.each do |descargable|
+              .col-12
+                = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
+                 
+  
+  - if params[:editar] != 'true'
+    .float-right
+      = link_to t(:back), root_path, class: 'btn btn-warning '
+      =f.submit 'Enviar', class: 'btn btn-primary', id: "submitBtn"
+  - else 
+    .float-right
+      = link_to t(:back), admin_proveedores_path, class: 'btn btn-warning '
+      =f.submit 'Enviar', class: 'btn btn-primary'
+
+
+
+:javascript
+  $(document).ready(function(){
+      const submitBtn = document.getElementById("submitBtn");
+
+      submitBtn.addEventListener("click", function(event) {
+        event.preventDefault(); // Evita el envío del formulario por defecto
+
+        const confirmed = confirm("¿Estás seguro de que deseas continuar?");
+
+        if (confirmed) {
+          // Envía el formulario manualmente
+          document.querySelector('form').submit();
+        } else {
+          // Acción a realizar si se hace clic en "Cancelar"
+          // Puedes agregar cualquier lógica adicional o redireccionar a otra página
+        }
+      });
+    });
