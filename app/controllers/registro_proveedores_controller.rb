@@ -175,13 +175,10 @@ class RegistroProveedoresController < ApplicationController
   def update
     @editar = params[:editar]
     @registro_proveedor = RegistroProveedor.find(params[:id])
-    puts "--------> #{@registro_proveedor.inspect}"
     asociar_institucion = @registro_proveedor.asociar_institucion
     contribuyente_id = @registro_proveedor.contribuyente_id
     rut_institucion = @registro_proveedor.rut_institucion
     registro_proveedores_params_sin_editar = registro_proveedores_params.except(:editar)
-    puts "---------------->2 #{registro_proveedores_params_sin_editar[:carta_compromiso].nil?}"
-    puts "aaa---> #{request.format.symbol}"
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params_sin_editar)
         if registro_proveedores_params_sin_editar[:carta_compromiso].nil?
@@ -367,10 +364,13 @@ class RegistroProveedoresController < ApplicationController
     respond_to do |format|
       if @registro_proveedor.update(registro_proveedores_params)
         @registro_proveedor.update(estado: 9)
-        # flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
-        # tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
-        # tarea = Tarea.where(nombre: "PRO-008").first
-        # tarea_pendiente.update(tarea_id: tarea.id, user_id: @registro_proveedor.user_encargado)
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        tarea = Tarea.where(nombre: "PRO-008").first
+        user = User.where(rut: @registro_proveedor.rut).first
+        TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
+        tarea_previa = Tarea.where(nombre: 'PRO-007').first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
+        tarea_pendiente.first.delete
         if @registro_proveedor.region.present? && @registro_proveedor.comuna.present?
           @registro_proveedor.region = Region.find(@registro_proveedor.region.to_i).nombre
           @registro_proveedor.comuna = Comuna.find(@registro_proveedor.comuna.to_i).nombre
@@ -409,13 +409,20 @@ class RegistroProveedoresController < ApplicationController
 
       if value == 1
         @registro_proveedor.update!(estado: 9)
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        tarea = Tarea.where(nombre: "PRO-009").first
+        user = User.where(rut: @registro_proveedor.rut).first
+        TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
+        tarea_previa = Tarea.where(nombre: 'PRO-008').first
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
+        tarea_pendiente.first.delete
       end
 
       if value == 2
         @registro_proveedor.update!(estado: 8)
         RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_later
-        flujo = Flujo.where(registro_proveedor_id: @registro_proveedor.id).first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id).first
+        flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+        tarea_pendiente = TareaPendiente.where(flujo_id: 1000).first
         tarea_pendiente.destroy
         # flujo.destroy
       end
@@ -430,9 +437,10 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor = RegistroProveedor.find(key)
 
       if @registro_proveedor.estado == 'actualizado'
-        @registro_proveedor.update!(fecha_revalidacion: value)
+        @registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
         RegistroProveedorMailer.revision_positiva(@registro_proveedor).deliver_now
       end
+    @registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
 
     end
 
