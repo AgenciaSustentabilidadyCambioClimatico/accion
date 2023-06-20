@@ -6,5 +6,4 @@ class RegistroProveedorMensajeMailer < ApplicationMailer
     @user = user.email
     mail(to: @user, subject: @asunto)
   end
-
 end
