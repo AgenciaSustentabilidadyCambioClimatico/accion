@@ -7,14 +7,12 @@ class RegistroProveedor::CreateService
   def perform
     create_user
     if @registro_proveedor.asociar_institucion == false
-      puts "-------> Creando institucion"
       create_institucion
     elsif @registro_proveedor.asociar_institucion == true && @registro_proveedor.contribuyente_id.present?
       find_institucion
     elsif @registro_proveedor.asociar_institucion == true && !@registro_proveedor.contribuyente_id.present?
       create_institucion_with_user_data
     end
-    puts "-------> Creando flujo"
     create_flujo
   end
 
