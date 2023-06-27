@@ -38,6 +38,7 @@
             Formatos
         .card-body
           .row
+          - if !@descargable_tareas.nil?
             - @descargables_tarea.each do |descargable|
               .col-12
                 = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
