@@ -510,10 +510,6 @@ class RegistroProveedoresController < ApplicationController
 
   end
 
-
-
-  end
-
   def descargar_documentos_proveedores
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
