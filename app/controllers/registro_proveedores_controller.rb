@@ -506,14 +506,11 @@ class RegistroProveedoresController < ApplicationController
   #PRO-010
   def enviar_carta_compromiso
     @registro_proveedor = RegistroProveedor.find(params[:id])
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 110)
 
   end
 
-  #PRO-010
-  def enviar_carta_compromiso
-    @registro_proveedor = RegistroProveedor.find(params[:id])
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+
 
   end
 
