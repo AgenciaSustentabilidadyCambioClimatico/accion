@@ -16,7 +16,9 @@ class RegistroProveedor::UpdateService
       update_persona_cargo_2
     end
     update_region_and_comuna
-    @registro_proveedor.update(estado: 'enviado')
+    if @params[:editar] != 'true'
+      @registro_proveedor.update(estado: 'enviado')
+    end
   end
 
   def create_and_update_instituciones

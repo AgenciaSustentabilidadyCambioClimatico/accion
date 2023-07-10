@@ -126,7 +126,7 @@
               <% if current_user && current_user.is_admin?%>
                 <td class="dos iconos-acciones">
                 <div>
-                <%= link_to edit_registro_proveedor_path(record.id) do %>
+                <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
                   <i class='fa fa-edit'></i>
                   </td>
                 <% end %>

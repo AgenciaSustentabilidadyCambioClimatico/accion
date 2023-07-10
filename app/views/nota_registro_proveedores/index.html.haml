@@ -1,12 +1,11 @@
-/PRO-009
 =render 'modal_evaluar'
-- titulo 'Clasificar Proveedores'
-= simple_form_for 'registro_proveedor', url: clasificar_proveedores_path, method: :patch do |f|
+- titulo 'Evaluar Proveedores'
+= simple_form_for 'nota_registro_proveedor', url: evaluacion_path, method: :patch do |f|
   .card-header
     .d-flex.justify-content-between.align-items-center
       %h5.no-margin Proveedores
       %div
-        %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluar", disabled: true} Clasificar
+        %button.btn.btn-ascc.btn-sm#boton_clasificar{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluar", disabled: true} Ingresar evaluacion
         %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
         %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
   .card-body.p-0
@@ -15,29 +14,30 @@
         %tr
           %th
           %th RUT Proveedor
-          %th Nombre Postulante
           %th Tipo de Proveedor
-          %th Evaluacion Anterior
-          %th Evaluaciones menores a 4
-          %th Calificación
+          %th Nombre APL
+          %th Evaluaciones Anteriores
+          %th Nota
           %th Seleccionar
       %tbody
-        - @registro_proveedores.each_with_index do |registro, index|
-          %tr{"data-id" => "#{registro.id}","id" => "#{registro.id}"}
+        - @nota_registro_proveedores.each_with_index do |nota, index|
+          %tr{"data-id" => "#{nota.id}","id" => "#{nota.id}"}
             %td=index + 1
-            %td=registro.rut
-            %td="#{registro.nombre} #{registro.apellido}"
-            %td=registro.tipo_proveedor.nombre
-            %td=registro.nota_registro_proveedores.last.nota
-            %td=registro.nota_registro_proveedores.select { |f| f.nota <= 4 }&.count
+            %td=nota.registro_proveedor.rut
+            %td=nota.registro_proveedor.tipo_proveedor.nombre
+            %td=nota.manifestacion_de_interes.nombre_acuerdo
             %td
-              %label.estado-elem Pendiente
-              = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
-              = f.input :comentario_negativo, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+              %button.btn.btn-primary.btn-sm#boton_evaluacion{type: :button, "data-toggle" => "modal", "data-target" => "#modal_evaluacion-#{nota.id}"} Ver
+            %td
+              - if nota.nota > 0
+                .text-center
+                  = nota.nota
+              - else
+                %label.estado-elem Pendiente
+                = f.input :nota, as: :hidden, input_html: { name: "nota[#{nota.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
-              %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
-          =render "modal_evaluacion"
-
+              %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: nota.id}
+          =render "modal_evaluaciones_pasadas", nota: nota
     .float-right
       = volver_root
       = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
@@ -122,7 +122,8 @@
       estado = $('#adhesion_estado_elementos option:selected');
       estado_val = estado.prop("value");
       estado_nombre = estado.text();
-      comentario = $('#adhesion_justificacion_elementos').val();
+      comentario = $('#adhesion_estado_elementos').val();
+      console.log(estado_nombre)
 
       $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
         posicion = elem.value;
@@ -130,9 +131,9 @@
         console.log(tr);
         tr.find(".estado-elem").html(estado_nombre);
         console.log(`${tr.find("input[name='aceptado["+posicion+"]']")}`)
-        tr.find("input[name='estado["+posicion+"]']").val(estado_val)
+        tr.find("input[name='nota["+posicion+"]']").val(estado_val)
         tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
-        tr.find("input[name='comentario["+posicion+"]']").val(comentario);
+        tr.find("input[name='nota["+posicion+"]']").val(estado_nombre);
       });
 
       $('.seleccionar-elemento-adhesion').attr("checked", false);

@@ -39,28 +39,29 @@
               .col-12.col-lg-4
                 =f.input :ciudad, label: 'Ciudad', class: 'form-control'
               .col-12
-                =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()", disabled: true}, label: 'Asociar institución'
+              /  =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()", disabled: true}, label: 'Asociar institución'
               .col-12
-                - if @registro_proveedor.contribuyente_id.present?
-                  .col-12
-                    =f.label 'Contribuyente'
-                    %input#form_control{:value => "#{Contribuyente.find(@registro_proveedor.contribuyente_id).razon_social}", disabled: true }
-                - else
-                  .row
-                    .col-12.col-lg-4
-                      = f.input :rut_institucion, input_html: { class: 'identificacion required-field', disabled: true }, label: 'RUT institución'
-                    .col-12.col-lg-4
-                      =f.input :nombre_institucion, input_html: { class: 'required-field', disabled: true }, label: 'Nombre institución'
-                    .col-12.col-lg-4
-                      / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                .contribuyente_fields{style: "display: none"}
+                  - if @registro_proveedor.contribuyente_id.present?
                     .col-12
-                      =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field', disabled: true }, label: 'Dirección casa matriz'
-                    .col-12.col-lg-4
-                      = f.input :region_casa_matriz, label: 'Región casa matriz', input_html: { disabled: true }
-                    .col-12.col-lg-4
-                      = f.input :comuna_casa_matriz, label: 'Comuna casa matriz', input_html: { disabled: true }
-                    .col-12.col-lg-4
-                      =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field', disabled: true }
+                      =f.label 'Contribuyente'
+                      %input#form_control{:value => "#{Contribuyente.find(@registro_proveedor.contribuyente_id).razon_social}", disabled: true }
+                  - else
+                    .row
+                      .col-12.col-lg-4
+                        = f.input :rut_institucion, input_html: { class: 'identificacion required-field', disabled: true }, label: 'RUT institución'
+                      .col-12.col-lg-4
+                        =f.input :nombre_institucion, input_html: { class: 'required-field', disabled: true }, label: 'Nombre institución'
+                      .col-12.col-lg-4
+                        / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                      .col-12
+                        =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field', disabled: true }, label: 'Dirección casa matriz'
+                      .col-12.col-lg-4
+                        = f.input :region_casa_matriz, label: 'Región casa matriz', input_html: { disabled: true }
+                      .col-12.col-lg-4
+                        = f.input :comuna_casa_matriz, label: 'Comuna casa matriz', input_html: { disabled: true }
+                      .col-12.col-lg-4
+                        =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field', disabled: true }
         .card
           .card-header
             %h5.no-margin

@@ -175,11 +175,21 @@ Rails.application.routes.draw do
   patch 'registro_proveedor/resultado_de_actualizacion', to: "registro_proveedores#resultado_de_actualizacion", as: :resultado_de_actualizacion
   #PRO-009
   get 'evaluacion_proveedores', to: 'registro_proveedores#evaluacion_proveedores', as: "evaluacion_proveedores"
+  patch 'clasificar_proveedores', to: 'registro_proveedores#clasificar_proveedores', as: "clasificar_proveedores"
+  #PRO-010
+  get 'enviar_carta_compromiso/:id', to: 'registro_proveedores#enviar_carta_compromiso', as: "enviar_carta_compromiso"
+
 
   #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
   post 'guardar-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#guardar', as: :guardar_admin_encuesta
+
+  #------------------------------------------------------------------------------------------------------------#
+
+  resources :nota_registro_proveedores, only: [:index]
+  patch 'nota_registro_proveedor/evaluacion', to: 'nota_registro_proveedores#evaluacion', as: :evaluacion
+
   namespace :admin do
     resources :encuestas, except: [:show] do
       #scope '(:tarea_pendiente_id)' do

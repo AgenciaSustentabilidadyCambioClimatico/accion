@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230314190321) do
+ActiveRecord::Schema.define(version: 20230615201453) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1235,6 +1235,16 @@ ActiveRecord::Schema.define(version: 20230314190321) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "nota_registro_proveedores", force: :cascade do |t|
+    t.bigint "registro_proveedor_id"
+    t.bigint "manifestacion_de_interes_id"
+    t.integer "nota", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
+    t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
+  end
+
   create_table "otros", force: :cascade do |t|
     t.bigint "establecimiento_contribuyente_id"
     t.bigint "alcance_id"
@@ -1596,6 +1606,9 @@ ActiveRecord::Schema.define(version: 20230314190321) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
+    t.string "comentario_negativo"
+    t.boolean "calificado", default: false
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -2015,6 +2028,8 @@ ActiveRecord::Schema.define(version: 20230314190321) do
   add_foreign_key "materia_sustancia_metas", "materia_sustancias"
   add_foreign_key "minutas", "convocatorias"
   add_foreign_key "modificacion_calendarios", "proyectos"
+  add_foreign_key "nota_registro_proveedores", "manifestacion_de_intereses"
+  add_foreign_key "nota_registro_proveedores", "registro_proveedores"
   add_foreign_key "otros", "alcances"
   add_foreign_key "otros", "contribuyentes"
   add_foreign_key "otros", "establecimiento_contribuyentes"
