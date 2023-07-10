@@ -24,8 +24,8 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-001
   def new
-    @tarea = Tarea.find(101)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
+    @tarea = Tarea.find(104)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
@@ -33,8 +33,8 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-001
   def create
-    @tarea = Tarea.find(101)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
+    @tarea = Tarea.find(104)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
       @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
@@ -73,6 +73,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.update!(user_encargado: value)
       flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
       tarea = Tarea.where(nombre: 'PRO-003').first
+      send_message(tarea, value)
       TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: value, data: @registro_proveedor.id)
       tarea_previa = Tarea.where(nombre: 'PRO-002').first
       tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
@@ -105,6 +106,7 @@ class RegistroProveedoresController < ApplicationController
       if value == 1
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: "PRO-005").first
+        send_message(tarea, @registro_proveedor.user_encargado)
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(nombre: 'PRO-003').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
@@ -184,12 +186,13 @@ class RegistroProveedoresController < ApplicationController
       if @registro_proveedor.update(registro_proveedores_params_sin_editar)
         if registro_proveedores_params_sin_editar[:carta_compromiso].nil?
           RegistroProveedor::UpdateService.new(@registro_proveedor, registro_proveedores_params, asociar_institucion, contribuyente_id, rut_institucion).perform
-       
+
           if params[:registro_proveedor][:editar] != 'true'
             flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
             tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, user_id: current_user.id).first
             tarea_pendiente.destroy
             tarea = Tarea.where(nombre: "PRO-003").first
+            send_message(tarea, @registro_proveedor.user_encargado)
             TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
           end
        end
@@ -201,7 +204,7 @@ class RegistroProveedoresController < ApplicationController
           redirect_to root_path
           flash[:success] = "Registro enviado correctamente"
         }
-       
+
       else
         format.html { render :edit }
         format.js
@@ -235,6 +238,7 @@ class RegistroProveedoresController < ApplicationController
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(nombre: 'PRO-007').first
         user = User.where(rut: @registro_proveedor.rut).first
+        send_message(tarea, user.id)
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(nombre: 'PRO-005').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
@@ -507,7 +511,6 @@ class RegistroProveedoresController < ApplicationController
   def enviar_carta_compromiso
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @descargables_tarea = DescargableTarea.where(tarea_id: 110)
-
   end
 
   def descargar_documentos_proveedores
@@ -580,6 +583,14 @@ class RegistroProveedoresController < ApplicationController
   end
 
   private
+
+  def send_message(tarea, user)
+    u = User.find(user)
+    mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
+    mensajes.each do |mensaje|
+      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
+    end
+  end
 
   def set_registro_proveedor
     if current_user.nil?

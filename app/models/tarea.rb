@@ -4,6 +4,7 @@ class Tarea < ApplicationRecord
 	has_many :campos, through: :campo_tareas
 	has_many :encuesta_descarga_roles
 	has_many :encuesta_ejecucion_roles
+  has_many :registro_proveedor_mensajes
 
 	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
 	accepts_nested_attributes_for :campos

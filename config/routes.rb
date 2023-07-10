@@ -181,6 +181,8 @@ Rails.application.routes.draw do
 
 
   #------------------------------------------------------------------------------------------------------------#
+
+  #------------------------------------------------------------------------------------------------------------#
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
   post 'guardar-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#guardar', as: :guardar_admin_encuesta
@@ -199,6 +201,7 @@ Rails.application.routes.draw do
       #  end
       #end
     end
+    resources :registro_proveedor_mensajes
     get 'get_apls_registro/:id', to: 'proveedores#get_apls_registro', as: :get_apls_registro
     resources :preguntas, except: [:show] do
     end
