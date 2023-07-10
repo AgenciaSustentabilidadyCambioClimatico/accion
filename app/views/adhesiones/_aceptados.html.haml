@@ -7,6 +7,7 @@
         %table.table.table-striped.table-bordered#adhesiones_revisadas{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
           %thead
             %tr
+              %th='Fecha Ingreso'
               %th=t(:rut_institucion)
               %th=t(:nombre_institución)
               %th=t(:alcance)
@@ -22,6 +23,7 @@
               -data.each do |k,v|
                 - v.each do |fila|
                   %tr
+                    %td=fila[:fecha_adhesion]
                     %td=fila[:rut_institucion]
                     %td=fila[:nombre_institucion]
                     %td=fila[:alcance]
