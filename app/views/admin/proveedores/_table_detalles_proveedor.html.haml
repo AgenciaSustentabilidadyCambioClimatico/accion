@@ -15,7 +15,10 @@
               - @apls.each do |record|
                 %tr
                   %td= record
-  %div.flex{style: 'margin-top:62px; margin-left: 20px; width: 700px'}
+
+  %div.flex{style: 'margin-left: 20px; width: 700px'}
+    %div.flex{style: 'width: 250px'}                  
+      =__descargar_archivo(@resolucion, @resolucion, true, false, "Archivo Resolución")   
     .card
       .card-header
         %h5.no-margin Experiencias
