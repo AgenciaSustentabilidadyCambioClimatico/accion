@@ -31,7 +31,7 @@
               %td.text-center=mensaje.id
               %td=mensaje.tarea.nombre
               %td=mensaje.asunto
-              %td= link_to 'Ver', '#'
+              %td= link_to 'Ver', admin_registro_proveedor_mensaje_path(mensaje)
               %td
                 = link_to edit_admin_registro_proveedor_mensaje_path(mensaje) do
                   %i.fa.fa-edit
