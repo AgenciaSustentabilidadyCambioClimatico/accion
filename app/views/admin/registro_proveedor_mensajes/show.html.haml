@@ -1,0 +1,25 @@
+.row
+  .col-12.mt-3
+    %h1.titulo='Mensaje para registro proveedor'
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            %b Mensaje
+          %h5.no-margin=titulo_acuerdo.html_safe
+        .card-body
+          .row
+            .col-12
+              %p
+                %strong Tarea:
+                #{@registro_proveedor_mensaje.tarea.nombre}
+            .col-12
+              %p
+                %strong Asunto:
+                #{@registro_proveedor_mensaje.asunto}
+            .col-12
+              %p
+                %strong Mensaje:
+                #{@registro_proveedor_mensaje.body}
+.float-right
+  =link_to t(:back), admin_registro_proveedor_mensajes_path, class: 'btn btn-warning '

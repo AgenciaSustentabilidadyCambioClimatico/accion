@@ -61,6 +61,15 @@
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
+              - if (@editar || local_assigns[:editar]) == "true"
+                .col-12.col-lg-4
+                  =f.input :fecha_aprobado, as: :date, required: true, html5: true, input_html: { class: 'required-field form-control' }
+                .col-12.col-lg-4
+                  =f.label 'Archivo Resolución'
+                  =f.input :archivo_aprobado_directiva, label: false, input_html: {class: "validado form-control"}
+                  = f.input :archivo_aprobado_directiva_cache, as: :hidden
+                .col-12.col-lg-1
+                  = __descargar_archivo(f.object.archivo_aprobado_directiva,f.object.archivo_aprobado_directiva)
               / .col-12
               /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
