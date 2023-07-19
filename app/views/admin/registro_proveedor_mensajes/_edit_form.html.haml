@@ -1,0 +1,21 @@
+= simple_form_for @registro_proveedor_mensaje, url: admin_registro_proveedor_mensaje_path(@registro_proveedor_mensaje.id), remote: true do |f|
+  .row
+    .col-12.mt-3
+      %h1.titulo='Mensaje para registro proveedor'
+      .col-12
+        .card
+          .card-header
+            %h5.no-margin
+              %b Datos Solicitante
+            %h5.no-margin=titulo_acuerdo.html_safe
+          .card-body
+            .row
+              .col-12
+                = f.association :tarea, collection: Tarea.where("nombre ILIKE ?", "%Pro-%").map { |r| [r.nombre, r.id] }.sort
+              .col-12
+                =f.input :asunto, required: true, input_html: { class: 'required-field' }
+              .col-12
+                =f.input :body, required: true, input_html: { rows: 10 }
+  .float-right
+    =link_to t(:back), admin_registro_proveedor_mensajes_path, class: 'btn btn-warning '
+    =f.submit 'Enviar', class: 'btn btn-primary'

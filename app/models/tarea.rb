@@ -4,6 +4,7 @@ class Tarea < ApplicationRecord
 	has_many :campos, through: :campo_tareas
 	has_many :encuesta_descarga_roles
 	has_many :encuesta_ejecucion_roles
+  has_many :registro_proveedor_mensajes
 
 	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
 	accepts_nested_attributes_for :campos
@@ -397,6 +398,8 @@ class Tarea < ApplicationRecord
   COD_PRO_006 = 'PRO-006'
   COD_PRO_007 = 'PRO-007'
   COD_PRO_008 = 'PRO-008'
+  COD_PRO_009 = 'PRO-009'
+  COD_PRO_010 = 'PRO-010'
 
 	#etapas de acuerdo
 	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]

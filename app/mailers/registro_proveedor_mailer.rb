@@ -76,5 +76,4 @@ class RegistroProveedorMailer < ApplicationMailer
     encabezado = 'Actualizar postulacion'
     mail(to: user, subject: encabezado)
   end
-
 end

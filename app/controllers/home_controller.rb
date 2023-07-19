@@ -117,7 +117,8 @@ class HomeController < ApplicationController
           acciones: @manifestacion_de_interes.acciones.count,
           empresas_adheridas: @manifestacion_de_interes.empresas_adheridas.count,
           empresas_certificadas: @manifestacion_de_interes.empresas_certificadas.count,
-          elementos_adheridos: elementos_adheridos.map{|ea| {id: ea.id, nombre: ea.nombre_del_elemento_v2}},
+          elementos_adheridos: @manifestacion_de_interes.elementos_adheridos,
+          #elementos_adheridos.map{|ea| {id: ea.id, nombre: ea.nombre_del_elemento_v2}}, utilizado antes, pero marcaba 0 en vista logeado. Se deja comentado por si se requiere volver atrás.
           clasificaciones: []
         }
 
