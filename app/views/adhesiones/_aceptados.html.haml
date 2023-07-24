@@ -16,6 +16,7 @@
               %th=t(:direccion_elemento)
               %th=t(:datos_encargado)
               %th=t(:observaciones)
+              %th=t(:documentación)
               %th=t(:estado)
               %th=t(:retirar_del_acuerdo)
           %tbody
@@ -35,6 +36,9 @@
                       %div{style: "white-space: nowrap"}=fila[:fono_encargado]
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td=fila[:observaciones]
+                    %td.text-center
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id), class: 'btn btn-tabla' do
+                        %i.fa.fa-download
                     %td=k.upcase
                     %td.text-center
                       -if k.upcase.to_s == "ACEPTADA"
