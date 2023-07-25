@@ -357,7 +357,6 @@ class AdhesionesController < ApplicationController
   			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
       end
 
-
       @rechazadas = @adhesion.adhesiones_rechazadas
       @pendientes = @adhesion.adhesiones_pendientes
       @no_pendientes = @adhesion.adhesiones_aceptadas_y_observadas
