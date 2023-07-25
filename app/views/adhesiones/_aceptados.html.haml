@@ -25,8 +25,8 @@
               -data.each do |k,v|
                 - v.each do |fila|
                   %tr
-                    %td=fila[:fecha_adhesion]
-                    %td=fila[:rut_institucion]
+                    %td=adhesion_id
+                    %td=@no_pendientes_todas
                     %td=fila[:nombre_institucion]
                     %td=fila[:alcance]
                     %td=fila[:nombre_elemento]
