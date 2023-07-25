@@ -240,7 +240,7 @@ class AdhesionesController < ApplicationController
           end
         end
       else
-        if elemento == 'true'
+        if params[:elemento] == 'true'
           adh_id = AdhesionElemento.find(params[:aid]).adhesion_id
         else
           adh_id = params[:aid]
