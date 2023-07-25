@@ -25,8 +25,8 @@
               -data.each do |k,v|
                 - v.each do |fila|
                   %tr
-                    %td=adhesion_id
-                    %td=@no_pendientes_todas
+                    %td=fila[:fecha_adhesion]
+                    %td=fila[:rut_institucion]
                     %td=fila[:nombre_institucion]
                     %td=fila[:alcance]
                     %td=fila[:nombre_elemento]
@@ -38,7 +38,7 @@
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td=fila[:observaciones]
                     %td.text-center
-                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id), class: 'btn btn-tabla' do
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: id, elemento: true), class: 'btn btn-tabla' do
                         %i.fa.fa-download
                     %td=k.upcase
                     %td.text-center

@@ -240,7 +240,12 @@ class AdhesionesController < ApplicationController
           end
         end
       else
-        adhesion = Adhesion.unscoped.find(params[:aid])
+        if elemento == 'true'
+          adh_id = AdhesionElemento.find(params[:aid]).adhesion_id
+        else
+          adh_id = params[:aid]
+        end
+        adhesion = Adhesion.unscoped.find(adh_id)
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -373,6 +378,7 @@ class AdhesionesController < ApplicationController
       @todas_todas = {}
       @por_revisar_todas = {}
       @adhesiones.each do |adh|
+        puts "adhesion: #{adh}"
         @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
         @pendientes_todas[adh.id] = adh.adhesiones_pendientes
         @no_pendientes_todas[adh.id] = adh.adhesiones_aceptadas_y_observadas
