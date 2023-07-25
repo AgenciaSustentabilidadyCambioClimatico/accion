@@ -37,7 +37,7 @@
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td=fila[:observaciones]
                     %td.text-center
-                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id), class: 'btn btn-tabla' do
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: fila[:adhesion_id]), class: 'btn btn-tabla' do
                         %i.fa.fa-download
                     %td=k.upcase
                     %td.text-center
