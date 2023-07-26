@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230615201453) do
+ActiveRecord::Schema.define(version: 20230726025935) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -111,6 +111,7 @@ ActiveRecord::Schema.define(version: 20230615201453) do
     t.text "fila"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elemento_retirados_on_adhesion_id"
     t.index ["alcance_id"], name: "index_adhesion_elemento_retirados_on_alcance_id"
     t.index ["establecimiento_contribuyente_id"], name: "idx_aer_ec"
@@ -1615,9 +1616,9 @@ ActiveRecord::Schema.define(version: 20230615201453) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -2007,7 +2008,6 @@ ActiveRecord::Schema.define(version: 20230615201453) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
-  add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"

@@ -13,6 +13,7 @@
               %th=t(:nombre_elemento)
               %th=t(:comuna_elemento)
               %th=t(:direccion_elemento)
+              %th=t(:documentación_de_postulación)
               %th=t(:fecha_retiro)
               %th=t(:documento_de_justificacion)
           %tbody
@@ -24,6 +25,9 @@
                 %td=fila[:nombre_elemento]
                 %td=fila[:comuna_instalacion]
                 %td=fila[:direccion_instalacion]
+                %td.text-center
+                  = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: (fila[:documento_justificacion].model.adhesion_externa_id == nil ? fila[:documento_justificacion].model.adhesion_id : fila[:documento_justificacion].model.adhesion_externa_id )), class: 'btn btn-tabla' do
+                    %i.fa.fa-download
                 %td=fila[:fecha_retiro]
                 %td.text-center
                   =link_to fila[:documento_justificacion].url, class: "btn btn-tabla mx-auto" do
