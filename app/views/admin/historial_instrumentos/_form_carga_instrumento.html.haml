@@ -69,17 +69,12 @@
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
                         -if ins[:estado] == "Ejecutada"
-                          =ins[:pendiente]
-                          =ins[:tarea][:id]
-                          =@instrumento.id
                           -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
                           =link_to data_url[:url], class: "btn-tabla-instrumentos" do
                             =fa_icon 'eye'
                             =ins[:estado]
                         -else
-                          - g = TareaPendiente.find(ins[:pendiente].id)
-                          -data_url = url_segun_tarea(g, ins[:tarea], @instrumento)
-                          =link_to data_url[:url], class: "btn-tabla-instrumentos" do
+                          =link_to tarea_pendiente_manifestacion_de_interes_path(ins[:pendiente].id, @instrumento.id, q: 'solo_lectura'), class: "btn-tabla-instrumentos" do
                             =fa_icon 'eye'
                             =ins[:estado]
                       -elsif !ins[:auditorias_tarea_033].blank?
