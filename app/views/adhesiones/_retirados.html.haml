@@ -19,7 +19,7 @@
           %tbody
             - @retiradas.each do |fila|
               %tr
-                %td=fila[:documento_justificacion].model.adhesion_externa_id
+                %td=fila[:rut_institucion]
                 %td=fila[:nombre_institucion]
                 %td=fila[:alcance]
                 %td=fila[:nombre_elemento]
