@@ -180,6 +180,7 @@ class AdhesionesController < ApplicationController
     aer.maquinaria_id = ae.maquinaria_id
     aer.otro_id = ae.otro_id
     aer.fila = fila
+    aer.adhesion_externa_id = ae.adhesion_externa_id
     #copiar archivos
     #aer.archivo_adhesion = File.open(ae.archivo_adhesion.file.file) if ae.archivo_adhesion.present?
     #aer.archivo_respaldo = File.open(ae.archivo_respaldo.file.file) if ae.archivo_respaldo.present?

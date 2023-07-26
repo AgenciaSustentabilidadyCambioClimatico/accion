@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230615201453) do
+ActiveRecord::Schema.define(version: 20230726025935) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -111,6 +111,7 @@ ActiveRecord::Schema.define(version: 20230615201453) do
     t.text "fila"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "adhesion_externa_id"
     t.index ["adhesion_id"], name: "index_adhesion_elemento_retirados_on_adhesion_id"
     t.index ["alcance_id"], name: "index_adhesion_elemento_retirados_on_alcance_id"
     t.index ["establecimiento_contribuyente_id"], name: "idx_aer_ec"
