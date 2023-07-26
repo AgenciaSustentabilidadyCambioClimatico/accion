@@ -523,6 +523,7 @@ class Adhesion < ApplicationRecord
 			self.adhesion_elemento_retirados.map{|a| 
 				fila = a.fila
 				fila[:documento_justificacion] = a.archivo_retiro
+				fila[:adhesion_externa_id] = self.id
 				fila
 			}
 		else
