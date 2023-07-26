@@ -4,24 +4,30 @@
 = simple_form_for @registro_proveedor, url: "/registro_proveedores/#{@registro_proveedor.id}", method: :patch, remote: true do |f|
   .row
     .col-12.mt-3
-      %h1.titulo='Responder Observaciones'
+      - if (@editar || local_assigns[:editar])  != 'true'
+        %h1.titulo='Responder Observaciones'
+      - else
+        %h1.titulo='Editando Proveedor'
+        
+    
       .col-12
-        .card
-          .card-header
-            %h5.no-margin
-              - if @registro_proveedor.estado == 'con_observaciones'
-                %b Postulación con observaciones
-              - elsif @registro_proveedor.estado == 'rechazado'
-                %b Postulación Rechazada. Puede Apelar
-            %h5.no-margin=titulo_acuerdo.html_safe
-          .card-body
-            .row
-              .col-12
-                = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Comentario de Revisor', input_html: { style: 'width: 100%', rows: 5 }
-              .col-12
-                = f.input :respuesta_comentario, as: :text, as: :text, label: 'Respuesta a comentarios', input_html: { style: 'width: 100%', rows: 5 }
-              .col-12.col-lg-5
-                =f.input :archivo_respuesta_rechazo,label: 'Archivo complementario a respuesta', input_html: {class: "validado form-control"}
+        - if (@editar || local_assigns[:editar])  != 'true'
+          .card
+            .card-header
+              %h5.no-margin
+                - if @registro_proveedor.estado == 'con_observaciones'
+                  %b Postulación con observaciones
+                - elsif @registro_proveedor.estado == 'rechazado'
+                  %b Postulación Rechazada. Puede Apelar
+              %h5.no-margin=titulo_acuerdo.html_safe
+            .card-body
+              .row
+                .col-12
+                  = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Comentario de Revisor', input_html: { style: 'width: 100%', rows: 5 }
+                .col-12
+                  = f.input :respuesta_comentario, as: :text, as: :text, label: 'Respuesta a comentarios', input_html: { style: 'width: 100%', rows: 5 }
+                .col-12.col-lg-5
+                  =f.input :archivo_respuesta_rechazo,label: 'Archivo complementario a respuesta', input_html: {class: "validado form-control"} 
         .card
           .card-header
             %h5.no-margin
@@ -55,6 +61,15 @@
               .col-12.col-lg-4
                 =f.label 'Ciudad'
                 =f.input :ciudad, label: false, class: 'form-control'
+              - if (@editar || local_assigns[:editar]) == "true"
+                .col-12.col-lg-4
+                  =f.input :fecha_aprobado, as: :date, required: true, html5: true, input_html: { class: 'required-field form-control' }
+                .col-12.col-lg-4
+                  =f.label 'Archivo Resolución'
+                  =f.input :archivo_aprobado_directiva, label: false, input_html: {class: "validado form-control"}
+                  = f.input :archivo_aprobado_directiva_cache, as: :hidden
+                .col-12.col-lg-1
+                  = __descargar_archivo(f.object.archivo_aprobado_directiva,f.object.archivo_aprobado_directiva)
               / .col-12
               /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
               .col-12
@@ -83,6 +98,8 @@
                         / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
+                        - if (@editar || local_assigns[:editar]) == "true"
+                          = f.hidden_field :editar, value: 'true'
         .card
           .card-header
             %h5.no-margin
@@ -105,8 +122,17 @@
           .card-body
             .row
               .col-12
+                - first_documento = true
                 = f.simple_fields_for :documento_registro_proveedores do |documento|
-                  = render 'documento_registro_fields_edit', f: documento
+                  - if first_documento
+                    - cv = first_documento ? true : false
+                    - first_documento = false
+                    = render 'documento_registro_proveedor_fields', f: documento, cv: cv 
+                    %h5
+                    %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos
+                  - else
+                    = render 'documento_registro_proveedor_fields', f: documento
+                  
                 .links
                   = link_to_add_association raw('<i class="fa fa-plus"></i>'), f, :documento_registro_proveedores, class: 'btn btn-success btn-sm px-3 mt-3'
                 .pt-3
@@ -119,13 +145,20 @@
                   Formatos
               .card-body
                 .row
+                - if !@descargable_tareas.nil?
                   - @descargables_tarea.each do |descargable|
                     .col-12
                       = __mostrar_descargable_simple(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
                  
-  .float-right
-    = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
-    =f.submit 'Enviar', class: 'btn btn-primary'
+   
+  - if (@editar || local_assigns[:editar])  != 'true'
+    .float-right
+      = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
+      =f.submit 'Enviar', class: 'btn btn-primary'
+  - else 
+    .float-right
+      = link_to t(:back), admin_proveedores_path, class: 'btn btn-warning '
+      =f.submit 'Enviar', class: 'btn btn-primary'
 
   / = render 'admin/contribuyentes/buscador', es_para_seleccion: true
 

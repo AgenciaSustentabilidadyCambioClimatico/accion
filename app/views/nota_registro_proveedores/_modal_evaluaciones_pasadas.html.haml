@@ -1,0 +1,15 @@
+.modal.fade{id: "modal_evaluacion-#{nota.id}",tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3
+        %label.control-label Evaluaciones Anteriores
+      .modal-body
+        .row
+          .col-12
+            - proveedor_id = nota.registro_proveedor.id
+            - proveedores = RegistroProveedor.find(proveedor_id)
+            - proveedores.nota_registro_proveedores.each do |nota|
+              %p="#{nota.registro_proveedor.nombre} rut: #{nota.registro_proveedor.rut} - nota: #{nota.nota} - #{nota.manifestacion_de_interes.nombre_acuerdo}"
+      .modal-footer
+        %button.btn.btn-secondary.btn-sm{type: :button, "data-dismiss"=>:modal}
+          Cerrar

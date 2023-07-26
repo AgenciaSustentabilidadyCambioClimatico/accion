@@ -99,8 +99,9 @@ class Admin::ProveedoresController < ApplicationController
   def get_apls_registro
     respond_to do |format|
       registro = RegistroProveedor.find(params[:id])
-      @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id).first
+      @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first
       @experiencias = CertificadoProveedor.where(registro_proveedor_id: registro.id)
+      @resolucion = registro.archivo_aprobado_directiva
       @apls = registro.get_apl
       format.js {}
       format.json { render :json => @apls}

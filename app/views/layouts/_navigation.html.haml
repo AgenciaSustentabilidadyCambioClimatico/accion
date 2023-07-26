@@ -48,8 +48,9 @@
               %li.nav-item.dropdown
                 %a#dropdown-tareas-pendientes.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
                   = 'Datos/Estadísticas'
-                %ul.dropdown-menu{"aria-labelledby" => "dropdown-tareas-pendientes"}
+                %ul.dropdown-menu
                   %li= link_to 'Adhesiones de APL',empresas_y_elementos_adheridos_path, class: 'dropdown-item'
+                  %li= link_to 'Acuerdos Firmados',acuerdos_firmados_path, class: 'dropdown-item'
             - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) || current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO) || current_user.is_ascc?
               %li.nav-item.dropdown
                 %a#dropdown-administracion.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
@@ -86,6 +87,7 @@
                           %li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
                           %li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
                           %li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
+                          %li= link_to 'Flujo Proveedores', admin_registro_proveedor_mensajes_path, class: 'dropdown-item'
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
                           = t(:diccionario_de_acciones)

@@ -826,6 +826,15 @@ module ApplicationHelper
     when Tarea::COD_PRO_008
     data[:url] = resultado_actualizacion_path
     data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_009
+      data[:url] = evaluacion_proveedores_path
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_PRO_010
+      user_rut = User.find(pendiente.user_id).rut
+      registro_proveedor = RegistroProveedor.where(rut: user_rut).last
+      data[:url] = enviar_carta_compromiso_path(registro_proveedor.id)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+
     end
   end
   data
