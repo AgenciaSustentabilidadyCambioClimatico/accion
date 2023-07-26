@@ -26,7 +26,7 @@
                 %td=fila[:comuna_instalacion]
                 %td=fila[:direccion_instalacion]
                 %td.text-center
-                  = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: fila[:adhesion_externa_id]), class: 'btn btn-tabla' do
+                  = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: fila[:documento_justificacion].model.adhesion_externa_id, elemento: true), class: 'btn btn-tabla' do
                     %i.fa.fa-download
                 %td=fila[:fecha_retiro]
                 %td.text-center

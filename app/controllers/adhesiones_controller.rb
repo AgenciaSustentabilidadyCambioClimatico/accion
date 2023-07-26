@@ -242,7 +242,7 @@ class AdhesionesController < ApplicationController
         end
       else
         if params[:elemento] == 'true'
-          adh = AdhesionElemento.find(params[:aid])
+          adh = (params[:retirado] == 'true' ? AdhesionElementoRetirado.find(params[:aid]) : AdhesionElemento.find(params[:aid]))
           adh_id =  (adh.adhesion_externa_id != nil ? adh.adhesion_externa_id : adh.adhesion_id )
         else
           adh_id = params[:aid]
