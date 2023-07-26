@@ -47,7 +47,7 @@
     $('body').on('ajax:complete','#manifestacion-de-interes-form',function(xhr,status){ $('.loading-data').show()});
 
   });
-- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:manifestación_de_acuerdo)
 - tabs = { "objetivo-acuerdo": true, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false }
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado

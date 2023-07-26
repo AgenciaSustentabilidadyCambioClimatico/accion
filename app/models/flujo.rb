@@ -327,7 +327,7 @@ class Flujo < ApplicationRecord
       documentos_asociados = {nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}
       tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
       estado = tarea_pend.estado_tarea_pendiente.nombre_historial
-      pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : nil
+      pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : tarea_pend
       activacion = tarea_pend.created_at.strftime("%F %T")
       ejecucion = tarea_pend.created_at != tarea_pend.updated_at ? tarea_pend.updated_at.strftime("%F %T") : ""
       #finalmente solo puede ver la tarea en especifico si es el que la respondio

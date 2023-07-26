@@ -74,7 +74,9 @@
                             =fa_icon 'eye'
                             =ins[:estado]
                         -else
-                          =ins[:estado]
+                          =link_to tarea_pendiente_manifestacion_de_interes_path(ins[:pendiente].id, @instrumento.id, q: 'solo_lectura'), class: "btn-tabla-instrumentos" do
+                            =fa_icon 'eye'
+                            =ins[:estado]
                       -elsif !ins[:auditorias_tarea_033].blank?
                         =render 'modal_auditorias_ejecutadas', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:auditorias_tarea_033]
                         =link_to '#', "data-target" => "#modal_auditorias_ejecutadas-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
