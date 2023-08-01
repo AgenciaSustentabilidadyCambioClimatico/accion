@@ -370,7 +370,6 @@ class Flujo < ApplicationRecord
       elsif t.codigo == Tarea::COD_APL_028
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 54).first
         documentos_asociados = {nombre: "Documentos Adhesiones", url: "descargar_compilado_adhesion_path", parametros: [tarea_pendiente], metodo: true}
-        puts "#{documentos_asociados}"
       elsif t.codigo == Tarea::COD_APL_042
         if self.tarea_pendientes.where(tarea_id: [Tarea::ID_APL_041, Tarea::ID_APL_042]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).length == 0
           documentos_asociados = {nombre: 'Informe de Impacto', url: self.manifestacion_de_interes.informe_impacto.documento.url}
