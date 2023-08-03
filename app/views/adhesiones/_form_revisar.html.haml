@@ -103,14 +103,13 @@
     });
 
     $('#adhesiones_pendientes').DataTable({
-      dom: 't',
-      paging: false,
       responsive: {
         details: {
           type: 'column',
           target: 'tr'
         }
       },
+      lengthMenu: [[8], [4]],
       language: {
         url: "#{asset_path('spanish.json')}"
       },
@@ -122,14 +121,13 @@
     });
 
     $('#adhesiones_revisadas').DataTable({
-      dom: 't',
-      paging: false,
       responsive: {
         details: {
           type: 'column',
           target: 'tr'
         }
       },
+      lengthMenu: [[8], [4]],
       language: {
         url: "#{asset_path('spanish.json')}"
       },
