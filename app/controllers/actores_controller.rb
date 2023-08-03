@@ -233,6 +233,7 @@ class ActoresController < ApplicationController
   end
 
   def set_mapa_de_actores_data
+    @solo_lectura = params[:q]
     if action_name.to_sym == :actualizacion ||action_name.to_sym == :actualizar
       accion = :actualizacion
     elsif action_name.to_sym == :revision ||action_name.to_sym == :enviar_revision
