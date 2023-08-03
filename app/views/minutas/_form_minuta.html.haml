@@ -133,7 +133,7 @@
 - titulo t(:minuta_, item: "#{@tipo.descripcion}")
 -#titulo t(:elaborar_y_cargar_minuta_o_acta_y_asistencia)
 
-
+- solo_lectura = @solo_lectura == 'solo_lectura'
 /evalua el caso de que se trate de una nueva convocatoria existente en cuyo caso asigna la jerarquia pertinente  
 - url = tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria,  @minuta)
 - hay_archivos_anexos = (@informe_de_acuerdo.present? && @informe_de_acuerdo.archivos_anexos.present?) ? true : false
@@ -281,13 +281,14 @@
                   %td=dest[:rol]              
   .float-right
     - if @tarea.codigo == Tarea::COD_APL_038
-      = link_to t(:volver), edit_tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria), class: 'btn btn-warning btn-sm' 
+      = link_to t(:volver), edit_tarea_pendiente_convocatoria_minuta_path(@tarea_pendiente, @convocatoria), class: 'btn btn-warning btn-sm'
     - elsif @convocatoria.tarea_codigo != Tarea::COD_APL_021
       -if !@tipo_conv.nil?
         = link_to t(:listado_convocatorias), tarea_pendiente_convocatorias_path(@tarea_pendiente), class: 'btn btn-warning btn-sm' 
       -else
         = link_to t(:volver), root_path, class: 'btn btn-warning btn-sm'
     - if (@minuta.plazo_vigente?(@minuta.fecha_acta) && !@convocatoria.terminada) || (@convocatoria.tarea_codigo == Tarea::COD_APL_021)
-      = button_tag t(:enviar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+      - if !solo_lectura
+        = button_tag t(:enviar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
     %br
     %br

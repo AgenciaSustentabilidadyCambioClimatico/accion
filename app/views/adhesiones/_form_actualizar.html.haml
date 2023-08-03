@@ -48,6 +48,7 @@
       $('#list_files').append(li);
     });
   }
+- solo_lectura = @solo_lectura == 'solo_lectura'
 -if @flujo.apl?
   - titulo t(:solicitud_de_adhesiones)
 -if @flujo.ppf?
@@ -193,6 +194,7 @@
 
     .float-right
       = volver_root
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
+      - if !solo_lectura
+        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
 
 

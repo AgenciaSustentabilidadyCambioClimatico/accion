@@ -73,7 +73,7 @@
   div.dataTables_wrapper div.dataTables_paginate { 
     margin-right: 10px;
   }
-
+- solo_lectura = @solo_lectura == 'solo_lectura'
 - titulo t(:asignar_responsable_elaborar_informe_impacto)
 = simple_form_for(@mapa_actor, remote: true, url: update_usuarios_cargo_informe_manifestacion_de_interes_path(@tarea_pendiente)) do |f|
   .card
@@ -123,7 +123,8 @@
           = f.input :observacion_carga_datos, label: t(:comentarios_a_encargado_de_entregar_informe_de_impacto),as: :text, required: false, :input_html => {:rows => 5}
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
+    - if !solo_lectura
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary"
 - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
 = form_tag "", id: :filtro_contribuyente, remote: true, authenticity_token: true do
   = hidden_field_tag(:contribuyente_id)
