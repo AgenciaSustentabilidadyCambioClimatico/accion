@@ -52,15 +52,11 @@
                   %td=ins[:ejecucion]
                   - if ins[:documentos_asociados][:url].blank?
                     %td=ins[:documentos_asociados][:nombre]
-                  -elsif ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
-                    %td
-                      -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
-                      - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
-                      =link_to 'Descargar Excel', f, {target: '_blank'}
                   - else
                     -if ins[:documentos_asociados][:url] == "modal"
                       =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:documentos_asociados][:lista]
                       %td
+
                         =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
                           =fa_icon 'download'
                           =ins[:documentos_asociados][:nombre]
@@ -70,6 +66,10 @@
                         =link_to enlace, class: "btn-tabla-instrumentos" do
                           =fa_icon 'download'
                           =ins[:documentos_asociados][:nombre]
+                        - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
+                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                          - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
+                          =link_to 'Descargar Excel', f, {target: '_blank', class: 'ml-1 btn-tabla-instrumentos'}
                   %td
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
