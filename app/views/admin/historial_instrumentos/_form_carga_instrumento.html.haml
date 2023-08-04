@@ -52,6 +52,11 @@
                   %td=ins[:ejecucion]
                   - if ins[:documentos_asociados][:url].blank?
                     %td=ins[:documentos_asociados][:nombre]
+                  -elsif ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
+                    %td
+                      -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                      - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
+                      =link_to 'Descargar Excel', f, {target: '_blank'}
                   - else
                     -if ins[:documentos_asociados][:url] == "modal"
                       =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:documentos_asociados][:lista]
