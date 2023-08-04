@@ -191,8 +191,18 @@ class Admin::ContribuyentesController < ApplicationController
     elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1" && v["_destroy"] == "false"}.size > 1
       @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
     end
-
     @contribuyente.attributes = contribuyente_params
+    # Agrupo por id de actividad economica
+    grouped_contribuyentes = @contribuyente.actividad_economica_contribuyentes.group_by { |ae| ae.actividad_economica_id }
+    filtered_contribuyentes = grouped_contribuyentes.values.map do |group|
+    # Si hay duplicados borros los que su id sea nil
+      if group.length > 1
+        group.reject { |ae| ae.id.nil? }
+      else
+        group
+      end
+    end
+     @contribuyente.actividad_economica_contribuyentes = filtered_contribuyentes.flatten
 
     errores = false
     errores = true unless @error_extra.nil? 
