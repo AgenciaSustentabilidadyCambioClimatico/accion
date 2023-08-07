@@ -38,6 +38,7 @@ class AdhesionesController < ApplicationController
 	end
 
   def revisar #DZC APL-028
+
   end
 
   # def revisar_guardar #DZC APL-028 PPF-017
