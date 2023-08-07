@@ -79,7 +79,9 @@
                             =fa_icon 'eye'
                             =ins[:estado]
                         -else
-                          =link_to tarea_pendiente_manifestacion_de_interes_path(ins[:pendiente].id, @instrumento.id, q: 'solo_lectura'), class: "btn-tabla-instrumentos" do
+                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                          - f = data_url[:url] + '/?q=solo_lectura'
+                          =link_to f, class: "btn-tabla-instrumentos" do
                             =fa_icon 'eye'
                             =ins[:estado]
                       -elsif !ins[:auditorias_tarea_033].blank?

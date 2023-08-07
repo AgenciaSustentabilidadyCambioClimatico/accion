@@ -165,6 +165,7 @@
 -if @flujo.ppf?
   - titulo t(:revision_adhesion)
 =render 'modal_retirar_elemento'
+- solo_lectura = @solo_lectura == 'solo_lectura'
 = simple_form_for @adhesion, url: guardar_revisar_adhesion_path(@tarea_pendiente), method: :patch, remote: true do |f|
   =render 'modal_clasificar_elementos'
   .row
@@ -263,7 +264,8 @@
       .float-right
         = volver_root
         - unless @pendientes_todas.blank?
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+          - if !solo_lectura
+            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
 #aceptadas.mt-2
   =render "aceptados"
 #retiradas.mt-2

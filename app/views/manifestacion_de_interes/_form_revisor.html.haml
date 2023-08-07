@@ -58,7 +58,7 @@
       }
     });
   });
-- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 = simple_form_for @manifestacion_de_interes, url: revisor_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.input :current_tab, as: :hidden, wrapper: false, input_html: { value: (f.object.current_tab.blank? ? 'objetivo-acuerdo' : f.object.current_tab) }

@@ -65,7 +65,7 @@
       }
     });
   });
-- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:observaciones_admisibilidad)
 = simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
