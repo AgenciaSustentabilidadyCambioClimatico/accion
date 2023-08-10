@@ -51,7 +51,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 
             continua_flujo_segun_tipo_tarea
           end
-          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if !@minuta.acta.blank?
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if !@minuta.acta.blank? && !@minuta.archivo_resolucion.blank?
         else
           # 
           @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
@@ -333,10 +333,16 @@ class MinutasController < ApplicationController #crea la depencia con convocator
         :acta,
         :acta_cache,
         :lista_asistencia,
-        :lista_asistencia_cache
+        :lista_asistencia_cache,
+        :archivo_resolucion,
+        :archivo_resolucion_cache
       )
       parametros[:fecha_acta]=Time.now.utc #agrega nuevo campo al hash, lo que permite instanciar ese campo en la tabla al momento de ejecutar el patch (update)
-      # if !@tarea_pendiente.blank?
+      #Continuando con cómo se creo fecha_acta, se agrega archivo_resolucion, desde aquí es necesario ambos archivos para cerrar tarea.
+      if parametros[:archivo_resolucion] !=  nil
+        parametros[:fecha_resolucion] = Time.now.utc 
+      end
+        # if !@tarea_pendiente.blank?
    #      parametros[:tarea_pendiente_id]=@tarea_pendiente.id
    #    end
       parametros

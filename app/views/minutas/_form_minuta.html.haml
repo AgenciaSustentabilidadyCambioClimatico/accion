@@ -194,7 +194,7 @@
                       .col-12
                         .alert.alert-blue.my-2.py-2.px-3.d-flex.align-items-center
                           %i.fa.fa-info-circle.mr-3
-                          Esta tarea permanecerá accesible mientras no se cargue el documento con todas las firmas.
+                          Esta tarea permanecerá accesible mientras no se cargue el documento con todas las firmas y resolución que aprueba Acuerdo.
                 .col-12
                   .row
                     - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
@@ -212,15 +212,22 @@
                         - tipo_de_acta = 'adjuntar_acuerdo_con_todas_las_firmas'
                         - tipo_de_asistente = 'firmantes'
                         - campo = 'im-not-required-check-the-others'
+                        - tipo_de_acta2 = 'adjuntar_archivo_de_resolucion'
+                        - campo2 = 'im-not-required-check-the-others'
                       - else
                         - tipo_de_acta = 'adjuntar_acta_minuta_reunion'
                         - tipo_de_asistente = 'personas_que_asistieron'
                         - campo = 'required-field'
                       = f.input :acta, as: :file, input_html: {class: "form-control #{campo}", multiple: false}, label: t(tipo_de_acta.to_sym), required: (@tarea.codigo != Tarea::COD_APL_022)
+                      - if @convocatoria.tarea_codigo == Tarea::COD_APL_021  
+                        = f.input :archivo_resolucion, as: :file, input_html: {class: "form-control #{campo2}", multiple: false}, label: t(tipo_de_acta2.to_sym), required: (@tarea.codigo != Tarea::COD_APL_022)                        
                       = f.hidden_field :acta_cache
+                      = f.hidden_field :archivo_resolucion_cache
                     .col-12.col-lg-2
                       -#
                       = __descargar_archivo(f.object.acta,f.object, true, false)
+                      - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
+                        = __descargar_archivo(f.object.archivo_resolucion,f.object, true, false)
                     - unless @convocatoria.tarea_codigo == Tarea::COD_APL_021 
                       .col-12.col-lg-10 
                         = f.input :lista_asistencia, as: :file, input_html: {class: 'form-control required-field', multiple: false}, label: t(:adjuntar_lista_asistencia), required: true
@@ -246,7 +253,7 @@
                       .col-12
                         .alert.alert-blue.my-2.py-2.px-3.d-flex.align-items-center
                           %i.fa.fa-info-circle.mr-3
-                          Esta tarea permanecerá accesible mientras no se cargue el documento con todas las firmas.
+                          Esta tarea permanecerá accesible mientras no se cargue el documento con todas las firmas y resolución que aprueba Acuerdo.
             .col-12.mt-3
               .form-inputs
                 = f.input :mensaje_encabezado, label: t(:asunto_del_mensaje), readonly: false, required: true, input_html: {class: 'required-field'}
@@ -292,3 +299,5 @@
         = button_tag t(:enviar), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled button-send", disabled: :disabled
     %br
     %br
+
+  
