@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230726025935) do
+ActiveRecord::Schema.define(version: 20230809181130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1219,6 +1219,8 @@ ActiveRecord::Schema.define(version: 20230726025935) do
     t.text "mensaje_cuerpo"
     t.datetime "fecha_hora"
     t.integer "tipo_reunion", default: 0
+    t.string "archivo_resolucion"
+    t.datetime "fecha_resolucion"
   end
 
   create_table "modalidades", force: :cascade do |t|
@@ -1239,10 +1241,9 @@ ActiveRecord::Schema.define(version: 20230726025935) do
   create_table "nota_registro_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "manifestacion_de_interes_id"
+    t.integer "nota", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "calificado", default: false
-    t.float "nota", default: 0.0
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
   end
@@ -1617,9 +1618,9 @@ ActiveRecord::Schema.define(version: 20230726025935) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -2009,7 +2010,6 @@ ActiveRecord::Schema.define(version: 20230726025935) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
-  add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"

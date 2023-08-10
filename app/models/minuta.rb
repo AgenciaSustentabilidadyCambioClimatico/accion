@@ -11,6 +11,8 @@ class Minuta < ApplicationRecord
 
 	mount_uploader :lista_asistencia, ArchivoListaAsistenciaMinutaUploader
 	mount_uploader :acta, ArchivoActaMinutaUploader
+	mount_uploader :archivo_resolucion, ArchivoResolucionMinutaUploader
+
 
 	before_save :actualizar_campos_extras
 
