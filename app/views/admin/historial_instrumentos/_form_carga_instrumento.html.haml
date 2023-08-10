@@ -69,7 +69,9 @@
                         - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
                           -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
                           - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
-                          =link_to 'Descargar Excel', f, {target: '_blank', class: 'ml-1 btn-tabla-instrumentos'}
+                          =link_to f, {target: '_blank', class: 'mt-1 btn-tabla-instrumentos'} do
+                            =fa_icon 'download'
+                            ='Consolidado Adhesiones'
                   %td
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
