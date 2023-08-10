@@ -38,7 +38,14 @@ class AdhesionesController < ApplicationController
 	end
 
   def revisar #DZC APL-028
-
+    respond_to do |format|
+      format.xlsx {
+        response.headers[
+          'Content-Disposition'
+        ] = "attachment; filename=Consolidado_Adhesiones.xlsx"
+      }
+      format.html { render :revisar }
+    end
   end
 
   # def revisar_guardar #DZC APL-028 PPF-017
