@@ -70,6 +70,12 @@
                           -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
                           - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
                           =link_to 'Descargar Excel', f, {target: '_blank', class: 'ml-1 btn-tabla-instrumentos'}
+                        -# Método para añadir archivo solo aceptaba uno, el cual se setea en flujo.rb, para el caso de esta tarea era
+                        -# el manifiesto de interes, por lo que se debe añadir la descarga de la ficha de interes de esta manera
+                        -if ins[:nombre_tarea] == 'APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés'
+                          - vacio = ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.blank? || ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.nil?
+                          = vacio ?  "Sin documentos aún" : __descargar_archivo(ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad,ins[:manifestacion_de_interes], true,true,nil, "Ficha de Manifestacion",false,true) 
+                        
                   %td
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?
