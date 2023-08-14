@@ -359,7 +359,7 @@ class Flujo < ApplicationRecord
       elsif t.codigo == Tarea::COD_APL_018# && estado == "Ejecutada"
         informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
         if !informe_acuerdo.nil? && (tarea_pend.user_id == current_user.id || puedo_ver_descargable_apl_018)
-          documentos_asociados = {nombre: "Documento de Acuerdo", url: 'obtener_archivo_acuerdo_anexos_zip_path', parametros: [self.id], metodo: true }
+          documentos_asociados = {nombre: "Documento Borrador de Acuerdo", url: 'obtener_archivo_acuerdo_anexos_zip_path', parametros: [self.id], metodo: true }
         end
       elsif t.codigo == Tarea::COD_APL_019
         #solo si es admin puede descargar el documento
