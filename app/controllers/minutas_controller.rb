@@ -5,7 +5,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
   before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip]
   before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip]
   before_action :set_descargable_tareas, except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :set_minuta, only: [:edit, :update, :destroy], except: [:archivo, :archivo_acuerdo_anexos_zip]
+  before_action :set_minuta, only: [:edit, :update, :destroy, :descargar_archivo], except: [:archivo, :archivo_acuerdo_anexos_zip]
   before_action :permiso_tarea, except: [:archivo, :archivo_acuerdo_anexos_zip]
   respond_to :docx
   # GET /minuta/new
@@ -318,7 +318,16 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     zip = helpers.generar_zip archivos
     send_data(zip, type: 'application/zip',filename: "acuerdo_y_anexos.zip")
   end
-
+  def descargar_archivo
+    if params[:tipo] == "acta"
+      archivo = @minuta.acta
+    elsif params[:tipo] == "resolucion"
+      archivo = @minuta.archivo_resolucion
+    end
+    if !archivo.nil?
+      send_data(archivo, type: archivo.file.content_type, charset: "iso-8859-1", filename: archivo.file.original_filename)
+    end
+  end
   private
     def minuta_params #hay que tener presente 
       parametros=params.require(:minuta).permit(

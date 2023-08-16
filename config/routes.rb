@@ -746,6 +746,9 @@ Rails.application.routes.draw do
   #DZC APL-012, APL-017, APL-022, APL-031
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/edit(.:format)", to: "minutas#edit", as: :edit_tarea_pendiente_convocatoria_minuta
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
+  get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
+
+
   # Obtener el archivo del acuerdo para APL-022
   get ":tarea_pendiente_id/:flujo/archivo-apl-022", to: "minutas#archivo", as: :obtener_archivo_apl_022, format: 'docx'
   get ":flujo/archivo-acuerdo-anexos-zip", to: "minutas#archivo_acuerdo_anexos_zip", as: :obtener_archivo_acuerdo_anexos_zip
