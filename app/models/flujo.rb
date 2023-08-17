@@ -327,7 +327,7 @@ class Flujo < ApplicationRecord
       documentos_asociados = {nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}
       tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
       estado = tarea_pend.estado_tarea_pendiente.nombre_historial
-      pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : nil
+      pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : tarea_pend
       activacion = tarea_pend.created_at.strftime("%F %T")
       ejecucion = tarea_pend.created_at != tarea_pend.updated_at ? tarea_pend.updated_at.strftime("%F %T") : ""
       #finalmente solo puede ver la tarea en especifico si es el que la respondio
@@ -367,6 +367,9 @@ class Flujo < ApplicationRecord
           #agregamos documento personalizado para tarea APL-019
           documentos_asociados = {nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}
         end
+      elsif t.codigo == Tarea::COD_APL_028
+        tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 54).first
+        documentos_asociados = {nombre: "Documentos Adhesiones", url: "descargar_compilado_adhesion_path", parametros: [tarea_pendiente], metodo: true}
       elsif t.codigo == Tarea::COD_APL_042
         if self.tarea_pendientes.where(tarea_id: [Tarea::ID_APL_041, Tarea::ID_APL_042]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).length == 0
           documentos_asociados = {nombre: 'Informe de Impacto', url: self.manifestacion_de_interes.informe_impacto.documento.url}

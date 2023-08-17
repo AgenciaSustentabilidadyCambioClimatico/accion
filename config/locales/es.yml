@@ -1369,6 +1369,7 @@ es:
   observaciones_realizadas_por_revisor_del_informe: Observaciones realizadas por Revisor del informe
   observaciones_sobre_el_documento_para_encargado_de_entregar_informe: Observaciones sobre el documento para Encargado de entregar informe
   adjuntar_acuerdo_con_todas_las_firmas: Adjuntar Acuerdo con todas las firmas
+  adjuntar_archivo_de_resolucion: Adjuntar Archivo de Resolución
   asignar_responsable_elaborar_informe_impacto: Asignar Responsable Elaborar Informe de Impacto
   comentarios_a_encargado_de_entregar_informe_de_impacto: Comentarios a encargado de entregar informe de impacto
   elegir_institucion_encargada_de_entregar_informe_de_impacto: Elegir Institución encargada de entregar informe de impacto
@@ -1431,6 +1432,7 @@ es:
   formato_excel_de_consolidado_de_adhesiones: Formato excel de Consolidado de adhesiones
   formulario_de_adhesion: Formulario de adhesión
   documentación: Documentación
+  documentación_de_postulación: Documentación de postulación
   mostrar_en_excel: Mostrar en excel
   Rol: Rol
   fecha_hora_activacion: Fecha/Hora activación

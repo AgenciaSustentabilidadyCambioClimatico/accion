@@ -16,10 +16,12 @@
               %th=t(:direccion_elemento)
               %th=t(:datos_encargado)
               %th=t(:observaciones)
+              %th=t(:documentación)
               %th=t(:estado)
               %th=t(:retirar_del_acuerdo)
           %tbody
             - @no_pendientes_todas.each do |adhesion_id, data|
+              -puts "adhesion: #{adhesion_id}"
               -data.each do |k,v|
                 - v.each do |fila|
                   %tr
@@ -35,6 +37,9 @@
                       %div{style: "white-space: nowrap"}=fila[:fono_encargado]
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td=fila[:observaciones]
+                    %td.text-center
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: fila[:id], elemento: true), class: 'btn btn-tabla' do
+                        %i.fa.fa-download
                     %td=k.upcase
                     %td.text-center
                       -if k.upcase.to_s == "ACEPTADA"

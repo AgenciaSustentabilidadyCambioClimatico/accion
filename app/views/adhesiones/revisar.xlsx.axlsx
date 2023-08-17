@@ -1,0 +1,52 @@
+wb = xlsx_package.workbook
+
+
+wb.styles do |style|
+  project_heading = style.add_style(b: true, sz: 15)
+  heading = style.add_style(b: true)
+  project_heading_secondary = style.add_style(b: true, sz: 14)
+
+  wb.add_worksheet(name:'Adhesiones Aceptadas') do |sheet|
+    sheet.add_row ["Adhesiones: Aceptadas"], style: project_heading
+    sheet.add_row ["Fecha Adhesion", "Rut Institución", "Nombre Institución", "Sector Productivo", "Tipo institución","Tamaño empresa", "Dirección casa matriz", "Comuna casa matriz", "Rut Encargado", "Nombre Encargado", "Cargo Encargado", "Fono Encargado", "Email Encargado", "Alcance", "Nombre instalación","Dirección instalación", "Comuna instalación", "Tipo elemento", 'Identificador', "Patente", "Nombre elemento", "Nombre archivo"], style: project_heading
+
+    @no_pendientes_todas.each do |adhesion_id, data|
+      data.each do |f, k|
+        k.each do |fila|
+          sheet.add_row [fila[:fecha_adhesion], fila[:rut_institucion], fila[:nombre_institucion], fila[:sector_productivo], fila[:tipo_institucion], fila[:tamaño_empresa], fila[:direccion_casa_matriz], fila[:comuna_casa_matriz], fila[:rut_encargado], fila[:nombre_encargado], fila[:cargo_encargado], fila[:fono_encargado], fila[:email_encargado], fila[:alcance], fila[:nombre_instalacion], fila[:direccion_instalacion], fila[:comuna_instalacion], fila[:tipo_elemento], fila[:identificador], fila[:patente], fila[:nombre_elemento], fila[:nombre_archivo]]
+        end
+      end
+    end
+  end
+
+  wb.add_worksheet(name:'Adhesiones Observadas') do |sheet|
+    sheet.add_row ["Adhesiones: Observadas"], style: project_heading
+    sheet.add_row ["Fecha Adhesion", "Rut Institución", "Nombre Institución", "Sector Productivo", "Tipo institución","Tamaño empresa", "Dirección casa matriz", "Comuna casa matriz", "Rut Encargado", "Nombre Encargado", "Cargo Encargado", "Fono Encargado", "Email Encargado", "Alcance", "Nombre instalación","Dirección instalación", "Comuna instalación", "Tipo elemento", 'Identificador', "Patente", "Nombre elemento", "Nombre archivo"], style: project_heading
+
+    @adhesion.adhesiones_observadas.each do |adhesion|
+      sheet.add_row [adhesion[:fecha_adhesion], adhesion[:rut_institucion], adhesion[:nombre_institucion], adhesion[:sector_productivo], adhesion[:tipo_institucion], adhesion[:tamaño_empresa], adhesion[:direccion_casa_matriz], adhesion[:comuna_casa_matriz], adhesion[:rut_encargado], adhesion[:nombre_encargado], adhesion[:cargo_encargado], adhesion[:fono_encargado], adhesion[:email_encargado], adhesion[:alcance], adhesion[:nombre_instalacion], adhesion[:direccion_instalacion], adhesion[:comuna_instalacion], adhesion[:tipo_elemento], adhesion[:identificador], adhesion[:patente], adhesion[:nombre_elemento], adhesion[:nombre_archivo]]
+    end
+  end
+
+  wb.add_worksheet(name:'Adhesiones Pendientes') do |sheet|
+    sheet.add_row ["Adhesiones: Pendientes"], style: project_heading
+    sheet.add_row ["Fecha Adhesion", "Rut Institución", "Nombre Institución", "Sector Productivo", "Tipo institución","Tamaño empresa", "Dirección casa matriz", "Comuna casa matriz", "Rut Encargado", "Nombre Encargado", "Cargo Encargado", "Fono Encargado", "Email Encargado", "Alcance", "Nombre instalación","Dirección instalación", "Comuna instalación", "Tipo elemento", 'Identificador', "Patente", "Nombre elemento", "Nombre archivo"], style: project_heading
+
+    @pendientes_todas.each do |adhesion_id, data|
+      data.each do |fila|
+        sheet.add_row [fila[:fecha_adhesion], fila[:rut_institucion], fila[:nombre_institucion], fila[:sector_productivo], fila[:tipo_institucion], fila[:tamaño_empresa], fila[:direccion_casa_matriz], fila[:comuna_casa_matriz], fila[:rut_encargado], fila[:nombre_encargado], fila[:cargo_encargado], fila[:fono_encargado], fila[:email_encargado], fila[:alcance], fila[:nombre_instalacion], fila[:direccion_instalacion], fila[:comuna_instalacion], fila[:tipo_elemento], fila[:identificador], fila[:patente], fila[:nombre_elemento], fila[:nombre_archivo]]
+      end
+    end
+  end
+
+  wb.add_worksheet(name:'Adhesiones Retiradas') do |sheet|
+    sheet.add_row ["Adhesiones: Retiradas"], style: project_heading
+    sheet.add_row ["Fecha Adhesion", "Rut Institución", "Nombre Institución", "Sector Productivo", "Tipo institución","Tamaño empresa", "Dirección casa matriz", "Comuna casa matriz", "Rut Encargado", "Nombre Encargado", "Cargo Encargado", "Fono Encargado", "Email Encargado", "Alcance", "Nombre instalación","Dirección instalación", "Comuna instalación", "Tipo elemento", 'Identificador', "Patente", "Nombre elemento", "Nombre archivo"], style: project_heading
+
+    @adhesion.adhesiones_retiradas.each do |adhesion|
+      sheet.add_row [adhesion[:fecha_adhesion], adhesion[:rut_institucion], adhesion[:nombre_institucion], adhesion[:sector_productivo], adhesion[:tipo_institucion], adhesion[:tamaño_empresa], adhesion[:direccion_casa_matriz], adhesion[:comuna_casa_matriz], adhesion[:rut_encargado], adhesion[:nombre_encargado], adhesion[:cargo_encargado], adhesion[:fono_encargado], adhesion[:email_encargado], adhesion[:alcance], adhesion[:nombre_instalacion], adhesion[:direccion_instalacion], adhesion[:comuna_instalacion], adhesion[:tipo_elemento], adhesion[:identificador], adhesion[:patente], adhesion[:nombre_elemento], adhesion[:nombre_archivo]]
+    end
+  end
+
+
+end

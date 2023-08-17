@@ -38,6 +38,14 @@ class AdhesionesController < ApplicationController
 	end
 
   def revisar #DZC APL-028
+    respond_to do |format|
+      format.xlsx {
+        response.headers[
+          'Content-Disposition'
+        ] = "attachment; filename=Consolidado_Adhesiones.xlsx"
+      }
+      format.html { render :revisar }
+    end
   end
 
   # def revisar_guardar #DZC APL-028 PPF-017
@@ -180,6 +188,7 @@ class AdhesionesController < ApplicationController
     aer.maquinaria_id = ae.maquinaria_id
     aer.otro_id = ae.otro_id
     aer.fila = fila
+    aer.adhesion_externa_id = ae.adhesion_externa_id
     #copiar archivos
     #aer.archivo_adhesion = File.open(ae.archivo_adhesion.file.file) if ae.archivo_adhesion.present?
     #aer.archivo_respaldo = File.open(ae.archivo_respaldo.file.file) if ae.archivo_respaldo.present?
@@ -240,7 +249,13 @@ class AdhesionesController < ApplicationController
           end
         end
       else
-        adhesion = Adhesion.unscoped.find(params[:aid])
+        if params[:elemento] == 'true'
+          adh = AdhesionElemento.find(params[:aid])
+          adh_id =  (adh.adhesion_externa_id != nil ? adh.adhesion_externa_id : adh.adhesion_id )
+        else
+          adh_id = params[:aid]
+        end
+        adhesion = Adhesion.unscoped.find(adh_id)
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -332,6 +347,7 @@ class AdhesionesController < ApplicationController
 
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
     def set_flujo
+      @solo_lectura = params[:q]
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -357,7 +373,6 @@ class AdhesionesController < ApplicationController
   			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
       end
 
-
       @rechazadas = @adhesion.adhesiones_rechazadas
       @pendientes = @adhesion.adhesiones_pendientes
       @no_pendientes = @adhesion.adhesiones_aceptadas_y_observadas
@@ -374,6 +389,7 @@ class AdhesionesController < ApplicationController
       @todas_todas = {}
       @por_revisar_todas = {}
       @adhesiones.each do |adh|
+        puts "adhesion: #{adh}"
         @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
         @pendientes_todas[adh.id] = adh.adhesiones_pendientes
         @no_pendientes_todas[adh.id] = adh.adhesiones_aceptadas_y_observadas

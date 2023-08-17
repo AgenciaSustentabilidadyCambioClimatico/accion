@@ -102,6 +102,7 @@
       }
     }
   }
+- solo_lectura = @solo_lectura == 'solo_lectura'
 - titulo t(:elementos_por_validar_, item: "#{@auditoria.nombre.upcase}")
 = simple_form_for @auditoria_validacion, url: guardar_validar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
   =render 'modal_clasificar_elementos_validar'
@@ -183,4 +184,5 @@
               =__descargar_archivo(f.object.archivo, f.object)
   .float-right
     = volver_root
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+    - if !solo_lectura
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true

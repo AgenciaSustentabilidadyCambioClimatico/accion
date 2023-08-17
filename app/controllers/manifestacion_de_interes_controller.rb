@@ -141,6 +141,7 @@ class ManifestacionDeInteresController < ApplicationController
 
   def edit #DZC TAREA APL-001 una vez instanciada la manifestación
     # DZC 2019-02-28 18:03:15 se setean las varibles relativas al mensaje "Recuerde gradar sus cambios"
+    @solo_lectura = params[:q]
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
     @manifestacion_de_interes.seleccion_de_radios
     @mantener_temporal = 'true'
@@ -187,6 +188,7 @@ class ManifestacionDeInteresController < ApplicationController
     @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
     @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
+
   end
 
   def update #DZC TAREA APL-001 una vez instanciada la manifestación
@@ -844,6 +846,7 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def observaciones_admisibilidad #DZC APL-004
+
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
     unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
       @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
@@ -2300,6 +2303,7 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_manifestacion_de_interes
+      @solo_lectura = params[:q]
       # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
       @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
       # DZC 2019-07-11 17:41:43 se agrega para generalizar las validaciones y tamaños de texto

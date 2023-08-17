@@ -116,6 +116,7 @@
       checkFieldValidity(campo);
     }
   }
+- solo_lectura = @solo_lectura == 'solo_lectura'
 - titulo t(:auditoria_revisa_, item: "#{@auditoria.nombre.upcase}")
 = simple_form_for @auditoria, url: guardar_revisar_auditorias_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), method: :patch, remote: true, html: {multipart: true} do |f|
   =render 'modal_clasificar_elementos'
@@ -222,4 +223,5 @@
   .float-right
     = volver_root
     - unless @auditoria.auditoria_elementos.blank?
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
+      - if !solo_lectura
+        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button', class: "btn btn-sm btn-primary", disabled: true
