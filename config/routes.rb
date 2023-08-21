@@ -735,6 +735,7 @@ Rails.application.routes.draw do
   post ":tarea_pendiente_id/convocatorias", to: "convocatorias#create", as: :create_tarea_pendiente_convocatoria
   get ":tarea_pendiente_id/convocatorias/:id/edit(.:format)", to: "convocatorias#edit", as: :edit_tarea_pendiente_convocatoria
   patch ":tarea_pendiente_id/convocatorias/:id(.:format)", to: "convocatorias#update", as: :tarea_pendiente_convocatoria
+  get ":tarea_pendiente_id/convocatorias/descargar_compilado_adjuntos", to: "convocatorias#descargar_compilado_adjuntos", as: :descargar_compilado_adjuntos
   delete ":tarea_pendiente_id/convocatorias/:id(.:format)", to: "convocatorias#destroy"
 
   #ruta para descargar adjuntos a ser llamada desde vista

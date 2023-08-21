@@ -51,6 +51,7 @@
                   %td=ins[:activacion]
                   %td=ins[:ejecucion]
                   %td
+                    -# Se recorre arreglo con los documentos asociados a cada APL.
                     - ins[:documentos_asociados].each do |documento| 
                       - if documento[:url].blank?
                         =documento[:nombre]
