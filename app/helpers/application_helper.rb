@@ -346,7 +346,7 @@ module ApplicationHelper
   end
 
   # DZC 2018-10-26 10:23:18 modifica el método para que, tratándose de un atributo que contenga múltiples archivos, se permita la descarga de un archivo ZIP que contenga todos esos  archivos
-  def __descargar_archivo(field,objeto, label = true, nombre_boton=true, titulo=nil, boton=nil, from_proveedor=false)
+  def __descargar_archivo(field,objeto, label = true, nombre_boton=true, titulo=nil, boton=nil, from_proveedor=false, from_historial=false)
     capture_haml do
       haml_tag :div, class: 'form-group' do
         haml_tag :label, (titulo.blank? ? '&nbsp;'.html_safe : titulo), class: 'control-label' if label
@@ -381,7 +381,7 @@ module ApplicationHelper
               url = request.base_url + file_split.last
               file_name = file_split.last.split('/').last
             end
-            haml_tag :a, href: url, class: "#{from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding}", download: '', title: file_name, "data-original-title" => file_name do
+            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? file_name : boton) if nombre_boton
             end

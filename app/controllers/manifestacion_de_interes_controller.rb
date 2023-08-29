@@ -14,7 +14,7 @@ class ManifestacionDeInteresController < ApplicationController
                                       :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico,
                                       :revisar_entregable_diagnostico,
                                       :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
-                                      :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe]
+                                      :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado]
   before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
                                       :admisibilidad_juridica, :revisar_admisibilidad_juridica,
@@ -2197,6 +2197,22 @@ class ManifestacionDeInteresController < ApplicationController
     }
     file = descargable.file(metodos)
     send_data file[:content], type: "application/#{file[:format]}", charset: "iso-8859-1", filename: file[:filename]
+  end
+  def descargar_compilado
+    require 'zip'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      @manifestacion_de_interes.documento_diagnosticos.each do |doc|
+          if File.exists?(doc.archivo.path)
+            # add file to zip
+            stream.put_next_entry(doc.archivo.file.identifier)
+            archivo_data = IO.read((doc.archivo.current_path rescue doc.archivo.path))
+            stream.write archivo_data
+        end
+      end
+    end
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
   def descargar_mapa_de_actores

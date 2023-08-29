@@ -50,28 +50,38 @@
                   %td=ins[:instancia].to_sentence
                   %td=ins[:activacion]
                   %td=ins[:ejecucion]
-                  - if ins[:documentos_asociados][:url].blank?
-                    %td=ins[:documentos_asociados][:nombre]
-                  - else
-                    -if ins[:documentos_asociados][:url] == "modal"
-                      =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: ins[:documentos_asociados][:lista]
-                      %td
-
-                        =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
-                          =fa_icon 'download'
-                          =ins[:documentos_asociados][:nombre]
-                    -else
-                      %td
-                        -enlace = ins[:documentos_asociados][:metodo] ? public_send(ins[:documentos_asociados][:url], *ins[:documentos_asociados][:parametros]) : ins[:documentos_asociados][:url]
-                        =link_to enlace, class: "btn-tabla-instrumentos" do
-                          =fa_icon 'download'
-                          =ins[:documentos_asociados][:nombre]
-                        - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
-                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
-                          - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
-                          =link_to f, {target: '_blank', class: 'mt-1 btn-tabla-instrumentos'} do
+                  %td
+                    -# Se recorre arreglo con los documentos asociados a cada APL.
+                    - ins[:documentos_asociados].each do |documento| 
+                      - if documento[:url].blank?
+                        =documento[:nombre]
+                      - else
+                        -if documento[:url] == "modal"
+                          =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: documento[:lista]
+                          =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
                             =fa_icon 'download'
-                            ='Consolidado Adhesiones'
+                            =documento[:nombre]
+                        -else
+                          -enlace = documento[:metodo] ? public_send(documento[:url], *documento[:parametros]) : documento[:url]
+                          =link_to enlace, class: "btn-tabla-instrumentos" do
+                            =fa_icon 'download'
+                            =documento[:nombre]
+                          - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
+                            -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                            - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
+                            =link_to f, {target: '_blank', class: 'mt-1 btn-tabla-instrumentos'} do
+                              =fa_icon 'download'
+                              ='Consolidado Adhesiones'
+
+
+                        -# Método para añadir archivo solo aceptaba uno, el cual se setea en flujo.rb, para el caso de esta tarea era
+                        -# el manifiesto de interes, por lo que se debe añadir la descarga de la ficha de interes de esta manera
+                        -# Se modificó método descargar_archivo, añadiendo parámetro que indica si la descarga viene desde historial instrumentos
+                        -# De manera que para descarga de un archivo singular se puede utilizar como se usa más abajo __descargar_archivo(objeto.archivo, objeto, true, true, nil, 'nombre del boton', false, true)
+                        - if ins[:nombre_tarea] == 'APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés'
+                          - vacio = ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.blank? || ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.nil?
+                          = vacio ?  "Sin documentos aún" : __descargar_archivo(ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad,ins[:manifestacion_de_interes], true,true,nil, "Ficha de Manifestacion",false,true) 
+
                   %td
                     - if ins[:puedo_ver_tarea]
                       -if ins[:auditorias_tarea_033].blank? && ins[:validaciones_tarea_034].blank?

@@ -540,6 +540,9 @@ Rails.application.routes.draw do
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/enviar-revision', to: "documento_diagnosticos#enviar_revision", as: :enviar_revision_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga', to: "documento_diagnosticos#descarga", as: :descarga_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga_estandar_acuerdo_informe', to: "documento_diagnosticos#descarga_estandar_acuerdo_informe", as: :descarga_estandar_o_acuerdo_documento_diagnosticos
+      # APL-014 Descarga compilado de documentos desde historial instrumentos
+      get ":id/documentos-diagnosticos/descargar_compilado", to: "manifestacion_de_interes#descargar_compilado", as: :descargar_compilado_manif
+
 
       #APL-013 APL-014 APL-018 APL-020 APL-023
       get 'pdf_set_metas', to: 'set_metas_acciones#pdf_set_metas', as: :pdf_set_metas
@@ -735,6 +738,7 @@ Rails.application.routes.draw do
   post ":tarea_pendiente_id/convocatorias", to: "convocatorias#create", as: :create_tarea_pendiente_convocatoria
   get ":tarea_pendiente_id/convocatorias/:id/edit(.:format)", to: "convocatorias#edit", as: :edit_tarea_pendiente_convocatoria
   patch ":tarea_pendiente_id/convocatorias/:id(.:format)", to: "convocatorias#update", as: :tarea_pendiente_convocatoria
+  get ":tarea_pendiente_id/convocatorias/descargar_compilado_adjuntos", to: "convocatorias#descargar_compilado_adjuntos", as: :descargar_compilado_adjuntos
   delete ":tarea_pendiente_id/convocatorias/:id(.:format)", to: "convocatorias#destroy"
 
   #ruta para descargar adjuntos a ser llamada desde vista
@@ -746,6 +750,9 @@ Rails.application.routes.draw do
   #DZC APL-012, APL-017, APL-022, APL-031
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/edit(.:format)", to: "minutas#edit", as: :edit_tarea_pendiente_convocatoria_minuta
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
+  get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
+
+
   # Obtener el archivo del acuerdo para APL-022
   get ":tarea_pendiente_id/:flujo/archivo-apl-022", to: "minutas#archivo", as: :obtener_archivo_apl_022, format: 'docx'
   get ":flujo/archivo-acuerdo-anexos-zip", to: "minutas#archivo_acuerdo_anexos_zip", as: :obtener_archivo_acuerdo_anexos_zip

@@ -16,6 +16,17 @@
           %i.fa.fa-file-text-o
           =t(:detener_acuerdo)
         = render 'actualizar_comite_acuerdos/detener_acuerdo', remote: true
+      = link_to  descargar_compilado_adjuntos_path(tarea_pendiente_id:@tarea_pendiente.id, codigo: @tarea.codigo.to_s[-3..-1]), class: 'btn btn-sm btn-primary margin-bottom-20' do
+        %i.fa.fa-download
+        =t(:descargar_compilado_archivos)
+-# Si la tarea es de código 011 o 030 solo aparece boton de descargar y no el de terminar acuerdo.
+- if @tarea.codigo == Tarea::COD_APL_011 || @tarea.codigo == Tarea::COD_APL_030
+  .d-flex.justify-content-between
+    %div
+      = link_to  descargar_compilado_adjuntos_path(tarea_pendiente_id:@tarea_pendiente.id, codigo: @tarea.codigo.to_s[-3..-1]), class: 'btn btn-sm btn-primary margin-bottom-20' do
+        %i.fa.fa-download
+        =t(:descargar_compilado_archivos)
+
 - if !solo_lectura
   = link_to t(:agregar_, item: t(:convocatoria).downcase), new_tarea_pendiente_convocatoria_path(@tarea_pendiente), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
 #convocatorias-remote-table
