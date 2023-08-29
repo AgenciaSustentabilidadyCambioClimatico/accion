@@ -540,6 +540,9 @@ Rails.application.routes.draw do
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/enviar-revision', to: "documento_diagnosticos#enviar_revision", as: :enviar_revision_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga', to: "documento_diagnosticos#descarga", as: :descarga_documento_diagnosticos
       get ':manifestacion_de_interes_id/documentos-diagnosticos/descarga_estandar_acuerdo_informe', to: "documento_diagnosticos#descarga_estandar_acuerdo_informe", as: :descarga_estandar_o_acuerdo_documento_diagnosticos
+      # APL-014 Descarga compilado de documentos desde historial instrumentos
+      get ":id/documentos-diagnosticos/descargar_compilado", to: "manifestacion_de_interes#descargar_compilado", as: :descargar_compilado_manif
+
 
       #APL-013 APL-014 APL-018 APL-020 APL-023
       get 'pdf_set_metas', to: 'set_metas_acciones#pdf_set_metas', as: :pdf_set_metas

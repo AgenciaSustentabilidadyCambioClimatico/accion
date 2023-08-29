@@ -357,6 +357,23 @@ class Flujo < ApplicationRecord
       # Documentos asociados funcionará como arreglo de diferentes documentos con sus datos
       if t.codigo == Tarea::COD_APL_005
         documentos_asociados = [{nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
+      elsif t.codigo == Tarea::COD_APL_011
+        documentos_asociados = []
+        convocatorias_apl_once = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-011").all
+        tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 57).first
+
+        if convocatorias_apl_once.nil?
+          documentos_asociados << {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
+        else
+          documentos_asociados << {nombre: "Talleres de Diagnóstico Inicial", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "011"], metodo: true}
+        end
+      elsif t.codigo == Tarea::COD_APL_014
+        tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 66).first
+        if self.manifestacion_de_interes.documento_diagnosticos.nil? || self.manifestacion_de_interes.documento_diagnosticos.empty?
+          documentos_asociados = [{nombre: "Sin documentos aún"}]
+        else 
+          documentos_asociados = [{nombre: "Documentación Diagnóstico", url: 'descargar_compilado_manif_manifestacion_de_interes_path',parametros: [id: self.manifestacion_de_interes_id, tarea_pendiente_id: tarea_pendiente.id], metodo: true}]
+        end 
       elsif t.codigo == Tarea::COD_APL_016
         convocatorias_apl = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-016").all
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 69).first
@@ -396,17 +413,11 @@ class Flujo < ApplicationRecord
       elsif t.codigo == Tarea::COD_APL_030
         documentos_asociados = []
         convocatorias_apl = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-030").all
-        convocatorias_apl_once = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-011").all
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 69).first
         if convocatorias_apl.nil?
           documentos_asociados << {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
         else
           documentos_asociados << {nombre: "Reuniones de Comité de Negociación", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "030"], metodo: true}
-        end
-        if convocatorias_apl_once.nil?
-          documentos_asociados << {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
-        else
-          documentos_asociados << {nombre: "Talleres de Diagnóstico Inicial", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "011"], metodo: true}
         end
       elsif t.codigo == Tarea::COD_APL_042
         if self.tarea_pendientes.where(tarea_id: [Tarea::ID_APL_041, Tarea::ID_APL_042]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).length == 0
