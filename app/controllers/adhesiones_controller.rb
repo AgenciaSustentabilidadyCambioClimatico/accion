@@ -229,58 +229,8 @@ class AdhesionesController < ApplicationController
 
   def descargar_compilado
     require 'zip'
-
-    max_zip_size = 10 * 1024 * 1024
-
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      current_zip_size = 0
-      part_number = 1
-      if params[:aid].blank?
-        @adhesiones.each do |adhesion|
-          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            if File.exists?(archivo.path)
-              entry_size = File.size(archivo.path)
-
-              #nombre = archivo.file.identifier
-              if adhesion.externa
-                nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-              else
-                c = adhesion.flujo.manifestacion_de_interes.contribuyente
-                nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
-              end
-              # rename the file
-              if current_zip_size + entry_size <= max_zip_size
-                stream.put_next_entry(nombre)
-                # add file to zip
-                stream.write IO.read((archivo.current_path rescue archivo.path))
-                current_zip_size += entry_size
-              else
-                # Close the current ZIP file in the buffer
-                stream.close
-
-                # Create a new buffer for the next ZIP file
-                archivo_zip.close
-                archivo_zip = Zip::OutputStream.write_buffer
-
-                part_number += 1
-                current_zip_size = entry_size
-                stream = buffer
-                stream.put_next_entry(nombre)
-                stream.write IO.read((archivo.current_path rescue archivo.path))
-              end
-            end
-          end
-        end
-      else
-        if params[:elemento] == 'true'
-          adh = AdhesionElemento.find(params[:aid])
-          adh_id = (adh.adhesion_externa_id != nil ? adh.adhesion_externa_id : adh.adhesion_id )
-        else
-          adh_id = params[:aid]
-        end
-        entry_size = File.size(archivo.path)
-
-        adhesion = Adhesion.unscoped.find(adh_id)
+      @adhesiones.each do |adhesion|
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -290,41 +240,73 @@ class AdhesionesController < ApplicationController
               c = adhesion.flujo.manifestacion_de_interes.contribuyente
               nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
             end
-            if current_zip_size + entry_size <= max_zip_size
-              stream.put_next_entry(nombre)
-              # add file to zip
-              stream.write IO.read((archivo.current_path rescue archivo.path))
-              current_zip_size += entry_size
-            else
-              # Close the current ZIP file in the buffer
-              stream.close
-
-              # Create a new buffer for the next ZIP file
-              archivo_zip.close
-              archivo_zip = Zip::OutputStream.write_buffer
-
-              part_number += 1
-              current_zip_size = entry_size
-              stream = buffer
-              stream.put_next_entry(nombre)
-              stream.write IO.read((archivo.current_path rescue archivo.path))
-            end
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
           end
         end
       end
     end
-
-    part_number = 1
     archivo_zip.rewind
-
-    loop do
-      output_file = "#{part_number}"
-      send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "#{output_file}_documentacion.zip"
-      part_number += 1
-      break if archivo_zip.eof?
-    end
-
     #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+  end
+
+  def descargar_compilado_two
+    require 'zip'
+    archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones.each do |adhesion|
+        cuenta = adhesion.archivos_adhesion_y_documentacion.count
+        numero_descarga = cuenta / 2
+        adhesion.archivos_adhesion_y_documentacion.first(numero_descarga).each do |archivo|
+          if File.exists?(archivo.path)
+            #nombre = archivo.file.identifier
+            if adhesion.externa
+              nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+            else
+              c = adhesion.flujo.manifestacion_de_interes.contribuyente
+              nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+            end
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip_two.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip_two.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion_parte_1.zip"
+  end
+
+  def descargar_compilado_three
+    require 'zip'
+    archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones.each do |adhesion|
+        cuenta = adhesion.archivos_adhesion_y_documentacion.count
+        numero_descarga = cuenta / 2
+        adhesion.archivos_adhesion_y_documentacion.last(numero_descarga).each do |archivo|
+          if File.exists?(archivo.path)
+            #nombre = archivo.file.identifier
+            if adhesion.externa
+              nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+            else
+              c = adhesion.flujo.manifestacion_de_interes.contribuyente
+              nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+            end
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip_two.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip_two.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion_parte_2.zip"
   end
 
   #DZC agrega al campo data de la tarea_pendiente 
