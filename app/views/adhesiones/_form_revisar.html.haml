@@ -187,7 +187,7 @@
                 .form-group
                   - cuenta = 0
                   - @adhesiones.each { |f| cuenta += f.archivos_adhesion_y_documentacion.count }
-                  -if cuenta > 50
+                  -if cuenta > 1
                     %label.string.control-label
                       = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
                     = link_to descargar_compilado_adhesion_two_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
