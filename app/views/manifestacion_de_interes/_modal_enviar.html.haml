@@ -1,0 +1,13 @@
+.modal.fade#modal_enviar{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content
+      .modal-header.p-3.text-center{style: 'font-weight: bold;'} Confirmar envío
+      .modal-body
+        %p= "¿Está seguro de cambiar nombre del APL #{@apl.nombre_acuerdo} a"
+        .div{id: 'jorge'}
+        %p
+      .modal-footer{style: "display: flex; align_items: center; justify-content: center;"}
+        = submit_tag 'Enviar', 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'enviar_button_o', class: "btn btn-primary"
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal, id:"cancelar"}
+          Volver
+

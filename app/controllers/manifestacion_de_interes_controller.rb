@@ -1,7 +1,8 @@
 class ManifestacionDeInteresController < ApplicationController
   before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
-  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables]
-  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables]
+  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
+  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
+
   before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
                                       :admisibilidad_juridica, :revisar_admisibilidad_juridica,
@@ -2301,6 +2302,40 @@ class ManifestacionDeInteresController < ApplicationController
       @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
     when Tarea::COD_APL_020
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+    end
+  end
+
+  def editar_nombre_apl
+    @apl = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+  end
+
+  def nombre_apl
+    if current_user.is_admin? || current_user.is_ascc? #DZC se trata del admin de la ASCC
+      @instrumentos = Flujo.order(id: :desc)
+    else
+      # @instrumentos = Flujo.where(contribuyente_id: contribuyentes.pluck(:id), terminado: [false, nil]).order(id: :asc).all
+      @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :desc)
+    end
+    @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
+    if params[:apl].present?
+      binding.pry
+      instrumento_id = params[:apl].to_i
+      @acuerdos_de_produccion = ManifestacionDeInteres.find(instrumento_id)
+    else
+      instrumento_id = nil
+      @acuerdos_de_produccion = ManifestacionDeInteres.all
+    end
+  end
+
+
+  def cambio_nombre_apl
+    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id].to_i)
+    respond_to do |format|
+      @manifestacion_de_interes.nombre_acuerdo = params[:manifestacion_de_interes][:nombre_acuerdo]
+      if @manifestacion_de_interes.save(validate: false)
+        format.js { flash.now[:success] = 'Nombre APL cambiado correctamente' }
+        format.html { redirect_to root_path, flash: {notice: 'Nombre APL cambiado correctamente' } }
+      end
     end
   end
 

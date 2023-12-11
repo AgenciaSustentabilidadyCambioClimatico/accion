@@ -453,7 +453,10 @@ Rails.application.routes.draw do
       get :usuario_flujos
     end
   end
-
+  #rutas para cambiar nombre apl
+  get '/editar_nombre_apl/:manifestacion_de_interes_id', to: "manifestacion_de_interes#editar_nombre_apl", as: :editar_nombre_apl
+  get '/nombres_apl', to: "manifestacion_de_interes#nombre_apl", as: :nombres_apl
+  patch '/cambio_nombre_apl/:manifestacion_de_interes_id', to: "manifestacion_de_interes#cambio_nombre_apl", as: :cambio_nombre
   # ToDo GABM - Mayo 29 2018 : Quitar params: :tarea_pendiente_id al resources de manifestacion_de_interes y agrupar todo el resources con
   # scope '/:tarea_pendientes_id' do. Luego quitar todos lo :id de cada metodo declarado y quitar :tarea_pendiente del grupo collection.
   resources :manifestacion_de_interes, param: :tarea_pendiente_id, path: "manifestacion-de-interes", except: [:show,:index,:create,:edit,:update] do
