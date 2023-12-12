@@ -2318,9 +2318,8 @@ class ManifestacionDeInteresController < ApplicationController
     end
     @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
     if params[:apl].present?
-      binding.pry
       instrumento_id = params[:apl].to_i
-      @acuerdos_de_produccion = ManifestacionDeInteres.find(instrumento_id)
+      @acuerdos_de_produccion = ManifestacionDeInteres.where(id: instrumento_id)
     else
       instrumento_id = nil
       @acuerdos_de_produccion = ManifestacionDeInteres.all

@@ -6,12 +6,12 @@
           %h5
             %b Nombres Acuerdos Produccion Limpia
           %h5
-            = link_to t(:volver_a_cargar), root_path, class: 'btn btn-sm btn-primary btn-sm float-right'
+            = link_to t(:volver_a_cargar), nombres_apl_path, class: 'btn btn-sm btn-primary btn-sm float-right'
       -if current_user.is_admin? || current_user.is_ascc?
         .card-body.pb-3
           .row.justify-content-left
             .col-md-4
-              = simple_form_for('#', url: nombres_apl_path) do |f|
+              = simple_form_for('nombre', url: nombres_apl_path, class: 'buscador_form', method: :get) do |f|
                 = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
         .card-body.p-0
         .table-responsive.mis-instrumentos
@@ -33,11 +33,11 @@
       width: '100%'
     });
 
-    htmlErrorToTooltip('top');
+    // htmlErrorToTooltip('top');
 
     $('#apl').chosen(chosenOptions);
     $('#apl').change(function(){
       console.log('envio el form')
-      $('#apl').submit()
+      $('.nombre').submit()
     });
   });
