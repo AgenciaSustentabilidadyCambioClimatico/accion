@@ -1,0 +1,5 @@
+var select_sublinea = "#get_sub_lineas_seleccionadas";
+$(select_sublinea).find('option').not(':first').remove();
+-@sub_lineas.each do |sub_linea|
+  $(select_sublinea).append("<option value='#{sub_linea.id}'>#{sub_linea.descripcion}</option>");
+$(select_sublinea).trigger('chosen:updated');

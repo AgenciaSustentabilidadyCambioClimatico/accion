@@ -123,6 +123,19 @@ module ApplicationHelper
   def datos_beneficiario
     @flujo.present? ? "<b>Beneficiario: </b> #{@flujo.contribuyente.nombre} <br><b>Rut: </b> #{@flujo.contribuyente.rut}-#{@flujo.contribuyente.dv}" : ""
   end
+
+  ##FPL##
+  def titulo_instrumento_fpl
+    @tipo_instrumento.present? ? "<b>#{TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA}</b> <br>" : ""
+  end
+
+  def titulo_proyecto_fpl
+    @manifestacion_de_interes.present? ? "<b>Proyecto: </b> #{@manifestacion_de_interes.flujo.nombre_instrumento} <br>" : ""
+  end
+
+  def datos_beneficiario_fpl
+    @flujo.present? ? "<b>Beneficiario: </b> #{@manifestacion_de_interes.institucion_gestora_acuerdo} <br><b>Rut: </b> #{@manifestacion_de_interes.rut_institucion_gestora_acuerdo}" : ""
+  end
   #**
 
   def action_label_of_(model,use_model_name=false)
@@ -139,6 +152,10 @@ module ApplicationHelper
 
   def action_label_representante(model)
     model.new_record? ? 'Crear nuevo representante' : "Editar representante"
+  end
+
+  def action_label_objetivo(model)
+    model.new_record? ? 'Crear nuevo objetivo' : "Editar objetivo"
   end
 
   def clase_segun_estado(estado=2)
@@ -336,6 +353,28 @@ module ApplicationHelper
       else
         haml_tag :div, class: 'form-group' do 
           haml_tag :label, titulo.blank? ? descargable.nombre : titulo, class: 'control-label string'
+          haml_tag :a, href: descargar_admin_tarea_descargable_tarea_path(tarea, descargable), class: 'btn btn-sm btn-descargar btn-block' do
+            haml_tag :i, class: 'fa fa-download'
+            haml_concat boton
+          end
+        end
+      end
+    end
+  end
+  def __mostrar_descargable_simple_2(tarea,codigo,titulo, boton=I18n.t(:descargar))
+    descargable = tarea.descargable_tareas.find_by(codigo: codigo)
+    capture_haml do
+      if descargable.blank?
+        haml_tag :div, class: 'form-group' do 
+          haml_tag :label, titulo, class: 'control-label string'
+          haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado) do
+            haml_tag :i, class: 'fa fa-ban'
+          end
+        end
+        # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
+        # haml_tag :div, codigo, class: 'form-control'
+      else
+        haml_tag :div, class: 'form-group' do 
           haml_tag :a, href: descargar_admin_tarea_descargable_tarea_path(tarea, descargable), class: 'btn btn-sm btn-descargar btn-block' do
             haml_tag :i, class: 'fa fa-download'
             haml_concat boton
@@ -834,7 +873,26 @@ module ApplicationHelper
       registro_proveedor = RegistroProveedor.where(rut: user_rut).last
       data[:url] = enviar_carta_compromiso_path(registro_proveedor.id)
       data[:icon] = "<i class='fa fa-edit'></i>"
-
+    #Nuevo flujo postulacion FPL
+    when Tarea::COD_FPL_020
+      data[:url] = iniciar_flujo_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_02
+      data[:url] =  revisor_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_03
+      data[:url] =  admisibilidad_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_04
+      data[:url] =  admisibilidad_tecnica_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_05
+      data[:url] =  admisibilidad_juridica_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_06
+      data[:url] =  pertinencia_factibilidad_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
+    #Nuevo flujo postulacion FPL  
     end
   end
   data

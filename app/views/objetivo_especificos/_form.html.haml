@@ -1,0 +1,111 @@
+:css
+	.hidden-block { display: none; }
+	.persona-button-block { position: absolute; width: 100%; height: 40px; bottom: -80px; right: -5px; }
+	i.deseleccionar-contribuyente { display: none; cursor: pointer; margin: 5px 0 0 -30px; }
+
+- pick_a_institucion="Seleccione una institución desde el buscador"
+- pick_a_contribuyente="Seleccione un establecimiento"
+:javascript
+	var rowFields=null;
+	$(document).ready(function() {
+		$("i.deseleccionar-contribuyente").click(function() {
+			pr = $(this).parents('div.row');
+			cs = pr.find('.contribuyente-selector');
+			es = pr.find('.establecimiento-selector');
+			cs.empty().append("<option value=''>#{pick_a_institucion}</option>").val("");
+			es.empty().append("<option value=''>#{pick_a_contribuyente}</option>");
+			checkFieldValidity(cs);
+			$(this).hide();
+
+			$(".remove_nested_fields[data-association='persona_cargos']").each(function(){
+				$(this).trigger("click");
+			});
+		});
+		$('#buscar-contribuyente').on('show.bs.modal', function (e) {
+			rowFields = $(e.relatedTarget).parents('.card');
+		})
+
+		//DZC 2019-06-17 14:01:19 se modifica para usar la función verificarModal()
+		//$('body').on('change','.contribuyente-radio',function(){
+		//	$('.seleccionar-contribuyente-button').removeAttr('disabled'); 
+		//});
+		verificarModal();
+
+		$('.seleccionar-contribuyente-button').click(function() {
+			try {
+				var establecimientos_html = "Seleccione un establecimiento^$^";
+				cs=rowFields.find('.contribuyente-selector');
+
+				//DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+				//data=JSON.parse($('.contribuyente-radio:checked').val());
+				data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+
+				cs.removeClass('border-error').removeAttr('data-original-title');
+				cs.append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
+				cs.val(data.id);
+				checkFieldValidity(cs);
+				$("i.deseleccionar-contribuyente").show();
+				$.each(data.establecimientos,function(k,v) {
+					establecimientos_html += "^*^"+v[0]+"^$^"+v[1];
+				});
+				rowFields.find('.establecimientos_data').val(establecimientos_html);
+
+				rowFields.find(".remove_nested_fields[data-association='persona_cargos']").each(function(){
+					$(this).trigger("click");
+				});
+
+			} catch(e) {
+				alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+			}
+		});
+		if ( $("#user_rut").val() !== "" ) {
+			$("#user_rut").val( $.formatRut( $("#user_rut").val() ) );
+		}
+
+		checkFieldValidity($('#user_nombre_completo'));
+	});
+	$(document).on('nested:fieldAdded:personas', function(e) {
+		randomId='persona-cargos-'+randomString();
+		$(e.target).find('#persona-cargos').attr("id",randomId)
+		$(e.target).find('a[data-target="#persona-cargos"]').attr("data-target",randomId)
+		checkFieldValidity($('#user_nombre_completo'));
+	});
+	$(document).on('nested:fieldAdded:persona_cargos', function(e) {
+		var estab_obj = $(e.target).find('.establecimiento-select');
+		estab_obj.empty();
+		var establecimientos_html = $(e.target).parents(".card").find(".establecimientos_data").val();
+		var estab_array = establecimientos_html.split("^*^");
+		$.each(estab_array, function(index, value){
+			value_array = value.split("^$^");
+			estab_obj.append("<option value='"+value_array[1]+"'>"+value_array[0]+"</option>");
+		});
+		$(e.target).find('select').chosen(chosenOptions);
+	});
+	$(document).on('nested:fieldRemoved:personas', function(e){
+		$(e.target).find(':input').removeClass('required-field not-required-if-other-like-me-is-present');
+		checkFieldValidity($('#user_nombre_completo'));
+	});
+- titulo t(:objetivo_específico)
+- require_ish = @objetivo_especifico.new_record? ? 'required-field' : 'im-not-required-check-the-others required'
+= simple_form_for @objetivo_especifico, url: objetivo_especificos_path, method: :post, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_objetivo(@objetivo_especifico)
+				.card-body
+					.row
+						= f.input :flujo_id, as: :hidden, input_html: { value: params[:id] }
+						.col-lg-2.pr-lg-0.col-12
+							= f.input :descripcion, required: true, label: t(:descripcion), placeholder: "Ingresar descripción", input_html: { class: 'required-field' }
+						.col-lg-4.pr-lg-0.col-12
+							= f.input :metodologia, required: true, label: t(:metodologia), placeholder: "Ingresar metodologia", input_html: { class: 'required-field' }
+						.col-lg-3.pr-lg-0.col-12
+							= f.input :resultado, required: true, label: t(:resultado), placeholder: "Ingresar resultado", input_html: { class: 'required-field' }
+						.col-lg-3.col-12
+							= f.input :indicadores, required: true, label: t(:indicadores), placeholder: "Ingresar indicadores", input_html: { class: 'required-field numero' }
+			.float-right
+				= link_to t(:back), :back, class: 'btn btn-sm btn-warning'
+				= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+				

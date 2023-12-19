@@ -131,15 +131,16 @@
       .card
         .card-header.p-0
           .p-3
-            %h5.no-margin=titulo_instrumento.html_safe
-            %h5.no-margin=datos_beneficiario.html_safe
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
           #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
               %li.nav-item
                 %a.nav-link{id: "pertinencia-factibilidad-externo", class: 'active', "aria-controls" => 'pertinencia-factibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#pertinencia-factibilidad-externo", :role => "tab"}
                   =t('pertinencia_factibilidad')
         .card-body.border-tabs.px-2.pt-3
-          - tabs = { "objetivo-acuerdo": false, "contexto-sector": false, "actores-y-partes-interesadas": false, "datos-institucion": false, "datos-proyecto": false, 'pertinencia-factibilidad': true }
+          - tabs = { "sector": false, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "pertinencia-factibilidad": true }
           -# formulario_remote = true #flag para mostrar/ocultar el botón de guardado
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
@@ -170,7 +171,7 @@
                             -#%span.badge.badge-danger.badge-pill 1
 
             =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
-            = render "form_manifestacion_de_interes", tabs: tabs, f: f, solo_lectura: true do
+            = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
               #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
                 .card
                   .card-body
@@ -264,13 +265,7 @@
                             .col-12
                               .form-group
                                 = label_tag "Adjuntar Ficha de Manifestación de Interés (Consejo Directivo)", nil, class: 'string mb-0'
-                                = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
-
-                      .col-12.col-lg-6
-                        .form-group
-                        %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
-                        = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
-                  
+                                = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)            
                       -if !@manifestacion_de_interes.respuesta_observaciones_pertinencia_factibilidad.blank?
                         .col-12.col-lg-6
                           -if !solo_lectura

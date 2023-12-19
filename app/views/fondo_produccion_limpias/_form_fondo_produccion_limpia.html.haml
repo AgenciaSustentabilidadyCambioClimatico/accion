@@ -1,0 +1,1272 @@
+:javascript
+  function cargarSubLineas(valorLinea) {
+     $.ajax({
+        url: "#{get_sub_lineas_seleccionadas_path}",
+        method: 'get',
+        data: {id: valorLinea},
+        success: function(data) {
+          // Manipula los datos recibidos, por ejemplo, actualiza el combo de sublíneas
+          var comboSublineas = $('#fondo_produccion_limpia_sub_linea_id');
+          comboSublineas.empty();
+
+          $.each(data.sublineas, function(index, value) {
+            comboSublineas.append($('<option>').text(value.descripcion).attr('value', value.id));
+          });
+        },
+        error: function(error) {
+          console.error('Error al obtener sublíneas:', error);
+        }
+      });
+  }
+  var pais = 'Chile';//aún no se sabe como se manejará la internalización de este proyecto
+  var desc = #{raw json_escape(@tipo_instrumentos.inject({}){|h,ti|h[ti.id]=ti.descripcion;h}.to_json)}
+
+  // DZC 2019-07-12 12:22:18 se agregan validaciones
+  var validaciones = #{raw json_escape(@validaciones.to_json)};
+  var clases = Object.keys(validaciones);
+  var descargables = #{raw json_escape(@descargables.to_json)}
+
+  $(document).on('click focus mouseover', '*',function(e){
+    if(!$(this).is('abbr')){
+      metodo = ['click','focus'].includes(e.type) ? 'hide' : 'enable';
+      $(this).tooltip(metodo);
+    }
+  });
+
+  $(document).on('click', '.x-remove-selection', function(){
+    elemento_a_quitar = $(this).attr('value');
+    arr_valores = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val();
+    $(this).parent().remove();
+    arr_valores = jQuery.grep(arr_valores, function(value) {
+      return value != elemento_a_quitar;
+    });
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val(arr_valores);
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2('close');
+  });
+
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      $("#manifestacion_de_interes_contribuyente_id").val(data.id);
+      $("#manifestacion_de_interes_contribuyente_id").change();
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+  //Permite que al seleccionar un usuario desde el modal se adjunte su información
+  $(document).on('click' , '.seleccionar-usuario-button', function() {
+    try {
+      data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
+      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
+  $(document).ready(function(){
+
+    if(#{!solo_lectura}){
+      $('#manifestacion_de_interes_acuerdo_previo_con_informe_id').select2({
+        placeholder: 'Seleccione un Acuerdo previo',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_estandar_de_certificacion_id').select2({
+        placeholder: 'Seleccione un estándar',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_diagnostico_id').select2({
+        placeholder: 'Seleccione un diagnóstico',
+        allowClear: true,
+        width: '100%'
+      });
+      $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2({
+        placeholder: 'Seleccione uno o varios programas',
+        width: '100%'
+      });
+    } 
+
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:select', function(e){
+      var data = e.params.data;
+      create_span_de_selector_ppp(data.id);
+    });
+
+    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:unselect', function(e){
+      var data = e.params.data;
+      $(".selection-list-boxes[value=" + data.id +"]").remove();
+    });    
+
+    function create_span_de_selector_ppp(id){
+      selector_ppp = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids');
+      op = selector_ppp.children("[value=" + id + "]");
+      x_span = "<a class='x-remove-selection' value='" + id + "'><span style='color: #999;'>×</span></a>";
+      $('#selection-container').append("<span class='selection-list-boxes' value='"+id+"'>" + x_span + op.text() + "</span>");
+    };
+
+    verificarModal();
+    process_mantenedor_campos();
+    //activa_validaciones();
+
+    $('body').on('change','.usuario-radio',function() {
+      $('.seleccionar-usuario-button').removeAttr('disabled');
+      $('.seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
+    });
+
+
+    // ## 
+    // # DOSSA 2019-09-10 16:48
+    // # Se comenta función ya que el tab Datos Proyecto debe disponibilizarse siempre.
+    //verificarPreinversion();
+    //$("#area-influencia-proyecto-mapa").focusout(function(e){
+      //if( $(document.activeElement).parents('div#area-influencia-proyecto-mapa').length ) {
+        //console.log("yes");
+      //}else{
+        //console.log("no");
+      //}
+
+      //$('#manifestacion_de_interes_area_influencia_proyecto_data').trigger("change");
+    //});
+
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+      $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
+    });
+    $('#manifestacion_de_interes_tipo_instrumento_id').change(function(){
+      if ( $(this).val() !== "" ) {
+        $('#manifestacion_de_interes_descripcion_acuerdo').html(desc[$(this).val()]);
+      }
+    });
+
+    function checkbox_related_element(c) {
+      element = $('#'+$(c).parents('.form-group').find('label.boolean').attr('for'));
+      if (element === undefined) {
+        return jQuery.extend();
+      } else {
+        return element;
+      }
+    }
+
+    function when_checkbox_is_true(checkbox) {
+      relement=checkbox_related_element(checkbox);
+      if ( relement.prop('tagName') == 'DIV' ) {
+        relement.show('slow');
+      } else {
+        relement.removeAttr('readonly');
+      }
+    }
+
+    function when_checkbox_is_false(checkbox) {
+      relement=checkbox_related_element(checkbox);
+      if ( relement.prop('tagName') == 'DIV' ) {
+        relement.hide('slow');
+      } else {
+        relement.attr('readonly','readonly');
+      }
+    }
+
+    __enable_fieds_if_checkbox_is_true($('[type="radio"]:checked'), when_checkbox_is_true, when_checkbox_is_false);
+    $('[type="radio"]').click(function(){
+      __enable_fieds_if_checkbox_is_true($(this), when_checkbox_is_true, when_checkbox_is_false);
+    });
+
+    $('#enviar-manifestacion-button').click(function(e){
+      $('#manifestacion_de_interes_temporal').val("");
+    });
+
+    if(#{!solo_lectura}){
+      $(".radios-selector-subida").on("change", function(){
+        padre = $(this).closest('.radios-selector-subida-padre');
+        check = $(this).val(); 
+        if( check == 0 ){
+          padre.find("input[type='file']").attr("disabled",false);
+          padre.find("select").attr("disabled",true);
+          padre.find(".descargable-file").removeClass("d-none");
+          padre.find(".descargable-select").addClass("d-none");
+        }
+        else if( check == 1 ){
+          padre.find("input[type='file']").attr("disabled",true);
+          padre.find("select").attr("disabled",false);
+          padre.find(".descargable-file").addClass("d-none");
+          padre.find(".descargable-select").removeClass("d-none");
+        };
+      });
+      $(".radios-selector-subida:checked").trigger("change");
+    }
+    
+    //# DOSSA 2019-09-24 17:00 se comenta ya que no es necesaria esta validación
+    //Validar que solo se leccione o un diagnostico o un estandar, no ambos.-
+    //if($('#manifestacion_de_interes_diagnostico_id').val() != '' && $('#manifestacion_de_interes_diagnostico_id').val() != null){
+      //console.log($('#manifestacion_de_interes_diagnostico_id').val())
+      //$('#manifestacion_de_interes_estandar_de_certificacion_id').attr('disabled', true);
+      //$('#manifestacion_de_interes_estandar_de_certificacion_id').val("");
+    //}
+    //if($('#manifestacion_de_interes_estandar_de_certificacion_id').val() != '' && $('#manifestacion_de_interes_estandar_de_certificacion_id').val() != null){
+      //$('#manifestacion_de_interes_diagnostico_id').attr('disabled', true);
+      //$('#manifestacion_de_interes_diagnostico_id').val("");
+    //}
+
+    //DZC 2019-02-28 20:01:23 configura la visualización del mensaje recuerde_guardar
+
+    //DZC 2019-03-01 12:58:16 elimina los timeouts pendientes
+    var id = window.setTimeout(function() {}, 0);
+    while (id--) {
+      window.clearTimeout(id);
+    };
+    //DZC 2019-03-01 12:58:34 crea un nuevo timeout
+    var minutos = "#{@recuerde_guardar_minutos}";
+    setTimeout(function showModal() {
+      $('#mensaje_recuerde_guardar').modal('show');
+      var minutos = "#{@recuerde_guardar_minutos}";
+      setTimeout(showModal, ((+minutos)*60*1000));
+      }, ((+minutos)*60*1000)
+    );
+
+    $(".show-ayuda").on("click",function(){
+      id_campo_boton = $(this).attr("campo");
+      $(".ayuda-campo-div-"+id_campo_boton).toggle(700);
+    });
+
+    $(".card-wrap").each(function(){
+      $(this).addClass("card");
+      $(this).css("margin-bottom", "0");
+    });
+  });
+
+  //DZC 2019-07-17 22:02:04 activa los listeners para las validaciones por incumplimiento de cantidades minimas y maximas de caracteres
+  function activa_validaciones(){
+    elementos_ids = id_elementos_a_validar();
+    elementos_validaciones = validaciones_por_elemento();
+    elementos_ids.forEach(function(elemento_id, index, arr){
+      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
+      if (validaciones_activas && #{!solo_lectura}){
+        var max_activa = elementos_validaciones[elemento_id]["validacion_max_activa"];
+        var min_activa = elementos_validaciones[elemento_id]["validacion_min_activa"];
+        var max = elementos_validaciones[elemento_id]["validacion_max"];
+        var min = elementos_validaciones[elemento_id]["validacion_min"];
+        var tipo = elementos_validaciones[elemento_id]["tipo"];
+        largo_campo = $(elemento_id).text().length;
+        condicional = (((min_activa && largo_campo < min) || (max_activa && largo_campo > max)) && largo_campo > 0);
+        label_inicial = condicional ? "\u26a0 Caracteres: " : "Caracteres: ";
+        label_max = (max_activa) ? "de " + max : "";
+        label_min = (min_activa) ? " (mínimo " + min + ")" : "";
+        $(elemento_id).after(label_contador(label_inicial, label_min, label_max, largo_campo, condicional));
+        // # DOSSA 2019-07-29 se cambia función para cuando se agreguen valores en el input ya que la función "keyup" sólo reconocía los cambios al presionar y soltar una tecla, esta nueva función reconoce todos los cambios en el input.
+        $(elemento_id).on("input propertychange",function (){
+          // DOSSA 2019-07-29 se hace condición única para mínimo y máximo, ya que ambas hacen lo mismo
+          largo_actual = $(this).val().length;
+          if ( (min_activa && largo_actual < min) || (max_activa && largo_actual > max) ){
+            // # DOSSA 2019-07-29 label que agrega símbolo unicode en caso de que el texto ingresado sea menor al mínimo o mayor al máximo.
+            label_inicial_m = "\u26a0 Caracteres: "
+            // # DOSSA 2019-07-29 en caso de que la validación máxima esté activa, la variable label_max tendrá un valor específico.
+            label_max_m = (max_activa) ? "de " + max : "";
+            // # DOSSA 2019-07-29 en caso de que la validación mínima esté activa, la variable label_min tendrá un valor específico.
+            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
+            $(this).next().remove();
+            $(this).after(label_contador( label_inicial_m, label_min_m, label_max_m, largo_actual, true ));
+          }else{
+            label_max_m = (max_activa) ? "de " + max : "";
+            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
+            $(this).css('color','#495057');
+            $(this).next().remove();
+            $(this).after(label_contador( label_inicial, label_min_m, label_max_m, largo_actual, false ));
+          };
+        });
+      }else if (tipo == "text" || tipo == "integer" || tipo == "double"){
+        $(elemento_id).after("<label class='float-right control-label' style='color: #0000'><br></label>")
+      }
+    });
+  };
+
+  // DZC 2019-07-17 19:44:46 retorna los ids de los doms a validar
+  function id_elementos_a_validar(){
+    elementos = [];
+    for (var modelo in validaciones){
+      for (var campo in validaciones[modelo]){
+        elementos.push("#" + modelo + "_" + campo);
+      };
+    };
+    return elementos;
+  };
+
+  //DZC 2019-07-17 19:46:42 retorna un hash con el id del dom, y sus validaciones asociadas
+  function validaciones_por_elemento(){
+    elementos = {};
+    for (var modelo in validaciones){
+      for (var campo in validaciones[modelo]){
+        elementos["#" + modelo + "_" + campo]={};
+        for (var validacion in validaciones[modelo][campo]){
+          elementos["#" + modelo + "_" + campo][validacion] = validaciones[modelo][campo][validacion];
+        };
+      };
+    };
+    return elementos;
+  };
+
+  //DZC 2019-07-17 19:59:04 retorna los elementos del dom a validar
+  function elementos_a_validar_dom(){
+    elementos = {};
+    $.each(clases, function(index, value){
+      texto = "[id*='";
+      texto += value;
+      texto += "']";
+      elementos[value] = $(texto);
+    });
+    return elementos;
+  };
+
+  // # DOSSA 2019-07-29 función que crea label que muestra el contador, máximo y mínimo de caracteres en caso de que corresponda, además agrega un label inicial el cual contendra
+  //    un símbolo unicode cuando sea necesario.
+  function label_contador( label_inicial, label_min, label_max, largo = 0, cond){
+    if(cond){
+      color = "red";
+    }else{
+      color = "#5d759e";
+    };
+    label = "<label class='float-right control-label' style='color:" + color + "'>" + label_inicial + "<b>" + largo + "</b>" + " " + label_max + label_min + "</label>";
+    return label;
+  };
+
+  //Procesar label, ayuda y tooltip
+  function process_mantenedor_campos(){
+    elementos_ids = id_elementos_a_validar();
+    elementos_validaciones = validaciones_por_elemento();
+
+    var ids_a_evitar = ["#manifestacion_de_interes_area_influencia_proyecto_data", "#manifestacion_de_interes_alternativas_instalacion_data"];
+    if(#{!solo_lectura}){
+      ids_a_evitar.push("#manifestacion_de_interes_actividad_economicas_ids");
+      ids_a_evitar.push("#manifestacion_de_interes_comunas_ids");
+      ids_a_evitar.push("#manifestacion_de_interes_cuencas_ids");
+    }else{
+      ids_a_evitar.push("#manifestacion_de_interes_acuerdo_de_alcance_nacional");
+    }
+
+    elementos_ids.forEach(function(elemento_id, index, arr){
+      var obligatorio = elementos_validaciones[elemento_id]["obligatorio_campo"];
+      var nombre = elementos_validaciones[elemento_id]["nombre"];
+      var ayuda_activo = elementos_validaciones[elemento_id]["ayuda_activo"];
+      var ayuda = elementos_validaciones[elemento_id]["ayuda"];
+      var id_campo = elementos_validaciones[elemento_id]["id_campo"];
+      var tooltip_activo = elementos_validaciones[elemento_id]["tooltip_activo"];
+      var texto_tooltip = elementos_validaciones[elemento_id]["tooltip"];
+      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
+      var elemento_tipo = elementos_validaciones[elemento_id]["tipo"];
+
+      elemento_padre = $(elemento_id).parent();
+      label = crear_label_de_nombre(elemento_id, obligatorio, nombre);
+      boton_ayuda = "";
+      div_ayuda = "";
+      if(ayuda_activo){
+        boton_ayuda = crear_boton_de_ayuda(id_campo);
+        div_ayuda = crear_div_de_ayuda(ayuda, id_campo)
+      };
+
+      //Fix para radio buttons
+      row_de_radio = elemento_padre.parent().children('.align-items-end');
+      if(row_de_radio.length > 0){
+        row_de_radio.append("<div class='col'>"+label+"</div>");
+        row_de_radio.append("<div class='col-auto pr-1'>"+boton_ayuda+"</div>");
+        row_de_radio.after("<div class='row'><div class='col'>"+div_ayuda+"</div></div>");
+      }else if(elemento_tipo == "list" && ayuda_activo && #{!solo_lectura}){
+        $(elemento_id).after("<div class='card-body group-hide ayuda-div py-1' style='font-size: 13px;'>" + ayuda + "</div>")
+      }else{
+        if (!ids_a_evitar.includes(elemento_id)){
+          top_input = "<div class='row align-items-end'>";
+          top_input += "<div class='col'>"+label+"</div>";
+          top_input += "<div class='col-auto pr-0'>"+boton_ayuda+"</div>";
+          top_input += "</div>";
+          top_input += "<div class='row'>";
+          top_input += "<div class='col'>"+div_ayuda+"</div>";
+          top_input += "</div>";
+          elemento_padre.children(".control-label").first().remove();
+          elemento_padre.prepend(top_input);
+        }
+      }
+
+      if (tooltip_activo && (elemento_id != "#manifestacion_de_interes_descarga_formato_cartas_de_patrocinio" || ('APL-001-DES-003' in descargables))){ 
+        crear_tooltip(elemento_id, texto_tooltip); 
+      }
+    });
+    if(#{!@mantener_temporal}){
+      htmlErrorToTooltip('top');
+    };
+    __tooltip({placement: 'top'});
+  };
+
+  // # DOSSA 2019-08-12 12:25 Función encargada de crear el div con las clases, atributos y texto el cual debe ser pasado como parámetro cuando se invoca esta función.
+  function crear_div_de_ayuda(contenido, id_campo){
+    div_ayuda = "<div class='ayuda-campo-div-"+id_campo+" alert ayuda-div small' style='display: none;'>" + contenido + "</div>";
+    return div_ayuda;
+  };
+
+  // # DOSSA 2019-08-12 12:26 Función encargada de crear el botón para los campos que posean la ayuda activa en el mantenedor.
+  function crear_boton_de_ayuda(id_campo){
+    i = "<i class='fa fa-info-circle' style='color: #0c5460;'></i>";
+    a = "<a class='btn show-ayuda pb-0' campo='" + id_campo + "' >" + i + "</a>";
+    return a;
+  };
+
+  function crear_label_de_nombre(elemento, obligatorio, nombre){
+    elemento_sin_gato = elemento.slice(1);
+    if (obligatorio){
+      abbr = "<abbr title='Campo requerido'>*</abbr>"
+      label_nombre = "<label class='control-label label-nombre text required' for='" + elemento_sin_gato + "'>" + abbr + " " + nombre + "</label>";
+    }else{
+      label_nombre = "<label class='control-label label-nombre text' for='" + elemento_sin_gato + "'>" + nombre + "</label>";
+    };
+    return label_nombre;
+  };
+
+  function crear_tooltip(elemento_id, tooltip){
+    var card_header = $('input[name="manifestacion_de_interes['+elemento_id.replace("#manifestacion_de_interes_", "")+'][]"]').closest(".card").children(".card-header");
+    if(elemento_id.includes("_ids") && card_header.length > 0){
+      if(!card_header.parent().hasClass("has-error")){
+        card_header.addClass('tooltip-block');
+        card_header.attr('data-tooltip','true');
+        card_header.attr('data-original-title', tooltip);
+      }
+    }else if($(elemento_id).hasClass('select2-hidden-accessible')){
+      $(elemento_id).parent().children('span').addClass('tooltip-block');
+      $(elemento_id).parent().children('span').attr('data-tooltip','true');
+      $(elemento_id).parent().children('span').attr('data-original-title', tooltip);
+    }else if($(elemento_id).hasClass('file')){
+      if(!$(elemento_id).parent().hasClass('has-error')){
+        $(elemento_id).parent().addClass('tooltip-block');
+        $(elemento_id).parent().attr('data-tooltip','true');
+        $(elemento_id).parent().attr('data-original-title', tooltip);
+      }
+    }else{
+      $(elemento_id).attr("title","");
+      $(elemento_id).addClass('tooltip-block');
+      $(elemento_id).attr('data-tooltip','true');
+      $(elemento_id).attr('data-original-title', tooltip);
+    }
+  }
+
+= render 'modal_recuerde_guardar'
+#manifestacionContent.tab-content.px-2.pt-0
+  #sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"sector"] ? 'true' : 'false'), "aria-labelledby" => "sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"sector"])}  
+    .card
+      .card-body
+        =f.label t(:caracterizacion_economica)
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            Este punto permitirá contextualizar la importancia del sector productivo en la economía e identificar los aspectos más relevantes del o de los procesos productivos que pretenden abordarse con la realización del proyecto
+        =f.label t(:caracterizacion_ambiental_social) 
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            En este punto se deberán evidenciar externalidades ambientales y sociales que presenta el sector y que contextualizan la necesidad de desarrollar un APL
+
+        .row{class: (!solo_lectura ? 'align-items-end' : '')}
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, as: :text, input_html: { }, label: @validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre], required: true
+            -else
+              -no_data = f.object.nombre_acuerdo.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre]
+              %p#manifestacion_de_interes_nombre_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.nombre_acuerdo)
+          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, as: :text, input_html: { }, label: @validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre], required: true
+            -else
+              -no_data = f.object.nombre_acuerdo.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre]
+              %p#manifestacion_de_interes_nombre_acuerdo.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.nombre_acuerdo)
+          .col-12
+            .h5
+              =@validaciones2[:fondo_produccion_limpium][:estructura_productiva][:nombre]
+              -if @validaciones2[:fondo_produccion_limpium][:estructura_productiva][:ayuda_activo]
+                %a.btn.show-ayuda{campo: "9997"}
+                  %i.fa.fa-info-circle{style: "color: #0c5460;"}
+            .ayuda-campo-div-9997.alert.ayuda-div.small{style: "display: none"}
+              =@validaciones2[:fondo_produccion_limpium][:estructura_productiva][:ayuda].html_safe
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, input_html: { class: 'text-fixed-size' }, label: @validaciones2[:fondo_produccion_limpium][:prueba_fpl][:nombre], required: true
+            -else
+              -no_data = f.object.nombre_acuerdo.blank?
+              %label.control-label.string=@validaciones2[:fondo_produccion_limpium][:prueba_fpl][:nombre]
+              %p#manifestacion_de_interes_numero_empresas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.numero_empresas)
+          -#
+            .col-lg-4.pr-lg-0.col-12
+              - f.object.porcentaje_mipymes=(f.object.porcentaje_mipymes.blank? ? 0 : f.object.porcentaje_mipymes)
+              = f.input :porcentaje_mipymes, input_html: { type: :range, class: '', min: 0.0, max: 100, step: 0.1 }, label: t(:with_range_values_, label: t(:porcentaje_mipymes), init: f.object.porcentaje_mipymes ).html_safe, wrapper_class: 'range-slider', required: true
+          .col-12.col-md-6
+            -if !solo_lectura
+              = f.input :proponente, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:produccion][:nombre], required: true
+            -else
+              -no_data = f.object.proponente.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:produccion][:nombre]
+              %p#manifestacion_de_interes_produccion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.proponente)
+          -#.col-12.col-md-1
+            -if !solo_lectura
+              = f.input :proponente, collection: ManifestacionDeInteres.unidades_de_medida_para_volumen, input_html: { class: ''}, label: false, required: true
+            -else
+              -no_data = f.object.proponente.blank?
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:unidad_de_medida_volumen][:nombre]
+              %p#manifestacion_de_interes_unidad_de_medida_volumen.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                =(no_data ? 'No se ingresó respuesta' : f.object.unidad_de_medida_volumen)
+        =f.label t(:motivacion_sector) 
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            Esta sección permite comprender las motivaciones del sector empresarial al postular, junto con su nivel de vinculación con programas, planes y estrategias de desarrollo.                                     
+  #propuesta-tecnica.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"propuesta-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "propuesta-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"propuesta-tecnica"])}
+    .card
+      .card-body
+        =f.label t(:objetivo_general)
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores ya la comunidad en general y que pongan de relieve impactos, beneficios, mejores practicas, tecnicas, avances o innovaviones fruto de la implementación de Acuendos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentable con una visión preventiva de la contaminacion y uso eficiente de los recursos.
+        =f.label t(:objetivo_específico) 
+        %br
+        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+          = link_to t(:agregar_, item: t(:objetivo_específico).downcase), new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:lista_de_, items: t(:objetivo_específico).downcase)
+          .card-body
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th=t(:descripcion)
+                    %th.center=t(:metodologia)
+                    %th=t(:resultado)
+                    %th=t(:indicadores)
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %th.dos.iconos-acciones=t(:acción)
+                %tbody
+                  - @objetivos.each do |objetivo|
+                    %tr
+                      %td=objetivo.descripcion
+                      %td=objetivo.metodologia
+                      %td=objetivo.resultado
+                      %td=objetivo.indicadores
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.dos.iconos-acciones
+                        = link_to edit_objetivo_especifico_path(objetivo), title: "Editar los objetivos específicos" do
+                          %i.fa.fa-edit
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          = link_to objetivo_especifico_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:objetivo_específico)), remote: false }, title: "Eliminar el objetivo específico" do
+                            %i.fa.fa-trash
+        %br
+        .alert.alert-primary
+          %small
+            %i.fa.fa-question-circle.fa-1-5x
+            Ubicación geográfica de las empresas
+        .row
+          .col-12
+            -if solo_lectura
+              %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+              #manifestacion_de_interes_comunas_ids
+            #checkbox-tree-selector-regiones-provincias-comunas.mb-3
+              -card_class = ''
+              -card_class += ' border-0' if solo_lectura
+              -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
+              .card.m-0.card-preview-seleccionados{class: card_class}
+                -if !solo_lectura
+                  #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3
+                    %h5.no-margin.float-left.display_select_title
+                      %abbr{title: :required} *
+                      =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                    .float-right
+                      %i.fa.fa-chevron-right#boton_expandir_territorios
+                .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
+                  .row
+                    .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
+                      =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
+                    .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
+                      = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
+                      #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
+                  - if f.object.errors.messages.has_key?(:comunas_ids)
+                    %span.help-block
+                      = f.object.errors.messages[:comunas_ids].first
+                -if !solo_lectura
+                  .card-footer.p-0
+                    %ul.list-group.seleccionados_tree.m-0
+                -else
+                  .card-footer.px-0.pb-0.pt-1.border-0
+                    %ul.list-group.seleccionados_tree_solo_lectura.m-0
+          -#
+            .col-lg-6.pr-lg-0.col-12
+              -#
+                #textarea-caracterizacion-sector-territorio.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:caracterización_sector_territorio)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :caracterizacion_sector_territorio, as: :text, input_html: { class: 'card-wrap' }, label: t(:caracterización_sector_territorio), wrapper_class: 'm-0', required: true
+          -#
+            .col-lg-6.col-12
+              -#
+                #textarea-principales_actores.mb-3
+                  .card.m-0
+                    .card-header.pt-2.pb-1.pl-3
+                      %h5.no-margin.float-left
+                        %abbr{title: :required} *
+                        = t(:principales_actores)
+                      .float-right
+                        %i.fa.fa-chevron-right
+                    .card-body.p-0.group-hide
+              = f.input :principales_actores, as: :text, input_html: { class: 'card-wrap' }, label: t(:principales_actores), wrapper_class: 'm-0', required: true
+
+        .alert.alert-primary
+          %small
+            %i.fa.fa-question-circle.fa-1-5x
+            Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. (clasificación SII)
+        .row{class: (solo_lectura ? '' : 'align-items-end')}
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:micro), input_html: { class: 'required-field', value: 0  }
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:pequena), input_html: { class: 'required-field', value: 0  }
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:mediana), input_html: { class: 'required-field', value: 0  }
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:grande), input_html: { class: 'required-field', value: 0  }
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:total), input_html: { class: 'required-field', value: 0  }       
+          %br
+        .alert.alert-primary
+          %small
+            %i.fa.fa-question-circle.fa-1-5x
+            Duracion del proyecto
+        .row{class: (solo_lectura ? '' : 'align-items-end')}     
+          .col-lg-2.pr-lg-0.col-12
+            = f.input :nombre_acuerdo, required: true, label: t(:duracion_proyecto), collection: (1..6).map { |num| [num, num] }, input_html: { class: 'required-field' }
+        %br
+        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+          -# = link_to t(:agregar_, item: t(:institucion).downcase), new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:empresas_beneficiarias_del_proyecto)
+            %h5.no-margin.float-left
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
+                =t(:buscar)
+                %i.fa.fa-search-plus
+          .card-body
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th=t(:n°)
+                    %th.center=t(:nombre_empresa)
+                    %th=t(:rut)
+                    %th=t(:tamano_empresa)
+                    %th=t(:nombre_establecimiento)
+                    %th=t(:region_establecimiento)
+                    %th=t(:comuna_establecimiento)
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %th.dos.iconos-acciones=t(:acción)
+                %tbody
+                  - @objetivos.each do |objetivo|
+                    %tr
+                      %td=objetivo.descripcion
+                      %td=objetivo.metodologia
+                      %td=objetivo.resultado
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.dos.iconos-acciones
+                        = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                          %i.fa.fa-edit
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                            %i.fa.fa-trash
+  #equipo-trabajo.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"equipo-trabajo"] ? 'true' : 'false'), "aria-labelledby" => "equipo-trabajo-tab", :role => "tabpanel", class: ("show active" if tabs[:"equipo-trabajo"])}
+    .card
+      .card-body
+        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+          = link_to t(:agregar_, item: t(:equipo_trabajo_postulante).downcase), new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:equipo_trabajo_postulante)
+          .card-body
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th=t(:nombre)
+                    %th.center=t(:rut)
+                    %th=t(:telefono)
+                    %th=t(:email)
+                    %th=t(:profesion)
+                    %th=t(:cargo)
+                    %th=t(:funciones_proyecto)
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %th.dos.iconos-acciones=t(:acción)
+                %tbody
+                  - @objetivos.each do |objetivo|
+                    %tr
+                      %td=objetivo.descripcion
+                      %td=objetivo.metodologia
+                      %td=objetivo.resultado
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.dos.iconos-acciones
+                        = link_to edit_objetivo_especifico_path(objetivo), title: "Editar los objetivos específicos" do
+                          %i.fa.fa-edit
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          = link_to objetivo_especifico_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:objetivo_específico)), remote: false }, title: "Eliminar el objetivo específico" do
+                            %i.fa.fa-trash
+        %br
+        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+          = link_to t(:agregar_, item: t(:equipo_trabajo_consultores).downcase), new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:equipo_trabajo_consultores)
+          .card-body
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th=t(:nombre)
+                    %th.center=t(:rut)
+                    %th=t(:telefono)
+                    %th=t(:email)
+                    %th=t(:profesion)
+                    %th=t(:funciones_proyecto)
+                    %th=t(:valor_hh)
+                    %th=t(:copia_ci)
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %th.dos.iconos-acciones=t(:acción)
+                %tbody
+                  - @objetivos.each do |objetivo|
+                    %tr
+                      %td=objetivo.descripcion
+                      %td=objetivo.metodologia
+                      %td=objetivo.resultado
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      %td=objetivo.indicadores
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.dos.iconos-acciones
+                        = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                          %i.fa.fa-edit
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                            %i.fa.fa-trash    
+  #plan-de-actividades.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"plan-de-actividades"] ? 'true' : 'false'), "aria-labelledby" => "plan-de-actividades-tab", :role => "tabpanel", class: ("show active" if tabs[:"plan-de-actividades"])}
+    .card
+      .card-header
+      
+      .card-body
+        <h1>Plan de Actividades</h1>
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            El plan ofrece un enfoque estructurado y detallado para planificar y gestionar las diversas etapas y actividades de un proyecto, incluyendo la asignación de costos. Además, la capacidad de editar, eliminar y agregar actividades proporciona flexibilidad en la adaptación del plan a las necesidades cambiantes del proyecto.
+        %div.table-responsive
+          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+            %thead
+              %tr
+                %th{style: 'text-align: center; border-right: 1px solid #999; border-left: 1px solid #999; vertical-align: middle;', rowspan: 2}=t(:n°)
+                %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle;', rowspan: 2}=t(:etapa_actividades)
+                %th{colspan: 6, style: 'text-align: center; border-right: 1px solid #999;'}=t(:duracion)
+                %th{colspan: 4, style: 'text-align: center; border-right: 1px solid #999;'}= t(:costos)
+                -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                %th.dos.iconos-acciones{style: 'border-right: 1px solid #999; vertical-align: middle;', rowspan: 2}=t(:acción)
+              %tr
+                %th{style: 'border-right: 1px solid #999;'}="1"
+                %th{style: 'border-right: 1px solid #999;'}="2"
+                %th{style: 'border-right: 1px solid #999;'}="3"
+                %th{style: 'border-right: 1px solid #999;'}="4"
+                %th{style: 'border-right: 1px solid #999;'}="5"
+                %th{style: 'border-right: 1px solid #999;'}="6"
+                %th{style: 'border-right: 1px solid #999;'}="Recursos Humanos Propios"
+                %th{style: 'border-right: 1px solid #999;'}="Recursos Humanos Externos"
+                %th{style: 'border-right: 1px solid #999;'}="Gastos de Operación"
+                %th{style: 'border-right: 1px solid #999;'}="Gastos de Administración"
+              %tbody
+                %tr{style: 'background-color: #5d759e;'}
+                  %td{colspan: 11, style: 'color: white; font-weight: bold;'}
+                    %span ETAPA 1.Coordinación y Difusión Inicial
+                  %td{colspan: 4}
+                    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: white;'}
+                      Agregar actividad etapa 1
+                      %img{src: "/assets/agregar.gif", border: "0"}
+              - @objetivos.each do |objetivo|
+                %tr
+                  %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999;'}=objetivo.descripcion
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.metodologia
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.resultado
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %td.dos.iconos-acciones{style: 'border-right: 1px solid #999;'}
+                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                      %i.fa.fa-edit
+                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        %i.fa.fa-trash  
+
+              %tr{style: 'background-color: #5d759e;'}
+                %td{colspan: 11, style: 'color: white; font-weight: bold;'}
+                  %span ETAPA 2.Recopilación de Información Primaria y Secundaria
+                %td{colspan: 4}
+                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: white;'}
+                    Agregar actividad etapa 2
+                    %img{src: "/assets/agregar.gif", border: "0"}
+              - @objetivos.each do |objetivo|
+                %tr
+                  %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999;'}=objetivo.descripcion
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.metodologia
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.resultado
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %td.dos.iconos-acciones{style: 'border-right: 1px solid #999;'}
+                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                      %i.fa.fa-edit
+                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        %i.fa.fa-trash  
+
+              %tr{style: 'background-color: #5d759e;'}
+                %td{colspan: 11, style: 'color: white; font-weight: bold;'}
+                  %span ETAPA 3.Análisis de Información y Desarrollo del Diagnóstico Preliminar
+                %td{colspan: 4}
+                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=3')", style: 'color: white;'}
+                    Agregar actividad etapa 3
+                    %img{src: "/assets/agregar.gif", border: "0"}
+              - @objetivos.each do |objetivo|
+                %tr
+                  %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999;'}=objetivo.descripcion
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.metodologia
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.resultado
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %td.dos.iconos-acciones{style: 'border-right: 1px solid #999;'}
+                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                      %i.fa.fa-edit
+                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        %i.fa.fa-trash  
+  
+              %tr{style: 'background-color: #5d759e;'}
+                %td{colspan: 11, style: 'color: white; font-weight: bold;'}
+                  %span ETAPA 4.Difusión del Diagnóstico Preliminar y Entrega Diagnóstico Final
+                %td{colspan: 4}
+                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=4')", style: 'color: white;'}
+                    Agregar actividad etapa 4
+                    %img{src: "/assets/agregar.gif", border: "0"}
+              - @objetivos.each do |objetivo|
+                %tr
+                  %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999;'}=objetivo.descripcion
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.metodologia
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.resultado
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %td.dos.iconos-acciones{style: 'border-right: 1px solid #999;'}
+                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                      %i.fa.fa-edit
+                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        %i.fa.fa-trash 
+
+              %tr{style: 'background-color: #5d759e;'}
+                %td{colspan: 11, style: 'color: white; font-weight: bold;'}
+                  %span ETAPA 5.Desarrollo, Socialización y Entrega de la Propuesta de APL
+                %td{colspan: 4}
+                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=5')", style: 'color: white;'}
+                    Agregar actividad etapa 5
+                    %img{src: "/assets/agregar.gif", border: "0"}
+              - @objetivos.each do |objetivo|
+                %tr
+                  %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999;'}=objetivo.descripcion
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.metodologia
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=""
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.resultado
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  %td{style: 'border-right: 1px solid #999;'}=objetivo.indicadores
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %td.dos.iconos-acciones{style: 'border-right: 1px solid #999;'}
+                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                      %i.fa.fa-edit
+                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        %i.fa.fa-trash 
+  #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
+    .card
+      .card-body
+        <h1>Antecedentes</h1>
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            Recuerde que sólo puede subir un archivo por cada fila. Puede subir archivos comprimidos con .zip o .rar           
+        %div.table-responsive
+          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+            %thead
+              %tr
+                %th{style: 'color: white; background-color: #5d759e; width: 25%;'} Documento
+                %th{style: 'color: white; background-color: #5d759e; width: 25%;'} Detalles
+                %th{style: 'color: white; background-color: #5d759e; width: 25%;'} Descargar Formato
+                %th{style: 'color: white; background-color: #5d759e; width: 25%;'} Subir Documento
+              %tbody
+                - @descargables_tarea.each do |descargable|
+                  %tr
+                    %td{style: 'border-right: 1px solid #999; border-left: 1px solid #999; vertical-align: middle;'}= descargable.nombre
+                    %td{style: 'border-right: 1px solid #999;'}
+                    %td{style: 'border-right: 1px solid #999; vertical-align: middle;'}= __mostrar_descargable_simple_2(@tarea, "#{descargable.codigo}", "#{descargable.nombre}")
+                    %td{style: 'border-right: 1px solid #999;'}
+
+  #costos.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"costos"] ? 'true' : 'false'), "aria-labelledby" => "costos-tab", :role => "tabpanel", class: ("show active" if tabs[:"costos"])}
+    .card
+      .card-body
+        <h1>Resumen</h1>
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos.
+        %div.table-responsive 
+          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+            %tr
+              %td{colspan: 2}
+                %table.tabla(width="100%"){style: 'border: #999 1px solid;'}
+                  %thead
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 40%;'}=t(:estructura_costos)
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} $
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'}=t(:porcentaje_costo)
+                  %tbody
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Costo total de la propuesta
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte Propio Valorado
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte Propio Líquido
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte Propio Total
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte solicitado Fondo PL
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                %br        
+                %table.tabla(width="100%"){style: 'border: #999 1px solid;'}
+                  %thead
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 40%;'}=t(:estructura_costos_partida)
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} $
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'}=t(:porcentaje_costo)
+                  %tbody
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Recursos Humanos Propios
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Recursos Humanos Externos
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Operación
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Administración
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                %br        
+                %table.tabla(width="100%"){style: 'border: #999 1px solid;'}
+                  %thead
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 40%;', rowspan: 2}=t(:aporte_beneficiario_partida)
+                      %th{colspan: 2, style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} Aporte Valorado
+                      %th{colspan: 2, style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} Aporte líquido
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 15%;'} $
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 15%;'} %
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 15%;'} $
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 15%;'} %
+                  %tbody
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Recursos Humanos Propios
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Recursos Humanos Externos
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Operación
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Administración
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%   
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%  
+                %br        
+                %table.tabla(width="100%"){style: 'border: #999 1px solid;'}
+                  %thead
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 40%;'}=t(:aporte_fondo_partida)
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} $
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'}=t(:porcentaje_costo)
+                  %tbody
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Recursos Humanos Externos
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Operación
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Administración
+                      %td{style: 'background-color: white;'} 0
+                      %td{style: 'background-color: white'} 0,00%  
+        <h1>Validación</h1>   
+        %div.table-responsive 
+          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+            %tr
+              %td{colspan: 2}
+                %table.tabla(width="100%"){style: 'border: #999 1px solid;'}
+                  %thead
+                    %tr{style: 'background-color: #5d759e;'}
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 30%;'} Glosa
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 10%;'} Montp
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 40%;'} Criterio
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 10%;'} Límite
+                      %th{style: 'text-align: center; border-right: 1px solid #999; vertical-align: middle; color: white; width: 10%;'} Cumple?
+                  %tbody
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte líquido del postulante
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Mayor o igual al 9% del total del proyecto
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Si
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Aporte del postulante
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Mayor o igual al 30,00% del total del proyecto
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Si
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Gastos de Administración
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Menor o igual al 10% del total del proyecto
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Si
+                    %tr
+                      %td(width="33%" class="tabla_grisC") Cofinanciamiento CPL
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Menor o igual a $25.000.000
+                      %td{style: 'background-color: white;'} $0
+                      %td{style: 'background-color: white;'} Si
+                %br                   
+
+  =yield
+- ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
+:javascript  
+
+  if(#{!solo_lectura}){
+    function display_descarga(){
+      selector = $("#manifestacion_de_interes_estandar_de_certificacion_id");
+      if(selector.val() == ""){
+        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: none");
+      }else{
+        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: block");
+        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+selector.val());    
+      };
+    };
+
+    display_descarga();
+    $("#manifestacion_de_interes_estandar_de_certificacion_id").on('change', function(){
+      display_descarga();
+      if($(this).val()!=""){
+        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+$(this).val());
+      }
+    });
+
+    function display_descarga_diagnostico(){
+      selector = $("#manifestacion_de_interes_diagnostico_id");
+      if(selector.val() == ""){
+        $(".diagnostico_id_descarga").parent().children().addClass("d-none");
+      }else{
+        $(".diagnostico_id_descarga").parent().children().removeClass("d-none");
+        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+selector.val());    
+      };
+    };
+
+    display_descarga_diagnostico();
+    $("#manifestacion_de_interes_diagnostico_id").on('change', function(){
+      display_descarga_diagnostico();
+      if($(this).val()!=""){
+        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+$(this).val());
+      }
+    });
+
+    function display_descarga_informe_impacto(){
+      selector = $("#manifestacion_de_interes_acuerdo_previo_con_informe_id");
+      if(selector.val() == ""){
+        $(".informe_impacto_id_descarga").parent().children().addClass("d-none");
+      }else{
+        $(".informe_impacto_id_descarga").parent().children().removeClass("d-none");  
+        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+selector.val());  
+      };
+    };
+
+    display_descarga_informe_impacto();
+    $("#manifestacion_de_interes_acuerdo_previo_con_informe_id").on('change', function(){
+      display_descarga_informe_impacto();
+      if($(this).val()!=""){
+        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+$(this).val());
+      }
+    });
+  }else{}
+
+
+  //Permite cargar el mapa de area de inicia y alternativa de instalaciòn
+
+  //initializeRepresentacionEnMapaProyectoMap(-30.0000000, -71.0000000);
+  //# DZC 2019-08-14 11:17:51 se comenta hasta que se disponibilicen los cambios
+  //# DZC 2019-08-16 19:15:46 se descomenta para QA
+
+  activa_validaciones();
+
+
+  $(document).ready(function() {
+
+    $('.acuerdo_alcance_nacional').change(function(){
+      if(this.value == 'true'){
+        $('#si_acuerdo_alcance').hide(1200);
+      }else{
+        $('#si_acuerdo_alcance').show(1200);
+      }
+    });
+
+    $('.parent-checkbox').on('click', function() {
+      ancestorBlock=$(this).parent();
+      childControl=ancestorBlock.children('i[class^="fa"]');
+      if((this).checked){
+        childGroup=ancestorBlock.children('.group-hide');
+      }else{
+        childGroup=ancestorBlock.children('.group-show');
+        $(this).siblings('ul').find("input[type='checkbox']").prop('checked', this.checked);
+      }
+      __show_hide_(childGroup,childControl);
+    });
+
+    // ##
+    // # SGUERRA 2019-06-09 14:38
+    // # Click en actividad economica para desplegar sub grupo
+
+    $('.p-chevron').on('click', function(){
+      ancestorBlock=$(this).parent().parent().parent();
+      childGroup=ancestorBlock.children('.ae-subgroup');
+      childControl=$(this).children('.fa');
+        __show_hide_(childGroup,childControl);      
+    });
+
+    init_coordenadas_territorios();
+
+    //initializeUbicacionEntidadGestoraMap(#{ue[0].blank? ? 'null' : ue[0]}, #{ue[1].blank? ? 'null' : ue[1]});
+    document_ready = true;
+    if(typeof google != "undefined"){
+      mapLoaded();
+    }
+
+    
+
+    //##
+    //# SGUERRA 19-08-2019 12:51:00
+    //# Funcion encargda de agrega la clase tooltip-block y los atributos necesarios para crear tooltip de forma dinámica a los elementos del formulario
+  });
+
+  // ## 
+  // # DOSSA 2019-09-10 16:48
+  // # Se comenta función ya que el tab Datos Proyecto debe disponibilizarse siempre.
+  //Permite mostrar la pestaña datos del proyecto solo en caso de que se preinversion
+  // function verificarPreinversion(){
+  //   var tipoSeleccionado = $('#manifestacion_de_interes_tipo_instrumento_id').val();
+  //   //En apl:003 al estar deshabilitado el input no es posible ller el valor.-
+  //   if (tipoSeleccionado == null){
+  //     tipoSeleccionado = '#{@manifestacion_de_interes.tipo_instrumento_id}'
+  //   }
+  //   if(tipoSeleccionado=="6"){
+  //     $('#datos-proyecto-tab').removeClass('d-none');
+  //   }else{
+  //     $('#datos-proyecto-tab').addClass('d-none');
+  //   }
+  // }
+
+
+

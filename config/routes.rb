@@ -179,14 +179,47 @@ Rails.application.routes.draw do
   #PRO-010
   get 'enviar_carta_compromiso/:id', to: 'registro_proveedores#enviar_carta_compromiso', as: "enviar_carta_compromiso"
 
+  #------------------------------------------------------------------------------------------------------------#
+  #Fondo Producción Limpia
+  #Tarea FPL-001-1
+  resources :fondo_produccion_limpia
+  match 'fondo-produccion-limpias/create/:id', to: 'fondo_produccion_limpias#create', via: [:get, :patch], as: 'iniciar_flujo'
+  get ':id/edit(.:format)', to: "fondo_produccion_limpias#edit", as: :edit_fondo_produccion_limpia #Fondo produccion limpia instanciada
+  match ':id/edit(.:format)', to: "fondo_produccion_limpias#update", as: :update, via: [:get, :post, :patch]
+  get '/get_sub_lineas_seleccionadas', to: 'fondo_produccion_limpias#get_sub_lineas_seleccionadas', as: :get_sub_lineas_seleccionadas
+  #Tarea FPL-02
+  get ':id/revisor', to: "fondo_produccion_limpias#revisor", as: :revisor_fondo_produccion_limpia
+  patch ':id/revisor', to: "fondo_produccion_limpias#asignar_revisor"
 
+  #Tarea FPL-03
+  get ':id/admisibilidad', to: "fondo_produccion_limpias#admisibilidad", as: :admisibilidad_fondo_produccion_limpia
+  patch ':id/admisibilidad', to: "fondo_produccion_limpias#revisar_admisibilidad"
+
+  #Tarea FPL-04
+  get ':id/admisibilidad_tecnica', to: "fondo_produccion_limpias#admisibilidad_tecnica", as: :admisibilidad_tecnica_fondo_produccion_limpia
+  patch ':id/admisibilidad_tecnica', to: "fondo_produccion_limpias#revisar_admisibilidad_tecnica"
+
+  #Tarea FPL-05
+  get ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#admisibilidad_juridica", as: :admisibilidad_juridica_fondo_produccion_limpia
+  patch ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#revisar_admisibilidad_juridica"
+
+  #Tarea FPL-06
+  get ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#pertinencia_factibilidad", as: :pertinencia_factibilidad_fondo_produccion_limpia
+  patch ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#revisar_pertinencia_factibilidad"
+
+  #Objetivos Especificos
+  resources :objetivo_especificos, only: [:new, :create, :edit, :update, :destroy] do
+    collection do
+      get 'new/:id', action: :new, as: :new
+    end
+  end
   #------------------------------------------------------------------------------------------------------------#
 
-  #------------------------------------------------------------------------------------------------------------#
+  post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'
+  
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml
   get 'responder-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#responder', as: :responder_admin_encuesta
   post 'guardar-encuesta/:tarea_pendiente_id/:encuesta_id', to: 'admin/encuestas#guardar', as: :guardar_admin_encuesta
-
   #------------------------------------------------------------------------------------------------------------#
 
   resources :nota_registro_proveedores, only: [:index]

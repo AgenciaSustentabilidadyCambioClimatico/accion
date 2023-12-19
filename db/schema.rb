@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230809181130) do
+ActiveRecord::Schema.define(version: 20231121200205) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -850,6 +850,19 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.integer "registro_proveedor_id"
   end
 
+  create_table "fondo_produccion_limpia", force: :cascade do |t|
+    t.string "proponente"
+    t.string "nombre_acuerdo"
+    t.bigint "flujo_id"
+    t.bigint "linea_id"
+    t.bigint "sub_linea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
+    t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
+    t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
+  end
+
   create_table "glosas", force: :cascade do |t|
     t.string "nombre"
     t.datetime "created_at", null: false
@@ -952,6 +965,13 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.text "poligono_ubicacion"
     t.string "glosario"
     t.string "certificaciones_homologables"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "lineas", force: :cascade do |t|
+    t.string "codigo"
+    t.string "descripcion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -1247,6 +1267,17 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.float "nota", default: 0.0
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
+  end
+
+  create_table "objetivos_especificos", force: :cascade do |t|
+    t.bigint "flujo_id"
+    t.string "descripcion"
+    t.string "metodologia"
+    t.string "resultado"
+    t.string "indicadores"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flujo_id"], name: "index_objetivos_especificos_on_flujo_id"
   end
 
   create_table "otros", force: :cascade do |t|
@@ -1619,9 +1650,9 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -1729,6 +1760,15 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.index ["estandar_nivel_id"], name: "index_set_metas_acciones_on_estandar_nivel_id"
     t.index ["flujo_id"], name: "index_set_metas_acciones_on_flujo_id"
     t.index ["ppf_metas_establecimiento_id"], name: "index_set_metas_acciones_on_ppf_metas_establecimiento_id"
+  end
+
+  create_table "sub_lineas", force: :cascade do |t|
+    t.string "codigo"
+    t.string "descripcion"
+    t.bigint "linea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["linea_id"], name: "index_sub_lineas_on_linea_id"
   end
 
   create_table "tamano_contribuyentes", force: :cascade do |t|
@@ -2017,6 +2057,9 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "flujos", "proyectos"
   add_foreign_key "flujos", "registro_proveedores"
   add_foreign_key "flujos", "tipo_instrumentos"
+  add_foreign_key "fondo_produccion_limpia", "flujos"
+  add_foreign_key "fondo_produccion_limpia", "lineas"
+  add_foreign_key "fondo_produccion_limpia", "sub_lineas"
   add_foreign_key "hito_de_prensa_archivos", "hitos_de_prensa", column: "hitos_de_prensa_id"
   add_foreign_key "hito_de_prensa_instrumentos", "flujos"
   add_foreign_key "hito_de_prensa_instrumentos", "hitos_de_prensa", column: "hitos_de_prensa_id"
@@ -2044,6 +2087,7 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "modificacion_calendarios", "proyectos"
   add_foreign_key "nota_registro_proveedores", "manifestacion_de_intereses"
   add_foreign_key "nota_registro_proveedores", "registro_proveedores"
+  add_foreign_key "objetivos_especificos", "flujos"
   add_foreign_key "otros", "alcances"
   add_foreign_key "otros", "contribuyentes"
   add_foreign_key "otros", "establecimiento_contribuyentes"
@@ -2096,6 +2140,7 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "set_metas_acciones", "flujos"
   add_foreign_key "set_metas_acciones", "materia_sustancias"
   add_foreign_key "set_metas_acciones", "ppf_metas_establecimientos"
+  add_foreign_key "sub_lineas", "lineas"
   add_foreign_key "tarea_pendientes", "estado_tarea_pendientes"
   add_foreign_key "tarea_pendientes", "flujos"
   add_foreign_key "tarea_pendientes", "personas"

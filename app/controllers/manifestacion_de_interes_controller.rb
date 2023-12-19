@@ -1376,47 +1376,78 @@ class ManifestacionDeInteresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save
         if @tarea_pendiente.save
-          if @manifestacion_de_interes.temp_siguientes != "true"
-            #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-            case @manifestacion_de_interes.resultado_pertinencia
-            when "aceptada"
-              MapaDeActor.find_or_create_by({
-                flujo_id: @tarea_pendiente.flujo_id,
-                rol_id: Rol::COORDINADOR,
-                persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
-              })
-              MapaDeActor.find_or_create_by({
-                flujo_id: @tarea_pendiente.flujo_id,
-                rol_id: Rol::PRENSA,
-                persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
-              })
-              actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-              MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
+          #Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
+          if manifestacion_pertinencia_params[:fondo_produccion_limpia] != "true"
+            if @manifestacion_de_interes.temp_siguientes != "true"
+              #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
+              case @manifestacion_de_interes.resultado_pertinencia
+              when "aceptada"
+                MapaDeActor.find_or_create_by({
+                  flujo_id: @tarea_pendiente.flujo_id,
+                  rol_id: Rol::COORDINADOR,
+                  persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
+                })
+                MapaDeActor.find_or_create_by({
+                  flujo_id: @tarea_pendiente.flujo_id,
+                  rol_id: Rol::PRENSA,
+                  persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
+                })
+                actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+                MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
-              #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
-              @manifestacion_de_interes.confirmar_temporales_a_definitivos
+                #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
+                @manifestacion_de_interes.confirmar_temporales_a_definitivos
 
-              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-              #Cargar set de metas si se adherio a estandar o diagnostico.-
-              if @manifestacion_de_interes.estandar_de_certificacion_id.present?
-                @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
-              elsif @manifestacion_de_interes.diagnostico_id.present?
-                set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
+                @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+                #Cargar set de metas si se adherio a estandar o diagnostico.-
+                if @manifestacion_de_interes.estandar_de_certificacion_id.present?
+                  @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
+                elsif @manifestacion_de_interes.diagnostico_id.present?
+                  set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
+                end
+
+                #IMPRIME VALOR SELECCIONADO EN FRONT
+                #fpl: manifestacion_pertinencia_params[:fondo_produccion_limpia]
+                #Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
+
+              when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
+                @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+              when "no_aceptada"
+                @tarea_pendiente.pasar_a_siguiente_tarea 'C'
               end
-            when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
-              @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-            when "no_aceptada"
-              @tarea_pendiente.pasar_a_siguiente_tarea 'C'
+              format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente'
+                render js: "window.location='#{root_path}'"}
+              format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
+            else
+              msj = 'Pertinencia-factibilidad guardada correctamente'
+              format.js { flash.now[:success] = msj
+                render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
+              format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
             end
-            format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente'
-              render js: "window.location='#{root_path}'"}
-            format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
-          else
-            msj = 'Pertinencia-factibilidad guardada correctamente'
-            format.js { flash.now[:success] = msj
-              render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
-            format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
-          end
+          else #ELIMINAR ESTE ELSE Y ESTE CODIGO INCLUIRLO DENTRO DEL CASE ACEPTADA DE LA LINEA 1384
+               #CONSULTANDO ANTES SI SELECCIONO POSTULACION FPL
+
+            #Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
+
+            flujo = @tarea_pendiente.flujo_id
+            tarea = Tarea.where(codigo: 'FPL-020').first 
+            user_id = current_user.id
+            data = {}
+            #send_message(tarea, value)
+            TareaPendiente.create(flujo_id: flujo, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user_id, data: data)
+        
+            #Crea registo en tabla Fondo Produccion LImpia
+
+            #Rails.logger.debug "GUARDA FPL"
+            fondo = FondoProduccionLimpia.create(proponente: @manifestacion_de_interes.proponente, nombre_acuerdo: @manifestacion_de_interes.nombre_acuerdo, flujo_id: flujo, linea_id:1, sub_linea_id:1)
+            #Rails.logger.debug "GUARDA FPL SALIDA:#{fondo}"
+            #binding.pry
+
+            format.js { flash.now[:success] = 'Postulación Fondo Producción Limpia Creada'
+            render js: "window.location='#{root_path}'"}
+            format.html { redirect_to root_path, flash: {notice: 'Postulación Fondo Producción Limpia Creada' }}
+            
+           end
         end
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
@@ -2558,6 +2589,7 @@ class ManifestacionDeInteresController < ApplicationController
         :temporal,
         :temp_siguientes,
         :update_pertinencia,
+        :fondo_produccion_limpia,
         secciones_observadas_pertinencia_factibilidad: []
       )
       if @manifestacion_de_interes.fecha_observaciones_admisibilidad.nil?
@@ -2707,5 +2739,13 @@ class ManifestacionDeInteresController < ApplicationController
     def informe_acuerdo_params
       parametros = params.require(:informe_acuerdo).permit(:respuesta_observaciones)
       parametros
+    end
+
+    def send_message(tarea, user)
+      u = User.find(user)
+      mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
+      mensajes.each do |mensaje|
+        RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
+      end
     end
 end

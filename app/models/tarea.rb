@@ -22,7 +22,7 @@ class Tarea < ApplicationRecord
 	#validates :etapa_id, presence: true
 	validates :tipo_instrumento_id, presence: true
 	validates :rol_id, presence: true
-	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL|PRO)-[\0-9]{3}(\.[0-9])?\Z/ }
+	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL|PRO)-[\0-9]\d{1,3}(\.[0-9])?\Z/ }
 	validates :nombre, presence: true
 	validates :descripcion, presence: true
 
@@ -400,6 +400,17 @@ class Tarea < ApplicationRecord
   COD_PRO_008 = 'PRO-008'
   COD_PRO_009 = 'PRO-009'
   COD_PRO_010 = 'PRO-010'
+
+	COD_FPL_020 = 'FPL-020'
+	COD_FPL_02 = 'FPL-02'
+	COD_FPL_03 = 'FPL-03'
+	COD_FPL_04 = 'FPL-04'
+	COD_FPL_05 = 'FPL-05'
+	COD_FPL_06 = 'FPL-06'
+	COD_FPL_07 = 'FPL-07'
+	COD_FPL_08 = 'FPL-08'
+	COD_FPL_09 = 'FPL-09'
+
 
 	#etapas de acuerdo
 	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]

@@ -1,0 +1,138 @@
+:javascript
+  $(document).ready(function(){
+    var anular_confirmado = false;
+    $('#guardar-manifestacion-temporal-button').click(function(){
+      $('#enviar-manifestacion-button').removeAttr('data-disable-with');
+    });
+    $('#enviar-manifestacion-button').click(function(){
+      if(confirm("¿Está seguro que desea enviar?")){
+        $('#manifestacion_de_interes_temporal').val(false);
+        $('#guardar-manifestacion-temporal-button').removeAttr('data-disable-with');
+      }
+    });
+    $('#anular_y_eliminar').click(function(e){
+      if(!anular_confirmado){
+        e.preventDefault();
+        dataConfirmModal.confirm({
+          title: 'Confirme antes de continuar',
+          text: "Esta acción eliminará la información ingresada en la manifestación de interés",
+          commit: 'Confirmar',
+          cancel: 'Cancelar',
+          zIindex: 10099,
+          onConfirm: function() { 
+            dataConfirmModal.confirm({
+              title: 'Confirme antes de continuar',
+              text: "¿Desea anular y eliminar la postulación al Acuerdo?",
+              commit: 'Si, anular y eliminar',
+              cancel: 'No',
+              zIindex: 10099,
+              onConfirm: function() { 
+                anular_confirmado = true;
+                $("#manifestacion_de_interes_anulado").val(true);
+                $('#anular_y_eliminar').trigger("click");
+              },
+              onCancel:  function() {
+              },
+              onHide:    function() {
+              }
+            });
+          },
+          onCancel:  function() {
+          },
+          onHide:    function() {
+          }
+        });
+      }
+    });
+    $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
+
+    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
+    //  console.log('La función de éxito de AJAX se ha ejecutado.');
+    //  // Agrega más lógica aquí si es necesario
+
+    //  if (data.success) {
+    //    if (data.activeTab) {
+    //      $('#manifestacion a[href="' + data.activeTab + '"]').tab('show');
+    //    } else {
+    //      location.reload();
+    //    }
+    //  }
+    //});
+
+    //$('body').on('ajax:error', '.ajax-form', function(event, xhr, status, error) {
+    ////  console.error('Error en la función de AJAX:', error);
+    //  // Agrega manejo de errores aquí si es necesario
+    //});
+    //$(document).on('click', '.ajax-form', function() {
+    //  console.log('Click en .ajax-form');
+    //});
+
+    //$('body').on('ajax:complete','#fondo-produccion-limpia-form',function(xhr,status){ $('.loading-data').show()});
+    //    console.log('La función de éxito de AJAX se ha ejecutado xxx');
+    //    //$('#manifestacion a[href=\'#propuesta-tecnica\']').tab('show');
+    //});
+
+    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
+    //  // Accede al parámetro enviado desde el controlador
+    //  var activeTab = data.activeTab;
+    //  // Ahora puedes usar el valor de activeTab como desees
+    //  console.log('Valor de activeTab:', activeTab);
+    //
+    //  // ... Resto del código
+    //});
+
+    //$(document).ready(function() {
+    //  $(document).ajaxSuccess(function(event, xhr, settings) {
+    //    // Obtén el valor del atributo de datos
+    //    var nameTab = $('body').data('nameTab');
+    //    
+    //    // Haz lo que necesites con nameTab
+    //    console.log('Valor de nameTab:', nameTab);
+    //  });
+    //});
+
+    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
+    //  console.log("La función de éxito de AJAX se ha ejecutado", data);
+    //  console.log("Valor de nameTab:", data.data.activeTab);
+    //});
+
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- titulo t(:postulacion_fondo_produccion_limpia)
+- tabs = { "sector": true, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+- formulario_remote = true #flag para mostrar/ocultar el botón de guardado
+- mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
+= simple_form_for [@fondo_produccion_limpia], :url => update_path, method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'fondo-produccion-limpias-form', class: 'ajax-form'} do |f|
+  .card
+  .card-header
+    %h5.no-margin=titulo_instrumento_fpl.html_safe
+    %h5.no-margin=titulo_proyecto_fpl.html_safe
+    %h5.no-margin=datos_beneficiario_fpl.html_safe
+  = f.submit "", class: 'd-none'
+  #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+    %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+      - tabs.each do |tab,active|
+        %li.nav-item.tab-block{id: "#{tab}-tab"}
+          %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+            =t(tab.to_s.gsub('-','_'))
+          - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+            %small.total-error
+              = @total_de_errores_por_tab[tab].size
+      - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
+        - formulario_remote = false
+  = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
+  -if !solo_lectura
+    .float-left
+      = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
+      = link_to t(:descargar_postulacion), descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
+    .float-right
+      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+      -#
+        = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary #{formulario_remote ? 'd-none' : nil}"
+      = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-manifestacion-temporal-button', class: "btn btn-sm btn-primary"
+      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
+        %i.fa.fa-arrow-circle-right
+        = t(:enviar_postulación)
+-if !solo_lectura
+  = render 'admin/users/buscador'
+  - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+  = render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
