@@ -230,7 +230,8 @@ class AdhesionesController < ApplicationController
   def descargar_compilado
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -243,7 +244,7 @@ class AdhesionesController < ApplicationController
             # rename the file
             stream.put_next_entry(nombre)
             # add file to zip
-            stream.write IO.read((archivo.current_path rescue archivo.path))
+            stream.write IO.read((archivo.path rescue archivo.path))
           end
         end
       end
