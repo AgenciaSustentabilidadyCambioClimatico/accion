@@ -812,7 +812,8 @@ Rails.application.routes.draw do
   post ':tarea_pendiente_id/auditoria/retirar_elemento', to: "adhesiones#retirar_elemento", as: :retirar_elemento_adhesion
   get ':tarea_pendiente_id/adhesion/descargar', to: "adhesiones#descargar", as: :descargar_adhesion
   get ':tarea_pendiente_id/adhesion/descargar_compilado', to: "adhesiones#descargar_compilado", as: :descargar_compilado_adhesion
-
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_two', to: "adhesiones#descargar_compilado_two", as: :descargar_compilado_adhesion_two
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_three', to: "adhesiones#descargar_compilado_three", as: :descargar_compilado_adhesion_three
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos
 
