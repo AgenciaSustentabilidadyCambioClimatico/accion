@@ -35,14 +35,14 @@ class RegistroProveedor::CreateService
 
     # user = User.where(rut: @registro_proveedor.rut).first
     f = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
-    tarea = Tarea.where(nombre: "PRO-002").first
+    tarea = Tarea.where(codigo: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
     puts "-------> Creando tarea"
     TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id, data: @registro_proveedor.id)
   end
 
   def send_message
-    tarea = Tarea.where(nombre: "PRO-002").first
+    tarea = Tarea.where(codigo: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
     mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
     mensajes.each do |mensaje|
