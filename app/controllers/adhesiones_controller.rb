@@ -9,6 +9,7 @@ class AdhesionesController < ApplicationController
 	end
 
 	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
+    binding.pry
     @adhesion.assign_attributes(adhesion_params)
 		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
     @adhesion.flujo_id = @flujo.id

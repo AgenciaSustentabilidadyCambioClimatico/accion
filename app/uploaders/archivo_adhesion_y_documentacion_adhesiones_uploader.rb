@@ -9,4 +9,7 @@ class ArchivoAdhesionYDocumentacionAdhesionesUploader < CarrierWave::Uploader::B
     %w(xls xlsx zip rar pdf jpg jpeg png docx doc)
   end
 
+  CarrierWave.configure do |config|
+    config.remove_previously_stored_files_after_update = false
+  end
 end
