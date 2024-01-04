@@ -9,14 +9,23 @@ class AdhesionesController < ApplicationController
 	end
 
 	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
-    binding.pry
+    a = []
+    @adhesion.archivos_adhesion_y_documentacion.each do |f|
+      a << f.file.path
+    end
     @adhesion.assign_attributes(adhesion_params)
+    # @adhesion.archivos_adhesion_y_documentacion << a
+
+
+
 		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
     @adhesion.flujo_id = @flujo.id
     @adhesion.is_ppf = @ppp.present?
     respond_to do |format|
       
       if @adhesion.save
+        @adhesion.remote_archivos_adhesion_y_documentacion_urls = a.first
+        binding.pry
         @rechazadas = []
         continua_flujo_segun_tipo_tarea
         if @tarea.codigo == Tarea::COD_PPF_016 || @tarea.codigo == Tarea::COD_PPF_017
