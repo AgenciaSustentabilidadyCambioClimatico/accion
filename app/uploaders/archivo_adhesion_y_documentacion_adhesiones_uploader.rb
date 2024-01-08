@@ -13,5 +13,4 @@ class ArchivoAdhesionYDocumentacionAdhesionesUploader < CarrierWave::Uploader::B
     %w(xls xlsx zip rar pdf jpg jpeg png docx doc)
   end
 
-
 end
