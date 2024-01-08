@@ -42,6 +42,7 @@ class Adhesion < ApplicationRecord
 
 	#para tareas 25
 	attr_accessor :current_user, :tarea_id
+  attr_accessor :remote_archivos_adhesion_y_documentacion
 
 	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
 
