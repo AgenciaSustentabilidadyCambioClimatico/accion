@@ -9,12 +9,17 @@ class AdhesionesController < ApplicationController
 	end
 
 	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
+    @adhesion_new = Adhesion.new
+    @adhesion_new.flujo_id = @flujo.id
+    @adhesion_new.is_ppf = @ppp.present?
+    @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
+    @adhesion_new.save!
     @adhesion.assign_attributes(adhesion_params)
+
 		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
     @adhesion.flujo_id = @flujo.id
     @adhesion.is_ppf = @ppp.present?
     respond_to do |format|
-      
       if @adhesion.save
         @rechazadas = []
         continua_flujo_segun_tipo_tarea
