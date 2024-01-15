@@ -287,7 +287,8 @@ class AdhesionesController < ApplicationController
   def descargar_compilado_two
     require 'zip'
     archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
         numero_descarga = cuenta / 2
         adhesion.archivos_adhesion_y_documentacion.first(numero_descarga).each do |archivo|
@@ -315,7 +316,8 @@ class AdhesionesController < ApplicationController
   def descargar_compilado_three
     require 'zip'
     archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
         numero_descarga = cuenta / 2
         adhesion.archivos_adhesion_y_documentacion.last(numero_descarga).each do |archivo|
