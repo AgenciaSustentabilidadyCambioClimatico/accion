@@ -235,8 +235,33 @@ class AdhesionesController < ApplicationController
   def descargar_compilado
     require 'zip'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
-      @adhesiones_todas.each do |adhesion|
+      if params[:aid].blank?
+        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        @adhesiones_todas.each do |adhesion|
+          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+            if File.exists?(archivo.path)
+              #nombre = archivo.file.identifier
+              if adhesion.externa
+                nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+              else
+                c = adhesion.flujo.manifestacion_de_interes.contribuyente
+                nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+              end
+              # rename the file
+              stream.put_next_entry(nombre)
+              # add file to zip
+              stream.write IO.read((archivo.path rescue archivo.path))
+            end
+          end
+        end
+      else
+        if params[:elemento] == 'true'
+          adh = AdhesionElemento.find(params[:aid])
+          adh_id = (adh.adhesion_externa_id != nil ? adh.adhesion_externa_id : adh.adhesion_id)
+        else
+          adh_id = params[:aid]
+        end
+        adhesion = Adhesion.unscoped.find(adh_id)
         adhesion.archivos_adhesion_y_documentacion.each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -246,9 +271,9 @@ class AdhesionesController < ApplicationController
               c = adhesion.flujo.manifestacion_de_interes.contribuyente
               nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
             end
-            # rename the file
+              # rename the file
             stream.put_next_entry(nombre)
-            # add file to zip
+              # add file to zip
             stream.write IO.read((archivo.path rescue archivo.path))
           end
         end
@@ -262,7 +287,8 @@ class AdhesionesController < ApplicationController
   def descargar_compilado_two
     require 'zip'
     archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
         numero_descarga = cuenta / 2
         adhesion.archivos_adhesion_y_documentacion.first(numero_descarga).each do |archivo|
@@ -290,10 +316,11 @@ class AdhesionesController < ApplicationController
   def descargar_compilado_three
     require 'zip'
     archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
-      @adhesiones.each do |adhesion|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
         numero_descarga = cuenta / 2
-        adhesion.archivos_adhesion_y_documentacion.last(numero_descarga).each do |archivo|
+        adhesion.archivos_adhesion_y_documentacion.drop(numero_descarga).each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
             if adhesion.externa
