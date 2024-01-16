@@ -320,7 +320,7 @@ class AdhesionesController < ApplicationController
       @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
         numero_descarga = cuenta / 2
-        adhesion.archivos_adhesion_y_documentacion.last(numero_descarga).each do |archivo|
+        adhesion.archivos_adhesion_y_documentacion.drop(numero_descarga).each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
             if adhesion.externa
