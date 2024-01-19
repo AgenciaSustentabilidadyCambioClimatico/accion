@@ -1,0 +1,174 @@
+:javascript
+  $(document).ready(function(){
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#manifestacion_de_interes_temporal').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'admisibilidad-tab'){
+
+        if($(tab_selected).prop('id') == 'admisibilidad-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#admisibilidad-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#admisibilidad-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          if($('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"] span').length == 0){
+            $('.accordionTabs .card-header a span').addClass('d-none');
+          }else{
+            $('.accordionTabs .card-header a span').removeClass('d-none');
+          }
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#admisibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Acuerdo');
+        $('.accordionTabs .card-header a span').removeClass('d-none');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#admisibilidad-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Acuerdo'){
+        $('#admisibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+  });
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- titulo t(:observaciones_admisibilidad)
+= simple_form_for @manifestacion_de_interes, url: observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, html: { autocomplete: :off, multipart: true } do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.hidden_field :update_obs_admisibilidad, as: :boolean, value: true
+  = f.submit "", class: 'd-none'
+  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+  = f.submit '', id: 'guardar-manifestacion-temporal-button', class: 'd-none'
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "admisibilidad-externo", class: 'active', "aria-controls" => 'admisibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-externo", :role => "tab"}
+                  =t('admisibilidad')
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(:admisibilidad) && @total_de_errores_por_tab[:admisibilidad].size > 0
+                  %small.total-error
+                    %i.fa.fa-exclamation
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "sector": false, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "admisibilidad": true }
+          -# formulario_remote = true #flag para mostrar/ocultar el botón de guardado
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{class: (tab.to_s == 'admisibilidad' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+                  - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                    %small.total-error
+                      %i.fa.fa-exclamation
+              -# if @manifestacion_de_interes.errors.messages.size < 1
+                -# formulario_remote = false
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de Acuerdo
+                    -# if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.select{|error_tab, error_data| error_tab.to_s != 'admisibilidad' && error_data.size > 0}.size > 0
+                    %span.badge.badge-danger.badge-pill.ml-auto
+                      %i.fa.fa-exclamation
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'admisibilidad'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+                              %span.badge.badge-danger.badge-pill
+                                %i.fa.fa-exclamation
+
+            = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura do
+              #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
+                .card
+                  .card-body
+                    .row
+                      .col-12
+                        -if !solo_lectura
+                          = f.input :observaciones_admisibilidad, as: :text, input_html: {rows: 5}, label: t(:observaciones_y_comentarios), disabled: true
+                        -else
+                          .form-group
+                            -no_data = f.object.observaciones_admisibilidad.blank?
+                            %label.control-label.string=t(:observaciones_y_comentarios)
+                            %p#manifestacion_de_interes_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_admisibilidad)
+                      .col-12
+                        -if !solo_lectura
+                          = f.input :respuesta_observaciones_admisibilidad, as: :text, input_html: {rows: 5}, required: true
+                        -else
+                          .form-group
+                            -no_data = f.object.respuesta_observaciones_admisibilidad.blank?
+                            %label.control-label.string=t(:respuesta_observaciones_admisibilidad)
+                            %p#manifestacion_de_interes_respuesta_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_admisibilidad)
+                      -if !solo_lectura
+                        .col-12.col-md-10
+                          = f.input :archivo_admisibilidad, as: :file, input_html: {class: 'form-control validado'}, label: "Archivo complementario a respuesta de admisibilidad (opcional)"
+                          = f.input :archivo_admisibilidad_cache, as: :hidden
+                        .col-12.col-md-2
+                          -#
+                            = __descargar_archivo(f.object.archivo_admisibilidad,:archivo_admisibilidad)
+                          = __descargar_archivo(f.object.archivo_admisibilidad,f.object)
+                      -else
+                        .col-12
+                          = label_tag 'Archivo complementario a respuesta de admisibilidad (opcional)', nil, class: 'string mb-0'
+                          = __descargar_archivo(f.object.archivo_admisibilidad,f.object, false)
+    -if !solo_lectura
+      .col-12
+        .float-right
+          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+            %i.fa.fa-arrow-circle-right
+            =t(:enviar)
+-if !solo_lectura
+  = render 'admin/users/buscador'
+  - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+  = render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento

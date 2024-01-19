@@ -892,6 +892,18 @@ module ApplicationHelper
     when Tarea::COD_FPL_06
       data[:url] =  pertinencia_factibilidad_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_07
+      data[:url] =  observaciones_admisibilidad_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_08
+      data[:url] =  observaciones_admisibilidad_tecnica_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_09
+      data[:url] =  observaciones_admisibilidad_juridica_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_10
+      data[:url] =  evaluacion_general_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
     #Nuevo flujo postulacion FPL  
     end
   end

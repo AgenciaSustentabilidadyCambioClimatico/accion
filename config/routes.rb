@@ -187,6 +187,7 @@ Rails.application.routes.draw do
   get ':id/edit(.:format)', to: "fondo_produccion_limpias#edit", as: :edit_fondo_produccion_limpia #Fondo produccion limpia instanciada
   match ':id/edit(.:format)', to: "fondo_produccion_limpias#update", as: :update, via: [:get, :post, :patch]
   get '/get_sub_lineas_seleccionadas', to: 'fondo_produccion_limpias#get_sub_lineas_seleccionadas', as: :get_sub_lineas_seleccionadas
+  post '/guardar_duracion', to: 'fondo_produccion_limpias#guardar_duracion'
   #Tarea FPL-02
   get ':id/revisor', to: "fondo_produccion_limpias#revisor", as: :revisor_fondo_produccion_limpia
   patch ':id/revisor', to: "fondo_produccion_limpias#asignar_revisor"
@@ -207,10 +208,31 @@ Rails.application.routes.draw do
   get ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#pertinencia_factibilidad", as: :pertinencia_factibilidad_fondo_produccion_limpia
   patch ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#revisar_pertinencia_factibilidad"
 
+  #Tarea FPL-07
+  get ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#observaciones_admisibilidad", as: :observaciones_admisibilidad
+  patch ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad"
+
+  #Tarea FPL-08
+  get ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#observaciones_admisibilidad_tecnica", as: :observaciones_admisibilidad_tecnica
+  patch ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad_tecnica"
+
+  #Tarea FPL-09
+  get ':id/observaciones-admisibilidad-juridica', to: "fondo_produccion_limpias#observaciones_admisibilidad_juridica", as: :observaciones_admisibilidad_juridica
+  patch ':id/observaciones-admisibilidad-juridica', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad_juridica"
+
+  #Tarea FPL-10
+  get ':id/evaluacion-general', to: "fondo_produccion_limpias#evaluacion_general", as: :evaluacion_general
+  patch ':id/evaluacion-general', to: "fondo_produccion_limpias#revisar_evaluacion_general"
+  
   #Objetivos Especificos
   resources :objetivo_especificos, only: [:new, :create, :edit, :update, :destroy] do
+    member do
+      patch 'update'
+    end
+  
     collection do
       get 'new/:id', action: :new, as: :new
+      delete 'destroy/:id', action: :destroy, as: :destroy
     end
   end
   #------------------------------------------------------------------------------------------------------------#

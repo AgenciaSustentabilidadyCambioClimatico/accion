@@ -119,7 +119,7 @@
   }
 
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
-- titulo t(:revisar_pertinencia_factibilidad)
+- titulo t(:envia_evaluacion_general)
 = simple_form_for @manifestacion_de_interes, url: pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.hidden_field :temp_siguientes, as: :boolean, value: true
@@ -138,7 +138,7 @@
             %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
               %li.nav-item
                 %a.nav-link{id: "pertinencia-factibilidad-externo", class: 'active', "aria-controls" => 'pertinencia-factibilidad-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#pertinencia-factibilidad-externo", :role => "tab"}
-                  =t('pertinencia_factibilidad')
+                  =t('evaluacion_general')
         .card-body.border-tabs.px-2.pt-3
           - tabs = { "sector": false, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "pertinencia-factibilidad": true }
           -# formulario_remote = true #flag para mostrar/ocultar el botón de guardado
@@ -198,7 +198,6 @@
                                     %label.control-label.string=t(:resultado_de_la_pertinencia)
                                     %p#manifestacion_de_interes_resultado_pertinencia.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                                       =(no_data ? 'No se ingresó respuesta' : f.object.resultado_pertinencia.humanize)
-                    
                       .col-12.col-lg-6
                         -if !solo_lectura
                           = f.input :observaciones_pertinencia_factibilidad, as: :text, input_html: {rows: 4}, label: t(:observaciones_y_comentarios)
@@ -217,7 +216,36 @@
                             %label.control-label.string="Condiciones y/o compromisos a solicitar"
                             %p#manifestacion_de_interes_compromiso_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                               =(no_data ? 'No se ingresó respuesta' : f.object.compromiso_pertinencia_factibilidad)
-                               
+                      .col-12.col-lg-6
+                        .row
+                          .col-12
+                            -if !solo_lectura
+                              = f.input :coordinador_subtipo_instrumento_id, collection: @responsables_coordinador.map{|p| [p.user.nombre_completo, p.id]}, label: "Seleccionar Coordinador del Acuerdo", input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione un Coordinador"}
+                            -else
+                              .form-group
+                                -mapa_coordinador = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::COORDINADOR).first
+                                -rev_coordinador = mapa_coordinador.nil? ? nil : mapa_coordinador.persona.user.nombre_completo
+                                -no_data = rev_coordinador.nil?
+                                %label.control-label.string="Coordinador del Acuerdo"
+                                %p#manifestacion_de_interes_coordinador_subtipo_instrumento_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                                  =(no_data ? 'No se ingresó respuesta' : rev_coordinador)
+                          .col-12
+                            - if @nuevo_usuario
+                              = label_tag t(:alerta_nuevo_usuario), nil, class: 'no-form label string'
+                      .col-12.col-lg-6
+                        .row.align-items-end
+                          -if !solo_lectura
+                            .col-12.col-lg-6
+                              = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: "Adjuntar Ficha de Fondo Producción Limpia (Consejo Directivo)"
+                              = f.input :archivo_pertinencia_factibilidad_cache, as: :hidden
+                            .col-12.col-lg-6
+                              .form-group
+                                = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object)
+                          -else
+                            .col-12
+                              .form-group
+                                = label_tag "Adjuntar Ficha de Fondo Producción Limpia (Consejo Directivo)", nil, class: 'string mb-0'
+                                = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)            
                       -if !@manifestacion_de_interes.respuesta_observaciones_pertinencia_factibilidad.blank?
                         .col-12.col-lg-6
                           -if !solo_lectura

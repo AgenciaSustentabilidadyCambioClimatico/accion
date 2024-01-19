@@ -88,9 +88,116 @@
 
     
   });
+
+  function habilitaObservaciones(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+
+    calcularPromedio();
+  }
+
+  function calcularPromedio() {
+    var notas = document.querySelectorAll('.nota-input');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedio(promedio);
+  }
+
+  function mostrarPromedio(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+  }
+%style
+  :css
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    .table {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 1rem;
+      background-color: transparent;
+    }
+
+    .table tbody + tbody {
+      border-top: 2px solid #dee2e6;
+    }
+
+    .table .table {
+      background-color: #fff;
+    }
+
+    .table thead th {
+      font-size: 12px;
+      border-bottom: 2px solid #dee2e6;
+      border-right: 2px solid #dee2e6; 
+      border-left: 2px solid #dee2e6;
+    }
+    .encabezado-form {
+      vertical-align: middle;
+      border-bottom: 2px solid #dee2e6;
+      background-color: #E0EFF6;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .encabezado2-form {
+      text-align: center; 
+      border-bottom: 2px solid #dee2e6;
+      vertical-align: middle; 
+      background-color: #E0EFF6;
+      font-weight: bold;
+    }
+
+    .contenido1-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 50%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido2-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 20%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido3-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 30%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:resultado_admisibilidad_financiera)
-= simple_form_for @fondo_produccion_limpia, url: admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @manifestacion_de_interes, url: admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.hidden_field :temp_siguientes, as: :boolean, value: true
   = f.hidden_field :update_admisibilidad, as: :boolean, value: true
@@ -135,70 +242,51 @@
             = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
               #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
                 .card
-                  .card-body
-                    .row
-                      .col-12.col-lg-6
-                        = f.label :secciones_observadas_admisibilidad do
-                          %abbr{title: 'Requerido', style: 'display: none;'} *
-                          =t(:observaciones)
-                        %br
-                        - checks = tabs.map{|l,v| l.to_s != "admisibilidad" ? [I18n.t(l.to_s.gsub('-','_')), l.to_s] : nil}.compact
-                        -error_soa = ''
-                        -#error_soa = 'border-error' if f.object.errors.messages[:secciones_observadas_admisibilidad].size > 0
-                        %div.form-group.required.manifestacion_de_interes_secciones_observadas_admisibilidad{class: error_soa}
-                          = f.collection_check_boxes :secciones_observadas_admisibilidad, checks, :last, :first, item_wrapper_tag: false, boolean_style: :inline, checked: @manifestacion_de_interes.secciones_observadas_admisibilidad, required: true do |cb|
-                            = cb.check_box(disabled: solo_lectura)
-                            = cb.label
-                            %br
-                      .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :nombre_acuerdo, as: :text, input_html: {rows: 7}, disabled: true
-                        -else
-                          .form-group
-                            -no_data = f.object.respuesta_observaciones_admisibilidad.blank?
-                            %label.control-label.string=t(:respuesta_observaciones_admisibilidad)
-                            %p#manifestacion_de_interes_respuesta_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_admisibilidad)
-                      .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :nombre_acuerdo, collection: @tipo_instrumentos.map{|m|[m.nombre,m.id]}, group_method: :last, label: t(:tipo_instrumento_propuesto), required: true
-                        -else
-                          .form-group
-                            -no_data = f.object.tipo_instrumento_id.blank?
-                            %label.control-label.string=t(:tipo_instrumento)
-                            %p#manifestacion_de_interes_tipo_instrumento_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.tipo_instrumento.nombre)
-                      .col-12.col-lg-6
-                        = label_tag 'Archivo complementario a respuesta de admisibilidad', nil, class: 'string mb-0'
-                        -#
-                          = __descargar_archivo(f.object.archivo_admisibilidad,:nombre_acuerdo, false)
-                      .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :nombre_acuerdo, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [(w == "en_observación" ? "Con observaciones" : w.humanize), w] }, required: true, label: t(:resultado_admisibilidad)
-                        -else
-                          .form-group
-                            -no_data = f.object.resultado_admisibilidad.blank?
-                            %label.control-label.string=t(:resultado_admisibilidad)
-                            %p#manifestacion_de_interes_resultado_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.resultado_admisibilidad.humanize)
-                      .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :nombre_acuerdo, as: :text, input_html: {rows: 3}, label: t(:comentario_jefe_de_línea), disabled: true
-                        -else
-                          .form-group
-                            -no_data = f.object.comentario_jefe_de_linea.blank?
-                            %label.control-label.string=t(:comentario_jefe_de_línea)
-                            %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.comentario_jefe_de_linea)
-                      .col-12
-                        -if !solo_lectura
-                          = f.input :nombre_acuerdo, as: :text, input_html: {rows: 5}, required: true, label: t(:observaciones_y_comentarios)
-                        -else
-                          .form-group
-                            -no_data = f.object.observaciones_admisibilidad.blank?
-                            %label.control-label.string=t(:observaciones_y_comentarios)
-                            %p#manifestacion_de_interes_observaciones_admisibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_admisibilidad)
+                  .card-header
+                    .card-body
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado-form{colspan: 3}Criterio 4: COSTOS </br> Consistencia de los costos de las actividades con los aspectos técnicos abordados, cantidad y tamaño de empresas y cobertura geográfica. </br>  Se evaluará positivamente el aporte liquido del postulante, cantidad de empresas no socias y el (%) de empresas Mipymes participantes
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
+                              %th.contenido2-form
+                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_1', onchange: "habilitaObservaciones('nota_input_id_1','obs_input_id_1')" }
+                              %th.contenido3-form
+                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden;'}
+                            %tr
+                              %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
+                              %th.contenido2-form
+                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_2', onchange: "habilitaObservaciones('nota_input_id_2','obs_input_id_2')" }
+                              %th.contenido3-form                             
+                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden;'}
+                            %tr
+                              %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
+                              %th.contenido2-form
+                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_3', onchange: "habilitaObservaciones('nota_input_id_3','obs_input_id_3')" }
+                              %th.contenido3-form
+                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden;'}                            
+                            %tr
+                              %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
+                              %th.contenido2-form
+                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_4', onchange: "habilitaObservaciones('nota_input_id_4','obs_input_id_4')" }
+                              %th.contenido3-form     
+                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden;'}
+                            %tr
+                              %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
+                              %th.contenido2-form
+                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_5', onchange: "habilitaObservaciones('nota_input_id_5','obs_input_id_5')" }
+                              %th.contenido3-form    
+                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden;'}
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas
+                              %th.contenido3-form                
     -if !solo_lectura
       .col-12
         .float-right

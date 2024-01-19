@@ -1,9 +1,5 @@
 :javascript
   $(document).ready(function(){
-
-    //$(".disabled *:not('.fa')").prop('disabled',true);
-    //$(".disabled *:not('.fa')").off();
-
     $('.chosen-control').chosen({
       allow_single_deselect: true,
       no_results_text: 'No se encontraron resultados',
@@ -12,11 +8,9 @@
     htmlErrorToTooltip('top');
 
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
-      //alert('paso1');
       tab_selected = e.target;
       $('.accordionTabs .card-body a').removeClass('hide');
       if($(tab_selected).prop('id') != 'asignar-revisor-tab'){
-        //alert($(tab_selected).prop('id'));
         if($(tab_selected).prop('id') == 'asignar-revisor-externo'){
           $('#collapseTabs').removeClass("show");
           $('a.nav-link#asignar-revisor-tab').tab('show');
@@ -60,9 +54,8 @@
     });
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
-= simple_form_for @fondo_produccion_limpia, url: revisor_fondo_produccion_limpia_path(@tarea_pendiente,@fondo_produccion_limpia) do |f|
+= simple_form_for @manifestacion_de_interes, url: revisor_fondo_produccion_limpia_path(@tarea_pendiente,@fondo_produccion_limpia) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
- 
   .row
     .col-12
       .card
@@ -108,7 +101,7 @@
                     .row
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :nombre_acuerdo, collection: @fondo_produccion_limpia.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico"}, label: t(:revisor_tecnico)
+                          = f.input :revisor_tecnico_id, collection: @fondo_produccion_limpia.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico"}, label: t(:revisor_tecnico)
                         -else
                           .form-group
                             -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
@@ -119,7 +112,7 @@
                               =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :nombre_acuerdo, collection: @fondo_produccion_limpia.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero"}, label: t(:revisor_financiero)
+                          = f.input :revisor_juridico_id, collection: @revisores_financieros_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero"}, label: t(:revisor_financiero)
                         -else
                           .form-group
                             -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_FINANCIERO_FPL).first
@@ -130,7 +123,7 @@
                               =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :nombre_acuerdo, collection: @revisores_juridicos_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico"}, label: t(:revisor_juridico)
+                          = f.input :revisor_juridico_id, collection: @revisores_juridicos_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico"}, label: t(:revisor_juridico)
                         -else
                           .form-group
                             -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_JURIDICO).first
@@ -141,7 +134,7 @@
                               =(no_data ? 'No se ingresó respuesta' : rev_juridico)
                       .col-12
                         -if !solo_lectura
-                          = f.input :nombre_acuerdo, as: :text, label: t(:comentario), input_html: {class: "required-field"}, required: true
+                          = f.input :comentario_jefe_de_linea, as: :text, label: t(:comentario), input_html: {class: "required-field"}, required: true
                         -else
                           .form-group
                             -no_data = f.object.comentario_jefe_de_linea.blank?

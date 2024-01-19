@@ -107,6 +107,7 @@
     %h5.no-margin=titulo_instrumento_fpl.html_safe
     %h5.no-margin=titulo_proyecto_fpl.html_safe
     %h5.no-margin=datos_beneficiario_fpl.html_safe
+  = f.input :id, as: :hidden, wrapper: false, input_html: { value: @tarea_pendiente.id, id: 'tarea_pendiente_id' }  
   = f.submit "", class: 'd-none'
   #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
     %ul#manifestacion.nav.nav-tabs{:role => "tablist"}

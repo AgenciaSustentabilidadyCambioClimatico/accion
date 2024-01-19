@@ -52,7 +52,6 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def revisores_select
-    # DZC 2018-10-03 17:41:49 se corrige la búsqueda de responsables según el tipo de instrumento de la instancia
     #tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
     nombre_acuerdo = self.nombre_acuerdo.blank? ? self.flujo.tipo_instrumento_id : self.nombre_acuerdo
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}     
