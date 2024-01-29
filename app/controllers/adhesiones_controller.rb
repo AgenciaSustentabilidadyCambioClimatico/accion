@@ -255,26 +255,24 @@ class AdhesionesController < ApplicationController
           end
         end
       else
-        if params[:elemento] == 'true'
-          adh = AdhesionElemento.find(params[:aid])
-          adh_id = (adh.adhesion_externa_id != nil ? adh.adhesion_externa_id : adh.adhesion_id)
-        else
-          adh_id = params[:aid]
-        end
-        adhesion = Adhesion.unscoped.find(adh_id)
-        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-          if File.exists?(archivo.path)
-            #nombre = archivo.file.identifier
-            if adhesion.externa
-              nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-            else
-              c = adhesion.flujo.manifestacion_de_interes.contribuyente
-              nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+        @adhesiones_todas.each do |adhesion|
+          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+            if File.exists?(archivo.path)
+              if params[:nombre_archivo] == archivo.file.identifier
+                #nombre = archivo.file.identifier
+                if adhesion.externa
+                  nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+                else
+                  c = adhesion.flujo.manifestacion_de_interes.contribuyente
+                  nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+                end
+                  # rename the file
+                stream.put_next_entry(nombre)
+                  # add file to zip
+                stream.write IO.read((archivo.path rescue archivo.path))
+              end
             end
-              # rename the file
-            stream.put_next_entry(nombre)
-              # add file to zip
-            stream.write IO.read((archivo.path rescue archivo.path))
           end
         end
       end
