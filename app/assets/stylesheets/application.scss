@@ -2034,3 +2034,33 @@ table.table.table-home.dataTable.no-footer{
 #registro_proveedor_asociar_institucion {
   margin-right: 6px;
 }
+
+.guillo {
+  background-color: white !important;
+  .sorting_1{
+   display: none;
+  }
+
+  .nombre_instrumento_guillo {
+    color: white !important;
+  }
+
+  .nombre_tarea_guillo {
+    padding-top: 20px;
+    text-align: center;
+  }
+
+  .estado_tarea_guillo {
+    padding-top: 30px;
+    text-align: center;
+  }
+
+  .icono_tarea_guillo {
+    padding-top: 30px;
+    text-align: center;
+
+    i {
+      font-size: 20px;
+    }
+  }
+}

@@ -35,8 +35,7 @@
     const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
     const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
     gui.forEach((e, index) => {
-      if ( index != 0 ) { e.classList.toggle("d-none"); };
-
+      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("guillo") };
     })
     g.forEach((e, index) => {
         if ( index != 0 ) { e.classList.toggle("d-none"); };
@@ -79,8 +78,8 @@
               %td
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
                 =flujo.id
-              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
-              %td
+              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre_instrumento_guillo'}=flujo.nombre_instrumento
+              %td{class: 'nombre_tarea_guillo'}
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?
                   - unless pendiente.determina_convocatoria.blank?
@@ -98,8 +97,8 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
-              %td.dos.iconos-acciones
+                %td{class: 'estado_tarea_guillo'}=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
+              %td.dos.iconos-acciones{class: 'icono_tarea_guillo'}
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
@@ -158,3 +157,4 @@
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
+
