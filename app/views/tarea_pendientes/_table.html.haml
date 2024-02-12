@@ -34,8 +34,10 @@
   function unfoldTareas(evento) {
     const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
     const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
+    const jj = document.querySelectorAll('.nombre_tarea_guillo')
     gui.forEach((e, index) => {
-      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("guillo") };
+      console.log(e.classList)
+      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("guillo"); };
     })
     g.forEach((e, index) => {
         if ( index != 0 ) { e.classList.toggle("d-none"); };
@@ -52,12 +54,12 @@
       = titulo
   .card-body
   - if current_user.contribuyente_ids.first == 639391
-    %%table.table.table-striped.acuerdos-pendientes
+    %%table.table.acuerdos-pendientes
       %thead
         %tr
           %th=t(:flujo_id)
           %th=t(:acuerdo_o_proyecto_o_programa)
-          %th=t(:tarea)
+          %th{class: 'd-none'} =t(:tarea)
           %th Estado del acuerdo
           %th.dos.iconos-acciones=t(:acciones)
       %tbody
@@ -76,10 +78,10 @@
             - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
               %td
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
+                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 24px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
                 =flujo.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre_instrumento_guillo'}=flujo.nombre_instrumento
-              %td{class: 'nombre_tarea_guillo'}
+              %td{class: 'ssss'}
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?
                   - unless pendiente.determina_convocatoria.blank?
@@ -102,6 +104,7 @@
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
+                %p i
 
   -else
     %table.table.table-striped.acuerdos-pendientes

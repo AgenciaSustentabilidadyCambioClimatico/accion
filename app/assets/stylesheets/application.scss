@@ -2035,18 +2035,38 @@ table.table.table-home.dataTable.no-footer{
   margin-right: 6px;
 }
 
+.ssss {
+  display: none;
+}
+
+.icono_tarea_guillo {
+
+    padding-top: 30px;
+    text-align: center;
+
+    i {
+      display: none;
+    }
+
+    p {
+      color: white;
+      font-size: 1px;
+    }
+  }
+
 .guillo {
-  background-color: white !important;
+  background-color: lightgrey !important;
   .sorting_1{
    display: none;
   }
 
   .nombre_instrumento_guillo {
-    color: white !important;
+    color: lightgrey !important;
   }
 
-  .nombre_tarea_guillo {
-    padding-top: 20px;
+  .ssss {
+    display: block;
+    padding-top: 30px;
     text-align: center;
   }
 
@@ -2056,11 +2076,16 @@ table.table.table-home.dataTable.no-footer{
   }
 
   .icono_tarea_guillo {
+
     padding-top: 30px;
     text-align: center;
 
     i {
       font-size: 20px;
+      display: block;
     }
   }
+
 }
+
+
