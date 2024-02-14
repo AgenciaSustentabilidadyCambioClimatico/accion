@@ -2055,13 +2055,19 @@ table.table.table-home.dataTable.no-footer{
   }
 
 .guillo {
-  background-color: lightgrey !important;
+  background-color: #F5F5F5 !important;
   .sorting_1{
    display: none;
   }
 
   .nombre_instrumento_guillo {
-    color: lightgrey !important;
+    color: #F5F5F5 !important;
+    width: 80px !important;
+    max-width: 80px !important;
+    min-width: 80px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;;
   }
 
   .ssss {
@@ -2086,6 +2092,11 @@ table.table.table-home.dataTable.no-footer{
     }
   }
 
+}
+
+.btn-flujo-guillo {
+  border-radius: 12px;
+  box-shadow: 1px 0px 6px lightgray;
 }
 
 

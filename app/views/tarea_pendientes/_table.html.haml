@@ -57,7 +57,7 @@
     %%table.table.acuerdos-pendientes
       %thead
         %tr
-          %th=t(:flujo_id)
+          %th{style: "width: 80px !important;"}=t(:flujo_id)
           %th=t(:acuerdo_o_proyecto_o_programa)
           %th{class: 'd-none'} =t(:tarea)
           %th Estado del acuerdo
@@ -76,9 +76,9 @@
             - subtipo_instrumento = flujo.subtipo_de_instrumento
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             - registro_proveedores = flujo.registro_proveedor
-            %tr{:id => "flujo#{flujo.id}", :onClick => "unfoldTareas()", :class => "flujo_tareas", style:"cursor: pointer;"}
-              %td
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 24px; margin-right: 20px; color: #007bff; cursor: not-allowed;' }
+            %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas"}
+              %td{:onClick => "unfoldTareas()", class: 'btn-flujo-guillo text-center', style:"cursor: pointer;"}
+                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre_instrumento_guillo'}=flujo.nombre_instrumento
               %td{class: 'ssss'}
@@ -110,7 +110,7 @@
     %table.table.table-striped.acuerdos-pendientes
       %thead
         %tr
-          %th=t(:flujo_id)
+          %th{style: "width: 80px; !important"}=t(:flujo_id)
           - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
             %th=t(:tarea_pendiente_id)
           %th=t(:acuerdo_o_proyecto_o_programa)
