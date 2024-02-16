@@ -2035,11 +2035,11 @@ table.table.table-home.dataTable.no-footer{
   margin-right: 6px;
 }
 
-.ssss {
+.tarea-nombre-entrada {
   display: none;
 }
 
-.icono_tarea_guillo {
+.icono-tarea-entrada {
 
     padding-top: 30px;
     text-align: center;
@@ -2054,13 +2054,13 @@ table.table.table-home.dataTable.no-footer{
     }
   }
 
-.guillo {
+.entrada-cambio-unfold {
   background-color: #F5F5F5 !important;
   .sorting_1{
    display: none;
   }
 
-  .nombre_instrumento_guillo {
+  .nombre-instrumento-entrada {
     color: #F5F5F5 !important;
     width: 80px !important;
     max-width: 80px !important;
@@ -2070,19 +2070,18 @@ table.table.table-home.dataTable.no-footer{
     text-overflow: ellipsis;;
   }
 
-  .ssss {
+  .tarea-nombre-entrada {
     display: block;
     padding-top: 30px;
     text-align: center;
   }
 
-  .estado_tarea_guillo {
+  .estado-tarea-entrada {
     padding-top: 30px;
     text-align: center;
   }
 
-  .icono_tarea_guillo {
-
+  .icono-tarea-entrada {
     padding-top: 30px;
     text-align: center;
 
@@ -2094,7 +2093,7 @@ table.table.table-home.dataTable.no-footer{
 
 }
 
-.btn-flujo-guillo {
+.btn-tarea-pendiente {
   border-radius: 12px;
   box-shadow: 1px 0px 6px lightgray;
 }

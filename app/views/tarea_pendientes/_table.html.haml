@@ -34,10 +34,10 @@
   function unfoldTareas(evento) {
     const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
     const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
-    const jj = document.querySelectorAll('.nombre_tarea_guillo')
+
     gui.forEach((e, index) => {
       console.log(e.classList)
-      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("guillo"); };
+      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold"); };
     })
     g.forEach((e, index) => {
         if ( index != 0 ) { e.classList.toggle("d-none"); };
@@ -77,11 +77,11 @@
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas"}
-              %td{:onClick => "unfoldTareas()", class: 'btn-flujo-guillo text-center', style:"cursor: pointer;"}
+              %td{:onClick => "unfoldTareas()", class: 'btn-tarea-pendiente text-center', style:"cursor: pointer;"}
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
-              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre_instrumento_guillo'}=flujo.nombre_instrumento
-              %td{class: 'ssss'}
+              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
+              %td{class: 'tarea-nombre-entrada'}
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?
                   - unless pendiente.determina_convocatoria.blank?
@@ -99,8 +99,8 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td{class: 'estado_tarea_guillo'}=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
-              %td.dos.iconos-acciones{class: 'icono_tarea_guillo'}
+                %td{class: 'estado-tarea-entrada'}=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
+              %td.dos.iconos-acciones{class: 'icono-tarea-entrada'}
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
