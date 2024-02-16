@@ -288,7 +288,7 @@ class AdhesionesController < ApplicationController
       @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
       @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
-        numero_descarga = cuenta / 2
+        numero_descarga = cuenta / 3
         adhesion.archivos_adhesion_y_documentacion.first(numero_descarga).each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
@@ -317,8 +317,37 @@ class AdhesionesController < ApplicationController
       @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
       @adhesiones_todas.each do |adhesion|
         cuenta = adhesion.archivos_adhesion_y_documentacion.count
-        numero_descarga = cuenta / 2
-        adhesion.archivos_adhesion_y_documentacion.drop(numero_descarga).each do |archivo|
+        numero_descarga = cuenta / 3
+        adhesion.archivos_adhesion_y_documentacion.drop(numero_descarga).first(numero_descarga + 1).each do |archivo|
+          if File.exists?(archivo.path)
+            #nombre = archivo.file.identifier
+            if adhesion.externa
+              nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+            else
+              c = adhesion.flujo.manifestacion_de_interes.contribuyente
+              nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+            end
+            # rename the file
+            stream.put_next_entry(nombre)
+            # add file to zip
+            stream.write IO.read((archivo.current_path rescue archivo.path))
+          end
+        end
+      end
+    end
+    archivo_zip_two.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip_two.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion_parte_2.zip"
+  end
+
+  def descargar_compilado_four
+    require 'zip'
+    archivo_zip_two = Zip::OutputStream.write_buffer do |stream|
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesiones_todas.each do |adhesion|
+        cuenta = adhesion.archivos_adhesion_y_documentacion.count
+        numero_descarga = cuenta / 3
+        adhesion.archivos_adhesion_y_documentacion.drop(numero_descarga * 2).each do |archivo|
           if File.exists?(archivo.path)
             #nombre = archivo.file.identifier
             if adhesion.externa

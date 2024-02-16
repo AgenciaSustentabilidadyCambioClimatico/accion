@@ -198,6 +198,11 @@
                     = link_to descargar_compilado_adhesion_three_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
                       %i.fa.fa-download
                       ='Descargar Documentación(2)'
+                    %label.string.control-label
+                      = ''
+                    = link_to descargar_compilado_adhesion_four_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      ='Descargar Documentación(3)'
                   -else
                     %label.string.control-label
                       = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
