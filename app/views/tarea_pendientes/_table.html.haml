@@ -32,8 +32,8 @@
   })
 
   function unfoldTareas(evento) {
-    const gui = document.querySelectorAll('#' + `${event.target.parentElement.id}`)
-    const g = document.querySelectorAll('.' + `${event.target.parentElement.id}`)
+    const gui = document.querySelectorAll('#' + `${event.target.closest('td').parentElement.id}`)
+    const g = document.querySelectorAll('.' + `${event.target.closest('td').parentElement.id}`)
 
     gui.forEach((e, index) => {
       console.log(e.classList)
@@ -77,8 +77,8 @@
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas"}
-              %td{:onClick => "unfoldTareas()", class: 'btn-tarea-pendiente text-center', style:"cursor: pointer;"}
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 18px; margin-right: 20px; cursor: pointer; color: #007bff;' }
+              %td{:onClick => "unfoldTareas()", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
+                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
               %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
               %td{class: 'tarea-nombre-entrada'}
