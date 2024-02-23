@@ -1,4 +1,5 @@
 :javascript
+  var variable = 1;
   function cargarSubLineas(valorLinea) {
      $.ajax({
         url: "#{get_sub_lineas_seleccionadas_path}",
@@ -44,23 +45,57 @@
     $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2('close');
   });
 
-  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+  /*$(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      //alert('entro contribuyente seleccion');
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      //data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      //$("#manifestacion_de_interes_contribuyente_id").val(data.id);
+      //$("#manifestacion_de_interes_contribuyente_id").change();
+      //$("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
+      //$("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });*/
+
+  $('.seleccionar-contribuyente-button').click(function() {
     try {
       //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
       //data=JSON.parse($('.contribuyente-radio:checked').val());
       data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-      $("#manifestacion_de_interes_contribuyente_id").val(data.id);
-      $("#manifestacion_de_interes_contribuyente_id").change();
-      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
-      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+
+      $("select#responsable_contribuyente_id").append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
+      $("input#responsable_contribuyente_id").val(data.id);
+      checkFieldValidity($("select#responsable_contribuyente_id"));
+      $("i.deseleccionar-contribuyente").show();
+      reset_actectos_tipo_contribuyente();
+      //rellena_tipo_contribuyente(tipos_contr, data.tipo_contribuyentes);
+      $.each($("select#responsable_actividad_economica_id option"),function(k,v) {
+        if ( $.inArray( parseInt( $(v).val() ), data.actividades_economicas) == -1 ) { $(v).remove(); }
+      });
+      $.each($("select#responsable_tipo_contribuyente_id option"),function(k,v) {
+        if ( $.inArray(parseInt( $(v).val() ), data.tipo_contribuyentes) == -1 ) { $(v).remove(); }
+      });
+      $("select#responsable_actividad_economica_id").trigger("chosen:updated");
+      $("select#responsable_tipo_contribuyente_id").trigger("chosen:updated");
     } catch(e) {
       alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
     }
-  });
+
+    $('.chosen-control').on('chosen:showing_dropdown', function(evt, params) {
+      console.log('lala');
+      console.log($(this).find('option'));
+      //compress()
+    });
+
+  });   
+
   //Permite que al seleccionar un usuario desde el modal se adjunte su información
   $(document).on('click' , '.seleccionar-usuario-button', function() {
     try {
-      data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+      data=JSON.parse($('table.usuarios').DataTable().$('.contribuyente-radio:checked').val());
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
@@ -70,12 +105,26 @@
   });
 
   $(document).ready(function(){
-
-    habilitaJustificacion();
     sumarTrabajadoresPermanentes();
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
+    
+    valida_div();
+
+    //var divEquipoConsultora = document.getElementById('div_equipo_consultora');
+    //divEquipoConsultora.style.display = 'none';
+    
+    //var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
+    //divEquipoConsultoraEmpresa.style.display = 'none';
+    
+    $("#intitucion_cogestora").click(function(){
+      alert('entro a buscador');
+      $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
+    });
+
+    $("#institucion_cogestora").click(function(){
+    });
 
     $('#open-modal-button').click(function(){
       $('#modal_objetivos-form').modal('show');
@@ -89,7 +138,34 @@
       $('#modal_consultora_create-form').modal('show');
     });
 
+    //$('#open-modal-button_crear_plan_actividades').click(function(){
+    //  $('#modal_plan_actividades-form').modal('show');
+    //});
     
+    
+    /*$('#open-modal-button_buscar_usuario').click(function(){
+      var modalBuscarUsuario = document.getElementById("buscar-usuario");
+      $(modalBuscarUsuario).modal('show');
+    });*/
+
+    $('#open-modal-button_buscar_usuario').click(function(){
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '1')}");
+      $('#buscar-usuario').modal("show");
+    });
+
+    $('#open-modal-button_buscar_contribuyente').click(function(){
+        $("#buscar-contribuyente").modal('show');
+    });
+
+    $('#open-modal-button_buscar_usuario_consultora').click(function(){
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '2')}");
+      $('#buscar-usuario').modal("show");
+    });
+
+    $('#open-modal-button_buscar_usuario_postulante').click(function(){
+        $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '3')}");
+        $('#buscar-usuario').modal("show");
+    });
 
     if(#{!solo_lectura}){
       $('#manifestacion_de_interes_acuerdo_previo_con_informe_id').select2({
@@ -136,7 +212,7 @@
 
     $('body').on('change','.usuario-radio',function() {
       $('.seleccionar-usuario-button').removeAttr('disabled');
-      $('.seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
+      $('.seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
     });
 
 
@@ -633,7 +709,7 @@
   }
 
   function duracion() {
-      var duracion = document.getElementById('duracion_proyecto');
+    var duracion = document.getElementById('duracion_proyecto');
     var valorSeleccionado = duracion.value;
     var tareaPendienteId = document.getElementById('tarea_pendiente_id');
 
@@ -644,7 +720,7 @@
       data: { duracion: valorSeleccionado, id: tareaPendienteId.value },
       success: function(response) {
         console.log('Duración guardada exitosamente en el servidor');
-        location.reload();
+        //location.reload();
       },
       error: function(error) {
         console.error('Error al guardar la duración en el servidor:', error);
@@ -726,6 +802,103 @@
     });
   }
 
+  function crearPlanActividades(plan_id){
+    //alert(plan_id);
+     //alert('entro buscador')
+    $.ajax({
+      url: "#{get_plan_actividades_fondo_produccion_limpia_path}",
+      data: { plan_id: plan_id},
+      method: "GET",
+      success: function(response) {
+        $('#modal_create_plan_actividades-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  function modalRrhhPropios(id){
+    //alert(id);
+    $.ajax({
+      url: "#{get_recursos_propios_fondo_produccion_limpia_path}",
+      data: { actividad_id: id},
+      method: "GET",
+      success: function(response) {
+        $('#modal_rrhh_propios-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  function modalRrhhExternos(id){
+    $.ajax({
+      url: "#{get_recursos_externos_fondo_produccion_limpia_path}",
+      data: { actividad_id: id},
+      method: "GET",
+      success: function(response) {
+        $('#modal_rrhh_externos-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+    
+  function optionSelect(tipo){
+    //alert("check "+tipo);
+    var divEquipoConsultora = document.getElementById('div_equipo_consultora');
+    var divEmpresaConsultora = document.getElementById('div_empresa_consultora');
+    var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
+    
+    if (tipo == 1) {
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'block';
+      
+    } else if (tipo == 2){
+      divEquipoConsultora.style.display = 'block';
+      divEmpresaConsultora.style.display = 'none';
+      divEquipoConsultoraEmpresa.style.display = 'none'; 
+    } else  if (tipo == 0){
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'none';
+    }
+  }
+
+  function valida_div(){
+    
+    var divEquipoConsultora = document.getElementById('div_equipo_consultora');
+    var divEmpresaConsultora = document.getElementById('div_empresa_consultora');
+    var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
+
+    var tipo = document.getElementById('tipos').getAttribute('data-tipo');
+    //alert("entro check "+tipo);
+    //alert(tipo);
+    if (tipo == 2) {
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'block';
+      $('#open-modal-button_buscar_contribuyente').prop('disabled', true);
+    } else if (tipo == 1){
+      divEquipoConsultora.style.display = 'block';
+      divEmpresaConsultora.style.display = 'none';
+      divEquipoConsultoraEmpresa.style.display = 'none'; 
+    } else  if (tipo == 0){
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'none';
+      $('#open-modal-button_buscar_contribuyente').prop('disabled', false);
+    }
+   
+  }
+
   function actualizarObjetivo() {
     var valueId = document.getElementById('id_edit').value;
     var valueFlujoId = document.getElementById('flujo_id_edit').value;
@@ -765,6 +938,32 @@
       $('#manifestacion a[href="#' + activeTab + '"]').tab('show');
     }
   });
+
+  $('#buscar-usuario').on('hidden.bs.modal', function () {
+    // Aquí puedes llamar a tu función JavaScript después de que el modal se haya ocultado
+    tuFuncionJavaScript();
+  });
+
+  function tuFuncionJavaScript() {
+    // Código de tu función aquí
+    alert("entro aqui");
+  }
+
+  function iniciarBuscar(id) {
+    //alert('entro buscador')
+    $.ajax({
+      url: "#{buscador_fondo_produccion_limpia_path}",
+      data: { id2: id},
+      method: "GET",
+      success: function(response) {
+        //$('#modal_objetivos-edit-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
 
 %style
   :css
@@ -842,6 +1041,23 @@
       
     }
 
+    .sub-contenido-form {
+      font-size: 12px; 
+      vertical-align: top;
+      background-color: #fff;
+      color: #5d759e !important;     
+      text-align: center; 
+    }
+
+    
+    .option-form {
+      font-size: 12px; 
+      vertical-align: top;
+      background-color: #fff;
+      color: #5d759e !important;     
+      font-weight: bold;
+    }
+
     .white-space {
       border-bottom: 2px solid #fff !important;
     }
@@ -855,11 +1071,24 @@
       font-size: 12px; 
       vertical-align: top;
       background-color: #fff;
-      color: #5d759e;     
+      color: #5d759e; 
+      width: 100px;    
     }
 
+    .sub-contenido-popup-form {
+      font-size: 10px !important;
+      vertical-align: middle;
+      border-bottom: 2px solid #dee2e6;
+      background-color: #E0EFF6;
+      text-align: center;
+      font-weight: bold;
+      width: 100px;
+      //height: 10px;
+    }
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
+  - tipo = @tipo
+  %div{ id: "tipos", "data-tipo" => tipo }
   #sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"sector"] ? 'true' : 'false'), "aria-labelledby" => "sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"sector"])}  
     .card
       .card-body
@@ -1141,183 +1370,206 @@
                 %th
                   = f.text_field :nombre_acuerdo, class: 'valor-a-sumar-', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'micro_tecnica', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
         %br
-        -# .alert.alert-primary
-        -#   %small
-        -#    %i.fa.fa-question-circle.fa-1-5x
-        -#     Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
-        -# .row{class: (solo_lectura ? '' : 'align-items-end')}
-        -#   .col-lg-2.pr-lg-0.col-12
-        -#     = f.input :nombre_acuerdo, required: true, label: t(:micro), input_html: { class: 'required-field', value: 0  }
-        -#   .col-lg-2.pr-lg-0.col-12
-        -#     = f.input :nombre_acuerdo, required: true, label: t(:pequena), input_html: { class: 'required-field', value: 0  }
-        -#   .col-lg-2.pr-lg-0.col-12
-        -#     = f.input :nombre_acuerdo, required: true, label: t(:mediana), input_html: { class: 'required-field', value: 0  }
-        -#   .col-lg-2.pr-lg-0.col-12
-        -#     = f.input :nombre_acuerdo, required: true, label: t(:grande), input_html: { class: 'required-field', value: 0  }
-        -#   .col-lg-2.pr-lg-0.col-12
-        -#     = f.input :nombre_acuerdo, required: true, label: t(:total), input_html: { class: 'required-field', value: 0  }  
-             
-        -# .alert.alert-primary
-        -#   %small
-        -#     %i.fa.fa-question-circle.fa-1-5x
-        -#     Duracion del proyecto en meses
-        -# .row{class: (solo_lectura ? '' : 'align-items-end')}     
-        -#   .col-12.col-md-6
-        -#     = f.input :sub_linea_id, required: true, label: t(:duracion_proyecto), collection: (1..6).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion_proyecto1'}
-        -#   .col-lg-6.col-12
-        -#    = f.input :nombre_acuerdo, as: :text, required: true, label: t(:justificacion_duracion), input_html: { class: 'required-field-text', id: 'justificacion_duracion1', style: 'visibility: hidden;'}
-        
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
                 %th
-                  = f.input :nombre_acuerdo, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion_proyecto'}
-              %tr{style: 'visibility: hidden;', id: 'titulo_justificacion'}
-                %th
-                  = f.input :nombre_acuerdo, as: :text, required: true, label: t(:justificacion_duracion), input_html: { class: 'required-field-text', id: 'justificacion_duracion', style: 'visibility: hidden;'}
+                  = f.input :sub_linea_id, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion_proyecto'}
+              -# %tr{style: 'visibility: hidden;', id: 'titulo_justificacion'}
+              -#   %th
+              -#    = f.input :nombre_acuerdo, as: :text, required: true, label: t(:justificacion_duracion), input_html: { class: 'required-field-text', id: 'justificacion_duracion', style: 'visibility: hidden;'}
         %br
-        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
-          -# = link_to t(:agregar_, item: t(:institucion).downcase), new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-        -#.card
-          -#.card-header.titulo-sector 
-          -#  %h5.no-margin
-          -#    = t(:empresas_beneficiarias_del_proyecto)
-          -#  %h5.no-margin.float-left
-          -#    = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'float-left buscar-contribuyente' do
-          -#      =t(:buscar)
-          -#      %i.fa.fa-search-plus
-            -# %h5.no-margin.float-left
-            -#   = link_to '#', class: 'btn btn-primary', id: 'open-modal-link', data: { target: '#tuModal' } do
-            -#     =t(:objetivo_específico)
-            -#     %i.fa.fa-search-plus
-          -#.card-body
-          -#  %div.table-responsive
-          -#    %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-          -#      %thead
-          -#        %tr
-          -#          %th.encabezado2-form=t(:n°)
-          -#          %th.encabezado2-form.center=t(:nombre_empresa)
-          -#          %th.encabezado2-form=t(:rut)
-          -#          %th.encabezado2-form=t(:tamano_empresa)
-          -#          %th.encabezado2-form=t(:nombre_establecimiento)
-          -#          %th.encabezado2-form=t(:region_establecimiento)
-          -#          %th.encabezado2-form=t(:comuna_establecimiento)
-          -#          -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-          -#          %th.encabezado2-form.dos.iconos-acciones=t(:acción)
-          -#      %tbody
-          -#        - @objetivos.each do |objetivo|
-          -#          %tr
-          -#            %td.contenido-form=objetivo.descripcion
-          -#            %td.contenido-form=objetivo.metodologia
-          -#            %td.contenido-form=objetivo.resultado
-          -#            %td.contenido-form=objetivo.indicadores
-          -#            %td.contenido-form=objetivo.indicadores
-          -#            %td.contenido-form=objetivo.indicadores
-          -#            %td.contenido-form=objetivo.indicadores
-          -#            -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-          -#            %td.contenido-form.dos.iconos-acciones
-          -#              = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-          -#                %i.fa.fa-edit
-          -#              -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-          -#                = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-          -#                  %i.fa.fa-trash
+       
   #equipo-trabajo.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"equipo-trabajo"] ? 'true' : 'false'), "aria-labelledby" => "equipo-trabajo-tab", :role => "tabpanel", class: ("show active" if tabs[:"equipo-trabajo"])}
     .card
       .card-body
         %br
+        <input type="hidden" id="Tipo_0_Option" name="Tipo_0_Option" value="0">
+        <input type="hidden" id="Tipo_1_Option" name="Tipo_1_Option" value="1">
         - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
           -# = link_to 'Agregar', new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-        <h1>Equipo de Institución Receptora del Cofinanciamiento</h1>  
-        -#%div.table-responsive
+        -# <h1>Equipo de Institución Receptora del Cofinanciamiento</h1>
+        <h1>A) Equipo de Trabajo del Postulante</h1>
+        %br
+        %div#div_postulante.table-responsive  
+          = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+          %br
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form=t(:nombre_completo_persona)
+                  %th.encabezado2-form.center=t(:rut)
+                  %th.encabezado2-form=t(:telefono)
+                  %th.encabezado2-form=t(:email)
+                  %th.encabezado2-form=t(:profesion)
+                  %th.encabezado2-form=t(:funciones_proyecto)
+                  %th.encabezado2-form=t(:valor_hh)
+                  %th.encabezado2-form=t(:copia_ci)
+                  %th.encabezado2-form=t(:curriculum_vitae)
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %th.encabezado2-form.dos.iconos-acciones=t(:acción)
+              %tbody
+                - @postulantes.each do |postulante|
+                  %tr
+                    %td.contenido-form= postulante.nombre_completo
+                    %td.contenido-form= postulante.rut
+                    %td.contenido-form= postulante.telefono
+                    %td.contenido-form= postulante.email
+                    %td.contenido-form= postulante.profesion
+                    %td.contenido-form= postulante.funciones_proyecto
+                    %td.contenido-form= postulante.valor_hh
+                    %td.contenido-form= postulante.copia_ci
+                    %td.contenido-form= postulante.curriculum
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %td.contenido-form.dos.iconos-acciones
+                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                        -#= link_to eliminar_equipo_postula_fondo_produccion_limpia_path(user_id: postulante.id), data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
+                        = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
+                          %i.fa.fa-trash 
+        </br>
+        <h1>B) Equipo de Trabajo de la Consultora</h1>
+        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
+          -# = link_to 'Agregar', new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' 
+        -# %div.table-responsive
         -#  %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
         -#    %thead
         -#      %tr
-        -#        -# %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_postulante) 
-        -#        %th.encabezado-form{colspan: 9} EQUIPO DE  INSTITUCIÓN RECEPTORA DEL COFINANCIAMIENTO
-          %br
+        -#        %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_consultores) 
+        -# %br
           -# = link_to 'Agregar', new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-        = button_tag 'Agregar', id: 'open-modal-button_crear_equipo_receptora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
-        %div.table-responsive  
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado2-form=t(:nombre_completo_persona)
-                %th.encabezado2-form.center=t(:rut)
-                %th.encabezado2-form=t(:telefono)
-                %th.encabezado2-form=t(:email)
-                %th.encabezado2-form=t(:profesion)
-                -# %th.encabezado2-form=t(:cargo)
-                %th.encabezado2-form=t(:funciones_proyecto)
-                %th.encabezado2-form=t(:valor_hh_)
-                %th.encabezado2-form=t(:copia_cédula_identidad)
-                %th.encabezado2-form=t(:curriculum_vitae)
-                -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                %th.encabezado2-form.dos.iconos-acciones=t(:acción)
-            %tbody
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_objetivo_especifico_path(objetivo), title: "Editar los objetivos específicos" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to objetivo_especifico_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:objetivo_específico)), remote: false }, title: "Eliminar el objetivo específico" do
-                        %i.fa.fa-trash
         %br
-        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
-          -# = link_to 'Agregar', new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' 
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
+        .alert.alert-primary
+          %small  
+            %i.fa.fa-question-circle.fa-1-5x
+            En este punto se debe indicar si se contratarán los servicios de una empresa consultora o de un equipo de consultor(es), para realizar una parte o todo el proyecto.
+        %div.table-responsive       
+          %table 
+            -#-if @count_user_empresa == 0 && @count_user_equipo == 0
+            -if @tipo == 0
               %tr
-                %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_consultores) 
+                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
+                %td.option-form Empresa Consultora
+              %tr
+                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                %td.option-form Equipo de Consultores
+
+            -#-if @count_user_empresa > 0
+            -if @tipo == 2
+              %tr
+                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
+                %td.option-form Empresa Consultora
+              %tr
+                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
+                %td.option-form Equipo de Consultores
+            
+            -#-if @count_user_equipo > 0
+            -if @tipo == 1
+              %tr
+                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
+                %td.option-form Empresa Consultora
+              %tr
+                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { checked: true, class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                %td.option-form Equipo de Consultores
+        %br   
+        %div#div_empresa_consultora.table-responsive  
+          -#- if @count_empresa_equipo.present? && @count_empresa_equipo == 0
+          = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
           %br
-          -# = link_to 'Agregar', new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-          = button_tag 'Agregar', id: 'open-modal-button_crear_equipo_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
-        %div.table-responsive  
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado2-form=t(:nombre_completo_persona)
-                %th.encabezado2-form.center=t(:rut)
-                %th.encabezado2-form=t(:telefono)
-                %th.encabezado2-form=t(:email)
-                %th.encabezado2-form=t(:profesion)
-                %th.encabezado2-form=t(:funciones_proyecto)
-                %th.encabezado2-form=t(:valor_hh)
-                %th.encabezado2-form=t(:copia_ci)
-                -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                %th.encabezado2-form.dos.iconos-acciones=t(:acción)
-            %tbody
-              - @objetivos.each do |objetivo|
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
                 %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
+                  %th.encabezado2-form=t(:razon_social)
+                  %th.encabezado2-form.center=t(:rut)
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash 
+                  %th.encabezado2-form.dos.iconos-acciones=t(:acción)
+              %tbody
+                - @empresa_equipo.each do |empresa|
+                  %tr
+                    %td.contenido-form=empresa.razon_social
+                    %td.contenido-form=empresa.rut
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %td.contenido-form.dos.iconos-acciones
+                      -#= link_to edit_admin_user_path(empresa), title: "Editar los datos del usuario" do
+                      -#  %i.fa.fa-edit
+                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                        -#= link_to admin_user_path(empresa), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                        -#= link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), data: {confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)), remote: false }, title: "Eliminar Contribuyente" do
+                        = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
+                          %i.fa.fa-trash 
+        -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
+        %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
+          = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+          %br
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form=t(:nombre_completo_persona)
+                  %th.encabezado2-form.center=t(:rut)
+                  %th.encabezado2-form=t(:telefono)
+                  %th.encabezado2-form=t(:email)
+                  %th.encabezado2-form=t(:profesion)
+                  %th.encabezado2-form=t(:funciones_proyecto)
+                  %th.encabezado2-form=t(:valor_hh)
+                  %th.encabezado2-form=t(:copia_ci)
+                  %th.encabezado2-form=t(:curriculum_vitae)
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %th.encabezado2-form.dos.iconos-acciones=t(:acción)
+              %tbody
+                - @user_equipo.each do |user|
+                  %tr
+                    %td.contenido-form= user.nombre_completo
+                    %td.contenido-form= user.rut
+                    %td.contenido-form= user.telefono
+                    %td.contenido-form= user.email
+                    %td.contenido-form= user.profesion
+                    %td.contenido-form= user.funciones_proyecto
+                    %td.contenido-form= user.valor_hh
+                    %td.contenido-form= user.copia_ci
+                    %td.contenido-form= user.curriculum
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %td.contenido-form.dos.iconos-acciones
+                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                        -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
+                        = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
+                          %i.fa.fa-trash 
+        </br>
+        %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
+          = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+          %br
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form=t(:nombre_completo_persona)
+                  %th.encabezado2-form.center=t(:rut)
+                  %th.encabezado2-form=t(:telefono)
+                  %th.encabezado2-form=t(:email)
+                  %th.encabezado2-form=t(:profesion)
+                  %th.encabezado2-form=t(:funciones_proyecto)
+                  %th.encabezado2-form=t(:valor_hh)
+                  %th.encabezado2-form=t(:copia_ci)
+                  %th.encabezado2-form=t(:curriculum_vitae)
+                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %th.encabezado2-form.dos.iconos-acciones=t(:acción)
+              %tbody
+                - @user_equipo.each do |user|
+                  %tr
+                    %td.contenido-form= user.nombre_completo
+                    %td.contenido-form= user.rut
+                    %td.contenido-form= user.telefono
+                    %td.contenido-form= user.email
+                    %td.contenido-form= user.profesion
+                    %td.contenido-form= user.funciones_proyecto
+                    %td.contenido-form= user.valor_hh
+                    %td.contenido-form= user.copia_ci
+                    %td.contenido-form= user.curriculum
+                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                    %td.contenido-form.dos.iconos-acciones
+                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                        -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                        = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                          %i.fa.fa-trash 
         </br>
         %div.table-responsive       
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -1340,7 +1592,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
+                -#%th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
                 %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:etapa_actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
@@ -1379,17 +1631,17 @@
                 %th.encabezado-form="Gastos de Operación"
                 %th.encabezado-form="Gastos de Administración"
               %tbody
-                %tr{style: 'background-color: #E0EFF6;'}
-                  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                    %span ETAPA 1.Coordinación y Difusión Inicial
-                  %td{colspan: 2, style: 'text-align: right;'}
-                    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: #5d759e;'}
-                      Agregar actividad etapa 1
-                      %img{src: "/assets/agregar.gif", border: "0"}
-              - @objetivos.each do |objetivo|
+                -#%tr{style: 'background-color: #E0EFF6;'}
+                -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
+                -#    %span ETAPA 1.Coordinación y Difusión Inicial
+                -#  %td{colspan: 2, style: 'text-align: right;'}
+                -#    %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'}
+                -#      Agregar actividad etapa 1
+                -#      %img{src: "/assets/agregar.gif", border: "0"}
+              - @actividad_x_linea.each do |actividad|
                 %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
+                  %td.contenido-form=actividad.nombre
+                  -#%td.contenido-form
                   - if @duracion == 1
                     %td.contenido-form#duracion
                   - elsif @duracion == 2
@@ -1417,217 +1669,217 @@
                     %td.contenido-form=""
                     %td.contenido-form=""
                     %td.contenido-form=""
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
+                  %td.contenido-form
+                  %td.contenido-form
+                  %td.contenido-form
+                  %td.contenido-form
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                   %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+                    = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id})" do
                       %i.fa.fa-edit
                     -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                      -# = link_to admin_user_path(actividad), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
                         %i.fa.fa-trash  
 
-              %tr{style: 'background-color: #E0EFF6;'}
-                %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                  %span ETAPA 2.Recopilación de Información Primaria y Secundaria
-                %td{colspan: 2, style: 'text-align: right;'}
-                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: #5d759e;'}
-                    Agregar actividad etapa 2
-                    %img{src: "/assets/agregar.gif", border: "0"}
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  - if @duracion == 1
-                    %td.contenido-form#duracion
-                  - elsif @duracion == 2
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                  - elsif @duracion == 3
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 4
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 5
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 6
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash  
+              -#%tr{style: 'background-color: #E0EFF6;'}
+              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
+              -#    %span ETAPA 2.Recopilación de Información Primaria y Secundaria
+              -#  %td{colspan: 2, style: 'text-align: right;'}
+              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: #5d759e;'}
+              -#      Agregar actividad etapa 2
+              -#      %img{src: "/assets/agregar.gif", border: "0"}
+              -#- @objetivos.each do |objetivo|
+              -#  %tr
+              -#    %td.contenido-form=objetivo.descripcion
+              -#    %td.contenido-form=objetivo.metodologia
+              -#    - if @duracion == 1
+              -#      %td.contenido-form#duracion
+              -#    - elsif @duracion == 2
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 3
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 4
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 5
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 6
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    %td.contenido-form=objetivo.resultado
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#    %td.contenido-form.dos.iconos-acciones
+              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+              -#        %i.fa.fa-edit
+              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+              -#          %i.fa.fa-trash  
 
-              %tr{style: 'background-color: #E0EFF6;'}
-                %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                  %span ETAPA 3.Análisis de Información y Desarrollo del Diagnóstico Preliminar
-                %td{colspan: 2, style: 'text-align: right;'}
-                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=3')", style: 'color: #5d759e;'}
-                    Agregar actividad etapa 3
-                    %img{src: "/assets/agregar.gif", border: "0"}
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  - if @duracion == 1
-                    %td.contenido-form#duracion
-                  - elsif @duracion == 2
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                  - elsif @duracion == 3
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 4
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 5
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 6
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash  
+              -#%tr{style: 'background-color: #E0EFF6;'}
+              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
+              -#    %span ETAPA 3.Análisis de Información y Desarrollo del Diagnóstico Preliminar
+              -#  %td{colspan: 2, style: 'text-align: right;'}
+              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=3')", style: 'color: #5d759e;'}
+              -#      Agregar actividad etapa 3
+              -#      %img{src: "/assets/agregar.gif", border: "0"}
+              -#- @objetivos.each do |objetivo|
+              -#  %tr
+              -#    %td.contenido-form=objetivo.descripcion
+              -#    %td.contenido-form=objetivo.metodologia
+              -#    - if @duracion == 1
+              -#      %td.contenido-form#duracion
+              -#    - elsif @duracion == 2
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 3
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 4
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 5
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 6
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    %td.contenido-form=objetivo.resultado
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#    %td.contenido-form.dos.iconos-acciones
+              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+              -#       %i.fa.fa-edit
+              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+              -#          %i.fa.fa-trash  
   
-              %tr{style: 'background-color: #E0EFF6;'}
-                %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                  %span ETAPA 4.Difusión del Diagnóstico Preliminar y Entrega Diagnóstico Final
-                %td{colspan: 2, style: 'text-align: right;'}
-                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=4')", style: 'color: #5d759e;'}
-                    Agregar actividad etapa 4
-                    %img{src: "/assets/agregar.gif", border: "0"}
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  - if @duracion == 1
-                    %td.contenido-form#duracion
-                  - elsif @duracion == 2
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                  - elsif @duracion == 3
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 4
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 5
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 6
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash 
+              -#%tr{style: 'background-color: #E0EFF6;'}
+              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
+              -#    %span ETAPA 4.Difusión del Diagnóstico Preliminar y Entrega Diagnóstico Final
+              -#  %td{colspan: 2, style: 'text-align: right;'}
+              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=4')", style: 'color: #5d759e;'}
+              -#      Agregar actividad etapa 4
+              -#      %img{src: "/assets/agregar.gif", border: "0"}
+              -#- @objetivos.each do |objetivo|
+              -#  %tr
+              -#    %td.contenido-form=objetivo.descripcion
+              -#    %td.contenido-form=objetivo.metodologia
+              -#    - if @duracion == 1
+              -#      %td.contenido-form#duracion
+              -#    - elsif @duracion == 2
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 3
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 4
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 5
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 6
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    %td.contenido-form=objetivo.resultado
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#    %td.contenido-form.dos.iconos-acciones
+              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+              -#        %i.fa.fa-edit
+              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+              -#          %i.fa.fa-trash 
 
-              %tr{style: 'background-color: #E0EFF6;'}
-                %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                  %span ETAPA 5.Desarrollo, Socialización y Entrega de la Propuesta de APL
-                %td{colspan: 2, style: 'text-align: right;'}
-                  %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=5')", style: 'color: #5d759e;'}
-                    Agregar actividad etapa 5
-                    %img{src: "/assets/agregar.gif", border: "0"}
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  - if @duracion == 1
-                    %td.contenido-form#duracion
-                  - elsif @duracion == 2
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                  - elsif @duracion == 3
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 4
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 5
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 6
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash 
+              -#%tr{style: 'background-color: #E0EFF6;'}
+              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
+              -#    %span ETAPA 5.Desarrollo, Socialización y Entrega de la Propuesta de APL
+              -#  %td{colspan: 2, style: 'text-align: right;'}
+              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=5')", style: 'color: #5d759e;'}
+              -#      Agregar actividad etapa 5
+              -#      %img{src: "/assets/agregar.gif", border: "0"}
+              -#- @objetivos.each do |objetivo|
+              -#  %tr
+              -#    %td.contenido-form=objetivo.descripcion
+              -#    %td.contenido-form=objetivo.metodologia
+              -#    - if @duracion == 1
+              -#      %td.contenido-form#duracion
+              -#    - elsif @duracion == 2
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 3
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 4
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 5
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    - elsif @duracion == 6
+              -#      %td.contenido-form#duracion
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#      %td.contenido-form=""
+              -#    %td.contenido-form=objetivo.resultado
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    %td.contenido-form=objetivo.indicadores
+              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#    %td.contenido-form.dos.iconos-acciones
+              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
+              -#        %i.fa.fa-edit
+              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+              -#          %i.fa.fa-trash 
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body
@@ -1868,19 +2120,19 @@
                           %td.contenido-popup-form 
                             -# = @objetivo_especifico.metodologia
                             -# = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.descripcion
-                            = f.text_field :descripcion, class: 'required-field', id: 'descripcion2', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.descripcion
+                            = f.text_field :descripcion, class: 'required-field', id: 'descripcion2', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:metodologia)
                           %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.metodologia 
+                            = f.text_field :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:resultado)
                           %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.resultado
+                            = f.text_field :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:indicadores)
                           %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores', value: @objetivo_especifico.indicadores 
+                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores'
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'actualizarObjetivo(); return false;'
@@ -2068,6 +2320,207 @@
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+  -# POPUP PLAN DE ACTIVIDADES
+  - if @plan_actividades.present?
+    #modal_create_plan_actividades-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+      .modal-dialog
+        .modal-content
+          .modal-body
+            = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+              .row
+                .col-12
+                  .card
+                    .card-header
+                      %h5.no-margin
+                        Actividades
+                    .card-body
+                      %div.table-responsive  
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
+                          = hidden_field_tag 'plan_id', id: 'plan_id'
+                          %tr
+                            %td.contenido-popup-form=t(:nombre_actividades)
+                            %td.contenido-popup-form 
+                              = f.text_field :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %tr
+                            %td.contenido-popup-form=t(:objetivo_específico)
+                            %td.contenido-popup-form 
+                              -#= f.select :descripcion, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              -#= f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, { selected: @plan_actividades.objetivos_especifico_id.nil? }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              -#= f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción', class: 'required-field' }, { selected: @plan_actividades.objetivos_especifico_id.nil? }
+                          %tr
+                            %td.contenido-popup-form{colspan: @duracion}
+                              %div#div_duracion.table-responsive
+                                %table.table.table-striped.usuarios.no-margin
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: @duracion}=t(:duracion)
+                                    %tr.contenido-popup-form{colspan: @duracion}
+                                      - if @duracion.present? && @duracion.to_i > 0
+                                        - (1..@duracion.to_i).each do |mes|
+                                          %td.sub-contenido-popup-form= mes
+                                      - else
+                                        %td.sub-contenido-popup-form{:colspan => @duracion} No checkboxes
+                                  %tbody
+                                    -#%tr
+                                    -#  - if @duracion.present? && @duracion.to_i > 0
+                                    -#    - (1..@duracion.to_i).each do |mes|
+                                    -#      %td.sub-contenido-form 
+                                    -#        - checkbox_id = "mes#{mes}"
+                                    -#        - if @plan_actividades.duracion.present?
+                                    -#          = f.check_box :descripcion, { checked: true }, class: 'required-field', id: checkbox_id, style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                                    -#        - else
+                                    -#          = f.check_box :descripcion, class: 'required-field', id: checkbox_id, style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                                    -#  - else
+                                    -#    %td.sub-contenido-form No checkboxes
+                          %tr
+                            %td.contenido-popup-form{colspan: 4}
+                              %div.table-responsive  
+                              %div#div_plan_recursos_propios.table-responsive  
+                                %table.table.table-striped.usuarios.no-margin
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 4}= t(:recursos_humanos_propios)
+                                    %tr.contenido-popup-form{colspan: 4}
+                                      %td.sub-contenido-popup-form Nombre
+                                      %td.sub-contenido-popup-form HH
+                                      %td.sub-contenido-popup-form Valor HH
+                                      %td.sub-contenido-popup-form Costo
+                                  %tbody
+                                %table
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 4}
+                                      %td{style: 'text-align: left; background-color: #fff;'}
+                                        %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", style: 'color: #5d759e;'} Editar
+                                        %img{src: "/assets/agregar.gif", border: "0"}
+                          %tr
+                            %td.contenido-popup-form{colspan: 4}
+                              %div.table-responsive  
+                              %div#div_plan_recursos_externos.table-responsive  
+                                %table.table.table-striped.usuarios.no-margin
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 4}= t(:recursos_humanos_externos)
+                                    %tr.contenido-popup-form{colspan: 4}
+                                      %td.sub-contenido-popup-form Nombre
+                                      %td.sub-contenido-popup-form HH
+                                      %td.sub-contenido-popup-form Valor HH
+                                      %td.sub-contenido-popup-form Costo
+                                  %tbody
+                                %table
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 4}
+                                      %td{style: 'text-align: left; background-color: #fff;'}
+                                        %a{href: "#-1", onclick: "modalRrhhExternos(document.getElementById('plan_id').value); return false;", style: 'color: #5d759e;'} Editar
+                                        %img{src: "/assets/agregar.gif", border: "0"}
+                          %tr 
+                            %td.contenido-popup-form{colspan: 6}
+                              %div.table-responsive  
+                                %table.table.table-striped.usuarios.no-margin
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 6}=t(:gasto_operacion)
+                                    %tr.contenido-popup-form{colspan: 6}
+                                      %td.sub-contenido-popup-form Ítem
+                                      %td.sub-contenido-popup-form Valor Unitario
+                                      %td.sub-contenido-popup-form Cantidad
+                                      %td.sub-contenido-popup-form Unidad
+                                      %td.sub-contenido-popup-form Total
+                                      %td.sub-contenido-popup-form
+                                  %tbody
+                                    %tr.contenido-popup-form{colspan: 6}
+                                      %td{colspan: 6,style: 'text-align: right; background-color: #fff;'}
+                                        %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'} Agregar Fila
+                                        %img{src: "/assets/agregar.gif", border: "0"}
+                          %tr 
+                            %td.contenido-popup-form{colspan: 6}
+                              %div.table-responsive  
+                                %table.table.table-striped.usuarios.no-margin
+                                  %thead
+                                    %tr.contenido-popup-form{colspan: 6}=t(:gasto_administracion)
+                                    %tr.contenido-popup-form{colspan: 6}
+                                      %td.sub-contenido-popup-form Ítem
+                                      %td.sub-contenido-popup-form Valor Unitario
+                                      %td.sub-contenido-popup-form Cantidad
+                                      %td.sub-contenido-popup-form Unidad
+                                      %td.sub-contenido-popup-form Total
+                                      %td.sub-contenido-popup-form
+                                  %tbody
+                                    %tr.contenido-popup-form{colspan: 6}
+                                      %td{colspan: 6, style: 'text-align: right; background-color: #fff;'}
+                                        %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'} Agregar Fila
+                                        %img{src: "/assets/agregar.gif", border: "0"}
+                            
+            .modal-footer
+              %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+              = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+
+  -# POPUP RRHH PROPIOS
+  #modal_rrhh_propios-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+    .modal-dialog
+      .modal-content
+        .modal-body
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            .row
+              .col-12
+                .card
+                  .card-header
+                    %h5.no-margin
+                      Recursos Humanos Propios
+                  .card-body
+                    %div#div_postulantes_faltantes.table-responsive  
+                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                        = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
+                        %thead
+                          %tr
+                            %td.sub-contenido-popup-form Nombre
+                            %td.sub-contenido-popup-form HH en la actividad Propios
+                        %tbody
+          .modal-footer
+            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+  -# POPUP RRHH EXTERNOS
+  #modal_rrhh_externos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+    .modal-dialog
+      .modal-content
+        .modal-body
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            .row
+              .col-12
+                .card
+                  .card-header
+                    %h5.no-margin
+                      Recursos Humanos Externos
+                  .card-body
+                    %div#div_consultor_faltantes.table-responsive  
+                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                        = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
+                        %thead
+                          %tr
+                            %td.sub-contenido-popup-form Nombre
+                            %td.sub-contenido-popup-form HH en la actividad Propios
+                        %tbody
+          .modal-footer
+            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+            
+-# POPUP BUSCAR CONTRIBUYENTE
+- custom_id = custom_id.blank? ? nil : custom_id
+- data_table = data_table.nil? ? true : data_table
+- es_maquinaria = es_maquinaria.blank? ? false : es_maquinaria
+- es_para_seleccion = es_para_seleccion.blank? ? false : es_para_seleccion
+- seleccion_basica = seleccion_basica.nil? ? false : seleccion_basica
+- buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
+- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+- tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
+- lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
+.modal.fade{id: :"buscar-contribuyente", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
+    .modal-content
+      .modal-body
+        .container-fluid{id: "body-contribuyente-buscador"}
+          =render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
+      .modal-footer
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Cerrar
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript  
@@ -2168,3 +2621,160 @@
     }
   });
 
+  //FUNCIONES MODAL BUSCAR USUARIO
+  $(document).on('change','#tabla_usuarios_buscar-usuario .usuario-radio',function() {
+    //alert("FUNCIONES MODAL BUSCAR USUARIO");
+    $('#buscar-usuario .seleccionar-usuario-button').removeAttr('disabled');
+    $('#buscar-usuario .seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
+  });
+
+  $(document).on('click','#nuevo-usuario-fpl-button', function(e){
+    e.preventDefault();
+    var tipo_equipo = $('#tipo_equipo').val();
+    //alert("nuevo-usuario-fpl-button "+ tipo_equipo);
+    $.ajax({
+      url: "#{insert_fondo_produccion_limpia_path}",
+      type: "POST",
+      data: {
+        id: #{@tarea_pendiente.id},
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        tipo_equipo: tipo_equipo,
+        estado: 'new'
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#buscar-usuario .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).on('change keyup', '.form-temporal-boton-guardar-fpl-usuario', function(){
+    nuevo_usuario_temporal_fpl_validaciones();
+  });
+
+  $(document).on('click', '.seleccionar-y-actualizar-usuario-fpl-button', function(){
+    var radioSeleccionado = document.querySelector('input[name="usuario_buscar-usuario"]:checked');
+    var valorSeleccionado = radioSeleccionado.value;
+    data=JSON.parse(valorSeleccionado);
+    var tipo_equipo = $('#tipo_equipo').val();
+    $('.loading-data').show();
+    $.ajax({
+      url: "#{edit_modal_fondo_produccion_limpia_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        user_id: data.id,
+        tipo_equipo: tipo_equipo,
+        estado: 'update'
+      }
+    }).fail(function(a, b, c) {
+      //alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      alert( "El usuario seleccionado ya se encuentra asociado al listado de consultores" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      //alert(data);
+      $('#buscar-usuario .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+
+    /*$.ajax({
+      type: 'GET',
+      url: '#{edit_modal_fondo_produccion_limpia_path}',
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        user_id: data.id,
+        tipo_equipo: tipo_equipo
+        },
+      dataType: 'json',
+      success: function(response) {
+        //alert(response.success);
+        if (response.success) {
+          // Equipo guardado correctamente
+          $('#buscar-usuario .body-usuario-buscador').html(data);
+          $('.loading-data').hide();
+        }
+      },
+      error: function(xhr, status, error) {
+        alert( "Error" );
+      }
+    });*/
+  });
+
+  $(document).on('click','#deshacer-usuario-fpl-button', function(e){
+    e.preventDefault();    
+    $('#buscar-usuario .body-usuario-buscador').html("#{j render 'fondo_produccion_limpias/buscador_form'}");
+  });
+
+  function nuevo_usuario_temporal_fpl_validaciones(){
+    //alert('nuevo_usuario_temporal_fpl_validaciones');
+    var rut = $('#user_rut').val() != "";
+    var nombre_completo = $('#user_nombre_completo').val() != "";
+    var email = $('#user_email').val() != "";
+    var telefono = $('#user_telefono').val() != "";
+    //alert(rut);
+    //alert(nombre_completo);
+    //alert(email);
+    //alert(telefono);
+    if(rut && nombre_completo && email && telefono){
+      $('.guarda-usuario-fpl-button').removeAttr("disabled");
+    }else{
+      $('.guarda-usuario-fpl-button').attr("disabled", true);
+    }
+  }
+
+  $(document).on('change keyup', '.form-temporal-boton-equipo-trabajo-fpl-usuario', function(){
+    nuevo_equipo_trabajo_fpl_validaciones();
+  });
+
+  function nuevo_equipo_trabajo_fpl_validaciones(){
+    $('.guarda-equipo-fpl-button').removeAttr("disabled");
+    /*var rut = $('#user_rut').val() != "";
+    var nombre_completo = $('#user_nombre_completo').val() != "";
+    var email = $('#user_email').val() != "";
+    var telefono = $('#user_telefono').val() != "";
+    if(rut && nombre_completo && email && telefono){
+      $('.guarda-equipo-fpl-button').removeAttr("disabled");
+    }else{
+      $('.guarda-equipo-fpl-button').attr("disabled", true);
+    }*/
+  }
+
+  $('body').on('change','.contribuyente-radio',function() {
+    //alert('checkeado xxx');
+    $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
+  });
+
+  $('.seleccionar-contribuyente-fpl-button').click(function() {
+    //alert('entro seleccionar-contribuyente-fpl-button');
+    data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+    //alert(data.id);
+
+    //var radioSeleccionado = document.querySelector('input[name="usuario_buscar-usuario"]:checked');
+    //var valorSeleccionado = radioSeleccionado.value;
+    //data=JSON.parse(valorSeleccionado);
+    $.ajax({
+      url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
+      type: "POST",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      //alert(data);
+      $('#buscar-contribuyente .body-contribuyente-buscador').html(data);
+      $('#buscar-contribuyente').modal('hide');
+      $('.loading-data').hide();
+    });
+  }); 
+
+   $('#muestra_espera').click(function(){
+    alert('entro espera');
+    $('.loading-data').show();
+  });

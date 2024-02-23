@@ -1,0 +1,12 @@
+$('.loading-data').hide();
+$("#eliminar-empresa-<%= user %>").closest('tr').remove();
+$('#div_empresa_consultora').css('display', 'block');
+$('#open-modal-button_buscar_contribuyente').prop('disabled', false);
+$('#open-modal-button_buscar_usuario_consultora').prop('disabled', true);
+$('#div_equipo_consultora_empresa').css('display', 'none');
+$('#opcion_2').prop('disabled', false);
+$('#div_equipo_consultora_empresa tbody').empty();
+$('#div_equipo_consultora_empresa').hide();
+$('#div_equipo_consultora tbody').empty();
+document.getElementById('Tipo_1_Option').value = 0;
+document.getElementById('Tipo_0_Option').value = 0;

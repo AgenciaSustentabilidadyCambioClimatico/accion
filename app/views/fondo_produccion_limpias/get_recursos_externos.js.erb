@@ -1,0 +1,14 @@
+$('#div_consultor_faltantes table tbody').empty();
+<% consultor_faltantes.each do |consultor_faltante| %>
+  var propio_id = '<%= consultor_faltante.id %>';
+  var nombre_usuario = '<%= consultor_faltante.nombre_usuario %>';
+  var newRow = "<tr>" +
+    "<td class='contenido-form'>" + nombre_usuario + "</td>" +
+    "<td class='contenido-form'>" +
+    "<input type='text' name='descripcion' id='descripcion' class='required-field' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+    "</td>" +
+    "</tr>";
+  $('#div_consultor_faltantes table tbody').append(newRow);
+<% end %>
+
+

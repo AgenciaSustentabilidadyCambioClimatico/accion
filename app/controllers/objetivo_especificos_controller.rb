@@ -9,8 +9,9 @@ class ObjetivoEspecificosController < ApplicationController
           format.js
         end
 	  end
-
+    
     def create
+
       success = 'Objetivo Específico creado exitosamente.'
 
       custom_params = {

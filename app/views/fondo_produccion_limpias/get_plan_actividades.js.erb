@@ -1,0 +1,43 @@
+$('#div_plan_recursos_propios table tbody').empty();
+<% recursos_internos.each do |recursos_interno| %>
+  var plan_id = '<%= recursos_interno.id %>';
+  var user_name = '<%= recursos_interno.user_name %>';
+  var hh = '<%= recursos_interno.hh %>';
+  var valor_hh = '<%= recursos_interno.valor_hh %>';
+  var costo = '<%= recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
+  var newRow = "<tr>" +
+    "<td class='contenido-form'>" + user_name + "</td>" +
+    "<td class='contenido-form'>" + hh + "</td>" +
+    "<td class='contenido-form'>" + valor_hh + "</td>" +
+    "<td class='contenido-form'>" + costo + "</td>" +
+    "</tr>";
+  $('#div_plan_recursos_propios table tbody').append(newRow);
+<% end %>
+
+$('#div_plan_recursos_externos table tbody').empty();
+<% recursos_externos.each do |recursos_externos| %>
+  var plan_id = '<%= recursos_externos.id %>';
+  var user_name = '<%= recursos_externos.user_name %>';
+  var hh = '<%= recursos_externos.hh %>';
+  var valor_hh = '<%= recursos_externos.valor_hh %>';
+  var costo = '<%= recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
+  var newRow = "<tr>" +
+    "<td class='contenido-form'>" + user_name + "</td>" +
+    "<td class='contenido-form'>" + hh + "</td>" +
+    "<td class='contenido-form'>" + valor_hh + "</td>" +
+    "<td class='contenido-form'>" + costo + "</td>" +
+    "</tr>";
+  $('#div_plan_recursos_externos table tbody').append(newRow);
+<% end %>
+
+document.getElementById('plan_id').value = <%= plan_id %>;
+
+<% if @nombre_actividad.present? %>
+  $('#nombre_actividad').val('<%= @nombre_actividad %>');
+<% end %>
+$('#objetivos_especifico_id').val('<%= @objetivos_especifico_id %>');
+
+console.log("<%= @duracion %>");
+$('#div_duracion table tbody').empty();
+var newRowDuracion = "<%= @duracion.html_safe %>";
+$('#div_duracion table tbody').append(newRowDuracion);

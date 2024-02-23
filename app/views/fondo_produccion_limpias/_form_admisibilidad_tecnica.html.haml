@@ -294,12 +294,12 @@
                               %th.encabezado2-form Subcriterios
                               %th.encabezado2-form Nota
                               %th.encabezado2-form Justificación
-                            %tr
-                              %th.contenido1-form Los antecedentes del sector son suficientes y claros para evaluar el impacto y justificación del proyecto
-                              %th.contenido2-form  
-                                = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_1', onchange: "habilitaObservaciones('nota_input_id_1','obs_input_id_1')" }
-                              %th.contenido3-form 
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden;'}
+                            -# %tr
+                            -#  %th.contenido1-form Los antecedentes del sector son suficientes y claros para evaluar el impacto y justificación del proyecto
+                            -#  %th.contenido2-form  
+                            -#    = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_1', onchange: "habilitaObservaciones('nota_input_id_1','obs_input_id_1')" }
+                            -#  %th.contenido3-form 
+                            -#    = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden;'}
                             %tr
                               %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
                               %th.contenido2-form 

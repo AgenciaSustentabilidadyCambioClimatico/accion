@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20231121200205) do
+ActiveRecord::Schema.define(version: 20240221161459) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -726,6 +726,32 @@ ActiveRecord::Schema.define(version: 20231121200205) do
     t.boolean "base", default: false, null: false
   end
 
+  create_table "equipo_empresas", force: :cascade do |t|
+    t.integer "id_empresa"
+    t.bigint "flujo_id"
+    t.bigint "contribuyente_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contribuyente_id"], name: "index_equipo_empresas_on_contribuyente_id"
+    t.index ["flujo_id"], name: "index_equipo_empresas_on_flujo_id"
+  end
+
+  create_table "equipo_trabajos", force: :cascade do |t|
+    t.string "profesion"
+    t.string "funciones_proyecto"
+    t.integer "valor_hh"
+    t.string "copia_ci"
+    t.string "curriculum"
+    t.integer "tipo_equipo"
+    t.bigint "user_id"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "contribuyente_id"
+    t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
+    t.index ["user_id"], name: "index_equipo_trabajos_on_user_id"
+  end
+
   create_table "establecimiento_contribuyentes", force: :cascade do |t|
     t.integer "contribuyente_id", null: false
     t.boolean "casa_matriz", default: false
@@ -861,6 +887,21 @@ ActiveRecord::Schema.define(version: 20231121200205) do
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
+  end
+
+  create_table "gastos", force: :cascade do |t|
+    t.string "nombre"
+    t.integer "valor_unitario"
+    t.integer "cantidad"
+    t.bigint "tipo_aporte_id"
+    t.bigint "flujo_id"
+    t.bigint "plan_actividad_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tipo_gasto"
+    t.index ["flujo_id"], name: "index_gastos_on_flujo_id"
+    t.index ["plan_actividad_id"], name: "index_gastos_on_plan_actividad_id"
+    t.index ["tipo_aporte_id"], name: "index_gastos_on_tipo_aporte_id"
   end
 
   create_table "glosas", force: :cascade do |t|
@@ -1330,6 +1371,18 @@ ActiveRecord::Schema.define(version: 20231121200205) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "plan_actividades", force: :cascade do |t|
+    t.string "duracion"
+    t.bigint "actividad_id"
+    t.bigint "flujo_id"
+    t.bigint "objetivos_especifico_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_id"], name: "index_plan_actividades_on_actividad_id"
+    t.index ["flujo_id"], name: "index_plan_actividades_on_flujo_id"
+    t.index ["objetivos_especifico_id"], name: "index_plan_actividades_on_objetivos_especifico_id"
+  end
+
   create_table "ppf_actividades", force: :cascade do |t|
     t.bigint "contribuyente_id"
     t.bigint "comuna_id"
@@ -1574,6 +1627,18 @@ ActiveRecord::Schema.define(version: 20231121200205) do
     t.string "venta_anual_en_uf"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "recurso_humanos", force: :cascade do |t|
+    t.integer "hh"
+    t.bigint "equipo_trabajo_id"
+    t.bigint "flujo_id"
+    t.bigint "plan_actividad_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["equipo_trabajo_id"], name: "index_recurso_humanos_on_equipo_trabajo_id"
+    t.index ["flujo_id"], name: "index_recurso_humanos_on_flujo_id"
+    t.index ["plan_actividad_id"], name: "index_recurso_humanos_on_plan_actividad_id"
   end
 
   create_table "regiones", id: :serial, force: :cascade do |t|
@@ -2037,6 +2102,10 @@ ActiveRecord::Schema.define(version: 20231121200205) do
   add_foreign_key "encuesta_user_respuestas", "preguntas"
   add_foreign_key "encuesta_user_respuestas", "tarea_pendientes"
   add_foreign_key "encuesta_user_respuestas", "users"
+  add_foreign_key "equipo_empresas", "contribuyentes"
+  add_foreign_key "equipo_empresas", "flujos"
+  add_foreign_key "equipo_trabajos", "flujos"
+  add_foreign_key "equipo_trabajos", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"
   add_foreign_key "establecimiento_contribuyentes", "paises"
@@ -2060,6 +2129,9 @@ ActiveRecord::Schema.define(version: 20231121200205) do
   add_foreign_key "fondo_produccion_limpia", "flujos"
   add_foreign_key "fondo_produccion_limpia", "lineas"
   add_foreign_key "fondo_produccion_limpia", "sub_lineas"
+  add_foreign_key "gastos", "flujos"
+  add_foreign_key "gastos", "plan_actividades"
+  add_foreign_key "gastos", "tipo_aportes"
   add_foreign_key "hito_de_prensa_archivos", "hitos_de_prensa", column: "hitos_de_prensa_id"
   add_foreign_key "hito_de_prensa_instrumentos", "flujos"
   add_foreign_key "hito_de_prensa_instrumentos", "hitos_de_prensa", column: "hitos_de_prensa_id"
@@ -2096,6 +2168,9 @@ ActiveRecord::Schema.define(version: 20231121200205) do
   add_foreign_key "personas", "contribuyentes"
   add_foreign_key "personas", "establecimiento_contribuyentes"
   add_foreign_key "personas", "users"
+  add_foreign_key "plan_actividades", "actividades"
+  add_foreign_key "plan_actividades", "flujos"
+  add_foreign_key "plan_actividades", "objetivos_especificos"
   add_foreign_key "ppf_metas_comentarios", "ppf_metas_establecimientos"
   add_foreign_key "ppf_metas_comentarios", "users"
   add_foreign_key "ppf_metas_establecimientos", "flujos"
@@ -2118,6 +2193,9 @@ ActiveRecord::Schema.define(version: 20231121200205) do
   add_foreign_key "provincias", "regiones"
   add_foreign_key "proyecto_pagos", "proyectos"
   add_foreign_key "rango_venta_contribuyentes", "tamano_contribuyentes"
+  add_foreign_key "recurso_humanos", "equipo_trabajos"
+  add_foreign_key "recurso_humanos", "flujos"
+  add_foreign_key "recurso_humanos", "plan_actividades"
   add_foreign_key "regiones", "paises"
   add_foreign_key "registro_apertura_correos", "convocatoria_destinatarios"
   add_foreign_key "registro_apertura_correos", "flujo_tareas"

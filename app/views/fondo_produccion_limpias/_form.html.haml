@@ -45,60 +45,11 @@
       }
     });
     $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
-
-    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
-    //  console.log('La función de éxito de AJAX se ha ejecutado.');
-    //  // Agrega más lógica aquí si es necesario
-
-    //  if (data.success) {
-    //    if (data.activeTab) {
-    //      $('#manifestacion a[href="' + data.activeTab + '"]').tab('show');
-    //    } else {
-    //      location.reload();
-    //    }
-    //  }
-    //});
-
-    //$('body').on('ajax:error', '.ajax-form', function(event, xhr, status, error) {
-    ////  console.error('Error en la función de AJAX:', error);
-    //  // Agrega manejo de errores aquí si es necesario
-    //});
-    //$(document).on('click', '.ajax-form', function() {
-    //  console.log('Click en .ajax-form');
-    //});
-
-    //$('body').on('ajax:complete','#fondo-produccion-limpia-form',function(xhr,status){ $('.loading-data').show()});
-    //    console.log('La función de éxito de AJAX se ha ejecutado xxx');
-    //    //$('#manifestacion a[href=\'#propuesta-tecnica\']').tab('show');
-    //});
-
-    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
-    //  // Accede al parámetro enviado desde el controlador
-    //  var activeTab = data.activeTab;
-    //  // Ahora puedes usar el valor de activeTab como desees
-    //  console.log('Valor de activeTab:', activeTab);
-    //
-    //  // ... Resto del código
-    //});
-
-    //$(document).ready(function() {
-    //  $(document).ajaxSuccess(function(event, xhr, settings) {
-    //    // Obtén el valor del atributo de datos
-    //    var nameTab = $('body').data('nameTab');
-    //    
-    //    // Haz lo que necesites con nameTab
-    //    console.log('Valor de nameTab:', nameTab);
-    //  });
-    //});
-
-    //$('body').on('ajax:success', '.ajax-form', function(event, data, status, xhr) {
-    //  console.log("La función de éxito de AJAX se ha ejecutado", data);
-    //  console.log("Valor de nameTab:", data.data.activeTab);
-    //});
-
+  });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:postulacion_fondo_produccion_limpia)
-- tabs = { "sector": true, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+-# - tabs = { "sector": true, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+- tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
 - mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
 = simple_form_for [@fondo_produccion_limpia], :url => update_path, method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'fondo-produccion-limpias-form', class: 'ajax-form'} do |f|
@@ -135,5 +86,7 @@
         = t(:enviar_postulación)
 -if !solo_lectura
   = render 'admin/users/buscador'
-  - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
-  = render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
+  -# - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+  - tipo_instrumento = 28 
+  -#= render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true

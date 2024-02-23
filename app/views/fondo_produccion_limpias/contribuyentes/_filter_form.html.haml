@@ -1,0 +1,56 @@
+-#DZC Gino
+- custom_id = custom_id.nil? ? nil : custom_id
+-#DZC
+- es_para_seleccion = es_para_seleccion.nil? ? false : es_para_seleccion
+- seleccion_basica = seleccion_basica.nil? ? false : seleccion_basica 
+-#DZC agregado por nosotros
+- es_maquinaria = es_maquinaria.nil? ? false : es_maquinaria
+-#DZC
+- buscar_por_actividad_economica = buscar_por_actividad_economica.nil? ? false : buscar_por_actividad_economica
+- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+-#DZC Gino
+- data_table = data_table.nil? ? true : data_table
+-#DZC
+- tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PROGRAMAS_Y_PROYECTOS_REGIONALES : tipo_instrumento
+
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+  });
+- if buscar_por_actividad_economica
+  .alert.alert-dismissible.fade.show.mb-3{class: 'alert-warning'}
+    El resultado será mas rápido dependiendo del nivel de detalle de búsqueda
+= render 'fondo_produccion_limpias/contribuyentes/resultado_consulta'
+= simple_form_for(@contribuyente, url: search_fondo_produccion_limpia_path, remote: true, html: { method: :put, class: 'filter', autocomplete: :off }) do |f|
+  -#DZC
+  - if es_maquinaria
+    = f.input :es_maquinaria, as: :hidden, input_html: { value: true }, wrapper: false
+  -#DZC
+  -#DZC Gino
+  = f.input :data_table, as: :hidden, input_html: { value: data_table }, wrapper: false
+  - if custom_id
+    = f.input :custom_id, as: :hidden, input_html: { value: custom_id }, wrapper: false
+  -#DZC
+  - if es_para_seleccion
+    = f.input :es_para_seleccion, as: :hidden, input_html: { value: true }, wrapper: false
+  - if buscar_por_actividad_economica
+    = f.input :buscar_por_actividad_economica, as: :hidden, input_html: { value: true }, wrapper: false
+  - if resultado_mostrados
+    = f.input :resultado_mostrados, as: :hidden, input_html: { value: resultado_mostrados }, wrapper: false
+  - if seleccion_basica
+    = f.input :seleccion_basica, as: :hidden, input_html: { value: true }, wrapper: false
+    = f.input :tipo_instrumento, as: :hidden, input_html: { value: tipo_instrumento }, wrapper: false
+  .row
+    .col-lg-3.pr-lg-0.col-12
+      = f.input :rut, label: false, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0' }, placeholder: "R.U.T", as: :string, required: true
+    .col-12{class: (buscar_por_actividad_economica ? 'col-lg-9' : 'col-lg-8' )}
+      = f.input :razon_social, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0', type: :string }, label: false, placeholder: 'Razón social', required: true
+    - if buscar_por_actividad_economica
+      .col-lg-11.pr-lg-0.col-12
+        = f.input :actividad_economica_id, collection: ActividadEconomica.__select(false), input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, required: true
+    .col-lg-1.col-12
+      = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled
