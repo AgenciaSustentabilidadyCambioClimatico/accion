@@ -38,7 +38,8 @@
                             =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
                         -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
                           %div.text-nowrap
-                            =link_to "Documento de Acuerdos y anexos", obtener_archivo_acuerdo_anexos_zip_path(data[:flujo_id])
+                            -tarea_pendiente = TareaPendiente.where(flujo_id: data[:flujo_id], tarea_id: Tarea::ID_APL_022).first
+                            =link_to "Documento de Acuerdo", obtener_archivo_apl_022_path(tarea_pendiente.id,data[:flujo_id])
                         -if !data[:informe_impacto].blank? && @datos_publicos.visibilidad_documentos.include?("4")
                           %div.text-nowrap
                             =link_to "Informe de Impacto", data[:informe_impacto]

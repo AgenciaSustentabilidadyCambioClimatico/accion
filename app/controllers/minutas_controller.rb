@@ -1,6 +1,6 @@
 class MinutasController < ApplicationController #crea la depencia con convocatoria en la carpeta del controlado
-  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip]
-  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip]
+  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip, :archivo]
+  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip, :archivo]
   before_action :set_flujo
   before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip]
   before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip]
