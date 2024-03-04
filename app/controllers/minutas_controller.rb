@@ -1,12 +1,12 @@
 class MinutasController < ApplicationController #crea la depencia con convocatoria en la carpeta del controlado
-  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip, :archivo]
-  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip, :archivo]
-  before_action :set_flujo
-  before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :set_descargable_tareas, except: [:archivo, :archivo_acuerdo_anexos_zip]
+  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip, :archivo, :descargar_acta]
+  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip, :archivo, :descargar_acta]
+  before_action :set_flujo, except: [:descargar_acta]
+  before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
+  before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
+  before_action :set_descargable_tareas, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
   before_action :set_minuta, only: [:edit, :update, :destroy, :descargar_archivo], except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :permiso_tarea, except: [:archivo, :archivo_acuerdo_anexos_zip]
+  before_action :permiso_tarea, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
   respond_to :docx
   # GET /minuta/new
   def new
@@ -328,6 +328,13 @@ class MinutasController < ApplicationController #crea la depencia con convocator
       send_data(archivo, type: archivo.file.content_type, charset: "iso-8859-1", filename: archivo.file.original_filename)
     end
   end
+
+  def descargar_acta
+    @minuta = Minuta.find(params[:id].to_i)
+    archivo = @minuta.acta
+    redirect_to archivo.url
+  end
+
   private
     def minuta_params #hay que tener presente 
       parametros=params.require(:minuta).permit(
