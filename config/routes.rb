@@ -751,6 +751,8 @@ Rails.application.routes.draw do
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/edit(.:format)", to: "minutas#edit", as: :edit_tarea_pendiente_convocatoria_minuta
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
+  get "minutas/:id/descargar_acta", to: "minutas#descargar_acta", as: :descargar_acta
+
 
 
   # Obtener el archivo del acuerdo para APL-022
