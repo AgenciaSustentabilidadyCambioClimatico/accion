@@ -1,3 +1,3 @@
 - titulo t(:tareas_pendientes_, tipo: t(:acuerdos)).html_safe
 
-= render 'table', titulo: t(:lista_de_, items: t(:acuerdos_pendientes).downcase), pendientes: @pendientes
+= render 'table', titulo: t(:lista_de_, items: t(:acuerdos_pendientes).downcase), pendientes: @pendientes, todos: true
