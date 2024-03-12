@@ -3,7 +3,7 @@
     .modal-content
       .modal-header.p-3.text-center{style: 'font-weight: bold;'} Confirmar envío
       .modal-body
-        %p= "¿Está seguro de cambiar nombre del APL #{@apl.nombre_acuerdo} a"
+        %p{id: 'pedro', style: 'display: none;'}= "#{@apl.nombre_acuerdo}"
         .div{id: 'jorge'}
         %p
       .modal-footer{style: "display: flex; align_items: center; justify-content: center;"}

@@ -20,7 +20,7 @@
 :javascript
   $(document).ready(function() {
     $('#enviar_button').click(function(){
-      $('#jorge').append($('#manifestacion_de_interes_nombre_acuerdo').val())
+      $('#jorge').append(`¿Está seguro de cambiar nombre del APL - "${$('#pedro').text()}" a "${$('#manifestacion_de_interes_nombre_acuerdo').val()}"?`)
     });
 
     $('#cancelar').click(function(){
