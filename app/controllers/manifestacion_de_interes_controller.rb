@@ -2319,7 +2319,8 @@ class ManifestacionDeInteresController < ApplicationController
     @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
     if params[:apl].present?
       instrumento_id = params[:apl].to_i
-      @acuerdos_de_produccion = [ManifestacionDeInteres.find(instrumento_id)]
+      flujo = Flujo.find(instrumento_id).manifestacion_de_interes.id
+      @acuerdos_de_produccion = ManifestacionDeInteres.where(id: flujo)
     else
       instrumento_id = nil
       @acuerdos_de_produccion = ManifestacionDeInteres.all
