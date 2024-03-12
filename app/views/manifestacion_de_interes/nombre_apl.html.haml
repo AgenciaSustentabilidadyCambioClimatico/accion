@@ -1,0 +1,43 @@
+.row
+  .col-12
+    .card
+      .card-header
+        .d-flex.flex-column.flex-md-row.justify-content-md-between.align-items-start.align-items-md-end
+          %h5
+            %b Nombres Acuerdos Produccion Limpia
+          %h5
+            = link_to t(:volver_a_cargar), nombres_apl_path, class: 'btn btn-sm btn-primary btn-sm float-right'
+      -if current_user.is_admin? || current_user.is_ascc?
+        .card-body.pb-3
+          .row.justify-content-left
+            .col-md-4
+              = simple_form_for('nombre', url: nombres_apl_path, class: 'buscador_form', method: :get) do |f|
+                = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
+        .card-body.p-0
+        .table-responsive.mis-instrumentos
+          %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
+            %thead
+              %tr
+                %th APL
+                %th
+            %tbody
+              - @acuerdos_de_produccion.each do |apl|
+                %tr.accion
+                  %td=apl.nombre_acuerdo.present? ? apl.nombre_acuerdo : "ID#{apl.id} - APL - Sin Nombre"
+                  %td= link_to 'editar nombre', editar_nombre_apl_path(apl)
+:javascript
+  $(document).ready(function() {
+     $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+
+    // htmlErrorToTooltip('top');
+
+    $('#apl').chosen(chosenOptions);
+    $('#apl').change(function(){
+      console.log('envio el form')
+      $('.nombre').submit()
+    });
+  });

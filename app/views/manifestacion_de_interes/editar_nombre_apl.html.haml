@@ -1,0 +1,33 @@
+.row
+  .col-12
+    .card
+      .card-header
+        .d-flex.flex-column.flex-md-row.justify-content-md-between.align-items-start.align-items-md-end
+          %h5.pt-2
+            %b Acuerdo Produccion Limpia
+      -if current_user.is_admin? || current_user.is_ascc?
+        .card-body.pb-3
+          .row.justify-content-left
+            .col-12
+              = simple_form_for(@apl, url: cambio_nombre_path(@apl)) do |f|
+                = f.input :nombre_acuerdo
+            .col-12
+              .float-right
+                = link_to 'Volver', nombres_apl_path, class: 'btn btn-sm btn-warning ml-1'
+                %button.btn.btn-primary.btn-sm#enviar_button{type: :button, "data-toggle" => "modal", "data-target" => "#modal_enviar"} Enviar
+      =render "modal_enviar"
+
+:javascript
+  $(document).ready(function() {
+    $('#enviar_button').click(function(){
+      $('#jorge').append(`¿Está seguro de cambiar nombre del APL - "${$('#pedro').text()}" a "${$('#manifestacion_de_interes_nombre_acuerdo').val()}"?`)
+    });
+
+    $('#cancelar').click(function(){
+      $('#jorge').text('')
+    });
+
+    $('#enviar_button_o').click(function(){
+      $('body .edit_manifestacion_de_interes').submit()
+    })
+  });
