@@ -754,6 +754,8 @@ Rails.application.routes.draw do
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/edit(.:format)", to: "minutas#edit", as: :edit_tarea_pendiente_convocatoria_minuta
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
+  get "minutas/:id/descargar_acta", to: "minutas#descargar_acta", as: :descargar_acta
+
 
 
   # Obtener el archivo del acuerdo para APL-022
@@ -817,6 +819,7 @@ Rails.application.routes.draw do
   get ':tarea_pendiente_id/adhesion/descargar_compilado', to: "adhesiones#descargar_compilado", as: :descargar_compilado_adhesion
   get ':tarea_pendiente_id/adhesion/descargar_compilado_two', to: "adhesiones#descargar_compilado_two", as: :descargar_compilado_adhesion_two
   get ':tarea_pendiente_id/adhesion/descargar_compilado_three', to: "adhesiones#descargar_compilado_three", as: :descargar_compilado_adhesion_three
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_four', to: "adhesiones#descargar_compilado_four", as: :descargar_compilado_adhesion_four
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos
 

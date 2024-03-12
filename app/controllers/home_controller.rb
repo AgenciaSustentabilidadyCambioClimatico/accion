@@ -8,8 +8,15 @@ class HomeController < ApplicationController
       include_models    = [:tipo_instrumento,:contribuyente,:estado_manifestacion,:persona]
       persona_ids       = @personas.map{|m|m[:id]}
       @manifestaciones  = []#ManifestacionDeInteres.includes(include_models).where(persona_id: persona_ids).order(id: :desc).all
-      TareaPendiente.continua_flujo_tareas_plazo_vencido(current_user.id) # DZC continua con el flujo de las tareas con plazo vencido, para que se excluyan de la bandeja de entrada
-      @pendientes       = TareaPendiente.todas_del_(current_user.id) #incluye todas las tareas pendientes del usuario
+      TareaPendiente.continua_flujo_tareas_plazo_vencido(current_user.id)
+      gg = TareaPendiente.todas_del_(current_user.id).group_by {|f| f.flujo.id }# DZC continua con el flujo de las tareas con plazo vencido, para que se excluyan de la bandeja de entrada
+      rr = []
+      gg.each do |index, value|
+        rr << value.first
+      end
+      @algo = TareaPendiente.todas_del_(current_user.id) + rr
+
+      @pendientes     = @algo #incluye todas las tareas pendientes del usuario
     else
       @clasificaciones_padre = ReporteriaDato.find_by(ruta: "index")
     end    
