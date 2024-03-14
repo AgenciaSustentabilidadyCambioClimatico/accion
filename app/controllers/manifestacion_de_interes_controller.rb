@@ -2306,7 +2306,9 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def editar_nombre_apl
+
     @apl = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
+    @flujo = @apl.flujo.id
   end
 
   def nombre_apl
@@ -2329,7 +2331,8 @@ class ManifestacionDeInteresController < ApplicationController
 
 
   def cambio_nombre_apl
-    @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id].to_i)
+    flujo = Flujo.find(params[:manifestacion_de_interes][:estado_proyecto].to_i)
+    @manifestacion_de_interes = flujo.manifestacion_de_interes
     respond_to do |format|
       @manifestacion_de_interes.nombre_acuerdo = params[:manifestacion_de_interes][:nombre_acuerdo]
       if @manifestacion_de_interes.save(validate: false)
