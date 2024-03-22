@@ -82,10 +82,14 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 #DZC agrega al campo data de la tarea_pendiente 
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
-    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015, Tarea::COD_APL_011#agrego tareas de padre, porque podrian venir de ahi y no funcionaria
+    when Tarea::COD_APL_011
+      @convocatoria.update({ terminada: true })
+    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015 #agrego tareas de padre, porque podrian venir de ahi y no funcionaria
       @convocatoria.update({ terminada: true })
       @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
     when Tarea::COD_APL_016
+      @convocatoria.update({ terminada: true })
+    when Tarea::COD_APL_030
       @convocatoria.update({ terminada: true })
     when Tarea::COD_APL_022, Tarea::COD_APL_038 #DZC minuta de firma de acuerdo APL-022, y de ceremonia de certificación APL-038
       tipo_campo = (@tarea.codigo==Tarea::COD_APL_022) ? 'firma' : 'ceremonia_certificacion'
