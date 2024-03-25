@@ -197,6 +197,18 @@ Rails.application.routes.draw do
   get 'eliminar_equipo_postulante/:id', to: "fondo_produccion_limpias#eliminar_equipo_postulante", as: :eliminar_equipo_postulante_fondo_produccion_limpia
   delete '/eliminar_equipo_postulante/:id', to: 'fondo_produccion_limpias#eliminar_equipo_postulante', as: 'eliminar_equipo_postulante'
 
+  #Objetivos
+  get 'new_objetivo_especifico/:id', to: "fondo_produccion_limpias#new_objetivo_especifico", as: :new_objetivo_especifico_fondo_produccion_limpia
+  get 'insert_objetivo_especifico/:id', to: "fondo_produccion_limpias#insert_objetivo_especifico", as: :insert_objetivo_especifico_fondo_produccion_limpia
+  #patch  'update_objetivo_especifico', to: "fondo_produccion_limpias#update_objetivo_especifico", as: :update_objetivo_especifico_fondo_produccion_limpia
+  #get  'update_objetivo_especifico/:id', to: "fondo_produccion_limpias#update_objetivo_especifico", as: :update_objetivo_especifico_fondo_produccion_limpia
+  get 'edit_objetivo_especifico/:id', to: "fondo_produccion_limpias#edit_objetivo_especifico", as: :edit_objetivo_especifico_fondo_produccion_limpia
+  #get 'objetivo_especificos/:id/edit', to: "fondo_produccion_limpias#edit_objetivo_especifico", as: :edit_objetivo_especifico_fondo_produccion_limpia
+#  get 'eliminar_objetivo_especifico/:id', to: "fondo_produccion_limpias#eliminar_objetivo_especifico", as: :eliminar_objetivo_especifico_fondo_produccion_limpia
+  patch 'update_objetivo_especifico/:id', to: "fondo_produccion_limpias#update_objetivo_especifico", as: :update_objetivo_especifico_fondo_produccion_limpia
+  delete '/eliminar_objetivo_especifico/:id', to: 'fondo_produccion_limpias#eliminar_objetivo_especifico', as: 'eliminar_objetivo_especifico'
+  get 'get_objetivo_especifico/:id', to: "fondo_produccion_limpias#get_objetivo_especifico", as: :get_objetivo_especifico_fondo_produccion_limpia
+    
   #Modal User
   get 'edit_modal', to: "fondo_produccion_limpias#edit_modal", as: :edit_modal_fondo_produccion_limpia
   patch  'update_modal', to: "fondo_produccion_limpias#update_modal", as: :update_modal_fondo_produccion_limpia
@@ -218,7 +230,17 @@ Rails.application.routes.draw do
   get 'get_plan_actividades/:id', to: "fondo_produccion_limpias#get_plan_actividades", as: :get_plan_actividades_fondo_produccion_limpia
   get 'get_recursos_propios/:id', to: "fondo_produccion_limpias#get_recursos_propios", as: :get_recursos_propios_fondo_produccion_limpia
   get 'get_recursos_externos/:id', to: "fondo_produccion_limpias#get_recursos_externos", as: :get_recursos_externos_fondo_produccion_limpia
-  post  'insert_plan_actividades', to: "fondo_produccion_limpias#insert_plan_actividades", as: :insert_plan_actividades_fondo_produccion_limpia
+  post 'insert_plan_actividades', to: "fondo_produccion_limpias#insert_plan_actividades", as: :insert_plan_actividades_fondo_produccion_limpia
+  get 'insert_gastos_operacion/:id', to: "fondo_produccion_limpias#insert_gastos_operacion", as: :insert_gastos_operacion_fondo_produccion_limpia
+  get 'insert_gastos_administracion/:id', to: "fondo_produccion_limpias#insert_gastos_administracion", as: :insert_gastos_administracion_fondo_produccion_limpia
+  get 'eliminar_gasto_operacion/:id', to: "fondo_produccion_limpias#eliminar_gasto_operacion", as: :eliminar_gasto_operacion_fondo_produccion_limpia
+  delete 'eliminar_gasto_operacion/:id', to: "fondo_produccion_limpias#eliminar_gasto_operacion", as: 'eliminar_gasto_operacion'
+  get 'eliminar_gasto_administracion/:id', to: "fondo_produccion_limpias#eliminar_gasto_administracion", as: :eliminar_gasto_administracion_fondo_produccion_limpia
+  delete 'eliminar_gasto_administracion/:id', to: "fondo_produccion_limpias#eliminar_gasto_administracion", as: 'eliminar_gasto_administracion'
+  get 'insert_recursos_humanos_propios/:id', to: "fondo_produccion_limpias#insert_recursos_humanos_propios", as: :insert_recursos_humanos_propios_fondo_produccion_limpia
+  get 'insert_recursos_humanos_externos/:id', to: "fondo_produccion_limpias#insert_recursos_humanos_externos", as: :insert_recursos_humanos_externos_fondo_produccion_limpia
+  post 'new_plan_actividades', to: "fondo_produccion_limpias#new_plan_actividades", as: :new_plan_actividades_fondo_produccion_limpia
+  #post 'insert_new_plan_actividades', to: "fondo_produccion_limpias#insert_new_plan_actividades", as: :insert_new_plan_actividades_fondo_produccion_limpia
 
   #Tarea FPL-02
   get ':id/revisor', to: "fondo_produccion_limpias#revisor", as: :revisor_fondo_produccion_limpia
@@ -257,16 +279,16 @@ Rails.application.routes.draw do
   patch ':id/evaluacion-general', to: "fondo_produccion_limpias#revisar_evaluacion_general"
   
   #Objetivos Especificos
-  resources :objetivo_especificos, only: [:new, :create, :edit, :update, :destroy] do
-    member do
-      patch 'update'
-    end
-  
-    collection do
-      get 'new/:id', action: :new, as: :new
-      delete 'destroy/:id', action: :destroy, as: :destroy
-    end
-  end
+  #resources :objetivo_especificos, only: [:new, :create, :edit, :update, :destroy] do
+  #  member do
+  #    patch 'update'
+  #  end
+  #
+  #  collection do
+  #    get 'new/:id', action: :new, as: :new
+  #    #delete 'destroy/:id', action: :destroy, as: :destroy
+  #  end
+  #end
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

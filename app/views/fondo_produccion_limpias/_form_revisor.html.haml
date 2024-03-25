@@ -7,11 +7,19 @@
     });
     htmlErrorToTooltip('top');
 
+    //alert('entro revisor');
+
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
       tab_selected = e.target;
+
+      //alert('entro revisor 1');
+      //alert($(tab_selected).prop('id'));
+
+      $(tab_selected).prop('id')
       $('.accordionTabs .card-body a').removeClass('hide');
       if($(tab_selected).prop('id') != 'asignar-revisor-tab'){
         if($(tab_selected).prop('id') == 'asignar-revisor-externo'){
+          //alert('entro revisor 2');
           $('#collapseTabs').removeClass("show");
           $('a.nav-link#asignar-revisor-tab').tab('show');
           $('.accordionTabs .card-header a').removeClass('active');
@@ -31,6 +39,7 @@
 
     $('.collapse-tab-item').click(function(e){
       tab = $(this).attr('tab');
+      //alert(tab);
       $('#collapseTabs').removeClass("show");
       $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
       $('a.nav-link#'+tab+'-tab').tab('show');
@@ -70,7 +79,7 @@
                 %a.nav-link{id: "asignar-revisor-externo", class: 'active', "aria-controls" => 'asignar-revisor-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#asignar-revisor-externo", :role => "tab"}
                   =t('asignar_revisor')
         .card-body.border-tabs.px-2.pt-3
-          - tabs = { "sector": false, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "asignar-revisor": true }
+          - tabs = { "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "asignar-revisor": true }
           - titulo t(:asignar_revisor)
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}

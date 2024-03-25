@@ -34,6 +34,7 @@
                 - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
                 = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_buscar-usuario" }          
         - else
+          -#- if @lista_usuarios.present?  
           - lista_usuarios.all.each do |u|
             %tr
               %td= "#{u.rut}"

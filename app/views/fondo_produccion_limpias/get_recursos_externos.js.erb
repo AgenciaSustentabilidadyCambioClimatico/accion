@@ -1,14 +1,37 @@
-$('#div_consultor_faltantes table tbody').empty();
+$('#div_consultor_faltantes_externos table tbody').empty();
+var newRowFinanciamiento = "<tr>" +
+  "<td class='contenido-form'>Fuente de financiamiento*" +
+  "</td>" +
+  "<td class='contenido-form'>" +
+  "<input type='radio' id='radio_tipo_aporte' name='radio_tipo_aporte' onclick='' value='2'> Aporte propio líquido<br>" +
+  "<input type='radio' id='radio_tipo_aporte' name='radio_tipo_aporte' onclick='' value='3'> Solicitado al fondo" +
+  "</td>" +
+  "</tr>";
+$('#div_consultor_faltantes_externos table tbody').append(newRowFinanciamiento);
 <% consultor_faltantes.each do |consultor_faltante| %>
-  var propio_id = '<%= consultor_faltante.id %>';
+  var rrhh_externo_id = '<%= consultor_faltante.id %>';
+  var rrhh_equipo_id = '<%= consultor_faltante.rrhh_equipo_id %>'; // Aquí asumo que hay un campo en el modelo llamado equipo_id
   var nombre_usuario = '<%= consultor_faltante.nombre_usuario %>';
+  var hh = '<%= consultor_faltante.hh %>'; // Obtener las horas hombre de los datos
+
   var newRow = "<tr>" +
+    "<td class='contenido-form' id='rrhh_externo_id_<%= consultor_faltante.id %>'>" + rrhh_externo_id + "</td>" +
+    "<td class='contenido-form' id='rrhh_equipo_id_<%= consultor_faltante.id %>'>" + rrhh_equipo_id + "</td>" +
     "<td class='contenido-form'>" + nombre_usuario + "</td>" +
     "<td class='contenido-form'>" +
-    "<input type='text' name='descripcion' id='descripcion' class='required-field' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+    "<input type='text' name='rrhh_externo_hh' id='rrhh_externo_hh' value='" + hh + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' title='Ingrese solo números' maxlength='3' onKeyPress='return soloNumeros(event)'>" +
     "</td>" +
     "</tr>";
-  $('#div_consultor_faltantes table tbody').append(newRow);
+  $('#div_consultor_faltantes_externos table tbody').append(newRow);
+  $('#rrhh_externo_id_<%= consultor_faltante.id %>').hide();
+  $('#rrhh_equipo_id_<%= consultor_faltante.id %>').hide();
+
+  // Seleccionar por defecto el radio button según el valor obtenido
+  var tipo_aporte_id = '<%= consultor_faltante.tipo_aporte %>'; // Asumiendo que recurso_humano es el nombre de la asociación
+  if (tipo_aporte_id == 2 || tipo_aporte_id == 3) {
+    //console.log("tipo_aporte: <%= consultor_faltante.tipo_aporte %>");
+    $('#radio_tipo_aporte[value=' + tipo_aporte_id + ']').prop('checked', true);
+  }
 <% end %>
 
 

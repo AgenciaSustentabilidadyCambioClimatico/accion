@@ -1,0 +1,19 @@
+$('#div_plan_recursos_propios table tbody').empty();
+$('#div_plan_recursos_externos table tbody').empty();
+
+$('#nombre_actividad').prop('disabled', false); 
+$('#nombre_actividad').val('');
+$('#objetivos_especifico_id').val('');
+
+$('#agregar_rr_pp').removeAttr('href').css('pointer-events', 'none').css('color', '#ccc');
+$('#agregar_rr_ex').removeAttr('href').css('pointer-events', 'none').css('color', '#ccc');
+$('#agregar_gas_ope').removeAttr('href').css('pointer-events', 'none').css('color', '#ccc');
+$('#agregar_gas_adm').removeAttr('href').css('pointer-events', 'none').css('color', '#ccc');
+
+console.log("<%= @duracion %>");
+$('#div_duracion table tbody').empty();
+var newRowDuracion = "<%= @duracion.html_safe %>";
+$('#div_duracion table tbody').append(newRowDuracion);
+
+$('#div_plan_gastos_operacion table tbody').empty();
+$('#div_plan_gastos_administracion table tbody').empty();

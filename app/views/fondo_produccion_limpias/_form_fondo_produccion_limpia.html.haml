@@ -109,6 +109,7 @@
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
+    cargarObjetivosEspecificos();
     
     valida_div();
 
@@ -748,16 +749,21 @@
   }
 
   function guardarObjetivo() {
-    var valueFlujoId = document.getElementById('flujo_id').value;
+    //var valueFlujoId = document.getElementById('flujo_id').value;
     var valueDescripcion = document.getElementById('descripcion').value;
     var valueMetodologia = document.getElementById('metodologia').value;
     var valueResultado = document.getElementById('resultado').value;
     var valueIndicadores = document.getElementById('indicadores').value;
 
     $.ajax({
-      url: "/objetivo_especificos/create",
-      data: { flujo_id: valueFlujoId, descripcion: valueDescripcion, metodologia: valueMetodologia, resultado: valueResultado, indicadores: valueIndicadores },
-      method: "POST",
+      //url: "/objetivo_especificos/create",
+      url: "#{insert_objetivo_especifico_fondo_produccion_limpia_path}",
+      data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", 
+              descripcion: valueDescripcion, 
+              metodologia: valueMetodologia, 
+              resultado: valueResultado, 
+              indicadores: valueIndicadores },
+      method: "GET",
       dataType: "script",
       success: function(response) {
         console.log("Método del controlador llamado con éxito");
@@ -783,14 +789,26 @@
   });*/
 
   $(document).on('click', '.editar-objetivo', function() {
-    var objetivoId = $(this).data('objetivo-id');
-    editarObjetivo(objetivoId);
+    //var objetivoId = $(this).data('objetivo-id');
+    //editarObjetivo(objetivoId);
+
+    // Obtener el elemento <a> por su clase
+    var enlace = document.querySelector('.editar-objetivo');
+
+    // Obtener el valor del atributo data-objetivo-id
+    var objetivoId = enlace.dataset.objetivoId;
+
+    // Mostrar el valor en la consola para verificar
+    console.log("ID del objetivo: " + objetivoId);
+
+    //editarObjetivo(objetivoId);
   });
 
   function editarObjetivo(id) {
     $.ajax({
-      url: '/objetivo_especificos/' + id + '/edit',
-      data: { id: id },
+      //url: '/objetivo_especificos/' + id + '/edit',
+      url: "#{edit_objetivo_especifico_fondo_produccion_limpia_path}",
+      data: { objetivo_id: id },
       method: "GET",
       success: function(response) {
         $('#modal_objetivos-edit-form').modal('show');
@@ -810,6 +828,7 @@
       data: { plan_id: plan_id},
       method: "GET",
       success: function(response) {
+        //alert(response);
         $('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
@@ -849,7 +868,262 @@
       }
     });
   }
+
+  function modalGastosOperacion(id){
+    $('#modal_gastos_operacion-form').modal('show');
+  
+  }
+
+  function modalGastosAdministrativos(id){
+    $('#modal_gastos_administracion-form').modal('show');
+  }
+
+  function insertGastosOperacion(plan_id){
+    //alert('entro gastos');
+    var nombre = document.getElementById('nombre').value;
+    var valor_unitario = document.getElementById('valor_unitario').value;
+    var cantidad = document.getElementById('cantidad').value;
+    var unidad_medida = document.getElementById('unidad_medida').value;
+    var tipo_aporte_id = document.getElementById('tipo_aporte_id').value;
+    //var flujo_id = document.getElementById('flujo_id').value;
     
+    $.ajax({
+      url: "#{insert_gastos_operacion_fondo_produccion_limpia_path}",
+      data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", plan_id: plan_id, nombre: nombre, valor_unitario: valor_unitario, cantidad: cantidad, unidad_medida: unidad_medida, tipo_aporte_id: tipo_aporte_id},
+      method: "GET",
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  function insertGastosAdministracion(plan_id){
+    //alert('entro gasts adm');
+    var nombre = document.getElementById('nombre_adm').value;
+    var valor_unitario = document.getElementById('valor_unitario_adm').value;
+    var cantidad = document.getElementById('cantidad_adm').value;
+    var unidad_medida = document.getElementById('unidad_medida').value;
+    var tipo_aporte_id = document.getElementById('tipo_aporte_id').value;
+
+    $.ajax({
+      url: "#{insert_gastos_administracion_fondo_produccion_limpia_path}",
+      data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", plan_id: plan_id, nombre: nombre, valor_unitario: valor_unitario, cantidad: cantidad, unidad_medida: unidad_medida, tipo_aporte_id: tipo_aporte_id},
+      method: "GET",
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  function guardarPlanActividad(plan_id){
+
+    //alert('plan_id '+ plan_id);
+    // Seleccionar todos los checkboxes dentro de la tabla
+    var checkboxes = document.querySelectorAll('#div_duracion input[type="checkbox"]');
+
+    // Array para almacenar los checkboxes seleccionados
+    var checkboxesSeleccionados = [];
+
+    // Iterar sobre los checkboxes y verificar cuáles están seleccionados
+    checkboxes.forEach(function(checkbox) {
+        if (checkbox.checked) {
+            checkboxesSeleccionados.push(checkbox.id); // Agregar el ID del checkbox seleccionado al array
+        }
+    });
+
+    var duracion = checkboxesSeleccionados;
+    var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
+    //alert(objetivos_especifico_id);
+
+    var nombre_actividad = document.getElementById('nombre_actividad').value;
+
+    //alert(checkboxesSeleccionados);
+
+    var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (nombre_actividad == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa un nombre de actividad.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (objetivos_especifico_id == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, seleccione un objetivo específico');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (checkboxesSeleccionados == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, seleccione al menos un mes de duración de la actividad');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+    
+    if (plan_id != "") {
+      //alert('entro insert');
+      $.ajax({
+        url: "#{insert_plan_actividades_fondo_produccion_limpia_path}",
+        data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", plan_id: plan_id, duracion: duracion, objetivos_especifico_id: objetivos_especifico_id},
+        method: "POST",
+        success: function(response) {
+          console.log("Método del controlador llamado con éxito");
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+        }
+      });
+    }else{
+      //alert('entro al sin id');
+      $.ajax({
+        url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
+        data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", 
+                nombre_actividad: nombre_actividad,
+                duracion: duracion, 
+                objetivos_especifico_id: objetivos_especifico_id, 
+                opcion: 'insert'},
+        method: "POST",
+        success: function(response) {
+          console.log("Método del controlador llamado con éxito");
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+        }
+      });
+    }
+  }
+
+  function guardarRrhhPropioshh(plan_id){
+    var data = [];// Arreglo para almacenar los datos
+    // Recorre cada fila de la tabla
+    $('#div_postulantes_faltantes table tbody tr').each(function() {
+        //var rrhhPropioId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
+        //var rrhhPropioId = $(this).find('input[name="rrhh_propios_id"]').val(); // Obtener el valor de rrhh_propios_id
+        //var rrhhEquipoId = $(this).find('input[name="rrhh_equipo_id"]').val(); // Obtener el valor de rrhh_equipo_id
+
+        var rrhhPropioId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
+        var rrhhEquipoId = $(this).find('td:nth-child(2)').text(); // Cambiar el selector según la estructura de tu tabla
+        var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
+        var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
+    
+        //alert(rrhhPropioId);
+        if (hh!=0) {
+          // Agrega los datos al arreglo
+          data.push({
+              rrhhPropioId: rrhhPropioId,
+              rhhEquipoId: rrhhEquipoId,
+              nombreUsuario: nombreUsuario,
+              hh: hh
+          });
+        }
+    });
+
+    //console.log(data); // Mostrar los datos en la consola para verificar
+
+    // Envía el arreglo al controlador utilizando AJAX
+    $.ajax({
+        type: "GET",
+        url: "#{insert_recursos_humanos_propios_fondo_produccion_limpia_path}",
+        data: { data: JSON.stringify(data), flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", plan_id: plan_id},// Envía los datos como JSON
+        success: function(response) {
+          // Maneja la respuesta del servidor
+          console.log(response);
+        },
+        error: function(xhr, status, error) {
+          // Maneja los errores de la solicitud AJAX
+          console.error(error);
+        }
+    });
+  }
+
+  function guardarRrhhExternoshh(plan_id){
+    var data = [];// Arreglo para almacenar los datos
+    // Recorre cada fila de la tabla
+    var alertaMostrada = false;
+    $('#div_consultor_faltantes_externos table tbody tr').each(function() {
+      var rrhhExternoId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
+      var rrhhEquipoId = $(this).find('td:nth-child(2)').text(); // Cambiar el selector según la estructura de tu tabla
+      var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
+      var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
+      
+
+      if (hh !== "" && hh !== "0") {
+        if (nombreUsuario !== "Fuente de financiamiento*") {
+
+          // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
+          var radioButtons = document.getElementsByName('radio_tipo_aporte');
+
+          // Iterar sobre los radio buttons para verificar si alguno está seleccionado
+
+          var seleccionado = false;
+          for (var i = 0; i < radioButtons.length; i++) {
+              if (radioButtons[i].checked) {
+                  seleccionado = true;
+                  break;
+              }
+          }
+          // Verificar si al menos uno está seleccionado
+          if (seleccionado) {
+          //alert(rrhhEquipoId);
+          // Agrega los datos al arreglo
+            data.push({
+                rrhhExternoId: rrhhExternoId,
+                rhhEquipoId: rrhhEquipoId,
+                nombreUsuario: nombreUsuario,
+                hh: hh
+            });
+            var alertaMostrada = true;
+          }else{ 
+            ///REVISAR ALERT
+            if (!alertaMostrada) {
+              var alertaMostrada = true;
+              alert('Por favor, seleccione alguna Fuente de financiamiento');
+              event.preventDefault();
+              //return;
+            }
+          }
+        }
+      }
+    });
+
+    var tipoAporteSeleccionado = $('#div_consultor_faltantes_externos input[name="radio_tipo_aporte"]:checked').val();
+
+    //console.log(data); // Mostrar los datos en la consola para verificar
+
+    // Envía el arreglo al controlador utilizando AJAX
+    $.ajax({
+        type: "GET",
+        url: "#{insert_recursos_humanos_externos_fondo_produccion_limpia_path}",
+        data: { data: JSON.stringify(data), 
+                flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", 
+                plan_id: plan_id, 
+                tipoAporte: tipoAporteSeleccionado},// Envía los datos como JSON
+        success: function(response) {
+          // Maneja la respuesta del servidor
+          console.log(response);
+        },
+        error: function(xhr, status, error) {
+          // Maneja los errores de la solicitud AJAX
+          console.error(error);
+        }
+    });
+  }  
+  
   function optionSelect(tipo){
     //alert("check "+tipo);
     var divEquipoConsultora = document.getElementById('div_equipo_consultora');
@@ -901,24 +1175,43 @@
 
   function actualizarObjetivo() {
     var valueId = document.getElementById('id_edit').value;
-    var valueFlujoId = document.getElementById('flujo_id_edit').value;
     var valueDescripcion = document.getElementById('descripcion_edit').value;
     var valueMetodologia = document.getElementById('metodologia_edit').value;
     var valueResultado = document.getElementById('resultado_edit').value;
     var valueIndicadores = document.getElementById('indicadores_edit').value;
 
     $.ajax({
-      url: "/objetivo_especificos/" + valueId + "/update",
-      data: {
-        id: valueId, 
-        flujo_id: valueFlujoId, 
+      url: "#{update_objetivo_especifico_fondo_produccion_limpia_path}",
+      data: JSON.stringify({ 
+        objetivo_id: valueId, 
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
         descripcion: valueDescripcion,
         metodologia: valueMetodologia,
         resultado: valueResultado,
-        indicadores: valueIndicadores,
-        authenticity_token: $('meta[name="csrf-token"]').attr('content') // CSRF token
-      },
+        indicadores: valueIndicadores
+      }),
+      contentType: 'application/json',
       method: "PATCH",
+      headers: {
+        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') // CSRF token
+      },
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+
+  }
+
+  function cargarObjetivosEspecificos() {
+    $.ajax({
+      url: "#{get_objetivo_especifico_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      },
+      method: "GET",
       success: function(response) {
         console.log("Método del controlador llamado con éxito");
       },
@@ -957,6 +1250,42 @@
       method: "GET",
       success: function(response) {
         //$('#modal_objetivos-edit-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  /*function soloNumeros(e){
+    var key = window.Event ? e.which : e.keyCode
+    return (key >= 48 && key <= 57)
+  }*/
+
+  function soloNumeros(e) {
+    var key = window.Event ? e.which : e.keyCode;
+    var value = e.target.value;
+    
+    // Si el primer carácter ingresado es 0 y no hay ningún otro carácter
+    // o el primer carácter ingresado es 0 y el segundo carácter no es un número
+    if ((key === 48 && (value === "" || isNaN(parseInt(value[0])))) || (value === "0" && isNaN(parseInt(String.fromCharCode(key))))) {
+        e.preventDefault(); // Evita que se ingrese el 0 como primer carácter
+    }
+
+    // Restringir que solo se ingresen números
+    return (key >= 48 && key <= 57);
+  }
+
+  function agregarPlanActividades() {
+    //alert('agregarPlanActividades');
+     $.ajax({
+      url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
+      data: { flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}", 
+              opcion: 'create'},
+      method: "POST",
+      success: function(response) {
+        $('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -1231,20 +1560,21 @@
         %br
         -
         -# - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
-        -#  = link_to t(:agregar_, item: t(:objetivo_específico).downcase), new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        -#  = link_to t(:agregar_, item: t(:objetivo_específico).downcase), new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
         -# .card
           -#.card-header.encabezado-titulo-form
             -# %h5.no-margin
             -#  = t(:lista_de_, items: t(:objetivo_específico).downcase)
           -# .card-body
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado-form{colspan: 9}=t(:objetivo_específico) 
-          %br
-          = button_tag 'Agregar', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
-        %div.table-responsive  
+        -#%div.table-responsive
+        -#  %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+        -#    %thead
+        -#      %tr
+        -#        %th.encabezado-form{colspan: 9}=t(:objetivo_específico) 
+        %h1= t(:objetivo_específico)
+        %br
+        = button_tag 'Agregar', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
+        %div#div_objetivo_especifico.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
@@ -1255,19 +1585,19 @@
                 -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                 %th.encabezado2-form.dos.iconos-acciones=t(:acción)
             %tbody
-              - @objetivos.each do |objetivo|
-                %tr
-                  %td.contenido-form=objetivo.descripcion
-                  %td.contenido-form=objetivo.metodologia
-                  %td.contenido-form=objetivo.resultado
-                  %td.contenido-form=objetivo.indicadores
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to '#', title: "Editar los objetivos específicos", class: 'editar-objetivo', data: { objetivo_id: objetivo.id } do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      = link_to destroy_objetivo_especificos_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:objetivo_específico)), remote: false }, title: "Eliminar el objetivo específico" do
-                        %i.fa.fa-trash
+              -#- @objetivos.each do |objetivo|
+              -#  %tr
+              -#    %td.contenido-form{id: "objetivo_descripcion_#{objetivo.id}"}=objetivo.descripcion
+              -#    %td.contenido-form{id: "objetivo_metodologia_#{objetivo.id}"}=objetivo.metodologia
+              -#    %td.contenido-form{id: "objetivo_resultado_#{objetivo.id}"}=objetivo.resultado
+              -#    %td.contenido-form{id: "objetivo_indicadores_#{objetivo.id}"}=objetivo.indicadores
+              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#    %td.contenido-form.dos.iconos-acciones
+              -#      = link_to '#', title: "Editar los objetivos específicos", class: 'editar-objetivo', data: { objetivo_id: objetivo.id } do
+              -#        %i.fa.fa-edit
+              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+              -#        = link_to eliminar_objetivo_especifico_fondo_produccion_limpia_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:objetivo_específico)), remote: false }, title: "Eliminar el objetivo específico" do
+              -#          %i.fa.fa-trash
         %br
         <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
         -# .alert.alert-primary
@@ -1376,7 +1706,7 @@
             %thead
               %tr
                 %th
-                  = f.input :sub_linea_id, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion_proyecto'}
+              -#    = f.input :sub_linea_id, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion_proyecto'}
               -# %tr{style: 'visibility: hidden;', id: 'titulo_justificacion'}
               -#   %th
               -#    = f.input :nombre_acuerdo, as: :text, required: true, label: t(:justificacion_duracion), input_html: { class: 'required-field-text', id: 'justificacion_duracion', style: 'visibility: hidden;'}
@@ -1389,9 +1719,9 @@
         <input type="hidden" id="Tipo_0_Option" name="Tipo_0_Option" value="0">
         <input type="hidden" id="Tipo_1_Option" name="Tipo_1_Option" value="1">
         - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
-          -# = link_to 'Agregar', new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-        -# <h1>Equipo de Institución Receptora del Cofinanciamiento</h1>
-        <h1>A) Equipo de Trabajo del Postulante</h1>
+          -# = link_to 'Agregar', new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+        <h1>Equipo de Institución Receptora del Cofinanciamiento</h1>
+        -#<h1>A) Equipo de Trabajo del Postulante  </h1>
         %br
         %div#div_postulante.table-responsive  
           = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
@@ -1411,25 +1741,27 @@
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
-                - @postulantes.each do |postulante|
-                  %tr
-                    %td.contenido-form= postulante.nombre_completo
-                    %td.contenido-form= postulante.rut
-                    %td.contenido-form= postulante.telefono
-                    %td.contenido-form= postulante.email
-                    %td.contenido-form= postulante.profesion
-                    %td.contenido-form= postulante.funciones_proyecto
-                    %td.contenido-form= postulante.valor_hh
-                    %td.contenido-form= postulante.copia_ci
-                    %td.contenido-form= postulante.curriculum
-                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                    %td.contenido-form.dos.iconos-acciones
-                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                        -#= link_to eliminar_equipo_postula_fondo_produccion_limpia_path(user_id: postulante.id), data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
-                        = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
-                          %i.fa.fa-trash 
+                - if @postulantes.present?
+                  - @postulantes.each do |postulante|
+                    %tr
+                      %td.contenido-form= postulante.nombre_completo
+                      %td.contenido-form= postulante.rut
+                      %td.contenido-form= postulante.telefono
+                      %td.contenido-form= postulante.email
+                      %td.contenido-form= postulante.profesion
+                      %td.contenido-form= postulante.funciones_proyecto
+                      %td.contenido-form= number_to_currency postulante.valor_hh
+                      %td.contenido-form= postulante.copia_ci
+                      %td.contenido-form= postulante.curriculum
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.contenido-form.dos.iconos-acciones
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          -#= link_to eliminar_equipo_postula_fondo_produccion_limpia_path(user_id: postulante.id), data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
+                          = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
+                            %i.fa.fa-trash 
         </br>
-        <h1>B) Equipo de Trabajo de la Consultora</h1>
+        <h1>Equipo de Institución Ejecutora</h1>
+        -#<h1>B) Equipo de Trabajo de la Consultora</h1>
         - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
           -# = link_to 'Agregar', new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' 
         -# %div.table-responsive
@@ -1438,7 +1770,7 @@
         -#      %tr
         -#        %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_consultores) 
         -# %br
-          -# = link_to 'Agregar', new_objetivo_especificos_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
+          -# = link_to 'Agregar', new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
         %br
         .alert.alert-primary
           %small  
@@ -1485,19 +1817,20 @@
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
-                - @empresa_equipo.each do |empresa|
-                  %tr
-                    %td.contenido-form=empresa.razon_social
-                    %td.contenido-form=empresa.rut
-                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                    %td.contenido-form.dos.iconos-acciones
-                      -#= link_to edit_admin_user_path(empresa), title: "Editar los datos del usuario" do
-                      -#  %i.fa.fa-edit
-                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                        -#= link_to admin_user_path(empresa), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        -#= link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), data: {confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)), remote: false }, title: "Eliminar Contribuyente" do
-                        = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
-                          %i.fa.fa-trash 
+                - if @empresa_equipo.present?
+                  - @empresa_equipo.each do |empresa|
+                    %tr
+                      %td.contenido-form=empresa.razon_social
+                      %td.contenido-form=empresa.rut
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.contenido-form.dos.iconos-acciones
+                        -#= link_to edit_admin_user_path(empresa), title: "Editar los datos del usuario" do
+                        -#  %i.fa.fa-edit
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          -#= link_to admin_user_path(empresa), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
+                          -#= link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), data: {confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)), remote: false }, title: "Eliminar Contribuyente" do
+                          = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
+                            %i.fa.fa-trash 
         -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
           = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
@@ -1517,23 +1850,24 @@
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
-                - @user_equipo.each do |user|
-                  %tr
-                    %td.contenido-form= user.nombre_completo
-                    %td.contenido-form= user.rut
-                    %td.contenido-form= user.telefono
-                    %td.contenido-form= user.email
-                    %td.contenido-form= user.profesion
-                    %td.contenido-form= user.funciones_proyecto
-                    %td.contenido-form= user.valor_hh
-                    %td.contenido-form= user.copia_ci
-                    %td.contenido-form= user.curriculum
-                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                    %td.contenido-form.dos.iconos-acciones
-                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                        -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
-                        = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
-                          %i.fa.fa-trash 
+                - if @user_equipo.present?
+                  - @user_equipo.each do |user|
+                    %tr
+                      %td.contenido-form= user.nombre_completo
+                      %td.contenido-form= user.rut
+                      %td.contenido-form= user.telefono
+                      %td.contenido-form= user.email
+                      %td.contenido-form= user.profesion
+                      %td.contenido-form= user.funciones_proyecto
+                      %td.contenido-form= number_to_currency user.valor_hh
+                      %td.contenido-form= user.copia_ci
+                      %td.contenido-form= user.curriculum
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.contenido-form.dos.iconos-acciones
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al consultor" do
+                          = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
+                            %i.fa.fa-trash 
         </br>
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
           = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
@@ -1553,23 +1887,24 @@
                   -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
-                - @user_equipo.each do |user|
-                  %tr
-                    %td.contenido-form= user.nombre_completo
-                    %td.contenido-form= user.rut
-                    %td.contenido-form= user.telefono
-                    %td.contenido-form= user.email
-                    %td.contenido-form= user.profesion
-                    %td.contenido-form= user.funciones_proyecto
-                    %td.contenido-form= user.valor_hh
-                    %td.contenido-form= user.copia_ci
-                    %td.contenido-form= user.curriculum
-                    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                    %td.contenido-form.dos.iconos-acciones
-                      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                        -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
-                        = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
-                          %i.fa.fa-trash 
+                - if @user_equipo.present?
+                  - @user_equipo.each do |user|
+                    %tr
+                      %td.contenido-form= user.nombre_completo
+                      %td.contenido-form= user.rut
+                      %td.contenido-form= user.telefono
+                      %td.contenido-form= user.email
+                      %td.contenido-form= user.profesion
+                      %td.contenido-form= user.funciones_proyecto
+                      %td.contenido-form= number_to_currency user.valor_hh
+                      %td.contenido-form= user.copia_ci
+                      %td.contenido-form= user.curriculum
+                      -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                      %td.contenido-form.dos.iconos-acciones
+                        -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                          -#= link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                          = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                            %i.fa.fa-trash 
         </br>
         %div.table-responsive       
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -1588,7 +1923,8 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             El plan ofrece un enfoque estructurado y detallado para planificar y gestionar las diversas etapas y actividades de un proyecto, incluyendo la asignación de costos. Además, la capacidad de editar, eliminar y agregar actividades proporciona flexibilidad en la adaptación del plan a las necesidades cambiantes del proyecto.
-        %div.table-responsive
+        = button_tag 'Agregar Actividad', onclick: "agregarPlanActividades()", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+        %div#div_plan_actividades.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
@@ -1631,255 +1967,32 @@
                 %th.encabezado-form="Gastos de Operación"
                 %th.encabezado-form="Gastos de Administración"
               %tbody
-                -#%tr{style: 'background-color: #E0EFF6;'}
-                -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-                -#    %span ETAPA 1.Coordinación y Difusión Inicial
-                -#  %td{colspan: 2, style: 'text-align: right;'}
-                -#    %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'}
-                -#      Agregar actividad etapa 1
-                -#      %img{src: "/assets/agregar.gif", border: "0"}
-              - @actividad_x_linea.each do |actividad|
-                %tr
-                  %td.contenido-form=actividad.nombre
-                  -#%td.contenido-form
-                  - if @duracion == 1
-                    %td.contenido-form#duracion
-                  - elsif @duracion == 2
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                  - elsif @duracion == 3
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 4
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 5
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  - elsif @duracion == 6
-                    %td.contenido-form#duracion
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                    %td.contenido-form=""
-                  %td.contenido-form
-                  %td.contenido-form
-                  %td.contenido-form
-                  %td.contenido-form
-                  -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                  %td.contenido-form.dos.iconos-acciones
-                    = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id})" do
-                      %i.fa.fa-edit
-                    -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-                      -# = link_to admin_user_path(actividad), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-                        %i.fa.fa-trash  
-
-              -#%tr{style: 'background-color: #E0EFF6;'}
-              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-              -#    %span ETAPA 2.Recopilación de Información Primaria y Secundaria
-              -#  %td{colspan: 2, style: 'text-align: right;'}
-              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=2')", style: 'color: #5d759e;'}
-              -#      Agregar actividad etapa 2
-              -#      %img{src: "/assets/agregar.gif", border: "0"}
-              -#- @objetivos.each do |objetivo|
-              -#  %tr
-              -#    %td.contenido-form=objetivo.descripcion
-              -#    %td.contenido-form=objetivo.metodologia
-              -#    - if @duracion == 1
-              -#      %td.contenido-form#duracion
-              -#    - elsif @duracion == 2
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 3
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 4
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 5
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 6
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    %td.contenido-form=objetivo.resultado
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#    %td.contenido-form.dos.iconos-acciones
-              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-              -#        %i.fa.fa-edit
-              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-              -#          %i.fa.fa-trash  
-
-              -#%tr{style: 'background-color: #E0EFF6;'}
-              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-              -#    %span ETAPA 3.Análisis de Información y Desarrollo del Diagnóstico Preliminar
-              -#  %td{colspan: 2, style: 'text-align: right;'}
-              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=3')", style: 'color: #5d759e;'}
-              -#      Agregar actividad etapa 3
-              -#      %img{src: "/assets/agregar.gif", border: "0"}
-              -#- @objetivos.each do |objetivo|
-              -#  %tr
-              -#    %td.contenido-form=objetivo.descripcion
-              -#    %td.contenido-form=objetivo.metodologia
-              -#    - if @duracion == 1
-              -#      %td.contenido-form#duracion
-              -#    - elsif @duracion == 2
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 3
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 4
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 5
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 6
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    %td.contenido-form=objetivo.resultado
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#    %td.contenido-form.dos.iconos-acciones
-              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-              -#       %i.fa.fa-edit
-              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-              -#          %i.fa.fa-trash  
-  
-              -#%tr{style: 'background-color: #E0EFF6;'}
-              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-              -#    %span ETAPA 4.Difusión del Diagnóstico Preliminar y Entrega Diagnóstico Final
-              -#  %td{colspan: 2, style: 'text-align: right;'}
-              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=4')", style: 'color: #5d759e;'}
-              -#      Agregar actividad etapa 4
-              -#      %img{src: "/assets/agregar.gif", border: "0"}
-              -#- @objetivos.each do |objetivo|
-              -#  %tr
-              -#    %td.contenido-form=objetivo.descripcion
-              -#    %td.contenido-form=objetivo.metodologia
-              -#    - if @duracion == 1
-              -#      %td.contenido-form#duracion
-              -#    - elsif @duracion == 2
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 3
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 4
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 5
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 6
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    %td.contenido-form=objetivo.resultado
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#    %td.contenido-form.dos.iconos-acciones
-              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-              -#        %i.fa.fa-edit
-              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-              -#          %i.fa.fa-trash 
-
-              -#%tr{style: 'background-color: #E0EFF6;'}
-              -#  %td{colspan: 5+@duracion, style: 'color: #5d759e; font-weight: bold;'}
-              -#    %span ETAPA 5.Desarrollo, Socialización y Entrega de la Propuesta de APL
-              -#  %td{colspan: 2, style: 'text-align: right;'}
-              -#    %a{href: "#-1", onclick: "ventana_campo_13('fila=-1&amp;etapa=5')", style: 'color: #5d759e;'}
-              -#      Agregar actividad etapa 5
-              -#      %img{src: "/assets/agregar.gif", border: "0"}
-              -#- @objetivos.each do |objetivo|
-              -#  %tr
-              -#    %td.contenido-form=objetivo.descripcion
-              -#    %td.contenido-form=objetivo.metodologia
-              -#    - if @duracion == 1
-              -#      %td.contenido-form#duracion
-              -#    - elsif @duracion == 2
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 3
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 4
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 5
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    - elsif @duracion == 6
-              -#      %td.contenido-form#duracion
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#      %td.contenido-form=""
-              -#    %td.contenido-form=objetivo.resultado
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    %td.contenido-form=objetivo.indicadores
-              -#    -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#    %td.contenido-form.dos.iconos-acciones
-              -#      = link_to edit_admin_user_path(objetivo), title: "Editar los datos del usuario" do
-              -#        %i.fa.fa-edit
-              -#      -if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
-              -#        = link_to admin_user_path(objetivo), method: :delete, data: { confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)), remote: false }, title: "Eliminar al usuario" do
-              -#          %i.fa.fa-trash 
+                - if @actividad_x_linea.present?  
+                  - @actividad_x_linea.each do |actividad|
+                    %tr
+                      %td.contenido-form=actividad.nombre
+                      - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
+                      - if detalle_existente.present?
+                        - duraciones = detalle_existente.duracion.split(',')
+                        - (1..@duracion).each do |d|
+                          - if duraciones.include?(d.to_s)
+                            %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= "X"
+                          - else
+                            %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
+                        %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipo_3)
+                        %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipos_1_2)
+                        %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_1)
+                        %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_2)
+                      - else
+                        - (1..@duracion).each do |d|
+                          %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
+                        %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}
+                        %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
+                        %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
+                        %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
+                      %td.contenido-form.dos.iconos-acciones
+                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id } do
+                          %i.fa.fa-edit 
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body
@@ -1922,24 +2035,59 @@
             %tbody
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Costo total de la propuesta
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#costo_total_de_la_propuesta.contenido-form=number_to_currency @costos['costo_total_de_la_propuesta']
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_costo_total_de_la_propuesta.contenido-form=number_to_percentage((@costos['costo_total_de_la_propuesta'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_costo_total_de_la_propuesta.contenido-form 0,00%
+                - else
+                  %td#costo_total_de_la_propuesta.contenido-form $0
+                  %td#porcentaje_costo_total_de_la_propuesta.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte Propio Valorado
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_valorado.contenido-form=number_to_currency @costos.aporte_propio_valorado
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_valorado.contenido-form=number_to_percentage((@costos['aporte_propio_valorado'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_valorado.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_valorado.contenido-form $0
+                  %td#porcentaje_aporte_propio_valorado.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte Propio Líquido
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_liquido.contenido-form=number_to_currency @costos.aporte_propio_liquido
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_liquido.contenido-form=number_to_percentage((@costos['aporte_propio_liquido'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_liquido.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_liquido.contenido-form $0
+                  %td#porcentaje_aporte_propio_liquido.contenido-form  0,00%    
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte Propio Total
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_total.contenido-form=number_to_currency @costos.costo_total_de_la_propuesta
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_total.contenido-form=number_to_percentage((@costos['costo_total_de_la_propuesta'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_total.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_total.contenido-form $0
+                  %td#porcentaje_aporte_propio_total.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte solicitado Fondo PL
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_solicitado_al_fondo.contenido-form=number_to_currency @costos.aporte_solicitado_al_fondo
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_solicitado_al_fondo.contenido-form=number_to_percentage((@costos['aporte_solicitado_al_fondo'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_solicitado_al_fondo.contenido-form 0,00%
+                - else
+                  %td#aporte_solicitado_al_fondo.contenido-form $0
+                  %td#porcentaje_aporte_solicitado_al_fondo.contenido-form  0,00%
           %br        
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -1950,20 +2098,48 @@
             %tbody
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Propios
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#recursos_humanos_propios.contenido-form=number_to_currency @costos.recursos_humanos_propios
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_recursos_humanos_propios.contenido-form=number_to_percentage((@costos['recursos_humanos_propios'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_recursos_humanos_propios.contenido-form 0,00%
+                - else
+                  %td#recursos_humanos_propios.contenido-form $0
+                  %td#porcentaje_recursos_humanos_propios.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#recursos_humanos_externos.contenido-form=number_to_currency @costos.recursos_humanos_externos
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_recursos_humanos_externos.contenido-form=number_to_percentage((@costos['recursos_humanos_externos'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_recursos_humanos_externos.contenido-form 0,00%
+                - else
+                  %td#recursos_humanos_externos.contenido-form $0
+                  %td#porcentaje_recursos_humanos_externos.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#gastos_operacion.contenido-form=number_to_currency @costos.gastos_operacion
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_gastos_operacion.contenido-form=number_to_percentage((@costos['gastos_operacion'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td.contenido-form 0,00%
+                - else
+                  %td#gastos_operacion.contenido-form $0
+                  %td#porcentaje_gastos_operacion.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#gastos_administrativos.contenido-form=number_to_currency @costos.gastos_administrativos
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_gastos_administrativos.contenido-form=number_to_percentage((@costos['gastos_administrativos'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_gastos_administrativos.contenido-form 0,00%
+                - else
+                  %td#gastos_administrativos.contenido-form $0
+                  %td#porcentaje_gastos_administrativos.contenido-form  0,00%
           %br        
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -1979,28 +2155,76 @@
             %tbody
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Propios
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_valorado_rrhh_propio.contenido-form=number_to_currency @costos.aporte_propio_valorado_rrhh_propio
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_valorado_rrhh_propio.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_rrhh_propio'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_valorado_rrhh_propio.contenido-form 0,00%
+                  %td#aporte_propio_liquido_rrhh_propio.contenido-form=number_to_currency @costos.aporte_propio_liquido_rrhh_propio
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_liquido_rrhh_propio.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_rrhh_propio'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_liquido_rrhh_propio.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_valorado_rrhh_propio.contenido-form $0
+                  %td#porcentaje_aporte_propio_valorado_rrhh_propio.contenido-form  0,00%
+                  %td#aporte_propio_liquido_rrhh_propio.contenido-form $0
+                  %td#porcentaje_aporte_propio_liquido_rrhh_propio.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_valorado_rrhh_externo.contenido-form=number_to_currency @costos.aporte_propio_valorado_rrhh_externo
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_valorado_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_rrhh_externo'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_valorado_rrhh_externo.contenido-form 0,00%
+                  %td#aporte_propio_liquido_rrhh_externo.contenido-form=number_to_currency @costos.aporte_propio_liquido_rrhh_externo
+                  - if @costos['costo_total_de_la_propuesta'] != 0
+                    %td#porcentaje_aporte_propio_liquido_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_rrhh_externo'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_liquido_rrhh_externo.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_valorado_rrhh_externo.contenido-form $0
+                  %td#porcentaje_aporte_propio_valorado_rrhh_externo.contenido-form  0,00%
+                  %td#aporte_propio_liquido_rrhh_externo.contenido-form $0
+                  %td#porcentaje_aporte_propio_liquido_rrhh_externo.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_propio_valorado_gasto_operacion.contenido-form=number_to_currency @costos.aporte_propio_valorado_gasto_operacion
+                  - if @costos['aporte_propio_valorado'] != 0
+                    %td#porcentaje_aporte_propio_valorado_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_gasto_operacion'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_valorado_gasto_operacion.contenido-form 0,00%
+                  %td#aporte_propio_liquido_gasto_operacion.contenido-form=number_to_currency @costos.aporte_propio_liquido_gasto_operacion
+                  - if @costos['aporte_propio_liquido'] != 0
+                    %td#porcentaje_aporte_propio_liquido_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_gasto_operacion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_liquido_gasto_operacion.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_valorado_gasto_operacion.contenido-form $0
+                  %td#porcentaje_aporte_propio_valorado_gasto_operacion.contenido-form  0,00%
+                  %td#aporte_propio_liquido_gasto_operacion.contenido-form $0
+                  %td#porcentaje_aporte_propio_liquido_gasto_operacion.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                %td.contenido-form 0
-                %td.contenido-form 0,00%   
-                %td.contenido-form 0
-                %td.contenido-form 0,00%  
+                - if @costos.present?
+                  %td#aporte_propio_valorado_gasto_administracion.contenido-form=number_to_currency @costos.aporte_propio_valorado_gasto_administracion
+                  - if @costos['aporte_propio_valorado'] != 0
+                    %td#porcentaje_aporte_propio_valorado_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_gasto_administracion'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_valorado_gasto_administracion.contenido-form 0,00%
+                  %td#aporte_propio_liquido_gasto_administracion.contenido-form=number_to_currency @costos.aporte_propio_liquido_gasto_administracion
+                  - if @costos['aporte_propio_liquido'] != 0
+                    %td#porcentaje_aporte_propio_liquido_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_gasto_administracion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_propio_liquido_gasto_administracion.contenido-form 0,00%
+                - else
+                  %td#aporte_propio_valorado_gasto_administracion.contenido-form $0
+                  %td#porcentaje_aporte_propio_valorado_gasto_administracion.contenido-form  0,00%
+                  %td#aporte_propio_liquido_gasto_administracion.contenido-form $0
+                  %td#porcentaje_aporte_propio_liquido_gasto_administracion.contenido-form  0,00%
           %br        
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -2011,16 +2235,37 @@
             %tbody
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_solicitado_fondo_rrhh_externo.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_rrhh_externo
+                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                    %td#porcentaje_aporte_solicitado_fondo_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_rrhh_externo'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_solicitado_fondo_rrhh_externo.contenido-form 0,00%
+                - else
+                  %td#aporte_solicitado_fondo_rrhh_externo.contenido-form $0
+                  %td#porcentaje_aporte_solicitado_fondo_rrhh_externo.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
-                %td.contenido-form 0
-                %td.contenido-form 0,00%
+                - if @costos.present?
+                  %td#aporte_solicitado_fondo_gasto_operacion.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_gasto_operacion
+                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                    %td#porcentaje_aporte_solicitado_fondo_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_gasto_operacion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_solicitado_fondo_gasto_operacion.contenido-form 0,00%
+                - else
+                  %td#aporte_solicitado_fondo_gasto_operacion.contenido-form $0
+                  %td#porcentaje_aporte_solicitado_fondo_gasto_operacion.contenido-form  0,00%
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                %td.contenido-form 0
-                %td.contenido-form 0,00%  
+                - if @costos.present?
+                  %td#aporte_solicitado_fondo_gasto_administracion.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_gasto_administracion
+                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                    %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_gasto_administracion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
+                  - else
+                    %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form 0,00%
+                - else
+                  %td#aporte_solicitado_fondo_gasto_administracion.contenido-form $0
+                  %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form  0,00%
         %br
         <h1>Validación</h1>   
         %div.table-responsive 
@@ -2035,35 +2280,314 @@
             %tbody
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte líquido del postulante
-                %td.contenido-form $0
-                %td.contenido-form Mayor o igual al 9% del total del proyecto
-                %td.contenido-form $0
-                %td.contenido-form Si
+                - if @costos.present?
+                  %td#valida_aporte_propio_liquido.contenido-form=number_to_currency @costos.aporte_propio_liquido
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                  %td#valida_pregunta_aporte_propio_liquido.contenido-form
+                    - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                      SI
+                    - else
+                      NO
+                - else
+                  %td#valida_aporte_propio_liquido.contenido-form $0
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form  0,00%
+                  %td#valida_pregunta_aporte_propio_liquido.contenido-form  NO
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
-                %td.contenido-form $0
-                %td.contenido-form Mayor o igual al 30,00% del total del proyecto
-                %td.contenido-form $0
-                %td.contenido-form Si
+                - if @costos.present?
+                  %td#valida_costo_total_de_la_propuesta.contenido-form=number_to_currency @costos.costo_total_de_la_propuesta
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form
+                    - if @costos.costo_total_de_la_propuesta >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                      SI
+                    - else
+                      NO
+                - else
+                  %td#valida_costo_total_de_la_propuesta.contenido-form $0
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form  0,00%
+                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form  NO
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                %td.contenido-form $0
-                %td.contenido-form Menor o igual al 10% del total del proyecto
-                %td.contenido-form $0
-                %td.contenido-form Si
+                - if @costos.present?
+                  %td#valida_gastos_administrativos.contenido-form=number_to_currency @costos.gastos_administrativos
+                  %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_gastos_administrativos.contenido-form=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                  %td#valida_pregunta_gastos_administrativos.contenido-form
+                    - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                      SI
+                    - else
+                      NO
+                - else
+                  %td#valida_gastos_administrativos.contenido-form $0
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_gastos_administrativos.contenido-form  0,00%
+                  %td#valida_pregunta_gastos_administrativos.contenido-form  NO
               %tr
                 %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
-                %td.contenido-form $0
-                %td.contenido-form Menor o igual a $25.000.000
-                %td.contenido-form $0
-                %td.contenido-form Si
-          %br      
+                - if @costos.present?
+                  %td#valida_aporte_solicitado_al_fondo.contenido-form=number_to_currency @costos.aporte_solicitado_al_fondo
+                  %td.contenido-form Menor o igual a #{number_to_currency(Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO)}
+                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form=number_to_currency(Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO)
+                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form
+                    - if @costos.aporte_solicitado_al_fondo <= Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO && @costos.costo_total_de_la_propuesta != ''
+                      SI
+                    - else
+                      NO
+                - else
+                  %td#valida_aporte_solicitado_al_fondo.contenido-form $0
+                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form  0,00%
+                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form  NO
+          %br
 
+  - solo_lectura = @solo_lectura
+  - if @revisor      
+    #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
+      .card
+        .card-body
+          .row
+            .col-12.col-lg-6
+              = f.input :revisor_tecnico_id, collection: @fondo_produccion_limpia.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico"}, label: t(:revisor_tecnico)
+            .col-12.col-lg-6
+              = f.input :revisor_juridico_id, collection: @revisores_financieros_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero"}, label: t(:revisor_financiero)
+            .col-12.col-lg-6
+              = f.input :revisor_juridico_id, collection: @revisores_juridicos_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico"}, label: t(:revisor_juridico)
+            .col-12
+              = f.input :comentario_jefe_de_linea, as: :text, label: t(:comentario), input_html: {class: "required-field"}, required: true
+  - if @admisibilidad      
+    #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
+      .card
+        .card-header
+          .card-body
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
+                  %tr
+                    %th.encabezado2-form Subcriterios
+                    %th.encabezado2-form Nota
+                    %th.encabezado2-form Justificación
+                  %tr
+                    %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_2', onchange: "habilitaObservaciones('nota_input_id_2','obs_input_id_2')" }
+                    %th.contenido3-form                             
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden;'}
+                  %tr
+                    %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_3', onchange: "habilitaObservaciones('nota_input_id_3','obs_input_id_3')" }
+                    %th.contenido3-form  
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden;'}                            
+                  %tr
+                    %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_4', onchange: "habilitaObservaciones('nota_input_id_4','obs_input_id_4')" }
+                    %th.contenido3-form         
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden;'}
+                  %tr
+                    %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input', id: 'nota_input_id_5', onchange: "habilitaObservaciones('nota_input_id_5','obs_input_id_5')" }
+                    %th.contenido3-form     
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden;'}
+                  %tr
+                    %th.contenido1-form Puntaje Otorgado
+                    %th.contenido2-form#promedio-notas 
+                    %th.contenido3-form   
+                %thead
+                  %tr
+                    %th{colspan: 3, style: 'background-color: #fff;'}
+                  %tr
+                    %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
+                  %tr
+                    %th.encabezado2-form Subcriterios
+                    %th.encabezado2-form Nota
+                    %th.encabezado2-form Justificación
+                  %tr
+                    %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input-2', id: 'nota_input_id_6', onchange: "habilitaObservaciones('nota_input_id_6','obs_input_id_6')" }
+                    %th.contenido3-form 
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_6', style: 'visibility: hidden;'}
+                  %tr
+                    %th.contenido1-form Puntaje Otorgado
+                    %th.contenido2-form#promedio-notas-2
+                    %th.contenido3-form   
+                %thead
+                  %tr
+                    %th{colspan: 3, style: 'background-color: #fff;'}
+                  %tr
+                    %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
+                  %tr
+                    %th.encabezado2-form Subcriterios
+                    %th.encabezado2-form Nota
+                    %th.encabezado2-form Justificación
+                  %tr
+                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input-3', id: 'nota_input_id_7', onchange: "habilitaObservaciones('nota_input_id_7','obs_input_id_7')" }
+                    %th.contenido3-form 
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_7', style: 'visibility: hidden;'}
+                  %tr
+                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input-3', id: 'nota_input_id_8', onchange: "habilitaObservaciones('nota_input_id_8','obs_input_id_8')" }
+                    %th.contenido3-form  
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_8', style: 'visibility: hidden;'}  
+                  %tr
+                    %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
+                    %th.contenido2-form 
+                      = f.input :resultado_pertinencia, required: true, label: false, collection: (1..7).map { |num| [num, num] }, input_html: { class: 'required-field nota-input-3', id: 'nota_input_id_9', onchange: "habilitaObservaciones('nota_input_id_9','obs_input_id_9')" }
+                    %th.contenido3-form    
+                      = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_9', style: 'visibility: hidden;'}  
+                  %tr
+                    %th.contenido1-form Puntaje Otorgado
+                    %th.contenido2-form#promedio-notas-3
+                    %th.contenido3-form        
+
+  #admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-juridica"])}
+    .card
+      .card-header
+        .card-body
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                %tr
+                  %th.contenido1-form Solicitud de cofinanciamiento
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_1', onchange: "habilitaObservaciones('nota_input_id_1','obs_input_id_1')" }                              
+                  %th.contenido3-form 
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_2', onchange: "habilitaObservaciones('nota_input_id_2','obs_input_id_2')" }
+                  %th.contenido3-form                           
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Copia simple del Rol Único Tributario de la organización postulante
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_3', onchange: "habilitaObservaciones('nota_input_id_3','obs_input_id_3')" }
+                  %th.contenido3-form   
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden;'}                            
+                %tr
+                  %th.contenido1-form Copia simple de la cédula de identidad del o los representantes legales
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_4', onchange: "habilitaObservaciones('nota_input_id_4','obs_input_id_4')" }
+                  %th.contenido3-form         
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_5', onchange: "habilitaObservaciones('nota_input_id_5','obs_input_id_5')" }
+                  %th.contenido3-form      
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_6', onchange: "habilitaObservaciones('nota_input_id_6','obs_input_id_6')" }
+                  %th.contenido3-form    
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_6', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_7', onchange: "habilitaObservaciones('nota_input_id_7','obs_input_id_7')" }
+                  %th.contenido3-form    
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_7', style: 'visibility: hidden;'}
+                %tr
+                  %th.contenido1-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
+                  %th.contenido2-form 
+                    = f.input :nombre_acuerdo, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_8', onchange: "habilitaObservaciones('nota_input_id_8','obs_input_id_8')" }
+                  %th.contenido3-form 
+                    = f.input :nombre_acuerdo, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_8', style: 'visibility: hidden;'}
+  
+  #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
+    .card
+      .card-body
+        .row
+          .col-12
+            .row
+              .col-12.col-lg-6.manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent
+                = f.label t(:observaciones), id: "observaciones_label"
+                %br
+                .form-group.required.manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad
+                  - checks = tabs.map{|l,v| l.to_s != "pertinencia-factibilidad" ? [I18n.t(l.to_s.gsub('-','_')), l.to_s] : nil}.compact                
+                  = f.collection_check_boxes :nombre_acuerdo, checks, :last, :first, item_wrapper_tag: false, boolean_style: :inline do |cb|
+                    = cb.check_box(disabled: solo_lectura)
+                    = cb.label
+                    %br
+              .col-12.col-lg-6
+                .row
+                  .col-12
+                    -if !solo_lectura
+                      = f.input :nombre_acuerdo, collection: ManifestacionDeInteres.resultado_pertinencia.keys.map { |w| [w.humanize, w] }, required: true, label: t(:resultado_de_la_pertinencia)
+                    -else
+                      .form-group
+                        -no_data = f.object.resultado_pertinencia.blank?
+                        %label.control-label.string=t(:resultado_de_la_pertinencia)
+                        %p#manifestacion_de_interes_resultado_pertinencia.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                          =(no_data ? 'No se ingresó respuesta' : f.object.resultado_pertinencia.humanize)
+        
+          .col-12.col-lg-6
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, as: :text, input_html: {rows: 4}, label: t(:observaciones_y_comentarios)
+            -else
+              .form-group
+                -no_data = f.object.observaciones_pertinencia_factibilidad.blank?
+                %label.control-label.string=t(:observaciones_y_comentarios)
+                %p#manifestacion_de_interes_observaciones_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.observaciones_pertinencia_factibilidad)
+          .col-12.col-lg-6
+            -if !solo_lectura
+              = f.input :nombre_acuerdo, as: :text, input_html: {rows: 4}, label: "Condiciones y/o compromisos a solicitar"
+            -else
+              .form-group
+                -no_data = f.object.compromiso_pertinencia_factibilidad.blank?
+                %label.control-label.string="Condiciones y/o compromisos a solicitar"
+                %p#manifestacion_de_interes_compromiso_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.compromiso_pertinencia_factibilidad)
+                    
+          -if !@manifestacion_de_interes.respuesta_observaciones_pertinencia_factibilidad.blank?
+            .col-12.col-lg-6
+              -if !solo_lectura
+                =f.input :nombre_acuerdo, as: :text, input_html: {rows: 4}, label: t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase), disabled: true
+              -else
+                .form-group
+                  -no_data = f.object.respuesta_observaciones_pertinencia_factibilidad.blank?
+                  %label.control-label.string=t(:detalle_de_, item: t(:respuesta_a_observaciones_pertinencia_factibilidad).downcase)
+                  %p#manifestacion_de_interes_respuesta_observaciones_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_observaciones_pertinencia_factibilidad)
+          -if !@manifestacion_de_interes.respuesta_otros_pertinencia_factibilidad.blank?
+            .col-12.col-lg-6
+              -if !solo_lectura
+                =f.input :nombre_acuerdo, as: :text, input_html: {rows: 4}, label: t(:comentarios_sobre_condiciones_y_compromisos), disabled: true
+              -else
+                .form-group
+                  -no_data = f.object.respuesta_otros_pertinencia_factibilidad.blank?
+                  %label.control-label.string=t(:comentarios_sobre_condiciones_y_compromisos)
+                  %p#manifestacion_de_interes_respuesta_otros_pertinencia_factibilidad.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.respuesta_otros_pertinencia_factibilidad)
+          -if !@manifestacion_de_interes.archivo_respuesta_pertinencia_factibilidad.blank?
+            .col-12.col-lg-6
+              .form-group
+                %label.string.control-label Archivo complementario a respuesta de pertinencia y factibilidad (opcional)
+                = __descargar_archivo(f.object.archivo_respuesta_pertinencia_factibilidad,f.object, false)
+                                  
   #modal_objetivos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2102,7 +2626,7 @@
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: objetivo_especificos_path, method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2114,25 +2638,25 @@
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
 
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
+                        = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'
+                        
                         
                         %tr
                           %td.contenido-popup-form=t(:descripcion)
                           %td.contenido-popup-form 
-                            -# = @objetivo_especifico.metodologia
-                            -# = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.descripcion
-                            = f.text_field :descripcion, class: 'required-field', id: 'descripcion2', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                            = f.text_field :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:metodologia)
                           %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                            = f.text_field :metodologia, required: true, id: 'metodologia_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:resultado)
                           %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                            = f.text_field :resultado, required: true, id: 'resultado_edit' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tr
                           %td.contenido-popup-form=t(:indicadores)
                           %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores'
+                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores_edit'
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'actualizarObjetivo(); return false;'
@@ -2142,7 +2666,7 @@
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2203,7 +2727,7 @@
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2264,7 +2788,7 @@
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2326,7 +2850,7 @@
       .modal-dialog
         .modal-content
           .modal-body
-            = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            = form_with(model: @plan_actividades, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
               .row
                 .col-12
                   .card
@@ -2341,14 +2865,12 @@
                           %tr
                             %td.contenido-popup-form=t(:nombre_actividades)
                             %td.contenido-popup-form 
-                              = f.text_field :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              = f.text_area  :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', disabled: true
+                              -#= f.text_area :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, disabled: true
                           %tr
-                            %td.contenido-popup-form=t(:objetivo_específico)
+                            %td.contenido-popup-form=t(:objetivos_específicos)
                             %td.contenido-popup-form 
-                              -#= f.select :descripcion, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
-                              = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
-                              -#= f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción' }, { selected: @plan_actividades.objetivos_especifico_id.nil? }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
-                              -#= f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Selecciona una opción', class: 'required-field' }, { selected: @plan_actividades.objetivos_especifico_id.nil? }
+                              = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                           %tr
                             %td.contenido-popup-form{colspan: @duracion}
                               %div#div_duracion.table-responsive
@@ -2362,17 +2884,6 @@
                                       - else
                                         %td.sub-contenido-popup-form{:colspan => @duracion} No checkboxes
                                   %tbody
-                                    -#%tr
-                                    -#  - if @duracion.present? && @duracion.to_i > 0
-                                    -#    - (1..@duracion.to_i).each do |mes|
-                                    -#      %td.sub-contenido-form 
-                                    -#        - checkbox_id = "mes#{mes}"
-                                    -#        - if @plan_actividades.duracion.present?
-                                    -#          = f.check_box :descripcion, { checked: true }, class: 'required-field', id: checkbox_id, style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
-                                    -#        - else
-                                    -#          = f.check_box :descripcion, class: 'required-field', id: checkbox_id, style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
-                                    -#  - else
-                                    -#    %td.sub-contenido-form No checkboxes
                           %tr
                             %td.contenido-popup-form{colspan: 4}
                               %div.table-responsive  
@@ -2390,7 +2901,7 @@
                                   %thead
                                     %tr.contenido-popup-form{colspan: 4}
                                       %td{style: 'text-align: left; background-color: #fff;'}
-                                        %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", style: 'color: #5d759e;'} Editar
+                                        %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", id: "agregar_rr_pp", style: 'color: #5d759e;'} Agregar
                                         %img{src: "/assets/agregar.gif", border: "0"}
                           %tr
                             %td.contenido-popup-form{colspan: 4}
@@ -2409,11 +2920,12 @@
                                   %thead
                                     %tr.contenido-popup-form{colspan: 4}
                                       %td{style: 'text-align: left; background-color: #fff;'}
-                                        %a{href: "#-1", onclick: "modalRrhhExternos(document.getElementById('plan_id').value); return false;", style: 'color: #5d759e;'} Editar
+                                        %a{href: "#-1", onclick: "modalRrhhExternos(document.getElementById('plan_id').value); return false;", id: "agregar_rr_ex", style: 'color: #5d759e;'} Agregar
                                         %img{src: "/assets/agregar.gif", border: "0"}
                           %tr 
                             %td.contenido-popup-form{colspan: 6}
                               %div.table-responsive  
+                              %div#div_plan_gastos_operacion.table-responsive  
                                 %table.table.table-striped.usuarios.no-margin
                                   %thead
                                     %tr.contenido-popup-form{colspan: 6}=t(:gasto_operacion)
@@ -2425,13 +2937,16 @@
                                       %td.sub-contenido-popup-form Total
                                       %td.sub-contenido-popup-form
                                   %tbody
+                                %table
+                                  %thead  
                                     %tr.contenido-popup-form{colspan: 6}
                                       %td{colspan: 6,style: 'text-align: right; background-color: #fff;'}
-                                        %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'} Agregar Fila
+                                        %a{href: "#-1", onclick: "modalGastosOperacion(document.getElementById('plan_id').value); return false;", id: "agregar_gas_ope", style: 'color: #5d759e;'} Agregar Fila
                                         %img{src: "/assets/agregar.gif", border: "0"}
                           %tr 
                             %td.contenido-popup-form{colspan: 6}
                               %div.table-responsive  
+                              %div#div_plan_gastos_administracion.table-responsive 
                                 %table.table.table-striped.usuarios.no-margin
                                   %thead
                                     %tr.contenido-popup-form{colspan: 6}=t(:gasto_administracion)
@@ -2443,21 +2958,23 @@
                                       %td.sub-contenido-popup-form Total
                                       %td.sub-contenido-popup-form
                                   %tbody
+                                %table
+                                  %thead  
                                     %tr.contenido-popup-form{colspan: 6}
                                       %td{colspan: 6, style: 'text-align: right; background-color: #fff;'}
-                                        %a{href: "#-1", onclick: 'crearPlanActividades(1); return false;', style: 'color: #5d759e;'} Agregar Fila
+                                        %a{href: "#-1", onclick: "modalGastosAdministrativos(document.getElementById('plan_id').value); return false;", id: "agregar_gas_adm", style: 'color: #5d759e;'} Agregar Fila
                                         %img{src: "/assets/agregar.gif", border: "0"}
                             
             .modal-footer
               %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
-              = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+              = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;"
 
   -# POPUP RRHH PROPIOS
   #modal_rrhh_propios-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2470,18 +2987,19 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         %thead
                           %tr
+                            -#%td.sub-contenido-popup-form ID
                             %td.sub-contenido-popup-form Nombre
-                            %td.sub-contenido-popup-form HH en la actividad Propios
+                            %td.sub-contenido-popup-form HH en la actividad
                         %tbody
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
-            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarRrhhPropioshh(document.getElementById('plan_id').value); return false;"
   -# POPUP RRHH EXTERNOS
   #modal_rrhh_externos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
     .modal-dialog
       .modal-content
         .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especificos_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
               .col-12
                 .card
@@ -2489,17 +3007,106 @@
                     %h5.no-margin
                       Recursos Humanos Externos
                   .card-body
-                    %div#div_consultor_faltantes.table-responsive  
+                    %div#div_consultor_faltantes_externos.table-responsive  
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         %thead
                           %tr
+                            -#%td.sub-contenido-popup-form ID
                             %td.sub-contenido-popup-form Nombre
-                            %td.sub-contenido-popup-form HH en la actividad Propios
+                            %td.sub-contenido-popup-form HH en la actividad
                         %tbody
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
-            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
+            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarRrhhExternoshh(document.getElementById('plan_id').value); return false;"
+
+  -# POPUP GASTOS OPERACION
+  #modal_gastos_operacion-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+    .modal-dialog
+      .modal-content
+        .modal-body
+          = form_with(model: @gastos_operaciones, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            .row
+              .col-12
+                .card
+                  .card-header
+                    %h5.no-margin
+                      Gastos Operación
+                  .card-body
+                    %div#div_consultor_faltantes.table-responsive  
+                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                        = hidden_field_tag 'flujo_id', @tarea_pendiente.flujo_id, id: 'flujo_id'
+                        %thead
+                          %tr
+                            %td.contenido-form Ítem:
+                            %td.contenido-form
+                              = f.text_field :nombre, class: 'required-field', id: 'nombre', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %tr
+                            %td.contenido-form Valor Unitario:
+                            %td.contenido-form
+                              = f.text_field :valor_unitario, class: 'required-field', id: 'valor_unitario', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', maxlength: 10, onKeyPress: 'return soloNumeros(event)'
+                          %tr
+                            %td.contenido-form Cantidad:
+                            %td.contenido-form
+                              = f.text_field :cantidad, class: 'required-field', id: 'cantidad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', maxlength: 3, onKeyPress: 'return soloNumeros(event)'
+                          %tr
+                            %td.contenido-form Unidad de medida:
+                            %td.contenido-form
+                              = select_tag(:tipo, options_for_select([['Unidad', 1], ['Global', 2]]), id: 'unidad_medida', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;')
+                          %tr
+                            %td.contenido-form Fuente de financiamiento
+                            %td.contenido-form
+                              -#= f.text_field :tipo_aporte_id, class: 'required-field', id: 'tipo_aporte_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              - if @tipo_aporte.present?  
+                                = select_tag :tipo_aporte_id, options_for_select(@tipo_aporte.map { |tipo| [tipo.nombre, tipo.id] }), class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                        %tbody
+          .modal-footer
+            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+            = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: "insertGastosOperacion(document.getElementById('plan_id').value); return false;"
+
+  -# POPUP GASTOS ADMINISTRACION
+  #modal_gastos_administracion-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+    .modal-dialog
+      .modal-content
+        .modal-body
+          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            .row
+              .col-12
+                .card
+                  .card-header
+                    %h5.no-margin
+                      Gastos Administración
+                  .card-body
+                    %div#div_consultor_faltantes.table-responsive  
+                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                        = hidden_field_tag 'flujo_id', @tarea_pendiente.flujo_id, id: 'flujo_id'
+                        %thead
+                          %tr
+                            %td.contenido-form Ítem:
+                            %td.contenido-form
+                              = f.text_field :nombre, class: 'required-field', id: 'nombre_adm', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %tr
+                            %td.contenido-form Valor Unitario:
+                            %td.contenido-form
+                              = f.text_field :valor_unitario, class: 'required-field', id: 'valor_unitario_adm', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', maxlength: 10, onKeyPress: 'return soloNumeros(event)'
+                          %tr
+                            %td.contenido-form Cantidad:
+                            %td.contenido-form
+                              = f.text_field :cantidad, class: 'required-field', id: 'cantidad_adm', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', maxlength: 3, onKeyPress: 'return soloNumeros(event)'
+                          %tr
+                            %td.contenido-form Unidad de medida:
+                            %td.contenido-form
+                              = select_tag(:tipo, options_for_select([['Unidad', 1], ['Global', 2]]), id: 'unidad_medida', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;')
+                          %tr
+                            %td.contenido-form Fuente de financiamiento
+                            %td.contenido-form
+                              -#= f.text_field :tipo_aporte_id, class: 'required-field', id: 'tipo_aporte_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                              - if @tipo_aporte.present?  
+                                = select_tag :tipo_aporte_id, options_for_select(@tipo_aporte.map { |tipo| [tipo.nombre, tipo.id] }), class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                        %tbody
+          .modal-footer
+            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "insertGastosAdministracion(document.getElementById('plan_id').value); return false;"
             
 -# POPUP BUSCAR CONTRIBUYENTE
 - custom_id = custom_id.blank? ? nil : custom_id

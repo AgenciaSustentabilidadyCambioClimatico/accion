@@ -1,0 +1,6 @@
+$('.loading-data').hide();
+$("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
+
+<% if @total_gastos_tipo_1.present? %>
+    document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_1.total_gastos_tipo_1 %>';
+<% end %>

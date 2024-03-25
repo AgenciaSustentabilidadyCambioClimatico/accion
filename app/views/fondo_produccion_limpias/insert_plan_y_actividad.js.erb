@@ -1,0 +1,22 @@
+var newRowDuracion = ""; 
+<% @duracion.each do |d| %>
+  <% if @duracion_x.split(',').include?(d.to_s) %>
+    newRowDuracion += "<td class='contenido-form' id='mes_<%= @plan_actividades.actividad_id %>_<%= d %>'>X</td>";
+  <% else %>
+    newRowDuracion += "<td class='contenido-form' id='mes_<%= @plan_actividades.actividad_id %>_<%= d %>'></td>";
+  <% end %>
+<% end %>
+
+var newRow = "<tr>" +
+  "<td class='contenido-form'><%= @actividad.nombre %></td>" +
+  newRowDuracion +
+  "<td class='contenido-form' id='valor_hh_tipo_3_<%= @plan_actividades.actividad_id %>'>$0</td>" +
+  "<td class='contenido-form' id='valor_hh_tipo_1_2_<%= @plan_actividades.actividad_id %>'>$0</td>" +
+  "<td class='contenido-form' id='total_gastos_tipo_1_<%= @plan_actividades.actividad_id %>'>$0</td>" +
+  "<td class='contenido-form' id='total_gastos_tipo_2_<%= @plan_actividades.actividad_id %>'>$0</td>" +
+  "<td class='contenido-form dos iconos-acciones'>" +
+  "<a title='Editar' onclick='crearPlanActividades(<%= @plan_actividades.actividad_id %>)' class='crear_plan_actividad' data-actividad-id='<%= @plan_actividades.actividad_id %>' href='#'><i class='fa fa-edit'></i></a>" +
+  "</td>" +
+  "</tr>";
+
+$('#div_plan_actividades table tbody').append(newRow);

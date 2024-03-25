@@ -458,6 +458,7 @@ es:
   campo_de_aplicación: Campo de aplicación
   definiciones: Definiciones
   objetivo_general: Objetivo general
+  objetivos_específicos: Objetivos específicos
   objetivo_específico: Objetivo específico
   derechos: Derechos
   obligaciones: Obligaciones
@@ -1534,6 +1535,7 @@ es:
   recursos_humanos_externos: Recursos Humanos Externos
   gasto_operacion: Gasto de Operación
   gasto_administracion: Gasto de Administración
+  nueva: Nueva
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:

@@ -191,7 +191,7 @@
                 %a.nav-link{id: "admisibilidad-juridica-externo", class: 'active', "aria-controls" => 'admisibilidad-juridica-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-juridica-externo", :role => "tab"}
                   =t('admisibilidad_juridica')
         .card-body.border-tabs.px-2.pt-3
-          - tabs = { "sector": false, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "admisibilidad-juridica": true }
+          - tabs = { "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "admisibilidad-juridica": true }
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
               - tabs.each do |tab,active|

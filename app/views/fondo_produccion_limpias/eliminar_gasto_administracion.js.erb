@@ -1,0 +1,6 @@
+$('.loading-data').hide();
+$("#eliminar-gasto-administracion-<%= gasto %>").closest('tr').remove();
+
+<% if @total_gastos_tipo_2.present? %>
+    document.getElementById('total_gastos_tipo_2_<%= @total_gastos_tipo_2.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_2.total_gastos_tipo_2 %>';
+<% end %>

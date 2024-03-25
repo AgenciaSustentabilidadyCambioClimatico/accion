@@ -57,13 +57,14 @@
                       - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
                       = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }          
               - else
-                - lista_usuarios.all.each do |u|
-                  %tr
-                    %td= "#{u.rut}"
-                    %td= u.nombre_completo
-                    %td.iconos-acciones
-                      - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
-                      = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }
+                - if @lista_usuarios.present? 
+                  - lista_usuarios.all.each do |u|
+                    %tr
+                      %td= "#{u.rut}"
+                      %td= u.nombre_completo
+                      %td.iconos-acciones
+                        - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
+                        = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }
   .col-12.mt-2.text-right
     -unless @contribuyente_temporal.nil?
       %button.btn.btn-primary.seleccionar-y-actualizar-usuario-fpl-button{type: :button, disabled: :disabled }

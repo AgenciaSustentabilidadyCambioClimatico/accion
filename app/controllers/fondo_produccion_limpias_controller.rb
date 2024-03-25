@@ -1,9 +1,11 @@
 class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
-    :insert_modal, :insert_modal_contribuyente]
+    :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
+    :new_plan_actividades, :eliminar_gasto_operacion, :eliminar_objetivo_especifico, :update_objetivo_especifico]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
-    :insert_modal, :insert_modal_contribuyente]
+    :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
+    :new_plan_actividades, :eliminar_gasto_operacion, :eliminar_objetivo_especifico, :update_objetivo_especifico]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador]
@@ -117,12 +119,14 @@ class FondoProduccionLimpiasController < ApplicationController
       @mantener_temporal = 'true'
       @objetivo_especifico = ObjetivosEspecifico.new
       @es_para_seleccion = 'true'
+      @tipo_aporte = TipoAporte.all
 
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
 
       set_actividades_x_linea
       set_plan_actividades
+      set_costos
 
       @tipo = 0
       if count_user_persona > 0 
@@ -187,6 +191,94 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
     end
 
+    def insert_objetivo_especifico
+      custom_params = {
+        objetivos_especifico: {
+          flujo_id: params['flujo_id'],
+          descripcion: params['descripcion'],
+          metodologia: params['metodologia'],
+          resultado: params['resultado'],
+          indicadores: params['indicadores']
+        }
+      }
+      @objetivo_especifico = ObjetivosEspecifico.new(custom_params[:objetivos_especifico])
+      respond_to do |format|
+        if @objetivo_especifico.save
+          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
+          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          #binding.pry
+          format.js { render 'insert_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico, tarea_pendiente: params['id'], objetivos_options: @objetivos_options } }
+        end
+      end
+    end
+
+    def edit_objetivo_especifico
+      @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
+      respond_to do |format|
+        #binding.pry
+        format.js { render 'edit_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico } }
+      end
+    end
+
+    def update_objetivo_especifico
+      binding.pry
+      @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
+      custom_params = {
+        objetivos_especifico: {
+          id: params['objetivo_id'],
+          flujo_id: params['flujo_id'],
+          descripcion: params['descripcion'],
+          metodologia: params['metodologia'],
+          resultado: params['resultado'],
+          indicadores: params['indicadores']
+        }
+      }
+      binding.pry
+      respond_to do |format|
+        if @objetivo_especifico.update(custom_params[:objetivos_especifico])
+          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
+          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          format.js { render 'update_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico, objetivos_options: @objetivos_options } }
+        end
+      end
+    end
+
+    def get_objetivo_especifico
+      @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
+    
+      respond_to do |format|
+        format.js { render 'get_objetivo_especifico', locals: { objetivo_especificos: @objetivo_especificos } }
+      end
+    end
+
+    def new_objetivo_especifico
+      #binding.pry
+        @objetivo_especifico = ObjetivosEspecifico.new
+        respond_to do |format|
+          format.html
+          format.js
+        end
+	  end
+
+    def eliminar_objetivo_especifico
+      #binding.pry
+      objetivo_especifico = ObjetivosEspecifico.find(params[:id])
+    
+      respond_to do |format|
+        if objetivo_especifico.destroy
+          #binding.pry
+          @objetivo = ObjetivosEspecifico.where(flujo_id: objetivo_especifico['flujo_id']).select(:descripcion, :id)
+          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          format.js { render 'eliminar_objetivo_especifico', locals: { objetivo_especifico: objetivo_especifico.id, objetivos_options: @objetivos_options } }
+          #flash[:success] = 'Consultor eliminado exitosamente.'
+        else
+          #binding.pry
+          format.js { render 'eliminar_objetivo_especifico', status: :unprocessable_entity }
+        end
+      end
+    end
+
+    
     def buscador
       #binding.pry
       rut = buscador_params[:rut]
@@ -650,11 +742,12 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def get_plan_actividades
-
+     
       @plan_actividades = PlanActividad.includes(:actividad).find_by(flujo_id: @tarea_pendiente.flujo_id, actividad_id: params['plan_id'])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
       arreglo = []
       if @plan_actividades.nil?
+        #binding.pry
         @actividad = Actividad.find_by(id: params['plan_id'])
         @nombre_actividad = @actividad.nombre if @actividad&.present?  
         @objetivos_especifico_id = nil
@@ -663,16 +756,17 @@ class FondoProduccionLimpiasController < ApplicationController
         1.upto(maximo) do |numero|
           arreglo << numero
         end
-    
+        #binding.pry
         newRowDuracion = ""
         arreglo.each do |mes|  
           newRowDuracion += "<td class='sub-contenido-form'>" +
-                            "<input type='checkbox' name='descripcion' class='required-field' id='mes#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+                            "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
                             "</td>"
         end
         @duracion = newRowDuracion
-      
+        #binding.pry
       else
+        #binding.pry
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
       
@@ -682,16 +776,22 @@ class FondoProduccionLimpiasController < ApplicationController
         end
   
         @duracion = @plan_actividades.duracion if @plan_actividades.duracion.present? #"1,2,4"
-        
+        #binding.pry
         newRowDuracion = ""
         arreglo.each do |mes|  
-          if @duracion.split(",").map(&:to_i).include?(mes)
-            newRowDuracion += "<td class='sub-contenido-form'>" +
-                              "<input type='checkbox' name='descripcion' checked='checked' class='required-field' id='mes#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                              "</td>"
+          if @duracion.present?
+            if @duracion.split(",").map(&:to_i).include?(mes)
+              newRowDuracion += "<td class='sub-contenido-form'>" +
+                                "<input type='checkbox' name='descripcion' checked='checked' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+                                "</td>"
+            else
+              newRowDuracion += "<td class='sub-contenido-form'>" +
+                                "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+                                "</td>"
+            end
           else
             newRowDuracion += "<td class='sub-contenido-form'>" +
-                              "<input type='checkbox' name='descripcion' class='required-field' id='mes#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+                              "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
                               "</td>"
           end
         end
@@ -705,6 +805,8 @@ class FondoProduccionLimpiasController < ApplicationController
       .where(equipo_trabajos: { tipo_equipo: 3 })
       .where(plan_actividades: { actividad_id: params['plan_id'] })
 
+      #binding.pry
+
       @recursos_externos = PlanActividad
       .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
       .joins(recurso_humanos: { equipo_trabajo: :user })
@@ -712,26 +814,90 @@ class FondoProduccionLimpiasController < ApplicationController
       .where(equipo_trabajos: { tipo_equipo: [1, 2] })
       .where(plan_actividades: { actividad_id: params['plan_id'] })
 
+      #@recursos_externos = PlanActividad
+      #.select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+      #.joins(recurso_humanos: { equipo_trabajo: :user })
+      #.where(recurso_humanos: { flujo_id: @tarea_pendiente.flujo_id })
+      #.where(equipo_trabajos: { tipo_equipo: [1, 2] })
+      #.where(plan_actividades: { actividad_id: params['plan_id'] })
+
+      #@gastos_operaciones = PlanActividad
+      #.select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, gastos.unidad_medida')
+      #.joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      #.where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
+      #.where(plan_actividades: { actividad_id: params['plan_id'] })
+      #.where(gastos: { tipo_gasto: 1 })
+
+      @gastos_operaciones = PlanActividad
+      .select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
+              CASE gastos.unidad_medida 
+                WHEN 1 THEN \'Unidad\' 
+                WHEN 2 THEN \'Global\' 
+                ELSE \'Otro\' 
+              END AS unidad_medida')
+      .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      .where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
+      .where(plan_actividades: { actividad_id: params['plan_id'] })
+      .where(gastos: { tipo_gasto: 1 })
+
+      #@gastos_administraciones = PlanActividad
+      #.select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, gastos.unidad_medida')
+      #.joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      #.where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
+      #.where(plan_actividades: { actividad_id: params['plan_id'] })
+      #.where(gastos: { tipo_gasto: 2 })
+      #binding.pry
+
+      @gastos_administraciones = PlanActividad
+      .select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
+              CASE gastos.unidad_medida 
+                WHEN 1 THEN \'Unidad\' 
+                WHEN 2 THEN \'Global\' 
+                ELSE \'Otro\' 
+              END AS unidad_medida')
+      .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      .where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
+      .where(plan_actividades: { actividad_id: params['plan_id'] })
+      .where(gastos: { tipo_gasto: 2 })
+
+      #binding.pry
+
+      @plan = params['plan_id']
+
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad } }
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion } }
       end
     end
     
     def get_recursos_propios
       #binding.pry
+      #@postulantes_faltantes = EquipoTrabajo.find_by_sql("
+      #    SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
+      #    FROM equipo_trabajos
+      #    INNER JOIN users ON equipo_trabajos.user_id = users.id
+      #    WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
+      #    AND tipo_equipo = 3
+      #    AND NOT EXISTS (
+      #      SELECT 1
+      #      FROM recurso_humanos
+      #      INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
+      #            WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
+      #      AND plan_actividades.actividad_id = #{params['actividad_id']}
+      #    )
+      #")
+
       @postulantes_faltantes = EquipoTrabajo.find_by_sql("
-          SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
-          FROM equipo_trabajos
-          INNER JOIN users ON equipo_trabajos.user_id = users.id
-          WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
-          AND tipo_equipo = 3
-          AND NOT EXISTS (
-            SELECT 1
-            FROM recurso_humanos
-            INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
-                  WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
-            AND plan_actividades.actividad_id = #{params['actividad_id']}
-          )
+          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id
+          FROM equipo_trabajos et
+          INNER JOIN users u ON et.user_id = u.id
+          LEFT JOIN (
+              SELECT rh.equipo_trabajo_id, rh.hh
+              FROM recurso_humanos rh
+              INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
+              WHERE pa.actividad_id = #{params['actividad_id']}
+          ) rh ON et.id = rh.equipo_trabajo_id
+          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
+          AND et.tipo_equipo = 3;
       ")
 
       #binding.pry
@@ -743,20 +909,49 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def get_recursos_externos
       #binding.pry
-      @consultor_faltantes = EquipoTrabajo.find_by_sql("
-          SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
-          FROM equipo_trabajos
-          INNER JOIN users ON equipo_trabajos.user_id = users.id
-          WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
-          AND tipo_equipo IN (1,2)
-          AND NOT EXISTS (
-            SELECT 1
-            FROM recurso_humanos
-            INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
-                  WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
-            AND plan_actividades.actividad_id = #{params['actividad_id']}
-          )
+      #@consultor_faltantes = EquipoTrabajo.find_by_sql("
+      #    SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
+      #    FROM equipo_trabajos
+      #    INNER JOIN users ON equipo_trabajos.user_id = users.id
+      #    WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
+      #    AND tipo_equipo IN (1,2)
+      #    AND NOT EXISTS (
+      #      SELECT 1
+      #      FROM recurso_humanos
+      #      INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
+      #            WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
+      #      AND plan_actividades.actividad_id = #{params['actividad_id']}
+      #    )
+      #")
+
+      @consultor_faltantesxxx = EquipoTrabajo.find_by_sql("
+          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id
+          FROM equipo_trabajos et
+          INNER JOIN users u ON et.user_id = u.id
+          LEFT JOIN (
+              SELECT rh.equipo_trabajo_id, rh.hh
+              FROM recurso_humanos rh
+              INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
+              WHERE pa.actividad_id = #{params['actividad_id']}
+          ) rh ON et.id = rh.equipo_trabajo_id
+          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
+          AND et.tipo_equipo IN (1,2);
       ")
+
+      @consultor_faltantes = EquipoTrabajo.find_by_sql("
+          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id, rh.tipo_aporte_id AS tipo_aporte
+          FROM equipo_trabajos et
+          INNER JOIN users u ON et.user_id = u.id
+          LEFT JOIN (
+            SELECT rh.equipo_trabajo_id, rh.hh, rh.tipo_aporte_id
+            FROM recurso_humanos rh
+            INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
+            WHERE pa.actividad_id = #{params['actividad_id']}
+          ) rh ON et.id = rh.equipo_trabajo_id
+          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
+          AND et.tipo_equipo IN (1,2);
+        ")
+
 
       #binding.pry
       respond_to do |format|
@@ -764,10 +959,406 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js { render 'get_recursos_externos', locals: { consultor_faltantes: @consultor_faltantes } }
       end
     end
+
+    def insert_gastos_operacion
+      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
+      custom_params = {
+        gasto: {
+          nombre: params[:nombre],
+          valor_unitario: params[:valor_unitario],
+          cantidad: params[:cantidad],
+          tipo_aporte_id: params[:tipo_aporte_id],
+          flujo_id: params[:flujo_id],
+          plan_actividad_id: @plan_actividades.id,
+          tipo_gasto: 1,
+          unidad_medida: params[:unidad_medida]
+        }  
+      }
+      
+      @gastos_operaciones = Gasto.new(custom_params[:gasto])
+        if @gastos_operaciones.save 
+          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_1 = PlanActividad
+          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+                WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+                ELSE 0 
+              END
+            ) AS total_gastos_tipo_1')
+          .joins("
+            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+          ")
+          .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
+          .group("plan_actividades.id, plan_actividades.actividad_id")
+          .first
+
+          #Actualiza costos
+        set_costos 
+
+          #@plan = params[:plan_id]
+          #binding.pry
+          respond_to do |format|
+            format.js { render 'insert_gastos_operacion', locals: { gastos_operaciones: @gastos_operaciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_1: @total_gastos_tipo_1 } }
+          end
+        end
+    end
+
+    def eliminar_gasto_operacion
+      #binding.pry
+      gasto = Gasto.find(params[:gastos_id])
+      #binding.pry
+      if gasto.destroy
+        respond_to do |format|
+          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_1 = PlanActividad
+          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+                WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+                ELSE 0 
+              END
+            ) AS total_gastos_tipo_1')
+          .joins("
+            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+          ")
+          .where(gastos: { flujo_id:  gasto['flujo_id'], plan_actividad_id: gasto['plan_actividad_id'] })
+          .group("plan_actividades.id, plan_actividades.actividad_id")
+          .first
+          #binding.pry
+          format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1 } }
+        end 
+      else
+        flash[:error] = 'Hubo un problema al eliminar el gasto.'
+      end
+    end
+
+    def insert_gastos_administracion
+      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
+      custom_params = {
+        gasto: {
+          nombre: params[:nombre],
+          valor_unitario: params[:valor_unitario],
+          cantidad: params[:cantidad],
+          tipo_aporte_id: params[:tipo_aporte_id],
+          flujo_id: params[:flujo_id],
+          plan_actividad_id: @plan_actividades.id,
+          tipo_gasto: 2,
+          unidad_medida: params[:unidad_medida]
+        }  
+      }
+      
+      @gastos_administraciones = Gasto.new(custom_params[:gasto])
+        if @gastos_administraciones.save 
+          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_2 = PlanActividad
+          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+                WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+                ELSE 0 
+              END
+            ) AS total_gastos_tipo_2')
+          .joins("
+            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+          ")
+          .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
+          .group("plan_actividades.id, plan_actividades.actividad_id")
+          .first
+
+          #Actualiza costos
+          set_costos 
+
+          @plan = params['plan_id']
+          respond_to do |format|
+            format.js { render 'insert_gastos_administracion', locals: { gastos_administraciones: @gastos_administraciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_2:@total_gastos_tipo_2, plan: @plan } }
+          end
+        end
+    end
+
+    def eliminar_gasto_administracion
+      #binding.pry
+      gasto = Gasto.find(params[:gastos_id])
+      #binding.pry
+      if gasto.destroy
+        respond_to do |format|
+          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_2 = PlanActividad
+          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+                WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+                ELSE 0 
+              END
+            ) AS total_gastos_tipo_2')
+          .joins("
+            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+          ")
+          .where(gastos: { flujo_id:  gasto['flujo_id'], plan_actividad_id: gasto['plan_actividad_id'] })
+          .group("plan_actividades.id, plan_actividades.actividad_id")
+          .first
+          #binding.pry
+
+          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2 } }
+        end 
+      else
+        flash[:error] = 'Hubo un problema al eliminar el gasto.'
+      end
+    end
+
+    def insert_recursos_humanos_propios
+      data = JSON.parse(params[:data])
+      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
+      #binding.pry 
+      rrhh_propio_ids = []  # Array para almacenar los IDs de rrhhPropioId
     
+      data.each do |clave, valor|
+        custom_params = {
+          recursos: {
+            hh: clave['hh'],
+            equipo_trabajo_id: clave['rrhhPropioId'],
+            flujo_id: params[:flujo_id],
+            plan_actividad_id: @plan_actividades.id,
+            tipo_aporte_id: 1
+          }  
+        }
+        if (clave['rhhEquipoId'] == "")
+          #se inserta un nuevo usuario
+          @recursos_propios = RecursoHumano.new(custom_params[:recursos])
+          @recursos_propios.save 
+          #binding.pry 
+        else
+          #se actualiza un usuario
+          @recursos_propios = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhPropioId'])
+          @recursos_propios.update(custom_params[:recursos])
+          #binding.pry 
+        end
+          
+        rrhh_propio_ids << clave['rrhhPropioId']  # Agregar el ID a la lista
+      end
+    
+      # Utilizar rrhh_propio_ids como necesites fuera del bucle
+      @recursos_internos = PlanActividad
+        .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+        .joins(recurso_humanos: { equipo_trabajo: :user })
+        .where(recurso_humanos: { flujo_id: params[:flujo_id] })
+        .where(plan_actividades: { actividad_id: params['plan_id'] })
+        .where(equipo_trabajos: { id: rrhh_propio_ids })  # Utilizar los IDs almacenados
+
+      # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      @valor_hh_tipo_3 = PlanActividad
+        .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+                  CASE 
+                  WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                  ELSE 0 
+                  END
+                ) AS valor_hh_tipo_3')
+        .joins("
+          LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+          LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+          LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+        ")
+        .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
+        .group("plan_actividades.id, plan_actividades.actividad_id")
+        .first
+      #Actualiza costos
+      set_costos  
+
+      respond_to do |format|
+        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3 } }
+      end
+    end
+
+    def insert_recursos_humanos_externos
+      data = JSON.parse(params[:data])
+      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
+    
+      rrhh_externo_ids = []  # Array para almacenar los IDs de rrhhPropioId
+    
+      data.each do |clave, valor|
+        if clave['hh'] != ""
+          if clave['nombreUsuario'] != ""
+            custom_params = {
+              recursos: {
+                hh: clave['hh'],
+                equipo_trabajo_id: clave['rrhhExternoId'],
+                flujo_id: params[:flujo_id],
+                plan_actividad_id: @plan_actividades.id,
+                  tipo_aporte_id: params['tipoAporte']
+                }  
+              }
+            #@recursos = RecursoHumano.new(custom_params[:recursos])
+            #binding.pry
+            #@recursos.save 
+            if (clave['rhhEquipoId'] == "")
+              #se inserta un nuevo usuario
+              @recursos = RecursoHumano.new(custom_params[:recursos])
+              @recursos.save 
+              #binding.pry 
+            else
+              #se actualiza un usuario
+              
+              @recursos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
+              #binding.pry 
+              @recursos.update(custom_params[:recursos])
+              #binding.pry 
+            end
+        
+            rrhh_externo_ids << clave['rrhhExternoId']  # Agregar el ID a la lista
+          end
+        end
+      end
+      #binding.pry
+      # Utilizar rrhh_externo_ids como necesites fuera del bucle
+      @recursos_externos = PlanActividad
+        .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+        .joins(recurso_humanos: { equipo_trabajo: :user })
+        .where(recurso_humanos: { flujo_id: params[:flujo_id] })
+        .where(plan_actividades: { actividad_id: params['plan_id'] })
+        .where(equipo_trabajos: { id: rrhh_externo_ids })  # Utilizar los IDs almacenados
+
+      # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      @valor_hh_tipos_1_2_ = PlanActividad
+        .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+                  CASE 
+                  WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                  ELSE 0 
+                  END
+                ) AS valor_hh_tipos_1_2_')
+        .joins("
+          LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+          LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+          LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+        ")
+        .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
+        .group("plan_actividades.id, plan_actividades.actividad_id")
+        .first
+        #binding.pry
+      #Actualiza costos
+      set_costos 
+
+      respond_to do |format|
+        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_ } }
+      end
+    end
+    
+
     def insert_plan_actividades
-      binding.pry
+      #binding.pry
+      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
+      @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
+      arreglo = []
+
+      maximo = @duracion_general.sub_linea_id 
+      1.upto(maximo) do |numero|
+        arreglo << numero
+      end
+      @duracion = arreglo
+
+        custom_params = {
+          plan_actividades: {
+            duracion: params['duracion'].join(','),
+            actividad_id: params['plan_id'],
+            flujo_id: params['flujo_id'],
+            objetivos_especifico_id: params['objetivos_especifico_id']
+          }
+        }
+        #binding.pry
+        if @plan_actividades.present?
+          @plan_actividades.update(custom_params[:plan_actividades])
+        else
+          @plan_actividades = PlanActividad.new(custom_params[:plan_actividades])
+          @plan_actividades.save
+        end
+
+        @duracion_x = params['duracion'].join(',')
+        respond_to do |format|
+          format.js { render 'insert_plan_actividades' }
+        end
+      
     end  
+
+    def new_plan_actividades
+      #binding.pry 
+      @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
+      arreglo = []
+
+      if params['opcion'] == 'create'
+    
+        maximo = @duracion_general.sub_linea_id 
+        1.upto(maximo) do |numero|
+          arreglo << numero
+        end
+        newRowDuracion = ""
+        arreglo.each do |mes|  
+          newRowDuracion += "<td class='sub-contenido-form'>" +
+                            "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
+                            "</td>"
+        end
+        @duracion = newRowDuracion
+        respond_to do |format|
+          format.js { render 'new_plan_actividades', locals: { duracion: @duracion } }
+        end
+      else
+        #binding.pry
+
+        maximo = @duracion_general.sub_linea_id 
+        1.upto(maximo) do |numero|
+          arreglo << numero
+        end
+        @duracion = arreglo
+
+        #inserta en tabla actividades la actividad nueva, se debe agregar un estado o ver como se identidica
+        custom_params_actividades = {
+          actividades: {
+            nombre: params['nombre_actividad'],
+            descripcion: params['nombre_actividad']
+          }
+        }
+        
+        @actividad = Actividad.new(custom_params_actividades[:actividades])
+        @actividad.save
+
+
+        #inserta en tabla actividades la actividad_por_linea
+        custom_params_actividad_por_linea = {
+          actividad_por_linea: {
+            actividad_id: @actividad.id,
+            tipo_instrumento_id: 11, #SE DEBE CAMBIAR POR EL SELECCIONADO EN LA TAREA APL-005
+            tipo_permiso: 3
+          }
+        }
+        
+        @actividad_por_linea = ActividadPorLinea.new(custom_params_actividad_por_linea [:actividad_por_linea])
+        @actividad_por_linea.save
+
+        #binding.pry
+      
+        #inserta en tabla plan_actividades
+        custom_params_plan_actividades = {
+          plan_actividades: {
+            duracion: params['duracion'].join(','),
+            actividad_id: @actividad.id,
+            flujo_id: params['flujo_id'],
+            objetivos_especifico_id: params['objetivos_especifico_id']
+          }
+        }
+        
+        
+        @plan_actividades = PlanActividad.new(custom_params_plan_actividades[:plan_actividades])
+        #binding.pry
+        @plan_actividades.save
+
+        #binding.pry
+                                                   
+        @duracion_x = params['duracion'].join(',')
+        #puts "@duracion: #{@duracion.inspect}"
+        #binding.pry
+        respond_to do |format|
+          format.js { render 'insert_plan_y_actividad' }
+        end
+      end
+    end 
+    
+    #def insert_new_plan_actividades
+    #  binding.pry
+    #end
 
     def get_sub_lineas_seleccionadas
       @sub_lineas = SubLinea.where(linea_id: params[:id])
@@ -780,8 +1371,12 @@ class FondoProduccionLimpiasController < ApplicationController
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @revisores_juridicos_fpl = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       @revisores_financieros_fpl = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
-      
-      #binding.pry
+      @revisor = true
+
+      #Carga costos
+      set_costos 
+
+      binding.pry
       #@manifestacion_de_interes.seleccion_de_radios
   
       #unless @manifestacion_de_interes.contribuyente_id.nil?
@@ -921,6 +1516,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @manifestacion_de_interes.temp_siguientes = "true"
       @manifestacion_de_interes.seleccion_de_radios
+
+      @admisibilidad = true
+
+      set_equipo_trabajo
   
       unless @manifestacion_de_interes.contribuyente_id.nil?
         #Elimino todos los que no sean el id guardado
@@ -1783,6 +2382,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
       @manifestacion_de_interes.seleccion_de_radios
   
+      @solo_lectura = false
       unless @manifestacion_de_interes.contribuyente_id.nil?
         #Elimino todos los que no sean el id guardado
         Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
@@ -2268,6 +2868,7 @@ class FondoProduccionLimpiasController < ApplicationController
       rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
       personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
       @usuarios = personas_responsables.map { |e| e.user  }
+      #binding.pry
     end
   
     def lista_usuarios_carga_datos
@@ -2276,6 +2877,7 @@ class FondoProduccionLimpiasController < ApplicationController
       rol_tarea = Rol::CARGADOR_DATOS_ACUERDO
       personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
       @usuarios = personas_responsables.map { |e| e.user  }
+      #binding.pry
     end
   
     def guardar_usuario_entregables #DZC APL-008
@@ -2863,6 +3465,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea = @tarea_pendiente.tarea
   
         autorizado? @tarea_pendiente if @tarea.codigo != Tarea::COD_APL_019
+        #binding.pry
       end
       #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
       def set_flujo
@@ -2879,7 +3482,7 @@ class FondoProduccionLimpiasController < ApplicationController
   
         # DZC 2019-07-17 16:24:33 se obtienen las validaciones para campos de texto, tooltips y ayudas desde la tabla
         @validaciones = @manifestacion_de_interes.get_campos_validaciones
-  
+        #binding.pry
         
         # DZC 2019-08-09 se comenta por que ya no es necesario
         #@textos = @manifestacion_de_interes.get_campos_textos
@@ -3408,36 +4011,27 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_actividades_x_linea
-        #binding.pry 
-        #@actividad_x_linea = ActividadPorLinea.where(tipo_instrumento_id: TipoInstrumento::FPL_LINEA_1_1).all
-
-        @actividad_x_linea = Actividad
-        .unscoped
-        .joins(:actividad_por_lineas)
-        .select("actividades.id, actividades.nombre")
-        .where(actividad_por_lineas: {tipo_instrumento_id: TipoInstrumento::FPL_LINEA_1_1, tipo_permiso: 1})
-        .order("actividades.nombre ASC")
-        .all
-        #puts @actividad_x_linea.to_sql
+        @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+        @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
         #binding.pry 
       end
 
+      def set_costos
+          @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
+          #binding.pry          
+      end
+
       def set_descargables
-        @descargables_tarea = DescargableTarea.where(tarea_id: 109).order(id: :asc);
+        #@descargables_tarea = DescargableTarea.where(tarea_id: 109).order(id: :asc);
+
+        @descargables_tarea = DocumentacionLegal.descargables_tarea_para_flujo(@tarea_pendiente.flujo_id)
+        #binding.pry  
       end
 
       def set_regiones
         @regiones = Region.order(id: :asc).all
       end
 
-      #def update_user_params
-      #  parameters = params.require(:user).permit(common_params)
-      #  if parameters[:password].blank?
-      #    parameters.delete(:password)
-      #    parameters.delete(:password_confirmation)
-      #  end
-      #  parameters
-      #end
 
       def update_user_params
         params.require(:user).permit(:nombre_completo, :telefono, :email, :temporal, :flujo_id, :user_id, :rut)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240221161459) do
+ActiveRecord::Schema.define(version: 20240325145228) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -616,6 +616,16 @@ ActiveRecord::Schema.define(version: 20240221161459) do
     t.index ["codigo"], name: "index_descargable_tareas_on_codigo", unique: true
   end
 
+  create_table "documentacion_legals", force: :cascade do |t|
+    t.integer "estado"
+    t.bigint "descargable_tareas_id"
+    t.bigint "tipo_contribuyentes_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
+    t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
+  end
+
   create_table "documento_diagnosticos", force: :cascade do |t|
     t.integer "manifestacion_de_interes_id", null: false
     t.integer "tipo_documento_diagnostico_id"
@@ -899,6 +909,7 @@ ActiveRecord::Schema.define(version: 20240221161459) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tipo_gasto"
+    t.integer "unidad_medida"
     t.index ["flujo_id"], name: "index_gastos_on_flujo_id"
     t.index ["plan_actividad_id"], name: "index_gastos_on_plan_actividad_id"
     t.index ["tipo_aporte_id"], name: "index_gastos_on_tipo_aporte_id"
@@ -1636,9 +1647,11 @@ ActiveRecord::Schema.define(version: 20240221161459) do
     t.bigint "plan_actividad_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "tipo_aporte_id"
     t.index ["equipo_trabajo_id"], name: "index_recurso_humanos_on_equipo_trabajo_id"
     t.index ["flujo_id"], name: "index_recurso_humanos_on_flujo_id"
     t.index ["plan_actividad_id"], name: "index_recurso_humanos_on_plan_actividad_id"
+    t.index ["tipo_aporte_id"], name: "index_recurso_humanos_on_tipo_aporte_id"
   end
 
   create_table "regiones", id: :serial, force: :cascade do |t|
@@ -2196,6 +2209,7 @@ ActiveRecord::Schema.define(version: 20240221161459) do
   add_foreign_key "recurso_humanos", "equipo_trabajos"
   add_foreign_key "recurso_humanos", "flujos"
   add_foreign_key "recurso_humanos", "plan_actividades"
+  add_foreign_key "recurso_humanos", "tipo_aportes"
   add_foreign_key "regiones", "paises"
   add_foreign_key "registro_apertura_correos", "convocatoria_destinatarios"
   add_foreign_key "registro_apertura_correos", "flujo_tareas"
