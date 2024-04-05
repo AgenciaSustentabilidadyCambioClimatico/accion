@@ -755,6 +755,7 @@ Rails.application.routes.draw do
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
   get "minutas/:id/descargar_acta", to: "minutas#descargar_acta", as: :descargar_acta
+  get "minutas/:id/descargar_archivo_resolucion", to: "minutas#descargar_archivo_resolucion", as: :descargar_archivo_resolucion
 
 
 
