@@ -343,6 +343,12 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     redirect_to archivo.url
   end
 
+  def descargar_archivo_resolucion
+    @minuta = Minuta.find(params[:id].to_i)
+    archivo = @minuta.archivo_resolucion
+    redirect_to archivo.url
+  end
+
   private
     def minuta_params #hay que tener presente 
       parametros=params.require(:minuta).permit(
