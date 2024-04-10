@@ -134,7 +134,7 @@
 						.col-lg-6.pr-lg-0.col-12.desactivado
 							= f.input :meta_id, label: t(:meta), collection: [], input_html: { class: 'required-field' }, required: true, disabled: true
 						.col-lg-3.pr-lg-0.col-12.desactivado
-							= f.input :valor_referencia, label: t(:valor_referencia), input_html: { class: 'required-field' }, required: true
+							= f.input :valor_referencia, label: t(:valor_referencia)
 						.col-lg-3.col-12.desactivado
 							-#
 								= f.input :tipo_cuantitativa, label: t(:tipo_cuantitativa), input_html: { type: :range }, wrapper_class: 'range-slider'
@@ -143,7 +143,7 @@
 						.col-lg-4.pr-lg-0.col-12.desactivado
 							= f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: 'required-field' }, required: true
 						.col-lg-4.desactivado
-							= f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: 'required-field' }, required: true
+							= f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión)
 						.col-lg-3.pr-lg-0.col-12.desactivado
 							= f.input :plazo_valor, label: t(:plazo_valor), input_html: { class: 'required-field numero-natural' }, required: true
 						.col-lg-3.col-12.desactivado

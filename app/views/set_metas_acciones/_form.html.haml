@@ -189,7 +189,7 @@
             .col-lg-4.col-12.desactivado
               = f.input :materia_sustancia_id, label: t(:materia_sustancia), collection: MateriaSustancia.all.map{|m|[m.nombre,m.id]}, required: true, disabled: true,  input_html: { class: " chosen-control", "data-placeholder" => "Seleccione una opción"}
             .col-lg-4.pr-lg-0.col-12.desactivado
-              = f.input :valor_referencia, label: t(:valor_referencia), input_html: { class: "#{requerido}" }, required: true
+              = f.input :valor_referencia, label: t(:valor_referencia)
             .col-lg-4.pr-lg-0.col-12.desactivado
               = f.input :alcance_id, label: t(:alcance), collection: Alcance.all.map{|m|[m.nombre,m.id]}, input_html: { class: "#{requerido}" }, required: true
             .col-lg-2.col-12.desactivado
@@ -206,12 +206,12 @@
               .col-lg-4.pr-lg-0.col-12
                 = f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: '' }, required: false
               .col-lg-4.col-12
-                = f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: '' }, required: true
+                = f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión)
             - else
               .col-lg-4.pr-lg-0.col-12.desactivado
                 = f.input :detalle_medio_verificacion, label: t(:detalle_medio_verificación), input_html: { class: "#{requerido}" }, required: true
               .col-lg-4.desactivado
-                = f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión), input_html: { class: "#{requerido}" }, required: true
+                = f.input :criterio_inclusion_exclusion, label: t(:criterio_inclusión_exclusión)
             -# si es observar, mostramos 1 comentario, para escribir
             - if observar_propuesta
               -# si tarea 20 fue finalizada mostramos la respuesta
