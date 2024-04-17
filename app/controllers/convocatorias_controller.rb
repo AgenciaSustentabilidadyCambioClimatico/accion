@@ -365,8 +365,7 @@ class ConvocatoriasController < ApplicationController
 			@convocatoria.accion = action_name
 			@convocatoria.establece_mensaje_encabezado
 			@convocatoria.establece_mensaje_cuerpo
-			@destinatarios = @convocatoria.destinatarios
-
+			@destinatarios = MapaDeActor.adecua_actores_unidos_rut_persona_institucion_convocatorias(@convocatoria.destinatarios)
 		end
 
 		def set_descargable_tareas 
