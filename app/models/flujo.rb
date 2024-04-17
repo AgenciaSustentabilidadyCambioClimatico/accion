@@ -396,13 +396,15 @@ class Flujo < ApplicationRecord
       elsif t.codigo == Tarea::COD_APL_022
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 62).first
         convocatoria = Convocatoria.where(flujo_id: self.id, tarea_codigo: "APL-021").first
-        if !convocatoria.minuta.acta.blank?
-          acta = {nombre: "Texto Acuerdo Firmado", url: 'descargar_archivo_path', parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, tipo: "acta"] ,metodo: true}
+        if !convocatoria.minuta.acta.file.nil?
+          minuta_id = convocatoria&.minuta&.id
+          acta = {nombre: "Texto Acuerdo Firmado", url: "descargar_acta_path", parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "acta"] ,metodo: true}
         else
           acta = {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
         end
-        if !convocatoria.minuta.archivo_resolucion.blank?
-          resolucion = {nombre: "Resolución Aprueba APL", url: 'descargar_archivo_path', parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, tipo: "resolucion"] ,metodo: true}
+        if !convocatoria.minuta.archivo_resolucion.file.nil?
+          minuta_id = convocatoria&.minuta&.id
+          resolucion = {nombre: "Resolución Aprueba APL", url: 'descargar_archivo_resolucion_path', parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "resolucion"] ,metodo: true}
         else
           resolucion = {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
         end

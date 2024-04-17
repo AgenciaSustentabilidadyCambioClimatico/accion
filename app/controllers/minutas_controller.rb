@@ -1,12 +1,12 @@
 class MinutasController < ApplicationController #crea la depencia con convocatoria en la carpeta del controlado
-  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip]
-  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip]
-  before_action :set_flujo
-  before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :set_descargable_tareas, except: [:archivo, :archivo_acuerdo_anexos_zip]
+  before_action :authenticate_user!, except: [:archivo_acuerdo_anexos_zip, :archivo, :descargar_acta]
+  before_action :set_tarea_pendiente, except: [:archivo_acuerdo_anexos_zip, :archivo, :descargar_acta]
+  before_action :set_flujo, except: [:descargar_acta]
+  before_action :set_convocatoria, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
+  before_action :set_tipo, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
+  before_action :set_descargable_tareas, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
   before_action :set_minuta, only: [:edit, :update, :destroy, :descargar_archivo], except: [:archivo, :archivo_acuerdo_anexos_zip]
-  before_action :permiso_tarea, except: [:archivo, :archivo_acuerdo_anexos_zip]
+  before_action :permiso_tarea, except: [:archivo, :archivo_acuerdo_anexos_zip, :descargar_acta]
   respond_to :docx
   # GET /minuta/new
   def new
@@ -82,8 +82,15 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 #DZC agrega al campo data de la tarea_pendiente 
   def continua_flujo_segun_tipo_tarea(condicion_de_salida=nil)
     case @tarea.codigo
-    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015,Tarea::COD_APL_011,Tarea::COD_APL_016 #agrego tareas de padre, porque podrian venir de ahi y no funcionaria
-      @convocatoria.update({terminada: true})
+    when Tarea::COD_APL_011
+      @convocatoria.update({ terminada: true })
+    when Tarea::COD_APL_012, Tarea::COD_APL_017, Tarea::COD_PPF_015 #agrego tareas de padre, porque podrian venir de ahi y no funcionaria
+      @convocatoria.update({ terminada: true })
+      @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+    when Tarea::COD_APL_016
+      @convocatoria.update({ terminada: true })
+    when Tarea::COD_APL_030
+      @convocatoria.update({ terminada: true })
     when Tarea::COD_APL_022, Tarea::COD_APL_038 #DZC minuta de firma de acuerdo APL-022, y de ceremonia de certificación APL-038
       tipo_campo = (@tarea.codigo==Tarea::COD_APL_022) ? 'firma' : 'ceremonia_certificacion'
       if !@minuta.fecha_hora.blank? && !@minuta.direccion.blank? #DZC verifica cumplimiento de condición 'B' y termina tareas pendientes correspondientes a las convocatorias de todos los actores. 
@@ -150,7 +157,8 @@ class MinutasController < ApplicationController #crea la depencia con convocator
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
       end
     when Tarea::COD_APL_031 #DZC Termina reuníon para establecer Comité Coordinador APL-031
-      @convocatoria.update({terminada: true})
+      @convocatoria.update({ terminada: true })
+      @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
     end
   end
 
@@ -328,6 +336,19 @@ class MinutasController < ApplicationController #crea la depencia con convocator
       send_data(archivo, type: archivo.file.content_type, charset: "iso-8859-1", filename: archivo.file.original_filename)
     end
   end
+
+  def descargar_acta
+    @minuta = Minuta.find(params[:id].to_i)
+    archivo = @minuta.acta
+    redirect_to archivo.url
+  end
+
+  def descargar_archivo_resolucion
+    @minuta = Minuta.find(params[:id].to_i)
+    archivo = @minuta.archivo_resolucion
+    redirect_to archivo.url
+  end
+
   private
     def minuta_params #hay que tener presente 
       parametros=params.require(:minuta).permit(

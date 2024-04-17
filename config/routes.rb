@@ -587,7 +587,10 @@ Rails.application.routes.draw do
       get :usuario_flujos
     end
   end
-
+  #rutas para cambiar nombre apl
+  get '/editar_nombre_apl/:manifestacion_de_interes_id', to: "manifestacion_de_interes#editar_nombre_apl", as: :editar_nombre_apl
+  get '/nombres_apl', to: "manifestacion_de_interes#nombre_apl", as: :nombres_apl
+  patch '/cambio_nombre_apl/:manifestacion_de_interes_id', to: "manifestacion_de_interes#cambio_nombre_apl", as: :cambio_nombre
   # ToDo GABM - Mayo 29 2018 : Quitar params: :tarea_pendiente_id al resources de manifestacion_de_interes y agrupar todo el resources con
   # scope '/:tarea_pendientes_id' do. Luego quitar todos lo :id de cada metodo declarado y quitar :tarea_pendiente del grupo collection.
   resources :manifestacion_de_interes, param: :tarea_pendiente_id, path: "manifestacion-de-interes", except: [:show,:index,:create,:edit,:update] do
@@ -885,6 +888,9 @@ Rails.application.routes.draw do
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/edit(.:format)", to: "minutas#edit", as: :edit_tarea_pendiente_convocatoria_minuta
   patch ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/:id(.:format)", to: "minutas#update", as: :tarea_pendiente_convocatoria_minuta
   get ":tarea_pendiente_id/convocatorias/:convocatoria_id/minutas/descargar_archivo", to: "minutas#descargar_archivo", as: :descargar_archivo
+  get "minutas/:id/descargar_acta", to: "minutas#descargar_acta", as: :descargar_acta
+  get "minutas/:id/descargar_archivo_resolucion", to: "minutas#descargar_archivo_resolucion", as: :descargar_archivo_resolucion
+
 
 
   # Obtener el archivo del acuerdo para APL-022
@@ -946,7 +952,9 @@ Rails.application.routes.draw do
   post ':tarea_pendiente_id/auditoria/retirar_elemento', to: "adhesiones#retirar_elemento", as: :retirar_elemento_adhesion
   get ':tarea_pendiente_id/adhesion/descargar', to: "adhesiones#descargar", as: :descargar_adhesion
   get ':tarea_pendiente_id/adhesion/descargar_compilado', to: "adhesiones#descargar_compilado", as: :descargar_compilado_adhesion
-
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_two', to: "adhesiones#descargar_compilado_two", as: :descargar_compilado_adhesion_two
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_three', to: "adhesiones#descargar_compilado_three", as: :descargar_compilado_adhesion_three
+  get ':tarea_pendiente_id/adhesion/descargar_compilado_four', to: "adhesiones#descargar_compilado_four", as: :descargar_compilado_adhesion_four
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos
 

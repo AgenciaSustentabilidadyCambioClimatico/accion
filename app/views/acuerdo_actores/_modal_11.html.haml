@@ -5,9 +5,9 @@
         =t(:mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento)
       .modal-body
         .row
-          .col-12.col-lg-6
+          .col-12
             = f.input :mecanismo_de_implementacion, label: t(:mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento), as: :ckeditor, input_html: {value: @datos["mecanismo_de_implementacion"], ckeditor: {height: 300}}
-          .col-12.col-lg-6
+          .col-12
             .row
               .col-12
                 = f.label t(:palabras_claves)

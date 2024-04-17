@@ -185,12 +185,30 @@
             .card.mb-0.mt-3.mt-lg-0
               .card-body.px-3.py-2
                 .form-group
-                  %label.string.control-label
-                    = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
-                  = link_to descargar_compilado_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
-                    %i.fa.fa-download
-                    = t(:descargar_documentación)
-
+                  - cuenta = 0
+                  - @adhesiones.each { |f| cuenta += f.archivos_adhesion_y_documentacion.count }
+                  -if cuenta > 40
+                    %label.string.control-label
+                      = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
+                    = link_to descargar_compilado_adhesion_two_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      = t(:descargar_documentación)
+                    %label.string.control-label
+                      = ''
+                    = link_to descargar_compilado_adhesion_three_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      ='Descargar Documentación(2)'
+                    %label.string.control-label
+                      = ''
+                    = link_to descargar_compilado_adhesion_four_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      ='Descargar Documentación(3)'
+                  -else
+                    %label.string.control-label
+                      = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
+                    = link_to descargar_compilado_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
+                      %i.fa.fa-download
+                      = t(:descargar_documentación)
                   =#__descargar_archivo(f.object.archivos_adhesion_y_documentacion, f.object, true, true, t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones), t(:descargar_documentación))
 
 
@@ -233,7 +251,7 @@
                       %div{style: "white-space: nowrap"}=fila[:fono_encargado]
                       %div{style: "white-space: nowrap"}=fila[:email_encargado]
                     %td.text-center
-                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id), class: 'btn btn-tabla' do
+                      = link_to descargar_compilado_adhesion_path(@tarea_pendiente, aid: adhesion_id, nombre_archivo: fila[:nombre_archivo]), class: 'btn btn-tabla' do
                         %i.fa.fa-download
                     %td
                       %label.estado-elem Pendiente

@@ -2042,3 +2042,68 @@ table.table.table-home.dataTable.no-footer{
 #registro_proveedor_asociar_institucion {
   margin-right: 6px;
 }
+
+.tarea-nombre-entrada {
+  display: none;
+}
+
+.icono-tarea-entrada {
+
+    padding-top: 30px;
+    text-align: center;
+
+    i {
+      display: none;
+    }
+
+    p {
+      color: white;
+      font-size: 1px;
+    }
+  }
+
+.entrada-cambio-unfold {
+  background-color: #F5F5F5 !important;
+  .sorting_1{
+   display: none !important;
+  }
+
+  .nombre-instrumento-entrada {
+    color: #F5F5F5 !important;
+    width: 80px !important;
+    max-width: 80px !important;
+    min-width: 80px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;;
+  }
+
+  .tarea-nombre-entrada {
+    display: block;
+    padding-top: 30px;
+    text-align: center;
+  }
+
+  .estado-tarea-entrada {
+    padding-top: 30px;
+    text-align: center;
+  }
+
+  .icono-tarea-entrada {
+    padding-top: 30px;
+    text-align: center;
+
+    i {
+      font-size: 20px;
+      display: block;
+    }
+  }
+
+}
+
+.btn-tarea-pendiente {
+  border-radius: 12px;
+  box-shadow: 1px 0px 6px lightgray;
+}
+
+
