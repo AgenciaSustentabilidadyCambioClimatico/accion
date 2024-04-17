@@ -1,7 +1,7 @@
 class PlanActividad < ApplicationRecord
   belongs_to :actividad
   belongs_to :flujo
-  belongs_to :objetivos_especifico
+  belongs_to :objetivos_especifico, optional: true
   has_many :gasto
   has_many :gastos, foreign_key: 'plan_actividad_id'
   has_many :equipo_trabajos
@@ -265,6 +265,146 @@ class PlanActividad < ApplicationRecord
       GROUP BY gastos.flujo_id
       ) AS gastos_subquery ON hh_gastos_subquery.flujo_id = gastos_subquery.flujo_id; ").first
     
+  end
+
+  ##Insertar Gastos
+  def self.total_gastos_tipo_1_insert(flujo_id, actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+        CASE 
+          WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+          ELSE 0 
+        END
+      ) AS total_gastos_tipo_1')
+    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .where(plan_actividades: { flujo_id: flujo_id, actividad_id: actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
+  end
+
+  def self.total_gastos_tipo_2_insert(flujo_id, actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+        CASE 
+          WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+          ELSE 0 
+        END
+      ) AS total_gastos_tipo_2')
+    .joins("
+      LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+    ")
+    .where(plan_actividades: { flujo_id: flujo_id, actividad_id: actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
+  end
+
+  ##Eliminar Gastos
+  def self.total_gastos_tipo_1(flujo_id, plan_actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+      CASE 
+        WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+        ELSE 0 
+      END
+    ) AS total_gastos_tipo_1')
+    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
+  end
+
+  def self.total_gastos_tipo_2(flujo_id, plan_actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+        CASE 
+          WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+          ELSE 0 
+        END
+      ) AS total_gastos_tipo_2')
+    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
+  end
+
+  def self.recursos_internos(flujo_id, actividad_id)
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+      .joins(recurso_humanos: { equipo_trabajo: :user })
+      .where(recurso_humanos: { flujo_id: flujo_id })
+      .where(equipo_trabajos: { tipo_equipo: 3 })
+      .where(plan_actividades: { actividad_id: actividad_id })
+  end
+
+  def self.recursos_externos(flujo_id, actividad_id)
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+      .joins(recurso_humanos: { equipo_trabajo: :user })
+      .where(recurso_humanos: { flujo_id: flujo_id })
+      .where(equipo_trabajos: { tipo_equipo: [1, 2] })
+      .where(plan_actividades: { actividad_id: actividad_id })
+  end    
+
+  def self.gastos_operaciones(flujo_id, actividad_id)
+    select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
+            CASE gastos.unidad_medida 
+              WHEN 1 THEN \'Unidad\' 
+              WHEN 2 THEN \'Global\' 
+              ELSE \'Otro\' 
+            END AS unidad_medida')
+    .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .where(gastos: { flujo_id: flujo_id })
+    .where(plan_actividades: { actividad_id: actividad_id })
+    .where(gastos: { tipo_gasto: 1 })
+  end
+
+  def self.gastos_administraciones(flujo_id, actividad_id)
+    select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
+              CASE gastos.unidad_medida 
+                WHEN 1 THEN \'Unidad\' 
+                WHEN 2 THEN \'Global\' 
+                ELSE \'Otro\' 
+              END AS unidad_medida')
+      .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      .where(gastos: { flujo_id: flujo_id })
+      .where(plan_actividades: { actividad_id: actividad_id })
+      .where(gastos: { tipo_gasto: 2 })
+  end    
+
+  def self.recursos_x_ids(flujo_id, actividad_id, rrhh_propio_ids)
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+    .joins(recurso_humanos: { equipo_trabajo: :user })
+    .where(recurso_humanos: { flujo_id: flujo_id })
+    .where(plan_actividades: { actividad_id: actividad_id })
+    .where(equipo_trabajos: { id: rrhh_propio_ids })  # Utilizar los IDs almacenados
+  end 
+
+  def self.valor_hh_tipos_1_2_(flujo_id, actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+              WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+              ELSE 0 
+              END
+            ) AS valor_hh_tipos_1_2_')
+    .joins("
+      LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+      LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+      LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+    ")
+    .where(plan_actividades: { flujo_id: flujo_id, actividad_id: actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
+  end
+
+  def self.valor_hh_tipo_3(flujo_id, actividad_id)
+    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+              CASE 
+              WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+              ELSE 0 
+              END
+            ) AS valor_hh_tipo_3')
+    .joins("
+      LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+      LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+      LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+    ")
+    .where(plan_actividades: { flujo_id: flujo_id, actividad_id: actividad_id })
+    .group("plan_actividades.id, plan_actividades.actividad_id")
+    .first
   end
 
 end

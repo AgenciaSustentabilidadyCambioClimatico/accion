@@ -181,9 +181,15 @@ Rails.application.routes.draw do
 
   #------------------------------------------------------------------------------------------------------------#
   #Fondo Producción Limpia
-  #Tarea FPL-001-1
   resources :fondo_produccion_limpia
-  #get 'lista_usuarios_entregables', to: 'fondo_produccion_limpias#lista_usuarios_entregables'
+  #Tarea FPL-00
+  get ':id/usuario-entregables', to: "fondo_produccion_limpias#usuario_entregables", as: :usuario_entregables_fondo_produccion_limpias
+  #post ':id/guardar_usuario_entregables', to: "fondo_produccion_limpias#guardar_usuario_entregables", as: :guardar_usuario_entregables_fondo_produccion_limpia
+  patch ':id/usuario-entregables', to: "fondo_produccion_limpias#guardar_usuario_entregables", as: :guardar_usuario_entregables_fondo_produccion_limpias
+
+
+  #Tarea FPL-01
+  get 'lista_usuarios_entregables', to: 'fondo_produccion_limpias#lista_usuarios_entregables', as: :lista_usuarios_entregables_fondo_produccion_limpia
   #get 'lista_usuarios_carga_datos', to: 'fondo_produccion_limpias#lista_usuarios_carga_datos'
   match 'fondo-produccion-limpias/create/:id', to: 'fondo_produccion_limpias#create', via: [:get, :patch], as: 'iniciar_flujo'
   get ':id/edit(.:format)', to: "fondo_produccion_limpias#edit", as: :edit_fondo_produccion_limpia #Fondo produccion limpia instanciada
@@ -192,6 +198,8 @@ Rails.application.routes.draw do
   post '/guardar_duracion', to: 'fondo_produccion_limpias#guardar_duracion'
   get 'buscador/:id', to: "fondo_produccion_limpias#buscador", as: :buscador_fondo_produccion_limpia
   #get 'valida_div/:id', to: "fondo_produccion_limpias#valida_div", as: :valida_div_fondo_produccion_limpia
+
+  get 'guardar_fondo_temporal/:id', to: "fondo_produccion_limpias#guardar_fondo_temporal", as: :guardar_fondo_temporal_fondo_produccion_limpia
 
   #Postulantes
   get 'eliminar_equipo_postulante/:id', to: "fondo_produccion_limpias#eliminar_equipo_postulante", as: :eliminar_equipo_postulante_fondo_produccion_limpia
@@ -219,7 +227,7 @@ Rails.application.routes.draw do
 
   #Modal Contribuyentes
   put 'search/:id', to: "fondo_produccion_limpias#search", as: :search_fondo_produccion_limpia
-  post  'insert_modal_contribuyente', to: "fondo_produccion_limpias#insert_modal_contribuyente", as: :insert_modal_contribuyente_fondo_produccion_limpia
+  patch  'insert_modal_contribuyente', to: "fondo_produccion_limpias#insert_modal_contribuyente", as: :insert_modal_contribuyente_fondo_produccion_limpia
   get 'eliminar_empresa/:id', to: "fondo_produccion_limpias#eliminar_empresa", as: :eliminar_empresa_fondo_produccion_limpia
   delete 'eliminar_empresa/:id', to: "fondo_produccion_limpias#eliminar_empresa", as: 'eliminar_empresa'
 
@@ -242,53 +250,70 @@ Rails.application.routes.draw do
   post 'new_plan_actividades', to: "fondo_produccion_limpias#new_plan_actividades", as: :new_plan_actividades_fondo_produccion_limpia
   #post 'insert_new_plan_actividades', to: "fondo_produccion_limpias#insert_new_plan_actividades", as: :insert_new_plan_actividades_fondo_produccion_limpia
 
+  #Cuestionario FPL
+  post 'new_cuestionario_fpl', to: "fondo_produccion_limpias#new_cuestionario_fpl", as: :new_cuestionario_fpl_fondo_produccion_limpia
+
+  #Enviar postulación
+  get 'enviar_postulacion/:id', to: "fondo_produccion_limpias#enviar_postulacion", as: :enviar_postulacion_fondo_produccion_limpia
+
+
   #Tarea FPL-02
   get ':id/revisor', to: "fondo_produccion_limpias#revisor", as: :revisor_fondo_produccion_limpia
-  patch ':id/revisor', to: "fondo_produccion_limpias#asignar_revisor"
+  get 'get_revisor/:id', to: "fondo_produccion_limpias#get_revisor", as: :get_revisor_fondo_produccion_limpia
+  patch 'revisor/:id', to: "fondo_produccion_limpias#asignar_revisor", as: :asignar_revisor_fondo_produccion_limpia
+  #get 'asignar_revisor/:id', to: "fondo_produccion_limpias#asignar_revisor", as: :asignar_revisor_fondo_produccion_limpia
 
   #Tarea FPL-03
   get ':id/admisibilidad', to: "fondo_produccion_limpias#admisibilidad", as: :admisibilidad_fondo_produccion_limpia
-  patch ':id/admisibilidad', to: "fondo_produccion_limpias#revisar_admisibilidad"
+  patch ':id/admisibilidad', to: "fondo_produccion_limpias#revisar_admisibilidad", as: :revisar_admisibilidad_fondo_produccion_limpia
+  get 'get_admisibilidad_financiera/:id', to: "fondo_produccion_limpias#get_admisibilidad_financiera", as: :get_admisibilidad_financiera_fondo_produccion_limpia
+  post ':id/enviar_admisibilidad_financiera', to: "fondo_produccion_limpias#enviar_admisibilidad_financiera", as: :enviar_admisibilidad_financiera_fondo_produccion_limpia
 
   #Tarea FPL-04
   get ':id/admisibilidad_tecnica', to: "fondo_produccion_limpias#admisibilidad_tecnica", as: :admisibilidad_tecnica_fondo_produccion_limpia
-  patch ':id/admisibilidad_tecnica', to: "fondo_produccion_limpias#revisar_admisibilidad_tecnica"
+  patch ':id/admisibilidad_tecnica', to: "fondo_produccion_limpias#revisar_admisibilidad_tecnica", as: :revisar_admisibilidad_tecnica_fondo_produccion_limpia
+  get 'get_admisibilidad_tecnica/:id', to: "fondo_produccion_limpias#get_admisibilidad_tecnica", as: :get_admisibilidad_tecnica_fondo_produccion_limpia
+  post ':id/enviar_admisibilidad_tecnica', to: "fondo_produccion_limpias#enviar_admisibilidad_tecnica", as: :enviar_admisibilidad_tecnica_fondo_produccion_limpia
 
   #Tarea FPL-05
   get ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#admisibilidad_juridica", as: :admisibilidad_juridica_fondo_produccion_limpia
-  patch ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#revisar_admisibilidad_juridica"
+  patch ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#revisar_admisibilidad_juridica", as: :revisar_admisibilidad_juridica_fondo_produccion_limpia
+  get 'get_admisibilidad_juridica/:id', to: "fondo_produccion_limpias#get_admisibilidad_juridica", as: :get_admisibilidad_juridica_fondo_produccion_limpia
+  post ':id/enviar_admisibilidad_juridica', to: "fondo_produccion_limpias#enviar_admisibilidad_juridica", as: :enviar_admisibilidad_juridica_fondo_produccion_limpia
 
   #Tarea FPL-06
   get ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#pertinencia_factibilidad", as: :pertinencia_factibilidad_fondo_produccion_limpia
-  patch ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#revisar_pertinencia_factibilidad"
+  patch ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#revisar_pertinencia_factibilidad", as: :revisar_pertinencia_factibilidad_fondo_produccion_limpia
+  get 'get_pertinencia_factibilidad/:id', to: "fondo_produccion_limpias#get_pertinencia_factibilidad", as: :get_pertinencia_factibilidad_fondo_produccion_limpia
+  post ':id/enviar_pertinencia_factibilidad', to: "fondo_produccion_limpias#enviar_pertinencia_factibilidad", as: :enviar_pertinencia_factibilidad_fondo_produccion_limpia
 
   #Tarea FPL-07
-  get ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#observaciones_admisibilidad", as: :observaciones_admisibilidad
-  patch ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad"
+  get ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#observaciones_admisibilidad", as: :observaciones_admisibilidad_fondo_produccion_limpia
+  patch ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad", as: :resolver_observaciones_admisibilidad_fondo_produccion_limpia
+  get 'get_observaciones_admisibilidad/:id', to: "fondo_produccion_limpias#get_observaciones_admisibilidad", as: :get_observaciones_admisibilidad_fondo_produccion_limpia
+  post ':id/enviar_observaciones_admisibilidad', to: "fondo_produccion_limpias#enviar_observaciones_admisibilidad", as: :enviar_observaciones_admisibilidad_fondo_produccion_limpia
 
   #Tarea FPL-08
-  get ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#observaciones_admisibilidad_tecnica", as: :observaciones_admisibilidad_tecnica
-  patch ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad_tecnica"
+  get ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#observaciones_admisibilidad_tecnica", as: :observaciones_admisibilidad_tecnica_fondo_produccion_limpia
+  patch ':id/observaciones-admisibilidad-tecnica', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad_tecnica", as: :resolver_observaciones_admisibilidad_tecnica
+  get 'get_observaciones_admisibilidad_tecnica/:id', to: "fondo_produccion_limpias#get_observaciones_admisibilidad_tecnica", as: :get_observaciones_admisibilidad_tecnica_fondo_produccion_limpia
+  post ':id/enviar_observaciones_admisibilidad_tecnica', to: "fondo_produccion_limpias#enviar_observaciones_admisibilidad_tecnica", as: :enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia
 
   #Tarea FPL-09
-  get ':id/observaciones-admisibilidad-juridica', to: "fondo_produccion_limpias#observaciones_admisibilidad_juridica", as: :observaciones_admisibilidad_juridica
-  patch ':id/observaciones-admisibilidad-juridica', to: "fondo_produccion_limpias#resolver_observaciones_admisibilidad_juridica"
+  get ':id/observaciones_admisibilidad_juridica', to: "fondo_produccion_limpias#observaciones_admisibilidad_juridica", as: :observaciones_admisibilidad_juridica_fondo_produccion_limpia
+  patch ':id/observaciones_admisibilidad_juridica', to: "fondo_produccion_limpias#resolve_observaciones_admisibilidad_juridica", as: :resolver_observaciones_admisibilidad_juridica_fondo_produccion_limpia
+  get 'get_observaciones_admisibilidad_juridica/:id', to: "fondo_produccion_limpias#get_observaciones_admisibilidad_juridica", as: :get_observaciones_admisibilidad_juridica_fondo_produccion_limpia
+  post ':id/enviar_observaciones_admisibilidad_juridica', to: "fondo_produccion_limpias#enviar_observaciones_admisibilidad_juridica", as: :enviar_observaciones_admisibilidad_juridica_fondo_produccion_limpia
+
 
   #Tarea FPL-10
-  get ':id/evaluacion-general', to: "fondo_produccion_limpias#evaluacion_general", as: :evaluacion_general
-  patch ':id/evaluacion-general', to: "fondo_produccion_limpias#revisar_evaluacion_general"
+  get ':id/evaluacion_general', to: "fondo_produccion_limpias#evaluacion_general", as: :evaluacion_general_fondo_produccion_limpia
+  patch ':id/evaluacion_general', to: "fondo_produccion_limpias#revisar_evaluacion_general", as: :revisar_evaluacion_general_fondo_produccion_limpia
+  get 'get_evaluacion_general/:id', to: "fondo_produccion_limpias#get_evaluacion_general", as: :get_evaluacion_general_fondo_produccion_limpia
+  post ':id/enviar_evaluacion_general', to: "fondo_produccion_limpias#enviar_evaluacion_general", as: :enviar_evaluacion_general_fondo_produccion_limpia
+
+
   
-  #Objetivos Especificos
-  #resources :objetivo_especificos, only: [:new, :create, :edit, :update, :destroy] do
-  #  member do
-  #    patch 'update'
-  #  end
-  #
-  #  collection do
-  #    get 'new/:id', action: :new, as: :new
-  #    #delete 'destroy/:id', action: :destroy, as: :destroy
-  #  end
-  #end
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

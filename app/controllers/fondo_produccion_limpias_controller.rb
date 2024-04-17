@@ -2,18 +2,19 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_gasto_operacion, :eliminar_objetivo_especifico, :update_objetivo_especifico]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_gasto_operacion, :eliminar_objetivo_especifico, :update_objetivo_especifico]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
-    :evaluacion_general, :guardar_duracion, :buscador]
+    :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
+    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
-                                        :admisibilidad_juridica, :revisar_admisibilidad_juridica,
+                                        :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
                                         :observaciones_admisibilidad, :resolver_observaciones_admisibilidad,
                                         :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                         :observaciones_admisibilidad_tecnica, :evaluacion_general,
@@ -24,24 +25,25 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico,
                                         :revisar_entregable_diagnostico,
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
-                                        :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado]
+                                        :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
+                                        :guardar_fondo_temporal]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
-      :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
-                                        :admisibilidad_juridica, :revisar_admisibilidad_juridica,
+      :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
+                                        :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
                                         :observaciones_admisibilidad, :resolver_observaciones_admisibilidad,
                                         :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                         :observaciones_admisibilidad_tecnica, :evaluacion_general,
                                         :pertinencia_factibilidad, :revisar_pertinencia_factibilidad,
                                         :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
-                                        :usuario_entregables, :guardar_usuario_entregables,
+                                        :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
                                         :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico,
                                         :revisar_entregable_diagnostico,
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos]
     before_action :set_contribuyentes, only: [:edit,:update,
                                         :revisor, :asignar_revisor,
-                                        :admisibilidad, :revisar_admisibilidad,
-                                        :admisibilidad_juridica, :revisar_admisibilidad_juridica,
+                                        :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
+                                        :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
                                         :observaciones_admisibilidad, :resolver_observaciones_admisibilidad,
                                         :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                         :observaciones_admisibilidad_tecnica, :evaluacion_general,
@@ -53,7 +55,7 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tipo_instrumentos, only: [:edit,:update,
                                         :revisor, :asignar_revisor,
                                         :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
-                                        :admisibilidad_juridica, :revisar_admisibilidad_juridica,
+                                        :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
                                         :observaciones_admisibilidad, :resolver_observaciones_admisibilidad,
                                         :observaciones_admisibilidad_tecnica, :evaluacion_general,
                                         :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
@@ -79,13 +81,114 @@ class FondoProduccionLimpiasController < ApplicationController
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general]
   
+    def initialize
+      super
+      @solo_lectura = false # Asigna el valor predeterminado que desees
+    end
+
     def iniciar_flujo #TAREA FPL-01 al iniciar proceso
       @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id)
     end
 
+    def usuario_entregables #FPL-00
+      tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
+      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+      #tipo_instrumento = @flujo.tipo_instrumento_id.nil? ? TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA : @flujo.tipo_instrumento_id
+      #rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
+      responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
+      contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
+      @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
+      
+
+      #@encargado_financiamiento = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+      @encargado_financiamiento = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      #binding.pry
+    end
+
+    def lista_usuarios_entregables
+      #manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
+      #tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
+      tipo_instrumento = 11#@manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
+      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+      #binding.pry
+      personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
+      @usuarios = personas_responsables.map { |e| e.user  }
+      #binding.pry
+    end
+
+    def guardar_usuario_entregables #FPL-00
+      #binding.pry
+      respond_to do |format|
+        #SE CREA FPL-01
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
+        pers = Persona.where(user_id: @tarea_pendiente.user_id).first
+        
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: @tarea_pendiente.user_id,
+            persona_id: pers.id,
+            data: { }
+          }
+        }
+
+        @tarea_pendientes = TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes])
+        @tarea_pendientes.save  
+
+        #SE CAMBIA EL ESTADO DEL FPL-00 A 2
+        #binding.pry
+        tarea_fondo_FPL_00 = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+        tarea_pendiente_FPL_00 = TareaPendiente.find_by(tarea_id: tarea_fondo_FPL_00.id, flujo_id: @flujo.id)
+
+        tarea_pendiente_FPL_00.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_FPL_00.save  
+
+        #binding.pry
+        institucion_postulante = ""
+        postulante = ""
+        institucion_receptora = ""
+
+        contribuyente = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+        
+
+        if params[:manifestacion_de_interes][:institucion_entregables_id] == ""
+          institucion_postulante =  contribuyente.contribuyente_id
+          postulante = @tarea_pendiente.user_id
+        else
+          institucion_postulante = params[:manifestacion_de_interes][:institucion_entregables_id]
+          postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
+        end  
+
+        if params[:manifestacion_de_interes][:nombre_acuerdo] == ""
+          institucion_receptora = contribuyente.contribuyente_id
+        else
+          institucion_receptora = params[:manifestacion_de_interes][:nombre_acuerdo]
+        end  
+
+        custom_params = {
+          fondo_produccion_limpia: {
+            institucion_entregables_id: institucion_postulante,
+            usuario_entregables_id: postulante,
+            institucion_receptor_cof_fpl_id: institucion_receptora,
+            duracion: 4
+          }
+        }
+        #binding.pry
+        @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+        #binding.pry
+        msj = 'Asignacion postulante y encargado de financiamiento guardado correctamente'
+        format.js { flash.now[:success] = msj
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: msj }}
+      end
+    end
+
     def guardar_duracion
       @duracion = params[:duracion]
-      @fondo_produccion_limpia.update(sub_linea_id:@duracion)
+      @fondo_produccion_limpia.update(duracion:@duracion)
       success = "La duración se ha actualizado exitosamente."
       error = "Hubo un error al actualizar la duración."
       link = edit_fondo_produccion_limpia_path(params[:id])
@@ -114,17 +217,27 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def edit 
-      @solo_lectura = params[:q]
+      #binding.pry
+      @solo_lectura = false
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @mantener_temporal = 'true'
       @objetivo_especifico = ObjetivosEspecifico.new
       @es_para_seleccion = 'true'
       @tipo_aporte = TipoAporte.all
+      @duracion_meses =  @fondo_produccion_limpia.duracion
 
+      #binding.pry
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
+      #binding.pry
 
+      #if @duracion_meses != nil
+      #  binding.pry
       set_actividades_x_linea
+      #else
+      #  binding.pry
+      #  @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+      #end
       set_plan_actividades
       set_costos
 
@@ -142,10 +255,10 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       
       #ESTE ID SE OBTIENE DESDE EL FPL00, CONSIDERAR ID_CONTRIBUYENTE EN LA TABLA FONDO PRODUCCION LIMPIA
-      #binding.pry
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
-      #binding.pry
+
+
       unless @manifestacion_de_interes.contribuyente_id.nil?
         #Elimino todos los que no sean el id guardado
         Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
@@ -188,7 +301,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
       @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
       carga_de_representantes
-      #binding.pry
     end
 
     def insert_objetivo_especifico
@@ -206,22 +318,20 @@ class FondoProduccionLimpiasController < ApplicationController
         if @objetivo_especifico.save
           @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
           @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
-          #binding.pry
           format.js { render 'insert_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico, tarea_pendiente: params['id'], objetivos_options: @objetivos_options } }
         end
       end
     end
 
     def edit_objetivo_especifico
+      #binding.pry
       @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
       respond_to do |format|
-        #binding.pry
         format.js { render 'edit_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico } }
       end
     end
 
     def update_objetivo_especifico
-      binding.pry
       @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
       custom_params = {
         objetivos_especifico: {
@@ -233,7 +343,6 @@ class FondoProduccionLimpiasController < ApplicationController
           indicadores: params['indicadores']
         }
       }
-      binding.pry
       respond_to do |format|
         if @objetivo_especifico.update(custom_params[:objetivos_especifico])
           @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
@@ -244,15 +353,16 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def get_objetivo_especifico
+
+      @solo_lectura = params['solo_lectura'] == "true" ? true : false
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
-    
+
       respond_to do |format|
-        format.js { render 'get_objetivo_especifico', locals: { objetivo_especificos: @objetivo_especificos } }
+        format.js { render 'get_objetivo_especifico', locals: { objetivo_especificos: @objetivo_especificos, solo_lectura: @solo_lectura } }
       end
     end
 
     def new_objetivo_especifico
-      #binding.pry
         @objetivo_especifico = ObjetivosEspecifico.new
         respond_to do |format|
           format.html
@@ -261,26 +371,19 @@ class FondoProduccionLimpiasController < ApplicationController
 	  end
 
     def eliminar_objetivo_especifico
-      #binding.pry
       objetivo_especifico = ObjetivosEspecifico.find(params[:id])
-    
       respond_to do |format|
         if objetivo_especifico.destroy
-          #binding.pry
           @objetivo = ObjetivosEspecifico.where(flujo_id: objetivo_especifico['flujo_id']).select(:descripcion, :id)
           @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
           format.js { render 'eliminar_objetivo_especifico', locals: { objetivo_especifico: objetivo_especifico.id, objetivos_options: @objetivos_options } }
-          #flash[:success] = 'Consultor eliminado exitosamente.'
         else
-          #binding.pry
           format.js { render 'eliminar_objetivo_especifico', status: :unprocessable_entity }
         end
       end
     end
-
-    
+  
     def buscador
-      #binding.pry
       rut = buscador_params[:rut]
       nombre = buscador_params[:nombre_completo]
       @usuarios = User
@@ -300,11 +403,9 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       @modal_id = buscador_params[:modal_id]
       @tipo_equipo = buscador_params[:tipo_equipo]
-      #binding.pry
     end
 
     def edit_modal
-      #binding.pry
       if params[:tipo_equipo] == "2"
         empresa = EquipoEmpresa.find_by(flujo_id: params[:flujo_id])
         @equipo = EquipoTrabajo.where(user_id: params[:user_id], flujo_id: params[:flujo_id], tipo_equipo: params[:tipo_equipo], contribuyente_id: empresa.contribuyente_id).count
@@ -312,16 +413,13 @@ class FondoProduccionLimpiasController < ApplicationController
         @equipo = EquipoTrabajo.where(user_id: params[:user_id], flujo_id: params[:flujo_id], tipo_equipo: params[:tipo_equipo]).count
       end
 
-      #binding.pry
       if @equipo > 0
         render json: { success: false, errors: "La combinación de user_id, flujo_id, tipo_equipo y contribuyente_id ya está en uso" }, status: :unprocessable_entity
       else  
         @equipo_temporal = EquipoTrabajo.new
-        #if params[:id].blank?
         if params[:estado] == 'new' 
           @usuario_temporal = User.new
         else
-          #@usuario_temporal = User.unscoped.find_by(user_id: params[:id], flujo_id: params[:flujo_id]) || User.unscoped.find(params[:id])
           @usuario_temporal =  User.unscoped.find(params[:id])
         end
         @usuario_temporal.temporal = true
@@ -330,12 +428,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @equipo_temporal.flujo_id = params[:flujo_id]
         @equipo_temporal.user_id = params[:user_id] unless params[:user_id].blank?
         @equipo_temporal.tipo_equipo = params[:tipo_equipo]
-
-        #format.json { render json: { success: true }, status: status }
-        #binding.pry
         render layout: false
-
-        #render json: { success: true }
       end 
     end
 
@@ -346,31 +439,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @usuario_temporal.flujo_id = params[:flujo_id]
       @equipo_temporal.tipo_equipo = params[:tipo_equipo]
       
-      #binding.pry
       render layout: false
     end 
 
-    #def valida_div
-    #  #binding.pry
-    #  count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
-    #  count_user_empresa = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 2).count
-
-    #  if count_user_persona > 0 
-    #    @tipo = 1
-    #  else
-    #    @tipo = 2 
-    #  end
-
-    #  respond_to do |format|
-    #    format.json { render json: { tipo: @tipo } }
-    #    format.js { render js: "var tipo = #{@tipo};" }
-    #  end
-    #  binding.pry
-    #end
-
     def insert_modal
-      #binding.pry
-      tarea = Tarea.where(codigo: 'FPL-020').first 
+      tarea = Tarea.where(codigo: '').first 
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
       @user = User.new(create_user_params)
 
@@ -387,7 +460,6 @@ class FondoProduccionLimpiasController < ApplicationController
           user_id: params[:user][:user_id]
         }
       }
-      #binding.pry
       tipo_proveedor = TipoProveedor.find(3)
 
       #SETEO PARAMETROS PROVEEDOR
@@ -406,35 +478,25 @@ class FondoProduccionLimpiasController < ApplicationController
       @registro_proveedor.ciudad = '.'
       @registro_proveedor.terminos_y_servicion = true
 
-      
       # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-      #binding.pry
       empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
 
       if params[:equipo_trabajo][:tipo_equipo].to_i == 2
         custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
         @registro_proveedor.contribuyente_id = empresa.contribuyente_id
       end
-      #binding.pry
       respond_to do |format|
         if @user.user_id.nil?
-          #binding.pry
           if @user.save
             usuario_temporal = User.unscoped.find(@user.id)
             usuario_final = usuario_temporal.confirmar_temporal
-            #binding.pry
             if(create_user_params[:temporal] == "true")
               @usuario_temporal = @user
-              #format.js {}
               custom_params_equipo[:equipo_trabajo][:user_id] =  @user.id
               @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-              #binding.pry
               if @equipo_temporal.save  
-                #binding.pry
                 if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
-                  #binding.pry
                   if @registro_proveedor.save
-                    #binding.pry
                     flash[:success] = 'Consultor creado exitosamente.'
                     format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
                     format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
@@ -453,7 +515,6 @@ class FondoProduccionLimpiasController < ApplicationController
           end
         else
           @user.save(validate: false)
-          #binding.pry
           #Metodo devuelve el registro final (sea nuevo o editado)
           @usuario_temporal = @user
           format.js {}
@@ -462,10 +523,8 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def update_modal
-      #binding.pry
-      tarea = Tarea.where(codigo: 'FPL-020').first 
+      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
-      #binding.pry
       #SETEO PARAMETROS USUARIO
       @user = User.find(params[:user][:user_id])
       custom_params = {
@@ -490,7 +549,6 @@ class FondoProduccionLimpiasController < ApplicationController
           user_id: params[:user][:user_id]
         }
       }
-      #binding.pry
       tipo_proveedor = TipoProveedor.find(3)
 
       #SETEO PARAMETROS PROVEEDOR
@@ -510,33 +568,22 @@ class FondoProduccionLimpiasController < ApplicationController
       @registro_proveedor.terminos_y_servicion = true
 
       # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-      #binding.pry
       empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
       if params[:equipo_trabajo][:tipo_equipo].to_i == 2
         custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
         @registro_proveedor.contribuyente_id = empresa.contribuyente_id
       end
       @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-      #binding.pry
       respond_to do |format|
         if @user.update(custom_params[:user]) && @equipo_temporal.save
           if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
             if @registro_proveedor.save
               flash[:success] = 'Consultor creado exitosamente.'
-              #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-              #format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-              #if params[:equipo_trabajo][:tipo_equipo] == 2
               format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
-              #end
             end
           else
             flash[:success] = 'Consultor creado exitosamente.'
-            #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-            #format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-            #if params[:equipo_trabajo][:tipo_equipo] == 2
             format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
-            #binding.pry
-            #end
           end  
         else
           flash[:error] = 'Hubo un problema al crear al Consultor.'
@@ -545,38 +592,19 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    #def eliminar_equipo 
-    #  #binding.pry
-    #  @equipo_trabajo = EquipoTrabajo.find(params[:user_id])
-    #  if @equipo_trabajo.destroy
-    #    flash[:success] = 'Consultor eliminado exitosamente.'
-    #  else
-    #    flash[:error] = 'Hubo un problema al eliminar el Consultor.'
-    #  end
-    #  redirect_to "#{request.referer}"
-    #  #respond_to do |format|
-    #  #  format.js { render js: "window.location='#{request.referer}?tabs=equipo-trabajo'" }
-    #  #  format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-    #  #end  
-    #end
-
     def eliminar_equipo
-      #binding.pry 
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy
         @count_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1,2]).count
-        #binding.pry  
         respond_to do |format|
           flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_equipo', locals: { user: equipo_trabajo.id, count_equipo: @count_equipo } }
         end
       else
       end
-      #binding.pry
     end
 
     def eliminar_equipo_postulante
-      #binding.pry
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
         respond_to do |format|
@@ -585,13 +613,13 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
       end
-      #binding.pry
     end
 
     ###CONTRIBUYENTES
     def insert_modal_contribuyente
+
       #binding.pry
-      tarea = Tarea.where(codigo: 'FPL-020').first 
+      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first #Tarea::COD_FPL_01
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:flujo_id])
      
       #SETEO PARAMETROS EQUIPO
@@ -603,13 +631,8 @@ class FondoProduccionLimpiasController < ApplicationController
       }
 
       @empresa_temporal = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
-      #binding.pry
       respond_to do |format|
-        #binding.pry
         if @empresa_temporal.save  
-              #binding.pry
-              #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-              #format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
               @contribuyente = Contribuyente
               .unscoped
               .joins(:equipo_empresas)
@@ -619,14 +642,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
               flash[:success] = 'Contribuyente creado exitosamente.'
               format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal} }
-              #format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente } }
-              #binding.pry
         end    
       end
     end
 
     def search
-      #binding.pry
       @contribuyente = Contribuyente.new(params.require(:contribuyente).permit(
         :rut,
         :razon_social,
@@ -640,9 +660,7 @@ class FondoProduccionLimpiasController < ApplicationController
         :custom_id,
         :data_table
       ))
-      #binding.pry
       @custom_id = @contribuyente.custom_id
-  #DZC
       @contribuyente.filter_mode = true
       @es_para_seleccion = false #( @contribuyente.es_para_seleccion == "true" )
       @seleccion_basica = true #@contribuyente.seleccion_basica
@@ -653,7 +671,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @resultado_mostrados = 30 #@contribuyente.resultado_mostrados
 
       @data_table = true #(@contribuyente.data_table == "true")
-      #binding.pry
       if @contribuyente.valid?
         if @seleccion_basica == "true"
           @contribuyentes = Contribuyente
@@ -685,19 +702,15 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         @errors = true
       end
-      #binding.pry
     end
 
     def eliminar_empresa
-      #binding.pry
       equipo_empresa = EquipoEmpresa.find(params[:contribuyente_id])
       equipo_trabajo = EquipoTrabajo.where(flujo_id: equipo_empresa.flujo_id, contribuyente_id: equipo_empresa.contribuyente_id)
-      #binding.pry
       if equipo_empresa.destroy
           equipo_trabajo.each do |equipo|
             equipo.destroy
           end
-          #flash[:success] = 'Contribuyente eliminado exitosamente.'
           respond_to do |format|
             flash[:success] = 'Contribuyente eliminado exitosamente.'
             format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
@@ -705,11 +718,9 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         flash[:error] = 'Hubo un problema al eliminar al contribuyente.'
       end
-      #redirect_to "#{request.referer}"
     end
 
     def eliminar_consultor_empresa
-      #binding.pry
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
         respond_to do |format|
@@ -718,10 +729,8 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
       end
-      #binding.pry
     end
         
-  
     def update #TAREA FPL-01
         respond_to do |format|
           
@@ -742,21 +751,20 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def get_plan_actividades
-     
       @plan_actividades = PlanActividad.includes(:actividad).find_by(flujo_id: @tarea_pendiente.flujo_id, actividad_id: params['plan_id'])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
       arreglo = []
       if @plan_actividades.nil?
-        #binding.pry
         @actividad = Actividad.find_by(id: params['plan_id'])
         @nombre_actividad = @actividad.nombre if @actividad&.present?  
         @objetivos_especifico_id = nil
-       
-        maximo = @duracion_general.sub_linea_id 
+  
+        maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
-        #binding.pry
+
+        ###GENERA TD DE CHECK DINAMICAMENTE
         newRowDuracion = ""
         arreglo.each do |mes|  
           newRowDuracion += "<td class='sub-contenido-form'>" +
@@ -764,19 +772,16 @@ class FondoProduccionLimpiasController < ApplicationController
                             "</td>"
         end
         @duracion = newRowDuracion
-        #binding.pry
       else
-        #binding.pry
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
       
-        maximo = @duracion_general.sub_linea_id
+        maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
   
         @duracion = @plan_actividades.duracion if @plan_actividades.duracion.present? #"1,2,4"
-        #binding.pry
         newRowDuracion = ""
         arreglo.each do |mes|  
           if @duracion.present?
@@ -798,164 +803,35 @@ class FondoProduccionLimpiasController < ApplicationController
         @duracion = newRowDuracion
       end   
 
-      @recursos_internos = PlanActividad
-      .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-      .joins(recurso_humanos: { equipo_trabajo: :user })
-      .where(recurso_humanos: { flujo_id: @tarea_pendiente.flujo_id })
-      .where(equipo_trabajos: { tipo_equipo: 3 })
-      .where(plan_actividades: { actividad_id: params['plan_id'] })
-
-      #binding.pry
-
-      @recursos_externos = PlanActividad
-      .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-      .joins(recurso_humanos: { equipo_trabajo: :user })
-      .where(recurso_humanos: { flujo_id: @tarea_pendiente.flujo_id })
-      .where(equipo_trabajos: { tipo_equipo: [1, 2] })
-      .where(plan_actividades: { actividad_id: params['plan_id'] })
-
-      #@recursos_externos = PlanActividad
-      #.select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-      #.joins(recurso_humanos: { equipo_trabajo: :user })
-      #.where(recurso_humanos: { flujo_id: @tarea_pendiente.flujo_id })
-      #.where(equipo_trabajos: { tipo_equipo: [1, 2] })
-      #.where(plan_actividades: { actividad_id: params['plan_id'] })
-
-      #@gastos_operaciones = PlanActividad
-      #.select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, gastos.unidad_medida')
-      #.joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-      #.where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
-      #.where(plan_actividades: { actividad_id: params['plan_id'] })
-      #.where(gastos: { tipo_gasto: 1 })
-
-      @gastos_operaciones = PlanActividad
-      .select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
-              CASE gastos.unidad_medida 
-                WHEN 1 THEN \'Unidad\' 
-                WHEN 2 THEN \'Global\' 
-                ELSE \'Otro\' 
-              END AS unidad_medida')
-      .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-      .where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
-      .where(plan_actividades: { actividad_id: params['plan_id'] })
-      .where(gastos: { tipo_gasto: 1 })
-
-      #@gastos_administraciones = PlanActividad
-      #.select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, gastos.unidad_medida')
-      #.joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-      #.where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
-      #.where(plan_actividades: { actividad_id: params['plan_id'] })
-      #.where(gastos: { tipo_gasto: 2 })
-      #binding.pry
-
-      @gastos_administraciones = PlanActividad
-      .select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
-              CASE gastos.unidad_medida 
-                WHEN 1 THEN \'Unidad\' 
-                WHEN 2 THEN \'Global\' 
-                ELSE \'Otro\' 
-              END AS unidad_medida')
-      .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-      .where(gastos: { flujo_id: @tarea_pendiente.flujo_id })
-      .where(plan_actividades: { actividad_id: params['plan_id'] })
-      .where(gastos: { tipo_gasto: 2 })
-
-      #binding.pry
-
+      ###OBTIENE RECURSOS Y GASTOS
+      @recursos_internos = PlanActividad.recursos_internos(@tarea_pendiente.flujo_id, params['plan_id'])
+    
+      @recursos_externos = PlanActividad.recursos_externos(@tarea_pendiente.flujo_id, params['plan_id'])
+    
+      @gastos_operaciones = PlanActividad.gastos_operaciones(@tarea_pendiente.flujo_id, params['plan_id'])
+ 
+      @gastos_administraciones = PlanActividad.gastos_administraciones(@tarea_pendiente.flujo_id, params['plan_id'])
+     
       @plan = params['plan_id']
 
+      @solo_lectura = params['solo_lectura'] == "true" ? true : false
+
+      #binding.pry
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion } }
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura } } 
       end
     end
     
     def get_recursos_propios
-      #binding.pry
-      #@postulantes_faltantes = EquipoTrabajo.find_by_sql("
-      #    SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
-      #    FROM equipo_trabajos
-      #    INNER JOIN users ON equipo_trabajos.user_id = users.id
-      #    WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
-      #    AND tipo_equipo = 3
-      #    AND NOT EXISTS (
-      #      SELECT 1
-      #      FROM recurso_humanos
-      #      INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
-      #            WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
-      #      AND plan_actividades.actividad_id = #{params['actividad_id']}
-      #    )
-      #")
-
-      @postulantes_faltantes = EquipoTrabajo.find_by_sql("
-          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id
-          FROM equipo_trabajos et
-          INNER JOIN users u ON et.user_id = u.id
-          LEFT JOIN (
-              SELECT rh.equipo_trabajo_id, rh.hh
-              FROM recurso_humanos rh
-              INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
-              WHERE pa.actividad_id = #{params['actividad_id']}
-          ) rh ON et.id = rh.equipo_trabajo_id
-          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
-          AND et.tipo_equipo = 3;
-      ")
-
-      #binding.pry
+      @postulantes_faltantes = EquipoTrabajo.postulantes_faltantes(params['actividad_id'], @tarea_pendiente.flujo_id)
       respond_to do |format|
-        #flash[:success] = 'Consultor eliminado exitosamente.'
         format.js { render 'get_recursos_propios', locals: { postulantes_faltantes: @postulantes_faltantes } }
       end
     end  
 
     def get_recursos_externos
-      #binding.pry
-      #@consultor_faltantes = EquipoTrabajo.find_by_sql("
-      #    SELECT equipo_trabajos.*, users.nombre_completo AS nombre_usuario
-      #    FROM equipo_trabajos
-      #    INNER JOIN users ON equipo_trabajos.user_id = users.id
-      #    WHERE equipo_trabajos.flujo_id = #{@tarea_pendiente.flujo_id}
-      #    AND tipo_equipo IN (1,2)
-      #    AND NOT EXISTS (
-      #      SELECT 1
-      #      FROM recurso_humanos
-      #      INNER JOIN plan_actividades ON recurso_humanos.plan_actividad_id = plan_actividades.id
-      #            WHERE recurso_humanos.equipo_trabajo_id = equipo_trabajos.id
-      #      AND plan_actividades.actividad_id = #{params['actividad_id']}
-      #    )
-      #")
-
-      @consultor_faltantesxxx = EquipoTrabajo.find_by_sql("
-          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id
-          FROM equipo_trabajos et
-          INNER JOIN users u ON et.user_id = u.id
-          LEFT JOIN (
-              SELECT rh.equipo_trabajo_id, rh.hh
-              FROM recurso_humanos rh
-              INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
-              WHERE pa.actividad_id = #{params['actividad_id']}
-          ) rh ON et.id = rh.equipo_trabajo_id
-          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
-          AND et.tipo_equipo IN (1,2);
-      ")
-
-      @consultor_faltantes = EquipoTrabajo.find_by_sql("
-          SELECT et.*, u.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id, rh.tipo_aporte_id AS tipo_aporte
-          FROM equipo_trabajos et
-          INNER JOIN users u ON et.user_id = u.id
-          LEFT JOIN (
-            SELECT rh.equipo_trabajo_id, rh.hh, rh.tipo_aporte_id
-            FROM recurso_humanos rh
-            INNER JOIN plan_actividades pa ON rh.plan_actividad_id = pa.id
-            WHERE pa.actividad_id = #{params['actividad_id']}
-          ) rh ON et.id = rh.equipo_trabajo_id
-          WHERE et.flujo_id = #{@tarea_pendiente.flujo_id}
-          AND et.tipo_equipo IN (1,2);
-        ")
-
-
-      #binding.pry
+      @consultor_faltantes = EquipoTrabajo.consultor_faltantes(params['actividad_id'], @tarea_pendiente.flujo_id)
       respond_to do |format|
-        #flash[:success] = 'Consultor eliminado exitosamente.'
         format.js { render 'get_recursos_externos', locals: { consultor_faltantes: @consultor_faltantes } }
       end
     end
@@ -978,24 +854,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @gastos_operaciones = Gasto.new(custom_params[:gasto])
         if @gastos_operaciones.save 
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-          @total_gastos_tipo_1 = PlanActividad
-          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-              CASE 
-                WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
-                ELSE 0 
-              END
-            ) AS total_gastos_tipo_1')
-          .joins("
-            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
-          ")
-          .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
-          .group("plan_actividades.id, plan_actividades.actividad_id")
-          .first
-
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
           #Actualiza costos
-        set_costos 
-
-          #@plan = params[:plan_id]
+          set_costos 
           #binding.pry
           respond_to do |format|
             format.js { render 'insert_gastos_operacion', locals: { gastos_operaciones: @gastos_operaciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_1: @total_gastos_tipo_1 } }
@@ -1010,20 +871,9 @@ class FondoProduccionLimpiasController < ApplicationController
       if gasto.destroy
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-          @total_gastos_tipo_1 = PlanActividad
-          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-              CASE 
-                WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
-                ELSE 0 
-              END
-            ) AS total_gastos_tipo_1')
-          .joins("
-            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
-          ")
-          .where(gastos: { flujo_id:  gasto['flujo_id'], plan_actividad_id: gasto['plan_actividad_id'] })
-          .group("plan_actividades.id, plan_actividades.actividad_id")
-          .first
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
           #binding.pry
+          set_costos 
           format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1 } }
         end 
       else
@@ -1049,23 +899,10 @@ class FondoProduccionLimpiasController < ApplicationController
       @gastos_administraciones = Gasto.new(custom_params[:gasto])
         if @gastos_administraciones.save 
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-          @total_gastos_tipo_2 = PlanActividad
-          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-              CASE 
-                WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
-                ELSE 0 
-              END
-            ) AS total_gastos_tipo_2')
-          .joins("
-            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
-          ")
-          .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
-          .group("plan_actividades.id, plan_actividades.actividad_id")
-          .first
-
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
           #Actualiza costos
           set_costos 
-
+          #binding.pry
           @plan = params['plan_id']
           respond_to do |format|
             format.js { render 'insert_gastos_administracion', locals: { gastos_administraciones: @gastos_administraciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_2:@total_gastos_tipo_2, plan: @plan } }
@@ -1080,21 +917,9 @@ class FondoProduccionLimpiasController < ApplicationController
       if gasto.destroy
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-          @total_gastos_tipo_2 = PlanActividad
-          .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-              CASE 
-                WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
-                ELSE 0 
-              END
-            ) AS total_gastos_tipo_2')
-          .joins("
-            LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
-          ")
-          .where(gastos: { flujo_id:  gasto['flujo_id'], plan_actividad_id: gasto['plan_actividad_id'] })
-          .group("plan_actividades.id, plan_actividades.actividad_id")
-          .first
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
           #binding.pry
-
+          set_costos
           format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2 } }
         end 
       else
@@ -1133,33 +958,15 @@ class FondoProduccionLimpiasController < ApplicationController
         rrhh_propio_ids << clave['rrhhPropioId']  # Agregar el ID a la lista
       end
     
-      # Utilizar rrhh_propio_ids como necesites fuera del bucle
-      @recursos_internos = PlanActividad
-        .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-        .joins(recurso_humanos: { equipo_trabajo: :user })
-        .where(recurso_humanos: { flujo_id: params[:flujo_id] })
-        .where(plan_actividades: { actividad_id: params['plan_id'] })
-        .where(equipo_trabajos: { id: rrhh_propio_ids })  # Utilizar los IDs almacenados
+      ### Utilizar rrhh_propio_ids como necesites fuera del bucle
+      @recursos_internos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_propio_ids)
 
-      # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-      @valor_hh_tipo_3 = PlanActividad
-        .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-                  CASE 
-                  WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh
-                  ELSE 0 
-                  END
-                ) AS valor_hh_tipo_3')
-        .joins("
-          LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
-          LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
-          LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
-        ")
-        .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
-        .group("plan_actividades.id, plan_actividades.actividad_id")
-        .first
-      #Actualiza costos
+      ### se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
+
+      ###Actualiza costos
       set_costos  
-
+      #binding.pry 
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3 } }
       end
@@ -1183,54 +990,27 @@ class FondoProduccionLimpiasController < ApplicationController
                   tipo_aporte_id: params['tipoAporte']
                 }  
               }
-            #@recursos = RecursoHumano.new(custom_params[:recursos])
-            #binding.pry
-            #@recursos.save 
+
             if (clave['rhhEquipoId'] == "")
               #se inserta un nuevo usuario
               @recursos = RecursoHumano.new(custom_params[:recursos])
               @recursos.save 
-              #binding.pry 
             else
               #se actualiza un usuario
-              
               @recursos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
-              #binding.pry 
               @recursos.update(custom_params[:recursos])
-              #binding.pry 
             end
         
             rrhh_externo_ids << clave['rrhhExternoId']  # Agregar el ID a la lista
           end
         end
       end
-      #binding.pry
-      # Utilizar rrhh_externo_ids como necesites fuera del bucle
-      @recursos_externos = PlanActividad
-        .select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-        .joins(recurso_humanos: { equipo_trabajo: :user })
-        .where(recurso_humanos: { flujo_id: params[:flujo_id] })
-        .where(plan_actividades: { actividad_id: params['plan_id'] })
-        .where(equipo_trabajos: { id: rrhh_externo_ids })  # Utilizar los IDs almacenados
+      ### Utilizar rrhh_externo_ids como necesites fuera del bucle
+      @recursos_externos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_externo_ids)
 
-      # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-      @valor_hh_tipos_1_2_ = PlanActividad
-        .select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-                  CASE 
-                  WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
-                  ELSE 0 
-                  END
-                ) AS valor_hh_tipos_1_2_')
-        .joins("
-          LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
-          LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
-          LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
-        ")
-        .where(plan_actividades: { flujo_id: params[:flujo_id], actividad_id: params['plan_id'] })
-        .group("plan_actividades.id, plan_actividades.actividad_id")
-        .first
-        #binding.pry
-      #Actualiza costos
+      ### se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
+      ###Actualiza costos
       set_costos 
 
       respond_to do |format|
@@ -1245,7 +1025,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
       arreglo = []
 
-      maximo = @duracion_general.sub_linea_id 
+      maximo = @duracion_general.duracion
       1.upto(maximo) do |numero|
         arreglo << numero
       end
@@ -1281,7 +1061,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       if params['opcion'] == 'create'
     
-        maximo = @duracion_general.sub_linea_id 
+        maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
@@ -1298,7 +1078,7 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         #binding.pry
 
-        maximo = @duracion_general.sub_linea_id 
+        maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
@@ -1356,9 +1136,85 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end 
     
-    #def insert_new_plan_actividades
-    #  binding.pry
-    #end
+    def guardar_fondo_temporal
+      #binding.pry
+      custom_params = {
+          fondo_produccion_limpia: {
+            cantidad_micro_empresa: params[:cantidad_micro_empresa],
+            cantidad_pequeña_empresa: params[:cantidad_pequeña_empresa],
+            cantidad_mediana_empresa: params[:cantidad_mediana_empresa],
+            cantidad_grande_empresa: params[:cantidad_grande_empresa],
+            empresas_asociadas_ag: params[:empresas_asociadas_ag],
+            empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
+            duracion: params[:duracion],
+            fortalezas_consultores: params[:fortalezas_consultores]
+          }
+        }
+        
+        #territorios_regiones: params[:territorios_regiones],
+        #territorios_provincias: params[:territorios_provincias],
+        #territorios_comunas: params[:territorios_comunas]
+        @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+        set_flujo
+
+        params[:comunasIds].each do |comuna_id|
+          # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
+          if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
+            puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
+          else
+            # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
+            comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+        
+            # Intentar guardar el objeto ComunaFlujo en la base de datos
+            if comuna_flujo.save
+              # Operación exitosa, puedes hacer algo si es necesario
+            else
+              # Si hay algún error al guardar el objeto, puedes manejarlo aquí
+              puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+            end
+          end
+        end    
+    end
+
+    def enviar_postulacion
+      #binding.pry
+
+      respond_to do |format|
+        #SE CREA FPL-02 Y SE LE ENVIA A TODOS LOS JEFES DE LINEA
+        jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
+        #binding.pry
+        jefes_de_linea.each do |responsable|
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
+          custom_params_tarea_pendiente = {
+            tarea_pendientes: {
+              flujo_id: @flujo.id,
+              tarea_id: tarea_fondo.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: responsable.user_id,
+              persona_id: responsable.id,
+              data: { }
+            }
+
+          }
+          TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+        end  
+
+        #SE CAMBIA EL ESTADO DEL FPL-01 A 2
+        #binding.pry
+        tarea_fondo_FPL_01 = Tarea.find_by_codigo(Tarea::COD_FPL_01)
+        tarea_pendiente_FPL_01 = TareaPendiente.find_by(tarea_id: tarea_fondo_FPL_01.id, flujo_id: @flujo.id)
+
+        tarea_pendiente_FPL_01.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_FPL_01.save  
+
+        #binding.pry
+        msj = 'Postulación a Fondo de Producción Limpia enviada correctamente'
+        format.js { flash.now[:success] = msj
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: msj }}
+      end
+    end
 
     def get_sub_lineas_seleccionadas
       @sub_lineas = SubLinea.where(linea_id: params[:id])
@@ -1368,1508 +1224,1220 @@ class FondoProduccionLimpiasController < ApplicationController
     end
   
     def revisor #TAREA FPL-02  
+      #binding.pry
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      @revisores_juridicos_fpl = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
-      @revisores_financieros_fpl = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      #@revisores_juridicos_fpl = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      @revisores_juridicos = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      #@revisores_tecnicos = Persona.responsables_por_rol_tipo_instrumento_select(Rol::REVISOR_TECNICO,TipoInstrumento.fpl.map{|ti|ti.id})
+      @revisores_tecnicos = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       @revisor = true
-
-      #Carga costos
+      #binding.pry
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
       set_costos 
 
-      binding.pry
-      #@manifestacion_de_interes.seleccion_de_radios
-  
-      #unless @manifestacion_de_interes.contribuyente_id.nil?
-      #  #Elimino todos los que no sean el id guardado
-      #  Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-      #  #Ahora segun si tiene contribuyente_id lo paso a variable
-      #  @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-      #  if @contribuyente_temporal.contribuyente_id.nil?
-      #    @contribuyente_nuevo = @contribuyente_temporal
-      #    @contribuyente_editado = Contribuyente.new
-      #  else
-      #    @contribuyente_nuevo = Contribuyente.new
-      #    @contribuyente_editado = @contribuyente_temporal
-      #  end
-      #else
-      #  Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-      #  @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      #end
-      #@contribuyente_nuevo.temporal = true
-      #@contribuyente_editado.temporal = true
-      #@contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      #@contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      #unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-      #  #Elimino todos los que no sean el id guardado
-      #  User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-      #  #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-    #    @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-    #    if @usuario_temporal.user_id.nil?
-    #      @usuario_nuevo = @usuario_temporal
-    #      @usuario_editado = User.new
-    #    else
-    #      @usuario_nuevo = User.new
-    #      @usuario_editado = @usuario_temporal
-    #    end
-    #  else
-    #    User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-    #    @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-    #  end
-    #  @usuario_nuevo.temporal = true
-    #  @usuario_editado.temporal = true
-    #  @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-    #  @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-    #  carga_de_representantes
+      #binding.pry
+      @solo_lectura = true
     end
-  
-    def asignar_revisor #TAREA FPL-02
-      @manifestacion_de_interes.assign_attributes(manifestacion_revisor_params)
-      @manifestacion_de_interes.update_asignar_revisor = true
+
+    def get_revisor
+      #binding.pry
+      @solo_lectura = true
+      @revisor = true
+      
+      @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
+      @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
+      @consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
+      @empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
+      @actividades = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+
       respond_to do |format|
-        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-        if @manifestacion_de_interes.valid?
-          @manifestacion_de_interes.save
+        format.js { render 'get_revisor', locals: { objetivo_especificos: @objetivo_especificos, postulantes: @postulantes, consultores: @consultores, empresas: @empresas, actividades: @actividades, codigo_proyecto: @codigo_proyecto} }
+      end
+    end
+
+    def asignar_revisor #TAREA FPL-02
+      #binding.pry
+      @revisor = true
+      respond_to do |format|
+        custom_params = {
+          fondo_produccion_limpia: {
+            codigo_proyecto: params[:codigo_proyecto],
+            revisor_tecnico_id: params[:revisor_tecnico_id],
+            revisor_financiero_id: params[:revisor_financiero_id],
+            revisor_juridico_id: params[:revisor_juridico_id],
+            comentario_asignar_revisor: params[:comentario_asignar_revisor]
+          }
+        }
+
+        if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
-            rol_id: Rol::REVISOR_TECNICO, #se vuelve a usar el id
-            #rol_id: Rol.find_by(nombre: 'Revisor Técnico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-            persona_id: manifestacion_revisor_params[:revisor_tecnico_id]
+            rol_id: Rol::REVISOR_TECNICO, 
+            persona_id: params[:revisor_tecnico_id]
           })
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
-            rol_id: Rol::REVISOR_JURIDICO, #se vuelve a usar el id
-            #rol_id: Rol.find_by(nombre: 'Revisor Jurídico').id, #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-            persona_id: manifestacion_revisor_params[:revisor_juridico_id]
+            rol_id: Rol::REVISOR_FINANCIERO,
+            persona_id: params[:revisor_financiero_id]
           })
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
-            rol_id: Rol::JEFE_DE_LINEA, #se vuelve a usar el id
-            #rol_id: Rol.find_by(nombre: 'Jefe de Línea').id, 
+            rol_id: Rol::REVISOR_JURIDICO,
+            persona_id: params[:revisor_juridico_id]
+          })
+          #binding.pry
+          mapa = MapaDeActor.find_or_create_by({
+            flujo_id: @tarea_pendiente.flujo_id,
+            rol_id: Rol::JEFE_DE_LINEA, 
             persona_id: @tarea_pendiente.persona_id
           })
-          continua_flujo_segun_tipo_tarea
-          # @tarea_pendiente.pasar_a_siguiente_tarea 'A' #hasta el momento solo hay una condición en el flujo de esta tarea
-          format.js { flash.now[:success] = 'Revisor asignado correctamente' ; render js: "window.location='#{root_path}'"
+
+          #binding.pry
+          #SE CREA FPL-03
+          tarea_fondo_FPL_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+          custom_params_tarea_pendiente_FPL_03 = {
+            tarea_pendientes: {
+              flujo_id: @flujo.id,
+              tarea_id: tarea_fondo_FPL_03.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: params[:revisor_financiero_id],
+              data: { }
+            }
           }
-          # format.html { redirect_to revisor_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Revisor asignado correctamente' }}
-          format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Revisor asignado correctamente' }}
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          flash.now[:error] = "Debe completar todos los campos requeridos"
-  
-          @manifestacion_de_interes.seleccion_de_radios
-  
-          @revisores_juridicos = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-  
-          unless @manifestacion_de_interes.contribuyente_id.nil?
-            #Elimino todos los que no sean el id guardado
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-            #Ahora segun si tiene contribuyente_id lo paso a variable
-            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-            if @contribuyente_temporal.contribuyente_id.nil?
-              @contribuyente_nuevo = @contribuyente_temporal
-              @contribuyente_editado = Contribuyente.new
-            else
-              @contribuyente_nuevo = Contribuyente.new
-              @contribuyente_editado = @contribuyente_temporal
+          #binding.pry
+          TareaPendiente.new(custom_params_tarea_pendiente_FPL_03[:tarea_pendientes]).save
+
+          #binding.pry
+          #SE CREA FPL-04
+          tarea_fondo_FPL_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+          custom_params_tarea_pendiente_FPL_04 = {
+            tarea_pendientes: {
+              flujo_id: @flujo.id,
+              tarea_id: tarea_fondo_FPL_04.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: params[:revisor_tecnico_id],
+              data: { }
+            }
+          }
+          TareaPendiente.new(custom_params_tarea_pendiente_FPL_04[:tarea_pendientes]).save
+
+          #binding.pry
+          #SE CREA FPL-05
+          tarea_fondo_FPL_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+          custom_params_tarea_pendiente_FPL_05 = {
+            tarea_pendientes: {
+              flujo_id: @flujo.id,
+              tarea_id: tarea_fondo_FPL_05.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: params[:revisor_juridico_id],
+              data: { }
+            }
+          }
+          TareaPendiente.new(custom_params_tarea_pendiente_FPL_05[:tarea_pendientes]).save
+
+          #SE CAMBIA EL ESTADO DEL FPL-02 A 2
+          #binding.pry
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
+          jefes_de_linea_fpl = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
+          
+          jefes_de_linea_fpl.each do |responsable|
+            #binding.pry
+            tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @flujo.id, user_id: responsable.user_id)
+            
+            if tarea_pendiente.present?
+              tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+              tarea_pendiente.save  
             end
-          else
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-          end
-          @contribuyente_nuevo.temporal = true
-          @contribuyente_editado.temporal = true
-          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-            #Elimino todos los que no sean el id guardado
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-            if @usuario_temporal.user_id.nil?
-              @usuario_nuevo = @usuario_temporal
-              @usuario_editado = User.new
-            else
-              @usuario_nuevo = User.new
-              @usuario_editado = @usuario_temporal
-            end
-          else
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-          end
-          @usuario_nuevo.temporal = true
-          @usuario_editado.temporal = true
-          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-          carga_de_representantes
-  
-          format.js { }
-          format.html { render :revisor}
+            #binding.pry
+          end   
+
+          msj = 'Revisores asignados correctamente'
+          format.js { flash.now[:success] = msj
+            render js: "window.location='#{root_path}'"}
+          format.html { redirect_to root_path, flash: {notice: msj }}
         end
       end
     end
+
+    def new_cuestionario_fpl
+      @cuestionario_fpl = CuestionarioFpl.new
+      respond_to do |format|
+        format.html
+        format.js
+      end
+    end
+
+    def get_admisibilidad_financiera #TAREA FPL-03
+
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
+      
+      respond_to do |format|
+        format.js { render 'get_admisibilidad_financiera', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      
+    end
   
     def admisibilidad #TAREA FPL-03
+      #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
 
       @manifestacion_de_interes.temp_siguientes = "true"
       @manifestacion_de_interes.seleccion_de_radios
 
       @admisibilidad = true
+      @solo_lectura = true
 
+      #Carga tabs de postulación
       set_equipo_trabajo
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
+
+    def revisar_admisibilidad  #TAREA FPL-003
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 1
+          }
+        }
+        
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 1).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          #binding.pry
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
+          #binding.pry
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
         end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
       end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
   
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
+      #respond_to do |format|
+      #  format.js { flash.now[:success] = 'Admisibilidad Financiera enviada correctamente'
+      #    render js: "window.location='#{root_path}'"}
+      #  format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Financiera enviada correctamente' }}
+      #end
+      #binding.pry
+    end
+
+    def enviar_admisibilidad_financiera  #TAREA FPL-003
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 1,
+            revision: 1
+          }
+        }
+        
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 1).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          #binding.pry
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
+          #binding.pry
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
         end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
       end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
+
+      cuestionario_fpl_count = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [1,2], revision: 1).group(:tipo_cuestionario_id).count
+      
+      #SE CAMBIA EL ESTADO DEL FPL-03 A 2
+      tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+      tarea_pendiente_fpl_03 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_03.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      #binding.pry
+      if tarea_pendiente_fpl_03.present?
+        tarea_pendiente_fpl_03.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_03.save  
+      end
+
+      #binding.pry
+      #SE CREA FPL-06
+      if cuestionario_fpl_count.count == 2
+      #binding.pry
+
+        #obtengo el usuario del jefe de linea
+        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+        #binding.pry
+
+        #obtengo el user_id del jefe de linea
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+
+    
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente_jefe_de_linea.user_id,
+            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
+            data: { }
+          }
+        }
+        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+      end
+  
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Admisibilidad Financiera enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Financiera enviada correctamente' }}
+      end
+      #binding.pry
+    end
+
+    def get_admisibilidad_tecnica #TAREA FPL-04
+      #binding.pry
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'get_admisibilidad_tecnica', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      #binding.pry
     end
 
     def admisibilidad_tecnica #TAREA FPL-04
+      #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      @manifestacion_de_interes.temp_siguientes = "true"
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
-    end
-  
-    def revisar_admisibilidad  #DZC TAREA APL-003
-      @manifestacion_de_interes.assign_attributes(manifestacion_admisibilidad_params)
-      @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-      respond_to do |format|
-        if @manifestacion_de_interes.valid?
-          @manifestacion_de_interes.save # Al estar comentada no guardaba los comentarios.-
-          #En caso de seleecionar como representante a un usuario que no se encuentra dentro de la institucion cogestora, se debe agreagrar.-
-          if @manifestacion_de_interes.temp_siguientes.to_s != "true"
-            if @nuevo_usuario
-              usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-              contribuyente = @manifestacion_de_interes.contribuyente_id
-              persona = usuario.persona_segun_(contribuyente)
-              if persona.present?
-                persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-              else
-                persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
-                persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-              end
-            end
-            # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            if @tarea_pendiente.save
-              continua_flujo_segun_tipo_tarea
-              # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-              # case @manifestacion_de_interes.resultado_admisibilidad
-              # when "aceptado"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-              # when "en_observación"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-              # when "rechazado"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
-              # end
-            end
-            format.js { flash.now[:success] = 'Admisibilidad Técnica enviada correctamente'
-              render js: "window.location='#{root_path}'"}
-            format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica enviada correctamente' }}
-          else
-            format.js { flash.now[:success] = 'Admisibilidad Técnica guardada correctamente'
-              render js: "window.location='#{admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
-            format.html { redirect_to admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Admisibilidad Técnica guardada correctamente' }}
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-  
-          @manifestacion_de_interes.seleccion_de_radios
-  
-          unless @manifestacion_de_interes.contribuyente_id.nil?
-            #Elimino todos los que no sean el id guardado
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-            #Ahora segun si tiene contribuyente_id lo paso a variable
-            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-            if @contribuyente_temporal.contribuyente_id.nil?
-              @contribuyente_nuevo = @contribuyente_temporal
-              @contribuyente_editado = Contribuyente.new
-            else
-              @contribuyente_nuevo = Contribuyente.new
-              @contribuyente_editado = @contribuyente_temporal
-            end
-          else
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-          end
-          @contribuyente_nuevo.temporal = true
-          @contribuyente_editado.temporal = true
-          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-            #Elimino todos los que no sean el id guardado
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-            if @usuario_temporal.user_id.nil?
-              @usuario_nuevo = @usuario_temporal
-              @usuario_editado = User.new
-            else
-              @usuario_nuevo = User.new
-              @usuario_editado = @usuario_temporal
-            end
-          else
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-          end
-          @usuario_nuevo.temporal = true
-          @usuario_editado.temporal = true
-          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-          carga_de_representantes
-  
-          format.js { }
-          format.html { render :admisibilidad}
-        end
-      end
-    end
-  
-    def admisibilidad_juridica #DZC TAREA APL-003.2
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      @manifestacion_de_interes.seleccion_de_radios
-
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
-    end
-  
-    def revisar_admisibilidad_juridica  #DZC TAREA APL-003
-      @manifestacion_de_interes.assign_attributes(manifestacion_admisibilidad_juridica_params)
-      @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-      respond_to do |format|
-        if @manifestacion_de_interes.valid?
-          @manifestacion_de_interes.save # Al estar comentada no guardaba los comentarios.-
-          #En caso de seleecionar como representante a un usuario que no se encuentra dentro de la institucion cogestora, se debe agreagrar.-
-          if @manifestacion_de_interes.temp_siguientes != "true"
-            if @nuevo_usuario
-              usuario = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-              contribuyente = @manifestacion_de_interes.contribuyente_id
-              persona = usuario.persona_segun_(contribuyente)
-              if persona.present?
-                persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-              else
-                persona = Persona.create(user_id: usuario.id, contribuyente_id: contribuyente,email_institucional: @manifestacion_de_interes.email_representante_para_acuerdo,telefono_institucional: @manifestacion_de_interes.telefono_representante_para_acuerdo)
-                persona.persona_cargos.create(cargo_id: Cargo::ENCARGADO_INS)
-              end
-            end
-            # @tarea_pendiente.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            if @tarea_pendiente.save
-              continua_flujo_segun_tipo_tarea
-              # #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-              # case @manifestacion_de_interes.resultado_admisibilidad
-              # when "aceptado"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-              # when "en_observación"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-              # when "rechazado"
-              #   @tarea_pendiente.pasar_a_siguiente_tarea 'C'
-              # end
-            end
-            format.js { flash.now[:success] = 'Admisibilidad Jurídica enviada correctamente'
-              render js: "window.location='#{root_path}'"}
-            format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica enviada correctamente' }}
-          else
-            format.js { flash.now[:success] = 'Admisibilidad Jurídica guardada correctamente'
-              render js: "window.location='#{admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
-            format.html { redirect_to admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Admisibilidad Jurídica guardada correctamente' }}
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-  
-          @manifestacion_de_interes.seleccion_de_radios
-  
-          unless @manifestacion_de_interes.contribuyente_id.nil?
-            #Elimino todos los que no sean el id guardado
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-            #Ahora segun si tiene contribuyente_id lo paso a variable
-            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-            if @contribuyente_temporal.contribuyente_id.nil?
-              @contribuyente_nuevo = @contribuyente_temporal
-              @contribuyente_editado = Contribuyente.new
-            else
-              @contribuyente_nuevo = Contribuyente.new
-              @contribuyente_editado = @contribuyente_temporal
-            end
-          else
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-          end
-          @contribuyente_nuevo.temporal = true
-          @contribuyente_editado.temporal = true
-          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-            #Elimino todos los que no sean el id guardado
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-            if @usuario_temporal.user_id.nil?
-              @usuario_nuevo = @usuario_temporal
-              @usuario_editado = User.new
-            else
-              @usuario_nuevo = User.new
-              @usuario_editado = @usuario_temporal
-            end
-          else
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-          end
-          @usuario_nuevo.temporal = true
-          @usuario_editado.temporal = true
-          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-          carga_de_representantes
-  
-          format.js { }
-          format.html { render :admisibilidad_juridica}
-        end
-      end
-    end
-  
-    def observaciones_admisibilidad #FPL-07 
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
-      end
-  
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
+      @solo_lectura = true
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
     end
 
-    def observaciones_admisibilidad_tecnica #FPL-08
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+    def revisar_admisibilidad_tecnica  #TAREA FPL-004
+      #binding.pry
+      jsonData = params['jsonData']
 
-      unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
-      end
-  
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 2
+          }
+        }
+
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
         end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
       end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
+    end
+
+    def enviar_admisibilidad_tecnica
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 2,
+            revision: 1
+          }
+        }
+
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end        
       end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
+
+      cuestionario_fpl_count = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [1,2], revision: 1).group(:tipo_cuestionario_id).count
+      
+      #SE CAMBIA EL ESTADO DEL FPL-04 A 2
+      tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+      tarea_pendiente_fpl_04 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_04.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      #binding.pry
+      if tarea_pendiente_fpl_04.present?
+        tarea_pendiente_fpl_04.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_04.save  
+      end
+
+      #binding.pry
+      #SE CREA FPL-06
+      if cuestionario_fpl_count.count == 2
+      #binding.pry
+
+        #obtengo el usuario del jefe de linea
+        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+        #binding.pry
+
+        #obtengo el user_id del jefe de linea
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+
+    
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente_jefe_de_linea.user_id,
+            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
+            data: { }
+          }
+        }
+        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+      end
+
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Pertinencia Técnica enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Pertinencia Técnica enviada correctamente' }}
+      end
+    end  
+
+    def get_admisibilidad_juridica #TAREA FPL-05
+      #binding.pry
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 3).order(:criterio_id)
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'get_admisibilidad_juridica', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      #binding.pry
     end
   
-    def resolver_observaciones_admisibilidad #DZC TAREA APL-004
+    def admisibilidad_juridica #TAREA FPL-05
+      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+      @manifestacion_de_interes.seleccion_de_radios
+      @solo_lectura = true
+
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
   
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
+    def revisar_admisibilidad_juridica  #DZC TAREA APL-005
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        revision = nil
+        if value['nota'] == '2'
+          revision = 3
         end
-      else
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 3,
+            revision: revision
+          }
+        }
+
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 3).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end  
+      end  
+    end
+
+    def enviar_admisibilidad_juridica  #DZC TAREA APL-005
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        revision = nil
+        if value['nota'] == '2'
+          revision = 3
+        else
+          revision = 1  
         end
-      else
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 3,
+            revision: revision
+          }
+        }
+        #binding.pry
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 3).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end  
+        
       end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+      #CONSULTA SI EXISTE ALGUN CUESTIONARIO RECHAZADO O CON OBSERVACIONES
+      #EL CODIGO 1 REPRESENTA APROBADO
+      #EL CODIGO 2 REPRESENTA CON OBSERVACION
+      #EL CODIGO 3 REPRESENTA RECHAZO
+      #EL CODIGO 4 REPRESENTA CON OBSERVACION SEGUNDA ITERACION Y FINAL
+
+      #CONSULTA SOBRE LOS CUESTIONARIOS APROBADOS
+      cuestionario_fpl_rechazado_jur = CuestionarioFpl.where(flujo_id: params[:flujo_id], revision: [2,3]).group(:tipo_cuestionario_id).count
+      cuestionario_fpl_aprobados = CuestionarioFpl.where(flujo_id: params[:flujo_id], revision: 1).group(:tipo_cuestionario_id).count
   
-      @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_params)
-      @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_obs_admisibilidad_params[:carta_de_apoyo_y_compromiso] if manifestacion_obs_admisibilidad_params[:carta_de_apoyo_y_compromiso].present?
-      @manifestacion_de_interes[:estandar_certificable] = manifestacion_obs_admisibilidad_params[:estandar_certificable] if manifestacion_obs_admisibilidad_params[:estandar_certificable].present?
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = manifestacion_obs_admisibilidad_params[:diagnostico_de_acuerdo_anterior] if  manifestacion_obs_admisibilidad_params[:diagnostico_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = manifestacion_obs_admisibilidad_params[:informe_de_acuerdo_anterior] if manifestacion_obs_admisibilidad_params[:informe_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:estudios_sectoriales_territoriales_relevantes] = manifestacion_obs_admisibilidad_params[:estudios_sectoriales_territoriales_relevantes] if manifestacion_obs_admisibilidad_params[:estudios_sectoriales_territoriales_relevantes].present?
-      @manifestacion_de_interes[:mapa_de_actores_archivo] = manifestacion_obs_admisibilidad_params[:mapa_de_actores_archivo] if manifestacion_obs_admisibilidad_params[:mapa_de_actores_archivo].present?
-      @manifestacion_de_interes[:carta_de_interes_institucion_gestora_firmada] = manifestacion_obs_admisibilidad_params[:carta_de_interes_institucion_gestora_firmada] if manifestacion_obs_admisibilidad_params[:carta_de_interes_institucion_gestora_firmada].present?
-      @manifestacion_de_interes[:area_influencia_proyecto_archivo] = manifestacion_obs_admisibilidad_params[:area_influencia_proyecto_archivo] if manifestacion_obs_admisibilidad_params[:area_influencia_proyecto_archivo].present?
-      @manifestacion_de_interes[:alternativas_instalacion_archivo] = manifestacion_obs_admisibilidad_params[:alternativas_instalacion_archivo] if manifestacion_obs_admisibilidad_params[:alternativas_instalacion_archivo].present?
-      @manifestacion_de_interes[:gantt_proyecto] = manifestacion_obs_admisibilidad_params[:gantt_proyecto] if manifestacion_obs_admisibilidad_params[:gantt_proyecto].present?
-      @manifestacion_de_interes[:estudio_de_mercado] = manifestacion_obs_admisibilidad_params[:estudio_de_mercado] if manifestacion_obs_admisibilidad_params[:estudio_de_mercado].present?
-      @manifestacion_de_interes[:anteproyecto] = manifestacion_obs_admisibilidad_params[:anteproyecto] if manifestacion_obs_admisibilidad_params[:anteproyecto].present?
-      @manifestacion_de_interes[:otros_estudios] = manifestacion_obs_admisibilidad_params[:otros_estudios] if manifestacion_obs_admisibilidad_params[:otros_estudios].present?
-      @manifestacion_de_interes.completar_informacion!
-      set_representantes
-  
-      unless @manifestacion_de_interes.tipo_instrumento.blank?
-        @manifestacion_de_interes.descripcion_acuerdo = @manifestacion_de_interes.tipo_instrumento.descripcion
+      #SE CAMBIA EL ESTADO DEL FPL-05 A 2
+      tarea_fondo_fpl_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+      #tarea_pendiente_fpl_05 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      tarea_pendiente_fpl_05 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
+      #binding.pry
+      if tarea_pendiente_fpl_05.present?
+        tarea_pendiente_fpl_05.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_05.save  
       end
-  
-      checked = @manifestacion_de_interes.set_checked
-      @rpc_checked = checked[:rpc_checked]
-      @actecos_checked = checked[:actecos_checked]
-  
-      @manifestacion_de_interes[:estandar_certificable] = nil if manifestacion_obs_admisibilidad_params[:radio_estandar] == "1"
-      @manifestacion_de_interes[:estandar_de_certificacion_id] = nil if manifestacion_obs_admisibilidad_params[:radio_estandar] == "0"
-  
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = nil if manifestacion_obs_admisibilidad_params[:radio_diagnostico] == "1"
-      @manifestacion_de_interes[:diagnostico_id] = nil if manifestacion_obs_admisibilidad_params[:radio_diagnostico] == "0"
-  
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = nil if manifestacion_obs_admisibilidad_params[:radio_informe] == "1"
-      @manifestacion_de_interes[:acuerdo_previo_con_informe_id] = nil if manifestacion_obs_admisibilidad_params[:radio_informe] == "0" 
-  
-      @flujo.actividad_economica_ids = manifestacion_obs_admisibilidad_params[:actividad_economicas_ids]
-      @flujo.comuna_ids = manifestacion_obs_admisibilidad_params[:comunas_ids]
-      @flujo.cuenca_ids = manifestacion_obs_admisibilidad_params[:cuencas_ids]
-      @flujo.save
-  
-      unless @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad.map{|s| [s.to_sym, [""]]}.to_h
-      end
-  
-      respond_to do |format|
-        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-        @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
-        if @manifestacion_de_interes.valid?
-        #DZC verifica la vigencia del plazo de 25 días corridos para evacuar las observaciones (condición 'B')
-        #se quita validacion,ahora muere en background
-          if true
-            @manifestacion_de_interes.save
-  
-            @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
-            @flujo.save
-  
-            unless @manifestacion_de_interes.contribuyente_id.nil?
-              #Elimino todos los que no sean el id guardado
-              Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-              #Ahora segun si tiene contribuyente_id lo paso a variable
-              @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-              if @contribuyente_temporal.contribuyente_id.nil?
-                @contribuyente_nuevo = @contribuyente_temporal
-                @contribuyente_editado = Contribuyente.new
-              else
-                @contribuyente_nuevo = Contribuyente.new
-                @contribuyente_editado = @contribuyente_temporal
-              end
-            else
-              @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-            end
-            @contribuyente_nuevo.temporal = true
-            @contribuyente_editado.temporal = true
-            @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-            unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-              #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-              @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-              if @usuario_temporal.user_id.nil?
-                @usuario_nuevo = @usuario_temporal
-                @usuario_editado = User.new
-              else
-                @usuario_nuevo = User.new
-                @usuario_editado = @usuario_temporal
-              end
-            else
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-              @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-            end
-  
-            @usuario_nuevo.temporal = true
-            @usuario_editado.temporal = true
-            @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-            
-            @manifestacion_de_interes.flujo.reload
-            carga_de_representantes
-  
-            #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
-            if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
-              if manifestacion_obs_admisibilidad_params.key?(:update_obs_admisibilidad) && manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
-                @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_params[:update_obs_admisibilidad] == "true"
-  
-                format.js { 
-                  flash[:success] = 'Admisibilidad Técnica Enviada correctamente'
-                  render js: "window.location='#{root_path}'"
-                }
-                format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Técnica Enviada correctamente' }}
-              end
-            else
-              @mantener_temporal = manifestacion_params[:temporal]
-              success = 'Admisibilidad Técnica Guardada correctamente'
-              format.js { flash.now[:success] = success }
-              format.html { redirect_to observaciones_admisibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), notice: success }
-            end
-            #format.js { 
-            #  flash.now[:success] = 'Admisibilidad Actualizada correctamente'
-            #  render js: "window.location='#{root_path}'"
-            #}
-            #format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Actualizada correctamente' }}
-          else
-            @tarea_pendiente.pasar_a_siguiente_tarea 'B' #DZC pasa a siguiente tarea ejecutando condición 'B' (pone término al flujo)
-            format.js { 
-              flash.now[:error] = 'Ya se ha vencido el plazo para evacuar las observaciones. Se ha puesto término a la manifestación' 
-              render js: "window.location='#{root_path}'" 
+
+      #SE CREA FPL-10
+      if cuestionario_fpl_aprobados.count  == 3 
+        #binding.pry
+        #obtengo el usuario del jefe de linea
+
+        #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        existe_fpl_06 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+        #binding.pry
+        if existe_fpl_06.present?
+          #binding.pry
+        else
+          #binding.pry
+          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+          #binding.pry
+
+          #obtengo el user_id del jefe de linea
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
+          tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+
+      
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+          custom_params_tarea_pendiente = {
+            tarea_pendientes: {
+              flujo_id: @flujo.id,
+              tarea_id: tarea_fondo.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: tarea_pendiente_jefe_de_linea.user_id,
+              persona_id: tarea_pendiente_jefe_de_linea.persona_id,
+              data: { }
             }
-            format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones. Se ha puesto término a la manifestación' }}
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          @total_de_errores_por_tab = [] if @manifestacion_de_interes.secciones_observadas_admisibilidad.nil?
-          @total_de_errores_por_tab[:"admisibilidad"] = [""]
-          carga_de_representantes
-  
-          if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
-            @manifestacion_de_interes.mapa_de_actores_data = nil
-            #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
-            @manifestacion_de_interes.mapa_de_actores_archivo = nil
-          end
-          format.js { flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos" }
-          format.html { render :observaciones_admisibilidad }
-        end
-      end
-    end
-  
-  
-  
-    def observaciones_admisibilidad_juridica #FPL-08
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
-      unless @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.map{|s| [s.to_sym, [""]]}.to_h
-      end
-  
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
+          }
+          TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
         end
       else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
-    end
-  
-    def resolver_observaciones_admisibilidad_juridica #DZC TAREA APL-004.2
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_juridica_params)
-      @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_obs_admisibilidad_juridica_params[:carta_de_apoyo_y_compromiso] if manifestacion_obs_admisibilidad_juridica_params[:carta_de_apoyo_y_compromiso].present?
-      @manifestacion_de_interes[:estandar_certificable] = manifestacion_obs_admisibilidad_juridica_params[:estandar_certificable] if manifestacion_obs_admisibilidad_juridica_params[:estandar_certificable].present?
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = manifestacion_obs_admisibilidad_juridica_params[:diagnostico_de_acuerdo_anterior] if  manifestacion_obs_admisibilidad_juridica_params[:diagnostico_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = manifestacion_obs_admisibilidad_juridica_params[:informe_de_acuerdo_anterior] if manifestacion_obs_admisibilidad_juridica_params[:informe_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:estudios_sectoriales_territoriales_relevantes] = manifestacion_obs_admisibilidad_juridica_params[:estudios_sectoriales_territoriales_relevantes] if manifestacion_obs_admisibilidad_juridica_params[:estudios_sectoriales_territoriales_relevantes].present?
-      @manifestacion_de_interes[:mapa_de_actores_archivo] = manifestacion_obs_admisibilidad_juridica_params[:mapa_de_actores_archivo] if manifestacion_obs_admisibilidad_juridica_params[:mapa_de_actores_archivo].present?
-      @manifestacion_de_interes[:carta_de_interes_institucion_gestora_firmada] = manifestacion_obs_admisibilidad_juridica_params[:carta_de_interes_institucion_gestora_firmada] if manifestacion_obs_admisibilidad_juridica_params[:carta_de_interes_institucion_gestora_firmada].present?
-      @manifestacion_de_interes[:area_influencia_proyecto_archivo] = manifestacion_obs_admisibilidad_juridica_params[:area_influencia_proyecto_archivo] if manifestacion_obs_admisibilidad_juridica_params[:area_influencia_proyecto_archivo].present?
-      @manifestacion_de_interes[:alternativas_instalacion_archivo] = manifestacion_obs_admisibilidad_juridica_params[:alternativas_instalacion_archivo] if manifestacion_obs_admisibilidad_juridica_params[:alternativas_instalacion_archivo].present?
-      @manifestacion_de_interes[:gantt_proyecto] = manifestacion_obs_admisibilidad_juridica_params[:gantt_proyecto] if manifestacion_obs_admisibilidad_juridica_params[:gantt_proyecto].present?
-      @manifestacion_de_interes[:estudio_de_mercado] = manifestacion_obs_admisibilidad_juridica_params[:estudio_de_mercado] if manifestacion_obs_admisibilidad_juridica_params[:estudio_de_mercado].present?
-      @manifestacion_de_interes[:anteproyecto] = manifestacion_obs_admisibilidad_juridica_params[:anteproyecto] if manifestacion_obs_admisibilidad_juridica_params[:anteproyecto].present?
-      @manifestacion_de_interes[:otros_estudios] = manifestacion_obs_admisibilidad_juridica_params[:otros_estudios] if manifestacion_obs_admisibilidad_juridica_params[:otros_estudios].present?
-      @manifestacion_de_interes.completar_informacion!
-      set_representantes
-  
-      unless @manifestacion_de_interes.tipo_instrumento.blank?
-        @manifestacion_de_interes.descripcion_acuerdo = @manifestacion_de_interes.tipo_instrumento.descripcion
-      end
-  
-      checked = @manifestacion_de_interes.set_checked
-      @rpc_checked = checked[:rpc_checked]
-      @actecos_checked = checked[:actecos_checked]
-  
-      @manifestacion_de_interes[:estandar_certificable] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_estandar] == "1"
-      @manifestacion_de_interes[:estandar_de_certificacion_id] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_estandar] == "0"
-  
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_diagnostico] == "1"
-      @manifestacion_de_interes[:diagnostico_id] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_diagnostico] == "0"
-  
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_informe] == "1"
-      @manifestacion_de_interes[:acuerdo_previo_con_informe_id] = nil if manifestacion_obs_admisibilidad_juridica_params[:radio_informe] == "0" 
-  
-      @flujo.actividad_economica_ids = manifestacion_obs_admisibilidad_juridica_params[:actividad_economicas_ids]
-      @flujo.comuna_ids = manifestacion_obs_admisibilidad_juridica_params[:comunas_ids]
-      @flujo.cuenca_ids = manifestacion_obs_admisibilidad_juridica_params[:cuencas_ids]
-      @flujo.save
-  
-      unless @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.map{|s| [s.to_sym, [""]]}.to_h
-      end
-  
-      respond_to do |format|
-        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-        @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
-        if @manifestacion_de_interes.valid?
-        #DZC verifica la vigencia del plazo de 25 días corridos para evacuar las observaciones (condición 'B')
-        #se quita validacion, ahora muere en background
-          if true
-            @manifestacion_de_interes.save
-  
-            @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
-            @flujo.save
-  
-            unless @manifestacion_de_interes.contribuyente_id.nil?
-              #Elimino todos los que no sean el id guardado
-              Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-              #Ahora segun si tiene contribuyente_id lo paso a variable
-              @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-              if @contribuyente_temporal.contribuyente_id.nil?
-                @contribuyente_nuevo = @contribuyente_temporal
-                @contribuyente_editado = Contribuyente.new
-              else
-                @contribuyente_nuevo = Contribuyente.new
-                @contribuyente_editado = @contribuyente_temporal
-              end
-            else
-              @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-            end
-            @contribuyente_nuevo.temporal = true
-            @contribuyente_editado.temporal = true
-            @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-            unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-              #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-              @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-              if @usuario_temporal.user_id.nil?
-                @usuario_nuevo = @usuario_temporal
-                @usuario_editado = User.new
-              else
-                @usuario_nuevo = User.new
-                @usuario_editado = @usuario_temporal
-              end
-            else
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-              @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-            end
-  
-            @usuario_nuevo.temporal = true
-            @usuario_editado.temporal = true
-            @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-            
-            @manifestacion_de_interes.flujo.reload
-            carga_de_representantes
-  
-            #DZC corrige continuación el en flujo por cumplimiento de condición 'A'
-            if manifestacion_params[:temporal]=="false" || manifestacion_params[:temporal].blank?
-              if manifestacion_obs_admisibilidad_juridica_params.key?(:update_obs_admisibilidad_juridica)
-                @tarea_pendiente.pasar_a_siguiente_tarea 'A' if manifestacion_obs_admisibilidad_juridica_params[:update_obs_admisibilidad_juridica] == "true"
-              end
-              format.js { 
-                flash[:success] = 'Admisibilidad Jurídica Enviada correctamente'
-                render js: "window.location='#{root_path}'"
+        #binding.pry
+        #consulto si la admisibilidad juridica es distinto a 0 se devuelve la evaluacion al postulante FPL-009, y el postulante debe corregir y volver a enviar al FPL-05
+        if cuestionario_fpl_rechazado_jur != 0
+          #OBTENGO USER_ID DEL POSTULANTE
+          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          #binding.pry
+          #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
+              custom_params_tarea_pendiente = {
+                tarea_pendientes: {
+                  flujo_id: @flujo.id,
+                  tarea_id: tarea_fondo.id,
+                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                  user_id: tarea_pendiente_postulante.user_id,
+                  persona_id: tarea_pendiente_postulante.persona_id,
+                  data: { }
               }
-              format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica Enviada correctamente' }}
-            else
-              @mantener_temporal = manifestacion_params[:temporal]
-              success = 'Admisibilidad Jurídica Guardada correctamente'
-              format.js { flash.now[:success] = success }
-              format.html { redirect_to observaciones_admisibilidad_juridica_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), notice: success }
-            end
-            #format.js { 
-            #  flash.now[:success] = 'Admisibilidad Actualizada correctamente'
-            #  render js: "window.location='#{root_path}'"
-            #}
-            #format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Actualizada correctamente' }}
-          else
-            @tarea_pendiente.pasar_a_siguiente_tarea 'B' #DZC pasa a siguiente tarea ejecutando condición 'B' (pone término al flujo)
-            format.js { 
-              flash.now[:error] = 'Ya se ha vencido el plazo para evacuar las observaciones. Se ha puesto término a la manifestación' 
-              render js: "window.location='#{root_path}'" 
             }
-            format.html { redirect_to root_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones. Se ha puesto término a la manifestación' }}
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          @total_de_errores_por_tab = [] if @manifestacion_de_interes.secciones_observadas_admisibilidad_juridica.nil?
-          @total_de_errores_por_tab[:"admisibilidad-juridica"] = [""]
-          carga_de_representantes
-  
-          if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
-            @manifestacion_de_interes.mapa_de_actores_data = nil
-            #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
-            @manifestacion_de_interes.mapa_de_actores_archivo = nil
-          end
-          format.js { flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos" }
-          format.html { render :observaciones_admisibilidad_juridica }
+            #binding.pry
+            TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
         end
       end
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Admisibilidad Jurídica enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica enviada correctamente' }}
+      end    
     end
-  
+
+    def get_pertinencia_factibilidad #TAREA FPL-05
+      #binding.pry
+      @cuestionario_pert_financiera_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
+      @cuestionario_pert_tecnica_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).order(:criterio_id).first
+
+      respond_to do |format|
+        format.js { render 'get_pertinencia_factibilidad', locals: { cuestionario_pert_financiera_fpl: @cuestionario_pert_financiera_fpl ,cuestionario_pert_tecnica_fpl: @cuestionario_pert_tecnica_fpl, cuestionario_obs_fpl: @cuestionario_obs_fpl} }
+      end
+      #binding.pry
+    end
+
     def pertinencia_factibilidad #TAREA FPL-06
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      #@responsables_coordinador = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-
-      @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-      @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
       @manifestacion_de_interes.seleccion_de_radios
-  
-      @solo_lectura = false
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+      @solo_lectura = true
+
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
+
+    def revisar_pertinencia_factibilidad
+      #binding.pry
+      case params[:nota_input_pertinencia]
+      when "1"
+        revision = 1
+      when "2"
+        revision = 2
+      when "3"
+        revision = 3
       end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
+
+      #GUARDA CORRECCIONES Y OBSERVACIONES ADMISIBILIDAD TECNICA
+      jsonDataFinanciera = params['jsonDataFinanciera']
+      jsonDataFinanciera.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 1,
+            revision: revision
+            
+          }
+        }
+        
+        @cuestionario_financiero_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 1).order(:criterio_id)
+        if @cuestionario_financiero_fpl.present?
+          @cuestionario_financiero_fpl.update(custom_params[:cuestionario_fpl])
         else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
+          @cuestionario_financiero_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_financiero_fpl.save
         end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+      
       end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
+
+      #GUARDA CORRECCIONES Y OBSERVACIONES ADMISIBILIDAD TECNICA
+      jsonDataTecnico = params['jsonDataTecnico']
+      jsonDataTecnico.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 2,
+            revision: revision
+          }
+        }
+        
+        @cuestionario_tecnico_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
+        if @cuestionario_tecnico_fpl.present?
+          @cuestionario_tecnico_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_tecnico_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_tecnico_fpl.save
+        end  
+      end
+
+      #GUARDA Resultado de la revision de pertinencia y factibilidad y Observaciones y comentarios
+      custom_params = {
+        cuestionario_obs_fpl: {
+          flujo_id: params['flujo_id'],
+          criterio_id: nil,
+          nota: params[:nota_input_pertinencia],
+          justificacion: params[:obs_input_pertinencia],
+          tipo_cuestionario_id: 4
+        }
+      }
+               
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
+      if @cuestionario_obs_fpl.present?
+        @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
+      else
+        @cuestionario_obs_fpl = CuestionarioFpl.new(custom_params[:cuestionario_obs_fpl])
+        @cuestionario_obs_fpl.save
+      end  
   
+    end
+
+    def enviar_pertinencia_factibilidad
+      #binding.pry
+      #GUARDA CORRECCIONES Y OBSERVACIONES ADMISIBILIDAD TECNICA
+
+      case params[:nota_input_pertinencia]
+      when "1"
+        revision = 1
+      when "2"
+        revision = 2
+      when "3"
+        revision = 3
+      end
+
+      jsonDataFinanciera = params['jsonDataFinanciera']
+      jsonDataFinanciera.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 1,
+            revision: revision
+          }
+        }
+        
+        @cuestionario_financiero_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 1).order(:criterio_id)
+        if @cuestionario_financiero_fpl.present?
+          @cuestionario_financiero_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_financiero_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_financiero_fpl.save
+        end
+
+        #VALIDAR EN EL COMBO BOX SI SE APRUEBA LA PERTINENCIA DE FACTIBILIDA
+      end
+
+      #GUARDA CORRECCIONES Y OBSERVACIONES ADMISIBILIDAD TECNICA
+      jsonDataTecnico = params['jsonDataTecnico']
+      jsonDataTecnico.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 2,
+            revision: revision
+          }
+        }
+        
+        @cuestionario_tecnico_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
+        if @cuestionario_tecnico_fpl.present?
+          @cuestionario_tecnico_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_tecnico_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_tecnico_fpl.save
+        end  
+      end
+
+      #GUARDA Resultado de la revision de pertinencia y factibilidad y Observaciones y comentarios
+      custom_params = {
+        cuestionario_obs_fpl: {
+          flujo_id: params['flujo_id'],
+          criterio_id: nil,
+          nota: params[:nota_input_pertinencia],
+          justificacion: params[:obs_input_pertinencia],
+          tipo_cuestionario_id: 4
+        }
+      }
+               
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
+      if @cuestionario_obs_fpl.present?
+        @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
+      else
+        @cuestionario_obs_fpl = CuestionarioFpl.new(custom_params[:cuestionario_obs_fpl])
+        @cuestionario_obs_fpl.save
+      end 
+
+      cuestionario_fpl_rechazado = CuestionarioFpl.where(flujo_id: params[:flujo_id], revision: [2,3]).group(:tipo_cuestionario_id).count
+      #binding.pry
+      
+      #SE CAMBIA EL ESTADO DEL FPL-05 A 2
+      tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      #tarea_pendiente_fpl_06 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_06.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
+      tarea_pendiente_fpl_06 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_06.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
+      if tarea_pendiente_fpl_06.present?
+        tarea_pendiente_fpl_06.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_06.save  
+      end
+      #binding.pry
+      if params[:nota_input_pertinencia] == '1'
+        #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+        existe_fpl_05 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+
+        if existe_fpl_05.present?
+          #existe
+          #binding.pry
+        else
+          #binding.pry
+          #OBTENGO USER_ID DEL JEFE DE LINEA
+          #binding.pry
+          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          #binding.pry
+          #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+              custom_params_tarea_pendiente = {
+                tarea_pendientes: {
+                  flujo_id: @flujo.id,
+                  tarea_id: tarea_fondo.id,
+                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                  user_id: tarea_pendiente_postulante.user_id,
+                  persona_id: tarea_pendiente_postulante.persona_id,
+                  data: { }
+              }
+            }
+            #binding.pry
+            TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+        end
+          
+      else
+        #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
+        #binding.pry
+        #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
+        if cuestionario_fpl_rechazado[1] != nil && cuestionario_fpl_rechazado[1] >= 1
+        #if cuestionario_fpl_rechazado.count == 0
+          #OBTENGO USER_ID DEL POSTULANTE
+          #binding.pry
+          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          #binding.pry
+          
+          #SE CREA TAREA PARA RESOLVER OBSERVACIONES FINANCIERAS
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
+              custom_params_tarea_pendiente = {
+                tarea_pendientes: {
+                  flujo_id: @flujo.id,
+                  tarea_id: tarea_fondo.id,
+                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                  user_id: tarea_pendiente_postulante.user_id,
+                  persona_id: tarea_pendiente_postulante.persona_id,
+                  data: { }
+              }
+            }
+            #binding.pry
+            TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+        end  
+
+        #consulto si la pertinencia tecnica es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-04
+        if cuestionario_fpl_rechazado[2] != nil && cuestionario_fpl_rechazado[2] >= 1
+          #OBTENGO USER_ID DEL POSTULANTE
+          #binding.pry
+          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          #binding.pry
+          #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_08)
+              custom_params_tarea_pendiente = {
+                tarea_pendientes: {
+                  flujo_id: @flujo.id,
+                  tarea_id: tarea_fondo.id,
+                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                  user_id: tarea_pendiente_postulante.user_id,
+                  persona_id: tarea_pendiente_postulante.persona_id,
+                  data: { }
+              }
+            }
+            #binding.pry
+            TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+        end  
+      end 
+      
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Evaluación General del Proyecto enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Evaluación General del Proyecto enviada correctamente' }}
+      end
+
+    end
+
+    def get_observaciones_admisibilidad #TAREA FPL-07
+      #binding.pry
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
+      
+      respond_to do |format|
+        format.js { render 'get_observaciones_admisibilidad', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      
+    end
+  
+
+    def observaciones_admisibilidad #TAREA FPL-07
+      #binding.pry
+      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+
+      @manifestacion_de_interes.temp_siguientes = "true"
+      @manifestacion_de_interes.seleccion_de_radios
+
+      @admisibilidad = true
+      @solo_lectura = true
+
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
+
+    def revisar_observaciones_admisibilidad  #TAREA FPL-07
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 1
+          }
+        }
+        
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 1).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          #binding.pry
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          #binding.pry
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end
+      end
+  
+      #respond_to do |format|
+      #  format.js { flash.now[:success] = 'Admisibilidad Financiera enviada correctamente'
+      #    render js: "window.location='#{root_path}'"}
+      #  format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Financiera enviada correctamente' }}
+      #end
+      #binding.pry
+    end
+
+    def enviar_observaciones_admisibilidad  #TAREA FPL-07
+      
+
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_08)
+      existe_fpl_08 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+      #binding.pry
+      #envia_notificacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [4]).count
+      #if envia_notificacion.present?
+      #  envia_notificacion.revision = envia_notificacion.revision + 1
+      #  envia_notificacion.save  
+      #end
+      #binding.pry
+      
+      #SE CAMBIA EL ESTADO DEL FPL-07 A 2
+      tarea_fondo_fpl_07 = Tarea.find_by_codigo(Tarea::COD_FPL_07)
+      tarea_pendiente_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_07.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      #binding.pry
+      if tarea_pendiente_fpl_07.present?
+        tarea_pendiente_fpl_07.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_07.save  
+      end
+
+      #binding.pry
+      #SE CREA FPL-06
+      #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
+      if existe_fpl_08.present?
+        #binding.pry
+      else  
+      #binding.pry
+        #obtengo el usuario del jefe de linea
+        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+        #binding.pry
+
+        #obtengo el user_id del jefe de linea
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+
+    
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente_jefe_de_linea.user_id,
+            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
+            data: { }
+          }
+        }
+        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+      end
+  
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Correción Admisibilidad Financiera enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Correción Admisibilidad Financiera enviada correctamente' }}
+      end
+      #binding.pry
+    end
+
+    def get_observaciones_admisibilidad_tecnica #TAREA FPL-04
+      #binding.pry
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'get_observaciones_admisibilidad_tecnica', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      #binding.pry
+    end
+
+    def observaciones_admisibilidad_tecnica #TAREA FPL-04
+      #binding.pry
+      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+      @solo_lectura = true
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
+
+    def revisar_observaciones_admisibilidad_tecnica  #TAREA FPL-004
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 2
+          }
+        }
+
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end
+      end
+    end
+
+    def enviar_observaciones_admisibilidad_tecnica
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
+      existe_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+      #binding.pry
+      #envia_notificacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [4]).count
+      #if envia_notificacion.present?
+      #  envia_notificacion.revision = envia_notificacion.revision + 1
+      #  envia_notificacion.save  
+      #end
+      #binding.pry
+      
+      #SE CAMBIA EL ESTADO DEL FPL-07 A 2
+      tarea_fondo_fpl_08 = Tarea.find_by_codigo(Tarea::COD_FPL_08)
+      tarea_pendiente_fpl_08 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_08.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      #binding.pry
+      if tarea_pendiente_fpl_08.present?
+        tarea_pendiente_fpl_08.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_08.save  
+      end
+
+      #binding.pry
+      #SE CREA FPL-06
+      #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
+      if existe_fpl_07.present?
+        #binding.pry
+      else  
+      #binding.pry
+        #obtengo el usuario del jefe de linea
+        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+        #binding.pry
+
+        #obtengo el user_id del jefe de linea
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+
+    
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente_jefe_de_linea.user_id,
+            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
+            data: { }
+          }
+        }
+        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+      end
+  
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Correción Admisibilidad Técnica enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Correción Admisibilidad Técnica enviada correctamente' }}
+      end
+      #binding.pry
+    end  
+    
+    def get_observaciones_admisibilidad_juridica #TAREA FPL-09
+      #binding.pry
+      @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 3).order(:criterio_id)
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'get_observaciones_admisibilidad_juridica', locals: { cuestionario_fpl: @cuestionario_fpl } }
+      end
+      #binding.pry
+    end
+  
+    def observaciones_admisibilidad_juridica #TAREA FPL-09
+      #binding.pry
+      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+      @manifestacion_de_interes.seleccion_de_radios
+      @solo_lectura = true
+
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
+    end
+  
+    def resolver_observaciones_admisibilidad_juridica  #TAREA FPL-09
+      #binding.pry
+      jsonData = params['jsonData']
+
+      jsonData.each do |key, value|
+        revision = nil
+        if value['nota'] == '2'
+          revision = 2
+        end
+        custom_params = {
+          cuestionario_fpl: {
+            flujo_id: params['flujo_id'],
+            criterio_id: value['criterio_id'],
+            nota: value['nota'],
+            justificacion: value['justificacion'],
+            tipo_cuestionario_id: 3,
+            revision: revision
+          }
+        }
+
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 3).order(:criterio_id)
+        #binding.pry
+        if @cuestionario_fpl.present?
+          @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
+        else
+          @cuestionario_fpl = CuestionarioFpl.new(custom_params[:cuestionario_fpl])
+          @cuestionario_fpl.save
+        end  
+      end  
+    end
+
+    def enviar_observaciones_admisibilidad_juridica  #TAREA FPL-09
+      #binding.pry
+      #SE CAMBIA EL ESTADO DEL FPL-09 A 2
+      tarea_fondo_fpl_09 = Tarea.find_by_codigo(Tarea::COD_FPL_09)
+      
+      tarea_pendiente_fpl_09 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_09.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      if tarea_pendiente_fpl_09.present?
+        tarea_pendiente_fpl_09.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_09.save  
+      end
+      #binding.pry
+      
+      #APERTURA NUEVAMENTE LA TAREA FPL-05
+      #obtengo el user_id del revisor juridico
+      mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_JURIDICO)
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+      #binding.pry
+      tarea_pendiente_admisibilidad_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, user_id: mapa.first.persona_id)
+      #binding.pry
+  
+      custom_params_tarea_pendiente = {
+        tarea_pendientes: {
+          flujo_id: @flujo.id,
+          tarea_id: tarea_fondo.id,
+          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+          user_id: tarea_pendiente_admisibilidad_juridica.user_id,
+          persona_id: tarea_pendiente_admisibilidad_juridica.persona_id,
+          data: { }
+        }
+      }
+      #binding.pry
+      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+     
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Correcciones de Admisibilidad Jurídica enviadas correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Correcciones de Admisibilidad Jurídica enviadas correctamente' }}
+      end    
+    end
+
+    def get_evaluacion_general #TAREA FPL-10
+      #binding.pry
+      @cuestionario_pert_financiera_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
+      @cuestionario_pert_tecnica_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
+      @cuestionario_pert_juridica_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 3).order(:criterio_id)
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).order(:criterio_id).first
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'get_evaluacion_general', locals: { cuestionario_pert_financiera_fpl: @cuestionario_pert_financiera_fpl ,cuestionario_pert_tecnica_fpl: @cuestionario_pert_tecnica_fpl, cuestionario_pert_juridica_fpl: @cuestionario_pert_juridica_fpl, cuestionario_obs_fpl: @cuestionario_obs_fpl} }
+      end
+      #binding.pry
     end
 
     def evaluacion_general #TAREA FPL-10
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      #@responsables_coordinador = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA_FPL, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-
-      @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-      @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
-  
-    end
-  
-    def revisar_pertinencia_factibilidad #DZC TAREA APL-005
-      
-      @manifestacion_de_interes.assign_attributes(manifestacion_pertinencia_params)
-      respond_to do |format|
-        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-        ##ToDo: fecha limite
-        if @manifestacion_de_interes.valid?
-          @manifestacion_de_interes.save
-          if @tarea_pendiente.save
-            #Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
-            if manifestacion_pertinencia_params[:fondo_produccion_limpia] != "true"
-              if @manifestacion_de_interes.temp_siguientes != "true"
-                #DZC se agrega la validación de la condición 'C', para ser coherente con el método continuar_flujo
-                case @manifestacion_de_interes.resultado_pertinencia
-                when "aceptada"
-                  MapaDeActor.find_or_create_by({
-                    flujo_id: @tarea_pendiente.flujo_id,
-                    rol_id: Rol::COORDINADOR,
-                    persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
-                  })
-                  MapaDeActor.find_or_create_by({
-                    flujo_id: @tarea_pendiente.flujo_id,
-                    rol_id: Rol::PRENSA,
-                    persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
-                  })
-                  actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-                  MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
-  
-                  #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
-                  @manifestacion_de_interes.confirmar_temporales_a_definitivos
-  
-                  @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-                  #Cargar set de metas si se adherio a estandar o diagnostico.-
-                  if @manifestacion_de_interes.estandar_de_certificacion_id.present?
-                    @flujo.set_metas_acciones_by_estandar @manifestacion_de_interes.estandar_de_certificacion_id
-                  elsif @manifestacion_de_interes.diagnostico_id.present?
-                    set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
-                  end
-  
-                  #IMPRIME VALOR SELECCIONADO EN FRONT
-                  #fpl: manifestacion_pertinencia_params[:fondo_produccion_limpia]
-                  Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
-  
-                when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
-                  @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-                when "no_aceptada"
-                  @tarea_pendiente.pasar_a_siguiente_tarea 'C'
-                end
-                format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente'
-                  render js: "window.location='#{root_path}'"}
-                format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente' }}
-              else
-                msj = 'Pertinencia-factibilidad guardada correctamente'
-                format.js { flash.now[:success] = msj
-                  render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
-                format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
-              end
-            else
-              Rails.logger.debug "FPL EL VALOR ES :#{manifestacion_pertinencia_params[:fondo_produccion_limpia]}"
-  
-              #@tarea_pendiente.pasar_a_siguiente_tarea 'D'
-  
-              #JV CREAR TAREA EM DASHBOARD
-              #@registro_proveedor = RegistroProveedor.find(key)
-              #@registro_proveedor.update!(user_encargado: value)
-              flujo = @tarea_pendiente.flujo_id #Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
-              tarea = 109 #Tarea.where(id: 2).first
-              user_id = 1620
-              #data = {}
-              #send_message(tarea, value)
-              TareaPendiente.create(flujo_id: flujo, tarea_id: tarea, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user_id, data: @manifestacion_de_interes.id)
-              #tarea_previa = Tarea.where(nombre: 'PRO-002').first
-              #tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-              #tarea_pendiente.first.delete
-  
-              format.js { flash.now[:success] = 'Pertinencia-factibilidad enviada correctamente FPL'
-              render js: "window.location='#{root_path}'"}
-              format.html { redirect_to root_path, flash: {notice: 'Pertinencia-factibilidad enviada correctamente FPL' }}
-              
-              #msj = 'Pertinencia-factibilidad guardada correctamente FPL'
-              #format.js { flash.now[:success] = msj
-              #render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
-              #format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
-            end
-            
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-          @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
-          @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
-  
-          @manifestacion_de_interes.seleccion_de_radios
-  
-          unless @manifestacion_de_interes.contribuyente_id.nil?
-            #Elimino todos los que no sean el id guardado
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-            #Ahora segun si tiene contribuyente_id lo paso a variable
-            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-            if @contribuyente_temporal.contribuyente_id.nil?
-              @contribuyente_nuevo = @contribuyente_temporal
-              @contribuyente_editado = Contribuyente.new
-            else
-              @contribuyente_nuevo = Contribuyente.new
-              @contribuyente_editado = @contribuyente_temporal
-            end
-          else
-            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-          end
-          @contribuyente_nuevo.temporal = true
-          @contribuyente_editado.temporal = true
-          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-            #Elimino todos los que no sean el id guardado
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-            if @usuario_temporal.user_id.nil?
-              @usuario_nuevo = @usuario_temporal
-              @usuario_editado = User.new
-            else
-              @usuario_nuevo = User.new
-              @usuario_editado = @usuario_temporal
-            end
-          else
-            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-          end
-          @usuario_nuevo.temporal = true
-          @usuario_editado.temporal = true
-          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-          carga_de_representantes
-  
-          format.js { }
-          format.html { render :pertinencia_factibilidad}
-        end
-      end
-    end
-  
-    def responder_pertinencia_factibilidad #DZC APL-006
-      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      unless @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.map{|s| [s.to_sym, [""]]}.to_h
-      end
-      @manifestacion_de_interes.seleccion_de_radios
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
-    end
-  
-    def responder_cond_obs_pertinencia_factibilidad #DZC APL-006
-  
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      @manifestacion_de_interes.assign_attributes(manifestacion_responder_pertinencia_params)
-      @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_responder_pertinencia_params[:carta_de_apoyo_y_compromiso] if manifestacion_responder_pertinencia_params[:carta_de_apoyo_y_compromiso].present?
-      @manifestacion_de_interes[:estandar_certificable] = manifestacion_responder_pertinencia_params[:estandar_certificable] if manifestacion_responder_pertinencia_params[:estandar_certificable].present?
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = manifestacion_responder_pertinencia_params[:diagnostico_de_acuerdo_anterior] if  manifestacion_responder_pertinencia_params[:diagnostico_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = manifestacion_responder_pertinencia_params[:informe_de_acuerdo_anterior] if manifestacion_responder_pertinencia_params[:informe_de_acuerdo_anterior].present?
-      @manifestacion_de_interes[:estudios_sectoriales_territoriales_relevantes] = manifestacion_responder_pertinencia_params[:estudios_sectoriales_territoriales_relevantes] if manifestacion_responder_pertinencia_params[:estudios_sectoriales_territoriales_relevantes].present?
-      @manifestacion_de_interes[:mapa_de_actores_archivo] = manifestacion_responder_pertinencia_params[:mapa_de_actores_archivo] if manifestacion_responder_pertinencia_params[:mapa_de_actores_archivo].present?
-      @manifestacion_de_interes[:carta_de_interes_institucion_gestora_firmada] = manifestacion_responder_pertinencia_params[:carta_de_interes_institucion_gestora_firmada] if manifestacion_responder_pertinencia_params[:carta_de_interes_institucion_gestora_firmada].present?
-      @manifestacion_de_interes[:area_influencia_proyecto_archivo] = manifestacion_responder_pertinencia_params[:area_influencia_proyecto_archivo] if manifestacion_responder_pertinencia_params[:area_influencia_proyecto_archivo].present?
-      @manifestacion_de_interes[:alternativas_instalacion_archivo] = manifestacion_responder_pertinencia_params[:alternativas_instalacion_archivo] if manifestacion_responder_pertinencia_params[:alternativas_instalacion_archivo].present?
-      @manifestacion_de_interes[:gantt_proyecto] = manifestacion_responder_pertinencia_params[:gantt_proyecto] if manifestacion_responder_pertinencia_params[:gantt_proyecto].present?
-      @manifestacion_de_interes[:estudio_de_mercado] = manifestacion_responder_pertinencia_params[:estudio_de_mercado] if manifestacion_responder_pertinencia_params[:estudio_de_mercado].present?
-      @manifestacion_de_interes[:anteproyecto] = manifestacion_responder_pertinencia_params[:anteproyecto] if manifestacion_responder_pertinencia_params[:anteproyecto].present?
-      @manifestacion_de_interes[:otros_estudios] = manifestacion_responder_pertinencia_params[:otros_estudios] if manifestacion_responder_pertinencia_params[:otros_estudios].present?
-      @manifestacion_de_interes.completar_informacion!
-      set_representantes
-  
-      unless @manifestacion_de_interes.tipo_instrumento.blank?
-        @manifestacion_de_interes.descripcion_acuerdo = @manifestacion_de_interes.tipo_instrumento.descripcion
-      end
-  
-      checked = @manifestacion_de_interes.set_checked
-      @rpc_checked = checked[:rpc_checked]
-      @actecos_checked = checked[:actecos_checked]
-  
-      @manifestacion_de_interes[:estandar_certificable] = nil if manifestacion_responder_pertinencia_params[:radio_estandar] == "1"
-      @manifestacion_de_interes[:estandar_de_certificacion_id] = nil if manifestacion_responder_pertinencia_params[:radio_estandar] == "0"
-  
-      @manifestacion_de_interes[:diagnostico_de_acuerdo_anterior] = nil if manifestacion_responder_pertinencia_params[:radio_diagnostico] == "1"
-      @manifestacion_de_interes[:diagnostico_id] = nil if manifestacion_responder_pertinencia_params[:radio_diagnostico] == "0"
-  
-      @manifestacion_de_interes[:informe_de_acuerdo_anterior] = nil if manifestacion_responder_pertinencia_params[:radio_informe] == "1"
-      @manifestacion_de_interes[:acuerdo_previo_con_informe_id] = nil if manifestacion_responder_pertinencia_params[:radio_informe] == "0" 
-  
-      @flujo.actividad_economica_ids = manifestacion_responder_pertinencia_params[:actividad_economicas_ids]
-      @flujo.comuna_ids = manifestacion_responder_pertinencia_params[:comunas_ids]
-      @flujo.cuenca_ids = manifestacion_responder_pertinencia_params[:cuencas_ids]
-      @flujo.save
-  
-      unless @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
-        @total_de_errores_por_tab = @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.map{|s| [s.to_sym, [""]]}.to_h
-      end
-      respond_to do |format|
-        @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-        @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
-        if @manifestacion_de_interes.valid?
-          #DZC verifica la vigencia del plazo de 60 días corridos para evacuar las observaciones (condición 'C')
-          #se quita validacion, ahora muere en background
-          if true
-            @manifestacion_de_interes.save
-  
-            @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
-            @flujo.save
-  
-            unless @manifestacion_de_interes.contribuyente_id.nil?
-              #Elimino todos los que no sean el id guardado
-              Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-              #Ahora segun si tiene contribuyente_id lo paso a variable
-              @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-              if @contribuyente_temporal.contribuyente_id.nil?
-                @contribuyente_nuevo = @contribuyente_temporal
-                @contribuyente_editado = Contribuyente.new
-              else
-                @contribuyente_nuevo = Contribuyente.new
-                @contribuyente_editado = @contribuyente_temporal
-              end
-            else
-              @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-            end
-            @contribuyente_nuevo.temporal = true
-            @contribuyente_editado.temporal = true
-            @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-            unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-              #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-              @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-              if @usuario_temporal.user_id.nil?
-                @usuario_nuevo = @usuario_temporal
-                @usuario_editado = User.new
-              else
-                @usuario_nuevo = User.new
-                @usuario_editado = @usuario_temporal
-              end
-            else
-              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-              @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-            end
-  
-            @usuario_nuevo.temporal = true
-            @usuario_editado.temporal = true
-            @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-            @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-            
-            @manifestacion_de_interes.flujo.reload
-            carga_de_representantes
-  
-            if manifestacion_responder_pertinencia_params.key?(:update_respuesta_pertinencia)
-              if @tarea_pendiente.save && manifestacion_responder_pertinencia_params[:update_respuesta_pertinencia] == "true" && @manifestacion_de_interes.temporal != "true"
-                if @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones" || @manifestacion_de_interes.resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones"
-                  case @manifestacion_de_interes.acepta_condiciones_pertinencia
-                  when true
-                    @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-                  when false
-                    @tarea_pendiente.pasar_a_siguiente_tarea 'B'
-                  end
-                else
-                  @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-                end
-                format.js { flash.now[:success] = 'Respuesta a las observaciones sobre pertinencia y factibilidad enviada correctamente'
-                  render js: "window.location='#{root_path}'"}
-                format.html { redirect_to root_path, flash: {notice: 'Respuesta a las observaciones sobre pertinencia y factibilidad enviada correctamente' }}
-              else #Toma este camino si solo se actualiza la manifestacion
-                format.js { flash.now[:success] = 'Respuesta a las observaciones sobre pertinencia y factibilidad guardada correctamente'}
-                format.html { redirect_to responder_pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: 'Respuesta a las observaciones sobre pertinencia y factibilidad guardada correctamente' }}
-              end
-            end
-          else
-            @tarea_pendiente.pasar_a_siguiente_tarea 'C' #DZC pasa a siguiente tarea ejecutando condición 'C' (pone término al flujo)
-            format.js { flash.now[:error] = 'Ya se ha vencido el plazo para evacuar las observaciones sobre pertinencia y factibilidad. Se ha puesto término a la manifestación'; render js: "window.location='#{root_path}'" }
-            format.html { redirect_to root_path(@tarea_pendiente, @manifestacion_de_interes), flash: {notice: 'Ya se ha vencido el plazo para evacuar las observaciones sobre pertinencia y factibilidad. Se ha puesto término a la manifestación' }}
-          end
-        else
-          @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-          flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-          # @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
-          @responsables = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-          @total_de_errores_por_tab = [] if @manifestacion_de_interes.secciones_observadas_pertinencia_factibilidad.nil?
-          @total_de_errores_por_tab[:"pertinencia-factibilidad"] = [""]
-          carga_de_representantes
-  
-          if(@manifestacion_de_interes.errors.messages[:mapa_de_actores_archivo].size > 0)
-            @manifestacion_de_interes.mapa_de_actores_data = nil
-            #@manifestacion_de_interes.mapa_de_actores_archivo.remove!
-            @manifestacion_de_interes.mapa_de_actores_archivo = nil
-          end
-          format.js { }
-          format.html { render :responder_pertinencia_factibilidad}
-        end
-      end
-    end
-  
-    def usuario_entregables #DZC APL-008
-      tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-      responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
-      contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-      @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
-    end
-  
-    def lista_usuarios_entregables
-      manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
-      tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-      personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
-      @usuarios = personas_responsables.map { |e| e.user  }
       #binding.pry
+      @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
+      @manifestacion_de_interes.seleccion_de_radios
+      @solo_lectura = true
+
+      #Carga tabs de postulación
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_plan_actividades
+      set_costos 
     end
+
+
   
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
@@ -2878,51 +2446,6 @@ class FondoProduccionLimpiasController < ApplicationController
       personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
       @usuarios = personas_responsables.map { |e| e.user  }
       #binding.pry
-    end
-  
-    def guardar_usuario_entregables #DZC APL-008
-      @manifestacion_de_interes.assign_attributes(manifestacion_usuario_entregables_params)
-      @manifestacion_de_interes.temporal = true
-      @manifestacion_de_interes.update_usuario_entregables = true
-  
-      tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-      respond_to do |format|
-  
-        if @manifestacion_de_interes.valid?
-          @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-          @manifestacion_de_interes.save
-  
-          
-          persona_by_user = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id).select{|p| p.user_id == @manifestacion_de_interes.usuario_entregables_id }.first
-  
-          mapa = MapaDeActor.find_or_create_by({
-            flujo_id: @tarea_pendiente.flujo_id,
-            rol_id: rol_tarea,
-            # rol_id: Rol.find_by(nombre: 'Responsable Entregables').id,
-            persona_id: persona_by_user.id
-          })
-          @manifestacion_de_interes.temporal = true
-          @manifestacion_de_interes.update(mapa_de_actores_data: nil) #DZC resetea el valor del campo, para que se contruyan archivos desde las tablas
-          # borramos el archivo mapa de actores
-          @manifestacion_de_interes.remove_mapa_de_actores_archivo!
-          @manifestacion_de_interes.save!
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A', {primera_ejecucion: true}
-          format.js { flash.now[:success] = 'Usuario encargado de entregables asignado correctamente' }
-          format.html { redirect_to root_path, flash: {notice: 'Usuario encargado de entregables asignado correctamente' }}
-        else
-          flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
-          responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
-          contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-          @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
-          if @manifestacion_de_interes.institucion_entregables_id.present?
-            personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, @manifestacion_de_interes.institucion_entregables_id)
-            @usuarios = personas_responsables.map { |e| e.user  }
-          end
-          format.js { }
-          format.html { render :usuario_entregables}
-        end
-      end
     end
   
     def cargar_actualizar_entregable_diagnostico #DZC APL-013
@@ -3469,15 +2992,21 @@ class FondoProduccionLimpiasController < ApplicationController
       end
       #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
       def set_flujo
+        #binding.pry
         @flujo = @tarea_pendiente.flujo
         @tipo_instrumento=@flujo.tipo_instrumento
       end
   
       def set_manifestacion_de_interes
+        #binding.pry
         @solo_lectura = params[:q]
         # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
-        @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
+        #@fondo_produccion_limpia.flujo_apl_id
+        @manifestacion_de_interes = ManifestacionDeInteres.find(@fondo_produccion_limpia.flujo_apl_id)
+
+        #@manifestacion_de_interes = ManifestacionDeInteres.find(270)
         # DZC 2019-07-11 17:41:43 se agrega para generalizar las validaciones y tamaños de texto
+        @tarea = @tarea_pendiente.tarea
         @manifestacion_de_interes.tarea_id = @tarea.id if @tarea.present?
   
         # DZC 2019-07-17 16:24:33 se obtienen las validaciones para campos de texto, tooltips y ayudas desde la tabla
@@ -3517,19 +3046,21 @@ class FondoProduccionLimpiasController < ApplicationController
       end
   
       def set_contribuyentes
-        # DZC 2018-10-10 16:42:42 se agrega contribuyente del proponente
+        #se agrega contribuyente del proponente
         @contribuyente = Contribuyente.new
         personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
   
-        # DZC 2018-11-19 10:27:27 se modifica para que no hayan contribuyentes precargados
-        # DZC 2019-06-17 18:07:31 se modifica para cargar el contribuyente escogido
-        if @tarea.codigo == Tarea::COD_APL_001
+        #se modifica para que no hayan contribuyentes precargados
+        #se modifica para cargar el contribuyente escogido
+        #binding.pry
+        if @tarea.codigo == Tarea::COD_FPL_00
           @contribuyentes_del_proponente = Contribuyente.where(id: personas_proponentes.pluck(:contribuyente_id))
         else
-          @contribuyentes_del_proponente = [@manifestacion_de_interes.proponente_institucion]
+          #@contribuyentes_del_proponente = [@flujo.proponente_institucion]
+          @contribuyentes_del_proponente = @fondo_produccion_limpia[:institucion_entregables_id]
         end
-  
-        #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
+        #binding.pry
+        #revisar impacto y eliminar si corresponde
           @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
       end
   
@@ -3820,6 +3351,7 @@ class FondoProduccionLimpiasController < ApplicationController
   
       def carga_de_representantes
         if(! @manifestacion_de_interes.contribuyente_id.nil?)
+
           contribuyente_temp = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
           cargo_ids = Responsable.where(rol_id: Rol::PROPONENTE, tipo_instrumento_id: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA, contribuyente_id: [nil, contribuyente_temp.contribuyente_id]).pluck(:cargo_id)
           @usuarios = User.includes(personas: :persona_cargos).where(personas: {contribuyente_id: contribuyente_temp.contribuyente_id}).where(persona_cargos: {cargo_id: cargo_ids})
@@ -3880,7 +3412,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @validaciones2 = @fondo_produccion_limpia.get_campos_validaciones
         @meses = [1,2,3,4,5,6]
         #binding.pry
-        @duracion = @fondo_produccion_limpia.sub_linea_id
+        @duracion = @fondo_produccion_limpia.duracion
         #binding.pry
       end  
 
@@ -3945,7 +3477,6 @@ class FondoProduccionLimpiasController < ApplicationController
         #@plan_actividades ||= []
         @plan_actividades = PlanActividad.includes(:actividad).find_by(flujo_id: @tarea_pendiente.flujo_id)
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?
-        #binding.pry
 
         ##TRAE LOS REGISTROS A LOS CUALES NO SE LES A ASIGNADO HH EN LOS POPUP RECURSOS INTERNOS Y EXTERNOS
         @postulantes_faltantes = EquipoTrabajo.find_by_sql("
@@ -3982,20 +3513,12 @@ class FondoProduccionLimpiasController < ApplicationController
         #REVISAR POR QUE NO DEJA VISUALIZAR LA DIRECCION
         @count_empresa_equipo = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
         @count_user_empresa = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 2).count
-        #@empresa_equipo = Contribuyente
-        #.unscoped
-        #.joins(:equipo_empresas, :establecimiento_contribuyentes)
-        #.select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion AS establecimiento_direccion, equipo_empresas.flujo_id")
-        #.where(contribuyentes: { flujo_id: @tarea_pendiente.flujo_id, temporal: true })
-        #.where(establecimiento_contribuyentes: { casa_matriz: true })
-        #.all
-
+     
         @empresa_equipo = Contribuyente
         .unscoped
         .joins(:equipo_empresas, :establecimiento_contribuyentes)
         .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
-        #.where(establecimiento_contribuyentes: { casa_matriz: true })
         .all
 
         # En tu controlador
@@ -4003,29 +3526,30 @@ class FondoProduccionLimpiasController < ApplicationController
           @show_empresa_div = true
         else
           @show_empresa_div = false
-        end
-
-
-        ##puts @empresa_equipo.to_sql
-        #binding.pry 
+        end 
       end
 
       def set_actividades_x_linea
+        #binding.pry
         @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+        #binding.pry
         @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
-        #binding.pry 
       end
 
       def set_costos
-          @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
-          #binding.pry          
+        #binding.pry
+        @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)            
+      end
+
+      def set_admisibilidad_financiera
+        @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1)
+        #binding.pry
       end
 
       def set_descargables
-        #@descargables_tarea = DescargableTarea.where(tarea_id: 109).order(id: :asc);
-
-        @descargables_tarea = DocumentacionLegal.descargables_tarea_para_flujo(@tarea_pendiente.flujo_id)
-        #binding.pry  
+        @descargables_postulante = DocumentacionLegal.descargables_postulante(@tarea_pendiente.flujo_id)
+        @descargables_receptor = DocumentacionLegal.descargables_receptor(@tarea_pendiente.flujo_id)
+        @descargables_ejecutor = DocumentacionLegal.descargables_ejecutor(@tarea_pendiente.flujo_id)
       end
 
       def set_regiones

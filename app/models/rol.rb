@@ -32,10 +32,10 @@ class Rol < ApplicationRecord
   JEFE_DE_LINEA_PROVEEDORES            = 35
   REVISOR_PROVEEDORES                  = 36
   REVISOR_COMENTARIOS                  = 37
-  REVISOR_JURIDICO_FPL                 = 38
-  REVISOR_TECNICO_FPL                  = 39
-  REVISOR_FINANCIERO_FPL               = 40
-  JEFE_DE_LINEA_FPL                    = 41
+  #REVISOR_JURIDICO_FPL                 = 38
+  #REVISOR_TECNICO_FPL                  = 39
+  REVISOR_FINANCIERO                   = 40
+  #JEFE_DE_LINEA_FPL                    = 41
   #ENCARGADO_ENTREGABLES_DIAGNOSTICO   = 10
   #REVISOR_TECNICO_INFORME_DE_IMPACTOS = 20
   #REVISOR_TECNICO_AUDITORIAS         = 21

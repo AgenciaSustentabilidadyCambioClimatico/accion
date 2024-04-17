@@ -15,6 +15,7 @@ class Actividad < ApplicationRecord
 			  (actividad_por_lineas.tipo_permiso IN (1, 3) AND plan_actividades.flujo_id = #{flujo_id})
 			  OR actividad_por_lineas.tipo_permiso = 1
 		  )
+		  GROUP BY 1,2
 		  ORDER BY actividades.id")
 	end
 	

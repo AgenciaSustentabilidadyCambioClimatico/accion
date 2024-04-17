@@ -1,33 +1,37 @@
 $('#div_plan_recursos_propios table tbody').empty();
-<% recursos_internos.each do |recursos_interno| %>
-  var plan_id = '<%= recursos_interno.id %>';
-  var user_name = '<%= recursos_interno.user_name %>';
-  var hh = '<%= recursos_interno.hh %>';
-  var valor_hh = '<%=number_to_currency recursos_interno.valor_hh %>';
-  var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
-  var newRow = "<tr>" +
-    "<td class='contenido-form'>" + user_name + "</td>" +
-    "<td class='contenido-form'>" + hh + "</td>" +
-    "<td class='contenido-form'>" + valor_hh + "</td>" +
-    "<td class='contenido-form'>" + costo + "</td>" +
-    "</tr>";
-  $('#div_plan_recursos_propios table tbody').append(newRow);
+<% if @recursos_internos.present? %>
+  <% recursos_internos.each do |recursos_interno| %>
+    var plan_id = '<%= recursos_interno.id %>';
+    var user_name = '<%= recursos_interno.user_name %>';
+    var hh = '<%= recursos_interno.hh %>';
+    var valor_hh = '<%=number_to_currency recursos_interno.valor_hh %>';
+    var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
+    var newRow = "<tr>" +
+      "<td class='contenido-form'>" + user_name + "</td>" +
+      "<td class='contenido-form'>" + hh + "</td>" +
+      "<td class='contenido-form'>" + valor_hh + "</td>" +
+      "<td class='contenido-form'>" + costo + "</td>" +
+      "</tr>";
+    $('#div_plan_recursos_propios table tbody').append(newRow);
+  <% end %>
 <% end %>
 
 $('#div_plan_recursos_externos table tbody').empty();
-<% recursos_externos.each do |recursos_externos| %>
-  var plan_id = '<%= recursos_externos.id %>';
-  var user_name = '<%= recursos_externos.user_name %>';
-  var hh = '<%= recursos_externos.hh %>';
-  var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
-  var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
-  var newRow = "<tr>" +
-    "<td class='contenido-form'>" + user_name + "</td>" +
-    "<td class='contenido-form'>" + hh + "</td>" +
-    "<td class='contenido-form'>" + valor_hh + "</td>" +
-    "<td class='contenido-form'>" + costo + "</td>" +
-    "</tr>";
-  $('#div_plan_recursos_externos table tbody').append(newRow);
+<% if @recursos_externos.present? %>
+  <% recursos_externos.each do |recursos_externos| %>
+    var plan_id = '<%= recursos_externos.id %>';
+    var user_name = '<%= recursos_externos.user_name %>';
+    var hh = '<%= recursos_externos.hh %>';
+    var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
+    var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
+    var newRow = "<tr>" +
+      "<td class='contenido-form'>" + user_name + "</td>" +
+      "<td class='contenido-form'>" + hh + "</td>" +
+      "<td class='contenido-form'>" + valor_hh + "</td>" +
+      "<td class='contenido-form'>" + costo + "</td>" +
+      "</tr>";
+    $('#div_plan_recursos_externos table tbody').append(newRow);
+  <% end %>
 <% end %>
 
 document.getElementById('plan_id').value = <%= plan_id %>;
@@ -37,54 +41,62 @@ document.getElementById('plan_id').value = <%= plan_id %>;
 <% end %>
 $('#objetivos_especifico_id').val('<%= @objetivos_especifico_id %>');
 
-console.log("<%= @duracion %>");
+//console.log("<%= @duracion %>");
 $('#div_duracion table tbody').empty();
 var newRowDuracion = "<%= @duracion.html_safe %>";
 $('#div_duracion table tbody').append(newRowDuracion);
 
 $('#div_plan_gastos_operacion table tbody').empty();
-<% gastos_operaciones.each do |gastos_operacion| %>
-  var gastos_id = '<%= gastos_operacion.id %>';
-  var nombre = '<%= gastos_operacion.nombre %>';
-  var valor_unitario = '<%=number_to_currency gastos_operacion.valor_unitario %>';
-  var cantidad = '<%= gastos_operacion.cantidad %>';
-  var unidad_medida = '<%= gastos_operacion.unidad_medida %>';
-  var total = '<%=number_to_currency gastos_operacion.cantidad.to_i * gastos_operacion.valor_unitario.to_i %>';
-  var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
-  var plan_id = '<%= @plan %>';
-  var newRow = "<tr>" +
-    "<td class='contenido-form'>" + nombre + "</td>" +
-    "<td class='contenido-form'>" + valor_unitario + "</td>" +
-    "<td class='contenido-form'>" + cantidad + "</td>" +
-    "<td class='contenido-form'>" + unidad_medida + "</td>" +
-    "<td class='contenido-form'>" + total + "</td>" +
-    "<td class='contenido-form dos iconos-acciones'>" +
-    "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
-    "</td>" +
-    "</tr>";
-  $('#div_plan_gastos_operacion table tbody').append(newRow);
+<% if @gastos_operaciones.present? %>
+  <% gastos_operaciones.each do |gastos_operacion| %>
+    var gastos_id = '<%= gastos_operacion.id %>';
+    var nombre = '<%= gastos_operacion.nombre %>';
+    var valor_unitario = '<%=number_to_currency gastos_operacion.valor_unitario %>';
+    var cantidad = '<%= gastos_operacion.cantidad %>';
+    var unidad_medida = '<%= gastos_operacion.unidad_medida %>';
+    var total = '<%=number_to_currency gastos_operacion.cantidad.to_i * gastos_operacion.valor_unitario.to_i %>';
+    var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var plan_id = '<%= @plan %>';
+    var newRow = "<tr>" +
+      "<td class='contenido-form'>" + nombre + "</td>" +
+      "<td class='contenido-form'>" + valor_unitario + "</td>" +
+      "<td class='contenido-form'>" + cantidad + "</td>" +
+      "<td class='contenido-form'>" + unidad_medida + "</td>" +
+      "<td class='contenido-form'>" + total + "</td>" +
+      <% if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura %>
+        "<td class='contenido-form dos iconos-acciones'>" +
+        "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "</td>" +
+      <% end %> 
+      "</tr>";
+    $('#div_plan_gastos_operacion table tbody').append(newRow);
+  <% end %>
 <% end %>
 
 $('#div_plan_gastos_administracion table tbody').empty();
-<% gastos_administraciones.each do |gastos_administracion| %>
-  var gastos_id = '<%= gastos_administracion.id %>';
-  var nombre = '<%= gastos_administracion.nombre %>';
-  var valor_unitario = '<%=number_to_currency gastos_administracion.valor_unitario %>';
-  var cantidad = '<%= gastos_administracion.cantidad %>';
-  var unidad_medida = '<%= gastos_administracion.unidad_medida %>';
-  var total = '<%=number_to_currency gastos_administracion.cantidad.to_i * gastos_administracion.valor_unitario.to_i %>';
-  var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
-  var newRow = "<tr>" +
-    "<td class='contenido-form'>" + nombre + "</td>" +
-    "<td class='contenido-form'>" + valor_unitario + "</td>" +
-    "<td class='contenido-form'>" + cantidad + "</td>" +
-    "<td class='contenido-form'>" + unidad_medida + "</td>" +
-    "<td class='contenido-form'>" + total + "</td>" +
-    "<td class='contenido-form dos iconos-acciones'>" +
-    "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
-    "</td>" +
-    "</tr>";
-  $('#div_plan_gastos_administracion table tbody').append(newRow);
+<% if @gastos_administraciones.present? %>
+  <% gastos_administraciones.each do |gastos_administracion| %>
+    var gastos_id = '<%= gastos_administracion.id %>';
+    var nombre = '<%= gastos_administracion.nombre %>';
+    var valor_unitario = '<%=number_to_currency gastos_administracion.valor_unitario %>';
+    var cantidad = '<%= gastos_administracion.cantidad %>';
+    var unidad_medida = '<%= gastos_administracion.unidad_medida %>';
+    var total = '<%=number_to_currency gastos_administracion.cantidad.to_i * gastos_administracion.valor_unitario.to_i %>';
+    var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var newRow = "<tr>" +
+      "<td class='contenido-form'>" + nombre + "</td>" +
+      "<td class='contenido-form'>" + valor_unitario + "</td>" +
+      "<td class='contenido-form'>" + cantidad + "</td>" +
+      "<td class='contenido-form'>" + unidad_medida + "</td>" +
+      "<td class='contenido-form'>" + total + "</td>" +
+      <% if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura %>
+        "<td class='contenido-form dos iconos-acciones'>" +
+        "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "</td>" +
+      <% end %> 
+      "</tr>";
+    $('#div_plan_gastos_administracion table tbody').append(newRow);
+  <% end %>
 <% end %>
 
 $('#agregar_rr_pp').attr('href', '#-1').css('pointer-events', '').css('color', '#5d759e');

@@ -5,6 +5,7 @@ var cantidad = '<%= @gastos_operaciones.cantidad %>';
 var unidad = '';
 var total = '<%=number_to_currency @gastos_operaciones.valor_unitario.to_i * @gastos_operaciones.cantidad.to_i %>';
 var plan_id = '<%= @plan %>';
+var tarea_pendiente_id =  '<%= @tarea_pendiente.id %>';
 
 <% if @gastos_operaciones.unidad_medida == 1 %>
     unidad = 'Unidad'

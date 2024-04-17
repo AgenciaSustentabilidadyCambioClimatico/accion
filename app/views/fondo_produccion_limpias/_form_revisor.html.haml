@@ -8,6 +8,7 @@
     htmlErrorToTooltip('top');
 
     //alert('entro revisor');
+    cargarRevisor();
 
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
       tab_selected = e.target;
@@ -62,8 +63,48 @@
       }
     });
   });
+
+  function cargarRevisor() {
+    //alert('cargarRevisor');
+    $.ajax({
+      url: "#{get_revisor_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+        calcularPromedioFinanciera();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  $('#asignar-revisores').click(function(e){
+      alert('asignar-revisores');
+      /*$.ajax({
+        url: "#{asignar_revisor_fondo_produccion_limpia_path}",
+        data: {
+          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+        },
+        method: "PATCH",
+        success: function(response) {
+          console.log("Método del controlador llamado con éxito");
+          calcularPromedioFinanciera();
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+        }
+      });*/
+    });
+
+  function asignarRevisorButton() {
+    alert('asignar_revisor-button XXX');
+  }
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
-= simple_form_for @manifestacion_de_interes, url: revisor_fondo_produccion_limpia_path(@tarea_pendiente,@fondo_produccion_limpia) do |f|
+= simple_form_for @fondo_produccion_limpia, url: asignar_revisor_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   .row
     .col-12
@@ -109,50 +150,21 @@
                   .card-body
                     .row
                       .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :revisor_tecnico_id, collection: @fondo_produccion_limpia.revisores_select, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico"}, label: t(:revisor_tecnico)
-                        -else
-                          .form-group
-                            -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
-                            -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
-                            -no_data = rev_tecnico.nil?
-                            %label.control-label.string=t(:revisor_tecnico)
-                            %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
+                        = f.input :codigo_proyecto, as: :text, label: t(:codigo_proyecto), input_html: {class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 0.5;'}, required: true, id: 'codigo_proyecto'
                       .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :revisor_juridico_id, collection: @revisores_financieros_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero"}, label: t(:revisor_financiero)
-                        -else
-                          .form-group
-                            -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_FINANCIERO_FPL).first
-                            -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
-                            -no_data = rev_tecnico.nil?
-                            %label.control-label.string=t(:revisor_financiero)
-                            %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
+                        = f.input :revisor_tecnico_id, collection: @revisores_tecnicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id'}, label: t(:revisor_tecnico)
                       .col-12.col-lg-6
-                        -if !solo_lectura
-                          = f.input :revisor_juridico_id, collection: @revisores_juridicos_fpl.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico"}, label: t(:revisor_juridico)
-                        -else
-                          .form-group
-                            -mapa_juridico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_JURIDICO).first
-                            -rev_juridico = mapa_juridico.nil? ? nil : mapa_juridico.persona.user.nombre_completo
-                            -no_data = rev_juridico.nil?
-                            %label.control-label.string=t(:revisor_juridico)
-                            %p#manifestacion_de_interes_revisor_juridico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : rev_juridico)
+                        = f.input :revisor_financiero_id, collection: @revisores_financieros.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id'}, label: t(:revisor_financiero)
+                      .col-12.col-lg-6
+                        = f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id'}, label: t(:revisor_juridico)
                       .col-12
-                        -if !solo_lectura
-                          = f.input :comentario_jefe_de_linea, as: :text, label: t(:comentario), input_html: {class: "required-field"}, required: true
-                        -else
-                          .form-group
-                            -no_data = f.object.comentario_jefe_de_linea.blank?
-                            %label.control-label.string=t(:comentario)
-                            %p#manifestacion_de_interes_comentario_jefe_de_linea.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                              =(no_data ? 'No se ingresó respuesta' : f.object.comentario_jefe_de_linea)
-    -if !solo_lectura
-      .col-12
-        .float-right
-          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: :enviar_revisor
-      
+                        = f.input :comentario_asignar_revisor, as: :text, label: t(:comentario), input_html: {class: "required-field", id: 'comentario_asignar_revisor_fpl'}, required: true
+    -#-if !solo_lectura
+    -#  .col-12
+    -#    .float-right
+    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'asignar-revisores'
+    -#      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'asignar-revisores', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
+    -#      -#  %i.fa.fa-arrow-circle-right
+    -#      -#  = t(:save)
+    -#      -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: :asignar-revisores

@@ -57,4 +57,13 @@ class FondoProduccionLimpia < ApplicationRecord
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}     
   end
 
+  def self.fpls
+    find_by_sql("SELECT fondo_produccion_limpia.flujo_id AS id, fondo_produccion_limpia.codigo_proyecto AS nombre_para_raa
+    FROM flujos 
+    INNER JOIN fondo_produccion_limpia ON fondo_produccion_limpia.flujo_id = flujos.id 
+    WHERE flujos.tipo_instrumento_id = 11
+    ORDER BY ID DESC
+    ")
+  end              
+
 end

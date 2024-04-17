@@ -4,6 +4,7 @@ var valor_unitario = '<%=number_to_currency @gastos_administraciones.valor_unita
 var cantidad = '<%= @gastos_administraciones.cantidad %>';
 var unidad = '';
 var total = '<%=number_to_currency @gastos_administraciones.valor_unitario.to_i * @gastos_administraciones.cantidad.to_i %>';
+var tarea_pendiente_id =  '<%= tarea_pendiente.id %>';
 
 <% if @gastos_administraciones.unidad_medida == 1 %>
     unidad = 'Unidad'

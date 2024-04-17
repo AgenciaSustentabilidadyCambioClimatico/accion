@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240325145228) do
+ActiveRecord::Schema.define(version: 20240409131705) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -513,6 +513,13 @@ ActiveRecord::Schema.define(version: 20240325145228) do
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
 
+  create_table "correlativos", force: :cascade do |t|
+    t.integer "year"
+    t.integer "valor"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "cuencas", force: :cascade do |t|
     t.string "codigo_cuenca"
     t.string "nombre_cuenca"
@@ -528,6 +535,18 @@ ActiveRecord::Schema.define(version: 20240325145228) do
     t.datetime "updated_at", null: false
     t.index ["cuenca_id"], name: "index_cuencas_flujos_on_cuenca_id"
     t.index ["flujo_id"], name: "index_cuencas_flujos_on_flujo_id"
+  end
+
+  create_table "cuestionario_fpls", force: :cascade do |t|
+    t.bigint "flujo_id"
+    t.integer "criterio_id"
+    t.integer "nota"
+    t.string "justificacion"
+    t.integer "tipo_cuestionario_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "revision"
+    t.index ["flujo_id"], name: "index_cuestionario_fpls_on_flujo_id"
   end
 
   create_table "dato_anual_contribuyentes", force: :cascade do |t|
@@ -622,6 +641,7 @@ ActiveRecord::Schema.define(version: 20240325145228) do
     t.bigint "tipo_contribuyentes_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tipo_descargable"
     t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
     t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end
@@ -894,6 +914,26 @@ ActiveRecord::Schema.define(version: 20240325145228) do
     t.bigint "sub_linea_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "flujo_apl_id"
+    t.integer "institucion_entregables_id"
+    t.integer "usuario_entregables_id"
+    t.integer "institucion_receptor_cof_fpl_id"
+    t.integer "cantidad_micro_empresa"
+    t.integer "cantidad_pequeña_empresa"
+    t.integer "cantidad_mediana_empresa"
+    t.integer "cantidad_grande_empresa"
+    t.string "territorios_regiones"
+    t.string "territorios_provincias"
+    t.string "territorios_comunas"
+    t.integer "empresas_asociadas_ag"
+    t.integer "empresas_no_asociadas_ag"
+    t.integer "duracion"
+    t.string "fortalezas_consultores"
+    t.string "codigo_proyecto"
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.integer "revisor_juridico_id"
+    t.string "comentario_asignar_revisor"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
@@ -2090,6 +2130,7 @@ ActiveRecord::Schema.define(version: 20240325145228) do
   add_foreign_key "convocatorias", "manifestacion_de_intereses"
   add_foreign_key "cuencas_flujos", "cuencas"
   add_foreign_key "cuencas_flujos", "flujos"
+  add_foreign_key "cuestionario_fpls", "flujos"
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"

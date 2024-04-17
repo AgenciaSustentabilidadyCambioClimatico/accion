@@ -85,7 +85,9 @@
     });
     
   });
-  function habilitaObservaciones(nota, observacion) {
+  function habilitaObservacionesJuridica(nota, observacion) {
+    //alert('nota');
+
     // Seleccionar el elemento select
     var notaSelect = document.getElementById(nota);
     var obsSelect = document.getElementById(observacion);
@@ -94,9 +96,11 @@
     var valorSeleccionado = notaSelect.value;
     
     // Mostrar un alert con el valor seleccionado
-    if (valorSeleccionado && valorSeleccionado == 'Cumple') {
+    if (valorSeleccionado && valorSeleccionado == '1') {
+      //alert('Cumple');
       obsSelect.style.visibility = 'hidden';
     } else {
+      //alert('No Cumple');
       obsSelect.style.visibility = 'visible';
     }
   }
@@ -170,10 +174,9 @@
       padding: 0.75rem;
       vertical-align: top;
     }
-
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:revisar_admisibilidad_juridica)
-= simple_form_for @manifestacion_de_interes, url: admisibilidad_juridica_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @fondo_produccion_limpia, url: admisibilidad_juridica_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.hidden_field :temp_siguientes, as: :boolean, value: true
   = f.submit "", class: 'd-none'
@@ -221,66 +224,67 @@
                 .card
                   .card-header
                     .card-body
-                      %div.table-responsive
-                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                          %thead
-                            %tr
-                              %th.encabezado2-form Criterios
-                              %th.encabezado2-form ¿Cumple?
-                              %th.encabezado2-form Observación
-                            %tr
-                              %th.contenido1-form Solicitud de cofinanciamiento
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_1', onchange: "habilitaObservaciones('nota_input_id_1','obs_input_id_1')" }                              
-                              %th.contenido3-form 
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_2', onchange: "habilitaObservaciones('nota_input_id_2','obs_input_id_2')" }
-                              %th.contenido3-form                           
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Copia simple del Rol Único Tributario de la organización postulante
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_3', onchange: "habilitaObservaciones('nota_input_id_3','obs_input_id_3')" }
-                              %th.contenido3-form   
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden;'}                            
-                            %tr
-                              %th.contenido1-form Copia simple de la cédula de identidad del o los representantes legales
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_4', onchange: "habilitaObservaciones('nota_input_id_4','obs_input_id_4')" }
-                              %th.contenido3-form         
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_5', onchange: "habilitaObservaciones('nota_input_id_5','obs_input_id_5')" }
-                              %th.contenido3-form      
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_6', onchange: "habilitaObservaciones('nota_input_id_6','obs_input_id_6')" }
-                              %th.contenido3-form    
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_6', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_7', onchange: "habilitaObservaciones('nota_input_id_7','obs_input_id_7')" }
-                              %th.contenido3-form    
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_7', style: 'visibility: hidden;'}
-                            %tr
-                              %th.contenido1-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
-                              %th.contenido2-form 
-                                = f.input :resultado_pertinencia, required: true, label: false,  collection: [['Cumple', 'Cumple'], ['No Cumple', 'No Cumple']], input_html: { class: 'required-field', id: 'nota_input_id_8', onchange: "habilitaObservaciones('nota_input_id_8','obs_input_id_8')" }
-                              %th.contenido3-form 
-                                = f.input :observaciones_pertinencia_factibilidad, required: true, label: false, input_html: { class: 'required-field-text', id: 'obs_input_id_8', style: 'visibility: hidden;'} 
-    -if !solo_lectura
-      .col-12
-        .float-right
-          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
-          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
-            %i.fa.fa-arrow-circle-right
-            =t(:enviar)
+                      = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                        %div.table-responsive
+                          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                            %thead
+                              %tr
+                                %th.encabezado2-form Criterios
+                                %th.encabezado2-form ¿Cumple?
+                                %th.encabezado2-form Observación
+                              %tr
+                                %th.contenido1-form Solicitud de cofinanciamiento
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_1', id: 'nota_input_juridica_id_1', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_1','obs_input_juridica_id_1')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form 
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_2', id: 'nota_input_juridica_id_2', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_2','obs_input_juridica_id_2')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form                           
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Copia simple del Rol Único Tributario de la organización postulante
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_3', id: 'nota_input_juridica_id_3', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_3','obs_input_juridica_id_3')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form   
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Copia simple de la cédula de identidad del o los representantes legales
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_4', id: 'nota_input_juridica_id_4', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_4','obs_input_juridica_id_4')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form         
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_5', id: 'nota_input_juridica_id_5', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_5','obs_input_juridica_id_5')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form      
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_6', id: 'nota_input_juridica_id_6', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_6','obs_input_juridica_id_6')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form    
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_7', id: 'nota_input_juridica_id_7', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_7','obs_input_juridica_id_7')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form    
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                              %tr
+                                %th.contenido1-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
+                                %th.contenido2-form 
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_8', id: 'nota_input_juridica_id_8', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_8','obs_input_juridica_id_8')", style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form 
+                                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+    -#-if !solo_lectura
+    -#  .col-12
+    -#    .float-right
+    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+    -#      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+    -#        %i.fa.fa-arrow-circle-right
+    -#        =t(:enviar)

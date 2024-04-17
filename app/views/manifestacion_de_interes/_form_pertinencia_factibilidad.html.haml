@@ -265,12 +265,18 @@
                               .form-group
                                 = label_tag "Adjuntar Ficha de Manifestación de Interés (Consejo Directivo)", nil, class: 'string mb-0'
                                 = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
-
                       .col-12.col-lg-6
-                        .form-group
-                        %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
-                        = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
-                  
+                        .row.align-items-end
+                          -if !solo_lectura
+                            .col-12.col-lg-6
+                              .form-group
+                              %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
+                              %br
+                              -#= f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)] ,[false, t(:no)]], :first, :last, checked: false
+                              = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false
+                            .col-12.col-lg-6
+                              -#= f.input :tipo_instrumento_id, collection: @lineas_fpl.map{|p| [p.nombre, p.id]}, label: t(:selección_de_linea), input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione una Línea", id: 'linea_id'}
+                              = f.input :tipo_instrumento_id, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:selección_de_linea), input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione una Línea", id: 'linea_id'}
                       -if !@manifestacion_de_interes.respuesta_observaciones_pertinencia_factibilidad.blank?
                         .col-12.col-lg-6
                           -if !solo_lectura

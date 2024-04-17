@@ -873,8 +873,14 @@ module ApplicationHelper
       registro_proveedor = RegistroProveedor.where(rut: user_rut).last
       data[:url] = enviar_carta_compromiso_path(registro_proveedor.id)
       data[:icon] = "<i class='fa fa-edit'></i>"
-    #Nuevo flujo postulacion FPL
-    when Tarea::COD_FPL_020
+    ###Nuevo flujo postulacion FPL###
+    when Tarea::COD_FPL_00
+      #data[:url] = asignar_gestor_receptor_fondo_produccion_limpia_path(pendiente)
+      #binding.pry
+      #data[:url] = usuario_entregables_fondo_produccion_limpias_path(pendiente, flujo)
+      data[:url] = usuario_entregables_fondo_produccion_limpias_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_01
       data[:url] = iniciar_flujo_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_02
@@ -893,16 +899,16 @@ module ApplicationHelper
       data[:url] =  pertinencia_factibilidad_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_07
-      data[:url] =  observaciones_admisibilidad_path(pendiente)
+      data[:url] =  observaciones_admisibilidad_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_08
-      data[:url] =  observaciones_admisibilidad_tecnica_path(pendiente)
+      data[:url] =  observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_09
-      data[:url] =  observaciones_admisibilidad_juridica_path(pendiente)
+      data[:url] =  observaciones_admisibilidad_juridica_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_10
-      data[:url] =  evaluacion_general_path(pendiente)
+      data[:url] =  evaluacion_general_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     #Nuevo flujo postulacion FPL  
     end

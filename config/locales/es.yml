@@ -1536,6 +1536,20 @@ es:
   gasto_operacion: Gasto de Operación
   gasto_administracion: Gasto de Administración
   nueva: Nueva
+  postulante : Postulante
+  encargado_financiamiento : Encargado Financiamiento
+  asignar_postulante_y_encargado_de_financiamiento: Asignar postulante y encargado de financiamiento
+  elegir_institucion_postulante: Elegir Institución Postulante
+  elegir_postulante: Elegir Postulante
+  receptor_cofinanciamiento : Receptor Cofinanciamiento
+  codigo_proyecto: Código Proyecto
+  selección_de_linea: Seleccion de línea
+  evaluacion_general_proyecto: Evaluación General del Proyecto 
+  revision_general_proyecto: Revisión General del Proyecto 
+  pertinencia_financiera: Pertinencia Financiera
+  pertinencia_tecnica: Pertinencia Técnica
+  revision_pertinencia_financiera: Revisión Pertinencia Financiera
+  revision_pertinencia_tecnica: Revisión Pertinencia Técnica
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
