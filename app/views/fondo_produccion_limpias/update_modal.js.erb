@@ -1,0 +1,67 @@
+
+var nombreCompleto = '<%= @user.nombre_completo %>';
+var rut = '<%= @user.rut %>';
+var telefono = '<%= @user.telefono %>';
+var email = '<%= @user.email %>';
+var profesion = '<%= @equipo_temporal.profesion %>';
+var funcionesProyecto = '<%= @equipo_temporal.funciones_proyecto %>';
+var valorHH = '<%= @equipo_temporal.valor_hh %>';
+var copiaCI = '<%= @equipo_temporal.copia_ci %>';
+var curriculum = '<%= @equipo_temporal.curriculum %>';
+var user_id = '<%= @equipo_temporal.id %>';
+var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+
+<% if @equipo_temporal.tipo_equipo == 1 %>
+    var newRow = "<tr>" +
+    "<td class='contenido-form'>" + nombreCompleto + "</td>" +
+    "<td class='contenido-form'>" + rut + "</td>" +
+    "<td class='contenido-form'>" + telefono + "</td>" +
+    "<td class='contenido-form'>" + email + "</td>" +
+    "<td class='contenido-form'>" + profesion + "</td>" +
+    "<td class='contenido-form'>" + funcionesProyecto + "</td>" +
+    "<td class='contenido-form'>" + valorHH + "</td>" +
+    "<td class='contenido-form'>" + copiaCI + "</td>" +
+    "<td class='contenido-form'>" + curriculum + "</td>" +
+    "<td class='contenido-form dos iconos-acciones'>" +
+    "<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-consultora' id='eliminar-usuario-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al consultor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+    "</td>" +
+    "</tr>";    
+    $('#div_equipo_consultora table tbody').append(newRow); 
+    $('#opcion_1').prop('disabled', true);
+<% end %>
+
+<% if @equipo_temporal.tipo_equipo == 2 %>
+    var newRow = "<tr>" +
+    "<td class='contenido-form'>" + nombreCompleto + "</td>" +
+    "<td class='contenido-form'>" + rut + "</td>" +
+    "<td class='contenido-form'>" + telefono + "</td>" +
+    "<td class='contenido-form'>" + email + "</td>" +
+    "<td class='contenido-form'>" + profesion + "</td>" +
+    "<td class='contenido-form'>" + funcionesProyecto + "</td>" +
+    "<td class='contenido-form'>" + valorHH + "</td>" +
+    "<td class='contenido-form'>" + copiaCI + "</td>" +
+    "<td class='contenido-form'>" + curriculum + "</td>" +
+    "<td class='contenido-form dos iconos-acciones'>" +
+    "<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-consultora_empresa' id='eliminar-usuario_empresa-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_consultor_empresa/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al consultor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+    "</td>" +
+    "</tr>";    
+    $('#div_equipo_consultora_empresa table tbody').append(newRow); 
+<% end %>
+
+<% if @equipo_temporal.tipo_equipo == 3 %>
+    var newRow = "<tr>" +
+    "<td class='contenido-form'>" + nombreCompleto + "</td>" +
+    "<td class='contenido-form'>" + rut + "</td>" +
+    "<td class='contenido-form'>" + telefono + "</td>" +
+    "<td class='contenido-form'>" + email + "</td>" +
+    "<td class='contenido-form'>" + profesion + "</td>" +
+    "<td class='contenido-form'>" + funcionesProyecto + "</td>" +
+    "<td class='contenido-form'>" + valorHH + "</td>" +
+    "<td class='contenido-form'>" + copiaCI + "</td>" +
+    "<td class='contenido-form'>" + curriculum + "</td>" +
+    "<td class='contenido-form dos iconos-acciones'>" +
+    "<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-consultora' id='eliminar-postulante-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo_postulante/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al consultor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+    "</td>" +
+    "</tr>";     
+    $('#div_postulante table tbody').append(newRow); 
+<% end %>

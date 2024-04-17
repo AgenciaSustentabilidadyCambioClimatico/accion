@@ -1,0 +1,71 @@
+= simple_form_for @usuario_temporal, url: update_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :user_id, as: :hidden, wrapper: false
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            = action_label_representante(usuario_temporal)
+        .card-body
+          .row
+            .col-12.col-lg-4
+              = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion form-temporal-boton-guardar-fpl-usuario', readonly: !usuario_temporal.user_id.nil? }
+            .col-12.col-lg-8
+              = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-temporal-boton-guardar-fpl-usuario' }
+            .col-12.col-lg-4
+              = f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'form-temporal-boton-guardar-fpl-usuario' }
+            .col-12.col-lg-4
+              = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-fpl-usuario' }
+    .col-12.mt-2.text-right
+      -#%button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
+      -#  =t(:volver_a_lista)
+      -#-confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
+      -#%button.btn.btn-primary.guarda-usuario-fpl-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+      -#  Grabar
+    = simple_form_for @equipo_temporal, url: insert_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
+      -#= f.input :flujo_id, as: :hidden, wrapper: false
+      -#= f.input :user_id, as: :hidden, wrapper: false
+      = f.input :tipo_equipo, as: :hidden, wrapper: false
+      .row
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin
+                -#= action_label_representante(usuario_temporal)
+                Agregar datos representante
+            .card-body
+              .row
+                -#= f.input :tipo_equipo, value: @tipo_equipo
+                .col-12.col-lg-4
+                  = f.input :profesion, required: true, label: t(:profesion), placeholder: "Ingresar profesión", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                .col-12.col-lg-4
+                  = f.input :funciones_proyecto, required: true, label: t(:funciones_proyecto), placeholder: "Ingresar funciones proyecto", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                .col-12.col-lg-4
+                  = f.input :valor_hh, required: true, label: t(:valor_hh), placeholder: "Ingresar valor hh", input_htmlusuario: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                .col-12.col-lg-4
+                  = f.input :copia_ci, required: true, label: t(:copia_ci), placeholder: "Ingresar copia cv", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                .col-12.col-lg-4
+                  = f.input :curriculum, required: true, label: t(:curriculum_vitae), placeholder: "Ingresar curriculum vitae", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+        .col-12.mt-2.text-right
+          %button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
+            =t(:volver_a_lista)
+          -confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
+          %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, id: 'oculta_modal', disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+            Guardar
+
+:javascript
+  $(document).ready(function(){
+    iniciarAutoNumeric();
+    nuevo_usuario_temporal_fpl_validaciones();
+    nuevo_equipo_trabajo_fpl_validaciones();
+    htmlErrorToTooltip('top'); 
+  });
+
+  $('#oculta_modal').click(function(){
+    //alert('paso1');
+    $('#buscar-usuario').modal('hide');
+    $(this).find('form')[0].reset();
+    $('.loading-data').show();
+  });

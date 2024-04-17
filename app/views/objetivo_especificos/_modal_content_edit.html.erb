@@ -1,0 +1,55 @@
+<%= form_with(model: @objetivo_especifico, url: objetivo_especifico_path(@objetivo_especifico), local: true, remote: true, html: { class: 'ajax-form' }) do |f| %>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h5 class="no-margin">Editar objetivo</h5>
+        </div> 
+        <div class="card-body"> 
+          <div class="table-responsive">
+            <input type="hidden" name="id_edit" id="id_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.id %>">
+            <input type="hidden" name="flujo_id_edit" id="flujo_id_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.flujo_id %>">
+            <table class="table table-striped usuarios no-margin">
+              <tr>
+                <td class="contenido-popup-form"><%= t(:descripcion) %></td>
+                <td class="contenido-popup-form">
+                  <input type="text" name="descripcion_edit" id="descripcion_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.descripcion %>">    
+                </td>
+              </tr>
+              <tr>
+                <td class="contenido-popup-form"><%= t(:metodologia) %></td>
+                <td class="contenido-popup-form">
+                  <input type="text" name="metodologia_edit" id="metodologia_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.metodologia %>"> 
+                </td>
+              </tr>
+              <tr>
+                <td class="contenido-popup-form"><%= t(:resultado) %></td>
+                <td class="contenido-popup-form">
+                  <input type="text" name="resultado_edit" id="resultado_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.resultado %>"> 
+                </td>
+              </tr>
+              <tr>
+                <td class="contenido-popup-form"><%= t(:indicadores) %></td>
+                <td class="contenido-popup-form">
+                  <input type="text" name="indicadores_edit" id="indicadores_edit" class="required-field" style="border: 1px solid #ced4da; border-radius: 0.25rem;" value="<%= @objetivo_especifico.indicadores %>"> 
+                </td>
+              </tr>
+            </table>      
+          </div>
+        </div>
+      </div> 
+    </div>
+  </div>    
+  </br>
+  <div class="modal-footer" >
+    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+    <%= f.submit t(:guardar), class: 'btn btn-primary', id: 'guardarBtn' %>
+  </div>
+  <% end %>
+
+  <script>
+  document.getElementById('guardarBtn').addEventListener('click', function(event) {
+    event.preventDefault();
+    actualizarObjetivo();
+  });
+  </script>

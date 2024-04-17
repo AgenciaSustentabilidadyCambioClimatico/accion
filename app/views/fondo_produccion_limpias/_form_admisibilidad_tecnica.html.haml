@@ -1,0 +1,412 @@
+:javascript
+  $(document).ready(function(){
+
+    //$(".disabled *:not('.fa')").prop('disabled',true);
+    //$(".disabled *:not('.fa')").off();
+
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show();
+    });
+    error_soa = '#{@manifestacion_de_interes.errors.messages[:secciones_observadas_admisibilidad_juridica].first}';
+
+    observacion_obligatoria();
+    htmlErrorToTooltip('top');
+    if(error_soa != ''){
+      showTooltipError(error_soa, $('.manifestacion_de_interes_secciones_observadas_admisibilidad_juridica'), 'top');
+    }
+    $('#manifestacion_de_interes_resultado_admisibilidad_juridica').change( function(){observacion_obligatoria()});
+
+    function observacion_obligatoria(){
+      resultado = $('#manifestacion_de_interes_resultado_admisibilidad_juridica').val()
+      if(resultado=="rechazado" || resultado=="en_observación"){
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad_juridica"] > abbr').show();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad_juridica"] > abbr').show();
+        $('#manifestacion_de_interes_observaciones_admisibilidad_juridica').addClass('required');
+        
+      }else{
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad_juridica"] > abbr').hide();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad_juridica"] > abbr').hide();
+        $('#manifestacion_de_interes_observaciones_admisibilidad_juridica').removeClass('required border-error').removeAttr('data-original-title');
+        $('.manifestacion_de_interes_secciones_observadas_admisibilidad_juridica').removeClass('border-error');
+      }
+    }
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'admisibilidad-tecnica-tab'){
+
+        if($(tab_selected).prop('id') == 'admisibilidad-tecnica-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#admisibilidad-tecnica-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#admisibilidad-tecnica-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#admisibilidad-juridica-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Acuerdo');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#admisibilidad-juridica-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Acuerdo'){
+        $('#admisibilidad-juridica-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+    
+  });
+
+  function habilitaObservacionesTecnica(nota, observacion) {
+    //alert('habilitaObservacionesTecnica');
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioTecnica();
+  }
+
+  function calcularPromedioTecnica() {
+    var notas = document.querySelectorAll('.nota-input-tecnica');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioTecnica(promedio);
+  }
+
+  function mostrarPromedioTecnica(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-tecnica');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+  }
+
+  function habilitaObservacionesTecnica2(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioTecnica2();
+  }
+
+  function calcularPromedioTecnica2() {
+    var notas = document.querySelectorAll('.nota-input-tecnica-2');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioTecnica2(promedio);
+  }
+
+  function mostrarPromedioTecnica2(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-tecnica-2');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+  }
+
+  function habilitaObservacionesTecnica3(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioTecnica3();
+  }
+
+  function calcularPromedioTecnica3() {
+    var notas = document.querySelectorAll('.nota-input-tecnica-3');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioTecnica3(promedio);
+  }
+
+  function mostrarPromedioTecnica3(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-tecnica-3');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+  }
+
+%style
+  :css
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    .table {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 1rem;
+      background-color: transparent;
+    }
+
+    .table tbody + tbody {
+      border-top: 2px solid #dee2e6;
+    }
+
+    .table .table {
+      background-color: #fff;
+    }
+
+    .table thead th {
+      font-size: 12px;
+      border-bottom: 2px solid #dee2e6;
+      border-right: 2px solid #dee2e6; 
+      border-left: 2px solid #dee2e6;
+    }
+    .encabezado-form {
+      vertical-align: middle;
+      border-bottom: 2px solid #dee2e6;
+      background-color: #E0EFF6;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .encabezado2-form {
+      text-align: center; 
+      border-bottom: 2px solid #dee2e6;
+      vertical-align: middle; 
+      background-color: #E0EFF6;
+      font-weight: bold;
+    }
+
+    .contenido1-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 50%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido2-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 20%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido3-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 30%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- titulo t(:revision_pertinencia_tecnica)
+= simple_form_for @fondo_produccion_limpia, url: admisibilidad_tecnica_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.submit "", class: 'd-none'
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "admisibilidad-tecnica-externo", class: 'active', "aria-controls" => 'admisibilidad-tecnica-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#admisibilidad-tecnica-externo", :role => "tab"}
+                  =t(:pertinencia_tecnica)
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "admisibilidad-tecnica": true }
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{class: (tab.to_s == 'admisibilidad-tecnica' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de Acuerdo
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'admisibilidad-tecnica'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            -#%span.badge.badge-danger.badge-pill 1
+
+            =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+            = f.input :update_admisibilidad_tecnica, as: :hidden, wrapper: false, input_html: { value: true }
+            = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
+              #admisibilidad-tecnica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-tecnica"])}
+                .card
+                  .card-body
+                    = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica11', id: 'nota_input_tecnica_id_1', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_1','obs_input_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form                             
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica11', id: 'nota_input_tecnica_id_2', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_2','obs_input_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form  
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica11', id: 'nota_input_tecnica_id_3', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_3','obs_input_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form         
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica11', id: 'nota_input_tecnica_id_4', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_4','obs_input_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form     
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica 
+                              %th.contenido3-form   
+                          %thead
+                            %tr
+                              %th{colspan: 3, style: 'background-color: #fff;'}
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-22', id: 'nota_input_tecnica_id_5', onchange: "habilitaObservacionesTecnica2('nota_input_tecnica_id_5','obs_input_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form 
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica-2
+                              %th.contenido3-form   
+                          %thead
+                            %tr
+                              %th{colspan: 3, style: 'background-color: #fff;'}
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-33', id: 'nota_input_tecnica_id_6', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_6','obs_input_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
+                              %th.contenido3-form 
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-33', id: 'nota_input_tecnica_id_7', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_7','obs_input_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form  
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-33', id: 'nota_input_tecnica_id_8', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_8','obs_input_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form    
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica-3
+                              %th.contenido3-form   
+    -#-if !solo_lectura
+    -#  .col-12
+    -#    .float-right
+    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+    -#      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+    -#        %i.fa.fa-arrow-circle-right
+    -#        =t(:enviar)

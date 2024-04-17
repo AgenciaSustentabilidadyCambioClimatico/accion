@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   attr_accessor :is_admin, :updated, :current, :claveunica
+  has_many :equipo_trabajos
   has_many :personas, dependent: :destroy
   has_many :contribuyentes, through: :personas
   has_many :persona_cargos, through: :personas

@@ -1,0 +1,207 @@
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
+
+    $('body').on('change','.contribuyente-radio',function() {
+      console.log('entro aca')
+      $('.seleccionar-contribuyente-button').removeAttr('disabled');
+    });
+
+    $('#buscar-contribuyente-fpl').prop('disabled', true);
+    $('#buscar-usuario-postulante-fpl').prop('disabled', true);
+    //$('#encargado-financiamiento-fpl').prop('disabled', true);
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      var encargadoFinanciamientoInput = document.getElementById('encargado-financiamiento-fpl');
+
+      // Disable the input field
+      encargadoFinanciamientoInput.disabled = true;
+    });
+
+
+  });
+
+  /*document.addEventListener('DOMContentLoaded', function() {
+    var buscarContribuyenteBtn = document.getElementById('buscar-contribuyente-fpl');
+
+    buscarContribuyenteBtn.addEventListener('click', function() {
+      // Disable the button
+      //buscarContribuyenteBtn.disabled = true;
+    });
+  });*/
+
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      $("#manifestacion_de_interes_institucion_entregables_id").val(data.id);
+      $("#manifestacion_de_interes_institucion_entregables_name").val(data.razon_social);
+
+      //cargo los usuarios de la tabla usuarios entregables
+      $.ajax({
+        url: "#{lista_usuarios_entregables_fondo_produccion_limpia_path}",
+        type: "GET",
+        data: {
+          contribuyente_id: data.id,
+          tarea_pendiente_id: #{@tarea_pendiente.id}
+        }
+      });
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
+  function guardarUsuarioEntregables(){
+    //alert('guardarUsuarioEntregables');
+
+    $('.loading-data').show();
+    $.ajax({
+      url: "#{guardar_usuario_entregables_fondo_produccion_limpias_path}",
+      data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo_id}", jsonData }),
+      contentType: "application/json",
+      method: "POST",
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+        $('.loading-data').hide();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
+      }
+    });
+  }
+
+  $(document).on('click', '.seleccionar-usuario-button', function() {
+    try {
+      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
+      //data=JSON.parse($('.contribuyente-radio:checked').val());
+      data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+      $("#manifestacion_de_interes_usuario_entregables_id").val(data.id);
+      $("#manifestacion_de_interes_usuario_entregable_name").val(data.nombre);
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+
+  function optionSelectInstitucionFinanciamiento(valor) {
+    //alert(valor);
+    var buscarContribuyenteBtn = document.getElementById('buscar-contribuyente-fpl');
+    if( valor == 1 ) {
+      /*buscarContribuyenteBtn.addEventListener('click', function() {
+        // Disable the button
+        buscarContribuyenteBtn.disabled = true;
+      });  */  
+      $('#buscar-contribuyente-fpl').prop('disabled', true);
+      $('#buscar-usuario-postulante-fpl').prop('disabled', true);
+      
+    }else{
+      /*uscarContribuyenteBtn.addEventListener('click', function() {
+        // Disable the button
+        buscarContribuyenteBtn.disabled = false;
+      });*/
+      $('#buscar-contribuyente-fpl').prop('disabled', false);
+      $('#buscar-usuario-postulante-fpl').prop('disabled', false);
+    }
+
+    //
+  }
+
+  function optionSelectInstitucionCofinanciamiento(valor) {
+    //alert(valor);
+    if( valor == 1 ) {
+      $('#encargado-financiamiento-fpl').prop('disabled', true);
+    }else{
+      $('#encargado-financiamiento-fpl').prop('disabled', false);
+    }
+  }
+  
+- solo_lectura = @solo_lectura == 'solo_lectura'
+- titulo t(:asignar_postulante_y_encargado_de_financiamiento)
+-#= simple_form_for @manifestacion_de_interes, url: usuario_entregables_fondo_produccion_limpias_path(@tarea_pendiente, @manifestacion_de_interes) do |f|
+= simple_form_for @manifestacion_de_interes, url: usuario_entregables_fondo_produccion_limpias_path(@tarea_pendiente) do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.input :update_usuario_entregables, as: :hidden, wrapper: false, input_html: { value: true }
+  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
+  .row
+    .col-12
+      .card
+        .card-header
+          -#
+            %h5.no-margin
+              %b=t(:usuario_entregables)
+          %h5.no-margin=titulo_instrumento.html_safe
+          %h5.no-margin=titulo_acuerdo.html_safe
+          %h5.no-margin=datos_beneficiario.html_safe
+        .card-body
+          .row
+            .col-12.my-2
+              .ayuda-campo-div-48.alert.ayuda-div.small.mb-1.mt-1{style: "padding: 0.5rem 0.75rem;"}
+                %i.fa.fa-info-circle{style: "margin-right: 5px"}
+                Si la institución o persona a designar no aparece en el listado, comuníquese con el Administrador de la plataforma.
+            .col-12.my-2
+              1.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que postulará a financiamiento?
+              %br  
+              Si      
+              = f.radio_button :institucion_entregables_id, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
+              No      
+              = f.radio_button :institucion_entregables_id, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }      
+          .row
+            .col-12.col-lg-6.mb-2
+              .row.align-items-end
+                .col-12
+                  %label.string.control-label
+                    %abbr{title: :required}*
+                    = t(:elegir_institucion_postulante)
+                  .row
+                    .col-12.col-lg-2.pr-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id:'buscar-contribuyente-fpl' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-10.pl-1
+                      = f.input :institucion_entregables_id, as: :hidden, wrapper: false
+                      = f.input :institucion_entregables_name, required: true, readonly: true, label: false, input_html: {class: 'required-field'}
+                .col-12
+                  %label.string.control-label
+                    %abbr{title: :required}*
+                    = t(:elegir_postulante)
+                  .row
+                    .col-12.col-lg-2.pr-1
+                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-usuario", class: 'form-control btn btn-primary btn-sm', id:'buscar-usuario-postulante-fpl' do
+                        %i.fa.fa-search-plus
+                        Buscar
+                    .col-12.col-lg-10.pl-1
+                      = f.input :usuario_entregables_id, as: :hidden, wrapper: false, label: false
+                      = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
+            .col-12.my-2
+              2.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que recibirá el cofinanciamiento?
+              %br  
+              Si      
+              = f.radio_button :usuario_entregables_id, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
+              No      
+              = f.radio_button :usuario_entregables_id, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
+            .col-12.col-lg-6.mb-2
+              -if !solo_lectura
+                = f.input :nombre_acuerdo, collection: @encargado_financiamiento.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
+              -else
+                .form-group
+                  -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
+                  -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
+                  -no_data = rev_tecnico.nil?
+                  %label.control-label.string=t(:revisor_tecnico)
+                  %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : rev_tecnico)                    
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -if !solo_lectura
+      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary ", onclick: 'guardarUsuarioEntregables(); return false;'
+
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+/ - @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: tipo_instrumento, solo_tabla: true
+= render 'admin/users/buscador', solo_tabla: true

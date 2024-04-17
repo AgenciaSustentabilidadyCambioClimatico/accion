@@ -1,0 +1,5 @@
+$('.loading-data').hide();
+$("#eliminar-usuario-<%= user %>").closest('tr').remove();
+<% if @count_equipo == 0 %>    
+    $('#opcion_1').prop('disabled', false);
+<% end %>

@@ -381,15 +381,19 @@ es:
   revisor: Revisor
   revisor_tecnico: Revisor técnico
   revisor_juridico: Revisor jurídico
+  revisor_financiero: Revisor financiero
   revisar_admisibilidad: Revisar admisibilidad técnica
   admisibilidad: Admisibilidad técnica
   resultado_admisibilidad: Resultado admisibilidad técnica
   revisar_admisibilidad_juridica: Revisar admisibilidad jurídica
   admisibilidad_juridica: Admisibilidad jurídica
+  admisibilidad_financiera: Admisibilidad financiera
+  resultado_admisibilidad_financiera: Resultado admisibilidad financiera
   resultado_admisibilidad_juridica: Resultado admisibilidad jurídica
   comentario_jefe_de_línea: Comentario jefe de línea
   observaciones_y_comentarios: Observaciones y comentarios
   observaciones_admisibilidad: Observaciones admisibilidad técnica
+  observaciones_admisibilidad_financiera: Observaciones admisibilidad financiera
   observación_admisibilidad: Observación admisibilidad técnica
   observaciones_admisibilidad_juridica: Observaciones admisibilidad jurídica
   observación_admisibilidad_juridica: Observación admisibilidad jurídica
@@ -454,6 +458,7 @@ es:
   campo_de_aplicación: Campo de aplicación
   definiciones: Definiciones
   objetivo_general: Objetivo general
+  objetivos_específicos: Objetivos específicos
   objetivo_específico: Objetivo específico
   derechos: Derechos
   obligaciones: Obligaciones
@@ -1464,6 +1469,88 @@ es:
   elegir_encargado_carga_datos: Elegir cargador de datos
   comentarios_encargado_carga_datos: Comentarios para cargador de datos
 
+  #Postulación Fondo Producción Limpia
+  postulacion_fondo_produccion_limpia: Postulación a Fondo de Producción Limpia
+  tipo_acuerdo: Tipo de Acuerdo
+  propuesta_tecnica: Propuesta Técnica
+  equipo_tabajo: Equipo de Trabajo
+  plan_actividades: Plan de Actividades
+  documentacion_legal: Documentación Legal
+  costos: Costos
+  validar_enviar: Validar y Enviar
+  linea_instrumento: Linea del instrumento
+  sub_linea_instrumento: Sublinea del instrumento
+  titulo_proyecto: Título del Proyecto
+  postular_a_fonfo_produccion_limpia: ¿Postular a Fondo Producción Limpia?
+  enviar_postulación: Enviar postulación
+  descargar_postulacion: Descargar postulación
+  descripcion: Descripción
+  metodologia: Metodología
+  resultados: Resultados
+  indicadores: Indicadores
+  empresas_beneficiarias_del_proyecto: Empresas beneficiarias del proyecto
+  n°: N°
+  nombre_empresa: Nombre de la empresa
+  rut: RUT
+  tamano_empresa: Tamaño de la empresa
+  region_establecimiento: Región del establecimiento
+  comuna_establecimiento: Comuna del establecimiento
+  confirma_edicion_objetivo: ¿Está seguro que desea guardar las modifcaciones realizadas?
+  caracterizacion_economica: A) CARACTERIZACIÓN ECONÓMICA
+  caracterizacion_ambiental_social: Caracterización ambiental y social
+  motivacion_sector: Motivación del sector en relación a estrategias de desarrollo
+  micro: Micro
+  pequena: Pequeña
+  mediana: Mediana
+  grande: Grande
+  total: Total
+  equipo_trabajo_postulante: Equipo de trabajo del postulante
+  equipo_trabajo_consultores: Equipo de trabajo de consultores
+  funciones_proyecto: Funcones en el Proyecto
+  valor_hh: Valor HH
+  copia_ci: Copia CI
+  duracion_proyecto: Seleccione la duración del proyecto en meses
+  justificacion_duracion: Justificación de duración proyecto superior a 4 meses
+  diagnostico_propuesta_apl: Diagnostico y propuesta de APL
+  duracion: Duración / Meses
+  etapa_actividades: Etapa / Actividades
+  resumen: Resumen
+  estructura_costos: Estructura de costos
+  porcentaje_costo: "% (del costo total de la propuesta)"
+  estructura_costos_partida: Estructura de costos por partida
+  aporte_beneficiario_partida: Aporte beneficiario por partida
+  aporte_fondo_partida: Aporte del fondo por partida
+  etapa_1: Etapa 1 - Coordinación y Difusión Inicial
+  sector: Sector
+  equipo_trabajo: Equipo de Trabajo
+  plan_de_actividades: Plan de Actividades
+  evaluacion_general: Evaluación general
+  envia_evaluacion_general: Envía evaluación general del proyecto
+  funciones_proyecto: Funciones en el Proyecto 
+  valor_hh_: Valor HH ($)
+  copia_cédula_identidad: Copia Cédula Identidad
+  curriculum_vitae: Curriculum Vitae
+  nombre_actividades: Nombre de la Actividad
+  recursos_humanos_propios: Recursos Humanos Propios
+  recursos_humanos_externos: Recursos Humanos Externos
+  gasto_operacion: Gasto de Operación
+  gasto_administracion: Gasto de Administración
+  nueva: Nueva
+  postulante : Postulante
+  encargado_financiamiento : Encargado Financiamiento
+  asignar_postulante_y_encargado_de_financiamiento: Asignar postulante y encargado de financiamiento
+  elegir_institucion_postulante: Elegir Institución Postulante
+  elegir_postulante: Elegir Postulante
+  receptor_cofinanciamiento : Receptor Cofinanciamiento
+  codigo_proyecto: Código Proyecto
+  selección_de_linea: Seleccion de línea
+  evaluacion_general_proyecto: Evaluación General del Proyecto 
+  revision_general_proyecto: Revisión General del Proyecto 
+  pertinencia_financiera: Pertinencia Financiera
+  pertinencia_tecnica: Pertinencia Técnica
+  revision_pertinencia_financiera: Revisión Pertinencia Financiera
+  revision_pertinencia_tecnica: Revisión Pertinencia Técnica
+
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:
@@ -2205,7 +2292,7 @@ es:
         tarea:
           attributes:
             codigo:
-              invalid: Código no es válido. (Debe tener el formato (APL-PFL-PPF)-XXX, donde equis en un número del 0 al 9)
+              invalid: Código no es válido. (Debe tener el formato (APL-PPF-FPL-PRO)-XXX, puede tener de 1 a 3 equis, donde equis en un número del 0 al 9)
             etapa_id:
               blank: Indique la etapa
             tipo_instrumento_id:
@@ -2290,6 +2377,10 @@ es:
               blank: Indique el nombre
             fecha_finalizacion:
               blank: Indique fecha de finalización
+        fondo_produccion_limpia:
+          attributes:
+            proponente:
+              blank: Indique el proponente del Acuerdo
   date:
     abbr_day_names:
     - dom

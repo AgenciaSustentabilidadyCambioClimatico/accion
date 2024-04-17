@@ -1,0 +1,41 @@
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+- tipo_equipo = tipo_equipo.nil? ? @tipo_equipo : tipo_equipo
+:javascript
+  function buscarUsuario(id) {
+    alert('entro buscador');
+    $.ajax({
+      url: '/fondo_produccion_limpias/' + id + '/buscador',
+      data: { id: id },
+      method: "GET",
+      success: function(response) {
+        $('#modal_objetivos-edit-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+.resultado-consulta-remote-block
+  - if @filtro_utilizado
+    .alert.alert-dismissible.fade.show.mb-3{class: @usuarios.size == 0 ? 'alert-danger' : 'alert-success' }
+      = "<b>Resultados:</b> #{@usuarios.size}</b> - <b>Filtro:</b> #{@filtro_utilizado}.".html_safe
+.card
+  .card-header
+    %h5.no-margin
+      = t(:buscar_, item: t(:usuario).downcase)
+  .card-body
+    %div{id: "usuarios-remote-filter"}
+      = simple_form_for :buscador, url: buscador_fondo_produccion_limpia_path, method: :get, class: 'filter', autocomplete: :off, remote: true do |f|
+        =f.hidden_field :flujo_id, value: (@flujo_id.present? ? @flujo_id : nil)
+        -#=f.hidden_field :modal_id, value: modal_id
+        =f.hidden_field :tipo_equipo, id: "tipo_equipo", value: @tipo_equipo, data: { tipo_equipo: @tipo_equipo }
+        .row
+          .col-lg-4.pr-lg-0.col-12
+            = f.input :rut, label: false, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0' }, placeholder: "R.U.T", as: :string, required: true
+          .col-12.col-lg-7
+            = f.input :nombre_completo, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0', type: :string }, label: false, placeholder: 'Nombre completo', required: true
+          .col-lg-1.col-12
+            = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled
+          %br

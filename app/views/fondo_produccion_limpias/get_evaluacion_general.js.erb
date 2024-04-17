@@ -1,0 +1,43 @@
+<% cuestionario_pert_financiera_fpl.each_with_index do |cuestionario, index| %>
+    //console.log("Valor en nota <%= index + 1 %>, <%= cuestionario.nota %>");
+    $('#nota_input_pert_general_id_<%= index + 1 %>').val('<%= cuestionario.nota %>');
+    var nota = '<%= cuestionario.nota %>'; // Asumiendo que justificacion es el nombre del atributo
+    if (nota < 5) { // Se debe comparar justificacion con un número, no con una cadena
+        //console.log("Valor en justificacion <%= index + 1 %>, <%= cuestionario.justificacion %>");
+        $('#obs_input_id_<%= index + 1 %>').css('visibility', 'visible'); // Cambiamos la visibilidad del campo
+        $('#obs_input_pert_general_id_<%= index + 1 %>').val('<%= cuestionario.justificacion %>'); // Establecemos su valor
+    }
+<% end %>
+
+<% cuestionario_pert_tecnica_fpl.each_with_index do |cuestionario, index| %>
+    console.log("Valor en nota <%= index + 1 %>, <%= cuestionario.nota %>");
+    $('#nota_input_pert_tecnica_general_id_<%= index + 1 %>').val('<%= cuestionario.nota %>');
+    var nota = '<%= cuestionario.nota %>'; // Asumiendo que justificacion es el nombre del atributo
+    if (nota < 5) { // Se debe comparar justificacion con un número, no con una cadena
+        console.log("Valor en justificacion <%= index + 1 %>, <%= cuestionario.justificacion %>");
+        $('#obs_input_pert_tecnica_general_id_<%= index + 1 %>').css('visibility', 'visible'); // Cambiamos la visibilidad del campo
+        $('#obs_input_pert_tecnica_general_id_<%= index + 1 %>').val('<%= cuestionario.justificacion %>'); // Establecemos su valor
+    }
+<% end %>
+
+<% cuestionario_pert_juridica_fpl.each_with_index do |cuestionario, index| %>
+    //console.log("Valor en nota <%= index + 1 %>, <%= cuestionario.nota %>");
+    $('#nota_input_juridica_general_id_<%= index + 1 %>').val('<%= cuestionario.nota %>');
+    var nota = '<%= cuestionario.nota %>'; // Asumiendo que justificacion es el nombre del atributo
+    if (nota == 2) { // Se debe comparar justificacion con un número, no con una cadena
+        //console.log("Valor en justificacion <%= index + 1 %>, <%= cuestionario.justificacion %>");
+        $('#obs_input_juridica_general_id_<%= index + 1 %>').css('visibility', 'visible'); // Cambiamos la visibilidad del campo
+        $('#obs_input_juridica_general_id_<%= index + 1 %>').val('<%= cuestionario.justificacion %>'); // Establecemos su valor
+    }
+<% end %>
+
+<% if @cuestionario_obs_fpl.present? %>
+    $('#nota_input_pertinencia_general').val('<%= @cuestionario_obs_fpl.nota %>');
+    $('#obs_input_pertinencia_general').val('<%= @cuestionario_obs_fpl.justificacion %>');
+<% end %>
+
+<% 
+# Calcula el promedio de las notas
+promedio = cuestionario_pert_tecnica_fpl.map(&:nota).map(&:to_f).sum / cuestionario_pert_tecnica_fpl.size
+%>
+$('#promedio-notas-pert-tecnica_general').val('<%= promedio %>'); // Carga el promedio en el campo

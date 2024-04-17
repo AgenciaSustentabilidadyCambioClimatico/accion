@@ -1,0 +1,170 @@
+:javascript
+  $(document).ready(function(){
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
+
+    //alert('entro revisor');
+    cargarRevisor();
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+
+      //alert('entro revisor 1');
+      //alert($(tab_selected).prop('id'));
+
+      $(tab_selected).prop('id')
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'asignar-revisor-tab'){
+        if($(tab_selected).prop('id') == 'asignar-revisor-externo'){
+          //alert('entro revisor 2');
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#asignar-revisor-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#asignar-revisor-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#asignar-revisor-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Acuerdo');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      //alert(tab);
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#asignar-revisor-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Acuerdo'){
+        $('#asignar-revisor-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+  });
+
+  function cargarRevisor() {
+    //alert('cargarRevisor');
+    $.ajax({
+      url: "#{get_revisor_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        console.log("Método del controlador llamado con éxito");
+        calcularPromedioFinanciera();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  $('#asignar-revisores').click(function(e){
+      alert('asignar-revisores');
+      /*$.ajax({
+        url: "#{asignar_revisor_fondo_produccion_limpia_path}",
+        data: {
+          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+        },
+        method: "PATCH",
+        success: function(response) {
+          console.log("Método del controlador llamado con éxito");
+          calcularPromedioFinanciera();
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+        }
+      });*/
+    });
+
+  function asignarRevisorButton() {
+    alert('asignar_revisor-button XXX');
+  }
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+= simple_form_for @fondo_produccion_limpia, url: asignar_revisor_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "asignar-revisor-externo", class: 'active', "aria-controls" => 'asignar-revisor-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#asignar-revisor-externo", :role => "tab"}
+                  =t('asignar_revisor')
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "asignar-revisor": true }
+          - titulo t(:asignar_revisor)
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{id: "#{tab}-tab", class: (tab.to_s == 'asignar-revisor' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de Acuerdo
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'asignar-revisor'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            -#%span.badge.badge-danger.badge-pill 1
+
+            = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
+              #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
+                .card
+                  .card-body
+                    .row
+                      .col-12.col-lg-6
+                        = f.input :codigo_proyecto, as: :text, label: t(:codigo_proyecto), input_html: {class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 0.5;'}, required: true, id: 'codigo_proyecto'
+                      .col-12.col-lg-6
+                        = f.input :revisor_tecnico_id, collection: @revisores_tecnicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id'}, label: t(:revisor_tecnico)
+                      .col-12.col-lg-6
+                        = f.input :revisor_financiero_id, collection: @revisores_financieros.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id'}, label: t(:revisor_financiero)
+                      .col-12.col-lg-6
+                        = f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id'}, label: t(:revisor_juridico)
+                      .col-12
+                        = f.input :comentario_asignar_revisor, as: :text, label: t(:comentario), input_html: {class: "required-field", id: 'comentario_asignar_revisor_fpl'}, required: true
+    -#-if !solo_lectura
+    -#  .col-12
+    -#    .float-right
+    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'asignar-revisores'
+    -#      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'asignar-revisores', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
+    -#      -#  %i.fa.fa-arrow-circle-right
+    -#      -#  = t(:save)
+    -#      -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: :asignar-revisores
