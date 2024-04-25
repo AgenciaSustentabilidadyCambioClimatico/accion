@@ -40,5 +40,8 @@ $('#objetivos_especifico_id').append($('<option>', {
     text: '<%= descripcion %>'
   }));
 <% end %>
-   
+
+var $objetivo = $('#open-modal-button');
+  $objetivo.removeClass('btn-danger').addClass('btn-primary');
+  $objetivo.attr('data-tooltip', 'false');
 $('#modal_objetivos-form').modal("hide");

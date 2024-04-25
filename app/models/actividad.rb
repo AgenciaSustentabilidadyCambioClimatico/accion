@@ -3,20 +3,20 @@ class Actividad < ApplicationRecord
 	validates :descripcion, presence: true
 
 	has_many :actividad_por_lineas
+	#belongs_to :actividad_por_linea
+	has_many :plan_actividades
 
 	def self.actividad_x_linea(flujo_id)
-		find_by_sql("
-		  SELECT actividades.id, actividades.nombre 
-		  FROM actividades
-		  INNER JOIN actividad_por_lineas ON actividad_por_lineas.actividad_id = actividades.id
-		  LEFT JOIN plan_actividades ON actividades.id = plan_actividades.actividad_id
-		  WHERE actividad_por_lineas.tipo_instrumento_id = 11 
-		  AND (
-			  (actividad_por_lineas.tipo_permiso IN (1, 3) AND plan_actividades.flujo_id = #{flujo_id})
-			  OR actividad_por_lineas.tipo_permiso = 1
-		  )
-		  GROUP BY 1,2
-		  ORDER BY actividades.id")
+		joins("INNER JOIN actividad_por_lineas ON actividad_por_lineas.actividad_id = actividades.id")
+			.left_joins(:plan_actividades)
+			.where(actividad_por_lineas: { tipo_instrumento_id: 11 })
+			.where(
+			"actividad_por_lineas.tipo_permiso IN (?) AND (plan_actividades.flujo_id = ? OR actividad_por_lineas.tipo_permiso = ?)",
+			[1, 3], flujo_id, 1
+			)
+			.group("actividades.id", "actividades.nombre")
+			.order("actividades.id")
+			.select("actividades.id", "actividades.nombre")
 	end
 	
 end

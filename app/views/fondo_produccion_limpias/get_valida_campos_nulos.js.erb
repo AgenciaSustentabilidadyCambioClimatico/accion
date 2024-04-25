@@ -1,0 +1,40 @@
+<% campos_nulos.each do |campo| %>
+  var $elemento = $('#<%= escape_javascript(campo.to_s) %>');
+  $elemento.removeClass('border-text');
+  $elemento.addClass('border-error');
+  $elemento.attr('data-tooltip', 'true');
+  $elemento.attr('data-original-title', 'Campo no puede estar vacío');
+<% end %>
+
+<% if objetivos_especificos === 0 %>
+  var $objetivo = $('#open-modal-button');
+  $objetivo.removeClass('btn-primary').addClass('btn-danger');
+  $objetivo.attr('data-tooltip', 'true');
+  $objetivo.attr('data-original-title', 'Debe tener a lo menos un registro');
+<% end %>
+
+<% if postulantes === 0 %>
+  var $postulante = $('#open-modal-button_buscar_usuario_postulante');
+  $postulante.removeClass('btn-primary').addClass('btn-danger');
+  $postulante.attr('data-tooltip', 'true');
+  $postulante.attr('data-original-title', 'Debe tener a lo menos un registro');
+<% end %>
+
+<% if equipo_empresa === 0 %>
+  var $empresa = $('#open-modal-button_buscar_contribuyente');
+  $empresa.removeClass('btn-primary').addClass('btn-danger');
+  $empresa.attr('data-tooltip', 'true');
+  $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
+<% end %>
+
+<% if equipo_consultor === 0 %>
+  var $consultor = $('#open-modal-button_buscar_usuario_consultora');
+  $consultor.removeClass('btn-primary').addClass('btn-danger');
+  $consultor.attr('data-tooltip', 'true');
+  $consultor.attr('data-original-title', 'Debe tener a lo menos un registro');
+
+  var $user = $('#open-modal-button_buscar_usuario');
+  $user.removeClass('btn-primary').removeClass('btn-danger');
+  $user.attr('data-tooltip', 'true');
+  $user.attr('data-original-title', 'Debe tener a lo menos un registro');
+<% end %>

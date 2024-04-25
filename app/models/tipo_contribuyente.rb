@@ -119,4 +119,19 @@ class TipoContribuyente < ApplicationRecord
       "No Clasificado" => 62
     }
   end
+
+  def self.tipo_contribuyente_id_postulante(flujo_id)
+    select("tipo_contribuyentes.tipo_contribuyente_id")
+      .joins("LEFT JOIN dato_anual_contribuyentes ON dato_anual_contribuyentes.tipo_contribuyente_id = tipo_contribuyentes.id")
+      .joins("LEFT JOIN fondo_produccion_limpia ON fondo_produccion_limpia.institucion_entregables_id = dato_anual_contribuyentes.contribuyente_id")
+      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id).first
+  end
+
+  def self.tipo_contribuyente_id_receptor(flujo_id)
+    select("tipo_contribuyentes.tipo_contribuyente_id")
+      .joins("LEFT JOIN dato_anual_contribuyentes ON dato_anual_contribuyentes.tipo_contribuyente_id = tipo_contribuyentes.id")
+      .joins("LEFT JOIN fondo_produccion_limpia ON fondo_produccion_limpia.institucion_receptor_cof_fpl_id = dato_anual_contribuyentes.contribuyente_id")
+      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id).first
+  end
+
 end

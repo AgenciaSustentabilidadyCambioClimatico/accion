@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240409131705) do
+ActiveRecord::Schema.define(version: 20240418193847) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -642,6 +642,7 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "tipo_descargable"
+    t.string "nombre_campo"
     t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
     t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end
@@ -934,6 +935,31 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.integer "revisor_financiero_id"
     t.integer "revisor_juridico_id"
     t.string "comentario_asignar_revisor"
+    t.string "instrumento_constitucion_estatutos_postulante"
+    t.string "certificado_vigencia_constitucion_postulante"
+    t.string "copia_instrumento_nombre_representante_postulante"
+    t.string "certificado_vigencia_copia_instrumento_postulante"
+    t.string "copia_cedula_representantes_legales_postulantes"
+    t.string "documento_coste_rol_unico_tributario_postulante"
+    t.string "antecedentes_contrato_anexo_c_postulante"
+    t.string "instrumento_constitucion_estatutos_receptor"
+    t.string "certificado_vigencia_constitucion_receptor"
+    t.string "copia_instrumento_nombre_representante_receptor"
+    t.string "certificado_vigencia_copia_instrumento_receptor"
+    t.string "copia_cedula_representantes_legales_receptor"
+    t.string "documento_coste_rol_unico_tributario_receptor"
+    t.string "declaracion_jurada_representante_legal_anexo_a_receptor"
+    t.string "declaracion_jurada_representante_legal_anexo_b_receptor"
+    t.string "instrumento_constitucion_estatutos_ejecutor"
+    t.string "certificado_vigencia_constitucion_ejecutor"
+    t.string "copia_instrumento_nombre_representante_ejecutor"
+    t.string "certificado_vigencia_copia_instrumento_ejecutor"
+    t.string "declaracion_jurada_representante_legal_anexo_a_ejecutor"
+    t.string "declaracion_jurada_representante_legal_anexo_b_ejecutor"
+    t.string "certificado_inicio_actividades_sii_ejecutor"
+    t.string "cedula_identidad_persona_ejecutor"
+    t.string "declaracion_jurada_simple_anexo_a_ejecutor"
+    t.string "declaracion_jurada_simple_anexo_b_ejecutor"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
