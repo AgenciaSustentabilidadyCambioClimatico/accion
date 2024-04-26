@@ -197,7 +197,7 @@ Rails.application.routes.draw do
   get '/get_sub_lineas_seleccionadas', to: 'fondo_produccion_limpias#get_sub_lineas_seleccionadas', as: :get_sub_lineas_seleccionadas
   post '/guardar_duracion', to: 'fondo_produccion_limpias#guardar_duracion'
   get 'buscador/:id', to: "fondo_produccion_limpias#buscador", as: :buscador_fondo_produccion_limpia
-  #get 'valida_div/:id', to: "fondo_produccion_limpias#valida_div", as: :valida_div_fondo_produccion_limpia
+  get 'get_valida_campos_nulos/:id', to: "fondo_produccion_limpias#get_valida_campos_nulos", as: :get_valida_campos_nulos_fondo_produccion_limpia
 
   get 'guardar_fondo_temporal/:id', to: "fondo_produccion_limpias#guardar_fondo_temporal", as: :guardar_fondo_temporal_fondo_produccion_limpia
 
@@ -249,6 +249,9 @@ Rails.application.routes.draw do
   get 'insert_recursos_humanos_externos/:id', to: "fondo_produccion_limpias#insert_recursos_humanos_externos", as: :insert_recursos_humanos_externos_fondo_produccion_limpia
   post 'new_plan_actividades', to: "fondo_produccion_limpias#new_plan_actividades", as: :new_plan_actividades_fondo_produccion_limpia
   #post 'insert_new_plan_actividades', to: "fondo_produccion_limpias#insert_new_plan_actividades", as: :insert_new_plan_actividades_fondo_produccion_limpia
+  
+  post 'subir_documento', to: 'fondo_produccion_limpias#subir_documento', as: :subir_documento
+  post 'subir_documento_equipo', to: 'fondo_produccion_limpias#subir_documento_equipo', as: :subir_documento_equipo
 
   #Cuestionario FPL
   post 'new_cuestionario_fpl', to: "fondo_produccion_limpias#new_cuestionario_fpl", as: :new_cuestionario_fpl_fondo_produccion_limpia

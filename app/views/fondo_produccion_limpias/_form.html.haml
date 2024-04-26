@@ -12,8 +12,7 @@
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
       var duracion = document.getElementById('duracion').value;
-      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;
-      
+      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
       //var territorios_regiones = document.getElementById('territorios_regiones').value;
       //var territorios_provincias = document.getElementById('territorios_provincias').value;
       //var territorios_comunas = document.getElementById('territorios_comunas').value;
@@ -44,7 +43,6 @@
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
 
-      
       $.ajax({
         url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
         data: {
@@ -114,20 +112,42 @@
     $('#enviar-postulacion-button').click(function(e){
       //alert('enviar-postulacion-button');
       $.ajax({
-        url: "#{enviar_postulacion_fondo_produccion_limpia_path}",
+        url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
         data: {
           flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
         },
-        method: "GET",
+       method: "GET",
         success: function(response) {
           console.log("Método del controlador llamado con éxito");
-          calcularPromedioFinanciera();
+          #alert(response.length);
+          if (response.length <= 5) {
+            console.log("No hay campos nulos, continuando con el siguiente AJAX");
+            if(confirm("¿Está seguro que desea enviar?")){
+              $.ajax({
+                url: "#{enviar_postulacion_fondo_produccion_limpia_path}",
+                data: {
+                  flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+                },
+                method: "GET",
+                success: function(response) {
+                  console.log("Método del controlador llamado con éxito");
+                  calcularPromedioFinanciera();
+                },
+                error: function(error) {
+                  console.error("Error al llamar al método del controlador", error);
+                }
+              });
+            }
+          }else{
+            alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
+          } 
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
         }
-      });
+      });  
     });
+
     $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'

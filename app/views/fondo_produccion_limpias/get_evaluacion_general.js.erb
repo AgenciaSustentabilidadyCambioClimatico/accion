@@ -36,8 +36,10 @@
     $('#obs_input_pertinencia_general').val('<%= @cuestionario_obs_fpl.justificacion %>');
 <% end %>
 
-<% 
-# Calcula el promedio de las notas
-promedio = cuestionario_pert_tecnica_fpl.map(&:nota).map(&:to_f).sum / cuestionario_pert_tecnica_fpl.size
-%>
-$('#promedio-notas-pert-tecnica_general').val('<%= promedio %>'); // Carga el promedio en el campo
+<% if @cuestionario_pert_tecnica_fpl.present? %>
+    <% 
+    # Calcula el promedio de las notas
+    promedio = cuestionario_pert_tecnica_fpl.map(&:nota).map(&:to_f).sum / cuestionario_pert_tecnica_fpl.size
+    %>
+    $('#promedio-notas-pert-tecnica_general').val('<%= promedio %>'); // Carga el promedio en el campo
+<% end %>

@@ -2280,6 +2280,147 @@
     alert(revisor_tecnico_id);
   }*/
 
+  //ESTA FUNCION FUNCIONA CORRECTAMENTE PARA GUARDAR UN ARCHIVO
+  /*function guardarArchivosEquipo(equipo_id, nombreCampo){
+      var archivoInput = document.getElementById('archivoInputEquipo_'+ equipo_id);
+      var archivo = archivoInput.files[0];
+      var formData = new FormData();
+      formData.append('archivo', archivo);
+      formData.append('equipo_id', equipo_id);
+      formData.append('nombre_campo', nombreCampo);
+
+      // Obtener el ID del flujo
+      var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
+      var flujo_id = "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}";
+
+      // Agregar el ID del flujo como parte de los datos del formulario
+      formData.append('id', Id);
+      formData.append('flujo_id', flujo_id);
+
+      fetch('/subir_documento_equipo', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al subir el archivo');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Documento subido correctamente:', data);
+        // Aquí puedes realizar alguna acción después de subir el documento, como actualizar la interfaz de usuario
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
+      });
+    }*/
+
+    function guardarArchivosEquipo(equipo_id, nombreCampo) {
+      var archivoInput = document.getElementById('archivoInput_'+ equipo_id);
+      var archivo = archivoInput.files[0];
+      var formData = new FormData();
+      formData.append('archivo', archivo);
+      formData.append('nombre_campo', nombreCampo);
+      formData.append('equipo_id', equipo_id);
+
+      // Obtener el ID del flujo
+      var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
+      var flujo_id = "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}";
+
+      // Agregar el ID del flujo como parte de los datos del formulario
+      formData.append('id', Id);
+      formData.append('flujo_id', flujo_id);
+
+      fetch('/subir_documento_equipo', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al subir el archivo');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Documentos subidos correctamente:', data);
+        // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
+      });
+    }
+
+    function guardarArchivos(event, id_doc, nombreCampo) {
+      //var archivoInput = document.getElementById('archivoInput_'+ id_doc);
+      var archivoInput = document.getElementById(nombreCampo);
+      var archivo = archivoInput.files[0];
+      var formData = new FormData();
+      formData.append('archivo', archivo);
+      formData.append('nombre_campo', nombreCampo);
+
+      // Obtener el ID del flujo
+      var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
+
+      // Agregar el ID del flujo como parte de los datos del formulario
+      formData.append('id', Id);
+
+      fetch('/subir_documento', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Error al subir el archivo');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Documentos subidos correctamente:', data);
+        // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
+      });
+    }
+
+    function actualizarContenidoDescarga(id, nombreArchivo, nombreCampo) {
+      var fila = document.getElementById(`fila_${id}`);
+      var linkDescarga = fila.querySelector('a.btn-descargar');
+      if (nombreArchivo !== "") {
+        // Si se ha cargado un archivo, actualizar el contenido del enlace de descarga
+        linkDescarga.dataset.originalTitle = nombreArchivo;
+        linkDescarga.innerHTML = `<i class="fa fa-download"></i> ${nombreArchivo}`;
+        linkDescarga.href = `/uploads/fondo_produccion_limpia/${nombreCampo}/${id}/${nombreArchivo}`;
+        linkDescarga.classList.remove('btn-disabled');
+        linkDescarga.classList.add('btn-block', 'btn-descargar', 'tooltip-block');
+        linkDescarga.setAttribute('download', ''); // Agregar el atributo 'download'
+      } else {
+        // Si no se ha cargado un archivo, restaurar el contenido predeterminado del enlace de descarga
+        linkDescarga.dataset.originalTitle = "Archivo(s) no subido(s)...";
+        linkDescarga.innerText = "";
+        linkDescarga.href = "#";
+        linkDescarga.classList.add('btn-disabled');
+      }
+    }
+
+    function guardarYActualizar(event, id, nombreCampo) {
+      guardarArchivos(event, id, nombreCampo);
+      actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo);
+    } 
+                                        
 %style
   :css
     .table-responsive {
@@ -2446,6 +2587,19 @@
 
     .texto-rojo {
       color: red;
+    }
+
+    .smaller-text {
+      font-size: 12px; /* Tamaño de letra más pequeño */
+    }
+
+    .border-text {
+      border: 1px solid #ced4da; 
+      border-radius: 0.25rem;
+    }
+
+    .mensaje-rojo {
+        color: red;
     }
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
@@ -2624,13 +2778,13 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                    = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
                   %th
-                    = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'              
+                    = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
                   %th
-                    = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                    = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
                   %th
-                    = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                    = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
                   %th#total_tecnica 
                 -else
                   %th
@@ -2691,12 +2845,12 @@
                     %label.label-estilo{ for: 'empresas_asociadas_ag' }
                       %abbr{ title: "Campo requerido" } *
                       N° Empresas Asociadas AG: 
-                    = f.text_field :empresas_asociadas_ag, class: 'valor-a-sumar-', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                    = f.text_field :empresas_asociadas_ag, class: 'border-text', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag' 
                   %th
                     %label.label-estilo{ for: 'empresas_asociadas_ag' }
                       %abbr{ title: "Campo requerido" } *
                       N° Empresas No Asociadas AG: 
-                    = f.text_field :empresas_no_asociadas_ag, class: 'valor-a-sumar-', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                    = f.text_field :empresas_no_asociadas_ag, class: 'border-text', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag'
                 -else
                   %th
                     = f.object.empresas_asociadas_ag
@@ -2749,19 +2903,24 @@
                 - if @postulantes.present?
                   - @postulantes.each do |postulante|
                     %tr
-                      %td.contenido-form= postulante.nombre_completo
-                      %td.contenido-form= postulante.rut
-                      %td.contenido-form= postulante.telefono
-                      %td.contenido-form= postulante.email
+                      %td.contenido-form= postulante.user.nombre_completo
+                      %td.contenido-form= postulante.user.rut
+                      %td.contenido-form= postulante.user.telefono
+                      %td.contenido-form= postulante.user.email
                       %td.contenido-form= postulante.profesion
                       %td.contenido-form= postulante.funciones_proyecto
                       %td.contenido-form= number_to_currency postulante.valor_hh
-                      %td.contenido-form= postulante.copia_ci
-                      %td.contenido-form= postulante.curriculum
+                      %td.contenido-form
+                        = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
+                      %td.contenido-form
+                        = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
                       - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
-                          = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
-                            %i.fa.fa-trash 
+                          - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                          - else
+                            = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
+                              %i.fa.fa-trash 
         </br>
         <h1>Equipo de Institución Ejecutora</h1>
         -#<h1>B) Equipo de Trabajo de la Consultora</h1>
@@ -2827,8 +2986,11 @@
                       %td.contenido-form=empresa.rut
                       - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
-                          = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
-                            %i.fa.fa-trash 
+                          - if equipo_consultores_existente?(empresa.contribuyente_id)
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"La empresa no puede ser eliminada ya que tiene un equipo de consultores asociados."}
+                          - else
+                            = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
+                              %i.fa.fa-trash 
         -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
           - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
@@ -2852,19 +3014,24 @@
                 - if @user_equipo.present?
                   - @user_equipo.each do |user|
                     %tr
-                      %td.contenido-form= user.nombre_completo
-                      %td.contenido-form= user.rut
-                      %td.contenido-form= user.telefono
-                      %td.contenido-form= user.email
+                      %td.contenido-form= user.user.nombre_completo
+                      %td.contenido-form= user.user.rut
+                      %td.contenido-form= user.user.telefono
+                      %td.contenido-form= user.user.email
                       %td.contenido-form= user.profesion
                       %td.contenido-form= user.funciones_proyecto
                       %td.contenido-form= number_to_currency user.valor_hh
-                      %td.contenido-form= user.copia_ci
-                      %td.contenido-form= user.curriculum
+                      %td.contenido-form
+                        = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
+                      %td.contenido-form
+                        = __descargar_archivo(user.curriculum,user.curriculum,false,false)
                       - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
-                          = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
-                            %i.fa.fa-trash 
+                          - if recurso_humano_existente?(user.id, user.flujo.id)
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                          - else
+                            = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
+                              %i.fa.fa-trash 
         </br>
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
           - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
@@ -2888,19 +3055,24 @@
                 - if @user_equipo.present?
                   - @user_equipo.each do |user|
                     %tr
-                      %td.contenido-form= user.nombre_completo
-                      %td.contenido-form= user.rut
-                      %td.contenido-form= user.telefono
-                      %td.contenido-form= user.email
+                      %td.contenido-form= user.user.nombre_completo
+                      %td.contenido-form= user.user.rut
+                      %td.contenido-form= user.user.telefono
+                      %td.contenido-form= user.user.email
                       %td.contenido-form= user.profesion
                       %td.contenido-form= user.funciones_proyecto
                       %td.contenido-form= number_to_currency user.valor_hh
-                      %td.contenido-form= user.copia_ci
-                      %td.contenido-form= user.curriculum
+                      %td.contenido-form
+                        = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
+                      %td.contenido-form
+                        = __descargar_archivo(user.curriculum,user.curriculum,false,false)
                       - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
-                          = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
-                            %i.fa.fa-trash 
+                          - if recurso_humano_existente?(user.id, user.flujo.id)
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                          - else
+                            = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
+                              %i.fa.fa-trash 
         </br>
         %div.table-responsive       
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3016,17 +3188,20 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                -# %th{style: 'width: 25%;'} Detalles
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Formato
-                %th.encabezado-form{style: 'width: 25%;'} Subir Documento
+                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_postulante.each do |descargable|
-                  %tr
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
-                    -# %td{style: 'border-right: 1px solid #999;'}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= __mostrar_descargable_simple_2(@tarea, "#{descargable.codigo}", "")
                     %td.contenido-form
-                      = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: false
+                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                      -#
+                        = __upload_status(f.object,descargable.nombre_campo)
+                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura    
+                      %td.contenido-form
+                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br              
         <h1>B) Receptor cofinanciamiento </h1>              
         %div.table-responsive
@@ -3034,17 +3209,20 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                -# %th{style: 'width: 25%;'} Detalles
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Formato
-                %th.encabezado-form{style: 'width: 25%;'} Subir Documento
+                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_receptor.each do |descargable|
-                  %tr
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
-                    -# %td{style: 'border-right: 1px solid #999;'}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= __mostrar_descargable_simple_2(@tarea, "#{descargable.codigo}", "")
                     %td.contenido-form
-                      = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: false
+                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                      -#
+                        = __upload_status(f.object,descargable.nombre_campo)
+                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                      %td.contenido-form
+                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
         <h1>C) Ejecutor </h1>              
         %div.table-responsive
@@ -3052,17 +3230,21 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                -# %th{style: 'width: 25%;'} Detalles
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Formato
-                %th.encabezado-form{style: 'width: 25%;'} Subir Documento
+                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_ejecutor.each do |descargable|
-                  %tr
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
-                    -# %td{style: 'border-right: 1px solid #999;'}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= __mostrar_descargable_simple_2(@tarea, "#{descargable.codigo}", "")
                     %td.contenido-form
-                      = f.input :archivo_pertinencia_factibilidad, as: :file, input_html: {class: "form-control"}, label: false
+                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                      -#
+                        = __upload_status(f.object,descargable.nombre_campo)
+                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura                    
+                      %td.contenido-form
+                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+
   #costos.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"costos"] ? 'true' : 'false'), "aria-labelledby" => "costos-tab", :role => "tabpanel", class: ("show active" if tabs[:"costos"])}
     .card
       .card-body
@@ -5050,11 +5232,14 @@
     var nombre_completo = $('#user_nombre_completo').val() != "";
     var email = $('#user_email').val() != "";
     var telefono = $('#user_telefono').val() != "";
-    //alert(rut);
-    //alert(nombre_completo);
-    //alert(email);
-    //alert(telefono);
-    if(rut && nombre_completo && email && telefono){
+
+    var profesión = document.getElementById('profesión');
+    var funciones_proyecto = document.getElementById('funciones_proyecto');
+    var valor_hh = document.getElementById('valor_hh');
+    var copia_ci = document.getElementById('copia_ci');
+    var curriculum_vitae = document.getElementById('curriculum_vitae');
+
+    if(rut && nombre_completo && email && telefono && profesión && funciones_proyecto && valor_hh && copia_ci && curriculum_vitae){
       $('.guarda-usuario-fpl-button').removeAttr("disabled");
     }else{
       $('.guarda-usuario-fpl-button').attr("disabled", true);
@@ -5065,17 +5250,42 @@
     nuevo_equipo_trabajo_fpl_validaciones();
   });
 
-  function nuevo_equipo_trabajo_fpl_validaciones(){
-    $('.guarda-equipo-fpl-button').removeAttr("disabled");
-    /*var rut = $('#user_rut').val() != "";
+  function nuevo_equipo_trabajo_fpl_validaciones() {
+    var rut = $('#user_rut').val() != "";
     var nombre_completo = $('#user_nombre_completo').val() != "";
     var email = $('#user_email').val() != "";
     var telefono = $('#user_telefono').val() != "";
-    if(rut && nombre_completo && email && telefono){
+
+    var profesión = $('#profesión').val() != "";
+    var funciones_proyecto = $('#funciones_proyecto').val() != "";
+    var valor_hh = $('#valor_hh').val() != "";
+
+    var archivoInput = document.getElementById('copia_ci');
+    var archivo = archivoInput.files[0];
+    var copia_ci = '';
+    if (archivo) {
+      copia_ci = archivo.name;
+    }
+
+    var archivoInput1 = document.getElementById('curriculum');
+    var archivo1 = archivoInput1.files[0];
+    var curriculum_vitae = '';
+    if (archivo1) {
+      curriculum_vitae = archivo1.name;
+    }
+
+    if (rut && nombre_completo  && email  && telefono  && profesión   && funciones_proyecto  && valor_hh && copia_ci && curriculum_vitae) {
       $('.guarda-equipo-fpl-button').removeAttr("disabled");
     }else{
       $('.guarda-equipo-fpl-button').attr("disabled", true);
-    }*/
+    }
+  }
+
+  function guardarArchivosEquipo2() {
+    var archivoInput = document.getElementById('copia_ci');
+    var archivo = archivoInput.files[0];
+    var nombreArchivo = archivo.name;
+    //alert(nombreArchivo);
   }
 
   $('body').on('change','.contribuyente-radio',function() {
