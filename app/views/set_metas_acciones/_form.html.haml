@@ -3,6 +3,10 @@
 - comite_propuestas = (@manifestacion_de_interes.accion_en_set_metas_accion == :comite)
 :javascript
   $(document).ready(function() {
+   $('.edit_set_metas_accion').on( "submit", function( event ) {
+      $('#set-metas-accion-remote-modal-form').fadeOut()
+      event.preventDefault();
+    });
     var acciones_descritas = #{raw json_escape Accion.descritas.to_json}
     var materia_sustancia_descritas = #{raw json_escape MateriaSustancia.descritas.to_json}
     var metas_descritas = #{raw json_escape Clasificacion.descritas(true).to_json}
@@ -251,4 +255,3 @@
       = link_to t(:back), cargar_actualizar_entregable_diagnostico_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-warning'
     - else
       = link_to t(:back), tarea_pendiente_manifestacion_de_interes_set_metas_acciones_path(@tarea_pendiente,@manifestacion_de_interes), class: 'btn btn-sm btn-warning'
-
