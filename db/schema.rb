@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240418193847) do
+ActiveRecord::Schema.define(version: 20240507202352) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -962,6 +962,21 @@ ActiveRecord::Schema.define(version: 20240418193847) do
     t.string "cedula_identidad_persona_ejecutor"
     t.string "declaracion_jurada_simple_anexo_a_ejecutor"
     t.string "declaracion_jurada_simple_anexo_b_ejecutor"
+    t.integer "flujo_apl_id"
+    t.integer "institucion_receptor_cof_fpl_id"
+    t.integer "cantidad_micro_empresa"
+    t.integer "cantidad_pequeña_empresa"
+    t.integer "cantidad_mediana_empresa"
+    t.integer "cantidad_grande_empresa"
+    t.integer "empresas_asociadas_ag"
+    t.integer "empresas_no_asociadas_ag"
+    t.integer "duracion"
+    t.string "fortalezas_consultores"
+    t.string "codigo_proyecto"
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.integer "revisor_juridico_id"
+    t.string "comentario_asignar_revisor"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
