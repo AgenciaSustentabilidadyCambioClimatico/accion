@@ -438,7 +438,7 @@
 
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:revision_general_proyecto)
-= simple_form_for @fondo_produccion_limpia, url: admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @fondo_produccion_limpia, url: enviar_evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.hidden_field :temp_siguientes, as: :boolean, value: true
   = f.hidden_field :update_admisibilidad, as: :boolean, value: true
@@ -449,7 +449,9 @@
         .card-header.p-0
           .p-3
             %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_instrumento.html_safe
             %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=titulo_apl.html_safe
             %h5.no-margin=datos_beneficiario_fpl.html_safe
           #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs{:role => "tablist"}

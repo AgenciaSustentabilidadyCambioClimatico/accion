@@ -129,8 +129,12 @@ module ApplicationHelper
     @tipo_instrumento.present? ? "<b>#{TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA}</b> <br>" : ""
   end
 
+  def titulo_apl
+    @manifestacion_de_interes.present? ? "<b>APL: </b> #{@manifestacion_de_interes.flujo.nombre_instrumento} <br>" : ""
+  end
+
   def titulo_proyecto_fpl
-    @manifestacion_de_interes.present? ? "<b>Proyecto: </b> #{@manifestacion_de_interes.flujo.nombre_instrumento} <br>" : ""
+    @manifestacion_de_interes.present? ? "<b>Proyecto: </b> #{@fondo_produccion_limpia.codigo_proyecto} <br>" : ""
   end
 
   def datos_beneficiario_fpl

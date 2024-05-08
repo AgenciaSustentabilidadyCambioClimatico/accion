@@ -30,6 +30,8 @@ class TipoInstrumento < ApplicationRecord
   FPL_LINEA_4                             = [17]
   STR_FPL_LINEA_4                         = "Línea 4 - Difusión Beneficios APL y Producción Limpia"
   FPL_LINEA_5_1                           = 22
+  L1                                      = "L1"
+  L5                                      = "L5"
 
   def self.por_padre(key=:name,object=false,include_parent=true,by_type=nil)
     tipo_instrumento = TipoInstrumento.includes([:tipo])

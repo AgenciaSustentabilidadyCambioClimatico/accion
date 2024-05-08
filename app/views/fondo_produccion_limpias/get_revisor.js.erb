@@ -1,42 +1,10 @@
-//$('#open-modal-button').css('visibility', 'hidden');
-//$('#enviar_revisor').css('visibility', 'hidden');
-//$('#open-modal-button_buscar_usuario_postulante').css('visibility', 'hidden');
-//$('#open-modal-button_buscar_contribuyente').css('visibility', 'hidden');
-//$('#open-modal-button_buscar_usuario_consultora').css('visibility', 'hidden');
-//$('#agregar_plan_actividades').css('visibility', 'hidden');
-
-//$('#agregar_rr_pp').css('visibility', 'hidden');
-//$('#agregar_rr_ex').css('visibility', 'hidden');
-//$('#agregar_gas_ope').css('visibility', 'hidden');
-//$('#agregar_gas_adm').css('visibility', 'hidden');
-
-console.log("codigo_proyecto: '<%= @codigo_proyecto %>'");
-
-//$('#codigo_proyecto').val('<%= @codigo_proyecto %>');
-//$('#codigo_proyecto').val('<%= j @codigo_proyecto %>');
+//console.log("codigo_proyecto: '<%= @codigo_proyecto %>'");
+$('#codigo_proyecto').val('<%= @codigo_proyecto %>');
 
 // Mostrar el div con el ID "div_equipo_consultora_empresa"
 $('#div_equipo_consultora_empresa').css('display', 'block');
 
 <% objetivo_especificos.each do |objetivo_especifico| %>
-    //console.log("objetivo_especifico: '#editar-objetivo-especifico-<%= objetivo_especifico.id %>'");
-    //console.log("objetivo_especifico: '<%= objetivo_especifico.id %>'");
     $('#editar-objetivo-especifico-<%= objetivo_especifico.id %>').css('visibility', 'hidden');
     $('#eliminar-objetivo-especifico-<%= objetivo_especifico.id %>').css('visibility', 'hidden');
 <% end %>
-
-/*<% postulantes.each do |postulante| %>
-    $('#eliminar-postulante-<%= postulante.id %>').css('visibility', 'hidden');
-<% end %>
-
-<% consultores.each do |consultor| %>
-    $('#eliminar-usuario_empresa-<%= consultor.id %>').css('visibility', 'hidden');
-<% end %>
-
-<% empresas.each do |empresa| %>
-    $('#eliminar-empresa-<%= empresa.id %>').css('visibility', 'hidden');
-<% end %>
-
-<% actividades.each do |actividad| %>
-    $('#crear_plan_actividad_<%= actividad.id %>').css('visibility', 'hidden');
-<% end %>*/
