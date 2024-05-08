@@ -233,12 +233,12 @@ document.getElementById('total_gastos_tipo_2_<%= @total_gastos_tipo_2.actividad_
   //Cofinanciamiento CPL
   document.getElementById('valida_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency @costos['aporte_solicitado_al_fondo'] %>';
   <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency(Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO) %>';
+    document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)) %>';
   <% else %>
     document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
   <% end %>
   
-  <% if @costos['aporte_solicitado_al_fondo'] <= Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO && ['@costos.costo_total_de_la_propuesta'] != '' %>
+  <% if @costos['aporte_solicitado_al_fondo'] <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && ['@costos.costo_total_de_la_propuesta'] != '' %>
     document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'SI';
   <% else %>
     document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';

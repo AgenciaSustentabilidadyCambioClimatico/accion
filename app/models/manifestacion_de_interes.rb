@@ -77,7 +77,7 @@ class ManifestacionDeInteres < ApplicationRecord
                               :solicita_condiciones_y_contiene_observaciones,:no_aceptada], _prefix: :resultado_pertinencia
   enum respuesta_resultado_pertinencia: [:aceptada, :solicita_condiciones_o_información, :no_aceptada], _prefix: :respuesta_resultado_pertinencia
 
-  attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia
+  attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia, :tipo_linea_seleccionada
   attr_accessor :accion_en_mapa_de_actores, :mapa_de_actores_correctamente_construido, :actores_con_observaciones
   attr_accessor :accion_en_documento_diagnostico, :aprueba_documentos_diagnostico, :documentos_diagnostico_con_observaciones
   attr_accessor :accion_en_set_metas_accion, :aprueba_set_metas_accion, :propuestas_con_observaciones
@@ -237,6 +237,7 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :encargado_hitos_prensa_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
   validates :resultado_pertinencia, presence: true, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
   validates :fondo_produccion_limpia, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_linea_seleccionada, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
 
   #apl-006
   validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}

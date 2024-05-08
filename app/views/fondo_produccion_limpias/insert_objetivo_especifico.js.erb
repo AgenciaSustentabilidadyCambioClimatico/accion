@@ -5,12 +5,12 @@ var resultado = '<%= @objetivo_especifico.resultado %>';
 var indicadores = '<%= @objetivo_especifico.indicadores %>';
 var tarea_pendiente_id =  '<%= tarea_pendiente %>';
 
-console.log("objetivo_id " + objetivo_id);
-console.log("descripcion " + descripcion);
-console.log("metodologia " + metodologia);
-console.log("resultado " + resultado);
-console.log("indicadores " + indicadores);
-console.log("tarea_pendiente_id " + tarea_pendiente_id);
+//console.log("objetivo_id " + objetivo_id);
+//console.log("descripcion " + descripcion);
+//console.log("metodologia " + metodologia);
+//console.log("resultado " + resultado);
+//console.log("indicadores " + indicadores);
+//console.log("tarea_pendiente_id " + tarea_pendiente_id);
 
 var newRow = "<tr>" +
 "<td class='contenido-form' id='objetivo_descripcion_<%= @objetivo_especifico.id %>'>" + descripcion + "</td>" +
@@ -41,7 +41,8 @@ $('#objetivos_especifico_id').append($('<option>', {
   }));
 <% end %>
 
-var $objetivo = $('#open-modal-button');
-  $objetivo.removeClass('btn-danger').addClass('btn-primary');
-  $objetivo.attr('data-tooltip', 'false');
 $('#modal_objetivos-form').modal("hide");
+
+var $objetivo = $('#open-modal-button');
+$objetivo.removeClass('btn-danger').addClass('btn-primary');
+$objetivo.attr('data-tooltip', 'false');

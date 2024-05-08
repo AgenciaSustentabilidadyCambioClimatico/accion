@@ -2,14 +2,14 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
-    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento]
+    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -98,18 +98,37 @@ class FondoProduccionLimpiasController < ApplicationController
      
       #binding.pry
     
-      # Crear un arreglo para almacenar los campos nulos
+      # Crear un arreglo para almacenar los campos nulos y los campos completos
+      campos_completos = []
       campos_nulos = []
-    
-      # Verificar si los campos están nulos y agregarlos al arreglo
+
+      # Verificar si los campos están nulos y agregarlos a los arreglos correspondientes
+      campos_completos << :cantidad_micro_empresa if @fondo_produccion_limpia.cantidad_micro_empresa.present?
       campos_nulos << :cantidad_micro_empresa if @fondo_produccion_limpia.cantidad_micro_empresa.nil?
+
+      campos_completos << :cantidad_pequeña_empresa if @fondo_produccion_limpia.cantidad_pequeña_empresa.present?
       campos_nulos << :cantidad_pequeña_empresa if @fondo_produccion_limpia.cantidad_pequeña_empresa.nil?
+
+      campos_completos << :cantidad_mediana_empresa if @fondo_produccion_limpia.cantidad_mediana_empresa.present?
       campos_nulos << :cantidad_mediana_empresa if @fondo_produccion_limpia.cantidad_mediana_empresa.nil?
+
+      campos_completos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.present?
       campos_nulos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
+
+      campos_completos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.present?
       campos_nulos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
+
+      campos_completos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.present?
       campos_nulos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
+
+      campos_completos << :duracion if @fondo_produccion_limpia.duracion.present?
       campos_nulos << :duracion if @fondo_produccion_limpia.duracion.nil?
-      campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.nil?
+
+      campos_completos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.present?
+      campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
+
+
+    
 
       #binding.pry
       # Verificar si los campos están nulos y agregarlos al arreglo
@@ -117,25 +136,44 @@ class FondoProduccionLimpiasController < ApplicationController
       
       @descargables_postulante.each do |descargable|
         campo = descargable.nombre_campo.to_sym
-        #binding.pry
         campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
       end
 
       @descargables_receptor.each do |descargable|
         campo = descargable.nombre_campo.to_sym
-        #binding.pry
         campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present? 
       end
 
       @descargables_ejecutor.each do |descargable|
         campo = descargable.nombre_campo.to_sym
-        #binding.pry
         campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
       end
 
       set_objetivos_especificos
       set_equipo_trabajo
+      set_actividades_x_linea
+      @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
      
+      #consulta si el numero de plan es igual al numero de actividades
+      plan = nil
+      if @count_plan_actividades != @actividad_x_linea.length
+        
+        #SE DEBE DESCOMENTAR AL TERMINAR LAS PRUEBAS
+        #plan = 0
+        #campos_nulos << plan
+      end  
+
+      comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
+      if comuna_flujo == 0
+        campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
+      else
+        campos_completos << "manifestacion_de_interes_comunas_ids".to_sym
+      end
+
+
       #binding.pry
       #@total_de_errores_por_tab = {}
       #@total_de_errores_por_tab[:"propuesta-tecnica"] = 2#@actores_con_observaciones.uniq if !@actores_con_observaciones.blank?
@@ -145,7 +183,7 @@ class FondoProduccionLimpiasController < ApplicationController
     
       #binding.pry
       respond_to do |format|
-        format.js { render 'get_valida_campos_nulos', locals: { campos_nulos: campos_nulos, objetivos_especificos: @objetivos.count, equipo_consultor: @user_equipo.count, postulantes: @postulantes.count, equipo_empresa: @count_empresa_equipo  } }
+        format.js { render 'get_valida_campos_nulos', locals: { campos_nulos: campos_nulos, campos_completos: campos_completos, objetivos_especificos: @objetivos.count, equipo_consultor: @user_equipo.count, postulantes: @postulantes.count, equipo_empresa: @count_empresa_equipo, plan: plan, actividad_x_linea: @actividad_x_linea } }
       end
     end
     
@@ -221,10 +259,12 @@ class FondoProduccionLimpiasController < ApplicationController
           postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
         end  
 
-        if params[:manifestacion_de_interes][:nombre_acuerdo] == ""
+        #if params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento] == ""
+        if params[:manifestacion_de_interes][:proponente] == ""
           institucion_receptora = contribuyente.id
         else
-          institucion_receptora = params[:manifestacion_de_interes][:nombre_acuerdo]
+          #institucion_receptora = params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento]
+          institucion_receptora = params[:manifestacion_de_interes][:proponente]
         end  
 
         custom_params = {
@@ -441,6 +481,25 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     helper_method :objetivo_especifico_existente?
+
+    def tope_maximo_solicitar_diagnostico(flujo_id)
+      flujo = Flujo.find_by(id: flujo_id)
+      if flujo
+        case flujo.tipo_instrumento_id
+        when 11
+          Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO
+        when 22
+          Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO_L5
+        else
+          nil
+        end
+      else
+        nil
+      end
+    end
+    
+    helper_method :tope_maximo_solicitar_diagnostico
+    
   
     def buscador
       rut = buscador_params[:rut]
@@ -843,10 +902,14 @@ class FondoProduccionLimpiasController < ApplicationController
       @plan_actividades = PlanActividad.includes(:actividad).find_by(flujo_id: @tarea_pendiente.flujo_id, actividad_id: params['plan_id'])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
       arreglo = []
+      @existe_plan = nil
+      
+      #binding.pry
       if @plan_actividades.nil?
         @actividad = Actividad.find_by(id: params['plan_id'])
         @nombre_actividad = @actividad.nombre if @actividad&.present?  
         @objetivos_especifico_id = nil
+        @existe_plan = 0
   
         maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
@@ -864,7 +927,7 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
-      
+        @existe_plan = 1
         maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
@@ -907,7 +970,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #binding.pry
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan } } 
       end
     end
     
@@ -1162,7 +1225,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
         @duracion = newRowDuracion
         respond_to do |format|
-          format.js { render 'new_plan_actividades', locals: { duracion: @duracion } }
+          format.js { render 'new_plan_actividades', locals: { duracion: @duracion, plan_id: params['plan_id'] } }
         end
       else
         #binding.pry
@@ -1215,18 +1278,19 @@ class FondoProduccionLimpiasController < ApplicationController
         @plan_actividades.save
 
         #binding.pry
+
+        @solo_lectura = false
                                                    
         @duracion_x = params['duracion'].join(',')
         #puts "@duracion: #{@duracion.inspect}"
         #binding.pry
         respond_to do |format|
-          format.js { render 'insert_plan_y_actividad' }
+          format.js { render 'insert_plan_y_actividad', solo_lectura: @solo_lectura}
         end
       end
     end 
     
     def guardar_fondo_temporal
-      #binding.pry
       custom_params = {
           fondo_produccion_limpia: {
             cantidad_micro_empresa: params[:cantidad_micro_empresa],
@@ -1239,50 +1303,42 @@ class FondoProduccionLimpiasController < ApplicationController
             fortalezas_consultores: params[:fortalezas_consultores]
           }
         }
-        
-        #territorios_regiones: params[:territorios_regiones],
-        #territorios_provincias: params[:territorios_provincias],
-        #territorios_comunas: params[:territorios_comunas]
         @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-
         set_flujo
-
-        params[:comunasIds].each do |comuna_id|
-          # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
-          if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
-            puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
-          else
-            # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
-            comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
-        
-            # Intentar guardar el objeto ComunaFlujo en la base de datos
-            if comuna_flujo.save
-              # Operación exitosa, puedes hacer algo si es necesario
+        if params[:comunasIds].present? && params[:comunasIds].any?
+          params[:comunasIds].each do |comuna_id|
+            # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
+            if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
+              puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
             else
-              # Si hay algún error al guardar el objeto, puedes manejarlo aquí
-              puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+              # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
+              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+          
+              # Intentar guardar el objeto ComunaFlujo en la base de datos
+              if comuna_flujo.save
+                # Operación exitosa, puedes hacer algo si es necesario
+              else
+                # Si hay algún error al guardar el objeto, puedes manejarlo aquí
+                puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+              end
             end
-          end
-        end    
+          end   
+        else
+          puts "No se selecciono ninguna comuna"
+        end 
     end
 
-
     def subir_documento
-      #binding.pry
       nombre_campo = params[:nombre_campo]
       @campo = nombre_campo
-      archivo = params[:archivo]  # Cambio aquí, usando el nombre dinámico del campo
+      archivo = params[:archivo]
 
-      #binding.pry
       custom_params = {
         fondo_produccion_limpia: {
           nombre_campo => archivo
         } 
-      }
-    
+      }   
       @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-      
-      #binding.pry
       respond_to do |format|
         format.js { render 'subir_documento', locals: { campo: @campo } }
       end
@@ -1290,7 +1346,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def enviar_postulacion
       #binding.pry
-
       respond_to do |format|
         #SE CREA FPL-02 Y SE LE ENVIA A TODOS LOS JEFES DE LINEA
         jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
@@ -1358,13 +1413,25 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
       @solo_lectura = true
       @revisor = true
+
+      year = Date.today.year.to_s
+      correlativo = Correlativo.obtener_correlativo 
+      linea = ''
+      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1
+        linea = TipoInstrumento::L1
+      else
+        linea = TipoInstrumento::L5
+      end
+
+      #Se concatenan las variables para formar el codigo del proyecto
+      @codigo_proyecto = linea + "-" + correlativo + "/" + year
       
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
       @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
       @consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
       @empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
       @actividades = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
-
+      
       respond_to do |format|
         format.js { render 'get_revisor', locals: { objetivo_especificos: @objetivo_especificos, postulantes: @postulantes, consultores: @consultores, empresas: @empresas, actividades: @actividades, codigo_proyecto: @codigo_proyecto} }
       end
@@ -1373,6 +1440,7 @@ class FondoProduccionLimpiasController < ApplicationController
     def asignar_revisor #TAREA FPL-02
       #binding.pry
       @revisor = true
+      
       respond_to do |format|
         custom_params = {
           fondo_produccion_limpia: {
@@ -2218,7 +2286,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
 
       @admisibilidad = true
-      @solo_lectura = true
+      @solo_lectura = false
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2335,7 +2403,7 @@ class FondoProduccionLimpiasController < ApplicationController
     def observaciones_admisibilidad_tecnica #TAREA FPL-04
       #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
-      @solo_lectura = true
+      @solo_lectura = false
       #Carga tabs de postulación
       set_equipo_trabajo
       set_actividades_x_linea
@@ -2548,8 +2616,34 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
     end
 
+    def enviar_evaluacion_general
+      #binding.pry
+      #Aprobado
+      #if params[:nota_input_pertinencia] == '1'
+        #cambiar de estado 2 el FPL-10
+          
+      #else #Con Observaciones o Rechazado
+        #devolver a FPL-07, FPL-08, FPL-09
 
-  
+      #end  
+
+      #SE CAMBIA EL ESTADO DEL FPL-09 A 2
+      tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+      
+      tarea_pendiente_fpl_10 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_10.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      if tarea_pendiente_fpl_10.present?
+        tarea_pendiente_fpl_10.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+        tarea_pendiente_fpl_10.save  
+      end
+
+      respond_to do |format|
+        format.js { flash.now[:success] = 'Evaluación General enviada correctamente'
+          render js: "window.location='#{root_path}'"}
+        format.html { redirect_to root_path, flash: {notice: 'Evaluación General enviada correctamente' }}
+      end
+
+    end
+
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
       tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id

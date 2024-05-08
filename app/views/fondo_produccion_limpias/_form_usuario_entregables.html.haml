@@ -20,7 +20,7 @@
       var encargadoFinanciamientoInput = document.getElementById('encargado-financiamiento-fpl');
 
       // Disable the input field
-      encargadoFinanciamientoInput.disabled = true;
+      //encargadoFinanciamientoInput.disabled = true;
     });
 
 
@@ -135,9 +135,11 @@
           -#
             %h5.no-margin
               %b=t(:usuario_entregables)
+          %h5.no-margin=titulo_instrumento_fpl.html_safe
           %h5.no-margin=titulo_instrumento.html_safe
-          %h5.no-margin=titulo_acuerdo.html_safe
-          %h5.no-margin=datos_beneficiario.html_safe
+          %h5.no-margin=titulo_proyecto_fpl.html_safe
+          %h5.no-margin=titulo_apl.html_safe
+          %h5.no-margin=datos_beneficiario_fpl.html_safe
         .card-body
           .row
             .col-12.my-2
@@ -148,9 +150,11 @@
               1.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que postulará a financiamiento?
               %br  
               Si      
-              = f.radio_button :institucion_entregables_id, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
+              -#= f.radio_button :seleccion_financiamiento, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
+              = f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
               No      
-              = f.radio_button :institucion_entregables_id, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }      
+              -#= f.radio_button :seleccion_financiamiento, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }      
+              = f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }  
           .row
             .col-12.col-lg-6.mb-2
               .row.align-items-end
@@ -176,18 +180,21 @@
                         %i.fa.fa-search-plus
                         Buscar
                     .col-12.col-lg-10.pl-1
-                      = f.input :usuario_entregables_id, as: :hidden, wrapper: false, label: false
+                      = f.input :usuario_entregables_id, as: :hidden, wrapper: false
                       = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
             .col-12.my-2
               2.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que recibirá el cofinanciamiento?
               %br  
               Si      
-              = f.radio_button :usuario_entregables_id, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
+              -#= f.radio_button :seleccion_cofinanciamiento, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
+              = f.radio_button :proponente, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
               No      
-              = f.radio_button :usuario_entregables_id, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
+              -#= f.radio_button :seleccion_cofinanciamiento, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
+              = f.radio_button :proponente, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
             .col-12.col-lg-6.mb-2
               -if !solo_lectura
-                = f.input :nombre_acuerdo, collection: @encargado_financiamiento.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
+                -#= f.input :institucion_receptor_cofinanciamiento, collection: @contribuyentes.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
+                = f.input :proponente, collection: @contribuyentes.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
               -else
                 .form-group
                   -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first

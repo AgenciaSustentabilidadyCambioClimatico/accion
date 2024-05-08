@@ -986,7 +986,7 @@
       return;
     }
     
-    if (plan_id != "") {
+    if (plan_id != 0) {
       //alert('entro insert');
       $.ajax({
         url: "#{insert_plan_actividades_fondo_produccion_limpia_path}",
@@ -1299,6 +1299,7 @@
      $.ajax({
       url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
       data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
+              plan_id: 0, 
               opcion: 'create'},
       method: "POST",
       success: function(response) {
@@ -1360,7 +1361,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -1413,13 +1413,115 @@
       }
     };
 
+    var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (nota_input_id_1 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 1.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_1 < 5) {
+        if (obs_input_id_1 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 1.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_2 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 2.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_2 < 5) {
+        if (obs_input_id_2 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 2.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_3 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 3.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_3 < 5) {
+        if (obs_input_id_3 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 3.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_4 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 4.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_4 < 5) {
+        if (obs_input_id_4 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 4.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_5 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 5.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_5 < 5) {
+        if (obs_input_id_5 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 5.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
     $.ajax({
       url: "#{enviar_admisibilidad_financiera_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -1499,7 +1601,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -1571,13 +1672,175 @@
       }
     };
 
+    var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (nota_input_id_1 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 1.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_1 < 5) {
+        if (obs_input_id_1 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 1.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_2 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 2.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_2 < 5) {
+        if (obs_input_id_2 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 2.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_3 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 3.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_3 < 5) {
+        if (obs_input_id_3 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 3.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_4 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 4.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_4 < 5) {
+        if (obs_input_id_4 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 4.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_5 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 5.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_5 < 5) {
+        if (obs_input_id_5 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 5.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_6 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 6.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_6 < 5) {
+        if (obs_input_id_6 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 6.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_7 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 7.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_7 < 5) {
+        if (obs_input_id_7 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 7.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_8 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona una nota a la pregunta 8.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_8 < 5) {
+        if (obs_input_id_8 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una justificación a la pregunta 8.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
     $.ajax({
       url: "#{enviar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -1657,7 +1920,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
@@ -1731,6 +1993,169 @@
       }
     };
 
+    var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (nota_input_id_1 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 1.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_1 == "2") {
+        if (obs_input_id_1 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 1.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_2 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 2.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_2 == "2") {
+        if (obs_input_id_2 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 2.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_3 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 3.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_3 == "2") {
+        if (obs_input_id_3 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 3.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_4 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 4.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_4 == "2") {
+        if (obs_input_id_4 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 4.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_5 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 5.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_5 == "2") {
+        if (obs_input_id_5 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 5.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_6 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 6.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_6 == "2") {
+        if (obs_input_id_6 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 6.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_7 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 7.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_7 == "2") {
+        if (obs_input_id_7 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 7.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
+    if (nota_input_id_8 == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, selecciona respuesta a la pregunta 8.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }else{
+      if (nota_input_id_8 == "2") {
+        if (obs_input_id_8 == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación a la pregunta 8.');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+      }
+    }
+
     $('.loading-data').show();
     $.ajax({
       url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
@@ -1738,7 +2163,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
@@ -1760,7 +2184,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
@@ -1780,7 +2203,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
@@ -1793,38 +2215,170 @@
 
   function enviarObservacionesAdmisibilidadFinanciera(){
     //alert('enviarObservacionesAdmisibilidadFinanciera');
+    var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+    var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+    var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+    var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+    var duracion = document.getElementById('duracion').value;
+    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+
+    // Obtener el elemento <ul> con la clase seleccionados_tree
+    var ulElement = document.querySelector('.seleccionados_tree');
+
+    // Verificar si se encontró el elemento <ul>
+    if (ulElement) {
+        // Obtener todos los elementos <li> dentro del <ul>
+        var liElements = ulElement.querySelectorAll('li');
+
+        // Crear un array para almacenar los IDs de las comunas seleccionadas
+        var comunasIds = [];
+
+        // Iterar sobre los elementos <li> para obtener los IDs
+        liElements.forEach(function(liElement) {
+            // Obtener el ID del elemento <li>
+            var comunaId = liElement.id;
+            // Agregar el ID al array de IDs de comunas seleccionadas
+            comunasIds.push(comunaId);
+        });
+
+        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+        console.log('IDs de comunas seleccionadas:', comunasIds);
+    } else {
+        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+    }
+
     $.ajax({
-      url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
-      data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-      contentType: "application/json",
-      method: "POST",
+      url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        cantidad_micro_empresa: cantidad_micro_empresa,
+        cantidad_pequeña_empresa: cantidad_pequeña_empresa,
+        cantidad_mediana_empresa: cantidad_mediana_empresa,
+        cantidad_grande_empresa: cantidad_grande_empresa,
+        empresas_asociadas_ag: empresas_asociadas_ag,
+        empresas_no_asociadas_ag: empresas_no_asociadas_ag,
+        duracion: duracion,
+        fortalezas_consultores: fortalezas_consultores,
+        comunasIds : comunasIds
+      },
+      method: "GET",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
-        $('.loading-data').hide();
+        $.ajax({
+          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+          },
+          method: "GET",
+          success: function(response) {
+            console.log("Método del controlador llamado con éxito");
+            if(confirm("¿Está seguro que desea enviar?")){
+              $.ajax({
+                url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
+                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+                contentType: "application/json",
+                method: "POST",
+                success: function(response) {
+                  console.log("Método del controlador llamado con éxito");
+                  $('.loading-data').hide();
+                },
+                error: function(error) {
+                  console.error("Error al llamar al método del controlador", error);
+                  $('.loading-data').hide();
+                }
+              });
+            }
+          }})
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        $('.loading-data').hide();
       }
     });
   }
 
   function enviarObservacionesAdmisibilidadTecnica(){
     //alert('enviarObservacionesAdmisibilidadTecnica');
+    var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+    var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+    var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+    var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+    var duracion = document.getElementById('duracion').value;
+    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+
+    // Obtener el elemento <ul> con la clase seleccionados_tree
+    var ulElement = document.querySelector('.seleccionados_tree');
+
+    // Verificar si se encontró el elemento <ul>
+    if (ulElement) {
+        // Obtener todos los elementos <li> dentro del <ul>
+        var liElements = ulElement.querySelectorAll('li');
+
+        // Crear un array para almacenar los IDs de las comunas seleccionadas
+        var comunasIds = [];
+
+        // Iterar sobre los elementos <li> para obtener los IDs
+        liElements.forEach(function(liElement) {
+            // Obtener el ID del elemento <li>
+            var comunaId = liElement.id;
+            // Agregar el ID al array de IDs de comunas seleccionadas
+            comunasIds.push(comunaId);
+        });
+
+        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+        console.log('IDs de comunas seleccionadas:', comunasIds);
+    } else {
+        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+    }
+
     $.ajax({
-      url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-      data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-      contentType: "application/json",
-      method: "POST",
+      url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        cantidad_micro_empresa: cantidad_micro_empresa,
+        cantidad_pequeña_empresa: cantidad_pequeña_empresa,
+        cantidad_mediana_empresa: cantidad_mediana_empresa,
+        cantidad_grande_empresa: cantidad_grande_empresa,
+        empresas_asociadas_ag: empresas_asociadas_ag,
+        empresas_no_asociadas_ag: empresas_no_asociadas_ag,
+        duracion: duracion,
+        fortalezas_consultores: fortalezas_consultores,
+        comunasIds : comunasIds
+      },
+      method: "GET",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
-        $('.loading-data').hide();
+        $.ajax({
+          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+          },
+          method: "GET",
+          success: function(response) {
+            console.log("Método del controlador llamado con éxito");
+            if(confirm("¿Está seguro que desea enviar?")){
+              $.ajax({
+                url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+                contentType: "application/json",
+                method: "POST",
+                success: function(response) {
+                  console.log("Método del controlador llamado con éxito");
+                  $('.loading-data').hide();
+                },
+                error: function(error) {
+                  console.error("Error al llamar al método del controlador", error);
+                  $('.loading-data').hide();
+                }
+              });
+            }
+          }})
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        $('.loading-data').hide();
       }
     });
   }
@@ -1946,7 +2500,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -2062,6 +2615,18 @@
     var nota_input_pertinencia = document.getElementById('nota_input_pertinencia').value;
     var obs_input_pertinencia = document.getElementById('obs_input_pertinencia').value;
 
+     var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (obs_input_pertinencia == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresar una observación.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
     $.ajax({
       url: "#{enviar_pertinencia_factibilidad_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -2072,7 +2637,206 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('#modal_create_plan_actividades-form').modal('show');
+        console.log("Método del controlador llamado con éxito");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+  
+  function enviarEvaluacionGeneral(){
+    //alert('enviarEvaluacionGeneral');
+
+    var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_id_1').value;
+    var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_id_2').value;
+    var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_id_3').value;
+    var nota_input_id_4 = document.getElementById('nota_input_pert_tecnica_id_4').value;
+    var nota_input_id_5 = document.getElementById('nota_input_pert_tecnica_id_5').value;
+    var nota_input_id_6 = document.getElementById('nota_input_pert_tecnica_id_6').value;
+    var nota_input_id_7 = document.getElementById('nota_input_pert_tecnica_id_7').value;
+    var nota_input_id_8 = document.getElementById('nota_input_pert_tecnica_id_8').value;
+
+    var obs_input_id_1 = document.getElementById('obs_input_pert_tecnica_id_1').value;
+    var obs_input_id_2 = document.getElementById('obs_input_pert_tecnica_id_2').value;
+    var obs_input_id_3 = document.getElementById('obs_input_pert_tecnica_id_3').value;
+    var obs_input_id_4 = document.getElementById('obs_input_pert_tecnica_id_4').value;
+    var obs_input_id_5 = document.getElementById('obs_input_pert_tecnica_id_5').value;
+    var obs_input_id_6 = document.getElementById('obs_input_pert_tecnica_id_6').value;
+    var obs_input_id_7 = document.getElementById('obs_input_pert_tecnica_id_7').value;
+    var obs_input_id_8 = document.getElementById('obs_input_pert_tecnica_id_8').value;
+
+    var jsonDataTecnico = {
+      1: {
+          criterio_id: 1,
+          nota: nota_input_id_1,
+          justificacion: obs_input_id_1
+      },
+      2: {
+          criterio_id: 2,
+          nota: nota_input_id_2,
+          justificacion: obs_input_id_2
+      },
+      3: {
+          criterio_id: 3,
+          nota: nota_input_id_3,
+          justificacion: obs_input_id_3
+      },
+      4: {
+          criterio_id: 4,
+          nota: nota_input_id_4,
+          justificacion: obs_input_id_4
+      },
+      5: {
+          criterio_id: 5,
+          nota: nota_input_id_5,
+          justificacion: obs_input_id_5
+      },
+      6: {
+          criterio_id: 6,
+          nota: nota_input_id_6,
+          justificacion: obs_input_id_6
+      },
+      7: {
+          criterio_id: 7,
+          nota: nota_input_id_7,
+          justificacion: obs_input_id_7
+      },
+      8: {
+          criterio_id: 8,
+          nota: nota_input_id_8,
+          justificacion: obs_input_id_8
+      }
+    };
+
+    var nota_input_finanaciera_id_1 = document.getElementById('nota_input_pert_general_id_1').value;
+    var nota_input_finanaciera_id_2 = document.getElementById('nota_input_pert_general_id_2').value;
+    var nota_input_finanaciera_id_3 = document.getElementById('nota_input_pert_general_id_3').value;
+    var nota_input_finanaciera_id_4 = document.getElementById('nota_input_pert_general_id_4').value;
+    var nota_input_finanaciera_id_5 = document.getElementById('nota_input_pert_general_id_5').value;
+
+    var obs_input_finanaciera_id_1 = document.getElementById('obs_input_pert_general_id_1').value;
+    var obs_input_finanaciera_id_2 = document.getElementById('obs_input_pert_general_id_2').value;
+    var obs_input_finanaciera_id_3 = document.getElementById('obs_input_pert_general_id_3').value;
+    var obs_input_finanaciera_id_4 = document.getElementById('obs_input_pert_general_id_4').value;
+    var obs_input_finanaciera_id_5 = document.getElementById('obs_input_pert_general_id_5').value;
+
+    var jsonDataFinanciera = {
+      1: {
+          criterio_id: 1,
+          nota: nota_input_finanaciera_id_1,
+          justificacion: obs_input_finanaciera_id_1
+      },
+      2: {
+          criterio_id: 2,
+          nota: nota_input_finanaciera_id_2,
+          justificacion: obs_input_finanaciera_id_2
+      },
+      3: {
+          criterio_id: 3,
+          nota: nota_input_finanaciera_id_3,
+          justificacion: obs_input_finanaciera_id_3
+      },
+      4: {
+          criterio_id: 4,
+          nota: nota_input_finanaciera_id_4,
+          justificacion: obs_input_finanaciera_id_4
+      },
+      5: {
+          criterio_id: 5,
+          nota: nota_input_finanaciera_id_5,
+          justificacion: obs_input_finanaciera_id_5
+      }
+    };
+
+    var nota_input_jur_id_1 = document.getElementById('nota_input_juridica_general_id_1').value;
+    var nota_input_jur_id_2 = document.getElementById('nota_input_juridica_general_id_2').value;
+    var nota_input_jur_id_3 = document.getElementById('nota_input_juridica_general_id_3').value;
+    var nota_input_jur_id_4 = document.getElementById('nota_input_juridica_general_id_4').value;
+    var nota_input_jur_id_5 = document.getElementById('nota_input_juridica_general_id_5').value;
+    var nota_input_jur_id_6 = document.getElementById('nota_input_juridica_general_id_6').value;
+    var nota_input_jur_id_7 = document.getElementById('nota_input_juridica_general_id_7').value;
+    var nota_input_jur_id_8 = document.getElementById('nota_input_juridica_general_id_8').value;
+
+    var obs_input_jur_id_1 = document.getElementById('obs_input_juridica_general_id_1').value;
+    var obs_input_jur_id_2 = document.getElementById('obs_input_juridica_general_id_2').value;
+    var obs_input_jur_id_3 = document.getElementById('obs_input_juridica_general_id_3').value;
+    var obs_input_jur_id_4 = document.getElementById('obs_input_juridica_general_id_4').value;
+    var obs_input_jur_id_5 = document.getElementById('obs_input_juridica_general_id_5').value;
+    var obs_input_jur_id_6 = document.getElementById('obs_input_juridica_general_id_6').value;
+    var obs_input_jur_id_7 = document.getElementById('obs_input_juridica_general_id_7').value;
+    var obs_input_jur_id_8 = document.getElementById('obs_input_juridica_general_id_8').value;
+
+    var jsonDataJuridica = {
+      1: {
+          criterio_id: 1,
+          nota: nota_input_jur_id_1,
+          justificacion: obs_input_jur_id_1
+      },
+      2: {
+          criterio_id: 2,
+          nota: nota_input_jur_id_2,
+          justificacion: obs_input_jur_id_2
+      },
+      3: {
+          criterio_id: 3,
+          nota: nota_input_jur_id_3,
+          justificacion: obs_input_jur_id_3
+      },
+      4: {
+          criterio_id: 4,
+          nota: nota_input_jur_id_4,
+          justificacion: obs_input_jur_id_4
+      },
+      5: {
+          criterio_id: 5,
+          nota: nota_input_jur_id_5,
+          justificacion: obs_input_jur_id_5
+      },
+      6: {
+          criterio_id: 6,
+          nota: nota_input_jur_id_6,
+          justificacion: obs_input_jur_id_6
+      },
+      7: {
+          criterio_id: 7,
+          nota: nota_input_jur_id_7,
+          justificacion: obs_input_jur_id_7
+      },
+      8: {
+          criterio_id: 8,
+          nota: nota_input_jur_id_8,
+          justificacion: obs_input_jur_id_8
+      }
+    };
+
+    var nota_input_pertinencia = document.getElementById('nota_input_pertinencia').value;
+    var obs_input_pertinencia = document.getElementById('obs_input_pertinencia').value;
+
+     var alertaMostrada = false;
+
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (obs_input_pertinencia == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresar una observación.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    $.ajax({
+      url: "#{enviar_evaluacion_general_fondo_produccion_limpia_path}",
+      data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
+        jsonDataTecnico, 
+        jsonDataFinanciera, 
+        jsonDataJuridica,
+        nota_input_pertinencia: nota_input_pertinencia, 
+        obs_input_pertinencia: obs_input_pertinencia }),
+      contentType: "application/json",
+      method: "POST",
+      success: function(response) {
         console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
@@ -2240,13 +3004,55 @@
     var revisor_financiero_id = document.getElementById('revisor_financiero_fpl_id').value;
     var revisor_juridico_id = document.getElementById('revisor_juridico_fpl_id').value;
     var comentario_asignar_revisor = document.getElementById('comentario_asignar_revisor_fpl').value;
+    
+    var alertaMostrada = false;
 
-    //alert(codigo_proyecto);
-    //alert(revisor_tecnico_id);
-    //alert(revisor_financiero_id);
-    //alert(revisor_juridico_id);
-    //alert(comentario_asignar_revisor);
+    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
+    if (codigo_proyecto == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa el codigo de proyecto.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
 
+    if (revisor_tecnico_id == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa el revisor técnico.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (revisor_financiero_id == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa el revisor financiero.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (revisor_juridico_id == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa el revisor jurídico.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    if (comentario_asignar_revisor == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa algun comentario.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+    
     $.ajax({
       url: "#{asignar_revisor_fondo_produccion_limpia_path}",
       data: {
@@ -2267,58 +3073,6 @@
       }
     });
   }
-
-  //$('#asinar_revisor-button').click(function(){
-  //});
-
-  /*function asignarRevisorButton() {
-    alert('asignar_revisor-button');
-    var codigo_proyecto = document.getElementById('codigo_proyecto').value;
-    alert(codigo_proyecto);
-
-    var revisor_tecnico_id = document.getElementById('revisor_tecnico_fpl_id').value;
-    alert(revisor_tecnico_id);
-  }*/
-
-  //ESTA FUNCION FUNCIONA CORRECTAMENTE PARA GUARDAR UN ARCHIVO
-  /*function guardarArchivosEquipo(equipo_id, nombreCampo){
-      var archivoInput = document.getElementById('archivoInputEquipo_'+ equipo_id);
-      var archivo = archivoInput.files[0];
-      var formData = new FormData();
-      formData.append('archivo', archivo);
-      formData.append('equipo_id', equipo_id);
-      formData.append('nombre_campo', nombreCampo);
-
-      // Obtener el ID del flujo
-      var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
-      var flujo_id = "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}";
-
-      // Agregar el ID del flujo como parte de los datos del formulario
-      formData.append('id', Id);
-      formData.append('flujo_id', flujo_id);
-
-      fetch('/subir_documento_equipo', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Error al subir el archivo');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Documento subido correctamente:', data);
-        // Aquí puedes realizar alguna acción después de subir el documento, como actualizar la interfaz de usuario
-      })
-      .catch(error => {
-        console.error('Error:', error);
-        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
-      });
-    }*/
 
     function guardarArchivosEquipo(equipo_id, nombreCampo) {
       var archivoInput = document.getElementById('archivoInput_'+ equipo_id);
@@ -2607,6 +3361,7 @@
   - solo_lectura = @solo_lectura
   %div{ id: "tipos", "data-tipo" => tipo }
   -#%div{ id: "solo_lecturas", "data-solo_lectura" => solo_lectura }
+  <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
   #sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"sector"] ? 'true' : 'false'), "aria-labelledby" => "sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"sector"])}  
     .card
       .card-body
@@ -2748,8 +3503,8 @@
         %br
         %h1= t(:objetivo_específico)
         %br
-        - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
-          = button_tag 'Agregar', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
+        - if !solo_lectura
+          = button_tag 'Agregar Objetivo', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
         %div#div_objetivo_especifico.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -2758,7 +3513,7 @@
                 %th.encabezado2-form.center=t(:metodologia)
                 %th.encabezado2-form=t(:resultado)
                 %th.encabezado2-form=t(:indicadores)
-                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                - if !solo_lectura
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
             %tbody
         %br
@@ -2882,7 +3637,7 @@
         -#<h1>A) Equipo de Trabajo del Postulante  </h1>
         %br
         %div#div_postulante.table-responsive  
-          - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+          - if !solo_lectura
             = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -2897,7 +3652,7 @@
                   %th.encabezado2-form=t(:valor_hh)
                   %th.encabezado2-form=t(:copia_ci)
                   %th.encabezado2-form=t(:curriculum_vitae)
-                  - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
                 - if @postulantes.present?
@@ -2914,7 +3669,7 @@
                         = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
                       %td.contenido-form
                         = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
-                      - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                      - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
@@ -2968,7 +3723,7 @@
                 %td.option-form Equipo de Consultores
         %br   
         %div#div_empresa_consultora.table-responsive  
-          - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+          - if !solo_lectura
             = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -2976,7 +3731,7 @@
                 %tr
                   %th.encabezado2-form=t(:razon_social)
                   %th.encabezado2-form.center=t(:rut)
-                  - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
                 - if @empresa_equipo.present?
@@ -2984,7 +3739,7 @@
                     %tr
                       %td.contenido-form=empresa.razon_social
                       %td.contenido-form=empresa.rut
-                      - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                      - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
                           - if equipo_consultores_existente?(empresa.contribuyente_id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"La empresa no puede ser eliminada ya que tiene un equipo de consultores asociados."}
@@ -2993,7 +3748,7 @@
                               %i.fa.fa-trash 
         -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
-          - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+          - if !solo_lectura
             = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3008,7 +3763,7 @@
                   %th.encabezado2-form=t(:valor_hh)
                   %th.encabezado2-form=t(:copia_ci)
                   %th.encabezado2-form=t(:curriculum_vitae)
-                  - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                  - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
                 - if @user_equipo.present?
@@ -3025,7 +3780,7 @@
                         = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
                       %td.contenido-form
                         = __descargar_archivo(user.curriculum,user.curriculum,false,false)
-                      - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                      - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
@@ -3034,7 +3789,7 @@
                               %i.fa.fa-trash 
         </br>
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
-          - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+          - if !solo_lectura
             = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3066,7 +3821,7 @@
                         = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
                       %td.contenido-form
                         = __descargar_archivo(user.curriculum,user.curriculum,false,false)
-                      - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                      - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
@@ -3082,7 +3837,7 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.input :fortalezas_consultores, as: :text, input_html: { id: 'fortalezas_consultores' }, label: @validaciones[:manifestacion_de_interes][:nombre_acuerdo][:nombre], required: true
+                    = f.input :fortalezas_consultores, as: :text, input_html: { id: 'fortalezas_consultores' }, label:  t(:fortaleza_equipo), required: true
                 -else
                   %th
                     = f.object.fortalezas_consultores
@@ -3095,7 +3850,7 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             El plan ofrece un enfoque estructurado y detallado para planificar y gestionar las diversas etapas y actividades de un proyecto, incluyendo la asignación de costos. Además, la capacidad de editar, eliminar y agregar actividades proporciona flexibilidad en la adaptación del plan a las necesidades cambiantes del proyecto.
-        - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+        - if !solo_lectura
           = button_tag 'Agregar Actividad', onclick: "agregarPlanActividades()", class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button', id: 'agregar_plan_actividades'
         %div#div_plan_actividades.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3189,7 +3944,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                - if !solo_lectura
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_postulante.each do |descargable|
@@ -3199,7 +3954,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura    
+                    - if !solo_lectura  
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br              
@@ -3210,7 +3965,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                - if !solo_lectura
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_receptor.each do |descargable|
@@ -3220,7 +3975,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                    - if !solo_lectura
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
@@ -3231,7 +3986,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                - if !solo_lectura
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_ejecutor.each do |descargable|
@@ -3241,7 +3996,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura                    
+                    - if !solo_lectura                   
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
 
@@ -3558,10 +4313,10 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
                 - if @costos.present?
                   %td#valida_aporte_solicitado_al_fondo.contenido-form=number_to_currency @costos.aporte_solicitado_al_fondo
-                  %td.contenido-form Menor o igual a #{number_to_currency(Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO)}
-                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form=number_to_currency(Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO)
+                  %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                   %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form
-                    - if @costos.aporte_solicitado_al_fondo <= Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO && @costos.costo_total_de_la_propuesta != ''
+                    - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
                       SI
                     - else
                       NO
@@ -4481,8 +5236,8 @@
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarPertinenciaFactibilidad(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_pertinencia_factibilidad_button", onclick: 'enviarPertinenciaFactibilidad(); return false;' do
+              -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarPertinenciaFactibilidad(); return false;'
+              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_evaluacion_general_button", onclick: 'enviarEvaluacionGeneral(); return false;' do
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar)                                               
   #modal_objetivos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
@@ -4801,7 +5556,7 @@
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
                                 %tbody
-                              - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                              - if !solo_lectura
                                 %table
                                   %thead
                                     %tr.contenido-popup-form{colspan: 4}
@@ -4821,7 +5576,7 @@
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
                                 %tbody
-                              - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura   
+                              - if !solo_lectura  
                                 %table
                                   %thead
                                     %tr.contenido-popup-form{colspan: 4}
@@ -4841,10 +5596,10 @@
                                     %td.sub-contenido-popup-form Cantidad
                                     %td.sub-contenido-popup-form Unidad
                                     %td.sub-contenido-popup-form Total
-                                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura   
+                                    - if !solo_lectura 
                                       %td.sub-contenido-popup-form
                                 %tbody
-                              - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura    
+                              - if !solo_lectura  
                                 %table
                                   %thead  
                                     %tr.contenido-popup-form{colspan: 6}
@@ -4864,10 +5619,10 @@
                                     %td.sub-contenido-popup-form Cantidad
                                     %td.sub-contenido-popup-form Unidad
                                     %td.sub-contenido-popup-form Total
-                                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
+                                    - if !solo_lectura
                                       %td.sub-contenido-popup-form
                                 %tbody
-                              - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura   
+                              - if !solo_lectura  
                                 %table
                                   %thead  
                                     %tr.contenido-popup-form{colspan: 6}
@@ -4877,8 +5632,10 @@
                           
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
-            - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura
-              = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;"
+            - if !solo_lectura
+              -#= button_to #button_name, '#', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;"
+              = button_to 'Crear Actividad', '#', id: 'button_id', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;" 
+
   -# POPUP RRHH PROPIOS
   #modal_rrhh_propios-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
     .modal-dialog
@@ -5274,9 +6031,9 @@
       curriculum_vitae = archivo1.name;
     }
 
-    if (rut && nombre_completo  && email  && telefono  && profesión   && funciones_proyecto  && valor_hh && copia_ci && curriculum_vitae) {
+    if (rut && nombre_completo && email && telefono && profesión && funciones_proyecto && valor_hh && copia_ci && curriculum_vitae) {
       $('.guarda-equipo-fpl-button').removeAttr("disabled");
-    }else{
+    } else {
       $('.guarda-equipo-fpl-button').attr("disabled", true);
     }
   }

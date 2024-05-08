@@ -1,3 +1,22 @@
+var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propios');
+var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
+var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
+var div_plan_gastos_administracion = document.getElementById('div_plan_gastos_administracion');
+
+<% if @existe_plan == 0 %>
+  div_plan_recursos_propios.style.display = 'none';
+  div_plan_recursos_externos.style.display = 'none';
+  div_plan_gastos_operacion.style.display = 'none';
+  div_plan_gastos_administracion.style.display = 'none';
+  $('#button_id').val('Grabar Plan Actividad');
+<% else %>  
+  div_plan_recursos_propios.style.display = 'block';
+  div_plan_recursos_externos.style.display = 'block';
+  div_plan_gastos_operacion.style.display = 'block';
+  div_plan_gastos_administracion.style.display = 'block';
+  $('#button_id').val('Continuar');
+<% end %>
+
 $('#div_plan_recursos_propios table tbody').empty();
 <% if @recursos_internos.present? %>
   <% recursos_internos.each do |recursos_interno| %>
@@ -63,7 +82,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
       "<td class='contenido-form'>" + total + "</td>" +
-      <% if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura %>
+      <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +
@@ -89,7 +108,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
       "<td class='contenido-form'>" + total + "</td>" +
-      <% if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA) && !solo_lectura %>
+      <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +

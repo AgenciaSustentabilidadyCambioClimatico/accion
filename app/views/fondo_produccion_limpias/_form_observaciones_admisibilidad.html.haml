@@ -186,8 +186,11 @@
       .card
         .card-header.p-0
           .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
             %h5.no-margin=titulo_instrumento.html_safe
-            %h5.no-margin=datos_beneficiario.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=titulo_apl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
           #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
               %li.nav-item
