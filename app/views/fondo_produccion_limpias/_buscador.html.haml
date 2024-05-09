@@ -17,6 +17,12 @@
           Cerrar
 :javascript
 
+  // Suponiendo que tienes un DataTable inicializado en tu tabla con id 'DataTables_Table_0'
+  var dataTable = $('table.usuarios').DataTable();
+
+  // Destruir la instancia del DataTable
+  dataTable.destroy();
+
   $(document).on('change','#tabla_usuarios_#{modal_id} .usuario-radio',function() {
     $('##{modal_id} .seleccionar-usuario-button').removeAttr('disabled');
     $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
@@ -48,8 +54,9 @@
   });
 
   $(document).on('click', '.seleccionar-y-actualizar-usuario-button', function(){
-    alert('entro buscar fondo');
-    alert($('table.usuarios').DataTable());
+    //alert('entro buscar fondo');
+    //alert($('table.usuarios').DataTable());
+
     data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
     alert(data);
     $.ajax({
