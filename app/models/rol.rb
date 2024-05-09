@@ -34,7 +34,7 @@ class Rol < ApplicationRecord
   REVISOR_COMENTARIOS                  = 37
   #REVISOR_JURIDICO_FPL                 = 38
   #REVISOR_TECNICO_FPL                  = 39
-  REVISOR_FINANCIERO                   = 40
+  REVISOR_FINANCIERO                   = 39
   #JEFE_DE_LINEA_FPL                    = 41
   #ENCARGADO_ENTREGABLES_DIAGNOSTICO   = 10
   #REVISOR_TECNICO_INFORME_DE_IMPACTOS = 20

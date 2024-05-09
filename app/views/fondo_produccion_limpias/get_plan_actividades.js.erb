@@ -1,4 +1,3 @@
-# encoding: utf-8
 var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propios');
 var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
 var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
@@ -85,7 +84,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + total + "</td>" +
       <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
-        "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "<a data-gasto-id=" + gastos_id + " data-confirm='ï¿½Estï¿½ seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +
       <% end %> 
       "</tr>";
@@ -111,7 +110,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + total + "</td>" +
       <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
-        "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "<a data-gasto-id="+ gastos_id + " data-confirm='ï¿½Estï¿½ seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +
       <% end %> 
       "</tr>";
