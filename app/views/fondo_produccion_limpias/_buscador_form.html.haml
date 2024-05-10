@@ -39,7 +39,7 @@
           %h5.no-margin
             = t(:lista_de_, items: t(:usuarios).downcase)
         %div.my-2 
-          %table.table.usuarios.table-striped{id: 'tabla_usuarios_buscar-usuario'}
+          %table.table.usuarios.table-striped{id: 'tabla_usuarios_' + (modal_id || '')}
             %thead
               %tr
                 %th.rut=t(:rut)

@@ -17,12 +17,6 @@
           Cerrar
 :javascript
 
-  // Suponiendo que tienes un DataTable inicializado en tu tabla con id 'DataTables_Table_0'
-  var dataTable = $('tabla_usuarios_buscar-usuario').DataTable();
-
-  // Destruir la instancia del DataTable
-  dataTable.destroy();
-
   $(document).on('change','#tabla_usuarios_#{modal_id} .usuario-radio',function() {
     $('##{modal_id} .seleccionar-usuario-button').removeAttr('disabled');
     $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
