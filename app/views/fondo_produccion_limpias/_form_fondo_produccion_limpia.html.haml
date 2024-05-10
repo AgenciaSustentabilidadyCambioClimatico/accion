@@ -158,7 +158,7 @@
     });*/
 
     $('#open-modal-button_buscar_usuario').click(function(){
-      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '1')}");
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-usuario', tipo_equipo: '1')}");
       $('#buscar-usuario').modal("show");
     });
 
@@ -167,13 +167,13 @@
     });
 
     $('#open-modal-button_buscar_usuario_consultora').click(function(){
-      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '2')}");
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-consultor', tipo_equipo: '2')}");
       $('#buscar-usuario').modal("show");
     });
 
     $('#open-modal-button_buscar_usuario_postulante').click(function(){
-        $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario', tipo_equipo: '3')}");
-        $('#buscar-usuario').modal("show");
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: '3')}");
+      $('#buscar-usuario').modal("show");
     });
 
     if(#{!solo_lectura}){
@@ -1249,7 +1249,7 @@
     }
   });
 
-  $('#buscar-usuario').on('hidden.bs.modal', function () {
+  /*$('#buscar-usuario').on('hidden.bs.modal', function () {
     // Aquí puedes llamar a tu función JavaScript después de que el modal se haya ocultado
     tuFuncionJavaScript();
   });
@@ -1257,7 +1257,7 @@
   function tuFuncionJavaScript() {
     // Código de tu función aquí
     alert("entro aqui");
-  }
+  }*/
 
   function iniciarBuscar(id) {
     //alert('entro buscador')
