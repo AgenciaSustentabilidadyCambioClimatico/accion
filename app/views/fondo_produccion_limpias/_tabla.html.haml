@@ -2,7 +2,7 @@
 - lista_usuarios = lista_usuarios.nil? ? @usuarios : lista_usuarios
 :javascript
   $(document).ready(function() {
-    $('#tabla_usuarios_' + modal_id).DataTable({
+    $('#tabla_usuarios_#{modal_id}').DataTable({
       lengthMenu: [[10], [10]],
       pageLength: 10,
       columnDefs: [ { targets: [2], orderable: false } ],
