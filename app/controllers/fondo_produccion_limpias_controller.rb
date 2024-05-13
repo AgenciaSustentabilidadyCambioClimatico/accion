@@ -538,7 +538,7 @@ class FondoProduccionLimpiasController < ApplicationController
         if params[:estado] == 'new' 
           @usuario_temporal = User.new
         else
-          @usuario_temporal =  User.unscoped.find(params[:id])
+          @usuario_temporal =  User.unscoped.find(params[:user_id])
         end
         @usuario_temporal.temporal = true
         @usuario_temporal.flujo_id = params[:flujo_id]
@@ -1082,7 +1082,6 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_recursos_humanos_propios
       data = JSON.parse(params[:data])
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
-      #binding.pry 
       rrhh_propio_ids = []  # Array para almacenar los IDs de rrhhPropioId
     
       data.each do |clave, valor|
@@ -1099,15 +1098,19 @@ class FondoProduccionLimpiasController < ApplicationController
           #se inserta un nuevo usuario
           @recursos_propios = RecursoHumano.new(custom_params[:recursos])
           @recursos_propios.save 
-          #binding.pry 
         else
           #se actualiza un usuario
           @recursos_propios = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhPropioId'])
           @recursos_propios.update(custom_params[:recursos])
-          #binding.pry 
         end
-          
-        rrhh_propio_ids << clave['rrhhPropioId']  # Agregar el ID a la lista
+
+        if (clave['hh'] == "")
+          eliminar_rrhh_propios = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhPropioId'])
+          eliminar_rrhh_propios.destroy
+        else
+          rrhh_propio_ids << clave['rrhhPropioId']  # Agregar el ID a la lista  
+        end  
+      
       end
     
       ### Utilizar rrhh_propio_ids como necesites fuera del bucle
@@ -1118,7 +1121,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       ###Actualiza costos
       set_costos  
-      #binding.pry 
+      
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3 } }
       end
@@ -1129,9 +1132,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
     
       rrhh_externo_ids = []  # Array para almacenar los IDs de rrhhPropioId
-    
+     
       data.each do |clave, valor|
-        if clave['hh'] != ""
+        #if clave['hh'] != ""
           if clave['nombreUsuario'] != ""
             custom_params = {
               recursos: {
@@ -1152,10 +1155,16 @@ class FondoProduccionLimpiasController < ApplicationController
               @recursos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
               @recursos.update(custom_params[:recursos])
             end
-        
-            rrhh_externo_ids << clave['rrhhExternoId']  # Agregar el ID a la lista
+      
+            if (clave['hh'] == "")
+              eliminar_rrhh_externos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
+              eliminar_rrhh_externos.destroy
+            else
+              rrhh_externo_ids << clave['rrhhExternoId']  # Agregar el ID a la lista
+            end
+
           end
-        end
+        #end
       end
       ### Utilizar rrhh_externo_ids como necesites fuera del bucle
       @recursos_externos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_externo_ids)
@@ -1207,7 +1216,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end  
 
     def new_plan_actividades
-      #binding.pry 
       @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
       arreglo = []
 
@@ -3651,13 +3659,12 @@ class FondoProduccionLimpiasController < ApplicationController
         @user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1, 2])
 
         @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
-        #binding.pry 
+
         if @count_user_equipo > 0
           @show_consultor_div = true
         else
           @show_consultor_div = false
         end
-        #binding.pry 
       end
 
       def set_plan_actividades
@@ -3666,7 +3673,6 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_equipo_empresa
-        #binding.pry 
         @count_empresa_equipo = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
         @count_user_empresa = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 2).count
      
