@@ -45,25 +45,14 @@
     $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2('close');
   });
 
-  /*$(document).on('click', '.seleccionar-contribuyente-button', function() {
-    try {
-      //alert('entro contribuyente seleccion');
-      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
-      //data=JSON.parse($('.contribuyente-radio:checked').val());
-      //data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-      //$("#manifestacion_de_interes_contribuyente_id").val(data.id);
-      //$("#manifestacion_de_interes_contribuyente_id").change();
-      //$("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val("");
-      //$("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
-    } catch(e) {
-      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-    }
-  });*/
-
   $('.seleccionar-contribuyente-button').click(function() {
     try {
       //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
       //data=JSON.parse($('.contribuyente-radio:checked').val());
+
+      var dataTable = $('table.contribuyentes').DataTable();
+      dataTable.destroy();
+
       data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
 
       $("select#responsable_contribuyente_id").append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
@@ -95,6 +84,9 @@
   //Permite que al seleccionar un usuario desde el modal se adjunte su información
   $(document).on('click' , '.seleccionar-usuario-button', function() {
     try {
+      var dataTable = $('table.usuarios').DataTable();
+      dataTable.destroy();
+
       data=JSON.parse($('table.usuarios').DataTable().$('.contribuyente-radio:checked').val());
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
@@ -1036,7 +1028,7 @@
         var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
     
         //alert(rrhhPropioId);
-        if (hh!=0) {
+        //if (hh!=0) {
           // Agrega los datos al arreglo
           data.push({
               rrhhPropioId: rrhhPropioId,
@@ -1044,7 +1036,7 @@
               nombreUsuario: nombreUsuario,
               hh: hh
           });
-        }
+        //}
     });
 
     //console.log(data); // Mostrar los datos en la consola para verificar
@@ -1078,7 +1070,7 @@
       var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
       
 
-      if (hh !== "" && hh !== "0") {
+      //if (hh !== "" && hh !== "0") {
         if (nombreUsuario !== "Fuente de financiamiento*") {
 
           // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
@@ -1114,7 +1106,7 @@
             }
           }
         }
-      }
+      //}
     });
 
     var tipoAporteSeleccionado = $('#div_consultor_faltantes_externos input[name="radio_tipo_aporte"]:checked').val();
@@ -4031,7 +4023,7 @@
                 %td.contenido-form Aporte Propio Valorado
                 - if @costos.present?
                   %td#aporte_propio_valorado.contenido-form=number_to_currency @costos.aporte_propio_valorado
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_propio_valorado'] != 0
                     %td#porcentaje_aporte_propio_valorado.contenido-form=number_to_percentage((@costos['aporte_propio_valorado'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_valorado.contenido-form 0,00%
@@ -4042,7 +4034,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte Propio Líquido
                 - if @costos.present?
                   %td#aporte_propio_liquido.contenido-form=number_to_currency @costos.aporte_propio_liquido
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_propio_liquido'] != 0
                     %td#porcentaje_aporte_propio_liquido.contenido-form=number_to_percentage((@costos['aporte_propio_liquido'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_liquido.contenido-form 0,00%
@@ -4064,7 +4056,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Aporte solicitado Fondo PL
                 - if @costos.present?
                   %td#aporte_solicitado_al_fondo.contenido-form=number_to_currency @costos.aporte_solicitado_al_fondo
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_solicitado_al_fondo'] != 0
                     %td#porcentaje_aporte_solicitado_al_fondo.contenido-form=number_to_percentage((@costos['aporte_solicitado_al_fondo'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_solicitado_al_fondo.contenido-form 0,00%
@@ -4083,7 +4075,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Propios
                 - if @costos.present?
                   %td#recursos_humanos_propios.contenido-form=number_to_currency @costos.recursos_humanos_propios
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['recursos_humanos_propios'] != 0
                     %td#porcentaje_recursos_humanos_propios.contenido-form=number_to_percentage((@costos['recursos_humanos_propios'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_recursos_humanos_propios.contenido-form 0,00%
@@ -4094,7 +4086,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
                 - if @costos.present?
                   %td#recursos_humanos_externos.contenido-form=number_to_currency @costos.recursos_humanos_externos
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['recursos_humanos_externos'] != 0
                     %td#porcentaje_recursos_humanos_externos.contenido-form=number_to_percentage((@costos['recursos_humanos_externos'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_recursos_humanos_externos.contenido-form 0,00%
@@ -4105,7 +4097,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
                 - if @costos.present?
                   %td#gastos_operacion.contenido-form=number_to_currency @costos.gastos_operacion
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['gastos_operacion'] != 0
                     %td#porcentaje_gastos_operacion.contenido-form=number_to_percentage((@costos['gastos_operacion'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td.contenido-form 0,00%
@@ -4116,7 +4108,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
                 - if @costos.present?
                   %td#gastos_administrativos.contenido-form=number_to_currency @costos.gastos_administrativos
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['gastos_administrativos'] != 0
                     %td#porcentaje_gastos_administrativos.contenido-form=number_to_percentage((@costos['gastos_administrativos'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_gastos_administrativos.contenido-form 0,00%
@@ -4145,7 +4137,7 @@
                   - else
                     %td#porcentaje_aporte_propio_valorado_rrhh_propio.contenido-form 0,00%
                   %td#aporte_propio_liquido_rrhh_propio.contenido-form=number_to_currency @costos.aporte_propio_liquido_rrhh_propio
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_propio_liquido'] != 0
                     %td#porcentaje_aporte_propio_liquido_rrhh_propio.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_rrhh_propio'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_liquido_rrhh_propio.contenido-form 0,00%
@@ -4158,12 +4150,12 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
                 - if @costos.present?
                   %td#aporte_propio_valorado_rrhh_externo.contenido-form=number_to_currency @costos.aporte_propio_valorado_rrhh_externo
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_propio_valorado'] != 0
                     %td#porcentaje_aporte_propio_valorado_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_rrhh_externo'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_valorado_rrhh_externo.contenido-form 0,00%
                   %td#aporte_propio_liquido_rrhh_externo.contenido-form=number_to_currency @costos.aporte_propio_liquido_rrhh_externo
-                  - if @costos['costo_total_de_la_propuesta'] != 0
+                  - if @costos['costo_total_de_la_propuesta'] != 0 && @costos['aporte_propio_liquido'] != 0
                     %td#porcentaje_aporte_propio_liquido_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_rrhh_externo'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_liquido_rrhh_externo.contenido-form 0,00%
@@ -4176,12 +4168,12 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
                 - if @costos.present?
                   %td#aporte_propio_valorado_gasto_operacion.contenido-form=number_to_currency @costos.aporte_propio_valorado_gasto_operacion
-                  - if @costos['aporte_propio_valorado'] != 0
+                  - if @costos['aporte_propio_valorado'] != 0 && @costos['aporte_propio_valorado_gasto_operacion'] != 0
                     %td#porcentaje_aporte_propio_valorado_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_gasto_operacion'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_valorado_gasto_operacion.contenido-form 0,00%
                   %td#aporte_propio_liquido_gasto_operacion.contenido-form=number_to_currency @costos.aporte_propio_liquido_gasto_operacion
-                  - if @costos['aporte_propio_liquido'] != 0
+                  - if @costos['aporte_propio_liquido'] != 0 && @costos['aporte_propio_liquido_gasto_operacion'] != 0
                     %td#porcentaje_aporte_propio_liquido_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_gasto_operacion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_liquido_gasto_operacion.contenido-form 0,00%
@@ -4194,12 +4186,12 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
                 - if @costos.present?
                   %td#aporte_propio_valorado_gasto_administracion.contenido-form=number_to_currency @costos.aporte_propio_valorado_gasto_administracion
-                  - if @costos['aporte_propio_valorado'] != 0
+                  - if @costos['aporte_propio_valorado'] != 0 && @costos['aporte_propio_valorado_gasto_administracion'] != 0
                     %td#porcentaje_aporte_propio_valorado_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_propio_valorado_gasto_administracion'].to_f / @costos['aporte_propio_valorado'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_valorado_gasto_administracion.contenido-form 0,00%
                   %td#aporte_propio_liquido_gasto_administracion.contenido-form=number_to_currency @costos.aporte_propio_liquido_gasto_administracion
-                  - if @costos['aporte_propio_liquido'] != 0
+                  - if @costos['aporte_propio_liquido'] != 0 && @costos['aporte_propio_liquido_gasto_administracion'] != 0
                     %td#porcentaje_aporte_propio_liquido_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_propio_liquido_gasto_administracion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_propio_liquido_gasto_administracion.contenido-form 0,00%
@@ -4220,7 +4212,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Recursos Humanos Externos
                 - if @costos.present?
                   %td#aporte_solicitado_fondo_rrhh_externo.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_rrhh_externo
-                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                  - if @costos['aporte_solicitado_al_fondo'] != 0 && @costos['aporte_solicitado_fondo_rrhh_externo'] != 0
                     %td#porcentaje_aporte_solicitado_fondo_rrhh_externo.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_rrhh_externo'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_solicitado_fondo_rrhh_externo.contenido-form 0,00%
@@ -4231,7 +4223,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Operación
                 - if @costos.present?
                   %td#aporte_solicitado_fondo_gasto_operacion.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_gasto_operacion
-                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                  - if @costos['aporte_solicitado_al_fondo'] != 0 && @costos['aporte_solicitado_fondo_gasto_operacion'] != 0
                     %td#porcentaje_aporte_solicitado_fondo_gasto_operacion.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_gasto_operacion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_solicitado_fondo_gasto_operacion.contenido-form 0,00%
@@ -4242,7 +4234,7 @@
                 %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
                 - if @costos.present?
                   %td#aporte_solicitado_fondo_gasto_administracion.contenido-form=number_to_currency @costos.aporte_solicitado_fondo_gasto_administracion
-                  - if @costos['aporte_solicitado_al_fondo'] != 0
+                  - if @costos['aporte_solicitado_al_fondo'] != 0 && @costos['aporte_solicitado_fondo_gasto_administracion'] != 0
                     %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form=number_to_percentage((@costos['aporte_solicitado_fondo_gasto_administracion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2)
                   - else
                     %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form 0,00%
@@ -5897,7 +5889,7 @@
 
   //FUNCIONES MODAL BUSCAR USUARIO
   $(document).on('change','#tabla_usuarios_buscar-usuario .usuario-radio',function() {
-    //alert("FUNCIONES MODAL BUSCAR USUARIO");
+    alert("FUNCIONES MODAL BUSCAR USUARIO");
     $('#buscar-usuario .seleccionar-usuario-button').removeAttr('disabled');
     $('#buscar-usuario .seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
   });
@@ -5938,7 +5930,7 @@
       url: "#{edit_modal_fondo_produccion_limpia_path}",
       type: "GET",
       data: {
-        id: data.id,
+        id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
         flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
         user_id: data.id,
         tipo_equipo: tipo_equipo,
@@ -6052,6 +6044,10 @@
 
   $('.seleccionar-contribuyente-fpl-button').click(function() {
     //alert('entro seleccionar-contribuyente-fpl-button');
+
+    var dataTable = $('table.contribuyentes').DataTable();
+    dataTable.destroy();
+
     data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
     //alert(data.id);
 
