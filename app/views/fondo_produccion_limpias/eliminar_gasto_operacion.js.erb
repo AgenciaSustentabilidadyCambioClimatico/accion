@@ -2,14 +2,25 @@ $('.loading-data').hide();
 $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
 
 <% if @total_gastos_tipo_1.present? %>
-    document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_1.total_gastos_tipo_1 %>';
+  document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_1.total_gastos_tipo_1 %>';
+<% else %>
+  document.getElementById('total_gastos_tipo_1_<%= plan_id %>').innerText = '$0';
 <% end %>
 
 //Actualiza campos de la tabla costo
-  //ESTRUCTURA DE COSTOS
+//ESTRUCTURA DE COSTOS
 
-  //Costo total de la propuesta
+//Costo total de la propuesta
+<% if @costos.present? %>
   document.getElementById('costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['costo_total_de_la_propuesta'] %>';
+
+  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+    //document.getElementById('costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['costo_total_de_la_propuesta'] %>';
+    document.getElementById('porcentaje_costo_total_de_la_propuesta').innerText = '<%= number_to_percentage((@costos['costo_total_de_la_propuesta'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2) %>';
+  <% else %>
+    //document.getElementById('costo_total_de_la_propuesta').innerText = '$0';
+    document.getElementById('porcentaje_costo_total_de_la_propuesta').innerText = '0,00%';
+  <% end %>
 
   //Aporte Propio Valorado
   document.getElementById('aporte_propio_valorado').innerText = '<%= number_to_currency @costos['aporte_propio_valorado'] %>';
@@ -29,6 +40,11 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
 
   //Aporte Propio Total
   document.getElementById('aporte_propio_total').innerText = '<%= number_to_currency @costos['costo_total_de_la_propuesta'] %>';
+  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+    document.getElementById('porcentaje_aporte_propio_total').innerText = '<%= number_to_percentage((@costos['costo_total_de_la_propuesta'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2) %>';
+  <% else %>
+    document.getElementById('porcentaje_aporte_propio_total').innerText = '0,00%';
+  <% end %>
 
   //Aporte solicitado Fondo PL
   document.getElementById('aporte_solicitado_al_fondo').innerText = '<%= number_to_currency @costos['aporte_solicitado_al_fondo'] %>';
@@ -82,7 +98,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   <% end %>
   
   document.getElementById('aporte_propio_liquido_rrhh_propio').innerText = '<%= number_to_currency @costos['aporte_propio_liquido_rrhh_propio'] %>';
-  <% if @costos['aporte_propio_valorado'] != 0 || @costos['aporte_propio_liquido_rrhh_propio'] != 0 %>
+  <% if @costos['aporte_propio_liquido'] != 0 || @costos['aporte_propio_liquido_rrhh_propio'] != 0 %>
     document.getElementById('porcentaje_aporte_propio_liquido_rrhh_propio').innerText = '<%= number_to_percentage((@costos['aporte_propio_liquido_rrhh_propio'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_propio_liquido_rrhh_propio').innerText = '0,00%';
@@ -97,8 +113,8 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   <% end %>
   
   document.getElementById('aporte_propio_liquido_rrhh_externo').innerText = '<%= number_to_currency @costos['aporte_propio_liquido_rrhh_externo'] %>';
-  <% if @costos['aporte_propio_valorado'] != 0 || @costos['aporte_propio_liquido_rrhh_externo'] != 0 %>
-    document.getElementById('porcentaje_aporte_propio_liquido_rrhh_externo').innerText = '<%= number_to_percentage((@costos['aporte_propio_liquido_rrhh_externo'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2) %>';
+  <% if @costos['aporte_propio_liquido'] != 0 || @costos['aporte_propio_liquido_rrhh_externo'] != 0 %>
+    document.getElementById('porcentaje_aporte_propio_liquido_rrhh_externo').innerText = '<%= number_to_percentage((@costos['aporte_propio_liquido_rrhh_externo'].to_f / @costos['aporte_propio_liquido'].to_f * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_propio_liquido_rrhh_externo').innerText = '0,00%';
   <% end %>
@@ -112,7 +128,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   <% end %>
   
   document.getElementById('aporte_propio_liquido_gasto_operacion').innerText = '<%= number_to_currency @costos['aporte_propio_liquido_gasto_operacion'] %>';
-  <% if @costos['aporte_propio_valorado'] != 0 || @costos['aporte_propio_liquido_gasto_operacion'] != 0 %>
+  <% if @costos['aporte_propio_liquido'] != 0 || @costos['aporte_propio_liquido_gasto_operacion'] != 0 %>
     document.getElementById('porcentaje_aporte_propio_liquido_gasto_operacion').innerText = '<%= number_to_percentage((@costos['aporte_propio_liquido_gasto_operacion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_propio_liquido_gasto_operacion').innerText = '0,00%';
@@ -127,7 +143,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   <% end %>
   
   document.getElementById('aporte_propio_liquido_gasto_administracion').innerText = '<%= number_to_currency @costos['aporte_propio_liquido_gasto_administracion'] %>';
-  <% if @costos['aporte_propio_valorado'] != 0 || @costos['aporte_propio_liquido_gasto_administracion'] != 0 %>
+  <% if @costos['aporte_propio_liquido'] != 0 || @costos['aporte_propio_liquido_gasto_administracion'] != 0 %>
     document.getElementById('porcentaje_aporte_propio_liquido_gasto_administracion').innerText = '<%= number_to_percentage((@costos['aporte_propio_liquido_gasto_administracion'].to_f / @costos['aporte_propio_liquido'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_propio_liquido_gasto_administracion').innerText = '0,00%';
@@ -136,7 +152,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   //APORTE DEL FONDO POR PARTIDA
   //Recursos Humanos Externos
   document.getElementById('aporte_solicitado_fondo_rrhh_externo').innerText = '<%= number_to_currency @costos['aporte_solicitado_fondo_rrhh_externo'] %>';
-  <% if @costos.aporte_solicitado_al_fondo != 0 %>
+  <% if @costos.aporte_solicitado_al_fondo != 0 || @costos['aporte_solicitado_fondo_rrhh_externo'] != 0 %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_rrhh_externo').innerText = '<%= number_to_percentage((@costos['aporte_solicitado_fondo_rrhh_externo'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_rrhh_externo').innerText = '0,00%';
@@ -144,7 +160,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
 
   //Gastos de Operación
   document.getElementById('aporte_solicitado_fondo_gasto_operacion').innerText = '<%= number_to_currency @costos['aporte_solicitado_fondo_gasto_operacion'] %>';
-  <% if @costos.aporte_solicitado_al_fondo != 0 %>
+  <% if @costos.aporte_solicitado_al_fondo != 0 || @costos['aporte_solicitado_fondo_gasto_operacion'] != 0 %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_operacion').innerText = '<%= number_to_percentage((@costos['aporte_solicitado_fondo_gasto_operacion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_operacion').innerText = '0,00%';
@@ -152,7 +168,7 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
 
   //Gastos de Administración
   document.getElementById('aporte_solicitado_fondo_gasto_administracion').innerText = '<%= number_to_currency @costos['aporte_solicitado_fondo_gasto_administracion'] %>';
-  <% if @costos.aporte_solicitado_al_fondo != 0 %>
+  <% if @costos.aporte_solicitado_al_fondo != 0 || @costos['aporte_solicitado_fondo_gasto_administracion'] != 0 %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_administracion').innerText = '<%= number_to_percentage((@costos['aporte_solicitado_fondo_gasto_administracion'].to_f / @costos['aporte_solicitado_al_fondo'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_administracion').innerText = '0,00%';
@@ -161,13 +177,13 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   //VALIDACIÓN
   //Aporte líquido del postulante
   document.getElementById('valida_aporte_propio_liquido').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] %>';
-  <% if @costos['aporte_propio_liquido'] != 0 %>
+  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
     document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
   <% else %>
     document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
   <% end %>
-  
-  <% if @costos['costo_total_de_la_propuesta'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100) && @costos['costo_total_de_la_propuesta'] != '' %>
+
+  <% if @costos['aporte_propio_liquido'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100) %>
     document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'SI';
   <% else %>
     document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
@@ -214,3 +230,102 @@ $("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
   <% else %>
     document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
   <% end %>
+<% else %>
+  //ESTRUCTURA DE COSTOS
+  //Costo total de la propuesta
+  document.getElementById('costo_total_de_la_propuesta').innerText = '$0';
+  document.getElementById('porcentaje_costo_total_de_la_propuesta').innerText = '0,00%';
+  
+  //Aporte Propio Valorado
+  document.getElementById('aporte_propio_valorado').innerText = '$0';
+  document.getElementById('porcentaje_aporte_propio_valorado').innerText = '0,00%';
+  
+  //Aporte Propio Líquido
+  document.getElementById('aporte_propio_liquido').innerText = '$0';
+  document.getElementById('porcentaje_aporte_propio_liquido').innerText = '0,00%';
+  
+  //Aporte Propio Total
+  document.getElementById('aporte_propio_total').innerText = '$0';
+  document.getElementById('porcentaje_aporte_propio_total').innerText = '0,00%';
+  
+  //Aporte solicitado Fondo PL
+  document.getElementById('aporte_solicitado_al_fondo').innerText = '$0';
+  document.getElementById('porcentaje_aporte_solicitado_al_fondo').innerText = '0,00%';
+  
+  //ESTRUCTURA DE COSTOS POR PARTIDA
+  //Recursos Humanos Propios
+  document.getElementById('recursos_humanos_propios').innerText = '$0';
+  document.getElementById('porcentaje_recursos_humanos_propios').innerText = '0,00%';
+  
+  //Recursos Humanos Externos
+  document.getElementById('recursos_humanos_externos').innerText = '$0'; 
+  document.getElementById('porcentaje_recursos_humanos_externos').innerText = '0,00%';
+  
+  //Gastos de Operación
+  document.getElementById('gastos_operacion').innerText = '$0';  
+  document.getElementById('porcentaje_gastos_operacion').innerText = '0,00%';
+  
+  //Gastos de Administración
+  document.getElementById('gastos_administrativos').innerText =  '$0';
+  document.getElementById('porcentaje_gastos_operacion').innerText = '0,00%';
+  
+  //APORTE BENEFICIARIO POR PARTIDA
+  //Recursos Humanos Propios
+  document.getElementById('aporte_propio_valorado_rrhh_propio').innerText = '$0';
+  document.getElementById('porcentaje_aporte_propio_valorado_rrhh_propio').innerText = '0,00%';
+  document.getElementById('aporte_propio_liquido_rrhh_propio').innerText = '$0'; 
+  document.getElementById('porcentaje_aporte_propio_liquido_rrhh_propio').innerText = '0,00%';
+  
+  //Recursos Humanos Externos
+  document.getElementById('aporte_propio_valorado_rrhh_externo').innerText = '$0'; 
+  document.getElementById('porcentaje_aporte_propio_valorado_rrhh_externo').innerText = '0,00%';
+  document.getElementById('aporte_propio_liquido_rrhh_externo').innerText = '$0'; 
+  document.getElementById('porcentaje_aporte_propio_liquido_rrhh_externo').innerText = '0,00%';
+  
+  //Gastos de Operación
+  document.getElementById('aporte_propio_valorado_gasto_operacion').innerText = '$0';  
+  document.getElementById('porcentaje_aporte_propio_valorado_gasto_operacion').innerText = '0,00%';
+  document.getElementById('aporte_propio_liquido_gasto_operacion').innerText = '$0';  
+  document.getElementById('porcentaje_aporte_propio_liquido_gasto_operacion').innerText = '0,00%';
+  
+  //Gastos de Administración
+  document.getElementById('aporte_propio_valorado_gasto_administracion').innerText = '$0';  
+  document.getElementById('porcentaje_aporte_propio_valorado_gasto_administracion').innerText = '0,00%';
+  document.getElementById('aporte_propio_liquido_gasto_administracion').innerText = '$0';  
+  document.getElementById('porcentaje_aporte_propio_liquido_gasto_administracion').innerText = '0,00%';
+  
+  //APORTE DEL FONDO POR PARTIDA
+  //Recursos Humanos Externos
+  document.getElementById('aporte_solicitado_fondo_rrhh_externo').innerText = '$0'; 
+  document.getElementById('porcentaje_aporte_solicitado_fondo_rrhh_externo').innerText = '0,00%';
+  
+  //Gastos de Operación
+  document.getElementById('aporte_solicitado_fondo_gasto_operacion').innerText = '$0';
+  document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_operacion').innerText = '0,00%';
+  
+  //Gastos de Administración
+  document.getElementById('aporte_solicitado_fondo_gasto_administracion').innerText = '$0'; 
+  document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_administracion').innerText = '0,00%';
+  
+  //VALIDACIÓN
+  //Aporte líquido del postulante
+  document.getElementById('valida_aporte_propio_liquido').innerText = '$0'; 
+  document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
+  document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
+  
+  //Aporte del postulante
+  document.getElementById('valida_costo_total_de_la_propuesta').innerText = '$0'; 
+  document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '0%';
+  document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'NO';
+  
+  //Gastos de Administración
+  document.getElementById('valida_gastos_administrativos').innerText = '$0'; 
+  document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '0%';
+  document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'NO';
+  
+  //Cofinanciamiento CPL
+  document.getElementById('valida_aporte_solicitado_al_fondo').innerText ='$0'; 
+  document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
+  document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
+      
+<% end %>

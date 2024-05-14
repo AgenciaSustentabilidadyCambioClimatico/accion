@@ -102,10 +102,16 @@ class PlanActividad < ApplicationRecord
         COALESCE(hh_gastos_subquery.valor_hh_tipos_1_2, 0) AS recursos_humanos_externos,
         COALESCE(gastos_subquery.total_gastos_tipo_1, 0) AS gastos_operacion,
         COALESCE(gastos_subquery.total_gastos_tipo_2, 0) AS gastos_administrativos,
-        COALESCE(hh_gastos_subquery.valor_hh_tipo_3+hh_gastos_subquery.valor_hh_tipos_1_2+gastos_subquery.total_gastos_tipo_1+gastos_subquery.total_gastos_tipo_2, 0) AS costo_total_de_la_propuesta,
-        COALESCE(hh_gastos_subquery.aporte_propio_valorado+gastos_subquery.aporte_propio_valorado, 0) AS aporte_propio_valorado,
-        COALESCE(hh_gastos_subquery.aporte_propio_liquido+gastos_subquery.aporte_propio_liquido, 0) AS aporte_propio_liquido,
-        COALESCE(hh_gastos_subquery.aporte_solicitado_al_fondo+gastos_subquery.aporte_solicitado_al_fondo, 0) AS aporte_solicitado_al_fondo,
+        COALESCE(hh_gastos_subquery.valor_hh_tipo_3, 0) +
+        COALESCE(hh_gastos_subquery.valor_hh_tipos_1_2, 0) +
+        COALESCE(gastos_subquery.total_gastos_tipo_1, 0) +
+        COALESCE(gastos_subquery.total_gastos_tipo_2, 0) AS costo_total_de_la_propuesta,
+        COALESCE(hh_gastos_subquery.aporte_propio_valorado, 0) +
+        COALESCE(gastos_subquery.aporte_propio_valorado, 0) AS aporte_propio_valorado,
+        COALESCE(hh_gastos_subquery.aporte_propio_liquido, 0) +
+        COALESCE(gastos_subquery.aporte_propio_liquido, 0) AS aporte_propio_liquido,
+        COALESCE(hh_gastos_subquery.aporte_solicitado_al_fondo, 0) +
+        COALESCE(gastos_subquery.aporte_solicitado_al_fondo, 0) AS aporte_solicitado_al_fondo,
         COALESCE(hh_gastos_subquery.aporte_propio_valorado_rrhh_propio, 0) AS aporte_propio_valorado_rrhh_propio,
         COALESCE(hh_gastos_subquery.aporte_propio_valorado_rrhh_externo, 0) AS aporte_propio_valorado_rrhh_externo,
         COALESCE(hh_gastos_subquery.aporte_propio_liquido_rrhh_propio, 0) AS aporte_propio_liquido_rrhh_propio,

@@ -84,7 +84,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + total + "</td>" +
       <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
-        "<a data-gasto-id=" + gastos_id + " data-confirm='�Est� seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +
       <% end %> 
       "</tr>";
@@ -102,6 +102,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
     var unidad_medida = '<%= gastos_administracion.unidad_medida %>';
     var total = '<%=number_to_currency gastos_administracion.cantidad.to_i * gastos_administracion.valor_unitario.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var plan_id = '<%= @plan %>';
     var newRow = "<tr>" +
       "<td class='contenido-form'>" + nombre + "</td>" +
       "<td class='contenido-form'>" + valor_unitario + "</td>" +
@@ -110,7 +111,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + total + "</td>" +
       <% if !solo_lectura %>
         "<td class='contenido-form dos iconos-acciones'>" +
-        "<a data-gasto-id="+ gastos_id + " data-confirm='�Est� seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id +"' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>" +
       <% end %> 
       "</tr>";
