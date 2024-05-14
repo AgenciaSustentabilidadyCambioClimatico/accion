@@ -1026,7 +1026,7 @@ class FondoProduccionLimpiasController < ApplicationController
           @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
           #binding.pry
           set_costos 
-          format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1 } }
+          format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1, plan_id: params['plan_id'] } }
         end 
       else
         flash[:error] = 'Hubo un problema al eliminar el gasto.'
@@ -1072,7 +1072,7 @@ class FondoProduccionLimpiasController < ApplicationController
           @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
           #binding.pry
           set_costos
-          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2 } }
+          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2, plan_id: params['plan_id'] } }
         end 
       else
         flash[:error] = 'Hubo un problema al eliminar el gasto.'
@@ -1121,7 +1121,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       ###Actualiza costos
       set_costos  
-      
+
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3 } }
       end
