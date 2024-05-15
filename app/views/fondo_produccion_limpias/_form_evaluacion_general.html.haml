@@ -92,7 +92,6 @@
     var notaSelect = document.getElementById(nota);
     var obsSelect = document.getElementById(observacion);
 
-    //alert('entro pertinencia');
     // Obtener el valor seleccionado
     var valorSeleccionado = notaSelect.value;
     
@@ -298,19 +297,11 @@
       resultado.textContent = total.toFixed(2);
     }
 
-    //alert('entro total ' + total.toFixed(2));
-
-    //alert('resultadoOtorgados1 ' + resultadoOtorgados1.toFixed(2));
-    //alert('resultadoOtorgados2 ' + resultadoOtorgados2.toFixed(2));
-    //alert('resultadoOtorgados3 ' + resultadoOtorgados3.toFixed(2));
-    //alert('resultadoOtorgados4 ' + resultadoOtorgados4.toFixed(2));
-
     //El promedio total debe ser matoyr o igual a 5.5
     if (total.toFixed(2) >= 5.50) {
       
       //los promedios parciales deben ser mayores o iguales a 5.0
       if (resultadoOtorgados1.toFixed(2) >= 5.00 && resultadoOtorgados2.toFixed(2) >= 5.00 && resultadoOtorgados3.toFixed(2) >= 5.00 && resultadoOtorgados4.toFixed(2) >= 5.00) {
-        //alert('entro sub total ');
         // Define los nuevos valores para el select
         var nuevosValores = [
             { value: '1', text: 'Aceptada' },

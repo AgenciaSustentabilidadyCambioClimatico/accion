@@ -6,21 +6,14 @@
       width: '100%'
     });
     htmlErrorToTooltip('top');
-
-    //alert('entro revisor');
     cargarRevisor();
 
     $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
       tab_selected = e.target;
-
-      //alert('entro revisor 1');
-      //alert($(tab_selected).prop('id'));
-
       $(tab_selected).prop('id')
       $('.accordionTabs .card-body a').removeClass('hide');
       if($(tab_selected).prop('id') != 'asignar-revisor-tab'){
         if($(tab_selected).prop('id') == 'asignar-revisor-externo'){
-          //alert('entro revisor 2');
           $('#collapseTabs').removeClass("show");
           $('a.nav-link#asignar-revisor-tab').tab('show');
           $('.accordionTabs .card-header a').removeClass('active');
@@ -40,7 +33,6 @@
 
     $('.collapse-tab-item').click(function(e){
       tab = $(this).attr('tab');
-      //alert(tab);
       $('#collapseTabs').removeClass("show");
       $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
       $('a.nav-link#'+tab+'-tab').tab('show');
@@ -65,7 +57,6 @@
   });
 
   function cargarRevisor() {
-    //alert('cargarRevisor');
     $.ajax({
       url: "#{get_revisor_fondo_produccion_limpia_path}",
       data: {
@@ -73,7 +64,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioFinanciera();
       },
       error: function(error) {
@@ -82,27 +72,6 @@
     });
   }
 
-  $('#asignar-revisores').click(function(e){
-      alert('asignar-revisores');
-      /*$.ajax({
-        url: "#{asignar_revisor_fondo_produccion_limpia_path}",
-        data: {
-          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-        },
-        method: "PATCH",
-        success: function(response) {
-          console.log("Método del controlador llamado con éxito");
-          calcularPromedioFinanciera();
-        },
-        error: function(error) {
-          console.error("Error al llamar al método del controlador", error);
-        }
-      });*/
-    });
-
-  function asignarRevisorButton() {
-    alert('asignar_revisor-button XXX');
-  }
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 = simple_form_for @fondo_produccion_limpia, url: asignar_revisor_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true

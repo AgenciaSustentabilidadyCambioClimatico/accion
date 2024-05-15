@@ -28,5 +28,10 @@ $('#div_objetivo_especifico table tbody').append(newRow);
 // Inicializar el tooltip después de agregar el nuevo elemento
 $('[data-toggle="tooltip"]').tooltip();
 
+var mensajeCosto = document.getElementById('mensaje-costo');
+<% if @mensaje.present? %>
+  var contenido = '<%= j @mensaje %>';
+  mensajeCosto.innerHTML = contenido;
+<% end %>
 
 

@@ -58,8 +58,6 @@
   });
 
   function guardarUsuarioEntregables(){
-    //alert('guardarUsuarioEntregables');
-
     $('.loading-data').show();
     $.ajax({
       url: "#{guardar_usuario_entregables_fondo_produccion_limpias_path}",
@@ -67,7 +65,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
       error: function(error) {
@@ -90,7 +87,6 @@
   });
 
   function optionSelectInstitucionFinanciamiento(valor) {
-    //alert(valor);
     var buscarContribuyenteBtn = document.getElementById('buscar-contribuyente-fpl');
     if( valor == 1 ) {
       /*buscarContribuyenteBtn.addEventListener('click', function() {
@@ -113,7 +109,6 @@
   }
 
   function optionSelectInstitucionCofinanciamiento(valor) {
-    //alert(valor);
     if( valor == 1 ) {
       $('#encargado-financiamiento-fpl').prop('disabled', true);
     }else{

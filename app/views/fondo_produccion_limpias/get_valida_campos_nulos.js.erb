@@ -1,5 +1,12 @@
 $('#campos_pendientes').val('0');
 
+var mensajeCosto = document.getElementById('mensaje-costo');
+
+<% if @mensaje.present? %>
+  var contenido = '<%= j @mensaje %>';
+  mensajeCosto.innerHTML = contenido;
+<% end %>
+
 <% campos_nulos.each do |campo| %>
   var $elemento = $('#<%= escape_javascript(campo.to_s) %>');
   $elemento.removeClass('border-text');

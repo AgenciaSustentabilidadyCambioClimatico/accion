@@ -33,6 +33,12 @@ document.querySelectorAll('#div_consultor_faltantes input[type="text"]').forEach
     input.value = '';
 });
 
+var mensajeCosto = document.getElementById('mensaje-costo');
+<% if @mensaje.present? %>
+  var contenido = '<%= j @mensaje %>';
+  mensajeCosto.innerHTML = contenido;
+<% end %>
+
 <% if @total_gastos_tipo_1.total_gastos_tipo_1 != 0 %>
   document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_1.total_gastos_tipo_1 %>';
 <% else %>
