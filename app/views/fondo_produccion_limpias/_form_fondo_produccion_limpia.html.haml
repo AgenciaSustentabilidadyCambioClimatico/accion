@@ -27,6 +27,16 @@
   var clases = Object.keys(validaciones);
   var descargables = #{raw json_escape(@descargables.to_json)}
 
+  $('#tabla_usuarios_buscar-usuario-usuario').dataTable({
+      destroy: true
+  });
+  $('#tabla_usuarios_buscar-usuario-consultor').dataTable({
+      destroy: true
+  });
+  $('#tabla_usuarios_buscar-usuario-postulante').dataTable({
+      destroy: true
+  });
+
   $(document).on('click focus mouseover', '*',function(e){
     if(!$(this).is('abbr')){
       metodo = ['click','focus'].includes(e.type) ? 'hide' : 'enable';
@@ -47,12 +57,6 @@
 
   $('.seleccionar-contribuyente-button').click(function() {
     try {
-      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
-      //data=JSON.parse($('.contribuyente-radio:checked').val());
-
-      var dataTable = $('table.contribuyentes').DataTable();
-      dataTable.destroy();
-
       data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
 
       $("select#responsable_contribuyente_id").append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
@@ -84,9 +88,6 @@
   //Permite que al seleccionar un usuario desde el modal se adjunte su información
   $(document).on('click' , '.seleccionar-usuario-button', function() {
     try {
-      var dataTable = $('table.usuarios').DataTable();
-      dataTable.destroy();
-
       data=JSON.parse($('table.usuarios').DataTable().$('.contribuyente-radio:checked').val());
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
       $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
@@ -112,15 +113,8 @@
     cargarEvaluacionGeneral();
     
     valida_div();
-
-    //var divEquipoConsultora = document.getElementById('div_equipo_consultora');
-    //divEquipoConsultora.style.display = 'none';
-    
-    //var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
-    //divEquipoConsultoraEmpresa.style.display = 'none';
-    
+   
     $("#intitucion_cogestora").click(function(){
-      //alert('entro a buscador');
       $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
     });
 
@@ -138,16 +132,6 @@
     $('#open-modal-button_crear_equipo_consultora').click(function(){
       $('#modal_consultora_create-form').modal('show');
     });
-
-    //$('#open-modal-button_crear_plan_actividades').click(function(){
-    //  $('#modal_plan_actividades-form').modal('show');
-    //});
-    
-    
-    /*$('#open-modal-button_buscar_usuario').click(function(){
-      var modalBuscarUsuario = document.getElementById("buscar-usuario");
-      $(modalBuscarUsuario).modal('show');
-    });*/
 
     $('#open-modal-button_buscar_usuario').click(function(){
       $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-usuario', tipo_equipo: '1')}");
@@ -209,27 +193,11 @@
 
     verificarModal();
     process_mantenedor_campos();
-    //activa_validaciones();
-
+   
     $('body').on('change','.usuario-radio',function() {
       $('.seleccionar-usuario-button').removeAttr('disabled');
       $('.seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
     });
-
-
-    // ## 
-    // # DOSSA 2019-09-10 16:48
-    // # Se comenta función ya que el tab Datos Proyecto debe disponibilizarse siempre.
-    //verificarPreinversion();
-    //$("#area-influencia-proyecto-mapa").focusout(function(e){
-      //if( $(document.activeElement).parents('div#area-influencia-proyecto-mapa').length ) {
-        //console.log("yes");
-      //}else{
-        //console.log("no");
-      //}
-
-      //$('#manifestacion_de_interes_area_influencia_proyecto_data').trigger("change");
-    //});
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
       $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
@@ -295,22 +263,7 @@
       });
       $(".radios-selector-subida:checked").trigger("change");
     }
-    
-    //# DOSSA 2019-09-24 17:00 se comenta ya que no es necesaria esta validación
-    //Validar que solo se leccione o un diagnostico o un estandar, no ambos.-
-    //if($('#manifestacion_de_interes_diagnostico_id').val() != '' && $('#manifestacion_de_interes_diagnostico_id').val() != null){
-      //console.log($('#manifestacion_de_interes_diagnostico_id').val())
-      //$('#manifestacion_de_interes_estandar_de_certificacion_id').attr('disabled', true);
-      //$('#manifestacion_de_interes_estandar_de_certificacion_id').val("");
-    //}
-    //if($('#manifestacion_de_interes_estandar_de_certificacion_id').val() != '' && $('#manifestacion_de_interes_estandar_de_certificacion_id').val() != null){
-      //$('#manifestacion_de_interes_diagnostico_id').attr('disabled', true);
-      //$('#manifestacion_de_interes_diagnostico_id').val("");
-    //}
 
-    //DZC 2019-02-28 20:01:23 configura la visualización del mensaje recuerde_guardar
-
-    //DZC 2019-03-01 12:58:16 elimina los timeouts pendientes
     var id = window.setTimeout(function() {}, 0);
     while (id--) {
       window.clearTimeout(id);
@@ -764,7 +717,6 @@
       method: "GET",
       dataType: "script",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -796,7 +748,6 @@
       method: "GET",
       success: function(response) {
         $('#modal_objetivos-edit-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -805,38 +756,27 @@
   }
 
   function crearPlanActividades(plan_id, solo_lectura){
-    //alert(plan_id);
-     //alert('entro buscador')
-
-    //var solo_lectura = document.getElementById('solo_lecturas').getAttribute('data-solo_lectura');
-    //alert(solo_lectura)
-
     $.ajax({
       url: "#{get_plan_actividades_fondo_produccion_limpia_path}",
       data: { plan_id: plan_id, 
               solo_lectura: solo_lectura},
       method: "GET",
       success: function(response) {
-        //alert(response);
         $('#modal_create_plan_actividades-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
-        //alert(error);
         console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
   function modalRrhhPropios(id){
-    //alert(id);
     $.ajax({
       url: "#{get_recursos_propios_fondo_produccion_limpia_path}",
       data: { actividad_id: id},
       method: "GET",
       success: function(response) {
         $('#modal_rrhh_propios-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -851,7 +791,6 @@
       method: "GET",
       success: function(response) {
         $('#modal_rrhh_externos-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -869,14 +808,12 @@
   }
 
   function insertGastosOperacion(plan_id){
-    //alert('entro gastos');
     var nombre = document.getElementById('nombre').value;
     var valor_unitario = document.getElementById('valor_unitario').value;
     var cantidad = document.getElementById('cantidad').value;
     var unidad_medida = document.getElementById('unidad_medida').value;
     var tipo_aporte_id = document.getElementById('tipo_aporte_id').value;
-    //var flujo_id = document.getElementById('flujo_id').value;
-    
+ 
     $.ajax({
       url: "#{insert_gastos_operacion_fondo_produccion_limpia_path}",
       data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -888,7 +825,6 @@
               tipo_aporte_id: tipo_aporte_id},
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -897,7 +833,6 @@
   }
 
   function insertGastosAdministracion(plan_id){
-    //alert('entro gasts adm');
     var nombre = document.getElementById('nombre_adm').value;
     var valor_unitario = document.getElementById('valor_unitario_adm').value;
     var cantidad = document.getElementById('cantidad_adm').value;
@@ -916,7 +851,6 @@
               tipo_aporte_id: tipo_aporte_id},
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -925,8 +859,6 @@
   }
 
   function guardarPlanActividad(plan_id){
-
-    //alert('plan_id '+ plan_id);
     // Seleccionar todos los checkboxes dentro de la tabla
     var checkboxes = document.querySelectorAll('#div_duracion input[type="checkbox"]');
 
@@ -942,12 +874,8 @@
 
     var duracion = checkboxesSeleccionados;
     var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
-    //alert(objetivos_especifico_id);
 
     var nombre_actividad = document.getElementById('nombre_actividad').value;
-
-    //alert(checkboxesSeleccionados);
-
     var alertaMostrada = false;
 
     // Si el campo está vacío, muestra una alerta y evita el envío del formulario
@@ -979,7 +907,6 @@
     }
     
     if (plan_id != 0) {
-      //alert('entro insert');
       $.ajax({
         url: "#{insert_plan_actividades_fondo_produccion_limpia_path}",
         data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -988,14 +915,12 @@
                 objetivos_especifico_id: objetivos_especifico_id},
         method: "POST",
         success: function(response) {
-          console.log("Método del controlador llamado con éxito");
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
         }
       });
     }else{
-      //alert('entro al sin id');
       $.ajax({
         url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
         data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -1005,7 +930,6 @@
                 opcion: 'insert'},
         method: "POST",
         success: function(response) {
-          console.log("Método del controlador llamado con éxito");
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
@@ -1027,7 +951,6 @@
         var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
         var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
     
-        //alert(rrhhPropioId);
         //if (hh!=0) {
           // Agrega los datos al arreglo
           data.push({
@@ -1087,7 +1010,6 @@
           }
           // Verificar si al menos uno está seleccionado
           if (seleccionado) {
-          //alert(rrhhEquipoId);
           // Agrega los datos al arreglo
             data.push({
                 rrhhExternoId: rrhhExternoId,
@@ -1133,7 +1055,6 @@
   }  
   
   function optionSelect(tipo){
-    //alert("check "+tipo);
     var divEquipoConsultora = document.getElementById('div_equipo_consultora');
     var divEmpresaConsultora = document.getElementById('div_empresa_consultora');
     var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
@@ -1161,8 +1082,6 @@
     var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
 
     var tipo = document.getElementById('tipos').getAttribute('data-tipo');
-    //alert("entro check "+tipo);
-    //alert(tipo);
     if (tipo == 2) {
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
@@ -1204,7 +1123,6 @@
         'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') // CSRF token
       },
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1222,7 +1140,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1241,25 +1158,12 @@
     }
   });
 
-  /*$('#buscar-usuario').on('hidden.bs.modal', function () {
-    // Aquí puedes llamar a tu función JavaScript después de que el modal se haya ocultado
-    tuFuncionJavaScript();
-  });
-
-  function tuFuncionJavaScript() {
-    // Código de tu función aquí
-    alert("entro aqui");
-  }*/
-
   function iniciarBuscar(id) {
-    //alert('entro buscador')
     $.ajax({
       url: "#{buscador_fondo_produccion_limpia_path}",
       data: { id2: id},
       method: "GET",
       success: function(response) {
-        //$('#modal_objetivos-edit-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1287,7 +1191,6 @@
   }
 
   function agregarPlanActividades() {
-    //alert('agregarPlanActividades');
      $.ajax({
       url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
       data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -1296,7 +1199,6 @@
       method: "POST",
       success: function(response) {
         $('#modal_create_plan_actividades-form').modal('show');
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1305,8 +1207,6 @@
   }
 
   function guardarAdmisibilidadFinanciera(){
-    //alert('guardarAdmisibilidadFinanciera');
-
     var nota_input_id_1 = document.getElementById('nota_input_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_id_3').value;
@@ -1353,7 +1253,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1363,8 +1262,6 @@
 
   
   function enviarAdmisibilidadFinanciera(){
-    //alert('enviarAdmisibilidadFinanciera');
-
     var nota_input_id_1 = document.getElementById('nota_input_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_id_3').value;
@@ -1514,7 +1411,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1523,7 +1419,6 @@
   }
 
   function guardarAdmisibilidadTecnica(){
-    //alert('guardarAdmisibilidadTecnica');
     var nota_input_id_1 = document.getElementById('nota_input_tecnica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_tecnica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_tecnica_id_3').value;
@@ -1585,15 +1480,12 @@
       }
     };
 
-    //alert(jsonData);
-
     $.ajax({
       url: "#{revisar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1602,7 +1494,6 @@
   }
 
   function enviarAdmisibilidadTecnica(){
-    //alert('enviarAdmisibilidadTecnica');
     var nota_input_id_1 = document.getElementById('nota_input_tecnica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_tecnica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_tecnica_id_3').value;
@@ -1833,7 +1724,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1842,8 +1732,6 @@
   }  
 
   function guardarAdmisibilidadJuridica(){
-    //alert('guardarAdmisibilidadJuridica');
-
     var nota_input_id_1 = document.getElementById('nota_input_juridica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_juridica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_juridica_id_3').value;
@@ -1912,7 +1800,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
       error: function(error) {
@@ -1923,7 +1810,6 @@
   }
 
   function enviarAdmisibilidadJuridica(){
-    //alert('enviarAdmisibilidadJuridica');
     var nota_input_id_1 = document.getElementById('nota_input_juridica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_juridica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_juridica_id_3').value;
@@ -2155,7 +2041,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
       error: function(error) {
@@ -2167,7 +2052,6 @@
   }
 
   function guardarObservacionesAdmisibilidadJuridica(){
-    //alert('guardarObservacionesAdmisibilidadJuridica');
     $('.loading-data').show();
 
     $.ajax({
@@ -2176,7 +2060,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
       error: function(error) {
@@ -2187,15 +2070,12 @@
   }
 
   function enviarObservacionesAdmisibilidadJuridica(){
-    //alert('enviarObservacionesAdmisibilidadJuridica');
-
     $.ajax({
       url: "#{enviar_observaciones_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $('.loading-data').hide();
       },
       error: function(error) {
@@ -2206,7 +2086,6 @@
   }
 
   function enviarObservacionesAdmisibilidadFinanciera(){
-    //alert('enviarObservacionesAdmisibilidadFinanciera');
     var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
@@ -2257,7 +2136,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $.ajax({
           url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
           data: {
@@ -2265,7 +2143,6 @@
           },
           method: "GET",
           success: function(response) {
-            console.log("Método del controlador llamado con éxito");
             if(confirm("¿Está seguro que desea enviar?")){
               $.ajax({
                 url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
@@ -2273,7 +2150,6 @@
                 contentType: "application/json",
                 method: "POST",
                 success: function(response) {
-                  console.log("Método del controlador llamado con éxito");
                   $('.loading-data').hide();
                 },
                 error: function(error) {
@@ -2291,7 +2167,6 @@
   }
 
   function enviarObservacionesAdmisibilidadTecnica(){
-    //alert('enviarObservacionesAdmisibilidadTecnica');
     var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
@@ -2342,7 +2217,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         $.ajax({
           url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
           data: {
@@ -2350,7 +2224,6 @@
           },
           method: "GET",
           success: function(response) {
-            console.log("Método del controlador llamado con éxito");
             if(confirm("¿Está seguro que desea enviar?")){
               $.ajax({
                 url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -2358,7 +2231,6 @@
                 contentType: "application/json",
                 method: "POST",
                 success: function(response) {
-                  console.log("Método del controlador llamado con éxito");
                   $('.loading-data').hide();
                 },
                 error: function(error) {
@@ -2376,7 +2248,6 @@
   }
 
   function guardarPertinenciaFactibilidad(){
-    //alert('guardarPertinenciaFactibilidad');
     var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_id_3').value;
@@ -2492,7 +2363,6 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2501,8 +2371,6 @@
   }
 
   function enviarPertinenciaFactibilidad(){
-    //alert('enviarPertinenciaFactibilidad');
-
     var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_id_3').value;
@@ -2629,7 +2497,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2639,8 +2506,6 @@
 
   
   function enviarEvaluacionGeneral(){
-    //alert('enviarEvaluacionGeneral');
-
     var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_id_1').value;
     var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_id_2').value;
     var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_id_3').value;
@@ -2829,7 +2694,6 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2838,7 +2702,6 @@
   }
 
   function cargarAdmisibilidadFinanciera() {
-    //alert('cargarAdmisibilidadFinanciera');
     $.ajax({
       url: "#{get_admisibilidad_financiera_fondo_produccion_limpia_path}",
       data: {
@@ -2846,7 +2709,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioFinanciera();
       },
       error: function(error) {
@@ -2855,10 +2717,7 @@
     });
   }
 
-
-
   function cargarAdmisibilidadTecnica() {
-    //alert('cargarAdmisibilidadTecnica');
     $.ajax({
       url: "#{get_admisibilidad_tecnica_fondo_produccion_limpia_path}",
       data: {
@@ -2866,7 +2725,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioTecnica();
         calcularPromedioTecnica2();
         calcularPromedioTecnica3();
@@ -2878,7 +2736,6 @@
   }
 
   function cargarAdmisibilidadJuridica() {
-    //alert('cargarAdmisibilidadJuridica');
     $.ajax({
       url: "#{get_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: {
@@ -2886,7 +2743,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2895,7 +2751,6 @@
   }
 
   function cargarObservacionesAdmisibilidadJuridica() {
-    //alert('cargarObservacionesAdmisibilidadJuridica');
     $.ajax({
       url: "#{get_observaciones_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: {
@@ -2903,7 +2758,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2912,7 +2766,6 @@
   }
 
   function cargarObservacionesAdmisibilidadFinanciera() {
-    //alert('cargarObservacionesAdmisibilidadFinanciera');
     $.ajax({
       url: "#{get_observaciones_admisibilidad_fondo_produccion_limpia_path}",
       data: {
@@ -2920,7 +2773,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2929,7 +2781,6 @@
   }
 
   function cargarObservacionesAdmisibilidadTecnica() {
-    //alert('cargarObservacionesAdmisibilidadTecnica');
     $.ajax({
       url: "#{get_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
       data: {
@@ -2937,7 +2788,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2946,7 +2796,6 @@
   }
 
   function cargarPertinenciaFactibilidad() {
-    //alert('cargarPertinenciaFactibilidad');
     $.ajax({
       url: "#{get_pertinencia_factibilidad_fondo_produccion_limpia_path}",
       data: {
@@ -2954,7 +2803,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioPertinenciaTecnica();
         calcularPromedioPertinenciaTecnica2();
         calcularPromedioPertinenciaTecnica3();
@@ -2968,7 +2816,6 @@
   }
 
   function cargarEvaluacionGeneral() {
-    //alert('cargarEvaluacionGeneral');
     $.ajax({
       url: "#{get_evaluacion_general_fondo_produccion_limpia_path}",
       data: {
@@ -2976,7 +2823,6 @@
       },
       method: "GET",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioPertinenciaTecnicaGeneral();
         calcularPromedioPertinenciaTecnicaGeneral2();
         calcularPromedioPertinenciaTecnicaGeneral3();
@@ -2990,7 +2836,6 @@
   }
 
   function guardarAsignarRevisores() {
-    //alert('guardarAsignarRevisores');
     var codigo_proyecto = document.getElementById('codigo_proyecto').value;
     var revisor_tecnico_id = document.getElementById('revisor_tecnico_fpl_id').value;
     var revisor_financiero_id = document.getElementById('revisor_financiero_fpl_id').value;
@@ -3057,7 +2902,6 @@
       },
       method: "PATCH",
       success: function(response) {
-        console.log("Método del controlador llamado con éxito");
         calcularPromedioFinanciera();
       },
       error: function(error) {
@@ -4022,8 +3866,7 @@
         <h1>Resumen</h1>
         .alert.alert-primary
           %small  
-            %i.fa.fa-question-circle.fa-1-5x
-            El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos.
+            #mensaje-costo
         %div.table-responsive 
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -5921,7 +5764,6 @@
   $(document).on('click','#nuevo-usuario-fpl-button', function(e){
     e.preventDefault();
     var tipo_equipo = $('#tipo_equipo').val();
-    //alert("nuevo-usuario-fpl-button "+ tipo_equipo);
     $.ajax({
       url: "#{insert_fondo_produccion_limpia_path}",
       type: "POST",
@@ -5961,11 +5803,9 @@
         estado: 'update'
       }
     }).fail(function(a, b, c) {
-      //alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
       alert( "El usuario seleccionado ya se encuentra asociado al listado de consultores" );
       $('.loading-data').hide();
     }).success(function(data){
-      //alert(data);
       $('#buscar-usuario .body-usuario-buscador').html(data);
       $('.loading-data').hide();
     });
@@ -5981,7 +5821,6 @@
         },
       dataType: 'json',
       success: function(response) {
-        //alert(response.success);
         if (response.success) {
           // Equipo guardado correctamente
           $('#buscar-usuario .body-usuario-buscador').html(data);
@@ -6000,7 +5839,6 @@
   });
 
   function nuevo_usuario_temporal_fpl_validaciones(){
-    //alert('nuevo_usuario_temporal_fpl_validaciones');
     var rut = $('#user_rut').val() != "";
     var nombre_completo = $('#user_nombre_completo').val() != "";
     var email = $('#user_email').val() != "";
@@ -6058,26 +5896,14 @@
     var archivoInput = document.getElementById('copia_ci');
     var archivo = archivoInput.files[0];
     var nombreArchivo = archivo.name;
-    //alert(nombreArchivo);
   }
 
   $('body').on('change','.contribuyente-radio',function() {
-    //alert('checkeado xxx');
     $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
   });
 
   $('.seleccionar-contribuyente-fpl-button').click(function() {
-    //alert('entro seleccionar-contribuyente-fpl-button');
-
-    var dataTable = $('table.contribuyentes').DataTable();
-    dataTable.destroy();
-
     data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-    //alert(data.id);
-
-    //var radioSeleccionado = document.querySelector('input[name="usuario_buscar-usuario"]:checked');
-    //var valorSeleccionado = radioSeleccionado.value;
-    //data=JSON.parse(valorSeleccionado);history
     $.ajax({
       url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
       type: "PATCH",
@@ -6089,7 +5915,6 @@
       alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
       $('.loading-data').hide();
     }).success(function(data){
-      //alert(data);
       $('#buscar-contribuyente .body-contribuyente-buscador').html(data);
       $('#buscar-contribuyente').modal('hide');
       $('.loading-data').hide();

@@ -86,8 +86,6 @@
     
   });
   function habilitaObservacionesJuridica(nota, observacion) {
-    //alert('nota');
-
     // Seleccionar el elemento select
     var notaSelect = document.getElementById(nota);
     var obsSelect = document.getElementById(observacion);
@@ -97,10 +95,8 @@
     
     // Mostrar un alert con el valor seleccionado
     if (valorSeleccionado && valorSeleccionado == '1') {
-      //alert('Cumple');
       obsSelect.style.visibility = 'hidden';
     } else {
-      //alert('No Cumple');
       obsSelect.style.visibility = 'visible';
     }
   }

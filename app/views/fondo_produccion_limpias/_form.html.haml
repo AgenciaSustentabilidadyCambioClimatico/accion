@@ -2,7 +2,6 @@
   $(document).ready(function(){
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
-      //alert('guardar-fondo-temporal-button');
       $('#enviar-manifestacion-button').removeAttr('data-disable-with');
 
       var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
@@ -59,7 +58,6 @@
         },
         method: "GET",
         success: function(response) {
-          console.log("Método del controlador llamado con éxito");
           $.ajax({
             url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
             data: {
@@ -67,7 +65,6 @@
             },
             method: "GET",
             success: function(response) {
-              console.log("Método del controlador llamado con éxito");
             }})
         },
         error: function(error) {
@@ -116,7 +113,6 @@
       }
     });
     $('#enviar-postulacion-button').click(function(e){
-      //alert('enviar-postulacion-button');
       $.ajax({
         url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
         data: {
@@ -124,9 +120,13 @@
         },
        method: "GET",
         success: function(response) {
-          console.log("Método del controlador llamado con éxito");
+          if (#{@response_costos} === 1) {
+            alert("#{@mensaje}");
+            event.preventDefault();
+            return;
+          }
+
           var valor = document.getElementById('campos_pendientes').value;
-          //alert(valor);
           if (valor == 0) {
             console.log("No hay campos nulos, continuando con el siguiente AJAX");
             if(confirm("¿Está seguro que desea enviar?")){
@@ -137,7 +137,6 @@
                 },
                 method: "GET",
                 success: function(response) {
-                  console.log("Método del controlador llamado con éxito");
                   calcularPromedioFinanciera();
                 },
                 error: function(error) {

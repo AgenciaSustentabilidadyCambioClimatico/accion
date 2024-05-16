@@ -14,6 +14,12 @@ $('#div_plan_recursos_externos table tbody').empty();
   <% end %>
   $('#modal_rrhh_externos-form').modal("hide");
 
+  var mensajeCosto = document.getElementById('mensaje-costo');
+  <% if @mensaje.present? %>
+    var contenido = '<%= j @mensaje %>';
+    mensajeCosto.innerHTML = contenido;
+  <% end %>
+
   <% if @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ != 0 %>
     document.getElementById('valor_hh_tipos_1_2_<%= @valor_hh_tipos_1_2_.actividad_id %>').innerText = '<%= number_to_currency @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ %>';
   <% else %>

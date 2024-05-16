@@ -155,6 +155,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_objetivos_especificos
       set_equipo_trabajo
       set_actividades_x_linea
+      set_costos
       @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
      
       #consulta si el numero de plan es igual al numero de actividades
@@ -449,6 +450,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
+      set_costos
 
       respond_to do |format|
         format.js { render 'get_objetivo_especifico', locals: { objetivo_especificos: @objetivo_especificos, solo_lectura: @solo_lectura } }
@@ -3699,7 +3701,28 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_costos
         #binding.pry
-        @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)            
+        @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
+
+        # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
+        @mensaje = nil
+        @response_costos = nil
+        mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
+        mensaje_error = "El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos."
+
+        if @costos.costo_total_de_la_propuesta.present? && (
+            @costos.aporte_propio_liquido >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100)) &&
+            (@costos.aporte_propio_liquido + @costos.aporte_propio_valorado) >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100)) &&
+            @costos.gastos_administrativos <= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100)) &&
+            @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)
+          )
+          @mensaje = mensaje_success
+          @response_costos = 0
+        else
+          @mensaje = mensaje_error
+          @response_costos = 1
+        end
+
+        #binding.pry
       end
 
       def set_admisibilidad_financiera
