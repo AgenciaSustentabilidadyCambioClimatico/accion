@@ -3705,7 +3705,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
         # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
         @mensaje = nil
-        @response_costos = nil
+        @response_costos = 1
         mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
         mensaje_error = "El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos."
 

@@ -120,8 +120,9 @@
         },
        method: "GET",
         success: function(response) {
-          if (#{@response_costos} === 1) {
-            alert("#{@mensaje}");
+          var resp = document.getElementById('response_costos').value;
+          if (resp == 1) {
+            alert("El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos.");
             event.preventDefault();
             return;
           }

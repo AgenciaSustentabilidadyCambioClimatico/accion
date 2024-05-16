@@ -3215,6 +3215,10 @@
       text-align: center;
     }
 
+    .icono-celeste {
+      color: #0069d9;
+    }
+
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
@@ -3222,6 +3226,7 @@
   %div{ id: "tipos", "data-tipo" => tipo }
   -#%div{ id: "solo_lecturas", "data-solo_lectura" => solo_lectura }
   <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
+  <input type="hidden" id="response_costos" name="response_costos" value="">
   #sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"sector"] ? 'true' : 'false'), "aria-labelledby" => "sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"sector"])}  
     .card
       .card-body
@@ -5421,7 +5426,7 @@
                                     %tr.contenido-popup-form{colspan: 4}
                                       %td{style: 'text-align: left; background-color: #fff;'}
                                         %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", id: "agregar_rr_pp", style: 'color: #5d759e;'} Agregar
-                                        %img{src: "/assets/agregar.gif", border: "0"}
+                                        %i.fa.fa-plus-square.icono-celeste
                         %tr
                           %td.contenido-popup-form{colspan: 4}
                             %div.table-responsive  
@@ -5441,7 +5446,8 @@
                                     %tr.contenido-popup-form{colspan: 4}
                                       %td{style: 'text-align: left; background-color: #fff;'}
                                         %a{href: "#-1", onclick: "modalRrhhExternos(document.getElementById('plan_id').value); return false;", id: "agregar_rr_ex", style: 'color: #5d759e;'} Agregar
-                                        %img{src: "/assets/agregar.gif", border: "0"}
+                                        %i.fa.fa-plus-square.icono-celeste
+
                         %tr 
                           %td.contenido-popup-form{colspan: 6}
                             %div.table-responsive  
@@ -5464,7 +5470,7 @@
                                     %tr.contenido-popup-form{colspan: 6}
                                       %td{colspan: 6,style: 'text-align: right; background-color: #fff;'}
                                         %a{href: "#-1", onclick: "modalGastosOperacion(document.getElementById('plan_id').value); return false;", id: "agregar_gas_ope", style: 'color: #5d759e;'} Agregar Fila
-                                        %img{src: "/assets/agregar.gif", border: "0"}
+                                        %i.fa.fa-plus-square.icono-celeste
                         %tr 
                           %td.contenido-popup-form{colspan: 6}
                             %div.table-responsive  
@@ -5487,7 +5493,7 @@
                                     %tr.contenido-popup-form{colspan: 6}
                                       %td{colspan: 6, style: 'text-align: right; background-color: #fff;'}
                                         %a{href: "#-1", onclick: "modalGastosAdministrativos(document.getElementById('plan_id').value); return false;", id: "agregar_gas_adm", style: 'color: #5d759e;'} Agregar Fila
-                                        %img{src: "/assets/agregar.gif", border: "0"}
+                                        %i.fa.fa-plus-square.icono-celeste
                           
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
