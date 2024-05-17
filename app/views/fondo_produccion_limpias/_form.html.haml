@@ -2,7 +2,7 @@
   $(document).ready(function(){
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
-      $('#enviar-manifestacion-button').removeAttr('data-disable-with');
+      //$('#enviar-manifestacion-button').removeAttr('data-disable-with');
 
       var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
       var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -72,12 +72,12 @@
         }
       });
     });
-    $('#enviar-manifestacion-button').click(function(){
+    /*$('#enviar-manifestacion-button').click(function(){
       if(confirm("¿Está seguro que desea enviar?")){
         $('#manifestacion_de_interes_temporal').val(false);
         $('#guardar-fondo-temporal-button').removeAttr('data-disable-with');
       }
-    });
+    });*/
     $('#anular_y_eliminar').click(function(e){
       if(!anular_confirmado){
         e.preventDefault();
