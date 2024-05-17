@@ -1,24 +1,4 @@
 :javascript
-  var variable = 1;
-  function cargarSubLineas(valorLinea) {
-     $.ajax({
-        url: "#{get_sub_lineas_seleccionadas_path}",
-        method: 'get',
-        data: {id: valorLinea},
-        success: function(data) {
-          // Manipula los datos recibidos, por ejemplo, actualiza el combo de sublíneas
-          var comboSublineas = $('#fondo_produccion_limpia_sub_linea_id');
-          comboSublineas.empty();
-
-          $.each(data.sublineas, function(index, value) {
-            comboSublineas.append($('<option>').text(value.descripcion).attr('value', value.id));
-          });
-        },
-        error: function(error) {
-          console.error('Error al obtener sublíneas:', error);
-        }
-      });
-  }
   var pais = 'Chile';//aún no se sabe como se manejará la internalización de este proyecto
   var desc = #{raw json_escape(@tipo_instrumentos.inject({}){|h,ti|h[ti.id]=ti.descripcion;h}.to_json)}
 
@@ -44,59 +24,6 @@
     }
   });
 
-  $(document).on('click', '.x-remove-selection', function(){
-    elemento_a_quitar = $(this).attr('value');
-    arr_valores = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val();
-    $(this).parent().remove();
-    arr_valores = jQuery.grep(arr_valores, function(value) {
-      return value != elemento_a_quitar;
-    });
-    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').val(arr_valores);
-    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2('close');
-  });
-
-  $('.seleccionar-contribuyente-button').click(function() {
-    try {
-      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-
-      $("select#responsable_contribuyente_id").append($("<option selected='selected' value='"+data.id+"'>"+data.razon_social+"</option>"));
-      $("input#responsable_contribuyente_id").val(data.id);
-      checkFieldValidity($("select#responsable_contribuyente_id"));
-      $("i.deseleccionar-contribuyente").show();
-      reset_actectos_tipo_contribuyente();
-      //rellena_tipo_contribuyente(tipos_contr, data.tipo_contribuyentes);
-      $.each($("select#responsable_actividad_economica_id option"),function(k,v) {
-        if ( $.inArray( parseInt( $(v).val() ), data.actividades_economicas) == -1 ) { $(v).remove(); }
-      });
-      $.each($("select#responsable_tipo_contribuyente_id option"),function(k,v) {
-        if ( $.inArray(parseInt( $(v).val() ), data.tipo_contribuyentes) == -1 ) { $(v).remove(); }
-      });
-      $("select#responsable_actividad_economica_id").trigger("chosen:updated");
-      $("select#responsable_tipo_contribuyente_id").trigger("chosen:updated");
-    } catch(e) {
-      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-    }
-
-    $('.chosen-control').on('chosen:showing_dropdown', function(evt, params) {
-      console.log('lala');
-      console.log($(this).find('option'));
-      //compress()
-    });
-
-  });   
-
-  //Permite que al seleccionar un usuario desde el modal se adjunte su información
-  $(document).on('click' , '.seleccionar-usuario-button', function() {
-    try {
-      data=JSON.parse($('table.usuarios').DataTable().$('.contribuyente-radio:checked').val());
-      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").append(new Option("--", data.id));
-      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(data.id);
-      $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
-    } catch(e) {
-      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
-    }
-  });
-
   $(document).ready(function(){
     sumarTrabajadoresPermanentes();
     sumarTrabajadoresTemporales();
@@ -116,9 +43,6 @@
    
     $("#intitucion_cogestora").click(function(){
       $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
-    });
-
-    $("#institucion_cogestora").click(function(){
     });
 
     $('#open-modal-button').click(function(){
@@ -152,48 +76,6 @@
       $('#buscar-usuario').modal("show");
     });
 
-    if(#{!solo_lectura}){
-      $('#manifestacion_de_interes_acuerdo_previo_con_informe_id').select2({
-        placeholder: 'Seleccione un Acuerdo previo',
-        allowClear: true,
-        width: '100%'
-      });
-      $('#manifestacion_de_interes_estandar_de_certificacion_id').select2({
-        placeholder: 'Seleccione un estándar',
-        allowClear: true,
-        width: '100%'
-      });
-      $('#manifestacion_de_interes_diagnostico_id').select2({
-        placeholder: 'Seleccione un diagnóstico',
-        allowClear: true,
-        width: '100%'
-      });
-      $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').select2({
-        placeholder: 'Seleccione uno o varios programas',
-        width: '100%'
-      }); 
-    } 
-
-    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:select', function(e){
-      var data = e.params.data;
-      create_span_de_selector_ppp(data.id);
-    });
-
-    $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids').on('select2:unselect', function(e){
-      var data = e.params.data;
-      $(".selection-list-boxes[value=" + data.id +"]").remove();
-    });    
-
-    function create_span_de_selector_ppp(id){
-      selector_ppp = $('#manifestacion_de_interes_programas_o_proyectos_relacionados_ids');
-      op = selector_ppp.children("[value=" + id + "]");
-      x_span = "<a class='x-remove-selection' value='" + id + "'><span style='color: #999;'>×</span></a>";
-      $('#selection-container').append("<span class='selection-list-boxes' value='"+id+"'>" + x_span + op.text() + "</span>");
-    };
-
-    verificarModal();
-    process_mantenedor_campos();
-   
     $('body').on('change','.usuario-radio',function() {
       $('.seleccionar-usuario-button').removeAttr('disabled');
       $('.seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
@@ -201,11 +83,6 @@
 
     $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
       $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
-    });
-    $('#manifestacion_de_interes_tipo_instrumento_id').change(function(){
-      if ( $(this).val() !== "" ) {
-        $('#manifestacion_de_interes_descripcion_acuerdo').html(desc[$(this).val()]);
-      }
     });
 
     function checkbox_related_element(c) {
@@ -217,58 +94,11 @@
       }
     }
 
-    function when_checkbox_is_true(checkbox) {
-      relement=checkbox_related_element(checkbox);
-      if ( relement.prop('tagName') == 'DIV' ) {
-        relement.show('slow');
-      } else {
-        relement.removeAttr('readonly');
-      }
-    }
-
-    function when_checkbox_is_false(checkbox) {
-      relement=checkbox_related_element(checkbox);
-      if ( relement.prop('tagName') == 'DIV' ) {
-        relement.hide('slow');
-      } else {
-        relement.attr('readonly','readonly');
-      }
-    }
-
-    __enable_fieds_if_checkbox_is_true($('[type="radio"]:checked'), when_checkbox_is_true, when_checkbox_is_false);
-    $('[type="radio"]').click(function(){
-      __enable_fieds_if_checkbox_is_true($(this), when_checkbox_is_true, when_checkbox_is_false);
-    });
-
-    $('#enviar-manifestacion-button').click(function(e){
-      $('#manifestacion_de_interes_temporal').val("");
-    });
-
-    if(#{!solo_lectura}){
-      $(".radios-selector-subida").on("change", function(){
-        padre = $(this).closest('.radios-selector-subida-padre');
-        check = $(this).val(); 
-        if( check == 0 ){
-          padre.find("input[type='file']").attr("disabled",false);
-          padre.find("select").attr("disabled",true);
-          padre.find(".descargable-file").removeClass("d-none");
-          padre.find(".descargable-select").addClass("d-none");
-        }
-        else if( check == 1 ){
-          padre.find("input[type='file']").attr("disabled",true);
-          padre.find("select").attr("disabled",false);
-          padre.find(".descargable-file").addClass("d-none");
-          padre.find(".descargable-select").removeClass("d-none");
-        };
-      });
-      $(".radios-selector-subida:checked").trigger("change");
-    }
-
     var id = window.setTimeout(function() {}, 0);
     while (id--) {
       window.clearTimeout(id);
     };
-    //DZC 2019-03-01 12:58:34 crea un nuevo timeout
+
     var minutos = "#{@recuerde_guardar_minutos}";
     setTimeout(function showModal() {
       $('#mensaje_recuerde_guardar').modal('show');
@@ -286,236 +116,8 @@
       $(this).addClass("card");
       $(this).css("margin-bottom", "0");
     });
-
-    // Manejar el clic en el enlace para abrir el modal
-    /*$('#open-modal-link').on('click', function(e) {
-      e.preventDefault();
-
-      // Realizar una solicitud AJAX para obtener el formulario
-      $.ajax({
-        url: '/objetivo_especificos/new',
-        method: 'GET',
-        dataType: 'html',
-        success: function(response) {
-          alert(response);
-          // Agregar el formulario al contenedor del modal
-          $('#modal-container').html(response);
-
-          // Mostrar el modal
-          //$('#myModal').modal('show');
-          $('#tuModal').html(response).modal('show');
-        },
-        error: function() {
-          alert('Error al cargar el formulario.');
-        }
-      });
-
-    $('#open-modal-linkxxx').on('click', function(e) {
-      e.preventDefault(); // Evita la acción predeterminada (por ejemplo, seguir un enlace)
-
-        // Realiza la solicitud AJAX
-        $.ajax({
-          type: 'GET', // Puedes cambiarlo según tus necesidades
-          url: '/objetivo_especificos/new', // Ruta a la acción del controlador
-          success: function(response) {
-            alert(response);
-            // La respuesta del servidor. Aquí puedes manipular la respuesta, por ejemplo, mostrarla en un modal.
-            console.log(response);
-            $('#tuModal').html(response).modal('show');
-            // Agrega el código aquí para manejar la respuesta, por ejemplo, mostrarla en un modal.
-          },
-          error: function(error) {
-            // Manejo de errores, si es necesario.
-            console.error(error);
-          }
-        });
-      });
-    });*/
   });
-  //DZC 2019-07-17 22:02:04 activa los listeners para las validaciones por incumplimiento de cantidades minimas y maximas de caracteres
-  function activa_validaciones(){
-    elementos_ids = id_elementos_a_validar();
-    elementos_validaciones = validaciones_por_elemento();
-    elementos_ids.forEach(function(elemento_id, index, arr){
-      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
-      if (validaciones_activas && #{!solo_lectura}){
-        var max_activa = elementos_validaciones[elemento_id]["validacion_max_activa"];
-        var min_activa = elementos_validaciones[elemento_id]["validacion_min_activa"];
-        var max = elementos_validaciones[elemento_id]["validacion_max"];
-        var min = elementos_validaciones[elemento_id]["validacion_min"];
-        var tipo = elementos_validaciones[elemento_id]["tipo"];
-        largo_campo = $(elemento_id).text().length;
-        condicional = (((min_activa && largo_campo < min) || (max_activa && largo_campo > max)) && largo_campo > 0);
-        label_inicial = condicional ? "\u26a0 Caracteres: " : "Caracteres: ";
-        label_max = (max_activa) ? "de " + max : "";
-        label_min = (min_activa) ? " (mínimo " + min + ")" : "";
-        $(elemento_id).after(label_contador(label_inicial, label_min, label_max, largo_campo, condicional));
-        // # DOSSA 2019-07-29 se cambia función para cuando se agreguen valores en el input ya que la función "keyup" sólo reconocía los cambios al presionar y soltar una tecla, esta nueva función reconoce todos los cambios en el input.
-        $(elemento_id).on("input propertychange",function (){
-          // DOSSA 2019-07-29 se hace condición única para mínimo y máximo, ya que ambas hacen lo mismo
-          largo_actual = $(this).val().length;
-          if ( (min_activa && largo_actual < min) || (max_activa && largo_actual > max) ){
-            // # DOSSA 2019-07-29 label que agrega símbolo unicode en caso de que el texto ingresado sea menor al mínimo o mayor al máximo.
-            label_inicial_m = "\u26a0 Caracteres: "
-            // # DOSSA 2019-07-29 en caso de que la validación máxima esté activa, la variable label_max tendrá un valor específico.
-            label_max_m = (max_activa) ? "de " + max : "";
-            // # DOSSA 2019-07-29 en caso de que la validación mínima esté activa, la variable label_min tendrá un valor específico.
-            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
-            $(this).next().remove();
-            $(this).after(label_contador( label_inicial_m, label_min_m, label_max_m, largo_actual, true ));
-          }else{
-            label_max_m = (max_activa) ? "de " + max : "";
-            label_min_m = (min_activa) ? " (mínimo " + min + ")" : "";
-            $(this).css('color','#495057');
-            $(this).next().remove();
-            $(this).after(label_contador( label_inicial, label_min_m, label_max_m, largo_actual, false ));
-          };
-        });
-      }else if (tipo == "text" || tipo == "integer" || tipo == "double"){
-        $(elemento_id).after("<label class='float-right control-label' style='color: #0000'><br></label>")
-      }
-    });
-  };
-
-  // DZC 2019-07-17 19:44:46 retorna los ids de los doms a validar
-  function id_elementos_a_validar(){
-    elementos = [];
-    for (var modelo in validaciones){
-      for (var campo in validaciones[modelo]){
-        elementos.push("#" + modelo + "_" + campo);
-      };
-    };
-    return elementos;
-  };
-
-  //DZC 2019-07-17 19:46:42 retorna un hash con el id del dom, y sus validaciones asociadas
-  function validaciones_por_elemento(){
-    elementos = {};
-    for (var modelo in validaciones){
-      for (var campo in validaciones[modelo]){
-        elementos["#" + modelo + "_" + campo]={};
-        for (var validacion in validaciones[modelo][campo]){
-          elementos["#" + modelo + "_" + campo][validacion] = validaciones[modelo][campo][validacion];
-        };
-      };
-    };
-    return elementos;
-  };
-
-  //DZC 2019-07-17 19:59:04 retorna los elementos del dom a validar
-  function elementos_a_validar_dom(){
-    elementos = {};
-    $.each(clases, function(index, value){
-      texto = "[id*='";
-      texto += value;
-      texto += "']";
-      elementos[value] = $(texto);
-    });
-    return elementos;
-  };
-
-  // # DOSSA 2019-07-29 función que crea label que muestra el contador, máximo y mínimo de caracteres en caso de que corresponda, además agrega un label inicial el cual contendra
-  //    un símbolo unicode cuando sea necesario.
-  function label_contador( label_inicial, label_min, label_max, largo = 0, cond){
-    if(cond){
-      color = "red";
-    }else{
-      color = "#5d759e";
-    };
-    label = "<label class='float-right control-label' style='color:" + color + "'>" + label_inicial + "<b>" + largo + "</b>" + " " + label_max + label_min + "</label>";
-    return label;
-  };
-
-  //Procesar label, ayuda y tooltip
-  function process_mantenedor_campos(){
-    elementos_ids = id_elementos_a_validar();
-    elementos_validaciones = validaciones_por_elemento();
-
-    var ids_a_evitar = ["#manifestacion_de_interes_area_influencia_proyecto_data", "#manifestacion_de_interes_alternativas_instalacion_data"];
-    if(#{!solo_lectura}){
-      ids_a_evitar.push("#manifestacion_de_interes_actividad_economicas_ids");
-      ids_a_evitar.push("#manifestacion_de_interes_comunas_ids");
-      ids_a_evitar.push("#manifestacion_de_interes_cuencas_ids");
-    }else{
-      ids_a_evitar.push("#manifestacion_de_interes_acuerdo_de_alcance_nacional");
-    }
-
-    elementos_ids.forEach(function(elemento_id, index, arr){
-      var obligatorio = elementos_validaciones[elemento_id]["obligatorio_campo"];
-      var nombre = elementos_validaciones[elemento_id]["nombre"];
-      var ayuda_activo = elementos_validaciones[elemento_id]["ayuda_activo"];
-      var ayuda = elementos_validaciones[elemento_id]["ayuda"];
-      var id_campo = elementos_validaciones[elemento_id]["id_campo"];
-      var tooltip_activo = elementos_validaciones[elemento_id]["tooltip_activo"];
-      var texto_tooltip = elementos_validaciones[elemento_id]["tooltip"];
-      var validaciones_activas = elementos_validaciones[elemento_id]["validaciones_activas"];
-      var elemento_tipo = elementos_validaciones[elemento_id]["tipo"];
-
-      elemento_padre = $(elemento_id).parent();
-      label = crear_label_de_nombre(elemento_id, obligatorio, nombre);
-      boton_ayuda = "";
-      div_ayuda = "";
-      if(ayuda_activo){
-        boton_ayuda = crear_boton_de_ayuda(id_campo);
-        div_ayuda = crear_div_de_ayuda(ayuda, id_campo)
-      };
-
-      //Fix para radio buttons
-      row_de_radio = elemento_padre.parent().children('.align-items-end');
-      if(row_de_radio.length > 0){
-        row_de_radio.append("<div class='col'>"+label+"</div>");
-        row_de_radio.append("<div class='col-auto pr-1'>"+boton_ayuda+"</div>");
-        row_de_radio.after("<div class='row'><div class='col'>"+div_ayuda+"</div></div>");
-      }else if(elemento_tipo == "list" && ayuda_activo && #{!solo_lectura}){
-        $(elemento_id).after("<div class='card-body group-hide ayuda-div py-1' style='font-size: 13px;'>" + ayuda + "</div>")
-      }else{
-        if (!ids_a_evitar.includes(elemento_id)){
-          top_input = "<div class='row align-items-end'>";
-          top_input += "<div class='col'>"+label+"</div>";
-          top_input += "<div class='col-auto pr-0'>"+boton_ayuda+"</div>";
-          top_input += "</div>";
-          top_input += "<div class='row'>";
-          top_input += "<div class='col'>"+div_ayuda+"</div>";
-          top_input += "</div>";
-          elemento_padre.children(".control-label").first().remove();
-          elemento_padre.prepend(top_input);
-        }
-      }
-
-      if (tooltip_activo && (elemento_id != "#manifestacion_de_interes_descarga_formato_cartas_de_patrocinio" || ('APL-001-DES-003' in descargables))){ 
-        crear_tooltip(elemento_id, texto_tooltip); 
-      }
-    });
-    if(#{!@mantener_temporal}){
-      htmlErrorToTooltip('top');
-    };
-    __tooltip({placement: 'top'});
-  };
-
-  // # DOSSA 2019-08-12 12:25 Función encargada de crear el div con las clases, atributos y texto el cual debe ser pasado como parámetro cuando se invoca esta función.
-  function crear_div_de_ayuda(contenido, id_campo){
-    div_ayuda = "<div class='ayuda-campo-div-"+id_campo+" alert ayuda-div small' style='display: none;'>" + contenido + "</div>";
-    return div_ayuda;
-  };
-
-  // # DOSSA 2019-08-12 12:26 Función encargada de crear el botón para los campos que posean la ayuda activa en el mantenedor.
-  function crear_boton_de_ayuda(id_campo){
-    i = "<i class='fa fa-info-circle' style='color: #0c5460;'></i>";
-    a = "<a class='btn show-ayuda pb-0' campo='" + id_campo + "' >" + i + "</a>";
-    return a;
-  };
-
-  function crear_label_de_nombre(elemento, obligatorio, nombre){
-    elemento_sin_gato = elemento.slice(1);
-    if (obligatorio){
-      abbr = "<abbr title='Campo requerido'>*</abbr>"
-      label_nombre = "<label class='control-label label-nombre text required' for='" + elemento_sin_gato + "'>" + abbr + " " + nombre + "</label>";
-    }else{
-      label_nombre = "<label class='control-label label-nombre text' for='" + elemento_sin_gato + "'>" + nombre + "</label>";
-    };
-    return label_nombre;
-  };
-
+  
   function crear_tooltip(elemento_id, tooltip){
     var card_header = $('input[name="manifestacion_de_interes['+elemento_id.replace("#manifestacion_de_interes_", "")+'][]"]').closest(".card").children(".card-header");
     if(elemento_id.includes("_ids") && card_header.length > 0){
@@ -723,23 +325,6 @@
       }
     });
   }
-
-
-  $(document).on('click', '.editar-objetivo', function() {
-    //var objetivoId = $(this).data('objetivo-id');
-    //editarObjetivo(objetivoId);
-
-    // Obtener el elemento <a> por su clase
-    var enlace = document.querySelector('.editar-objetivo');
-
-    // Obtener el valor del atributo data-objetivo-id
-    var objetivoId = enlace.dataset.objetivoId;
-
-    // Mostrar el valor en la consola para verificar
-    console.log("ID del objetivo: " + objetivoId);
-
-    //editarObjetivo(objetivoId);
-  });
 
   function editarObjetivo(id) {
     $.ajax({
@@ -951,18 +536,14 @@
         var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
         var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
     
-        //if (hh!=0) {
-          // Agrega los datos al arreglo
-          data.push({
-              rrhhPropioId: rrhhPropioId,
-              rhhEquipoId: rrhhEquipoId,
-              nombreUsuario: nombreUsuario,
-              hh: hh
-          });
-        //}
+        // Agrega los datos al arreglo
+        data.push({
+            rrhhPropioId: rrhhPropioId,
+            rhhEquipoId: rrhhEquipoId,
+            nombreUsuario: nombreUsuario,
+            hh: hh
+        });
     });
-
-    //console.log(data); // Mostrar los datos en la consola para verificar
 
     // Envía el arreglo al controlador utilizando AJAX
     $.ajax({
@@ -992,48 +573,43 @@
       var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
       var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
       
+      if (nombreUsuario !== "Fuente de financiamiento*") {
 
-      //if (hh !== "" && hh !== "0") {
-        if (nombreUsuario !== "Fuente de financiamiento*") {
+        // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
+        var radioButtons = document.getElementsByName('radio_tipo_aporte');
 
-          // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
-          var radioButtons = document.getElementsByName('radio_tipo_aporte');
+        // Iterar sobre los radio buttons para verificar si alguno está seleccionado
 
-          // Iterar sobre los radio buttons para verificar si alguno está seleccionado
-
-          var seleccionado = false;
-          for (var i = 0; i < radioButtons.length; i++) {
-              if (radioButtons[i].checked) {
-                  seleccionado = true;
-                  break;
-              }
-          }
-          // Verificar si al menos uno está seleccionado
-          if (seleccionado) {
-          // Agrega los datos al arreglo
-            data.push({
-                rrhhExternoId: rrhhExternoId,
-                rhhEquipoId: rrhhEquipoId,
-                nombreUsuario: nombreUsuario,
-                hh: hh
-            });
-            var alertaMostrada = true;
-          }else{ 
-            ///REVISAR ALERT
-            if (!alertaMostrada) {
-              var alertaMostrada = true;
-              alert('Por favor, seleccione alguna Fuente de financiamiento');
-              event.preventDefault();
-              //return;
+        var seleccionado = false;
+        for (var i = 0; i < radioButtons.length; i++) {
+            if (radioButtons[i].checked) {
+                seleccionado = true;
+                break;
             }
+        }
+        // Verificar si al menos uno está seleccionado
+        if (seleccionado) {
+        // Agrega los datos al arreglo
+          data.push({
+              rrhhExternoId: rrhhExternoId,
+              rhhEquipoId: rrhhEquipoId,
+              nombreUsuario: nombreUsuario,
+              hh: hh
+          });
+          var alertaMostrada = true;
+        }else{ 
+          ///REVISAR ALERT
+          if (!alertaMostrada) {
+            var alertaMostrada = true;
+            alert('Por favor, seleccione alguna Fuente de financiamiento');
+            event.preventDefault();
+            //return;
           }
         }
-      //}
+      }
     });
 
     var tipoAporteSeleccionado = $('#div_consultor_faltantes_externos input[name="radio_tipo_aporte"]:checked').val();
-
-    //console.log(data); // Mostrar los datos en la consola para verificar
 
     // Envía el arreglo al controlador utilizando AJAX
     $.ajax({
@@ -1170,11 +746,6 @@
       }
     });
   }
-
-  /*function soloNumeros(e){
-    var key = window.Event ? e.which : e.keyCode
-    return (key >= 48 && key <= 57)
-  }*/
 
   function soloNumeros(e) {
     var key = window.Event ? e.which : e.keyCode;
@@ -3179,7 +2750,7 @@
     }
 
     .smaller-text {
-      font-size: 12px; /* Tamaño de letra más pequeño */
+      font-size: 12px; 
     }
 
     .border-text {
@@ -3606,7 +3177,7 @@
                       %td.contenido-form=empresa.rut
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
-                          - if equipo_consultores_existente?(empresa.contribuyente_id)
+                          - if equipo_consultores_existente?(empresa.contribuyente_id, empresa.flujo_id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"La empresa no puede ser eliminada ya que tiene un equipo de consultores asociados."}
                           - else
                             = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
@@ -5664,75 +5235,7 @@
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript  
 
-  if(#{!solo_lectura}){
-    function display_descarga(){
-      selector = $("#manifestacion_de_interes_estandar_de_certificacion_id");
-      if(selector.val() == ""){
-        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: none");
-      }else{
-        $(".estandar_de_homologacion_descarga").parent().children().attr("style","display: block");
-        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+selector.val());    
-      };
-    };
-
-    display_descarga();
-    $("#manifestacion_de_interes_estandar_de_certificacion_id").on('change', function(){
-      display_descarga();
-      if($(this).val()!=""){
-        $(".estandar_de_homologacion_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?estandar_id="+$(this).val());
-      }
-    });
-
-    function display_descarga_diagnostico(){
-      selector = $("#manifestacion_de_interes_diagnostico_id");
-      if(selector.val() == ""){
-        $(".diagnostico_id_descarga").parent().children().addClass("d-none");
-      }else{
-        $(".diagnostico_id_descarga").parent().children().removeClass("d-none");
-        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+selector.val());    
-      };
-    };
-
-    display_descarga_diagnostico();
-    $("#manifestacion_de_interes_diagnostico_id").on('change', function(){
-      display_descarga_diagnostico();
-      if($(this).val()!=""){
-        $(".diagnostico_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?acuerdo_id="+$(this).val());
-      }
-    });
-
-    function display_descarga_informe_impacto(){
-      selector = $("#manifestacion_de_interes_acuerdo_previo_con_informe_id");
-      if(selector.val() == ""){
-        $(".informe_impacto_id_descarga").parent().children().addClass("d-none");
-      }else{
-        $(".informe_impacto_id_descarga").parent().children().removeClass("d-none");  
-        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+selector.val());  
-      };
-    };
-
-    display_descarga_informe_impacto();
-    $("#manifestacion_de_interes_acuerdo_previo_con_informe_id").on('change', function(){
-      display_descarga_informe_impacto();
-      if($(this).val()!=""){
-        $(".informe_impacto_id_descarga").attr("href","/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@manifestacion_de_interes.id}/documentos-diagnosticos/descarga_estandar_acuerdo_informe?informe_id="+$(this).val());
-      }
-    });
-  }else{}
-
-  activa_validaciones();
-
-
   $(document).ready(function() {
-
-    $('.acuerdo_alcance_nacional').change(function(){
-      if(this.value == 'true'){
-        $('#si_acuerdo_alcance').hide(1200);
-      }else{
-        $('#si_acuerdo_alcance').show(1200);
-      }
-    });
-
     $('.parent-checkbox').on('click', function() {
       ancestorBlock=$(this).parent();
       childControl=ancestorBlock.children('i[class^="fa"]');
@@ -5758,13 +5261,6 @@
     if(typeof google != "undefined"){
       mapLoaded();
     }
-  });
-
-  //FUNCIONES MODAL BUSCAR USUARIO
-  $(document).on('change','#tabla_usuarios_buscar-usuario .usuario-radio',function() {
-    alert("FUNCIONES MODAL BUSCAR USUARIO");
-    $('#buscar-usuario .seleccionar-usuario-button').removeAttr('disabled');
-    $('#buscar-usuario .seleccionar-y-actualizar-usuario-fpl-button').removeAttr('disabled');
   });
 
   $(document).on('click','#nuevo-usuario-fpl-button', function(e){
@@ -5815,28 +5311,6 @@
       $('#buscar-usuario .body-usuario-buscador').html(data);
       $('.loading-data').hide();
     });
-
-    /*$.ajax({
-      type: 'GET',
-      url: '#{edit_modal_fondo_produccion_limpia_path}',
-      data: {
-        id: data.id,
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
-        user_id: data.id,
-        tipo_equipo: tipo_equipo
-        },
-      dataType: 'json',
-      success: function(response) {
-        if (response.success) {
-          // Equipo guardado correctamente
-          $('#buscar-usuario .body-usuario-buscador').html(data);
-          $('.loading-data').hide();
-        }
-      },
-      error: function(xhr, status, error) {
-        alert( "Error" );
-      }
-    });*/
   });
 
   $(document).on('click','#deshacer-usuario-fpl-button', function(e){
@@ -5898,12 +5372,6 @@
     }
   }
 
-  function guardarArchivosEquipo2() {
-    var archivoInput = document.getElementById('copia_ci');
-    var archivo = archivoInput.files[0];
-    var nombreArchivo = archivo.name;
-  }
-
   $('body').on('change','.contribuyente-radio',function() {
     $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
   });
@@ -5926,8 +5394,3 @@
       $('.loading-data').hide();
     });
   }); 
-
-  $('#muestra_espera').click(function(){
-    alert('entro espera');
-    $('.loading-data').show();
-  });

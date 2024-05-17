@@ -236,6 +236,10 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes = TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes])
         @tarea_pendientes.save  
 
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        encabezado = "FPL-01-Completar Documentación"
+        FondoProduccionLimpiaMailer.envio_mail(encabezado, @tarea_pendiente.user_id).deliver_later
+
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         #binding.pry
         tarea_fondo_FPL_00 = Tarea.find_by_codigo(Tarea::COD_FPL_00)
@@ -617,12 +621,12 @@ class FondoProduccionLimpiasController < ApplicationController
               if @equipo_temporal.save  
                 if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
                   if @registro_proveedor.save
-                    flash[:success] = 'Consultor creado exitosamente.'
+                    #flash[:success] = 'Consultor creado exitosamente.'
                     format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
                     format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
                   end
                 else
-                  flash[:success] = 'Consultor creado exitosamente.'
+                  #flash[:success] = 'Consultor creado exitosamente.'
                   format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
                   format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
                 end  
@@ -715,11 +719,11 @@ class FondoProduccionLimpiasController < ApplicationController
         if @user.update(custom_params[:user]) && @equipo_temporal.save
           if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
             if @registro_proveedor.save
-              flash[:success] = 'Consultor creado exitosamente.'
+              #flash[:success] = 'Consultor creado exitosamente.'
               format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
             end
           else
-            flash[:success] = 'Consultor creado exitosamente.'
+            #flash[:success] = 'Consultor creado exitosamente.'
             format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
           end  
         else
@@ -875,8 +879,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def equipo_consultores_existente?(contribuyente_id)
-      EquipoTrabajo.exists?(contribuyente_id: contribuyente_id)
+    def equipo_consultores_existente?(contribuyente_id, flujo_id)
+      EquipoTrabajo.exists?(contribuyente_id: contribuyente_id, flujo_id: flujo_id, tipo_equipo: [1,2])
     end
 
     helper_method :equipo_consultores_existente?
@@ -3681,7 +3685,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @empresa_equipo = Contribuyente
         .unscoped
         .joins(:equipo_empresas, :establecimiento_contribuyentes)
-        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id")
+        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
 
@@ -3709,18 +3713,20 @@ class FondoProduccionLimpiasController < ApplicationController
         mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
         mensaje_error = "El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos."
 
-        if @costos.costo_total_de_la_propuesta.present? && (
-            @costos.aporte_propio_liquido >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100)) &&
-            (@costos.aporte_propio_liquido + @costos.aporte_propio_valorado) >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100)) &&
-            @costos.gastos_administrativos <= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100)) &&
-            @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)
-          )
-          @mensaje = mensaje_success
-          @response_costos = 0
-        else
-          @mensaje = mensaje_error
-          @response_costos = 1
-        end
+        if @costos.present?
+          if @costos.costo_total_de_la_propuesta.present? && (
+              @costos.aporte_propio_liquido >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100)) &&
+              (@costos.aporte_propio_liquido + @costos.aporte_propio_valorado) >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100)) &&
+              @costos.gastos_administrativos <= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100)) &&
+              @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)
+            )
+            @mensaje = mensaje_success
+            @response_costos = 0
+          else
+            @mensaje = mensaje_error
+            @response_costos = 1
+          end
+        end  
 
         #binding.pry
       end
