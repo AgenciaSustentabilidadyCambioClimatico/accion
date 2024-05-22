@@ -86,7 +86,7 @@
       }
     });
 
-    
+    cargarAdmisibilidadFinanciera(); 
   });
 
   function habilitaObservacionesFinanciera(nota, observacion) {
@@ -125,6 +125,23 @@
       resultadoPromedio.textContent = promedio.toFixed(2);
     }
   }
+
+  function cargarAdmisibilidadFinanciera() {
+    $.ajax({
+      url: "#{get_admisibilidad_financiera_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        calcularPromedioFinanciera();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
 %style
   :css
     .table-responsive {

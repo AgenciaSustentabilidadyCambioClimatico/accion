@@ -8,6 +8,7 @@ var mensajeCosto = document.getElementById('mensaje-costo');
 
 $('#response_costos').val('<%= @response_costos %>');
 
+$('#contador_campos_nulos').val(<%= campos_nulos.count %>);
 <% campos_nulos.each do |campo| %>
   var $elemento = $('#<%= escape_javascript(campo.to_s) %>');
   $elemento.removeClass('border-text');

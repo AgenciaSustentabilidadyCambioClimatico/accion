@@ -83,7 +83,7 @@
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
-    
+    cargarObservacionesAdmisibilidadTecnica();
   });
   function habilitaObservacionesJuridica(nota, observacion) {
     // Seleccionar el elemento select
@@ -100,6 +100,22 @@
       obsSelect.style.visibility = 'visible';
     }
   }
+
+  function cargarObservacionesAdmisibilidadTecnica() {
+    $.ajax({
+      url: "#{get_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
 
 %style
   :css

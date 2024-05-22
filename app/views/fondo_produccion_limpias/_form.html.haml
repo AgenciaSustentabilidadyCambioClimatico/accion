@@ -12,10 +12,6 @@
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
       var duracion = document.getElementById('duracion').value;
       var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
-      //var territorios_regiones = document.getElementById('territorios_regiones').value;
-      //var territorios_provincias = document.getElementById('territorios_provincias').value;
-      //var territorios_comunas = document.getElementById('territorios_comunas').value;
-
       
       // Obtener el elemento <ul> con la clase seleccionados_tree
       var ulElement = document.querySelector('.seleccionados_tree');
@@ -37,7 +33,7 @@
           });
 
           // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-          console.log('IDs de comunas seleccionadas:', comunasIds);
+          // console.log('IDs de comunas seleccionadas:', comunasIds);
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
@@ -65,6 +61,10 @@
             },
             method: "GET",
             success: function(response) {
+              var contador_campos_nulos = document.getElementById('contador_campos_nulos').value;
+                if (contador_campos_nulos > 0) {
+                  alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
+                }
             }})
         },
         error: function(error) {
@@ -72,12 +72,7 @@
         }
       });
     });
-    /*$('#enviar-manifestacion-button').click(function(){
-      if(confirm("¿Está seguro que desea enviar?")){
-        $('#manifestacion_de_interes_temporal').val(false);
-        $('#guardar-fondo-temporal-button').removeAttr('data-disable-with');
-      }
-    });*/
+
     $('#anular_y_eliminar').click(function(e){
       if(!anular_confirmado){
         e.preventDefault();
@@ -120,6 +115,12 @@
         },
        method: "GET",
         success: function(response) {
+          var contador_campos_nulos = document.getElementById('contador_campos_nulos').value;
+          if (contador_campos_nulos > 0) {
+            alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
+            event.preventDefault();
+            return;
+          }
           var resp = document.getElementById('response_costos').value;
           if (resp == 1) {
             alert("El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos.");

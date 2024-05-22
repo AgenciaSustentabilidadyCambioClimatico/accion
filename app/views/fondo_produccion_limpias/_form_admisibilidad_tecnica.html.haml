@@ -83,6 +83,8 @@
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
+
+  cargarAdmisibilidadTecnica();  
     
   });
 
@@ -192,6 +194,24 @@
     if (resultadoPromedio) {
       resultadoPromedio.textContent = promedio.toFixed(2);
     }
+  }
+
+  function cargarAdmisibilidadTecnica() {
+    $.ajax({
+      url: "#{get_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        calcularPromedioTecnica();
+        calcularPromedioTecnica2();
+        calcularPromedioTecnica3();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
   }
 
 %style
