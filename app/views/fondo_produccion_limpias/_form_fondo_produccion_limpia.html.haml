@@ -30,15 +30,6 @@
     sumarValores(); 
     sumarValoresTec();
     cargarObjetivosEspecificos();
-    cargarAdmisibilidadFinanciera();
-    cargarAdmisibilidadTecnica();
-    cargarAdmisibilidadJuridica();
-    cargarPertinenciaFactibilidad();
-    cargarObservacionesAdmisibilidadJuridica();
-    cargarObservacionesAdmisibilidadFinanciera();
-    cargarObservacionesAdmisibilidadTecnica();
-    cargarEvaluacionGeneral();
-    
     valida_div();
    
     $("#intitucion_cogestora").click(function(){
@@ -1686,7 +1677,7 @@
         });
 
         // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        console.log('IDs de comunas seleccionadas:', comunasIds);
+        // console.log('IDs de comunas seleccionadas:', comunasIds);
     } else {
         console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
     }
@@ -1767,7 +1758,7 @@
         });
 
         // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        console.log('IDs de comunas seleccionadas:', comunasIds);
+        // console.log('IDs de comunas seleccionadas:', comunasIds);
     } else {
         console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
     }
@@ -2272,140 +2263,6 @@
     });
   }
 
-  function cargarAdmisibilidadFinanciera() {
-    $.ajax({
-      url: "#{get_admisibilidad_financiera_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-        calcularPromedioFinanciera();
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarAdmisibilidadTecnica() {
-    $.ajax({
-      url: "#{get_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-        calcularPromedioTecnica();
-        calcularPromedioTecnica2();
-        calcularPromedioTecnica3();
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarAdmisibilidadJuridica() {
-    $.ajax({
-      url: "#{get_admisibilidad_juridica_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarObservacionesAdmisibilidadJuridica() {
-    $.ajax({
-      url: "#{get_observaciones_admisibilidad_juridica_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarObservacionesAdmisibilidadFinanciera() {
-    $.ajax({
-      url: "#{get_observaciones_admisibilidad_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarObservacionesAdmisibilidadTecnica() {
-    $.ajax({
-      url: "#{get_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarPertinenciaFactibilidad() {
-    $.ajax({
-      url: "#{get_pertinencia_factibilidad_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-        calcularPromedioPertinenciaTecnica();
-        calcularPromedioPertinenciaTecnica2();
-        calcularPromedioPertinenciaTecnica3();
-        calcularPromedioPertinenciaFinanciera();
-        totalPertinencia();
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
-  function cargarEvaluacionGeneral() {
-    $.ajax({
-      url: "#{get_evaluacion_general_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      },
-      method: "GET",
-      success: function(response) {
-        calcularPromedioPertinenciaTecnicaGeneral();
-        calcularPromedioPertinenciaTecnicaGeneral2();
-        calcularPromedioPertinenciaTecnicaGeneral3();
-        calcularPromedioPertinenciaFinancieraGeneral();
-        totalPertinenciaGeneral();
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
   function guardarAsignarRevisores() {
     var codigo_proyecto = document.getElementById('codigo_proyecto').value;
     var revisor_tecnico_id = document.getElementById('revisor_tecnico_fpl_id').value;
@@ -2798,6 +2655,7 @@
   -#%div{ id: "solo_lecturas", "data-solo_lectura" => solo_lectura }
   <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
   <input type="hidden" id="response_costos" name="response_costos" value="">
+  <input type="hidden" id="contador_campos_nulos" name="contador_campos_nulos" value="">
   #sector.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"sector"] ? 'true' : 'false'), "aria-labelledby" => "sector-tab", :role => "tabpanel", class: ("show active" if tabs[:"sector"])}  
     .card
       .card-body

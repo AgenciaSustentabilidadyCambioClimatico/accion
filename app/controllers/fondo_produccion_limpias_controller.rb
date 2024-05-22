@@ -3708,10 +3708,10 @@ class FondoProduccionLimpiasController < ApplicationController
         @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
 
         # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
-        @mensaje = nil
-        @response_costos = 1
         mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
         mensaje_error = "El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos."
+        @mensaje = mensaje_error
+        @response_costos = 1
 
         if @costos.present?
           if @costos.costo_total_de_la_propuesta.present? && (

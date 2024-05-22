@@ -85,8 +85,7 @@
         $('.accordionTabs .card-header a').removeClass('active');
       }
     });
-
-    
+  cargarPertinenciaFactibilidad();
   });
   
   function habilitaObservacionesPertinenciaFinanciera(nota, observacion) {
@@ -355,6 +354,26 @@
           }));
       });
     }
+  }
+
+  function cargarPertinenciaFactibilidad() {
+    $.ajax({
+      url: "#{get_pertinencia_factibilidad_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        calcularPromedioPertinenciaTecnica();
+        calcularPromedioPertinenciaTecnica2();
+        calcularPromedioPertinenciaTecnica3();
+        calcularPromedioPertinenciaFinanciera();
+        totalPertinencia();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
   }
 
 %style
