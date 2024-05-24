@@ -1,6 +1,6 @@
 class RenameFieldsInFondoProduccionLimpia < ActiveRecord::Migration[5.1]
   def change
-    rename_column :fondo_produccion_limpia, :institucion_postulante_fpl_id, :institucion_entregables_id
-    rename_column :fondo_produccion_limpia, :persona_postulante_fpl_id, :usuario_entregables_id
+    add_column :fondo_produccion_limpia, :institucion_entregables_id, :integer
+    add_column :fondo_produccion_limpia, :usuario_entregables_id, :integer
   end
 end
