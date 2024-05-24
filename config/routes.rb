@@ -357,6 +357,7 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :fondo_produccion_limpia_mensajes
     # resources :proveedores, except: [:show] do
     #   patch 'proveedores/establecimientos(.:format)', to: 'proveedores#establecimientos', as: :proveedores_establecimientos
     # end

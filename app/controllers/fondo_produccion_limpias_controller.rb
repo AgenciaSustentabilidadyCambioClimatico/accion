@@ -237,8 +237,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes.save  
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
-        encabezado = "FPL-01-Completar Documentación"
-        FondoProduccionLimpiaMailer.envio_mail(encabezado, @tarea_pendiente.user_id).deliver_later
+        send_message(tarea_fondo, @tarea_pendiente.user_id)
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         #binding.pry
@@ -3640,9 +3639,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def send_message(tarea, user)
         u = User.find(user)
-        mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
+        mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
         mensajes.each do |mensaje|
-          RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_now
+          FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
         end
       end
 
