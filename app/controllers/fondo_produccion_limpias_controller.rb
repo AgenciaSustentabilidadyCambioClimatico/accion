@@ -1374,9 +1374,10 @@ class FondoProduccionLimpiasController < ApplicationController
               persona_id: responsable.id,
               data: { }
             }
-
           }
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo, responsable.user_id)
         end  
 
         #SE CAMBIA EL ESTADO DEL FPL-01 A 2
@@ -1503,6 +1504,9 @@ class FondoProduccionLimpiasController < ApplicationController
           #binding.pry
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_03[:tarea_pendientes]).save
 
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo_FPL_03, params[:revisor_financiero_id])
+
           #binding.pry
           #SE CREA FPL-04
           tarea_fondo_FPL_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
@@ -1517,6 +1521,9 @@ class FondoProduccionLimpiasController < ApplicationController
           }
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_04[:tarea_pendientes]).save
 
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo_FPL_04, params[:revisor_tecnico_id])
+
           #binding.pry
           #SE CREA FPL-05
           tarea_fondo_FPL_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
@@ -1530,6 +1537,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_05[:tarea_pendientes]).save
+
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo_FPL_05, params[:revisor_juridico_id])
 
           #SE CAMBIA EL ESTADO DEL FPL-02 A 2
           #binding.pry
@@ -1690,6 +1700,9 @@ class FondoProduccionLimpiasController < ApplicationController
           }
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
   
       respond_to do |format|
@@ -1810,6 +1823,9 @@ class FondoProduccionLimpiasController < ApplicationController
           }
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
 
       respond_to do |format|
@@ -1958,6 +1974,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
         end
       else
         #binding.pry
@@ -1982,6 +2001,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
             #binding.pry
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+            #SE ENVIAR EL MAIL AL RESPONSABLE
+            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end
       end
       respond_to do |format|
@@ -2216,6 +2238,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
             #binding.pry
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+            #SE ENVIAR EL MAIL AL RESPONSABLE
+            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end
           
       else
@@ -2245,6 +2270,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
             #binding.pry
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+            #SE ENVIAR EL MAIL AL RESPONSABLE
+            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end  
 
         #consulto si la pertinencia tecnica es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-04
@@ -2269,6 +2297,9 @@ class FondoProduccionLimpiasController < ApplicationController
             }
             #binding.pry
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+            #SE ENVIAR EL MAIL AL RESPONSABLE
+            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end  
       end 
       
@@ -2393,6 +2424,9 @@ class FondoProduccionLimpiasController < ApplicationController
           }
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
   
       respond_to do |format|
@@ -2498,6 +2532,9 @@ class FondoProduccionLimpiasController < ApplicationController
           }
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
   
       respond_to do |format|
@@ -2595,6 +2632,8 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
       TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
+      #SE ENVIAR EL MAIL AL RESPONSABLE
+      send_message(tarea_fondo, tarea_pendiente_admisibilidad_juridica.user_id)
      
       respond_to do |format|
         format.js { flash.now[:success] = 'Correcciones de Admisibilidad Jurídica enviadas correctamente'

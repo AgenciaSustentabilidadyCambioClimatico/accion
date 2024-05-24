@@ -1423,6 +1423,9 @@ class ManifestacionDeInteresController < ApplicationController
                       data: { }
                     }]
                   )
+
+                  #SE ENVIAR EL MAIL AL RESPONSABLE
+                  send_message(tarea_fondo, @tarea_pendiente.user_id)
                   
                   #Inicia el flujo con el nombre Sin nombre
                   codigo_proyecto = "Proyecto diagnóstico FPL"
@@ -2795,9 +2798,10 @@ class ManifestacionDeInteresController < ApplicationController
 
     def send_message(tarea, user)
       u = User.find(user)
-      mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
+      mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
       mensajes.each do |mensaje|
-        RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
+        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
       end
     end
+
 end
