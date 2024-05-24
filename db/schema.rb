@@ -162,6 +162,10 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.text "email_representante_legal"
     t.boolean "externa", default: false
     t.bigint "rol_id"
+    t.date "fecha_adhesion"
+    t.string "tamano_empresa"
+    t.string "sector_productivo"
+    t.boolean "archivo_documento_excel", default: false
     t.index ["flujo_id"], name: "index_adhesiones_on_flujo_id"
     t.index ["matriz_comuna_id"], name: "index_adhesiones_on_matriz_comuna_id"
     t.index ["matriz_region_id"], name: "index_adhesiones_on_matriz_region_id"
@@ -561,6 +565,21 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "dato_de_elementos", force: :cascade do |t|
+    t.bigint "adhesion_id"
+    t.string "region"
+    t.string "comuna"
+    t.string "alcance"
+    t.string "nombre_elemento"
+    t.string "direccion_elemento"
+    t.string "tipo_elemento"
+    t.string "archivo_de_adhesion"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.boolean "validacion_dato", default: true
+    t.index ["adhesion_id"], name: "index_dato_de_elementos_on_adhesion_id"
+  end
+
   create_table "dato_levantado_mensuals", force: :cascade do |t|
     t.bigint "dato_productivo_elemento_adherido_id"
     t.string "nombre_archivo_evidencia"
@@ -804,9 +823,10 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.integer "tipo_equipo"
     t.bigint "user_id"
     t.bigint "flujo_id"
+    t.bigint "contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "contribuyente_id"
+    t.index ["contribuyente_id"], name: "index_equipo_trabajos_on_contribuyente_id"
     t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
     t.index ["user_id"], name: "index_equipo_trabajos_on_user_id"
   end
@@ -943,26 +963,8 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.bigint "sub_linea_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "flujo_apl_id"
     t.integer "institucion_entregables_id"
     t.integer "usuario_entregables_id"
-    t.integer "institucion_receptor_cof_fpl_id"
-    t.integer "cantidad_micro_empresa"
-    t.integer "cantidad_pequeña_empresa"
-    t.integer "cantidad_mediana_empresa"
-    t.integer "cantidad_grande_empresa"
-    t.string "territorios_regiones"
-    t.string "territorios_provincias"
-    t.string "territorios_comunas"
-    t.integer "empresas_asociadas_ag"
-    t.integer "empresas_no_asociadas_ag"
-    t.integer "duracion"
-    t.string "fortalezas_consultores"
-    t.string "codigo_proyecto"
-    t.integer "revisor_tecnico_id"
-    t.integer "revisor_financiero_id"
-    t.integer "revisor_juridico_id"
-    t.string "comentario_asignar_revisor"
     t.string "instrumento_constitucion_estatutos_postulante"
     t.string "certificado_vigencia_constitucion_postulante"
     t.string "copia_instrumento_nombre_representante_postulante"
@@ -988,6 +990,21 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.string "cedula_identidad_persona_ejecutor"
     t.string "declaracion_jurada_simple_anexo_a_ejecutor"
     t.string "declaracion_jurada_simple_anexo_b_ejecutor"
+    t.integer "flujo_apl_id"
+    t.integer "institucion_receptor_cof_fpl_id"
+    t.integer "cantidad_micro_empresa"
+    t.integer "cantidad_pequeña_empresa"
+    t.integer "cantidad_mediana_empresa"
+    t.integer "cantidad_grande_empresa"
+    t.integer "empresas_asociadas_ag"
+    t.integer "empresas_no_asociadas_ag"
+    t.integer "duracion"
+    t.string "fortalezas_consultores"
+    t.string "codigo_proyecto"
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.integer "revisor_juridico_id"
+    t.string "comentario_asignar_revisor"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
@@ -1782,6 +1799,13 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.index ["user_id"], name: "index_registro_apertura_correos_on_user_id"
   end
 
+  create_table "registro_proveedor_documentos", force: :cascade do |t|
+    t.integer "tipo_proveedor"
+    t.json "file"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "registro_proveedor_mensajes", force: :cascade do |t|
     t.text "body"
     t.string "asunto"
@@ -1830,9 +1854,9 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
-    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
+    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -2196,6 +2220,7 @@ ActiveRecord::Schema.define(version: 20240524121749) do
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"
+  add_foreign_key "dato_de_elementos", "adhesiones"
   add_foreign_key "dato_productivo_elemento_adheridos", "set_metas_acciones"
   add_foreign_key "descargable_tareas", "tareas"
   add_foreign_key "detalle_documentacion_legals", "documentacion_legals"
@@ -2223,6 +2248,7 @@ ActiveRecord::Schema.define(version: 20240524121749) do
   add_foreign_key "encuesta_user_respuestas", "users"
   add_foreign_key "equipo_empresas", "contribuyentes"
   add_foreign_key "equipo_empresas", "flujos"
+  add_foreign_key "equipo_trabajos", "contribuyentes"
   add_foreign_key "equipo_trabajos", "flujos"
   add_foreign_key "equipo_trabajos", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"

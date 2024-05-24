@@ -4,8 +4,7 @@ default: &default
   timeout: 5000
   pool: 5
   host: localhost
-  username: root
-  password: root
+  username: guillo10
   template: template0
   schema_search_path: "public, admin"
 
