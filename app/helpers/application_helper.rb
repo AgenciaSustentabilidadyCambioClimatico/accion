@@ -879,9 +879,6 @@ module ApplicationHelper
       data[:icon] = "<i class='fa fa-edit'></i>"
     ###Nuevo flujo postulacion FPL###
     when Tarea::COD_FPL_00
-      #data[:url] = asignar_gestor_receptor_fondo_produccion_limpia_path(pendiente)
-      #binding.pry
-      #data[:url] = usuario_entregables_fondo_produccion_limpias_path(pendiente, flujo)
       data[:url] = usuario_entregables_fondo_produccion_limpias_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_01

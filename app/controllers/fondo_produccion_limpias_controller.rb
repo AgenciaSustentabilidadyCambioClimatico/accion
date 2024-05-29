@@ -92,12 +92,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def get_valida_campos_nulos
       # Obtener el fondo_produccion_limpia
-      #binding.pry
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: params[:flujo_id])
 
-     
-      #binding.pry
-    
       # Crear un arreglo para almacenar los campos nulos y los campos completos
       campos_completos = []
       campos_nulos = []
@@ -209,14 +205,11 @@ class FondoProduccionLimpiasController < ApplicationController
       #tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
       tipo_instrumento = 11#@manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
       rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-      #binding.pry
       personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
       @usuarios = personas_responsables.map { |e| e.user  }
-      #binding.pry
     end
 
     def guardar_usuario_entregables #FPL-00
-      #binding.pry
       respond_to do |format|
         #SE CREA FPL-01
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
@@ -279,10 +272,8 @@ class FondoProduccionLimpiasController < ApplicationController
             duracion: 4
           }
         }
-        #binding.pry
         @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
-        #binding.pry
         msj = 'Asignacion postulante y encargado de financiamiento guardado correctamente'
         format.js { flash.now[:success] = msj
           render js: "window.location='#{root_path}'"}
@@ -321,16 +312,15 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def edit 
-      #binding.pry
       @solo_lectura = false
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @mantener_temporal = 'true'
       @objetivo_especifico = ObjetivosEspecifico.new
       @es_para_seleccion = 'true'
       @tipo_aporte = TipoAporte.all
-      #@duracion =  @fondo_produccion_limpia.duracion
+      @contribuyentes = nil
+      @custom_id = 'fpl'
 
-      #binding.pry
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
 
@@ -354,7 +344,6 @@ class FondoProduccionLimpiasController < ApplicationController
       #ESTE ID SE OBTIENE DESDE EL FPL00, CONSIDERAR ID_CONTRIBUYENTE EN LA TABLA FONDO PRODUCCION LIMPIA
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
-
 
       unless @manifestacion_de_interes.contribuyente_id.nil?
         #Elimino todos los que no sean el id guardado
@@ -421,7 +410,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def edit_objetivo_especifico
-      #binding.pry
       @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
       respond_to do |format|
         format.js { render 'edit_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico } }
@@ -561,12 +549,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @usuario_temporal.temporal = true
       @usuario_temporal.flujo_id = params[:flujo_id]
       @equipo_temporal.tipo_equipo = params[:tipo_equipo]
-      
       render layout: false
     end 
 
     def insert_modal
-      tarea = Tarea.where(codigo: '').first 
+      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
       @user = User.new(create_user_params)
 
@@ -576,8 +563,8 @@ class FondoProduccionLimpiasController < ApplicationController
           profesion: params[:equipo_trabajo][:profesion],
           funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
           valor_hh: params[:equipo_trabajo][:valor_hh],
-          copia_ci: params[:equipo_trabajo][:copia_ci],
-          curriculum: params[:equipo_trabajo][:curriculum],
+          copia_ci: params[:archivos_copia_ci], #params[:equipo_trabajo][:copia_ci],
+          curriculum: params[:archivos_curriculum], #params[:equipo_trabajo][:curriculum],
           tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
           flujo_id: params[:user][:flujo_id],
           user_id: params[:user][:user_id]
@@ -737,7 +724,7 @@ class FondoProduccionLimpiasController < ApplicationController
       if equipo_trabajo.destroy
         @count_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1,2]).count
         respond_to do |format|
-          flash[:success] = 'Consultor eliminado exitosamente.'
+          #flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_equipo', locals: { user: equipo_trabajo.id, count_equipo: @count_equipo } }
         end
       else
@@ -748,7 +735,7 @@ class FondoProduccionLimpiasController < ApplicationController
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
         respond_to do |format|
-          flash[:success] = 'Consultor eliminado exitosamente.'
+          #flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_equipo_postulante', locals: { user: equipo_trabajo.id } }
         end
       else
@@ -787,8 +774,11 @@ class FondoProduccionLimpiasController < ApplicationController
               .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
               .all
 
-              flash[:success] = 'Contribuyente creado exitosamente.'
-              format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal} }
+              #Obtiene descargables actualizados
+              set_descargables
+
+              #flash[:success] = 'Contribuyente creado exitosamente.'
+              format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal, descargables_ejecutor: @descargables_ejecutor} }
         end    
       end
     end
@@ -859,7 +849,7 @@ class FondoProduccionLimpiasController < ApplicationController
             equipo.destroy
           end
           respond_to do |format|
-            flash[:success] = 'Contribuyente eliminado exitosamente.'
+            #flash[:success] = 'Contribuyente eliminado exitosamente.'
             format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
           end 
       else
@@ -871,7 +861,7 @@ class FondoProduccionLimpiasController < ApplicationController
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
         respond_to do |format|
-          flash[:success] = 'Consultor eliminado exitosamente.'
+          #flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_consultor_empresa', locals: { user: equipo_trabajo.id } }
         end
       else

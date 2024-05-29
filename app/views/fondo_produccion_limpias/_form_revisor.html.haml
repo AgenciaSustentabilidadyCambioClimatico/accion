@@ -130,12 +130,3 @@
                         = f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id'}, label: t(:revisor_juridico)
                       .col-12
                         = f.input :comentario_asignar_revisor, as: :text, label: t(:comentario), input_html: {class: "required-field", id: 'comentario_asignar_revisor_fpl'}, required: true
-    -#-if !solo_lectura
-    -#  .col-12
-    -#    .float-right
-    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: 'asignar-revisores'
-    -#      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'asignar-revisores', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
-    -#      -#  %i.fa.fa-arrow-circle-right
-    -#      -#  = t(:save)
-    -#      -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: :asignar-revisores

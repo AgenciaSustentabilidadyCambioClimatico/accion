@@ -809,15 +809,23 @@
       }
     };
 
+    const button = document.getElementById('guardar_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{revisar_admisibilidad_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       }
     });
   }
@@ -967,15 +975,25 @@
       }
     }
 
+    $('.loading-data').show();
+
+    const button = document.getElementById('enviar_admisibilidad_financiera_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{enviar_admisibilidad_financiera_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
+        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button.disabled = false;
       }
     });
   }
@@ -1042,15 +1060,23 @@
       }
     };
 
+    const button = document.getElementById('guardar_button_admisibilidad_tecnica');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{revisar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       }
     });
   }
@@ -1279,6 +1305,11 @@
         }
       }
     }
+    $('.loading-data').show();
+
+    const button = document.getElementById('enviar_admisibilidad_tecnica_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -1286,9 +1317,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
+        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button.disabled = false;
       }
     });
   }  
@@ -1356,6 +1391,11 @@
     };
 
     $('.loading-data').show();
+
+    const button = document.getElementById('guardar_button_admisibilidad_juridica');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{revisar_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
@@ -1363,10 +1403,14 @@
       method: "PATCH",
       success: function(response) {
         $('.loading-data').hide();
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       }
     });
   }
@@ -1597,17 +1641,24 @@
     }
 
     $('.loading-data').show();
+
+    const button = document.getElementById('enviar_admisibilidad_juridica_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        $('.loading-data').hide();
+        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button.disabled = false;
       }
     });
 
@@ -1632,13 +1683,14 @@
   }
 
   function enviarObservacionesAdmisibilidadJuridica(){
+    $('.loading-data').show();
     $.ajax({
       url: "#{enviar_observaciones_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        $('.loading-data').hide();
+        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1712,7 +1764,7 @@
                 contentType: "application/json",
                 method: "POST",
                 success: function(response) {
-                  $('.loading-data').hide();
+                  //$('.loading-data').hide();
                 },
                 error: function(error) {
                   console.error("Error al llamar al método del controlador", error);
@@ -1787,13 +1839,14 @@
           method: "GET",
           success: function(response) {
             if(confirm("¿Está seguro que desea enviar?")){
+              $('.loading-data').show();
               $.ajax({
                 url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
                 data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
                 contentType: "application/json",
                 method: "POST",
                 success: function(response) {
-                  $('.loading-data').hide();
+                  //$('.loading-data').hide();
                 },
                 error: function(error) {
                   console.error("Error al llamar al método del controlador", error);
@@ -1913,7 +1966,12 @@
 
     var nota_input_pertinencia = document.getElementById('nota_input_pertinencia').value;
     var obs_input_pertinencia = document.getElementById('obs_input_pertinencia').value;
-
+    
+    $('.loading-data').show();
+    
+    const button = document.getElementById('guardar_button_pertinencia_factibilidad');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;
 
     $.ajax({
       url: "#{revisar_pertinencia_factibilidad_fondo_produccion_limpia_path}",
@@ -1925,9 +1983,15 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
+        $('.loading-data').hide();
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
+        button.innerHTML = 'Guardar';
+        button.disabled = false;
       }
     });
   }
@@ -2048,6 +2112,11 @@
       event.preventDefault();
       return;
     }
+    $('.loading-data').show();
+
+    const button = document.getElementById('enviar_pertinencia_factibilidad_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button.disabled = true;
 
     $.ajax({
       url: "#{enviar_pertinencia_factibilidad_fondo_produccion_limpia_path}",
@@ -2059,9 +2128,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
+        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button.disabled = false;
       }
     });
   }
@@ -2245,6 +2318,12 @@
       return;
     }
 
+    $('.loading-data').show();
+
+    const button = document.getElementById('enviar_evaluacion_general_button');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button.disabled = true;
+
     $.ajax({
       url: "#{enviar_evaluacion_general_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
@@ -2258,7 +2337,10 @@
       success: function(response) {
       },
       error: function(error) {
+        $('.loading-data').hide();
         console.error("Error al llamar al método del controlador", error);
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button.disabled = false;
       }
     });
   }
@@ -2317,7 +2399,10 @@
       event.preventDefault();
       return;
     }
-    
+    $('.loading-data').show();
+    const button = document.getElementById('guardar_button_revisor');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;
     $.ajax({
       url: "#{asignar_revisor_fondo_produccion_limpia_path}",
       data: {
@@ -2330,10 +2415,12 @@
       },
       method: "PATCH",
       success: function(response) {
-        calcularPromedioFinanciera();
+        //calcularPromedioFinanciera();
+        $('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
+        $('.loading-data').hide();
       }
     });
   }
@@ -2372,7 +2459,7 @@
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
       })
       .catch(error => {
-        console.error('Error:', error);
+        //console.error('Error:', error);
         // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
       });
     }
@@ -3274,7 +3361,7 @@
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
         <h1>C) Ejecutor </h1>              
-        %div.table-responsive
+        %div#div_ejecutor.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
@@ -3663,9 +3750,8 @@
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_revisor", onclick: 'guardarAsignarRevisores(); return false;'
-              = button_tag t(:save), class: 'btn btn-sm btn-primary btn-sm', type: 'button', onclick: 'guardarAsignarRevisores(); return false;'
-              -#= button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'asignarRevisorButton(); return false;'
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_revisor", onclick: 'guardarAsignarRevisores(); return false;'
+
   - if @admisibilidad  
     #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
       .card
@@ -3865,7 +3951,7 @@
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadTecnica(); return false;'
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
               = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar)            
@@ -3933,7 +4019,7 @@
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadJuridica(); return false;'
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_juridica", onclick: 'guardarAdmisibilidadJuridica(); return false;'
               = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarAdmisibilidadJuridica(); return false;' do
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar) 
@@ -4271,7 +4357,7 @@
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarPertinenciaFactibilidad(); return false;'
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_pertinencia_factibilidad", onclick: 'guardarPertinenciaFactibilidad(); return false;'
               = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_pertinencia_factibilidad_button", onclick: 'enviarPertinenciaFactibilidad(); return false;' do
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar)
@@ -5084,7 +5170,7 @@
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
     .modal-content
       .modal-body
-        .container-fluid{id: "body-contribuyente-buscador"}
+        .container-fluid{id: "body-contribuyente-fpl-buscador"}
           =render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
       .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
@@ -5122,8 +5208,7 @@
   });
 
   $(document).on('click','#nuevo-usuario-fpl-button', function(e){
-    e.preventDefault();
-    var tipo_equipo = $('#tipo_equipo').val();
+    const tipo_equipo = this.getAttribute('data-tipo-equipo');
     $.ajax({
       url: "#{insert_fondo_produccion_limpia_path}",
       type: "POST",
@@ -5247,7 +5332,7 @@
       alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
       $('.loading-data').hide();
     }).success(function(data){
-      $('#buscar-contribuyente .body-contribuyente-buscador').html(data);
+      $('#buscar-contribuyente .body-contribuyente-fpl-buscador').html(data);
       $('#buscar-contribuyente').modal('hide');
       $('.loading-data').hide();
     });

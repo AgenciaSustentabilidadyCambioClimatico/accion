@@ -30,7 +30,7 @@
                 %br
   -unless @usuario_temporal.nil?
     .col-12.text-right
-      %button.btn.btn-primary#nuevo-usuario-button{type: :button}
+      %button.btn.btn-primary#nuevo-usuario-fpl-button{type: :button, 'data-tipo-equipo': tipo_equipo}
         =t(:nuevo_representante)
   .col-12.mt-2
     .usuarios-remote-table
