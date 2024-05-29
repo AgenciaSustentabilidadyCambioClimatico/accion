@@ -1,10 +1,6 @@
 :javascript
   $(document).ready(function(){
 
-    //$(".disabled *:not('.fa')").prop('disabled',true);
-    //$(".disabled *:not('.fa')").off();
-
-
     $('#guardar_button').click(function(){
       $('#enviar_button').removeAttr('data-disable-with');
       $('.loading-data').show()
@@ -306,12 +302,4 @@
                             %tr
                             %th.contenido1-form Puntaje Otorgado
                             %th.contenido2-form#promedio-notas-financiera
-                            %th.contenido3-form          
-    -#-if !solo_lectura
-    -#  .col-12
-    -#    .float-right
-    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
-    -#      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
-    -#        %i.fa.fa-arrow-circle-right
-    -#        =t(:enviar)
+                            %th.contenido3-form
