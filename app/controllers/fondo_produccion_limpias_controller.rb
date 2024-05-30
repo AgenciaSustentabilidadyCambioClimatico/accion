@@ -1,4 +1,5 @@
 class FondoProduccionLimpiasController < ApplicationController
+    include ApplicationHelper
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
@@ -184,27 +185,18 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
     
-
     def usuario_entregables #FPL-00
-      tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-      #tipo_instrumento = @flujo.tipo_instrumento_id.nil? ? TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA : @flujo.tipo_instrumento_id
-      #rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
+      tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
+      rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
       responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
       contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
       @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
-      
-
-      #@encargado_financiamiento = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
       @encargado_financiamiento = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
-      #binding.pry
     end
 
     def lista_usuarios_entregables
-      #manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
-      #tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
-      tipo_instrumento = 11#@manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+      tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA 
+      rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
       personas_responsables = Responsable::__personas_responsables_v2(rol_tarea, tipo_instrumento, params[:contribuyente_id])
       @usuarios = personas_responsables.map { |e| e.user  }
     end
@@ -557,77 +549,89 @@ class FondoProduccionLimpiasController < ApplicationController
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
       @user = User.new(create_user_params)
 
-      #SETEO PARAMETROS EQUIPO
-      custom_params_equipo = {
-        equipo_trabajo: {
-          profesion: params[:equipo_trabajo][:profesion],
-          funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
-          valor_hh: params[:equipo_trabajo][:valor_hh],
-          copia_ci: params[:archivos_copia_ci], #params[:equipo_trabajo][:copia_ci],
-          curriculum: params[:archivos_curriculum], #params[:equipo_trabajo][:curriculum],
-          tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
-          flujo_id: params[:user][:flujo_id],
-          user_id: params[:user][:user_id]
-        }
-      }
-      tipo_proveedor = TipoProveedor.find(3)
-
-      #SETEO PARAMETROS PROVEEDOR
-      @registro_proveedor = RegistroProveedor.new()
-      @registro_proveedor.rut = @user.rut
-      @registro_proveedor.nombre = @user.nombre_completo
-      @registro_proveedor.email = @user.email
-      @registro_proveedor.telefono = @user.telefono
-      @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-      @registro_proveedor.tipo_proveedor_id = 3
-      @registro_proveedor.calificado = false
-      @registro_proveedor.apellido = '.'
-      @registro_proveedor.direccion = '.'
-      @registro_proveedor.region = '.'
-      @registro_proveedor.comuna = '.'
-      @registro_proveedor.ciudad = '.'
-      @registro_proveedor.terminos_y_servicion = true
-
-      # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-      empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
-
-      if params[:equipo_trabajo][:tipo_equipo].to_i == 2
-        custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
-        @registro_proveedor.contribuyente_id = empresa.contribuyente_id
+      @usuarios = User
+      if @user.rut.present?
+        rut = @user.rut.upcase
+        @usuarios = @usuarios.where("rut = ?", rut)
       end
-      respond_to do |format|
-        if @user.user_id.nil?
-          if @user.save
-            usuario_temporal = User.unscoped.find(@user.id)
-            usuario_final = usuario_temporal.confirmar_temporal
-            if(create_user_params[:temporal] == "true")
-              @usuario_temporal = @user
-              custom_params_equipo[:equipo_trabajo][:user_id] =  @user.id
-              @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-              if @equipo_temporal.save  
-                if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
-                  if @registro_proveedor.save
+
+      if @usuarios.count > 0
+         # Usuario ya existe
+        format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
+        format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
+      else
+        #SETEO PARAMETROS EQUIPO
+        custom_params_equipo = {
+          equipo_trabajo: {
+            profesion: params[:equipo_trabajo][:profesion],
+            funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+            valor_hh: params[:equipo_trabajo][:valor_hh],
+            copia_ci: params[:archivos_copia_ci], #params[:equipo_trabajo][:copia_ci],
+            curriculum: params[:archivos_curriculum], #params[:equipo_trabajo][:curriculum],
+            tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+            flujo_id: params[:user][:flujo_id],
+            user_id: params[:user][:user_id]
+          }
+        }
+        tipo_proveedor = TipoProveedor.find(3)
+
+        #SETEO PARAMETROS PROVEEDOR
+        @registro_proveedor = RegistroProveedor.new()
+        @registro_proveedor.rut = @user.rut
+        @registro_proveedor.nombre = @user.nombre_completo
+        @registro_proveedor.email = @user.email
+        @registro_proveedor.telefono = @user.telefono
+        @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
+        @registro_proveedor.tipo_proveedor_id = 3
+        @registro_proveedor.calificado = false
+        @registro_proveedor.apellido = '.'
+        @registro_proveedor.direccion = '.'
+        @registro_proveedor.region = '.'
+        @registro_proveedor.comuna = '.'
+        @registro_proveedor.ciudad = '.'
+        @registro_proveedor.terminos_y_servicion = true
+
+        # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
+        empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+
+        if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+          custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
+          @registro_proveedor.contribuyente_id = empresa.contribuyente_id
+        end
+        respond_to do |format|
+          if @user.user_id.nil?
+            if @user.save
+              usuario_temporal = User.unscoped.find(@user.id)
+              usuario_final = usuario_temporal.confirmar_temporal
+              if(create_user_params[:temporal] == "true")
+                @usuario_temporal = @user
+                custom_params_equipo[:equipo_trabajo][:user_id] =  @user.id
+                @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
+                if @equipo_temporal.save  
+                  if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
+                    if @registro_proveedor.save
+                      #flash[:success] = 'Consultor creado exitosamente.'
+                      format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+                      format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+                    end
+                  else
                     #flash[:success] = 'Consultor creado exitosamente.'
                     format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
                     format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-                  end
-                else
-                  #flash[:success] = 'Consultor creado exitosamente.'
-                  format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-                  format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+                  end  
                 end  
-              end  
-            else
-              message = t(:m_successfully_created, m: t(:user))
-              format.js { flash.now[:success] = message }
-              format.html { redirect_to admin_users_url, notice: message }
+              else
+                message = t(:m_successfully_created, m: t(:user))
+                format.js { flash.now[:success] = message }
+                format.html { redirect_to admin_users_url, notice: message }
+              end
             end
+          else
+            @user.save(validate: false)
+            #Metodo devuelve el registro final (sea nuevo o editado)
+            @usuario_temporal = @user
+            format.js {}
           end
-        else
-          @user.save(validate: false)
-          #Metodo devuelve el registro final (sea nuevo o editado)
-          @usuario_temporal = @user
-          format.js {}
         end
       end
     end
