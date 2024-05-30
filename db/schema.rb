@@ -654,34 +654,6 @@ ActiveRecord::Schema.define(version: 20240524121749) do
     t.index ["codigo"], name: "index_descargable_tareas_on_codigo", unique: true
   end
 
-  create_table "detalle_documentacion_legals", force: :cascade do |t|
-    t.bigint "documentacion_legal_id"
-    t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["documentacion_legal_id"], name: "index_detalle_documentacion_legals_on_documentacion_legal_id"
-    t.index ["flujo_id"], name: "index_detalle_documentacion_legals_on_flujo_id"
-  end
-
-  create_table "detalle_documentacions", force: :cascade do |t|
-    t.string "rol_unico_tributario_postulante"
-    t.string "certificado_vigencia"
-    t.string "declaracion_jurada_anexo_b"
-    t.string "copia_instrumento_nombre_representante"
-    t.string "copia_cedula_representantes_legales"
-    t.string "instrumento_constitucion_estatutos"
-    t.string "antecedentes_contrato_anexo_c"
-    t.string "declaracion_jurada_representante_legal_anexo_a"
-    t.string "declaracion_jurada_representante_legal_anexo_b"
-    t.string "certificado_inicio_actividades"
-    t.string "copia_cedula_persona"
-    t.string "declaracion_jurada_anexo_a"
-    t.bigint "flujo_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["flujo_id"], name: "index_detalle_documentacions_on_flujo_id"
-  end
-
   create_table "documentacion_legals", force: :cascade do |t|
     t.integer "estado"
     t.bigint "descargable_tareas_id"
@@ -1433,9 +1405,10 @@ ActiveRecord::Schema.define(version: 20240524121749) do
   create_table "nota_registro_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "manifestacion_de_interes_id"
-    t.integer "nota", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "calificado", default: false
+    t.float "nota", default: 0.0
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
   end
@@ -2223,9 +2196,6 @@ ActiveRecord::Schema.define(version: 20240524121749) do
   add_foreign_key "dato_de_elementos", "adhesiones"
   add_foreign_key "dato_productivo_elemento_adheridos", "set_metas_acciones"
   add_foreign_key "descargable_tareas", "tareas"
-  add_foreign_key "detalle_documentacion_legals", "documentacion_legals"
-  add_foreign_key "detalle_documentacion_legals", "flujos"
-  add_foreign_key "detalle_documentacions", "flujos"
   add_foreign_key "documento_diagnosticos", "manifestacion_de_intereses"
   add_foreign_key "documento_diagnosticos", "tipo_documento_diagnosticos"
   add_foreign_key "documento_garantias", "documento_garantias"

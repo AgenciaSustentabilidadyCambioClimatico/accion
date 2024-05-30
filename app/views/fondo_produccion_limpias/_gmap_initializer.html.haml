@@ -33,7 +33,7 @@
       center: new google.maps.LatLng(lat,lng),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
-    marker = new google.maps.Marker({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
+    marker = new google.maps.marker.AdvancedMarkerElement({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
   }
 
   function initializeRepresentacionSeleccionTerritorioMap(lat,lng) {
@@ -156,7 +156,7 @@
 
   function addMarker(map,location) {
     pinIcon = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00",null,null,null,new google.maps.Size(14,20));
-    marker = new google.maps.Marker({
+    marker = new google.maps.marker.AdvancedMarkerElement({
       position: location,
       map: map,
       icon: pinIcon
