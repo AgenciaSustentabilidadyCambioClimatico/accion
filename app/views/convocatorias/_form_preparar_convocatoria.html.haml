@@ -78,11 +78,12 @@
 
 	});
 
-	function initMap(){
+	async function initMap(){const {AdvancedMarkerElement} = await google.maps.importLibrary("marker");
 		map = new google.maps.Map(document.getElementById('map'), {
 			zoom: 5, mapId: "DEMO_MAP_ID",
 			center: uluru
 		});
+
 
 		marker = new google.maps.marker.AdvancedMarkerElement({
 			position: uluru,
