@@ -2,7 +2,9 @@
   $(document).ready(function(){
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
-      //$('#enviar-manifestacion-button').removeAttr('data-disable-with');
+      const button = document.getElementById('guardar-fondo-temporal-button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+      button.disabled = true;
 
       var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
       var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -37,7 +39,8 @@
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
-
+      
+      $('.loading-data').show();
       $.ajax({
         url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
         data: {
@@ -65,10 +68,16 @@
                 if (contador_campos_nulos > 0) {
                   alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
                 }
+                $('.loading-data').hide();
+                button.innerHTML = 'Guardar cambios temporales';
+                button.disabled = false;
             }})
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
+          button.innerHTML = 'Guardar cambios temporales';
+          button.disabled = false;
         }
       });
     });
@@ -107,6 +116,7 @@
         });
       }
     });
+    
     $('#enviar-postulacion-button').click(function(e){
       $.ajax({
         url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
@@ -132,6 +142,12 @@
           if (valor == 0) {
             console.log("No hay campos nulos, continuando con el siguiente AJAX");
             if(confirm("¿Está seguro que desea enviar?")){
+              $('.loading-data').show();
+
+              const button = document.getElementById('enviar-postulacion-button');
+              button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+              button.disabled = true;
+
               $.ajax({
                 url: "#{enviar_postulacion_fondo_produccion_limpia_path}",
                 data: {
@@ -139,10 +155,14 @@
                 },
                 method: "GET",
                 success: function(response) {
-                  calcularPromedioFinanciera();
+                  //calcularPromedioFinanciera();
+                  //$('.loading-data').hide();
                 },
                 error: function(error) {
                   console.error("Error al llamar al método del controlador", error);
+                  $('.loading-data').hide();
+                  button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+                  button.disabled = false;
                 }
               });
             }
@@ -192,8 +212,6 @@
       = link_to t(:descargar_postulacion), descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
     .float-right
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
-      -#
-        = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary #{formulario_remote ? 'd-none' : nil}"
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
       = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
         %i.fa.fa-arrow-circle-right

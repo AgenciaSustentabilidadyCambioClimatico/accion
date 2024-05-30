@@ -12,33 +12,13 @@
       $('.seleccionar-contribuyente-button').removeAttr('disabled');
     });
 
-    $('#buscar-contribuyente-fpl').prop('disabled', true);
-    $('#buscar-usuario-postulante-fpl').prop('disabled', true);
-    //$('#encargado-financiamiento-fpl').prop('disabled', true);
-    
     document.addEventListener('DOMContentLoaded', function() {
       var encargadoFinanciamientoInput = document.getElementById('encargado-financiamiento-fpl');
-
-      // Disable the input field
-      //encargadoFinanciamientoInput.disabled = true;
     });
-
-
   });
-
-  /*document.addEventListener('DOMContentLoaded', function() {
-    var buscarContribuyenteBtn = document.getElementById('buscar-contribuyente-fpl');
-
-    buscarContribuyenteBtn.addEventListener('click', function() {
-      // Disable the button
-      //buscarContribuyenteBtn.disabled = true;
-    });
-  });*/
 
   $(document).on('click', '.seleccionar-contribuyente-button', function() {
     try {
-      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
-      //data=JSON.parse($('.contribuyente-radio:checked').val());
       data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
       $("#manifestacion_de_interes_institucion_entregables_id").val(data.id);
       $("#manifestacion_de_interes_institucion_entregables_name").val(data.razon_social);
@@ -58,6 +38,46 @@
   });
 
   function guardarUsuarioEntregables(){
+    var financiamiento = document.getElementById('opcion_2_financiamiento');
+    var cofinanciamiento = document.getElementById('opcion_4_cofinanciamiento');
+    
+    if (financiamiento.checked) {
+      var institucion_entregables_id = document.getElementById('manifestacion_de_interes_institucion_entregables_id');
+      var usuario_entregables_id = document.getElementById('manifestacion_de_interes_usuario_entregables_id');
+
+      var alertaMostrada = false;
+      if (institucion_entregables_id.value.trim() === '') {
+        if (!alertaMostrada) {
+          alert('Por favor, seleccione institución postulante.');
+          alertaMostrada = true;
+        }
+        event.preventDefault();
+        return;
+      }
+
+      if (usuario_entregables_id.value.trim() === '') {
+        if (!alertaMostrada) {
+          alert('Por favor, seleccione postulante.');
+          alertaMostrada = true;
+        }
+        event.preventDefault();
+        return;
+      }
+    }
+
+    if (cofinanciamiento.checked) {
+      var institucion_confinanciamiento_id = document.getElementById('manifestacion_de_interes_proponente');
+      var alertaMostrada = false;
+      if (institucion_confinanciamiento_id.value.trim() === '') {
+        if (!alertaMostrada) {
+          alert('Por favor, seleccione institución confinanciamiento.');
+          alertaMostrada = true;
+        }
+        event.preventDefault();
+        return;
+      }
+    }
+
     $('.loading-data').show();
     $.ajax({
       url: "#{guardar_usuario_entregables_fondo_produccion_limpias_path}",
@@ -76,8 +96,6 @@
 
   $(document).on('click', '.seleccionar-usuario-button', function() {
     try {
-      //DZC 2019-06-17 13:44:59 se modifica para considerar el contribuyente que ha sido escogido en otra página
-      //data=JSON.parse($('.contribuyente-radio:checked').val());
       data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
       $("#manifestacion_de_interes_usuario_entregables_id").val(data.id);
       $("#manifestacion_de_interes_usuario_entregable_name").val(data.nombre);
@@ -87,42 +105,28 @@
   });
 
   function optionSelectInstitucionFinanciamiento(valor) {
-    var buscarContribuyenteBtn = document.getElementById('buscar-contribuyente-fpl');
+    var financiamiento_seccion = document.getElementById('financiamiento_seccion');
     if( valor == 1 ) {
-      /*buscarContribuyenteBtn.addEventListener('click', function() {
-        // Disable the button
-        buscarContribuyenteBtn.disabled = true;
-      });  */  
-      $('#buscar-contribuyente-fpl').prop('disabled', true);
-      $('#buscar-usuario-postulante-fpl').prop('disabled', true);
-      
+      financiamiento_seccion.style.display = 'none';
     }else{
-      /*uscarContribuyenteBtn.addEventListener('click', function() {
-        // Disable the button
-        buscarContribuyenteBtn.disabled = false;
-      });*/
-      $('#buscar-contribuyente-fpl').prop('disabled', false);
-      $('#buscar-usuario-postulante-fpl').prop('disabled', false);
+      financiamiento_seccion.style.display = 'block';
     }
-
-    //
   }
 
   function optionSelectInstitucionCofinanciamiento(valor) {
+    var cofinanciamiento_seccion = document.getElementById('cofinanciamiento_seccion');
     if( valor == 1 ) {
-      $('#encargado-financiamiento-fpl').prop('disabled', true);
+      cofinanciamiento_seccion.style.display = 'none';
     }else{
-      $('#encargado-financiamiento-fpl').prop('disabled', false);
+      cofinanciamiento_seccion.style.display = 'block';
     }
   }
   
 - solo_lectura = @solo_lectura == 'solo_lectura'
 - titulo t(:asignar_postulante_y_encargado_de_financiamiento)
--#= simple_form_for @manifestacion_de_interes, url: usuario_entregables_fondo_produccion_limpias_path(@tarea_pendiente, @manifestacion_de_interes) do |f|
 = simple_form_for @manifestacion_de_interes, url: usuario_entregables_fondo_produccion_limpias_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.input :update_usuario_entregables, as: :hidden, wrapper: false, input_html: { value: true }
-  =# f.input :temporal, as: :hidden, wrapper: false, input_html: { value: true }
   .row
     .col-12
       .card
@@ -145,12 +149,10 @@
               1.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que postulará a financiamiento?
               %br  
               Si      
-              -#= f.radio_button :seleccion_financiamiento, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
               = f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
               No      
-              -#= f.radio_button :seleccion_financiamiento, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }      
-              = f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }  
-          .row
+              = f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }
+          .row#financiamiento_seccion{style: 'display: none;'}
             .col-12.col-lg-6.mb-2
               .row.align-items-end
                 .col-12
@@ -159,7 +161,7 @@
                     = t(:elegir_institucion_postulante)
                   .row
                     .col-12.col-lg-2.pr-1
-                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id:'buscar-contribuyente-fpl' do
+                      = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: 'buscar-contribuyente-fpl' do
                         %i.fa.fa-search-plus
                         Buscar
                     .col-12.col-lg-10.pl-1
@@ -171,24 +173,23 @@
                     = t(:elegir_postulante)
                   .row
                     .col-12.col-lg-2.pr-1
-                      = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-usuario", class: 'form-control btn btn-primary btn-sm', id:'buscar-usuario-postulante-fpl' do
+                      = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-usuario", class: 'form-control btn btn-primary btn-sm', id: 'buscar-usuario-postulante-fpl' do
                         %i.fa.fa-search-plus
                         Buscar
                     .col-12.col-lg-10.pl-1
                       = f.input :usuario_entregables_id, as: :hidden, wrapper: false
                       = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
+          .row
             .col-12.my-2
               2.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que recibirá el cofinanciamiento?
               %br  
               Si      
-              -#= f.radio_button :seleccion_cofinanciamiento, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
               = f.radio_button :proponente, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
               No      
-              -#= f.radio_button :seleccion_cofinanciamiento, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
               = f.radio_button :proponente, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
+          .row#cofinanciamiento_seccion{style: 'display: none;'}
             .col-12.col-lg-6.mb-2
               -if !solo_lectura
-                -#= f.input :institucion_receptor_cofinanciamiento, collection: @contribuyentes.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
                 = f.input :proponente, collection: @contribuyentes.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
               -else
                 .form-group
@@ -197,7 +198,7 @@
                   -no_data = rev_tecnico.nil?
                   %label.control-label.string=t(:revisor_tecnico)
                   %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                    =(no_data ? 'No se ingresó respuesta' : rev_tecnico)                    
+                    =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
     -if !solo_lectura
