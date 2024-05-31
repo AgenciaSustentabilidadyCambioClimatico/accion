@@ -14,6 +14,14 @@ $('#div_plan_recursos_propios table tbody').empty();
   <% end %>
   $('#modal_rrhh_propios-form').modal("hide");
 
+  $('#modal_rrhh_propios-form').on('hidden.bs.modal', function () {
+    // Cierra modal_create_plan_actividades-form si está abierto
+    $('#modal_create_plan_actividades-form').modal("hide");
+
+    // Llama a la función para abrir el nuevo modal
+    //crearPlanActividades('<%= j @plan_id %>', 'false');
+  });
+
   var mensajeCosto = document.getElementById('mensaje-costo');
   <% if @mensaje.present? %>
     var contenido = '<%= j @mensaje %>';
