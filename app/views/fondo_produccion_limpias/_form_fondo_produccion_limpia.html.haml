@@ -337,6 +337,12 @@
       data: { plan_id: plan_id, 
               solo_lectura: solo_lectura},
       method: "GET",
+      cache: false, // Deshabilitar caché
+      headers: { 
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0"
+      },
       success: function(response) {
         $('#modal_create_plan_actividades-form').modal('show');
       },
@@ -518,10 +524,6 @@
     var data = [];// Arreglo para almacenar los datos
     // Recorre cada fila de la tabla
     $('#div_postulantes_faltantes table tbody tr').each(function() {
-        //var rrhhPropioId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
-        //var rrhhPropioId = $(this).find('input[name="rrhh_propios_id"]').val(); // Obtener el valor de rrhh_propios_id
-        //var rrhhEquipoId = $(this).find('input[name="rrhh_equipo_id"]').val(); // Obtener el valor de rrhh_equipo_id
-
         var rrhhPropioId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
         var rrhhEquipoId = $(this).find('td:nth-child(2)').text(); // Cambiar el selector según la estructura de tu tabla
         var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
@@ -545,7 +547,7 @@
                 plan_id: plan_id},// Envía los datos como JSON
         success: function(response) {
           // Maneja la respuesta del servidor
-          console.log(response);
+          //console.log(response);
         },
         error: function(xhr, status, error) {
           // Maneja los errores de la solicitud AJAX
@@ -612,7 +614,7 @@
                 tipoAporte: tipoAporteSeleccionado},// Envía los datos como JSON
         success: function(response) {
           // Maneja la respuesta del servidor
-          console.log(response);
+          //console.log(response);
         },
         error: function(xhr, status, error) {
           // Maneja los errores de la solicitud AJAX

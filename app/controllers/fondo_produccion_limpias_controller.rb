@@ -187,11 +187,18 @@ class FondoProduccionLimpiasController < ApplicationController
     
     def usuario_entregables #FPL-00
       tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
+
+      #postulante
       rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
       responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
       contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
       @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
-      @encargado_financiamiento = Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+
+      #entregables
+      rol_tarea2 = Tarea::find_by(codigo: Tarea::COD_FPL_015).rol_id
+      responsables2 = Responsable.__personas_responsables(rol_tarea2, tipo_instrumento)
+      contribuyentes_ids_2 = responsables2.map{|p| p.contribuyente_id }.uniq
+      @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_2)
     end
 
     def lista_usuarios_entregables
@@ -203,16 +210,17 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def guardar_usuario_entregables #FPL-00
       respond_to do |format|
+        #binding.pry
         #SE CREA FPL-01
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-        pers = Persona.where(user_id: @tarea_pendiente.user_id).first
+        pers = Persona.where(user_id:  params[:manifestacion_de_interes][:usuario_entregables_id]).first
         
         custom_params_tarea_pendiente = {
           tarea_pendientes: {
             flujo_id: @flujo.id,
             tarea_id: tarea_fondo.id,
             estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: @tarea_pendiente.user_id,
+            user_id:  params[:manifestacion_de_interes][:usuario_entregables_id],
             persona_id: pers.id,
             data: { }
           }
@@ -222,7 +230,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes.save  
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
-        send_message(tarea_fondo, @tarea_pendiente.user_id)
+        send_message(tarea_fondo, params[:manifestacion_de_interes][:usuario_entregables_id])
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         #binding.pry
@@ -1121,8 +1129,12 @@ class FondoProduccionLimpiasController < ApplicationController
       ###Actualiza costos
       set_costos  
 
+      @plan_id =  params['plan_id']
+
+      #@solo_lectura = false
+      #binding.pry
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3 } }
+        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3, plan_id: @plan_id} }
       end
     end
 
@@ -1173,8 +1185,10 @@ class FondoProduccionLimpiasController < ApplicationController
       ###Actualiza costos
       set_costos 
 
+      @plan_id =  params['plan_id']
+     
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_ } }
+        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, plan_id: @plan_id } }
       end
     end
     

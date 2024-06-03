@@ -28,6 +28,14 @@ $('#div_plan_gastos_administracion table tbody').append(newRow);
    
 $('#modal_gastos_administracion-form').modal("hide");
 
+$('#modal_gastos_administracion-form').on('hidden.bs.modal', function () {
+  // Cierra modal_create_plan_actividades-form si está abierto
+  $('#modal_create_plan_actividades-form').modal("hide");
+
+  // Llama a la función para abrir el nuevo modal
+  //crearPlanActividades('<%= j @plan_id %>', 'false');
+});
+
 document.querySelectorAll('#div_consultor_faltantes input[type="text"]').forEach(function(input) {
     input.value = '';
 });

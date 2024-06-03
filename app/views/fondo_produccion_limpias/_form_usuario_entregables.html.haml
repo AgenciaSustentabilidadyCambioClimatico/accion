@@ -190,7 +190,7 @@
           .row#cofinanciamiento_seccion{style: 'display: none;'}
             .col-12.col-lg-6.mb-2
               -if !solo_lectura
-                = f.input :proponente, collection: @contribuyentes.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
+                = f.input :proponente, collection: @contribuyentes_entregables.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
               -else
                 .form-group
                   -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
