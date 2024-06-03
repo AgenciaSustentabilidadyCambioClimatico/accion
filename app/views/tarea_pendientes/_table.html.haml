@@ -80,8 +80,13 @@
               %td{:onClick => "unfoldTareas()", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
-              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word ;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
-              %td{class: 'tarea-nombre-entrada'}
+              - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)
+              - if fondo_produccion_limpia.present?
+                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}
+                  = fondo_produccion_limpia
+              -else
+                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
+              %td
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?
                   - unless pendiente.determina_convocatoria.blank?

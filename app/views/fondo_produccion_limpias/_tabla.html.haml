@@ -1,0 +1,44 @@
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+- lista_usuarios = lista_usuarios.nil? ? @usuarios : lista_usuarios
+:javascript
+  $(document).ready(function() {
+    $('#tabla_usuarios_#{modal_id}').DataTable({
+      lengthMenu: [[10], [10]],
+      pageLength: 10,
+      columnDefs: [ { targets: [2], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+  });
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:usuarios).downcase)
+  %div.my-2 
+    %table.table.usuarios.table-striped{id: 'tabla_usuarios_' + (modal_id || '')}
+      %thead
+        %tr
+          %th.rut=t(:rut)
+          %th.razon-social=t(:nombre)
+          %th.iconos-acciones=t(:seleccione)
+
+      %tbody
+        -# DZC 2019-08-23 18:20:14 se corrige error
+        - if lista_usuarios.is_a?(Array)
+          - lista_usuarios.each do |u|
+            %tr
+              %td= "#{u.rut}"
+              %td= u.nombre_completo
+              %td.iconos-acciones
+                - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
+                = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_buscar-usuario" }          
+        - else
+          -#- if @lista_usuarios.present?  
+          - lista_usuarios.all.each do |u|
+            %tr
+              %td= "#{u.rut}"
+              %td= u.nombre_completo
+              %td.iconos-acciones
+                - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
+                = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_buscar-usuario" }

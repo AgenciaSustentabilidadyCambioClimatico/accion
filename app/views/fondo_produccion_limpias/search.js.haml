@@ -1,0 +1,10 @@
+- if @errors == true
+	$('#contribuyentes-remote-filter#{@custom_id}').html("#{j render 'fondo_produccion_limpias/contribuyentes/filter_form', es_para_seleccion: @es_para_seleccion, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados, custom_id: @custom_id}");
+	htmlErrorToTooltip('top');
+- else
+	- @contribuyente = Contribuyente.new
+	$('#contribuyentes-remote-filter#{@custom_id}').html("#{j render 'fondo_produccion_limpias/contribuyentes/filter_form', es_para_seleccion: @es_para_seleccion, seleccion_basica: @seleccion_basica, tipo_instrumento: @tipo_instrumento, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados, custom_id: @custom_id, es_maquinaria: @es_maquinaria}");
+	$("#contribuyentes-remote-table#{@custom_id}").html("#{j render 'fondo_produccion_limpias/contribuyentes/table', es_para_seleccion: @es_para_seleccion,seleccion_basica: @seleccion_basica, tipo_instrumento: @tipo_instrumento,buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados, data_table: @data_table, es_maquinaria: @es_maquinaria, custom_id: @custom_id}");
+	
+$('.loading-data').hide();
+closeAlertMessage();

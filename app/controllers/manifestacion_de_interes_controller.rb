@@ -1323,6 +1323,9 @@ class ManifestacionDeInteresController < ApplicationController
     @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
     @manifestacion_de_interes.seleccion_de_radios
 
+    #Obtiene las lineas para el diagnostico del FPL
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
+   
     unless @manifestacion_de_interes.contribuyente_id.nil?
       #Elimino todos los que no sean el id guardado
       Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
@@ -1369,11 +1372,11 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def revisar_pertinencia_factibilidad #DZC TAREA APL-005
-    
+    #binding.pry
     @manifestacion_de_interes.assign_attributes(manifestacion_pertinencia_params)
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
-      ##ToDo: fecha limite
+      ##ToDo: fecha limiteq
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save
         if @tarea_pendiente.save
@@ -1404,6 +1407,47 @@ class ManifestacionDeInteresController < ApplicationController
               elsif @manifestacion_de_interes.diagnostico_id.present?
                 set_metas_by_antiguo_acuerdo @manifestacion_de_interes.diagnostico_id, @flujo
               end
+
+              #FPL-00 - SE CREA NUEVO FLUJO FPL PARA EL DIAGNOSTICO 
+              if manifestacion_pertinencia_params[:fondo_produccion_limpia] == "true"
+                flujo = Flujo.new({
+                  contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
+                  tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada] #params[:manifestacion_de_interes][:tipo_instrumento_id] 
+                })
+                if flujo.save
+                  tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+                  flujo.tarea_pendientes.create([{
+                      tarea_id: tarea_fondo.id,
+                      estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                      user_id: @tarea_pendiente.user_id,
+                      data: { }
+                    }]
+                  )
+
+                  #SE ENVIAR EL MAIL AL RESPONSABLE
+                  send_message(tarea_fondo, @tarea_pendiente.user_id)
+                  
+                  #Inicia el flujo con el nombre Sin nombre
+                  codigo_proyecto = "Proyecto diagnóstico FPL"
+
+                  fpl = FondoProduccionLimpia.new({
+                    flujo_id: flujo.id,
+                    flujo_apl_id: @tarea_pendiente.flujo_id,
+                    linea_id:1, sub_linea_id:1, #eliminar estos dos campos
+                    codigo_proyecto: codigo_proyecto
+                  })
+                  fpl.save 
+
+                    #guarda el fpl id en la tabla flujo
+                    flujo.proyecto_id = fpl.id
+                    flujo.save
+
+                  success = 'Flujo fondo de producción limpia creado correctamente.'
+                else
+                  warning = 'Usted NO puede iniciar Flujo FPL.'
+                end
+              end
+              
             when "solicita_condiciones", "realiza_observaciones", "solicita_condiciones_y_contiene_observaciones"
               @tarea_pendiente.pasar_a_siguiente_tarea 'B'
             when "no_aceptada"
@@ -1418,12 +1462,15 @@ class ManifestacionDeInteresController < ApplicationController
               render js: "window.location='#{pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)}'"}
             format.html { redirect_to pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), flash: {notice: msj }}
           end
+          
         end
       else
         @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
         flash.now[:error] = "Antes de enviar debe completar todos los campos requeridos"
         @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
         @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
+        #Obtiene las lineas para el diagnostico del FPL
+        @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
 
         @manifestacion_de_interes.seleccion_de_radios
 
@@ -2596,6 +2643,8 @@ class ManifestacionDeInteresController < ApplicationController
         :temporal,
         :temp_siguientes,
         :update_pertinencia,
+        :fondo_produccion_limpia,
+        :tipo_linea_seleccionada,
         secciones_observadas_pertinencia_factibilidad: []
       )
       if @manifestacion_de_interes.fecha_observaciones_admisibilidad.nil?
@@ -2746,4 +2795,13 @@ class ManifestacionDeInteresController < ApplicationController
       parametros = params.require(:informe_acuerdo).permit(:respuesta_observaciones)
       parametros
     end
+
+    def send_message(tarea, user)
+      u = User.find(user)
+      mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
+      mensajes.each do |mensaje|
+        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
+      end
+    end
+
 end

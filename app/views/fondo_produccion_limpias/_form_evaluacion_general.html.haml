@@ -1,0 +1,552 @@
+:javascript
+  $(document).ready(function(){
+
+    //$(".disabled *:not('.fa')").prop('disabled',true);
+    //$(".disabled *:not('.fa')").off();
+
+    $('#guardar_button').click(function(){
+      $('#enviar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    $('#enviar_button').click(function(){
+      $('#manifestacion_de_interes_temp_siguientes').val(false);
+      $('#guardar_button').removeAttr('data-disable-with');
+      $('.loading-data').show()
+    });
+    error_soa = '#{@manifestacion_de_interes.errors.messages[:secciones_observadas_admisibilidad].first}';
+
+    observacion_obligatoria();
+    htmlErrorToTooltip('top');
+    if(error_soa != ''){
+      showTooltipError(error_soa, $('.manifestacion_de_interes_secciones_observadas_admisibilidad'), 'top');
+    }
+    $('#manifestacion_de_interes_resultado_admisibilidad').change( function(){observacion_obligatoria()});
+
+
+    function observacion_obligatoria(){
+      resultado = $('#manifestacion_de_interes_resultado_admisibilidad').val()
+      if(resultado=="rechazado" || resultado=="en_observación"){
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').show();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad"] > abbr').show();
+        $('#manifestacion_de_interes_observaciones_admisibilidad').addClass('required');
+        
+      }else{
+        $('label[for="manifestacion_de_interes_observaciones_admisibilidad"] > abbr').hide();
+        $('label[for="manifestacion_de_interes_secciones_observadas_admisibilidad"] > abbr').hide();
+        $('#manifestacion_de_interes_observaciones_admisibilidad').removeClass('required border-error').removeAttr('data-original-title');
+        $('.manifestacion_de_interes_secciones_observadas_admisibilidad').removeClass('border-error');
+      }
+    }
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'evaluacion-general-tab'){
+
+        if($(tab_selected).prop('id') == 'evaluacion-general-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#evaluacion-general-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#evaluacion-general-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#evaluacion-general-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Acuerdo');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+
+      $('#admisibilidad-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Acuerdo'){
+        $('#admisibilidad-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+    cargarEvaluacionGeneral();
+    
+  });
+  
+  function habilitaObservacionesPertinenciaFinancieraGeneral(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioPertinenciaFinancieraGeneral();
+  }
+
+  function calcularPromedioPertinenciaFinancieraGeneral() {
+    var notas = document.querySelectorAll('.nota-input-pert-financiera-general');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioPertinenciaFinancieraGeneral(promedio);
+  }
+
+  function mostrarPromedioPertinenciaFinancieraGeneral(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-pert-financiera-general');
+    var resultadoPromedioTotal = document.getElementById('promedio-notas-pert-financiera-total-general');
+    var resultadoPuntajePonderado = document.getElementById('puntaje-ponderado-financiera-total-general');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPromedioTotal) {
+      resultadoPromedioTotal.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPuntajePonderado) {
+      resultadoPuntajePonderado.textContent = (promedio * 0.25).toFixed(2);
+      totalPertinenciaGeneral();
+    }
+  }
+
+   function habilitaObservacionesPertinenciaTecnicaGeneral(nota, observacion) {
+    alert('habilitaObservacionesTecnica');
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioPertinenciaTecnicaGeneral();
+  }
+
+  function calcularPromedioPertinenciaTecnicaGeneral() {
+    var notas = document.querySelectorAll('.nota-input-pert-tecnica-general');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioPertinenciaTecnicaGeneral(promedio);
+  }
+
+  function mostrarPromedioPertinenciaTecnicaGeneral(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-pert-tecnica-general');
+    var resultadoPromedioTotal = document.getElementById('promedio-notas-pert-tecnica-total-general');
+    var resultadoPuntajePonderado = document.getElementById('puntaje-ponderado-tecnica-total-general');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPromedioTotal) {
+      resultadoPromedioTotal.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPuntajePonderado) {
+      resultadoPuntajePonderado.textContent = (promedio * 0.35).toFixed(2);
+      totalPertinenciaGeneral();
+    }
+  }
+
+  function habilitaObservacionesPertinenciaTecnicaGeneral2(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioPertinenciaTecnicaGeneral2();
+  }
+
+  function calcularPromedioPertinenciaTecnicaGeneral2() {
+    var notas = document.querySelectorAll('.nota-input-pert-tecnica-general-2');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioPertinenciaTecnicaGeneral2(promedio);
+  }
+
+  function mostrarPromedioPertinenciaTecnicaGeneral2(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-pert-tecnica-general-2');
+    var resultadoPromedioTotal2 = document.getElementById('promedio-notas-pert-tecnica-total-general-2');
+    var resultadoPuntajePonderado = document.getElementById('puntaje-ponderado-tecnica-total-general-2');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPromedioTotal2) {
+      resultadoPromedioTotal2.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPuntajePonderado) {
+      resultadoPuntajePonderado.textContent = (promedio * 0.25).toFixed(2)
+      totalPertinenciaGeneral();
+    }
+  }
+
+  function habilitaObservacionesPertinenciaTecnicaGeneral3(nota, observacion) {
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado >= 5) {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+    calcularPromedioPertinenciaTecnicaGeneral3();
+  }
+
+  function calcularPromedioPertinenciaTecnicaGeneral3() {
+    var notas = document.querySelectorAll('.nota-input-pert-tecnica-general-3');
+    var total = 0;
+
+    notas.forEach(function (nota) {
+      total += parseInt(nota.value) || 0;
+    });
+
+    var promedio = total / notas.length;
+    mostrarPromedioPertinenciaTecnicaGeneral3(promedio);
+  }
+
+  function mostrarPromedioPertinenciaTecnicaGeneral3(promedio) {
+    var resultadoPromedio = document.getElementById('promedio-notas-pert-tecnica-general-3');
+    var resultadoPromedioTotal3 = document.getElementById('promedio-notas-pert-tecnica-total-general-3');
+    var resultadoPuntajePonderado = document.getElementById('puntaje-ponderado-tecnica-total-general-3');
+
+    if (resultadoPromedio) {
+      resultadoPromedio.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPromedioTotal3) {
+      resultadoPromedioTotal3.textContent = promedio.toFixed(2);
+    }
+
+    if (resultadoPuntajePonderado) {
+      resultadoPuntajePonderado.textContent = (promedio * 0.15).toFixed(2);
+      totalPertinenciaGeneral();
+    }
+  }
+
+  function totalPertinenciaGeneral() {
+    var resultadoTotal1 = parseFloat(document.getElementById('puntaje-ponderado-tecnica-total-general').textContent);
+    var resultadoTotal2 = parseFloat(document.getElementById('puntaje-ponderado-tecnica-total-general-2').textContent);
+    var resultadoTotal3 = parseFloat(document.getElementById('puntaje-ponderado-tecnica-total-general-3').textContent);
+    var resultadoTotal4 = parseFloat(document.getElementById('puntaje-ponderado-financiera-total-general').textContent);
+
+    var resultado = document.getElementById('pertinencia-total-general');
+
+    var total = resultadoTotal1 + resultadoTotal2 + resultadoTotal3 + resultadoTotal4;
+
+
+    var resultadoOtorgados1 = parseFloat(document.getElementById('promedio-notas-pert-tecnica-general').textContent);
+    var resultadoOtorgados2 = parseFloat(document.getElementById('promedio-notas-pert-tecnica-general-2').textContent);
+    var resultadoOtorgados3 = parseFloat(document.getElementById('promedio-notas-pert-tecnica-general-3').textContent);
+    var resultadoOtorgados4 = parseFloat(document.getElementById('promedio-notas-pert-financiera-general').textContent);
+
+    if (resultado) {
+      resultado.textContent = total.toFixed(2);
+    }
+
+    //El promedio total debe ser matoyr o igual a 5.5
+    if (total.toFixed(2) >= 5.50) {
+      
+      //los promedios parciales deben ser mayores o iguales a 5.0
+      if (resultadoOtorgados1.toFixed(2) >= 5.00 && resultadoOtorgados2.toFixed(2) >= 5.00 && resultadoOtorgados3.toFixed(2) >= 5.00 && resultadoOtorgados4.toFixed(2) >= 5.00) {
+        // Define los nuevos valores para el select
+        var nuevosValores = [
+            { value: '1', text: 'Aceptada' },
+            { value: '2', text: 'Con Observaciones' },
+            { value: '3', text: 'Rechazada' }
+        ];
+
+        // Limpiar el select actual
+        $('#nota_input_pertinencia').empty();
+
+        // Iterar sobre los nuevos valores y agregar opciones al select
+        nuevosValores.forEach(function(opcion) {
+            $('#nota_input_pertinencia').append($('<option>', {
+                value: opcion.value,
+                text: opcion.text
+            }));
+        });
+      }else{
+        // Define los nuevos valores para el select
+        var nuevosValores = [
+            { value: '2', text: 'Con Observaciones' },
+            { value: '3', text: 'Rechazada' }
+        ];
+
+        // Limpiar el select actual
+        $('#nota_input_pertinencia').empty();
+
+        // Iterar sobre los nuevos valores y agregar opciones al select
+        nuevosValores.forEach(function(opcion) {
+            $('#nota_input_pertinencia').append($('<option>', {
+                value: opcion.value,
+                text: opcion.text
+            }));
+        });
+      }
+    }else{
+      // Define los nuevos valores para el select
+      var nuevosValores = [
+          { value: '2', text: 'Con Observaciones' },
+          { value: '3', text: 'Rechazada' }
+      ];
+
+      // Limpiar el select actual
+      $('#nota_input_pertinencia').empty();
+
+      // Iterar sobre los nuevos valores y agregar opciones al select
+      nuevosValores.forEach(function(opcion) {
+          $('#nota_input_pertinencia').append($('<option>', {
+              value: opcion.value,
+              text: opcion.text
+          }));
+      });
+    }
+  }
+
+  function cargarEvaluacionGeneral() {
+    $.ajax({
+      url: "#{get_evaluacion_general_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      success: function(response) {
+        calcularPromedioPertinenciaTecnicaGeneral();
+        calcularPromedioPertinenciaTecnicaGeneral2();
+        calcularPromedioPertinenciaTecnicaGeneral3();
+        calcularPromedioPertinenciaFinancieraGeneral();
+        totalPertinenciaGeneral();
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+%style
+  :css
+    .table-responsive {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+
+    .table {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 1rem;
+      background-color: transparent;
+    }
+
+    .table tbody + tbody {
+      border-top: 2px solid #dee2e6;
+    }
+
+    .table .table {
+      background-color: #fff;
+    }
+
+    .table thead th {
+      font-size: 12px;
+      border-bottom: 2px solid #dee2e6;
+      border-right: 2px solid #dee2e6; 
+      border-left: 2px solid #dee2e6;
+    }
+    .encabezado-form {
+      vertical-align: middle;
+      border-bottom: 2px solid #dee2e6;
+      background-color: #E0EFF6;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .encabezado2-form {
+      text-align: center; 
+      border-bottom: 2px solid #dee2e6;
+      vertical-align: middle; 
+      background-color: #E0EFF6;
+      font-weight: bold;
+    }
+
+    .contenido1-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 50%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido2-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 20%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+    .contenido3-form {
+      border-bottom: 2px solid #dee2e6;
+      font-size: 12px; 
+      width: 30%;
+      padding: 0.75rem;
+      vertical-align: top;
+    }
+
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- titulo t(:revision_general_proyecto)
+= simple_form_for @fondo_produccion_limpia, url: enviar_evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  = f.hidden_field :temp_siguientes, as: :boolean, value: true
+  = f.hidden_field :update_admisibilidad, as: :boolean, value: true
+  = f.submit "", class: 'd-none'
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_instrumento.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=titulo_apl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "evaluacion-general-externo", class: 'active', "aria-controls" => 'evaluacion-general-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#evaluacion-general-externo", :role => "tab"}
+                  =t(:evaluacion_general_proyecto)
+        .card-body.border-tabs.px-2.pt-3
+          - tabs = { "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false, "evaluacion-general": true }
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab,active|
+                %li.nav-item{class: (tab.to_s == 'evaluacion-general' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    =t(tab.to_s.gsub('-','_'))
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      =fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de Acuerdo
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab,active|
+                        -if tab.to_s != 'evaluacion-general'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            =t(tab.to_s.gsub('-','_'))
+                            -#%span.badge.badge-danger.badge-pill 1
+
+          = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
+            #evaluacion-general.tab-pane.fade{"aria-expanded" => (tabs[:"evaluacion-general"] ? 'true' : 'false'), "aria-labelledby" => "evaluacion-general-tab", :role => "tabpanel", class: ("show active" if tabs[:"evaluacion-general"])}
+              .card
+                .card-header
+                  .card-body
+                    = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado-form{colspan: 3}Criterio 4: COSTOS xx </br> Consistencia de los costos de las actividades con los aspectos técnicos abordados, cantidad y tamaño de empresas y cobertura geográfica. </br>  Se evaluará positivamente el aporte liquido del postulante, cantidad de empresas no socias y el (%) de empresas Mipymes participantes
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
+                              %th.contenido2-form
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera11', id: 'nota_input_id_1', onchange: "habilitaObservacionesFinanciera('nota_input_id_1','obs_input_id_1')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
+                              %th.contenido2-form
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera11', id: 'nota_input_id_2', onchange: "habilitaObservacionesFinanciera('nota_input_id_2','obs_input_id_2')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
+                              %th.contenido2-form
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera11', id: 'nota_input_id_3', onchange: "habilitaObservacionesFinanciera('nota_input_id_3','obs_input_id_3')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
+                              %th.contenido2-form
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera11', id: 'nota_input_id_4', onchange: "habilitaObservacionesFinanciera('nota_input_id_4','obs_input_id_4')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
+                            %tr
+                              %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
+                              %th.contenido2-form
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera11', id: 'nota_input_id_5', onchange: "habilitaObservacionesFinanciera('nota_input_id_5','obs_input_id_5')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                            %th.contenido1-form Puntaje Otorgado
+                            %th.contenido2-form#promedio-notas-financiera
+                            %th.contenido3-form          
+    -#-if !solo_lectura
+    -#  .col-12
+    -#    .float-right
+    -#      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+    -#      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button"
+    -#      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_button" do
+    -#        %i.fa.fa-arrow-circle-right
+    -#        =t(:enviar)

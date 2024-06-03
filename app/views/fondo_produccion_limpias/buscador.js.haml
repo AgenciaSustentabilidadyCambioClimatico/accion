@@ -1,0 +1,4 @@
+$('#buscar-usuario .usuarios-remote-table').html("#{j render('tabla',modal_id: @modal_id)}");
+$('#buscar-usuario .usuarios-form-buscar').html("#{j render('form_buscar',modal_id: @modal_id)}");
+$('.loading-data').hide();
+closeAlertMessage();

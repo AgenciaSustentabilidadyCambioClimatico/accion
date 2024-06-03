@@ -1,0 +1,16 @@
+<% cuestionario_fpl.each_with_index do |cuestionario, index| %>
+    var nota = document.getElementById('nota_input_juridica_obs_id_<%= index + 1 %>');
+    var justificacion = document.getElementById('obs_input_juridica_obs_id_<%= index + 1 %>');
+
+    if (<%= cuestionario.nota %> == 1) {
+        nota.textContent = 'Cumple';
+        justificacion.textContent = ' -- ';
+    }else{
+        nota.textContent = 'No Cumple';
+        justificacion.textContent = '<%= cuestionario.justificacion %>';
+
+        nota.classList.add('texto-rojo'); // Agregar la clase si no cumple
+    }
+<% end %>
+
+

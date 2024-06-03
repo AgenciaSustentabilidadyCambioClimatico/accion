@@ -1,0 +1,13 @@
+-if @user.temporal
+  -#$('#buscar-usuario .body-usuario-buscador').html("#{j render 'form_temporal_insert', usuario_temporal: @usuario_temporal}");
+  $('#buscar-usuario .body-usuario-buscador').html("#{j render 'form_temporal', usuario_temporal: @usuario_temporal}");
+  -if @usuario_temporal.errors.blank?
+    $('#buscar-usuario').modal("hide");
+    $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(#{@usuario_temporal.id});
+    $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
+    $("#guardar-manifestacion-temporal-button").trigger("click");
+  -else
+    $('.loading-data').hide();
+-else
+  = render 'layouts/remote_form', block: 'user'
+  clearTimeout(cierreAlerta);

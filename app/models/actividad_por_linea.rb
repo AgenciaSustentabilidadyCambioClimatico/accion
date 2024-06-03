@@ -1,5 +1,5 @@
 class ActividadPorLinea < ApplicationRecord
-	enum tipo_permiso: [ :obligatoria, :permitida, :no_permitida ]
+	enum tipo_permiso: [ :obligatoria, :permitida, :no_permitida, :nueva ]
 
 	belongs_to :actividad
 	belongs_to :linea, class_name: :TipoInstrumento, foreign_key: :tipo_instrumento_id
@@ -23,4 +23,5 @@ class ActividadPorLinea < ApplicationRecord
 	#PERMISO_OBLIGATORIA	= 0
 	#PERMISO_PERMITIDA		= 1
 	#PERMISO_NO_PERMITIDA	= 2
+	#NUEVA					= 3
 end
