@@ -210,17 +210,38 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def guardar_usuario_entregables #FPL-00
       respond_to do |format|
-        #binding.pry
         #SE CREA FPL-01
+        #binding.pry
+        institucion_postulante = ""
+        postulante = ""
+        institucion_receptora = ""
+ 
+        contribuyente = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+         
+        if params[:manifestacion_de_interes][:institucion_entregables_id] == ""
+          institucion_postulante =  contribuyente.id
+          postulante = @tarea_pendiente.user_id
+        else
+          institucion_postulante = params[:manifestacion_de_interes][:institucion_entregables_id]
+          postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
+        end  
+ 
+        #if params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento] == ""
+        if params[:manifestacion_de_interes][:proponente] == ""
+          institucion_receptora = contribuyente.id
+        else
+        #institucion_receptora = params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento]
+          institucion_receptora = params[:manifestacion_de_interes][:proponente]
+        end  
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-        pers = Persona.where(user_id:  params[:manifestacion_de_interes][:usuario_entregables_id]).first
+        pers = Persona.where(user_id: postulante).first
         
         custom_params_tarea_pendiente = {
           tarea_pendientes: {
             flujo_id: @flujo.id,
             tarea_id: tarea_fondo.id,
             estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id:  params[:manifestacion_de_interes][:usuario_entregables_id],
+            user_id:  postulante,
             persona_id: pers.id,
             data: { }
           }
@@ -230,7 +251,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendientes.save  
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
-        send_message(tarea_fondo, params[:manifestacion_de_interes][:usuario_entregables_id])
+        send_message(tarea_fondo, postulante)
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         #binding.pry
@@ -239,30 +260,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
         tarea_pendiente_FPL_00.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_FPL_00.save  
-
-        #binding.pry
-        institucion_postulante = ""
-        postulante = ""
-        institucion_receptora = ""
-
-        contribuyente = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        
-
-        if params[:manifestacion_de_interes][:institucion_entregables_id] == ""
-          institucion_postulante =  contribuyente.id
-          postulante = @tarea_pendiente.user_id
-        else
-          institucion_postulante = params[:manifestacion_de_interes][:institucion_entregables_id]
-          postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
-        end  
-
-        #if params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento] == ""
-        if params[:manifestacion_de_interes][:proponente] == ""
-          institucion_receptora = contribuyente.id
-        else
-          #institucion_receptora = params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento]
-          institucion_receptora = params[:manifestacion_de_interes][:proponente]
-        end  
 
         custom_params = {
           fondo_produccion_limpia: {
