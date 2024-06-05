@@ -1551,6 +1551,7 @@ es:
   pertinencia_tecnica: Pertinencia Técnica
   revision_pertinencia_financiera: Revisión Pertinencia Financiera
   revision_pertinencia_tecnica: Revisión Pertinencia Técnica
+  observaciones_admisibilidad_tecnica: Observaciones admisibilidad técnica
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:

@@ -317,6 +317,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @tipo_aporte = TipoAporte.all
       @contribuyentes = nil
       @custom_id = 'fpl'
+      @adm_juridica = true
 
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
@@ -407,7 +408,7 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def edit_objetivo_especifico
-      @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
+      @objetivo_especifico = ObjetivosEspecifico.find(params[:id])
       respond_to do |format|
         format.js { render 'edit_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico } }
       end
@@ -847,6 +848,10 @@ class FondoProduccionLimpiasController < ApplicationController
         @contribuyente = Contribuyente.new
       else
         @errors = true
+      end
+
+      respond_to do |format|
+        format.js { render 'fondo_produccion_limpias/contribuyentes/search', locals: { contribuyentes: @contribuyentes, filtro_utilizado: @filtro_utilizado, errors: @errors } }
       end
     end
 
@@ -1417,6 +1422,8 @@ class FondoProduccionLimpiasController < ApplicationController
       #@revisores_tecnicos = Persona.responsables_por_rol_tipo_instrumento_select(Rol::REVISOR_TECNICO,TipoInstrumento.fpl.map{|ti|ti.id})
       @revisores_tecnicos = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       @revisor = true
+      @adm_juridica = false
+
       #binding.pry
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -1597,6 +1604,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @admisibilidad = true
       @solo_lectura = true
+      @adm_juridica = false
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -1732,6 +1740,7 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = true
+      @adm_juridica = false
       #Carga tabs de postulación
       set_equipo_trabajo
       set_actividades_x_linea
@@ -1854,6 +1863,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
+      @adm_juridica = false
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -1986,7 +1996,7 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         #binding.pry
         #consulto si la admisibilidad juridica es distinto a 0 se devuelve la evaluacion al postulante FPL-009, y el postulante debe corregir y volver a enviar al FPL-05
-        if cuestionario_fpl_rechazado_jur != 0
+        if cuestionario_fpl_rechazado_jur[3] != nil && cuestionario_fpl_rechazado_jur[3] != 0 
           #OBTENGO USER_ID DEL POSTULANTE
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
@@ -2034,6 +2044,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
+      @adm_juridica = false
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2201,7 +2212,9 @@ class FondoProduccionLimpiasController < ApplicationController
         @cuestionario_obs_fpl.save
       end 
 
-      cuestionario_fpl_rechazado = CuestionarioFpl.where(flujo_id: params[:flujo_id], revision: [2,3]).group(:tipo_cuestionario_id).count
+      #cuestionario_fpl_rechazado = CuestionarioFpl.where(flujo_id: params[:flujo_id], revision: [2,3]).group(:tipo_cuestionario_id).count
+
+      cuestionario_fpl_rechazado = CuestionarioFpl.where(flujo_id: params[:flujo_id], nota: [1,2,3,4], tipo_cuestionario_id: [1,2]).group(:tipo_cuestionario_id).count
       #binding.pry
       
       #SE CAMBIA EL ESTADO DEL FPL-05 A 2
@@ -2216,7 +2229,7 @@ class FondoProduccionLimpiasController < ApplicationController
       if params[:nota_input_pertinencia] == '1'
         #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
-        existe_fpl_05 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+        existe_fpl_05 = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1).last
 
         if existe_fpl_05.present?
           #existe
@@ -2225,34 +2238,43 @@ class FondoProduccionLimpiasController < ApplicationController
           #binding.pry
           #OBTENGO USER_ID DEL JEFE DE LINEA
           #binding.pry
-          mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
-          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
-          #binding.pry
-          #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
-            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
-              custom_params_tarea_pendiente = {
-                tarea_pendientes: {
-                  flujo_id: @flujo.id,
-                  tarea_id: tarea_fondo.id,
-                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-                  user_id: tarea_pendiente_postulante.user_id,
-                  persona_id: tarea_pendiente_postulante.persona_id,
-                  data: { }
-              }
-            }
-            #binding.pry
-            TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
-            #SE ENVIAR EL MAIL AL RESPONSABLE
-            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+          #CONSULTO SI EXISTE ALGUNA TAREA FPL-09 PENDIENTE
+          tarea_fondo_fpl_09 = Tarea.find_by_codigo(Tarea::COD_FPL_09)
+          existe_fpl_09 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_09.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1).last
+          if existe_fpl_09.present?
+            #existe
+            #binding.pry
+          else
+            mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+            tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+            #binding.pry
+            #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
+              tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+                custom_params_tarea_pendiente = {
+                  tarea_pendientes: {
+                    flujo_id: @flujo.id,
+                    tarea_id: tarea_fondo.id,
+                    estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                    user_id: tarea_pendiente_postulante.user_id,
+                    persona_id: tarea_pendiente_postulante.persona_id,
+                    data: { }
+                }
+              }
+              #binding.pry
+              TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
+
+              #SE ENVIAR EL MAIL AL RESPONSABLE
+              send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+          end
         end
           
       else
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #binding.pry
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
-        if cuestionario_fpl_rechazado[1] != nil && cuestionario_fpl_rechazado[1] >= 1
+        if cuestionario_fpl_rechazado[1] != nil && cuestionario_fpl_rechazado[1] != 0
         #if cuestionario_fpl_rechazado.count == 0
           #OBTENGO USER_ID DEL POSTULANTE
           #binding.pry
@@ -2281,7 +2303,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end  
 
         #consulto si la pertinencia tecnica es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-04
-        if cuestionario_fpl_rechazado[2] != nil && cuestionario_fpl_rechazado[2] >= 1
+        if cuestionario_fpl_rechazado[2] != nil && cuestionario_fpl_rechazado[2] != 0
           #OBTENGO USER_ID DEL POSTULANTE
           #binding.pry
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
@@ -2336,6 +2358,23 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @admisibilidad = true
       @solo_lectura = false
+      @adm_juridica = false
+      
+      count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
+      count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
+
+      @tipo = 0
+      if count_user_persona > 0 
+        @tipo = 1
+      end 
+
+      if @tipo == 0
+        if count_user_empresa > 0 
+          @tipo = 2
+        else 
+          @tipo = 0
+        end
+      end
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2456,6 +2495,24 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = false
+
+      @adm_juridica = false
+      count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
+      count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
+
+      @tipo = 0
+      if count_user_persona > 0 
+        @tipo = 1
+      end 
+
+      if @tipo == 0
+        if count_user_empresa > 0 
+          @tipo = 2
+        else 
+          @tipo = 0
+        end
+      end
+
       #Carga tabs de postulación
       set_equipo_trabajo
       set_actividades_x_linea
@@ -2489,7 +2546,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def enviar_observaciones_admisibilidad_tecnica
+    #FPL-08
+    def enviar_observaciones_admisibilidad_tecnica 
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
       existe_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
       #binding.pry
@@ -2565,6 +2623,23 @@ class FondoProduccionLimpiasController < ApplicationController
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
+      @adm_juridica = true
+
+      count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
+      count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
+
+      @tipo = 0
+      if count_user_persona > 0 
+        @tipo = 1
+      end 
+
+      if @tipo == 0
+        if count_user_empresa > 0 
+          @tipo = 2
+        else 
+          @tipo = 0
+        end
+      end
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2621,7 +2696,7 @@ class FondoProduccionLimpiasController < ApplicationController
       mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_JURIDICO)
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
       #binding.pry
-      tarea_pendiente_admisibilidad_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, user_id: mapa.first.persona_id)
+      tarea_pendiente_admisibilidad_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
       #binding.pry
   
       custom_params_tarea_pendiente = {
@@ -2630,7 +2705,6 @@ class FondoProduccionLimpiasController < ApplicationController
           tarea_id: tarea_fondo.id,
           estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
           user_id: tarea_pendiente_admisibilidad_juridica.user_id,
-          persona_id: tarea_pendiente_admisibilidad_juridica.persona_id,
           data: { }
         }
       }

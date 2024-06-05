@@ -54,7 +54,7 @@
     });
 
     $('#open-modal-button_buscar_contribuyente').click(function(){
-        $("#buscar-contribuyente").modal('show');
+        $("#buscar-contribuyente-fpl").modal('show');
     });
 
     $('#open-modal-button_buscar_usuario_consultora').click(function(){
@@ -2740,8 +2740,8 @@
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
   - solo_lectura = @solo_lectura
+  - adm_juridica = @adm_juridica
   %div{ id: "tipos", "data-tipo" => tipo }
-  -#%div{ id: "solo_lecturas", "data-solo_lectura" => solo_lectura }
   <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
   <input type="hidden" id="response_costos" name="response_costos" value="">
   <input type="hidden" id="contador_campos_nulos" name="contador_campos_nulos" value="">
@@ -3327,7 +3327,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if !solo_lectura
+                - if adm_juridica
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_postulante.each do |descargable|
@@ -3337,7 +3337,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if !solo_lectura  
+                    - if adm_juridica
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br              
@@ -3348,7 +3348,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if !solo_lectura
+                - if adm_juridica  
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_receptor.each do |descargable|
@@ -3358,7 +3358,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if !solo_lectura
+                    - if adm_juridica
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
@@ -3369,7 +3369,7 @@
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
-                - if !solo_lectura
+                - if adm_juridica
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_ejecutor.each do |descargable|
@@ -3379,7 +3379,7 @@
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if !solo_lectura                   
+                    - if adm_juridica 
                       %td.contenido-form
                         = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
 
@@ -4655,7 +4655,7 @@
                         %tr
                           %td.contenido-popup-form=t(:indicadores)
                           %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores' 
+                            = f.text_field :indicadores, class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores' 
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
@@ -5168,7 +5168,7 @@
 - tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
 - solo_tabla = solo_tabla.nil? ? false : solo_tabla
 - lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
-.modal.fade{id: :"buscar-contribuyente", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+.modal.fade{id: :"buscar-contribuyente-fpl", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
     .modal-content
       .modal-body
@@ -5334,8 +5334,8 @@
       alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
       $('.loading-data').hide();
     }).success(function(data){
-      $('#buscar-contribuyente .body-contribuyente-fpl-buscador').html(data);
-      $('#buscar-contribuyente').modal('hide');
+      $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+      $('#buscar-contribuyente-fpl').modal('hide');
       $('.loading-data').hide();
     });
   }); 

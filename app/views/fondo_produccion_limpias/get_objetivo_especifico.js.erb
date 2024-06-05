@@ -18,7 +18,7 @@ $('#div_objetivo_especifico table tbody').empty();
       <% if objetivo_especifico_existente?(objetivo_especifico.id) %>
       newRow += "<i class='fa fa-exclamation-circle' data-toggle='tooltip' title='El objetivo no puede ser eliminado ya que se encuentra asociado a alguna actividad.'></i>";
       <% else %>
-        newRow += "<a data-objetivo-id=" + objetivo_id + " data-confirm='¿Está seguro que desea borrar este(a) Objetivo específico?' class='eliminar-objetivo-especifico' id='eliminar-objetivo-especifico-" + objetivo_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_objetivo_especifico/" + objetivo_id + "' data-original-title='Eliminar objetivo específico'><i class='fa fa-trash' data-original-title='' title=''></i></a>";
+        newRow += "<a data-objetivo-id=" + objetivo_id + " data-confirm='¿Está seguro que desea borrar este objetivo específico?' class='eliminar-objetivo-especifico' id='eliminar-objetivo-especifico-" + objetivo_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_objetivo_especifico/" + objetivo_id + "' data-original-title='Eliminar objetivo específico'><i class='fa fa-trash' data-original-title='' title=''></i></a>";
       newRow += "</td>";
       <% end %>  
     <% end %>  
