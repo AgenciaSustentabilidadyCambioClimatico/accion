@@ -56,9 +56,10 @@ $('#contador_campos_nulos').val(<%= campos_nulos.count %>);
   $consultor.attr('data-original-title', 'Debe tener a lo menos un registro');
 
   var $user = $('#open-modal-button_buscar_usuario');
-  $user.removeClass('btn-primary').removeClass('btn-danger');
+  $user.removeClass('btn-primary').addClass('btn-danger');
   $user.attr('data-tooltip', 'true');
   $user.attr('data-original-title', 'Debe tener a lo menos un registro');
+
   $('#campos_pendientes').val('1');
 <% end %>
 

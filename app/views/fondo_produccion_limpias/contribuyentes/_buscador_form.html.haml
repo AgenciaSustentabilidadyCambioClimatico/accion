@@ -20,7 +20,7 @@
         %h5.no-margin
           = t(:lista_de_, items: t(:contribuyentes).downcase)
       .card-body.p-0
-        %div{id: "contribuyentes-remote-table#{custom_id}"}
+        %div{id: "contribuyentes-fpl-remote-table#{custom_id}"}
           = render 'fondo_produccion_limpias/contribuyentes/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento, lista_contribuyentes: lista_contribuyentes, custom_id: custom_id
   .col-12.mt-2.text-right
     -#-unless @contribuyente_temporal.nil?
