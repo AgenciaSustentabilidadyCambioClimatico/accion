@@ -1,5 +1,10 @@
+<% @recursos_propios_no_asignados.each do |recursos_propios_no_asignados| %>
+  $('#iconos-acciones-<%= recursos_propios_no_asignados.id %>').html('<a data-user-id="<%= recursos_propios_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recursos_propios_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recursos_propios_no_asignados.id %>"><i class="fa fa-trash"></i>');
+<% end %>
+
 $('#div_plan_recursos_propios table tbody').empty();
 <% recursos_internos.each do |recurso_interno| %>
+    var equipo_trabajos_id = '<%= recurso_interno.equipo_trabajos_id %>';
     var user_name = '<%= recurso_interno.user_name %>';
     var hh = '<%= recurso_interno.hh %>';
     var valor_hh = '<%=number_to_currency recurso_interno.valor_hh %>';
@@ -11,7 +16,12 @@ $('#div_plan_recursos_propios table tbody').empty();
       "<td class='contenido-form'>" + costo + "</td>" +
       "</tr>";
     $('#div_plan_recursos_propios table tbody').append(newRow);
+
+    <% if recurso_humano_existente?(recurso_interno.equipo_trabajos_id, flujo_id) %>
+      $('#iconos-acciones-<%= recurso_interno.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');
+    <% end %>
   <% end %>
+
   $('#modal_rrhh_propios-form').modal("hide");
 
   $('#modal_rrhh_propios-form').on('hidden.bs.modal', function () {

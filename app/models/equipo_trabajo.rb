@@ -3,6 +3,8 @@ class EquipoTrabajo < ApplicationRecord
   belongs_to :flujo
   belongs_to :contribuyente, optional: true
 
+  has_many :recurso_humanos, foreign_key: :equipo_trabajo_id, dependent: :destroy
+
   mount_uploader :copia_ci, ArchivoCopiaCiEquipoTrabajoUploader
   mount_uploader :curriculum, ArchivoCurriculumEquipoTrabajoUploader
   

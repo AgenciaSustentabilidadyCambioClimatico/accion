@@ -32,9 +32,9 @@
     cargarObjetivosEspecificos();
     valida_div();
    
-    $("#intitucion_cogestora").click(function(){
-      $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
-    });
+    //$("#intitucion_cogestora").click(function(){
+    //  $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
+    //});
 
     $('#open-modal-button').click(function(){
       $('#modal_objetivos-form').modal('show');
@@ -3053,7 +3053,7 @@
                       %td.contenido-form
                         = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
                       - if !solo_lectura
-                        %td.contenido-form.dos.iconos-acciones
+                        %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
@@ -3164,7 +3164,7 @@
                       %td.contenido-form
                         = __descargar_archivo(user.curriculum,user.curriculum,false,false)
                       - if !solo_lectura
-                        %td.contenido-form.dos.iconos-acciones
+                        %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
@@ -3205,7 +3205,7 @@
                       %td.contenido-form
                         = __descargar_archivo(user.curriculum,user.curriculum,false,false)
                       - if !solo_lectura
-                        %td.contenido-form.dos.iconos-acciones
+                        %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
