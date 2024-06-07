@@ -372,7 +372,7 @@ class PlanActividad < ApplicationRecord
   end    
 
   def self.recursos_x_ids(flujo_id, actividad_id, rrhh_propio_ids)
-    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name, equipo_trabajos.id AS equipo_trabajos_id')
     .joins(recurso_humanos: { equipo_trabajo: :user })
     .where(recurso_humanos: { flujo_id: flujo_id })
     .where(plan_actividades: { actividad_id: actividad_id })

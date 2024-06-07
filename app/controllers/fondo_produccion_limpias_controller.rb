@@ -711,7 +711,15 @@ class FondoProduccionLimpiasController < ApplicationController
         @registro_proveedor.contribuyente_id = empresa.contribuyente_id
       end
       @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-      respond_to do |format|
+
+      @contribuyente = Contribuyente
+        .unscoped
+        .joins(:equipo_empresas)
+        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social")
+        .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
+        .all
+     
+        respond_to do |format|
         if @user.update(custom_params[:user]) && @equipo_temporal.save
           if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
             if @registro_proveedor.save
@@ -874,9 +882,10 @@ class FondoProduccionLimpiasController < ApplicationController
     def eliminar_consultor_empresa
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
+        set_equipo_empresa
         respond_to do |format|
           #flash[:success] = 'Consultor eliminado exitosamente.'
-          format.js { render 'eliminar_consultor_empresa', locals: { user: equipo_trabajo.id } }
+          format.js { render 'eliminar_consultor_empresa', locals: { user: equipo_trabajo.id, tarea_pendiente_id: params[:id] } }
         end
       else
       end
@@ -887,7 +896,7 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     helper_method :equipo_consultores_existente?
-        
+
     def update #TAREA FPL-01
         respond_to do |format|
           
@@ -1133,10 +1142,13 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @plan_id =  params['plan_id']
 
+      @recursos_propios_no_asignados = EquipoTrabajo.left_outer_joins(:recurso_humanos)
+             .where(recurso_humanos: { equipo_trabajo_id: nil })
+             .where(flujo_id: params[:flujo_id], tipo_equipo: 3)
+
       #@solo_lectura = false
-      #binding.pry
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3, plan_id: @plan_id} }
+        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3, plan_id: @plan_id, flujo_id: params[:flujo_id]} }
       end
     end
 
@@ -1188,9 +1200,13 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
 
       @plan_id =  params['plan_id']
+
+      @recursos_externos_no_asignados = EquipoTrabajo.left_outer_joins(:recurso_humanos)
+             .where(recurso_humanos: { equipo_trabajo_id: nil })
+             .where(flujo_id: params[:flujo_id], tipo_equipo: [1,2])
      
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, plan_id: @plan_id } }
+        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, plan_id: @plan_id, flujo_id: params[:flujo_id] } }
       end
     end
     
