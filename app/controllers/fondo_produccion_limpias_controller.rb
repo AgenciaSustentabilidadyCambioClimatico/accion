@@ -3,10 +3,10 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -2287,17 +2287,36 @@ class FondoProduccionLimpiasController < ApplicationController
         end
           
       else
+        #GENERA FOTO DE DIAGNOSTICO Y LA CONVIERTE EN PDF
+        @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.proyecto_id)
+        cuestionario_observacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).first 
+
+        if cuestionario_observacion
+          revision = cuestionario_observacion.revision || 0
+          puts revision + 1  
+        else
+          puts "No se encontró ningún cuestionario."
+        end
+        
+        custom_params_update = {
+          cuestionario_obs_fpl: {
+            revision: revision + 1
+          }
+        }
+               
+        if cuestionario_observacion.present?
+          cuestionario_observacion.update(custom_params_update[:cuestionario_obs_fpl])
+        end 
+  
+        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision)
+     
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
-        #binding.pry
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
         if cuestionario_fpl_rechazado[1] != nil && cuestionario_fpl_rechazado[1] != 0
-        #if cuestionario_fpl_rechazado.count == 0
           #OBTENGO USER_ID DEL POSTULANTE
-          #binding.pry
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
           tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
-          #binding.pry
           
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES FINANCIERAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
@@ -2789,6 +2808,19 @@ class FondoProduccionLimpiasController < ApplicationController
         format.html { redirect_to root_path, flash: {notice: 'Evaluación General enviada correctamente' }}
       end
 
+    end
+
+    def descargar_pdf
+      flujo = Flujo.find(params[:id])
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.proyecto_id)
+
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.proyecto_id}_#{params[:revision]}.pdf")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.proyecto_id}_#{params[:revision]}.pdf"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
+      end
     end
 
     def lista_usuarios_carga_datos

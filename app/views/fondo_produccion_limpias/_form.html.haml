@@ -118,6 +118,14 @@
     });
     
     $('#enviar-postulacion-button').click(function(e){
+      const button = document.getElementById('enviar-postulacion-button');
+      const button_guardar = document.getElementById('guardar-fondo-temporal-button');
+
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button.disabled = true;
+
+      button_guardar.disabled = true;
+      $('.loading-data').show();
       $.ajax({
         url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
         data: {
@@ -140,14 +148,16 @@
 
           var valor = document.getElementById('campos_pendientes').value;
           if (valor == 0) {
-            console.log("No hay campos nulos, continuando con el siguiente AJAX");
+            //console.log("No hay campos nulos, continuando con el siguiente AJAX");
             if(confirm("¿Está seguro que desea enviar?")){
-              $('.loading-data').show();
+              /*const button = document.getElementById('enviar-postulacion-button');
+              const button_guardar = document.getElementById('guardar-fondo-temporal-button');
 
-              const button = document.getElementById('enviar-postulacion-button');
               button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
               button.disabled = true;
 
+              button_guardar.disabled = true;
+              $('.loading-data').show();*/
               $.ajax({
                 url: "#{enviar_postulacion_fondo_produccion_limpia_path}",
                 data: {
@@ -155,23 +165,24 @@
                 },
                 method: "GET",
                 success: function(response) {
-                  //calcularPromedioFinanciera();
-                  //$('.loading-data').hide();
                 },
                 error: function(error) {
                   console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
+                  //$('.loading-data').hide();
                   button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
                   button.disabled = false;
+                  button_guardar.disabled = false;
                 }
               });
             }
           }else{
             alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
+            $('.loading-data').hide();
           } 
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
         }
       });  
     });
@@ -213,9 +224,10 @@
     .float-right
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
-      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do # related-disabled-button btn-disabled", disabled: :disabled do
-        %i.fa.fa-arrow-circle-right
-        = t(:enviar_postulación)
+      = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
+      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do
+      -#  %i.fa.fa-arrow-circle-right
+      -#  = t(:enviar_postulación)
 -if !solo_lectura
   = render 'admin/users/buscador'
   -# - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA

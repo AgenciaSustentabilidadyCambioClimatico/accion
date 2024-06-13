@@ -51,6 +51,12 @@
                   %td=ins[:activacion]
                   %td=ins[:ejecucion]
                   %td
+                    -# Botón de descarga de PDF Fondo Producción Limpia
+                    - if ins[:tarea][:codigo] == 'FPL-06'
+                      - ins[:tarea_fpl_06].each do |revision|
+                        = link_to descargar_pdf_fondo_produccion_limpia_path(ins[:id_instrumento], revision: revision), class: "btn-tabla-instrumentos" do
+                          = fa_icon 'file-pdf-o'
+                          = "Revisión #{revision}"
                     -# Se recorre arreglo con los documentos asociados a cada APL.
                     - ins[:documentos_asociados].each do |documento| 
                       - if documento[:url].blank?
