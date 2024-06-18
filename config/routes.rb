@@ -289,6 +289,7 @@ Rails.application.routes.draw do
   patch ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#revisar_pertinencia_factibilidad", as: :revisar_pertinencia_factibilidad_fondo_produccion_limpia
   get 'get_pertinencia_factibilidad/:id', to: "fondo_produccion_limpias#get_pertinencia_factibilidad", as: :get_pertinencia_factibilidad_fondo_produccion_limpia
   post ':id/enviar_pertinencia_factibilidad', to: "fondo_produccion_limpias#enviar_pertinencia_factibilidad", as: :enviar_pertinencia_factibilidad_fondo_produccion_limpia
+  get ':id/:revision/descargar_pdf', to: "fondo_produccion_limpias#descargar_pdf", as: :descargar_pdf_fondo_produccion_limpia
 
   #Tarea FPL-07
   get ':id/observaciones-admisibilidad', to: "fondo_produccion_limpias#observaciones_admisibilidad", as: :observaciones_admisibilidad_fondo_produccion_limpia

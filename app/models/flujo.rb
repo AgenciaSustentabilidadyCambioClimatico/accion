@@ -61,7 +61,10 @@ class Flujo < ApplicationRecord
   def nombre_instrumento
     nombre = "ACUERDO, PROYECTO O PROGRAMA NO INICIADO"
     if !self.proyecto.blank? 
-      nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+      #Obtiene nombre del proyecto de la tabla fondo produccion limpia
+      fpl = FondoProduccionLimpia.find(proyecto.id)
+      nombre = fpl.codigo_proyecto
+      #nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
     elsif !self.manifestacion_de_interes.blank?
       nombre = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?
@@ -493,6 +496,25 @@ class Flujo < ApplicationRecord
         tareas_validaciones = tareas_validaciones.values
         estado = "Ejecutada"
       end
+      # Inicializa tareas_validaciones_fpl_06 como un arreglo vacío
+      tareas_validaciones_fpl_06 = []
+
+      # Comprueba si la tarea tiene el código FPL_06
+      if t.codigo == Tarea::COD_FPL_06
+        # Intenta encontrar el cuestionario relevante
+        cuestionario_fpl = CuestionarioFpl.where(flujo_id: self.id, tipo_cuestionario_id: 4).first 
+
+        # Asegúrate de que se encontró el cuestionario y que tiene una revisión válida
+        if cuestionario_fpl && cuestionario_fpl.revision
+          # Genera un rango de números hasta la revisión máxima
+          maximo = cuestionario_fpl.revision
+          1.upto(maximo) do |numero|
+            # Añade cada número al arreglo
+            tareas_validaciones_fpl_06 << numero 
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+          end
+        end
+      end 
       instancias << {
         tipo_instrumento: self.tipo_instrumento.nombre,
         id_instrumento: self.id,
@@ -508,6 +530,7 @@ class Flujo < ApplicationRecord
         puedo_ver_tarea: puedo_ver_tarea,
         auditorias_tarea_033: tareas_auditoria,
         validaciones_tarea_034: tareas_validaciones,
+        tarea_fpl_06: tareas_validaciones_fpl_06,
         activacion: activacion,
         ejecucion: ejecucion
       } 
