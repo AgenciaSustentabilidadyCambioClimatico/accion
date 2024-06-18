@@ -2307,8 +2307,17 @@ class FondoProduccionLimpiasController < ApplicationController
         if cuestionario_observacion.present?
           cuestionario_observacion.update(custom_params_update[:cuestionario_obs_fpl])
         end 
-  
-        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision)
+
+
+        objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
+        postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
+        consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
+        empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
+        actividades = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
+        costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
+
+
+        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos)
      
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
