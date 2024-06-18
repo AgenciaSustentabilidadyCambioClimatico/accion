@@ -18,8 +18,8 @@ var newRow = "<tr>" +
 "<td class='contenido-form' id='objetivo_resultado_<%= @objetivo_especifico.id %>'>" + resultado + "</td>" +
 "<td class='contenido-form' id='objetivo_indicadores_<%= @objetivo_especifico.id %>'>" + indicadores + "</td>" +
 "<td class='contenido-form dos iconos-acciones'>" +
-"<a title='Editar los objetivos específicos' class='editar-objetivo' data-objetivo-id='"+ objetivo_id + "' href='/edit_objetivo_especifico/" + objetivo_id + "'><i class='fa fa-edit'></i></a> " +
-"<a data-objetivo-id=" + objetivo_id + " data-confirm='¿Está seguro que desea borrar este(a) Objetivo específico?' class='eliminar-objetivo-especifico' id='eliminar-objetivo-especifico-" + objetivo_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_objetivo_especifico/" + objetivo_id + "' data-original-title='Eliminar objetivo específico'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+"<a title='Editar los objetivos específicos' class='editar-objetivo' id='editar-objetivo-especifico-" + objetivo_id + "' data-objetivo-id='" + objetivo_id + "' href='#' onclick='editarObjetivo(" + objetivo_id + ")'><i class='fa fa-edit'></i></a> " +
+"<a data-objetivo-id=" + objetivo_id + " data-confirm='¿Está seguro que desea borrar este Objetivo específico?' class='eliminar-objetivo-especifico' id='eliminar-objetivo-especifico-" + objetivo_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_objetivo_especifico/" + objetivo_id + "' data-original-title='Eliminar objetivo específico'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
 "</td>" +
 "</tr>";   
 $('#div_objetivo_especifico table tbody').append(newRow);

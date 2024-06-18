@@ -62,9 +62,9 @@ class Flujo < ApplicationRecord
     nombre = "ACUERDO, PROYECTO O PROGRAMA NO INICIADO"
     if !self.proyecto.blank? 
       #Obtiene nombre del proyecto de la tabla fondo produccion limpia
-      fpl = FondoProduccionLimpia.find(proyecto.id)
-      nombre = fpl.codigo_proyecto
-      #nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+      #fpl = FondoProduccionLimpia.find(proyecto.id)
+      #nombre = fpl.codigo_proyecto
+      nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
     elsif !self.manifestacion_de_interes.blank?
       nombre = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?

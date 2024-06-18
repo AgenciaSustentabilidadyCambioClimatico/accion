@@ -408,7 +408,7 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def edit_objetivo_especifico
-      @objetivo_especifico = ObjetivosEspecifico.find(params[:id])
+      @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
       respond_to do |format|
         format.js { render 'edit_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico } }
       end
