@@ -85,9 +85,9 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   <% end %>
 
   //Aporte Propio Total
-  document.getElementById('aporte_propio_total').innerText = '<%= number_to_currency @costos['costo_total_de_la_propuesta'] %>';
+  document.getElementById('aporte_propio_total').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'] %>';
   <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('porcentaje_aporte_propio_total').innerText = '<%= number_to_percentage((@costos['costo_total_de_la_propuesta'].to_f / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2) %>';
+    document.getElementById('porcentaje_aporte_propio_total').innerText = '<%= number_to_percentage(((@costos['aporte_propio_liquido'].to_f + @costos['aporte_propio_valorado'].to_f) / @costos['costo_total_de_la_propuesta'] * 100).round(2), precision: 2) %>';
   <% else %>
     document.getElementById('porcentaje_aporte_propio_total').innerText = '0,00%';
   <% end %>
@@ -236,7 +236,7 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   <% end %>
 
   //Aporte del postulante
-  document.getElementById('valida_costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['costo_total_de_la_propuesta'] %>';
+  document.getElementById('valida_costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'] %>';
   <% if @costos['costo_total_de_la_propuesta'] != 0 %>
     document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
   <% else %>

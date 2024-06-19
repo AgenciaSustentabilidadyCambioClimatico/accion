@@ -418,8 +418,8 @@
     var nombre = document.getElementById('nombre_adm').value;
     var valor_unitario = document.getElementById('valor_unitario_adm').value;
     var cantidad = document.getElementById('cantidad_adm').value;
-    var unidad_medida = document.getElementById('unidad_medida').value;
-    var tipo_aporte_id = document.getElementById('tipo_aporte_id').value;
+    var unidad_medida = document.getElementById('unidad_medida_2').value;
+    var tipo_aporte_id = document.getElementById('tipo_aporte_id_2').value;
 
     $.ajax({
       url: "#{insert_gastos_administracion_fondo_produccion_limpia_path}",
@@ -5145,13 +5145,13 @@
                           %tr
                             %td.contenido-form Unidad de medida:
                             %td.contenido-form
-                              = select_tag(:tipo, options_for_select([['Unidad', 1], ['Global', 2]]), id: 'unidad_medida', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;')
+                              = select_tag(:tipo, options_for_select([['Unidad', 1], ['Global', 2]]), id: 'unidad_medida_2', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;')
                           %tr
                             %td.contenido-form Fuente de financiamiento
                             %td.contenido-form
                               -#= f.text_field :tipo_aporte_id, class: 'required-field', id: 'tipo_aporte_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                               - if @tipo_aporte.present?  
-                                = select_tag :tipo_aporte_id, options_for_select(@tipo_aporte.map { |tipo| [tipo.nombre, tipo.id] }), class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                                = select_tag :tipo_aporte_id_2, options_for_select(@tipo_aporte.map { |tipo| [tipo.nombre, tipo.id] }), class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
                         %tbody
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
