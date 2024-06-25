@@ -151,6 +151,34 @@ class MapaDeActor < ApplicationRecord
 		actores
 	end
 
+  def self.adecua_actores_unidos_rut_persona_institucion_convocatorias(data)
+    actores_unidos = {}
+    # agrupamos los actores por rut persona y rut_institucion
+
+    data.each do |fila|
+
+      if !fila[:rut].to_s.gsub("k","K").gsub(".","").blank? && fila[:rut].to_s.gsub("k","K").gsub(".","") != "no"
+        llave = fila[:rut].to_s.gsub("k","K").gsub(".","")+fila[:rut_institucion].to_s.gsub("k","K").gsub(".","")
+        if actores_unidos.has_key?(llave)
+          # agregamos los roles para luego compararlos y dejarlos unicos
+          actores_unidos[llave][:rol] << fila[:rol]
+        else
+          # inicializamos el arreglo donde guardaremos los roles
+          fila[:rol] = [fila[:rol]]
+          actores_unidos[llave] = fila
+        end
+      else
+        #los que no tengan rut se agregan si o si a lista, y sin llave
+        fila[:rol] = [fila[:rol]]
+        actores_unidos[actores_unidos.length] = fila
+      end
+    end
+
+    # descomprimimos y nos quedamos solo con una fila por actor repetido pero agregamos los otros roles
+    actores = actores_unidos.map{|llave,fila| fila[:rol] = fila[:rol].uniq.join(', '); fila}
+    actores
+  end
+
 	def self.dominios
 		{
 			roles: Rol.where(mostrar_en_excel: true).order(nombre: :asc).map {|r| r.nombre}.compact,
