@@ -72,11 +72,11 @@ class FondoProduccionLimpiasController < ApplicationController
   
     before_action :set_objetivos_especificos, only: [:edit, :revisor, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
-    :evaluacion_general]
+    :evaluacion_general, :get_valida_campos_nulos]
 
     before_action :set_descargables, only: [:edit,  :revisor, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
-    :evaluacion_general]
+    :evaluacion_general, :get_valida_campos_nulos]
   
     before_action :set_regiones, only: [:edit,  :revisor, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
@@ -124,13 +124,7 @@ class FondoProduccionLimpiasController < ApplicationController
       campos_completos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.present?
       campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
 
-
-    
-
-      #binding.pry
       # Verificar si los campos están nulos y agregarlos al arreglo
-      set_descargables
-      
       @descargables_postulante.each do |descargable|
         campo = descargable.nombre_campo.to_sym
         campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
@@ -149,7 +143,6 @@ class FondoProduccionLimpiasController < ApplicationController
         campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
       end
 
-      set_objetivos_especificos
       set_equipo_trabajo
       set_actividades_x_linea
       set_costos
