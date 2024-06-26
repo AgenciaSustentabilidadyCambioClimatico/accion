@@ -223,6 +223,7 @@ GEM
       activerecord (>= 4.0)
       hashids (~> 1.0)
     hashids (1.0.4)
+    hirb (0.7.3)
     html2haml (2.2.0)
       erubis (~> 2.7.0)
       haml (>= 4.0, < 6)
@@ -477,6 +478,7 @@ DEPENDENCIES
   haml
   haml-rails (~> 1.0)
   hashid-rails (~> 1.0)
+  hirb
   htmltoword
   httparty
   jquery-datatables
