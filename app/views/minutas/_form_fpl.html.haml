@@ -1,0 +1,16 @@
+%br 
+.card
+  .card-header
+    %h5.no-margin
+      = t(:postulacion_fondo_producion_limpia)
+  .card-body 
+    .col-12.mb-3
+      .row   
+        .col-6
+          .form-group
+          %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
+          %br
+          = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia'
+        .col-6
+          = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:selección_de_linea), input_html: {class: "chosen-control", type: :string, "data-placeholder"=>"Seleccione una Línea", id: 'tipo_linea_seleccionada'}
+        %br 
