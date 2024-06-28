@@ -1433,7 +1433,6 @@ class ManifestacionDeInteresController < ApplicationController
                   fpl = FondoProduccionLimpia.new({
                     flujo_id: flujo.id,
                     flujo_apl_id: @tarea_pendiente.flujo_id,
-                    linea_id:1, sub_linea_id:1, #eliminar estos dos campos
                     codigo_proyecto: codigo_proyecto
                   })
                   fpl.save 
