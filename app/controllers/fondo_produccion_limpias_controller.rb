@@ -93,7 +93,54 @@ class FondoProduccionLimpiasController < ApplicationController
 
     #Graba las postulaciones de las distintas fases del FPL
     def grabar_postulacion
-      #binding.pry
+
+      
+      #CUSTUMIZAR ESTE CODIGO
+
+
+      binding.pry
+      tarea_pendiente = TareaPendiente.find(params[:id])
+      flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
+      binding.pry
+
+      @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
+
+      flujo = Flujo.new({
+        contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
+        tipo_instrumento_id: params[:tipo_linea_seleccionada]
+      })
+
+      if flujo.save
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+        flujo.tarea_pendientes.create([{
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente.user_id,
+            data: { }
+          }]
+        )
+
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente.user_id)
+        
+        #Inicia el flujo con el nombre Sin nombre
+        codigo_proyecto = "Proyecto diagnóstico FPL"
+
+        fpl = FondoProduccionLimpia.create({
+          flujo_id: flujo.id,
+          flujo_apl_id: tarea_pendiente.flujo_id,
+          codigo_proyecto: codigo_proyecto
+        })
+
+        #guarda el fpl id en la tabla flujo
+        flujo.proyecto_id = fpl.id
+        flujo.save
+
+        success = 'Flujo fondo de producción limpia creado correctamente.'
+      else
+        warning = 'Usted NO puede iniciar Flujo FPL.'
+      end
+
     end  
 
     def get_valida_campos_nulos
