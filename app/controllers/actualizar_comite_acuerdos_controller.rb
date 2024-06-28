@@ -7,8 +7,6 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_manifestacion_de_interes
 
   def index
-
-    binding.pry
     #Obtiene las lineas para el diagnostico del FPL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2])
 

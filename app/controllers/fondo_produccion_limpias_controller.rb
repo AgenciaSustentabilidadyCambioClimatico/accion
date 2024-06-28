@@ -91,6 +91,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id)
     end
 
+    #Graba las postulaciones de las distintas fases del FPL
+    def grabar_postulacion
+      #binding.pry
+    end  
+
     def get_valida_campos_nulos
       # Obtener el fondo_produccion_limpia
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: params[:flujo_id])
@@ -4007,6 +4012,10 @@ class FondoProduccionLimpiasController < ApplicationController
   
       def create_user_params
         params.require(:user).permit((common_params << :rut))
+      end
+
+      def create_fondo_produccion_limpia_params
+        params.require(:fondo_produccion_limpia).permit(:flujo_id, :flujo_apl_id, :codigo_proyecto)
       end
 
 end

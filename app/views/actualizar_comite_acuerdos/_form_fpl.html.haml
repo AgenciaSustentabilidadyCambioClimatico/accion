@@ -1,18 +1,35 @@
+:javascript
+  function habilitaOpciones(radio) {
+    var valorSeleccionado = radio.value === 'true';
+    if (valorSeleccionado) {
+      document.getElementById('tipo_linea_seleccionada').disabled = false;
+      document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+    } else {
+      document.getElementById('tipo_linea_seleccionada').disabled = true;
+      document.getElementById('grabar-postulacion-fpl-button').disabled = true;
+    }
+  }
+
 .card.m-0
   .card-body
-    = simple_form_for @informe, url: guardar_comite_actualizar_acuerdos_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes), remote: true, method: :patch do |f|
-      .row
-        .col-12.mb-3
-          .row
-            .col-6
-              .form-group
-              %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
-              %br
-              = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia'
-            .col-6
-              = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:selección_de_linea), input_html: {class: "chosen-control", type: :string, "data-placeholder"=>"Seleccione una Línea", id: 'tipo_linea_seleccionada'}
-              %br 
-        .col-12
-          .float-right
-            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary button-send"   
-            
+    = simple_form_for @informe, url: grabar_postulacion_fondo_produccion_limpia_path(@tarea_pendiente), remote: true, method: :patch do |f|
+      .card
+        .card-header
+          %h5.no-margin
+            = t(:postulacion_fondo_produccion_limpia)
+        .card-body 
+          .col-12.mb-3
+            .row
+              .col-6
+                .form-group
+                  %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
+                  %br
+                  = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia' do |b|
+                    = b.radio_button onchange: 'habilitaOpciones(this);'
+                    = b.label
+              .col-6
+                = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}
+                %br 
+          .col-12
+            .float-right
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "grabar-postulacion-fpl-button btn btn-sm btn-primary button-send", id:"grabar-postulacion-fpl-button", disabled: true
