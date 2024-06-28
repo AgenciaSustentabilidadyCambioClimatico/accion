@@ -21,9 +21,13 @@ class TipoInstrumento < ApplicationRecord
   FONDO_DE_PRODUCCION_LIMPIA              = 10
   STR_FONDO_DE_PRODUCCION_LIMPIA          = "Fondo de Producción Limpia"
   FPL_LINEA_1_1                           = 11
+  FPL_LINEA_1_2_1                         = 12
+  FPL_LINEA_1_2_2                         = 29
   STR_FPL_LINEA_1_1                       = "Línea 1.1 - Diagnóstico de APL NCH"
+  STR_FPL_LINEA_1_2_1                     = "Línea 1.2.1 - Implementación de APL - Fase 1"
+  STR_FPL_LINEA_1_2_2                     = "Línea 1.2.2 - Implementación de APL - Fase 2"
   FPL                                     = [11,12,13,14,15,16,17]
-  FPL_LINEA_1                             = [11,12,13]
+  FPL_LINEA_1                             = [11,12,13,29]
   FPL_LINEA_2                             = [14,15]
   FPL_LINEA_3                             = [16]
   STR_FPL_LINEA_3                         = "Línea 3 - Misiones de Cooperación en Producción Limpia"

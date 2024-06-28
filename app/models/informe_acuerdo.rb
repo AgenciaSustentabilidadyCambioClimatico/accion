@@ -37,6 +37,8 @@ class InformeAcuerdo < ApplicationRecord
 
   attr_accessor :acta_convocatoria
 
+  attr_accessor :tipo_linea_seleccionada
+
   has_many :comentarios_informe_acuerdos, dependent: :destroy
 	accepts_nested_attributes_for :comentarios_informe_acuerdos, allow_destroy: true
 

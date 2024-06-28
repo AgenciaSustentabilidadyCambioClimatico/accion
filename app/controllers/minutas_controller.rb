@@ -22,6 +22,8 @@ class MinutasController < ApplicationController #crea la depencia con convocator
   # end
 
   def edit
+    #Obtiene las lineas para el diagnostico del FPL
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_1])
   end
 
   # PATCH/PUT
