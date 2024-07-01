@@ -9,9 +9,8 @@
 			%h5.titulo-caja.text-center= "Cambie su contraseña"
 		.card-body
 			.text-center.mb-4
-				= image_tag ("logo-ascc.png")
+				= image_tag ("logo-ascc-nuevo.png")
 			= f.input :password, required: true, autofocus: true, placeholder: 'Nueva contraseña', label: false
 			= f.input :password_confirmation, required: true, placeholder: "Confirme su nueva contraseña", label: false
 			= f.button :submit, "Cambiar", class: 'btn btn-sm btn-primary btn-block'
 	= render "devise/shared/links", form_remote: false
-	

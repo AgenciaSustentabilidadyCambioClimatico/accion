@@ -22,7 +22,7 @@ class DescargableTarea < ApplicationRecord
   end
 
   def file(replaces)
-    #if self.archivo.file.present? #DZC para el caso de que no exista el archivo 
+    #if self.archivo.file.present? #DZC para el caso de que no exista el archivo
     #Es necesario cuando se genera por primera vez, desde el mantenedor de archivos.-
       content = self.contenido.to_s.as_hash
       subido = self.subido.present? ? self.subido : false
@@ -40,7 +40,7 @@ class DescargableTarea < ApplicationRecord
           filename: nombre_archivo
         }
       elsif self.formato.to_sym == :pdf
-        nombre_archivo = self.nombre.present? ? "#{self.nombre}.pdf" : "archivo.pdf"        
+        nombre_archivo = self.nombre.present? ? "#{self.nombre}.pdf" : "archivo.pdf"
         sizes = { small: 10, normal: 13, large: 20, huge: 32 }
         pdf = DescargableTarea.pdf_document(DescargableTarea.__contenido(replaces,content,130,:justify,sizes))
         return {
@@ -109,7 +109,7 @@ class DescargableTarea < ApplicationRecord
 	def self.__contenido(replace,editor_hash,image_width,justify,sizes)
     data  = []
     # Cabecera fija con el logo de la agencia
-    data  << { value: Rails.root.join('app','assets','images','logo-ascc.jpg').to_s, attributes: { width: image_width, in_header: true }, image: true }
+    data  << { value: Rails.root.join('app','assets','images','logo-ascc-nuevo.png').to_s, attributes: { width: image_width, in_header: true }, image: true }
     data  << { value: "\n"}
     editor_hash.each do |k,lines|
       skip_to_next = nil
@@ -120,7 +120,7 @@ class DescargableTarea < ApplicationRecord
         align = :left
         color = '000000'
         nxti  = lines[i+1]
-        
+
         # Ignoramos los saltos de líneas continuos
         unless skip_to_next
           # Normalizamos attributos cuando esto existen
@@ -132,7 +132,7 @@ class DescargableTarea < ApplicationRecord
             size    = attributes["size"].blank? ? sizes[:normal] : sizes[attributes["size"].to_sym]
             color   = attributes["color"].to_s.upcase.sub(/[^0-9A-Z]/,'') unless attributes["color"].blank?
           end
-          
+
           # Si la línea siguiente es un salto de línea y posee los atributos de alineación de la línea actual, entonces se presume que no es
           # un salto de línea deseado. Es por esto que nos "robamos" su atributo de centrado y la ignoramos.
           if ! nxti.blank? && nxti["insert"].gsub(/\n/,'').blank? && nxti.has_key?("attributes") && nxti["attributes"].has_key?("align")
@@ -147,7 +147,7 @@ class DescargableTarea < ApplicationRecord
           end
 
           attributes = { style: style, size: size, align: align, color: color }
-          
+
           # Procesamos de forma disntas las líneas que empiezan con uno o más salto de línea
           if line["insert"].match(/^[\n]{2,}$/).blank?
             values = []

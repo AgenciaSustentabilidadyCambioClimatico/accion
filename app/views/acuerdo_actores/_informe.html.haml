@@ -2,11 +2,11 @@
 -datos = (@datos.nil? ? datos : @datos)
 -es_descargable = es_descargable.blank? ? false : es_descargable
 -if !es_descargable
-  = image_tag('logo-ascc.png', width:130, class: '')
+  = image_tag('logo-ascc-nuevo.png', width:130, class: '')
 -else
   = wicked_pdf_stylesheet_link_tag    'application', media: 'all'
   =# wicked_pdf_javascript_include_tag 'application'
-  = wicked_pdf_image_tag image_url('logo-ascc.png'), width: 180
+  = wicked_pdf_image_tag image_url('logo-ascc-nuevo.png'), width: 180
 %p.h4.text-center="Informe"
 %p.h5="Partes que suscriben el Acuerdo:"
 - partes = "En [INGRESAR COMUNA], a [INGRESAR FECHA FIRMA], comparecen, por una parte, "
