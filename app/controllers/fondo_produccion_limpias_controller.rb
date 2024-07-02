@@ -94,51 +94,56 @@ class FondoProduccionLimpiasController < ApplicationController
     #Graba las postulaciones de las distintas fases del FPL
     def grabar_postulacion
 
-      
-      #CUSTUMIZAR ESTE CODIGO
+      if params[:minuta][:fondo_produccion_limpia] == "true"
+        tarea_pendiente = TareaPendiente.find(params[:id])
+        flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
 
+        @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
-      binding.pry
-      tarea_pendiente = TareaPendiente.find(params[:id])
-      flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
-      binding.pry
-
-      @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
-
-      flujo = Flujo.new({
-        contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
-        tipo_instrumento_id: params[:tipo_linea_seleccionada]
-      })
-
-      if flujo.save
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
-        flujo.tarea_pendientes.create([{
-            tarea_id: tarea_fondo.id,
-            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente.user_id,
-            data: { }
-          }]
-        )
-
-        #SE ENVIAR EL MAIL AL RESPONSABLE
-        send_message(tarea_fondo, tarea_pendiente.user_id)
-        
-        #Inicia el flujo con el nombre Sin nombre
-        codigo_proyecto = "Proyecto diagnóstico FPL"
-
-        fpl = FondoProduccionLimpia.create({
-          flujo_id: flujo.id,
-          flujo_apl_id: tarea_pendiente.flujo_id,
-          codigo_proyecto: codigo_proyecto
+        flujo = Flujo.new({
+          contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
+          tipo_instrumento_id: params[:informe_acuerdo][:tipo_linea_seleccionada]
         })
 
-        #guarda el fpl id en la tabla flujo
-        flujo.proyecto_id = fpl.id
-        flujo.save
+        if flujo.save
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+          flujo.tarea_pendientes.create([{
+              tarea_id: tarea_fondo.id,
+              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+              user_id: tarea_pendiente.user_id,
+              data: { }
+            }]
+          )
 
-        success = 'Flujo fondo de producción limpia creado correctamente.'
+          #SE ENVIAR EL MAIL AL RESPONSABLE
+          send_message(tarea_fondo, tarea_pendiente.user_id)
+          
+          #Inicia el flujo con el nombre Sin nombre
+          codigo_proyecto = "Proyecto diagnóstico FPL"
+
+          fpl = FondoProduccionLimpia.create({
+            flujo_id: flujo.id,
+            flujo_apl_id: tarea_pendiente.flujo_id,
+            codigo_proyecto: codigo_proyecto
+          })
+
+          #guarda el fpl id en la tabla flujo
+          flujo.proyecto_id = fpl.id
+          flujo.save
+
+          msj = 'Flujo fondo de producción limpia creado correctamente.'
+          respond_to do |format|
+            format.js { flash.now[:success] = msj; render js: "window.location='#{root_path}'" }
+            format.html { redirect_to root_path, flash: { notice: msj } }
+          end
+        end
       else
-        warning = 'Usted NO puede iniciar Flujo FPL.'
+        msj = 'Usted NO puede iniciar Flujo FPL.'
+        respond_to do |format|
+          format.js { flash.now[:error] = msj; render js: "window.location='#{root_path}'" }
+          format.html { redirect_to root_path, flash: { notice: msj } }
+        end
+        
       end
 
     end  
@@ -526,6 +531,10 @@ class FondoProduccionLimpiasController < ApplicationController
           Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO
         when 22
           Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO_L5
+        when 12
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+        when 29
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
         else
           nil
         end
@@ -1517,7 +1526,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
       @consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
       @empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
-      @actividades = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+      @actividades = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id, @tarea_pendiente.flujo.tipo_instrumento_id)
       
       respond_to do |format|
         format.js { render 'get_revisor', locals: { objetivo_especificos: @objetivo_especificos, postulantes: @postulantes, consultores: @consultores, empresas: @empresas, actividades: @actividades, codigo_proyecto: @codigo_proyecto} }
@@ -3917,7 +3926,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_actividades_x_linea
         #binding.pry
-        @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id)
+        @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id, @tarea_pendiente.flujo.tipo_instrumento_id)
         #binding.pry
         @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
       end
