@@ -11,7 +11,7 @@
       %h5.titulo-caja.text-center= "Recuperar contraseña"
     .card-body
       .text-center.mb-4
-        = image_tag ("logo-ascc.png")
+        = image_tag ("logo-ascc-nuevo.png")
       = f.input :email, required: true, autofocus: true, placeholder: "Escriba su correo", label: false, input_html: { class: "validado" }
       = f.button :submit, "Recuperar", class: 'btn btn-sm btn-agencia btn-block'
   = render "devise/shared/links", form_remote: form_remote

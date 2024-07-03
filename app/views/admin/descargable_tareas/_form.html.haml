@@ -87,7 +87,7 @@
 				prev = $("#descargable-previsualizacion");
 				$.post("#{previsualizacion_admin_tarea_descargable_tareas_path(format: :json)}",{data: data},function(data) {
 					prev.empty();
-					prev.append('#{image_tag('logo-ascc.png', width:130, class: '')}');
+					prev.append('#{image_tag('logo-ascc-nuevo.png', width:130, class: '')}');
 					$.each(data,function(index,line) {
 						pClass = 'm-0';
 						pStyle = '';
@@ -162,7 +162,7 @@
 		checkEditorHashContent(false);
 		mostrarPrevisualizacion();
 	});
-:css 
+:css
 	#descargar-archivo, #previsualizar-archivo { display: none }
 	#descargable-previsualizacion p[style=''] { height: 15px; }
 	#descargable-previsualizacion br { line-height: 31px; }

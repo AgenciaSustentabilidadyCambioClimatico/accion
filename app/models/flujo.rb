@@ -60,8 +60,14 @@ class Flujo < ApplicationRecord
 
   def nombre_instrumento
     nombre = "ACUERDO, PROYECTO O PROGRAMA NO INICIADO"
-    if !self.proyecto.blank? 
-      nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+    
+    #if!self.proyecto.blank?   
+      #nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+
+    if self.proyecto_id.present?
+      #Obtiene nombre del proyecto de la tabla fondo produccion limpia
+      fpl = FondoProduccionLimpia.find(proyecto_id)
+      nombre = fpl.codigo_proyecto
     elsif !self.manifestacion_de_interes.blank?
       nombre = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?
@@ -79,19 +85,21 @@ class Flujo < ApplicationRecord
     end 
     #verificar que es ppl
     if self.proyecto_id.present?
-      return "PPL"
+      return "FPL" #"PPL"
     end
   end
 
   def subtipo_de_instrumento
+    #binding.pry
     no_hay = 'Pendiente de aprobación'
     case self.tipo_de_flujo
       when 'APL'
         self.manifestacion_de_interes.tipo_instrumento.present? ? self.manifestacion_de_interes.tipo_instrumento.nombre_subtipo : no_hay
       when 'PPF'
         self.ppp.tipo_instrumento.present? ? self.ppp.tipo_instrumento.nombre_subtipo : no_hay
-      when 'PPL'
-        self.proyecto.tipo_instrumento.present? ? self.proyecto.tipo_instrumento.nombre_subtipo : no_hay
+      when 'FPL' #'PPL'
+        no_hay = tipo_instrumento.nombre
+        #self.proyecto.tipo_instrumento.present? ? self.proyecto.tipo_instrumento.nombre_subtipo : no_hay
       else
         no_hay
     end
@@ -228,7 +236,7 @@ class Flujo < ApplicationRecord
             objeto_tres = self
           end
 
-        when "PPL"
+        when "FPL" #"PPL"
           tareas_pendientes = self.tarea_pendientes.where(user_id: usuario.id, tarea_id: Tarea::ID_FPL_007, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
           tarea_pendiente = tareas_pendientes.blank? ? nil : tareas_pendientes.first
           if tarea_pendiente.present?
@@ -237,7 +245,8 @@ class Flujo < ApplicationRecord
             objeto_uno = tarea_pendiente.id
             objeto_dos = self.proyecto
           else
-            actividades = ProyectoActividad::get_actividades_calendario(proyecto.id)
+            #actividades = ProyectoActividad::get_actividades_calendario(proyecto.id)
+            actividades = ProyectoActividad::get_actividades_calendario(proyecto_id)
             if actividades.present?
               accion_texto = "Actividades" 
               accion_url = "fpl_set_metas_acciones_admin_gestionar_mis_instrumentos_path"
@@ -260,7 +269,7 @@ class Flujo < ApplicationRecord
           end
       end
       datos << {
-          tipo_instrumento: self.tipo_instrumento.nombre,
+          tipo_instrumento: self.tipo_instrumento.nombre_tipo, #self.tipo_instrumento.nombre,
           subtipo_instrumento: self.subtipo_de_instrumento, 
           id_instrumento: self.id,
           manifestacion_de_interes_id: manifestacion_de_interes_id,
@@ -493,6 +502,25 @@ class Flujo < ApplicationRecord
         tareas_validaciones = tareas_validaciones.values
         estado = "Ejecutada"
       end
+      # Inicializa tareas_validaciones_fpl_06 como un arreglo vacío
+      tareas_validaciones_fpl_06 = []
+
+      # Comprueba si la tarea tiene el código FPL_06
+      if t.codigo == Tarea::COD_FPL_06
+        # Intenta encontrar el cuestionario relevante
+        cuestionario_fpl = CuestionarioFpl.where(flujo_id: self.id, tipo_cuestionario_id: 4).first 
+
+        # Asegúrate de que se encontró el cuestionario y que tiene una revisión válida
+        if cuestionario_fpl && cuestionario_fpl.revision
+          # Genera un rango de números hasta la revisión máxima
+          maximo = cuestionario_fpl.revision
+          1.upto(maximo) do |numero|
+            # Añade cada número al arreglo
+            tareas_validaciones_fpl_06 << numero 
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+          end
+        end
+      end 
       instancias << {
         tipo_instrumento: self.tipo_instrumento.nombre,
         id_instrumento: self.id,
@@ -508,6 +536,7 @@ class Flujo < ApplicationRecord
         puedo_ver_tarea: puedo_ver_tarea,
         auditorias_tarea_033: tareas_auditoria,
         validaciones_tarea_034: tareas_validaciones,
+        tarea_fpl_06: tareas_validaciones_fpl_06,
         activacion: activacion,
         ejecucion: ejecucion
       } 
@@ -536,8 +565,12 @@ class Flujo < ApplicationRecord
 
 
   def tipo_instrumento_por_proceso
-    if !self.proyecto.blank? 
-      instrumento = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+    #if !self.proyecto.blank? 
+    #  instrumento = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
+
+    if self.proyecto_id.present?
+      fpl = FondoProduccionLimpia.find(proyecto_id)
+      instrumento = fpl.codigo_proyecto
     elsif !self.manifestacion_de_interes.blank?
       instrumento = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?

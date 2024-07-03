@@ -153,7 +153,7 @@ class CreaReporteSustentabilidad
       archivo = WickedPdf.new.pdf_from_string(
         ActionController::Base.new.render_to_string(
           #cover: render_to_string('_portada_reporte_sustentabilidad'),
-          'admin/gestionar_mis_instrumentos/_reporte_sustentabilidad', 
+          'admin/gestionar_mis_instrumentos/_reporte_sustentabilidad',
           layout: 'layouts/wicked_pdf',
           locals: {
             manifestacion_de_interes: @manifestacion_de_interes,
@@ -224,7 +224,7 @@ class CreaReporteSustentabilidad
 
       #config inicial
       clase_base = self
-      logo = ActionController::Base.helpers.image_url('logo-ascc.png', host: request.base_url)
+      logo = ActionController::Base.helpers.image_url('logo-ascc-nuevo.png', host: request.base_url)
       font_title_1 = {size: 18, color: '000000', bold: true}
       font_title_2 = {size: 16, color: '000000', bold: true}
       font_subtitle_2 = {size: 16, color: '000000'}
@@ -413,7 +413,7 @@ class CreaReporteSustentabilidad
                 p " "
               end
             end
-            
+
           end
           data_metas_ods << _meta
         end
@@ -469,7 +469,7 @@ class CreaReporteSustentabilidad
         #   end]
 
         #   #detalle elem
-          
+
         #   cert_header = Caracal::Core::Models::TableCellModel.new do
         #     table [_cert_obtenidas] do
         #       cell_style rows[0], background: 'F8F8F8', align: :center
@@ -538,7 +538,7 @@ class CreaReporteSustentabilidad
         #       end
         #     end
         #   end]
-                    
+
         # end
 
         if !manifestacion_de_interes.nil?
@@ -627,7 +627,7 @@ class CreaReporteSustentabilidad
                   color   'E0E0E0'
                   size    1
                 end
-                
+
               end
             end
             _metas_avances_acciones = [[avance_header],[avance_tabla]]

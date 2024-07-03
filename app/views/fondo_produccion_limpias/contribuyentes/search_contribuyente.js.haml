@@ -1,0 +1,7 @@
+- if @errors == true
+	$('#contribuyentes-fpl-remote-filter').html("#{j render 'fondo_produccion_limpias/contribuyentes/filter_form', es_para_seleccion: @es_para_seleccion, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados}");
+	htmlErrorToTooltip('top');
+- else
+	$('#contribuyentes-fpl-remote-table').html("#{j render 'fondo_produccion_limpias/contribuyentes/table', es_para_seleccion: @es_para_seleccion, buscar_por_actividad_economica: @buscar_por_actividad_economica, resultado_mostrados: @resultado_mostrados}");
+$('.loading-data').hide();
+closeAlertMessage();

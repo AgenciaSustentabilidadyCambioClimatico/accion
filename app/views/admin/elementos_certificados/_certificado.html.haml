@@ -1,6 +1,6 @@
 .row
   .col-12.mb-5
-    =app_helpers.image_tag(app_helpers.wicked_pdf_asset_base64('logo-ascc.png'), width: 250, class: "imagen")
+    =app_helpers.image_tag(app_helpers.wicked_pdf_asset_base64('logo-ascc-nuevo.png'), width: 250, class: "imagen")
   .col-12.text-center.certificado-black
     %p.certificado-40px CERTIFICADO
     %p.certificado-20px.certificado-600 LA AGENCIA DE SUSTENTABILIDAD Y CAMBIO CLIMÁTICO
@@ -9,7 +9,7 @@
     %p=titulo
     %p.certificado-40px.certificado-600=adhesion_elemento.nombre_segun_alcance
     %p=adhesion_elemento.dir_segun_alcance.values.join(", ")
-    %p de la empresa: 
+    %p de la empresa:
   .col-12.mt-5.text-center.certificado-black
     %p.certificado-40px.certificado-600=institucion.razon_social
     %p La cual ha sido auditada y certificada en conformidad con los requisitos de:
@@ -40,5 +40,5 @@
         %td.w-50
           .text-center.certificado-black
             %p
-              Fecha Emisión Certificado de Cumplimiento: 
+              Fecha Emisión Certificado de Cumplimiento:
               =l(Date.today, format: "%d de %B de %Y")

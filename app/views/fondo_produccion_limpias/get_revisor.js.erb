@@ -1,0 +1,11 @@
+//console.log("codigo_proyecto: '<%= @codigo_proyecto %>'");
+$('#codigo_proyecto').val('<%= @codigo_proyecto %>');
+
+// Mostrar el div con el ID "div_equipo_consultora_empresa"
+$('#div_equipo_consultora_empresa').css('display', 'block');
+//$('#div_equipo_consultora').css('display', 'block');
+
+<% objetivo_especificos.each do |objetivo_especifico| %>
+    $('#editar-objetivo-especifico-<%= objetivo_especifico.id %>').css('visibility', 'hidden');
+    $('#eliminar-objetivo-especifico-<%= objetivo_especifico.id %>').css('visibility', 'hidden');
+<% end %>

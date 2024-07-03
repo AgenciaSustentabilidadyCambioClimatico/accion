@@ -1,0 +1,48 @@
+var objetivo_id = '<%= @objetivo_especifico.id %>';
+var descripcion = '<%= @objetivo_especifico.descripcion %>';
+var metodologia = '<%= @objetivo_especifico.metodologia %>';
+var resultado = '<%= @objetivo_especifico.resultado %>';
+var indicadores = '<%= @objetivo_especifico.indicadores %>';
+var tarea_pendiente_id =  '<%= tarea_pendiente %>';
+
+//console.log("objetivo_id " + objetivo_id);
+//console.log("descripcion " + descripcion);
+//console.log("metodologia " + metodologia);
+//console.log("resultado " + resultado);
+//console.log("indicadores " + indicadores);
+//console.log("tarea_pendiente_id " + tarea_pendiente_id);
+
+var newRow = "<tr>" +
+"<td class='contenido-form' id='objetivo_descripcion_<%= @objetivo_especifico.id %>'>" + descripcion + "</td>" +
+"<td class='contenido-form' id='objetivo_metodologia_<%= @objetivo_especifico.id %>'>" + metodologia + "</td>" +
+"<td class='contenido-form' id='objetivo_resultado_<%= @objetivo_especifico.id %>'>" + resultado + "</td>" +
+"<td class='contenido-form' id='objetivo_indicadores_<%= @objetivo_especifico.id %>'>" + indicadores + "</td>" +
+"<td class='contenido-form dos iconos-acciones'>" +
+"<a title='Editar los objetivos específicos' class='editar-objetivo' id='editar-objetivo-especifico-" + objetivo_id + "' data-objetivo-id='" + objetivo_id + "' href='#' onclick='editarObjetivo(" + objetivo_id + ")'><i class='fa fa-edit'></i></a> " +
+"<a data-objetivo-id=" + objetivo_id + " data-confirm='¿Está seguro que desea borrar este Objetivo específico?' class='eliminar-objetivo-especifico' id='eliminar-objetivo-especifico-" + objetivo_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_objetivo_especifico/" + objetivo_id + "' data-original-title='Eliminar objetivo específico'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+"</td>" +
+"</tr>";   
+$('#div_objetivo_especifico table tbody').append(newRow);
+
+// Remover todas las opciones actuales del combo box
+$('#objetivos_especifico_id').empty();
+
+// Agregar una opción en blanco por defecto
+$('#objetivos_especifico_id').append($('<option>', {
+  value: '',
+  text: 'Seleccione una opción'
+}));
+
+// Agregar las nuevas opciones al combo box
+<% @objetivos_options.each do |descripcion, id| %>
+  $('#objetivos_especifico_id').append($('<option>', {
+    value: '<%= id %>',
+    text: '<%= descripcion %>'
+  }));
+<% end %>
+
+$('#modal_objetivos-form').modal("hide");
+
+var $objetivo = $('#open-modal-button');
+$objetivo.removeClass('btn-danger').addClass('btn-primary');
+$objetivo.attr('data-tooltip', 'false');

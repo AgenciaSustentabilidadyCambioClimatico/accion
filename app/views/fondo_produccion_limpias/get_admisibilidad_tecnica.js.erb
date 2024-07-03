@@ -1,0 +1,13 @@
+<% cuestionario_fpl.each_with_index do |cuestionario, index| %>
+    //console.log("Valor en nota <%= index + 1 %>, <%= cuestionario.nota %>");
+    $('#nota_input_tecnica_id_<%= index + 1 %>').val('<%= cuestionario.nota %>');
+    var nota = '<%= cuestionario.nota %>'; // Asumiendo que justificacion es el nombre del atributo
+    if (nota < 5) { // Se debe comparar justificacion con un número, no con una cadena
+        //console.log("Valor en justificacion <%= index + 1 %>, <%= cuestionario.justificacion %>");
+        $('#obs_input_tecnica_id_<%= index + 1 %>').css('visibility', 'visible'); // Cambiamos la visibilidad del campo
+        $('#obs_input_tecnica_id_<%= index + 1 %>').val('<%= cuestionario.justificacion %>'); // Establecemos su valor
+    }
+<% end %>
+
+// Mostrar el div con el ID "div_equipo_consultora_empresa"
+$('#div_equipo_consultora_empresa').css('display', 'block');

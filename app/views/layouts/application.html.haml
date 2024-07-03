@@ -42,7 +42,7 @@
               %div{style: "background-color: #0060AB;height: 11px;width: 30%;"}
               %div{style: "background-color: #E72B37;height: 11px;width: 40%;"}
             = link_to root_path, class: 'my-auto' do
-              %img{src: image_url("logo-ascc.png"), style: "height: 65px;"}
+              %img{src: image_url("logo-ascc-nuevo.png"), style: "height: 65px;"}
           .d-flex
             =link_to acuerdos_firmados_path, class: "header-no-signed d-flex flex-column ml-2 #{(params[:action] == "acuerdos_firmados" ? 'active' : '')}" do
               .title.mb-0=@header.datos[:acuerdos_firmados]
@@ -65,7 +65,7 @@
                 %div{style: "background-color: #0060AB;height: 11px;width: 30%;"}
                 %div{style: "background-color: #E72B37;height: 11px;width: 40%;"}
               = link_to root_path, class: 'my-auto' do
-                %img{src: image_url("logo-ascc.png"), style: "height: 65px;"} 
+                %img{src: image_url("logo-ascc-nuevo.png"), style: "height: 65px;"}
             =link_to '#', class: 'btn btn-ingresar-header iniciar-sesion-header ml-2 align-self-center' do
               Ingresar
           .d-flex.flex-row.my-2

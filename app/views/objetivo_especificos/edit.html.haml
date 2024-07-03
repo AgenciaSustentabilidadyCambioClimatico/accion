@@ -1,0 +1,23 @@
+- titulo t(:objetivo_específico)
+- require_ish = @objetivo_especifico.new_record? ? 'required-field' : 'im-not-required-check-the-others required'
+= simple_form_for @objetivo_especifico, url: objetivo_especifico_path(@objetivo_especifico), method: :patch do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						= action_label_objetivo(@objetivo_especifico)
+				.card-body
+					.row
+						= f.input :flujo_id, as: :hidden, input_html: { value: @objetivo_especifico.flujo_id }
+						.col-lg-2.pr-lg-0.col-12
+							= f.input :descripcion, required: true, label: t(:descripcion), placeholder: "Ingresar descripción", input_html: { class: 'required-field' }
+						.col-lg-4.pr-lg-0.col-12
+							= f.input :metodologia, required: true, label: t(:metodologia), placeholder: "Ingresar metodologia", input_html: { class: 'required-field' }
+						.col-lg-3.pr-lg-0.col-12
+							= f.input :resultado, required: true, label: t(:resultado), placeholder: "Ingresar resultado", input_html: { class: 'required-field' }
+						.col-lg-3.col-12
+							= f.input :indicadores, required: true, label: t(:indicadores), placeholder: "Ingresar indicadores", input_html: { class: 'required-field numero' }
+			.float-right
+				= link_to t(:back), :back, class: 'btn btn-sm btn-warning'
+				= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", data: { confirm: t(:confirma_edicion_objetivo), remote: false }, disabled: :disabled

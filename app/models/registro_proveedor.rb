@@ -47,7 +47,7 @@ class RegistroProveedor < ApplicationRecord
       errors.add(:terminos_y_servicion, "Debes aceptar los terminos y servicios")
     end
   end
-  
+
   def get_apl
     @flujo = Flujo.joins(mapa_de_actores: { persona: :user }).where(users: { rut: self.rut })
     @nombre = @flujo.joins(:manifestacion_de_interes).order('manifestacion_de_intereses.created_at DESC').pluck('manifestacion_de_intereses.nombre_acuerdo')
@@ -82,8 +82,8 @@ class RegistroProveedor < ApplicationRecord
     ##HEADER
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width  => pdf.bounds.width do
-        #pdf.image Rails.root.join('app','assets','images','logo-ascc.png').to_s, width: 150
-        pdf.image Rails.root.join("app/assets/images/logo-ascc.png"), width: 119
+        #pdf.image Rails.root.join('app','assets','images','logo-ascc-nuevo.png').to_s, width: 150
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width  => pdf.bounds.width do
           pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
             pdf.text "FORMULARIO REGISTRO PROVEEDORES", size: 10, color: "003DA6", align: :right
