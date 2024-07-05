@@ -14,9 +14,9 @@ class Actividad < ApplicationRecord
 			"actividad_por_lineas.tipo_permiso IN (?) AND (plan_actividades.flujo_id = ? OR actividad_por_lineas.tipo_permiso = ?)",
 			[1, 3], flujo_id, 1
 			)
-			.group("actividades.id", "actividades.nombre")
-			.order("actividades.id")
-			.select("actividades.id", "actividades.nombre")
+			.group("actividades.id", "actividades.nombre", "actividad_por_lineas.tipo_actividad")
+			.order("actividad_por_lineas.tipo_actividad")
+			.select("actividades.id", "actividades.nombre", "actividad_por_lineas.tipo_actividad")
 	end
 	
 end

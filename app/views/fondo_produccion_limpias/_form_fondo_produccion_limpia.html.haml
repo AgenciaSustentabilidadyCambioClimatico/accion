@@ -3319,8 +3319,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
-                -#%th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:etapa_actividades)
+                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
                 -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
@@ -3334,7 +3333,13 @@
                 %th.encabezado-form="Gastos de Administración"
               %tbody
                 - if @actividad_x_linea.present?  
+                  - current_tipo_actividad = nil
                   - @actividad_x_linea.each do |actividad|
+                    - if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1   
+                      - if current_tipo_actividad != actividad.tipo_actividad
+                        - current_tipo_actividad = actividad.tipo_actividad
+                        %tr
+                          %th.contenido-form{colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                     %tr
                       %td.contenido-form=actividad.nombre
                       -#- if @actividad_detalle.present?

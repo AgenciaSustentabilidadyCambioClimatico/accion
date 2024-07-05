@@ -15,6 +15,8 @@
 							= f.input :tipo_instrumento_id, label: t(:línea_asociada), collection: TipoInstrumento.lineas_asociadas, input_html: { class: 'required-field' }, required: true
 						.col-lg-6.pr-lg-0.col-12
 							= f.input :tipo_permiso, label: t(:tipo_permiso), collection: ActividadPorLinea.permisos, input_html: { class: 'required-field' }, required: true
+						.col-lg-6.col-12
+							= f.input :tipo_actividad, label: t(:tipo_de_actividad), collection: ActividadPorLinea.actividades, input_html: { class: 'required-field' }, required: true
 	.float-right
 		= link_to t(:back), admin_actividades_por_lineas_path, class: 'btn btn-sm btn-warning'
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

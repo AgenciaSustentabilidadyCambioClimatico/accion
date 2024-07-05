@@ -1555,6 +1555,9 @@ es:
   admisibilidad_tecnica: Admisibilidad técnica
   fondo_produccion_limpia: Fondo producción Limpia
   seleccion_de_linea: Selección de línea
+  tipo_de_actividad: Tipo de actividad
+  tipo_a: Tipo A
+  tipo_b: Tipo B
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
