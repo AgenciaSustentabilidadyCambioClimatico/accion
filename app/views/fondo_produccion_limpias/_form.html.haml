@@ -10,34 +10,40 @@
       var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
       var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
       var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-      var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
-      var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
       var duracion = document.getElementById('duracion').value;
-      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
-      
-      // Obtener el elemento <ul> con la clase seleccionados_tree
-      var ulElement = document.querySelector('.seleccionados_tree');
+      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
+      var empresas_asociadas_ag = 0;   
+      var empresas_no_asociadas_ag = 0;
 
-      // Verificar si se encontró el elemento <ul>
-      if (ulElement) {
-          // Obtener todos los elementos <li> dentro del <ul>
-          var liElements = ulElement.querySelectorAll('li');
+      if(#{@flujo.tipo_instrumento_id} == 11)  {
 
-          // Crear un array para almacenar los IDs de las comunas seleccionadas
-          var comunasIds = [];
+        empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+        empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
 
-          // Iterar sobre los elementos <li> para obtener los IDs
-          liElements.forEach(function(liElement) {
-              // Obtener el ID del elemento <li>
-              var comunaId = liElement.id;
-              // Agregar el ID al array de IDs de comunas seleccionadas
-              comunasIds.push(comunaId);
-          });
+        // Obtener el elemento <ul> con la clase seleccionados_tree
+        var ulElement = document.querySelector('.seleccionados_tree');
 
-          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-          // console.log('IDs de comunas seleccionadas:', comunasIds);
-      } else {
-          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+        // Verificar si se encontró el elemento <ul>
+        if (ulElement) {
+            // Obtener todos los elementos <li> dentro del <ul>
+            var liElements = ulElement.querySelectorAll('li');
+
+            // Crear un array para almacenar los IDs de las comunas seleccionadas
+            var comunasIds = [];
+
+            // Iterar sobre los elementos <li> para obtener los IDs
+            liElements.forEach(function(liElement) {
+                // Obtener el ID del elemento <li>
+                var comunaId = liElement.id;
+                // Agregar el ID al array de IDs de comunas seleccionadas
+                comunasIds.push(comunaId);
+            });
+
+            // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+            // console.log('IDs de comunas seleccionadas:', comunasIds);
+        } else {
+            console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+        }
       }
       
       $('.loading-data').show();

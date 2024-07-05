@@ -1,5 +1,8 @@
 :javascript
   $(document).ready(function() {
+
+    cargarListaUsuariosEntregables();
+
     $('.chosen-control').chosen({
       allow_single_deselect: true,
       no_results_text: 'No se encontraron resultados',
@@ -36,6 +39,22 @@
       alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
     }
   });
+
+  function cargarListaUsuariosEntregables(){
+    try {
+      //cargo los usuarios de la tabla usuarios entregables
+      $.ajax({
+        url: "#{lista_usuarios_entregables_fondo_produccion_limpia_path}",
+        type: "GET",
+        data: {
+          contribuyente_id: #{@manifestacion_de_interes.proponente_institucion_id},
+          tarea_pendiente_id: #{@tarea_pendiente.id}
+        }
+      });
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  }
 
   function guardarUsuarioEntregables(){
     var financiamiento = document.getElementById('opcion_2_financiamiento');

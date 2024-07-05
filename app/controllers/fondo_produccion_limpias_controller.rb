@@ -94,7 +94,7 @@ class FondoProduccionLimpiasController < ApplicationController
     #Graba las postulaciones de las distintas fases del FPL
     def grabar_postulacion
 
-      if params[:minuta][:fondo_produccion_limpia] == "true"
+      if params[:informe_acuerdo][:fondo_produccion_limpia] == "true"
         tarea_pendiente = TareaPendiente.find(params[:id])
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
 
@@ -119,7 +119,11 @@ class FondoProduccionLimpiasController < ApplicationController
           send_message(tarea_fondo, tarea_pendiente.user_id)
           
           #Inicia el flujo con el nombre Sin nombre
-          codigo_proyecto = "Proyecto diagnóstico FPL"
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 
+            codigo_proyecto = "Proyecto diagnóstico FPL"
+          else
+            codigo_proyecto = "Proyecto seguimiento FPL"
+          end
 
           fpl = FondoProduccionLimpia.create({
             flujo_id: flujo.id,
@@ -169,11 +173,13 @@ class FondoProduccionLimpiasController < ApplicationController
       campos_completos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.present?
       campos_nulos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
 
-      campos_completos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.present?
-      campos_nulos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+        campos_completos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.present?
+        campos_nulos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
 
-      campos_completos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.present?
-      campos_nulos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
+        campos_completos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.present?
+        campos_nulos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
+      end  
 
       campos_completos << :duracion if @fondo_produccion_limpia.duracion.present?
       campos_nulos << :duracion if @fondo_produccion_limpia.duracion.nil?
@@ -213,12 +219,13 @@ class FondoProduccionLimpiasController < ApplicationController
         #plan = 0
         #campos_nulos << plan
       end  
-
-      comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
-      if comuna_flujo == 0
-        campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
-      else
-        campos_completos << "manifestacion_de_interes_comunas_ids".to_sym
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+        comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
+        if comuna_flujo == 0
+          campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
+        else
+          campos_completos << "manifestacion_de_interes_comunas_ids".to_sym
+        end
       end
 
 
@@ -309,14 +316,21 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_FPL_00 = TareaPendiente.find_by(tarea_id: tarea_fondo_FPL_00.id, flujo_id: @flujo.id)
 
         tarea_pendiente_FPL_00.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-        tarea_pendiente_FPL_00.save  
+        tarea_pendiente_FPL_00.save 
+        
+        #Se asigna duracion en meses segun tipo de instrumento
+        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1
+          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
+        else
+          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
+        end
 
         custom_params = {
           fondo_produccion_limpia: {
             institucion_entregables_id: institucion_postulante,
             usuario_entregables_id: postulante,
             institucion_receptor_cof_fpl_id: institucion_receptora,
-            duracion: 4
+            duracion: meses
           }
         }
         @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])

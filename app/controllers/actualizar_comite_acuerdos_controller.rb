@@ -9,6 +9,9 @@ class ActualizarComiteAcuerdosController < ApplicationController
   def index
     #Obtiene las lineas para el diagnostico del FPL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2])
+    @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
+    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: TipoInstrumento::FPL_LINEA_1_2_2)
+    @intrumento_seleccionado = TipoInstrumento::FPL_LINEA_1_2_2
 
     @estandares_certificacion = []
     estandares_certificacion_ids = []

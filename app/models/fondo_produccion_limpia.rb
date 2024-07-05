@@ -4,6 +4,8 @@ class FondoProduccionLimpia < ApplicationRecord
   belongs_to :sublinea, optional: true
 
   MINUTOS_MENSAJE_GUARDAR = 20
+  DURACION_FPL_LINEA_1_1 = 4
+  DURACION_FPL_LINEA_1_2 = 12
 
   mount_uploader :instrumento_constitucion_estatutos_postulante, ArchivoInstrumentoConstitucionEstatutosPostulanteFondoProduccionLimpiaUploader
   mount_uploader :certificado_vigencia_constitucion_postulante, ArchivoCertificadoVigenciaConstitucionPostulanteFondoProduccionLimpiaUploader

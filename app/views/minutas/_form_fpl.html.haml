@@ -20,9 +20,17 @@
           .form-group
           %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
           %br
-          = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia' do |b|
-            = b.radio_button onchange: 'habilitaOpciones(this);'
-            = b.label
+          - if @flujos_con_tipo_instrumento.present?
+            = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia', disabled: true do |b|
+              = b.radio_button onchange: 'habilitaOpciones(this);'
+              = b.label
+          - else
+            = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia' do |b|
+              = b.radio_button onchange: 'habilitaOpciones(this);'
+              = b.label
         .col-6
-          = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}
+          - if @flujos_con_tipo_instrumento.present?
+            = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}, selected: @intrumento_seleccionado
+          - else
+            = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}
         %br 

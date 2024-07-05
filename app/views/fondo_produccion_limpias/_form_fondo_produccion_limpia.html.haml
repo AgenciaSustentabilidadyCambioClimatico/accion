@@ -1706,34 +1706,41 @@
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
     var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
-    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
     var duracion = document.getElementById('duracion').value;
     var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+    var empresas_asociadas_ag = 0;   
+    var empresas_no_asociadas_ag = 0;
 
-    // Obtener el elemento <ul> con la clase seleccionados_tree
-    var ulElement = document.querySelector('.seleccionados_tree');
+    if(#{@flujo.tipo_instrumento_id} == 11)  {
 
-    // Verificar si se encontró el elemento <ul>
-    if (ulElement) {
-        // Obtener todos los elementos <li> dentro del <ul>
-        var liElements = ulElement.querySelectorAll('li');
+      var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+      var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+   
+      // Obtener el elemento <ul> con la clase seleccionados_tree
+      var ulElement = document.querySelector('.seleccionados_tree');
 
-        // Crear un array para almacenar los IDs de las comunas seleccionadas
-        var comunasIds = [];
+      // Verificar si se encontró el elemento <ul>
+      if (ulElement) {
+          // Obtener todos los elementos <li> dentro del <ul>
+          var liElements = ulElement.querySelectorAll('li');
 
-        // Iterar sobre los elementos <li> para obtener los IDs
-        liElements.forEach(function(liElement) {
-            // Obtener el ID del elemento <li>
-            var comunaId = liElement.id;
-            // Agregar el ID al array de IDs de comunas seleccionadas
-            comunasIds.push(comunaId);
-        });
+          // Crear un array para almacenar los IDs de las comunas seleccionadas
+          var comunasIds = [];
 
-        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        // console.log('IDs de comunas seleccionadas:', comunasIds);
-    } else {
-        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+          // Iterar sobre los elementos <li> para obtener los IDs
+          liElements.forEach(function(liElement) {
+              // Obtener el ID del elemento <li>
+              var comunaId = liElement.id;
+              // Agregar el ID al array de IDs de comunas seleccionadas
+              comunasIds.push(comunaId);
+          });
+
+          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+          // console.log('IDs de comunas seleccionadas:', comunasIds);
+      } else {
+          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      }
+
     }
 
     $.ajax({
@@ -1787,34 +1794,41 @@
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
     var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
-    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
     var duracion = document.getElementById('duracion').value;
     var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
 
-    // Obtener el elemento <ul> con la clase seleccionados_tree
-    var ulElement = document.querySelector('.seleccionados_tree');
+    var empresas_asociadas_ag = 0;   
+    var empresas_no_asociadas_ag = 0;
 
-    // Verificar si se encontró el elemento <ul>
-    if (ulElement) {
-        // Obtener todos los elementos <li> dentro del <ul>
-        var liElements = ulElement.querySelectorAll('li');
+    if(#{@flujo.tipo_instrumento_id} == 11)  {
 
-        // Crear un array para almacenar los IDs de las comunas seleccionadas
-        var comunasIds = [];
+      var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+      var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
 
-        // Iterar sobre los elementos <li> para obtener los IDs
-        liElements.forEach(function(liElement) {
-            // Obtener el ID del elemento <li>
-            var comunaId = liElement.id;
-            // Agregar el ID al array de IDs de comunas seleccionadas
-            comunasIds.push(comunaId);
-        });
+      // Obtener el elemento <ul> con la clase seleccionados_tree
+      var ulElement = document.querySelector('.seleccionados_tree');
 
-        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        // console.log('IDs de comunas seleccionadas:', comunasIds);
-    } else {
-        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      // Verificar si se encontró el elemento <ul>
+      if (ulElement) {
+          // Obtener todos los elementos <li> dentro del <ul>
+          var liElements = ulElement.querySelectorAll('li');
+
+          // Crear un array para almacenar los IDs de las comunas seleccionadas
+          var comunasIds = [];
+
+          // Iterar sobre los elementos <li> para obtener los IDs
+          liElements.forEach(function(liElement) {
+              // Obtener el ID del elemento <li>
+              var comunaId = liElement.id;
+              // Agregar el ID al array de IDs de comunas seleccionadas
+              comunasIds.push(comunaId);
+          });
+
+          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+          // console.log('IDs de comunas seleccionadas:', comunasIds);
+      } else {
+          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      }
     }
 
     $.ajax({
@@ -2901,100 +2915,166 @@
             %tbody
         %br
         <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
-              %tr
-                %th.encabezado2-form Micro
-                %th.encabezado2-form Pequeña
-                %th.encabezado2-form Mediana
-                %th.encabezado2-form Grande
-                %th.encabezado2-form Total
-                
-              %tr
-                -if !solo_lectura
-                  %th
-                    = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
-                  %th
-                    = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
-                  %th
-                    = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
-                  %th
-                    = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
-                  %th#total_tecnica 
-                -else
-                  %th
-                    = f.object.cantidad_micro_empresa
-                  %th
-                    = f.object.cantidad_pequeña_empresa
-                  %th
-                    = f.object.cantidad_mediana_empresa
-                  %th
-                    = f.object.cantidad_grande_empresa                  
-                  %th#total_tecnica 
-        %br   
-        .row
-          .col-12
-            -if solo_lectura
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
-              #manifestacion_de_interes_comunas_ids
-            #checkbox-tree-selector-regiones-provincias-comunas.mb-3
-              -card_class = ''
-              -card_class += ' border-0' if solo_lectura
-              -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
-              .card.m-0.card-preview-seleccionados{class: card_class}
-                -if !solo_lectura
-                  #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3.titulo-sector 
-                    %h5.no-margin.float-left.display_select_title
-                      %abbr{title: :required} *
-                      =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
-                    .float-right
-                      %i.fa.fa-chevron-right#boton_expandir_territorios
-                .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
-                  .row
-                    .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
-                      =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
-                    .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
-                      = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
-                      #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
-                  - if f.object.errors.messages.has_key?(:comunas_ids)
-                    %span.help-block
-                      = f.object.errors.messages[:comunas_ids].first
-                -if !solo_lectura
-                  .card-footer.p-0
-                    %ul.list-group.seleccionados_tree.m-0
-                -else
-                  .card-footer.px-0.pb-0.pt-1.border-0
-                    %ul.list-group.seleccionados_tree_solo_lectura.m-0
-          
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado2-form 
-                  Empresas socias de la A.G. potenciales suscriptoras del APL
-                %th.encabezado2-form 
-                  Empresas potenciales no socias de la A.G.       
-              %tr
-                -if !solo_lectura
-                  %th
-                    %label.label-estilo{ for: 'empresas_asociadas_ag' }
-                      %abbr{ title: "Campo requerido" } *
-                      N° Empresas Asociadas AG: 
-                    = f.text_field :empresas_asociadas_ag, class: 'border-text', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag' 
-                  %th
-                    %label.label-estilo{ for: 'empresas_asociadas_ag' }
-                      %abbr{ title: "Campo requerido" } *
-                      N° Empresas No Asociadas AG: 
-                    = f.text_field :empresas_no_asociadas_ag, class: 'border-text', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag'
-                -else
-                  %th
-                    = f.object.empresas_asociadas_ag
-                  %th
-                    = f.object.empresas_no_asociadas_ag
-        %br
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                %tr
+                  %th.encabezado2-form Micro
+                  %th.encabezado2-form Pequeña
+                  %th.encabezado2-form Mediana
+                  %th.encabezado2-form Grande
+                  %th.encabezado2-form Total
+                  
+                %tr
+                  -if !solo_lectura
+                    %th
+                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                    %th
+                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                    %th
+                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                    %th
+                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
+                    %th#total_tecnica 
+                  -else
+                    %th
+                      = f.object.cantidad_micro_empresa
+                    %th
+                      = f.object.cantidad_pequeña_empresa
+                    %th
+                      = f.object.cantidad_mediana_empresa
+                    %th
+                      = f.object.cantidad_grande_empresa                  
+                    %th#total_tecnica 
+          %br 
+            .row
+              .col-12
+                -if solo_lectura
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                  #manifestacion_de_interes_comunas_ids
+                #checkbox-tree-selector-regiones-provincias-comunas.mb-3
+                  -card_class = ''
+                  -card_class += ' border-0' if solo_lectura
+                  -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
+                  .card.m-0.card-preview-seleccionados{class: card_class}
+                    -if !solo_lectura
+                      #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3.titulo-sector 
+                        %h5.no-margin.float-left.display_select_title
+                          %abbr{title: :required} *
+                          =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                        .float-right
+                          %i.fa.fa-chevron-right#boton_expandir_territorios
+                    .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
+                      .row
+                        .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
+                          =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
+                        .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
+                          = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
+                          #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
+                      - if f.object.errors.messages.has_key?(:comunas_ids)
+                        %span.help-block
+                          = f.object.errors.messages[:comunas_ids].first
+                    -if !solo_lectura
+                      .card-footer.p-0
+                        %ul.list-group.seleccionados_tree.m-0
+                    -else
+                      .card-footer.px-0.pb-0.pt-1.border-0
+                        %ul.list-group.seleccionados_tree_solo_lectura.m-0
+            
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th.encabezado2-form 
+                      Empresas socias de la A.G. potenciales suscriptoras del APL
+                    %th.encabezado2-form 
+                      Empresas potenciales no socias de la A.G.       
+                  %tr
+                    -if !solo_lectura
+                      %th
+                        %label.label-estilo{ for: 'empresas_asociadas_ag' }
+                          %abbr{ title: "Campo requerido" } *
+                          N° Empresas Asociadas AG: 
+                        = f.text_field :empresas_asociadas_ag, class: 'border-text', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag' 
+                      %th
+                        %label.label-estilo{ for: 'empresas_asociadas_ag' }
+                          %abbr{ title: "Campo requerido" } *
+                          N° Empresas No Asociadas AG: 
+                        = f.text_field :empresas_no_asociadas_ag, class: 'border-text', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag'
+                    -else
+                      %th
+                        = f.object.empresas_asociadas_ag
+                      %th
+                        = f.object.empresas_no_asociadas_ag
+              %br
+        - else
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                %tr
+                  %th.encabezado2-form 
+                  %th.encabezado2-form Micro
+                  %th.encabezado2-form Pequeña
+                  %th.encabezado2-form Mediana
+                  %th.encabezado2-form Grande
+                  %th.encabezado2-form Total
+                  
+                %tr
+                  -if !solo_lectura
+                    %th
+                      Empresas Totales a Adherir
+                    %th
+                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                    %th
+                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                    %th
+                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                    %th
+                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
+                    %th#total_tecnica 
+                  -else
+                    %th
+                      Empresas Totales a Adherir
+                    %th
+                      = f.object.cantidad_micro_empresa
+                    %th
+                      = f.object.cantidad_pequeña_empresa
+                    %th
+                      = f.object.cantidad_mediana_empresa
+                    %th
+                      = f.object.cantidad_grande_empresa                  
+                    %th#total_tecnica
+                %tr
+                  -if !solo_lectura
+                    %th
+                      Elementos Totales a Adherir
+                    %th
+                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                    %th
+                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                    %th
+                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                    %th
+                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
+                    %th#total_tecnica 
+                  -else
+                    %th
+                      Elementos Totales a Adherir
+                    %th
+                      = f.object.cantidad_micro_empresa
+                    %th
+                      = f.object.cantidad_pequeña_empresa
+                    %th
+                      = f.object.cantidad_mediana_empresa
+                    %th
+                      = f.object.cantidad_grande_empresa                  
+                    %th#total_tecnica
+            %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3002,7 +3082,7 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.input :duracion, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion'}
+                    = f.input :duracion, required: true, label: t(:duracion_proyecto), collection: (1..@duracion).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion'}
                 -else
                   %th
                     = f.object.duracion
@@ -3246,33 +3326,8 @@
                 -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                 %th.encabezado-form.dos.iconos-acciones{style: 'vertical-align: middle;', rowspan: 2}=t(:acción)
               %tr
-                - if @duracion == 1
-                  %th.encabezado-form="1"
-                - elsif @duracion == 2
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                - elsif @duracion == 3
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                - elsif @duracion == 4
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                - elsif @duracion == 5
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                  %th.encabezado-form="5"
-                - elsif @duracion == 6
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                  %th.encabezado-form="5"
-                  %th.encabezado-form="6"
+                - (1..@duracion).each do |d|
+                  %th.encabezado-form=d
                 %th.encabezado-form="Recursos Humanos Propios"
                 %th.encabezado-form="Recursos Humanos Externos"
                 %th.encabezado-form="Gastos de Operación"
@@ -3302,15 +3357,8 @@
                         %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
-                      -#-else
-                      -#  - (1..@duracion).each do |d|
-                      -#    %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
-                      -#  %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
                       %td.contenido-form.dos.iconos-acciones
-                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},solo_lectura)", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
                           %i.fa.fa-edit 
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
@@ -3633,81 +3681,133 @@
                   %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form-costo  0,00%
         %br
         <h1>Validación</h1>   
-        %div.table-responsive 
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr{style: 'background-color: #5d759e;'}
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
-            %tbody
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Aporte líquido del postulante
-                - if @costos.present?
-                  %td#valida_aporte_propio_liquido.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
-                    - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_aporte_propio_liquido.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo  0,00%
-                  %td#valida_pregunta_aporte_propio_liquido.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
-                - if @costos.present?
-                  %td#valida_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'])
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
-                    - if (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado']) >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_costo_total_de_la_propuesta.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo  0,00%
-                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                - if @costos.present?
-                  %td#valida_gastos_administrativos.contenido-form-costo=number_to_currency @costos.gastos_administrativos
-                  %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_gastos_administrativos.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_gastos_administrativos.contenido-form-center
-                    - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_gastos_administrativos.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
-                  %td#valida_pregunta_gastos_administrativos.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
-                - if @costos.present?
-                  %td#valida_aporte_solicitado_al_fondo.contenido-form-costo=number_to_currency @costos.aporte_solicitado_al_fondo
-                  %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
-                    - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
-                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center NO
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+          %div.table-responsive 
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr{style: 'background-color: #5d759e;'}
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
+              %tbody
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Aporte líquido del postulante
+                  - if @costos.present?
+                    %td#valida_aporte_propio_liquido.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
+                      - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#valida_aporte_propio_liquido.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo  0,00%
+                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center  NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
+                  - if @costos.present?
+                    %td#valida_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'])
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
+                      - if (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado']) >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#valida_costo_total_de_la_propuesta.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo  0,00%
+                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center  NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
+                  - if @costos.present?
+                    %td#valida_gastos_administrativos.contenido-form-costo=number_to_currency @costos.gastos_administrativos
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_gastos_administrativos.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_gastos_administrativos.contenido-form-center
+                      - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#valida_gastos_administrativos.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
+                    %td#valida_pregunta_gastos_administrativos.contenido-form-center  NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
+                  - if @costos.present?
+                    %td#valida_aporte_solicitado_al_fondo.contenido-form-costo=number_to_currency @costos.aporte_solicitado_al_fondo
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
+                      - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
+                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center NO
           %br
+        - else
+          %div.table-responsive 
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr{style: 'background-color: #5d759e;'}
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Tipo de Actividades
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo general al postulante
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_POSTULANTE)}% del total Actividades Tipo B
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a $0
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Total Proyecto
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte líquido del postulante
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Gastos de Administración
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
+                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
+              %tbody
   - if @revisor      
     #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
       .card
@@ -5201,8 +5301,10 @@
         __show_hide_(childGroup,childControl);      
     });
 
-    init_coordenadas_territorios();
-
+    if(#{@flujo.tipo_instrumento_id} == 11) {
+      init_coordenadas_territorios();
+    }  
+      
     document_ready = true;
     if(typeof google != "undefined"){
       mapLoaded();
