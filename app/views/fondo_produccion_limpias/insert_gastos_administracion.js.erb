@@ -4,6 +4,7 @@ var valor_unitario = '<%=number_to_currency @gastos_administraciones.valor_unita
 var cantidad = '<%= @gastos_administraciones.cantidad %>';
 var unidad = '';
 var total = '<%=number_to_currency @gastos_administraciones.valor_unitario.to_i * @gastos_administraciones.cantidad.to_i %>';
+var plan_id = '<%= @plan_id %>';
 var tarea_pendiente_id =  '<%= tarea_pendiente.id %>';
 
 <% if @gastos_administraciones.unidad_medida == 1 %>
@@ -33,7 +34,7 @@ $('#modal_gastos_administracion-form').on('hidden.bs.modal', function () {
   $('#modal_create_plan_actividades-form').modal("hide");
 
   // Llama a la función para abrir el nuevo modal
-  //crearPlanActividades('<%= j @plan_id %>', 'false');
+  crearPlanActividades('<%= @plan_id %>', 'false');
 });
 
 document.querySelectorAll('#div_consultor_faltantes input[type="text"]').forEach(function(input) {

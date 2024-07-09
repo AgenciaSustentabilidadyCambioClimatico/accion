@@ -26,10 +26,10 @@ $('#div_plan_recursos_externos table tbody').empty();
 
   $('#modal_rrhh_externos-form').on('hidden.bs.modal', function () {
   // Cierra modal_create_plan_actividades-form si está abierto
-   $('#modal_create_plan_actividades-form').modal("hide");
+  $('#modal_create_plan_actividades-form').modal("hide");
 
   // Llama a la función para abrir el nuevo modal
-  //crearPlanActividades('<%= j @plan_id %>', 'false');
+  crearPlanActividades('<%= j @plan_id %>', 'false');
  });
 
   var mensajeCosto = document.getElementById('mensaje-costo');

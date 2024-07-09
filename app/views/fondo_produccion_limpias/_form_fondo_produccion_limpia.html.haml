@@ -29,6 +29,7 @@
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
+    sumarValoresTecElementos();
     cargarObjetivosEspecificos();
     valida_div();
    
@@ -160,6 +161,27 @@
     // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
     var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
     var total = document.getElementById('total_tecnica');
+
+    // Inicializar la variable para la suma
+    var suma = 0;
+
+    // Iterar sobre los campos de texto y sumar los valores
+    camposDeTexto.forEach(function (campo) {
+      // Obtener el valor del campo de texto y convertirlo a un número
+      var valor = parseFloat(campo.value) || 0;
+
+      // Sumar al total
+      suma += valor;
+    });
+
+    // Mostrar el resultado o hacer algo con la suma
+    total.textContent = suma;
+  }
+
+  function sumarValoresTecElementos() {
+    // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+    var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+    var total = document.getElementById('total_tecnica_elementos');
 
     // Inicializar la variable para la suma
     var suma = 0;
@@ -337,12 +359,6 @@
       data: { plan_id: plan_id, 
               solo_lectura: solo_lectura},
       method: "GET",
-      cache: false, // Deshabilitar caché
-      headers: { 
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          "Pragma": "no-cache",
-          "Expires": "0"
-      },
       success: function(response) {
         $('#modal_create_plan_actividades-form').modal('show');
       },
@@ -353,6 +369,7 @@
   }
 
   function modalRrhhPropios(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $.ajax({
       url: "#{get_recursos_propios_fondo_produccion_limpia_path}",
       data: { actividad_id: id},
@@ -361,12 +378,13 @@
         $('#modal_rrhh_propios-form').modal('show');
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
   function modalRrhhExternos(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $.ajax({
       url: "#{get_recursos_externos_fondo_produccion_limpia_path}",
       data: { actividad_id: id},
@@ -375,17 +393,18 @@
         $('#modal_rrhh_externos-form').modal('show');
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
   function modalGastosOperacion(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $('#modal_gastos_operacion-form').modal('show');
-  
   }
 
   function modalGastosAdministrativos(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $('#modal_gastos_administracion-form').modal('show');
   }
 
@@ -407,9 +426,10 @@
               tipo_aporte_id: tipo_aporte_id},
       method: "GET",
       success: function(response) {
+        
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
@@ -435,7 +455,7 @@
       success: function(response) {
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
@@ -497,6 +517,8 @@
                 objetivos_especifico_id: objetivos_especifico_id},
         method: "POST",
         success: function(response) {
+          //alert("Plan de actividad creado exitosamente");
+         
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
@@ -518,6 +540,7 @@
         }
       });
     }
+    //crearPlanActividades(plan_id, 'false');
   }
 
   function guardarRrhhPropioshh(plan_id){
@@ -1710,6 +1733,10 @@
     var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
     var empresas_asociadas_ag = 0;   
     var empresas_no_asociadas_ag = 0;
+    var elementos_micro_empresa = 0;
+    var elementos_pequena_empresa = 0;
+    var elementos_mediana_empresa = 0;
+    var elementos_grande_empresa = 0;
 
     if(#{@flujo.tipo_instrumento_id} == 11)  {
 
@@ -1740,7 +1767,11 @@
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
-
+    }else{
+      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
     $.ajax({
@@ -1755,7 +1786,11 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds
+        comunasIds : comunasIds,
+        elementos_micro_empresa: elementos_micro_empresa,
+        elementos_pequena_empresa: elementos_pequena_empresa,
+        elementos_mediana_empresa: elementos_mediana_empresa,
+        elementos_grande_empresa: elementos_grande_empresa
       },
       method: "GET",
       success: function(response) {
@@ -1800,6 +1835,11 @@
     var empresas_asociadas_ag = 0;   
     var empresas_no_asociadas_ag = 0;
 
+    var elementos_micro_empresa = 0;
+    var elementos_pequena_empresa = 0;
+    var elementos_mediana_empresa = 0;
+    var elementos_grande_empresa = 0;
+
     if(#{@flujo.tipo_instrumento_id} == 11)  {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
@@ -1829,6 +1869,11 @@
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
+    }else{
+      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
     $.ajax({
@@ -1843,7 +1888,11 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds
+        comunasIds : comunasIds,
+        elementos_micro_empresa: elementos_micro_empresa,
+        elementos_pequena_empresa: elementos_pequena_empresa,
+        elementos_mediana_empresa: elementos_mediana_empresa,
+        elementos_grande_empresa: elementos_grande_empresa
       },
       method: "GET",
       success: function(response) {
@@ -3054,26 +3103,26 @@
                     %th
                       Elementos Totales a Adherir
                     %th
-                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                      = f.text_field :elementos_micro_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_micro_empresa'
                     %th
-                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                      = f.text_field :elementos_pequena_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_pequena_empresa'            
                     %th
-                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                      = f.text_field :elementos_mediana_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_mediana_empresa'
                     %th
-                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
-                    %th#total_tecnica 
+                      = f.text_field :elementos_grande_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_grande_empresa'
+                    %th#total_tecnica_elementos
                   -else
                     %th
                       Elementos Totales a Adherir
                     %th
-                      = f.object.cantidad_micro_empresa
+                      = f.object.elementos_micro_empresa
                     %th
-                      = f.object.cantidad_pequeña_empresa
+                      = f.object.elementos_pequena_empresa
                     %th
-                      = f.object.cantidad_mediana_empresa
+                      = f.object.elementos_mediana_empresa
                     %th
-                      = f.object.cantidad_grande_empresa                  
-                    %th#total_tecnica
+                      = f.object.elementos_grande_empresa                  
+                    %th#total_tecnica_elementos
             %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
@@ -3339,7 +3388,7 @@
                       - if current_tipo_actividad != actividad.tipo_actividad
                         - current_tipo_actividad = actividad.tipo_actividad
                         %tr
-                          %th.contenido-form{colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
+                          %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                     %tr
                       %td.contenido-form=actividad.nombre
                       -#- if @actividad_detalle.present?

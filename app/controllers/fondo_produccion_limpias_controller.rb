@@ -179,6 +179,18 @@ class FondoProduccionLimpiasController < ApplicationController
 
         campos_completos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.present?
         campos_nulos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
+      else     
+        campos_completos << :elementos_micro_empresa if @fondo_produccion_limpia.elementos_micro_empresa.present?
+        campos_nulos << :elementos_micro_empresa if @fondo_produccion_limpia.elementos_micro_empresa.nil?
+
+        campos_completos << :elementos_pequena_empresa if @fondo_produccion_limpia.elementos_pequena_empresa.present?
+        campos_nulos << :elementos_pequena_empresa if @fondo_produccion_limpia.elementos_pequena_empresa.nil?
+
+        campos_completos << :elementos_mediana_empresa if @fondo_produccion_limpia.elementos_mediana_empresa.present?
+        campos_nulos << :elementos_mediana_empresa if @fondo_produccion_limpia.elementos_mediana_empresa.nil?
+
+        campos_completos << :elementos_grande_empresa if @fondo_produccion_limpia.elementos_grande_empresa.present?
+        campos_nulos << :elementos_grande_empresa if @fondo_produccion_limpia.elementos_grande_empresa.nil?
       end  
 
       campos_completos << :duracion if @fondo_produccion_limpia.duracion.present?
@@ -1095,6 +1107,8 @@ class FondoProduccionLimpiasController < ApplicationController
           @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
           #Actualiza costos
           set_costos 
+
+          @plan_id = params['plan_id']
           #binding.pry
           respond_to do |format|
             format.js { render 'insert_gastos_operacion', locals: { gastos_operaciones: @gastos_operaciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_1: @total_gastos_tipo_1 } }
@@ -1141,7 +1155,7 @@ class FondoProduccionLimpiasController < ApplicationController
           #Actualiza costos
           set_costos 
           #binding.pry
-          @plan = params['plan_id']
+          @plan_id = params['plan_id']
           respond_to do |format|
             format.js { render 'insert_gastos_administracion', locals: { gastos_administraciones: @gastos_administraciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_2:@total_gastos_tipo_2, plan: @plan } }
           end
@@ -1306,7 +1320,8 @@ class FondoProduccionLimpiasController < ApplicationController
           @plan_actividades = PlanActividad.new(custom_params[:plan_actividades])
           @plan_actividades.save
         end
-
+        #binding.pry
+        @plan_id = params['plan_id']
         @duracion_x = params['duracion'].join(',')
         respond_to do |format|
           format.js { render 'insert_plan_actividades' }
@@ -1407,7 +1422,11 @@ class FondoProduccionLimpiasController < ApplicationController
             empresas_asociadas_ag: params[:empresas_asociadas_ag],
             empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
             duracion: params[:duracion],
-            fortalezas_consultores: params[:fortalezas_consultores]
+            fortalezas_consultores: params[:fortalezas_consultores],
+            elementos_micro_empresa: params[:elementos_micro_empresa],
+            elementos_pequena_empresa: params[:elementos_pequena_empresa],
+            elementos_mediana_empresa: params[:elementos_mediana_empresa],
+            elementos_grande_empresa: params[:elementos_grande_empresa]
           }
         }
         @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
