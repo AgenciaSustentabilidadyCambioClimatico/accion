@@ -1325,7 +1325,12 @@ class ManifestacionDeInteresController < ApplicationController
 
     #Obtiene las lineas para el diagnostico del FPL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
-   
+    @fondo_produccion_limpia_id = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id, ).pluck(:flujo_id).first
+    @intrumento_seleccionado = nil
+    if @fondo_produccion_limpia_id.present?
+      @intrumento_seleccionado = Flujo.where(id: @fondo_produccion_limpia_id).pluck(:tipo_instrumento_id) 
+    end
+
     unless @manifestacion_de_interes.contribuyente_id.nil?
       #Elimino todos los que no sean el id guardado
       Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
