@@ -154,11 +154,28 @@
                   = t(:iniciar_proceso)
                 %ul.dropdown-menu{"aria-labelledby" => "dropdown-iniciar-proceso"}
                   - if puede_crear_manifestacion
-                    %li= link_to t(:acuerdos), iniciar_flujo_manifestacion_de_interes_index_path, method: :patch, class: 'dropdown-item'
+                    %li.dropdown-item{"data-toggle" => "modal", "data-target" => "#modal_enviar_formulario"} Acuerdos
                   - if puede_crear_programa_regional
                     %li= link_to t(:programa_regional), ppf_programa_proyecto_propuestas_path, method: :post, class: 'dropdown-item'
                   - if puede_crear_seguimiento_fpl
                     %li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
+            .modal.fade#modal_enviar_formulario{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
+              .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+                .modal-content
+                  .modal-header.p-3.text-center{style: 'font-weight: bold;'} Manifestación de Interés
+                  .modal-body
+                    %p
+                      ¿Desea iniciar una nueva
+                      %strong
+                        Manifestación de Interés
+                      para realizar un
+                      %strong
+                        Acuerdo de Producción Limpia
+                      ?
+                  .modal-footer{style: "display: flex; align_items: center; justify-content: center;"}
+                    = link_to 'Iniciar', iniciar_flujo_manifestacion_de_interes_index_path, method: :patch, class: 'btn btn-primary'
+                    %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+                      Volver
 :javascript
   $('#logout').click(function(e){
     e.preventDefault();
