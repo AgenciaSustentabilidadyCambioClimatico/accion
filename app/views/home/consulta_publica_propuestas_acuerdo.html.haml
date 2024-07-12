@@ -30,7 +30,8 @@
       dom: '<"mr-3 mb-2"f>ti<"m-3"p>r',
       responsive: true,
       lengthMenu: [[30], [30]],
-      columnDefs: [ { targets: [-1], orderable: true } ],
+      columnDefs: [{ orderable: true, targets: [-1] }],
+      order: [[2, 'asc']],
       language: {
         url: "#{asset_path('spanish.json')}"
       },
