@@ -6,6 +6,12 @@ class FondoProduccionLimpia < ApplicationRecord
   MINUTOS_MENSAJE_GUARDAR = 20
   DURACION_FPL_LINEA_1_1 = 4
   DURACION_FPL_LINEA_1_2 = 12
+  APORTE_MICRO_EMPRESA = 900000
+  APORTE_PEQUEÑA_EMPRESA = 700000
+  APORTE_MEDIANA_EMPRESA = 300000
+  PORCENTAJE_APORTE_BENEFICIARIO_MICRO_EMPRESA = 0.1
+  PORCENTAJE_APORTE_BENEFICIARIO_PEQUEÑA_EMPRESA = 0.3
+  PORCENTAJE_APORTE_BENEFICIARIO_MEDIANA_EMPRESA = 0.7
 
   mount_uploader :instrumento_constitucion_estatutos_postulante, ArchivoInstrumentoConstitucionEstatutosPostulanteFondoProduccionLimpiaUploader
   mount_uploader :certificado_vigencia_constitucion_postulante, ArchivoCertificadoVigenciaConstitucionPostulanteFondoProduccionLimpiaUploader
@@ -35,9 +41,6 @@ class FondoProduccionLimpia < ApplicationRecord
   mount_uploader :declaracion_jurada_simple_anexo_a_ejecutor, ArchivoDeclaracionJuradaSimpleAnexoAEjecutorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_simple_anexo_b_ejecutor, ArchivoDeclaracionJuradaSimpleAnexoBEjecutorFondoProduccionLimpiaUploader
 
-  ##CONTENIDO
-  #validaciones = get_campos_validaciones
-
   def comunas
     self.flujo.comunas
   end
@@ -47,7 +50,6 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def get_campos_validaciones
-    #filtro_tarea = self.tarea_id.present? ? {tarea_id: self.tarea_id} : {}
     filtro_tarea =  nil
     validaciones = {}
     campos = Campo.where(clase: self.class.name) #, validaciones_activas: true, tipo: "text")
@@ -82,7 +84,6 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def revisores_select
-    #tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
     nombre_acuerdo = self.nombre_acuerdo.blank? ? self.flujo.tipo_instrumento_id : self.nombre_acuerdo
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}     
   end
@@ -123,13 +124,11 @@ class FondoProduccionLimpia < ApplicationRecord
   
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
       # Aquí se agregan los elementos del PDF, según el contenido necesario.
-      #self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica), "Objetivos del proyecto")
       self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica))
       self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
       self.pdf_tabla_objetivos(pdf, objetivo_especificos)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
-      #self.pdf_contenido_formato(pdf, :codigo_proyecto)
       self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
@@ -163,14 +162,9 @@ class FondoProduccionLimpia < ApplicationRecord
       
   
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
-      #self.pdf_sub_titulo_formato(pdf, "Plan de Actividades")
       self.pdf_tabla_plan_actividades(pdf, planes)
       self.pdf_separador(pdf, 20)
-  
-      #self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
-      #self.pdf_sub_titulo_formato(pdf, "Antecedentes que se deben adjuntar")
-      #self.pdf_separador(pdf, 20)
-  
+
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
       self.pdf_tabla_costos(pdf, costos)
@@ -192,7 +186,6 @@ class FondoProduccionLimpia < ApplicationRecord
     # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
     pdf_file_path.to_s
 
-    #binding.pry
   rescue StandardError => e
     Rails.logger.error "Error generando PDF: #{e.message}"
     nil
@@ -207,7 +200,7 @@ class FondoProduccionLimpia < ApplicationRecord
       
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
-      #binding.pry
+
       # Agregar cada objetivo específico a la tabla
       objetivo_especificos.each do |objetivo|
         fila = [
@@ -218,16 +211,14 @@ class FondoProduccionLimpia < ApplicationRecord
         ]
         data << fila
       end
-    #binding.pry
+
       pdf.table(data, header: true, column_widths: [130, 130, 130, 130], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
 
       pdf.move_down 10 # Espacio después de la tabla
 
-      #binding.pry
     rescue => e
-      #binding.pry
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
@@ -277,7 +268,6 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
       pdf.text titulo, size: 11
     end
-    #pdf.text subtitulo, size: 9
     pdf.text "··········<color rgb='003DA6'>··········</color>", size: 20, color: 'EB0029', inline_format: true, leading: 0
     pdf.move_down 5
   end
@@ -287,8 +277,6 @@ class FondoProduccionLimpia < ApplicationRecord
       #pdf.text titulo, size: 11
       pdf.text subtitulo, size: 10
     end
-    
-    #pdf.text "··········<color rgb='003DA6'>··········</color>", size: 20, color: 'EB0029', inline_format: true, leading: 0
     pdf.move_down 5
   end
 
@@ -297,7 +285,6 @@ class FondoProduccionLimpia < ApplicationRecord
     #  pdf.text titulo, size: 11
     end
     pdf.text contenido.to_s, size: 9
-    #pdf.text "··········<color rgb='003DA6'>··········</color>", size: 20, color: 'EB0029', inline_format: true, leading: 0
     pdf.move_down 5
   end
 
@@ -330,7 +317,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.move_down 10 # Espacio después de la tabla
 
-      #binding.pry
     rescue => e
       #c
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
@@ -363,16 +349,13 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.move_down 10 # Espacio después de la tabla
 
-      #binding.pry
     rescue => e
-      #binding.pry
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
   end
 
   def pdf_tabla_plan_actividades(pdf, planes)
-    #binding.pry
     begin
       # Encabezados de la tabla
       headers = ["Etapa / Actividades", "1", "2", "3", "4", "Recursos Humanos Propios", "Recursos Humanos Externos", "Gastos de Operación", "Gastos de Administración"]
@@ -381,10 +364,8 @@ class FondoProduccionLimpia < ApplicationRecord
       data = [headers] # Comienza con los encabezados
 
       # Agregar cada objetivo específico a la tabla
-      #binding.pry
       duracion_total = self.duracion
       planes.each do |plan|
-        #binding.pry
         fila = [
           plan.nombre,
           *Array.new(duracion_total) do |index|
@@ -402,28 +383,21 @@ class FondoProduccionLimpia < ApplicationRecord
         ]
         data << fila
       end
-      #binding.pry
       pdf.table(data, header: true, column_widths: [100,45,45,45,45,60,60,60,60], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
 
       pdf.move_down 10 # Espacio después de la tabla
 
-      #binding.pry
     rescue => e
-      #c
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
   end
 
-  # En tu controlador (por ejemplo, app/controllers/tu_controlador.rb)
   def pdf_tabla_costos(pdf, costos)
     begin
       # Encabezados de la tabla principal
-      #headers = ["Estructura de costos", "$", "% (del costo total de la propuesta)"]
-
-      #data_principal = [headers] # Comienza con los encabezados
 
       # Datos de la tabla principal
       
@@ -452,10 +426,7 @@ class FondoProduccionLimpia < ApplicationRecord
       ]
 
       # Encabezados de la segunda tabla (Estructura de costos por partida)
-      #headers_partida = ["Estructura de costos por partida", "$", "% (del costo total de la propuesta)"]
 
-      #data_partida = [headers_partida] # Comienza con los encabezados
-      
       porcentaje6 = (costos.recursos_humanos_propios.to_f / costos.costo_total_de_la_propuesta) * 100
       porcentaje_recursos_humanos_propios = "%.2f %%" % porcentaje6
 
@@ -477,14 +448,7 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Gastos de Operación", sprintf("$%<costo>.0f", costo: costos.gastos_operacion).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), porcentaje_gastos_operacion],
         ["Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), porcentaje_gastos_administrativos]
       ]
-
       # Encabezados de la tercera tabla (Aporte beneficiario por partida)
-      #headers_aporte = ["Aporte beneficiario por partida", "$ Aporte Valorado", "% Aporte Valorado", "$ Aporte Líquido", "% Aporte Líquido"]
-
-      #data_aporte = [headers_aporte] # Comienza con los encabezados
-
-      
-
       porcentaje10 = (costos.aporte_propio_valorado_rrhh_propio.to_f / costos.aporte_propio_valorado) * 100
       porcentaje_aporte_propio_valorado_rrhh_propio = "%.2f %%" % porcentaje10
 
@@ -518,7 +482,6 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.aporte_propio_valorado_gasto_administracion).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), porcentaje_aporte_propio_valorado_gasto_administracion, sprintf("$%<costo>.0f", costo: costos.aporte_propio_liquido_gasto_administracion).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), porcentaje_aporte_propio_liquido_gasto_administracion],
       ]
 
-      #binding.pry
       if costos.aporte_solicitado_al_fondo != 0
         porcentaje18 = (costos.aporte_solicitado_fondo_rrhh_externo.to_f / costos.aporte_solicitado_al_fondo) * 100
         porcentaje_aporte_solicitado_fondo_rrhh_externo = "%.2f %%" % porcentaje18
@@ -627,9 +590,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.table(data_validacion, header: true, column_widths: [200, 75, 75, 75, 75], cell_style: { size: 9, padding: [4, 8] }) do |table|
       end
-
       pdf.move_down 10
-      #binding.pry
     rescue => e
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
       puts "Error creando la tabla en el PDF: #{e.message}"
@@ -672,7 +633,6 @@ class FondoProduccionLimpia < ApplicationRecord
         if link.blank?
           pdf.text valor_real, size: 9, color: '555555', align: :justify
         else
-          #pdf.text "<link href='"+link+"'>"+valor_real+"</link>", size: 9, color: '007BFF', inline_format: true
           self.pdf_boton_descarga(pdf, link, valor_real)
         end
       end
@@ -756,6 +716,30 @@ class FondoProduccionLimpia < ApplicationRecord
         data:      $3, # data string
         extension: $1.split('/')[1] # "png"
         }
+    end
+  end
+
+  def self.calcular_suma_y_porcentaje(flujo_id)
+    resultados = where(flujo_id: flujo_id)
+      .group(:id)
+      .select(
+        "SUM(cantidad_micro_empresa * #{APORTE_MICRO_EMPRESA}) +
+         SUM(cantidad_pequeña_empresa * #{APORTE_PEQUEÑA_EMPRESA}) +
+         SUM(cantidad_mediana_empresa * #{APORTE_MEDIANA_EMPRESA}) AS suma_total",
+        "(#{PORCENTAJE_APORTE_BENEFICIARIO_MICRO_EMPRESA} * SUM(cantidad_micro_empresa) + 
+          #{PORCENTAJE_APORTE_BENEFICIARIO_PEQUEÑA_EMPRESA} * SUM(cantidad_pequeña_empresa) + 
+          #{PORCENTAJE_APORTE_BENEFICIARIO_MEDIANA_EMPRESA} * SUM(cantidad_mediana_empresa)) /
+          (SUM(cantidad_micro_empresa) + 
+           SUM(cantidad_pequeña_empresa) + 
+           SUM(cantidad_mediana_empresa)) * 100 AS porcentaje_empresa"
+      ).first
+
+    if resultados.present?
+      suma_total = resultados.suma_total.to_f
+      porcentaje_empresa = resultados.porcentaje_empresa.to_f
+      return suma_total, porcentaje_empresa
+    else
+      return nil, nil
     end
   end
 

@@ -3822,46 +3822,106 @@
                   %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
                   %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
                   %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
+              %tbody
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo general al postulante
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                  - if @costos_seguimiento[0].present?
+                    %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'])
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
+                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center
+                      - if @costos.gastos_administrativos <= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo  $0
+                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center  NO
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
+                  - if @costos_seguimiento[0].present?
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f)
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center
+                      - if @costos_seguimiento[0]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_propio_valorado'].to_f != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo $0
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo  $0
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center  NO    
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_POSTULANTE)}% del total Actividades Tipo B
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                  - if @costos_seguimiento[1].present?
+                    %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'])
+                    %td.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
+                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center
+                      - if @costos.gastos_administrativos <= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo  $0
+                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  NO        
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a $0
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
+                  - if @costos_seguimiento[1].present?
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f)
+                    %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
+                      - if @costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].to_f != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo $0
+                    %td.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo  $0
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  NO      
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Total Proyecto
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte líquido del postulante
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} No
+                  - if @costos.present?
+                    %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
+                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center
+                      - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
+                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo $0
+                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center NO  
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Gastos de Administración
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                  %td.contenido-form{style: 'text-align: right; vertical-align: middle;'} $0
-                  %td.contenido-form{style: 'text-align: center; vertical-align: middle;'} Si
-              %tbody
+                  - if @costos.present?
+                    %td#total_proyecto_gastos_administracion_monto.contenido-form-costo=number_to_currency @costos.gastos_administrativos
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center
+                      - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        SI
+                      - else
+                        NO
+                  - else
+                    %td#total_proyecto_gastos_administracion_monto.contenido-form-costo $0
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo $0
+                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center NO            
   - if @revisor      
     #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
       .card

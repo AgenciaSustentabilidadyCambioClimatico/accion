@@ -3888,15 +3888,10 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     
       def set_fondo_produccion_limpia
-        #binding.pry
         @tarea_pendiente = TareaPendiente.includes([:flujo]).find(params[:id])
         @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
         @duracion =  @fondo_produccion_limpia.duracion
-        #@validaciones2 = @fondo_produccion_limpia.get_campos_validaciones
         @meses = [1,2,3,4,5,6]
-        #binding.pry
-        #@duracion = @fondo_produccion_limpia.duracion
-        #binding.pry
       end  
 
       def send_message(tarea, user)
@@ -3918,13 +3913,10 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_equipo_trabajo
-        #empresa = EquipoEmpresa.find_by(flujo_id: @tarea_pendiente.flujo_id)
         set_equipo_empresa
 
         @count_user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
-
         @user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1, 2])
-
         @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
 
         if @count_user_equipo > 0
@@ -3958,15 +3950,16 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_actividades_x_linea
-        #binding.pry
         @actividad_x_linea = Actividad.actividad_x_linea(@tarea_pendiente.flujo_id, @tarea_pendiente.flujo.tipo_instrumento_id)
-        #binding.pry
         @actividad_detalle = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
       end
 
       def set_costos
-        #binding.pry
         @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
+        if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 
+          @costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
+          @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
+        end  
 
         # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
         mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
@@ -3988,13 +3981,10 @@ class FondoProduccionLimpiasController < ApplicationController
             @response_costos = 1
           end
         end  
-
-        #binding.pry
       end
 
       def set_admisibilidad_financiera
         @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1)
-        #binding.pry
       end
 
       def set_descargables
