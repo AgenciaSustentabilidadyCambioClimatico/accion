@@ -3831,7 +3831,7 @@
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
                     %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
                     %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center
-                      - if @costos.gastos_administrativos <= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
+                      - if @costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'] >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
                         SI
                       - else
                         NO
@@ -3847,7 +3847,7 @@
                     %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center
-                      - if @costos_seguimiento[0]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_propio_valorado'].to_f != ''
+                      - if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_propio_valorado'].to_f != ''
                         SI
                       - else
                         NO
@@ -3864,7 +3864,7 @@
                     %td.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center
-                      - if @costos.gastos_administrativos <= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
+                      - if @costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'] >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
                         SI
                       - else
                         NO
