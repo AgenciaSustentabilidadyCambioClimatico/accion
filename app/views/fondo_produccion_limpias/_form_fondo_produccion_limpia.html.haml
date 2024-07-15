@@ -179,24 +179,26 @@
   }
 
   function sumarValoresTecElementos() {
-    // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
-    var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
-    var total = document.getElementById('total_tecnica_elementos');
+    if(#{@flujo.tipo_instrumento_id} != 11)  {
+      // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+      var total = document.getElementById('total_tecnica_elementos');
 
-    // Inicializar la variable para la suma
-    var suma = 0;
+      // Inicializar la variable para la suma
+      var suma = 0;
 
-    // Iterar sobre los campos de texto y sumar los valores
-    camposDeTexto.forEach(function (campo) {
-      // Obtener el valor del campo de texto y convertirlo a un número
-      var valor = parseFloat(campo.value) || 0;
+      // Iterar sobre los campos de texto y sumar los valores
+      camposDeTexto.forEach(function (campo) {
+        // Obtener el valor del campo de texto y convertirlo a un número
+        var valor = parseFloat(campo.value) || 0;
 
-      // Sumar al total
-      suma += valor;
-    });
+        // Sumar al total
+        suma += valor;
+      });
 
-    // Mostrar el resultado o hacer algo con la suma
-    total.textContent = suma;
+      // Mostrar el resultado o hacer algo con la suma
+      total.textContent = suma;
+    }
   }
 
    function sumarTrabajadoresPermanentes() {
@@ -3847,7 +3849,7 @@
                     %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center
-                      - if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_propio_valorado'].to_f != ''
+                      - if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f != ''
                         SI
                       - else
                         NO
@@ -3861,7 +3863,7 @@
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
                   - if @costos_seguimiento[1].present?
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'])
-                    %td.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center
                       - if @costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'] >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
@@ -3870,14 +3872,14 @@
                         NO
                   - else
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo $0
-                    %td.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo  $0
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  NO        
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
                   - if @costos_seguimiento[1].present?
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f)
-                    %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
                       - if @costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].to_f != ''
@@ -3886,7 +3888,7 @@
                         NO
                   - else
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo $0
-                    %td.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo  $0
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  NO      
                 %tr
