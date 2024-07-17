@@ -53,7 +53,7 @@
     %h5.no-margin
       = titulo
   .card-body
-  - if current_user.contribuyente_ids.first == 639391
+  - unless current_user.id == 1
     %%table.table.acuerdos-pendientes
       %thead
         %tr
