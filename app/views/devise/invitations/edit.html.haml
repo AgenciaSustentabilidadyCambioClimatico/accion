@@ -5,7 +5,7 @@
       %h5.titulo-caja.text-center= "Aceptar invitación"
     .card-body
       .text-center.mb-4
-        = image_tag ("logo-ascc.png")
+        = image_tag ("logo-ascc-nuevo.png")
       = f.input :password, required: true, placeholder: 'Contraseña', label: false, fa_icon: :key, input_html: { class: 'required-field' }
       = f.input :password_confirmation, required: true, placeholder: 'Confirmar contraseña', label: false, fa_icon: :key, input_html: { class: 'required-field' }
       = f.button :submit, "Aceptar", class: 'btn btn-sm btn-agencia btn-block mt-3 btn-disabled', disabled: :disabled
