@@ -29,7 +29,7 @@
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
-    sumarValoresTecElementos();
+    sumarValoresTecElementosCarga();
     cargarObjetivosEspecificos();
     valida_div();
    
@@ -178,7 +178,7 @@
     total.textContent = suma;
   }
 
-  function sumarValoresTecElementos() {
+  function sumarValoresTecElementosCarga() {
     if(#{@flujo.tipo_instrumento_id} != 11)  {
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -201,7 +201,42 @@
     }
   }
 
-   function sumarTrabajadoresPermanentes() {
+  function sumarValoresTecElementos(campo_a, campo_b, nombre) {
+    if(#{@flujo.tipo_instrumento_id} != 11)  {
+      // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+      var total = document.getElementById('total_tecnica_elementos');
+
+      // Inicializar la variable para la suma
+      var suma = 0;
+
+      // Iterar sobre los campos de texto y sumar los valores
+      camposDeTexto.forEach(function (campo) {
+        // Obtener el valor del campo de texto y convertirlo a un número
+        var valor = parseFloat(campo.value) || 0;
+
+        // Sumar al total
+        suma += valor;
+      });
+
+      // Mostrar el resultado o hacer algo con la suma
+      total.textContent = suma;
+
+      validarCampos(campo_a, campo_b, nombre);
+    }
+  }
+
+  function validarCampos(campo_a, campo_b, nombre) {
+    var campoA = document.getElementById(campo_a).value;
+    var campoB = document.getElementById(campo_b).value;
+
+    if (parseFloat(campoA) > parseFloat(campoB)) {
+      alert('En la tabla "Elementos Totales a Adherir", el valor de la columna "' + nombre + '" debe ser menor o igual que el de la fila "Empresas Totales a Adherir".');
+      document.getElementById(campo_b).value = '';
+    }
+  }
+
+  function sumarTrabajadoresPermanentes() {
     // Obtener todos los elementos con la clase 'valor-a-sumar'
     var camposDeTexto = document.querySelectorAll('.valor-permanentes');
     var total = document.getElementById('total_permanente');
@@ -2999,7 +3034,8 @@
                       = f.object.cantidad_mediana_empresa
                     %th
                       = f.object.cantidad_grande_empresa                  
-                    %th#total_tecnica 
+                    %th
+                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
           %br 
             .row
               .col-12
@@ -3099,19 +3135,20 @@
                       = f.object.cantidad_mediana_empresa
                     %th
                       = f.object.cantidad_grande_empresa                  
-                    %th#total_tecnica
+                    %th
+                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
                 %tr
                   -if !solo_lectura
                     %th
                       Elementos Totales a Adherir
                     %th
-                      = f.text_field :elementos_micro_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_micro_empresa'
+                      = f.text_field :elementos_micro_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa'
                     %th
-                      = f.text_field :elementos_pequena_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_pequena_empresa'            
+                      = f.text_field :elementos_pequena_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa'            
                     %th
-                      = f.text_field :elementos_mediana_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_mediana_empresa'
+                      = f.text_field :elementos_mediana_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa'
                     %th
-                      = f.text_field :elementos_grande_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: 'sumarValoresTecElementos();', id: 'elementos_grande_empresa'
+                      = f.text_field :elementos_grande_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa'
                     %th#total_tecnica_elementos
                   -else
                     %th
@@ -3124,7 +3161,8 @@
                       = f.object.elementos_mediana_empresa
                     %th
                       = f.object.elementos_grande_empresa                  
-                    %th#total_tecnica_elementos
+                    %th
+                      = f.object.elementos_micro_empresa + f.object.elementos_pequena_empresa + f.object.elementos_mediana_empresa + f.object.elementos_grande_empresa    
             %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
