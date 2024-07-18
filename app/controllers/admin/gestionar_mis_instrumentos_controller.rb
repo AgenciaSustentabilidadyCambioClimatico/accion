@@ -66,7 +66,8 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
       unless @instrumentos.blank?
         @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
         @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
-        @fpls = @instrumentos.where.not(proyecto_id: nil)
+        #@fpls = @instrumentos.where.not(proyecto_id: nil)
+        @fpls = FondoProduccionLimpia.fpls()
         @instancias = []
         @instrumentos.each do |i|
           @instancias += i.datos_para_gestionar(personas_id)       
