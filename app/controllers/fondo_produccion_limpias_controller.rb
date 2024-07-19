@@ -241,7 +241,14 @@ class FondoProduccionLimpiasController < ApplicationController
         }
 
         @tarea_pendientes = TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes])
-        @tarea_pendientes.save  
+        @tarea_pendientes.save 
+        
+        #Se inserta en el mapa de actores al nuevo postulante
+        mapa = MapaDeActor.find_or_create_by({
+          flujo_id: @flujo.id,
+          rol_id: Rol::PROPONENTE, 
+          persona_id: pers.id
+        })
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         send_message(tarea_fondo, postulante)
@@ -2009,8 +2016,8 @@ class FondoProduccionLimpiasController < ApplicationController
           #OBTENGO USER_ID DEL POSTULANTE
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
-          #binding.pry
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
+          binding.pry
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
               custom_params_tarea_pendiente = {
@@ -2257,7 +2264,7 @@ class FondoProduccionLimpiasController < ApplicationController
           else
             mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-            tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+            tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
             #binding.pry
             #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
               tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
@@ -2318,7 +2325,7 @@ class FondoProduccionLimpiasController < ApplicationController
           #OBTENGO USER_ID DEL POSTULANTE
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
           
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES FINANCIERAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
@@ -2345,7 +2352,7 @@ class FondoProduccionLimpiasController < ApplicationController
           #binding.pry
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
-          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
           #binding.pry
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_08)

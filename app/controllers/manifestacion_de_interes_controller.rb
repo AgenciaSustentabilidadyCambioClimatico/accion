@@ -1429,6 +1429,13 @@ class ManifestacionDeInteresController < ApplicationController
                     }]
                   )
 
+                  #Se inserta en el mapa de actores al postulante
+                  mapa = MapaDeActor.find_or_create_by({
+                    flujo_id: flujo.id,
+                    rol_id: Rol::PROPONENTE, 
+                    persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
+                  })
+
                   #SE ENVIAR EL MAIL AL RESPONSABLE
                   send_message(tarea_fondo, @tarea_pendiente.user_id)
                   
