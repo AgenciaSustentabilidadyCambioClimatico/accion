@@ -119,7 +119,7 @@ class FondoProduccionLimpiasController < ApplicationController
           send_message(tarea_fondo, tarea_pendiente.user_id)
           
           #Inicia el flujo con el nombre Sin nombre
-          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
             codigo_proyecto = "Proyecto diagnóstico FPL"
           else
             codigo_proyecto = "Proyecto seguimiento FPL"
@@ -173,7 +173,7 @@ class FondoProduccionLimpiasController < ApplicationController
       campos_completos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.present?
       campos_nulos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
 
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1    
         campos_completos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.present?
         campos_nulos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
 
@@ -231,7 +231,7 @@ class FondoProduccionLimpiasController < ApplicationController
         #plan = 0
         #campos_nulos << plan
       end  
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1    
         comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
         if comuna_flujo == 0
           campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
@@ -338,7 +338,7 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_FPL_00.save 
         
         #Se asigna duracion en meses segun tipo de instrumento
-        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1
+        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
         else
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
@@ -1553,7 +1553,7 @@ class FondoProduccionLimpiasController < ApplicationController
       year = Date.today.year.to_s
       correlativo = Correlativo.obtener_correlativo 
       linea = ''
-      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1
+      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
         linea = TipoInstrumento::L1
       else
         linea = TipoInstrumento::L5
@@ -2111,7 +2111,7 @@ class FondoProduccionLimpiasController < ApplicationController
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
           tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
-          binding.pry
+          #binding.pry
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
               custom_params_tarea_pendiente = {
@@ -3963,7 +3963,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_costos
         @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
-        if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 
+        if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
           @costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
           @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
         end  
@@ -3974,7 +3974,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @mensaje = mensaje_error
         @response_costos = 1
 
-        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 
+        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
           if @costos.present?
             if @costos.costo_total_de_la_propuesta.present? && (
                 @costos.aporte_propio_liquido >= (((@costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100)) &&

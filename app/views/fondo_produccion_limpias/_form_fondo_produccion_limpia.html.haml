@@ -3001,7 +3001,7 @@
             %tbody
         %br
         <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1  
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3424,7 +3424,7 @@
                 - if @actividad_x_linea.present?  
                   - current_tipo_actividad = nil
                   - @actividad_x_linea.each do |actividad|
-                    - if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1   
+                    - if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
                       - if current_tipo_actividad != actividad.tipo_actividad
                         - current_tipo_actividad = actividad.tipo_actividad
                         %tr
@@ -3775,7 +3775,7 @@
                   %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form-costo  0,00%
         %br
         <h1>Validación</h1>   
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1   
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
           %div.table-responsive 
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
