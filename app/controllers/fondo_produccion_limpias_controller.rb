@@ -287,7 +287,7 @@ class FondoProduccionLimpiasController < ApplicationController
  
         contribuyente = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
          
-        if params[:manifestacion_de_interes][:institucion_entregables_id] == ""
+        if params[:manifestacion_de_interes][:nombre_acuerdo] == "opcion_1"
           institucion_postulante =  contribuyente.id
           postulante = @tarea_pendiente.user_id
         else
