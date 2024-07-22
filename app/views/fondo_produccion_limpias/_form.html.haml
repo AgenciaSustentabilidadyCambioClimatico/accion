@@ -76,7 +76,10 @@
         },
         method: "GET",
         success: function(response) {
-          $.ajax({
+          $('.loading-data').hide();
+          button.innerHTML = 'Guardar cambios temporales';
+          button.disabled = false;
+          /*$.ajax({
             url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
             data: {
               flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
@@ -90,7 +93,7 @@
                 $('.loading-data').hide();
                 button.innerHTML = 'Guardar cambios temporales';
                 button.disabled = false;
-            }})
+            }})*/
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
