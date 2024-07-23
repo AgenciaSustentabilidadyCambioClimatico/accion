@@ -138,7 +138,11 @@ module ApplicationHelper
   end
 
   def datos_beneficiario_fpl
-    @flujo.present? ? "<b>Beneficiario: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).razon_social} <br><b>Rut: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).dv}" : ""
+    if @fondo_produccion_limpia.institucion_entregables_id.present?
+      @flujo.present? ? "<b>Beneficiario: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).razon_social} <br><b>Rut: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).dv}" : ""
+    else
+      @flujo.present? ? "<b>Beneficiario: </b> #{@manifestacion_de_interes.institucion_gestora_acuerdo} <br><b>Rut: </b> #{@manifestacion_de_interes.rut_institucion_gestora_acuerdo}" : ""
+    end
   end
   #**
 

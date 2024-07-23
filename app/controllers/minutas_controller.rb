@@ -82,7 +82,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
               send_message(tarea_fondo, @tarea_pendiente.user_id)
               
               #Inicia el flujo con el nombre Sin nombre
-              codigo_proyecto = "Proyecto diagnóstico FPL"
+              codigo_proyecto = "Proyecto seguimiento FPL"
 
               fpl = FondoProduccionLimpia.create({
                 flujo_id: flujo.id,
