@@ -523,7 +523,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
       set_costos
-
+      binding.pry
       respond_to do |format|
         format.js { render 'get_objetivo_especifico', locals: { objetivo_especificos: @objetivo_especificos, solo_lectura: @solo_lectura } }
       end
@@ -847,6 +847,12 @@ class FondoProduccionLimpiasController < ApplicationController
         flash[:error] = 'El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
       end
     end
+
+    def obtiene_contribuyente(id)
+      Contribuyente.find(id)
+    end
+
+    helper_method :obtiene_contribuyente
 
     def recurso_humano_existente?(equipo_trabajo_id, flujo_id)
       RecursoHumano.exists?(equipo_trabajo_id: equipo_trabajo_id, flujo_id: flujo_id)
