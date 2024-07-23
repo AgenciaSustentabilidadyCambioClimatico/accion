@@ -158,31 +158,10 @@
   }
 
   function sumarValoresTec() {
-    // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
-    var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
-    var total = document.getElementById('total_tecnica');
-
-    // Inicializar la variable para la suma
-    var suma = 0;
-
-    // Iterar sobre los campos de texto y sumar los valores
-    camposDeTexto.forEach(function (campo) {
-      // Obtener el valor del campo de texto y convertirlo a un número
-      var valor = parseFloat(campo.value) || 0;
-
-      // Sumar al total
-      suma += valor;
-    });
-
-    // Mostrar el resultado o hacer algo con la suma
-    total.textContent = suma;
-  }
-
-  function sumarValoresTecElementosCarga() {
-    if(#{@flujo.tipo_instrumento_id} != 11)  {
-      // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
-      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
-      var total = document.getElementById('total_tecnica_elementos');
+    if(#{@solo_lectura} != true)  {
+      // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
+      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
+      var total = document.getElementById('total_tecnica');
 
       // Inicializar la variable para la suma
       var suma = 0;
@@ -194,10 +173,36 @@
 
         // Sumar al total
         suma += valor;
+      
       });
 
-      // Mostrar el resultado o hacer algo con la suma
-      total.textContent = suma;
+    // Mostrar el resultado o hacer algo con la suma
+    total.textContent = suma;
+    }
+  }
+
+  function sumarValoresTecElementosCarga() {
+    if(#{@solo_lectura} != true)  {
+      if(#{@flujo.tipo_instrumento_id} != 11)  {
+        // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+        var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+        var total = document.getElementById('total_tecnica_elementos');
+
+        // Inicializar la variable para la suma
+        var suma = 0;
+
+        // Iterar sobre los campos de texto y sumar los valores
+        camposDeTexto.forEach(function (campo) {
+          // Obtener el valor del campo de texto y convertirlo a un número
+          var valor = parseFloat(campo.value) || 0;
+
+          // Sumar al total
+          suma += valor;
+        });
+
+        // Mostrar el resultado o hacer algo con la suma
+        total.textContent = suma;
+      }
     }
   }
 
