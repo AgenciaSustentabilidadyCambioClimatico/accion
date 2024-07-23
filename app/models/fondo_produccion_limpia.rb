@@ -1,7 +1,8 @@
 class FondoProduccionLimpia < ApplicationRecord
-  belongs_to :flujo
+  #belongs_to :flujo
   belongs_to :linea, optional: true
   belongs_to :sublinea, optional: true
+  has_many :flujo
 
   MINUTOS_MENSAJE_GUARDAR = 20
   DURACION_FPL_LINEA_1_1 = 4
