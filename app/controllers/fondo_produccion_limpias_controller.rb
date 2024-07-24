@@ -132,7 +132,7 @@ class FondoProduccionLimpiasController < ApplicationController
           })
 
           #guarda el fpl id en la tabla flujo
-          flujo.proyecto_id = fpl.id
+          flujo.fondo_produccion_limpia_id = fpl.id
           flujo.save
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
