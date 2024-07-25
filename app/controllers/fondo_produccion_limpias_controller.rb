@@ -241,6 +241,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
 
+      @tipo = params['tipo']
+
       #binding.pry
       #@total_de_errores_por_tab = {}
       #@total_de_errores_por_tab[:"propuesta-tecnica"] = 2#@actores_con_observaciones.uniq if !@actores_con_observaciones.blank?
@@ -250,7 +252,7 @@ class FondoProduccionLimpiasController < ApplicationController
     
       #binding.pry
       respond_to do |format|
-        format.js { render 'get_valida_campos_nulos', locals: { campos_nulos: campos_nulos, campos_completos: campos_completos, objetivos_especificos: @objetivos.count, equipo_consultor: @user_equipo.count, postulantes: @postulantes.count, equipo_empresa: @count_empresa_equipo, plan: plan, actividad_x_linea: @actividad_x_linea } }
+        format.js { render 'get_valida_campos_nulos', locals: { campos_nulos: campos_nulos, campos_completos: campos_completos, objetivos_especificos: @objetivos.count, equipo_consultor: @user_equipo.count, postulantes: @postulantes.count, equipo_empresa: @count_empresa_equipo, plan: plan, actividad_x_linea: @actividad_x_linea, tipo: @tipo} }
       end
     end
     
@@ -1426,45 +1428,49 @@ class FondoProduccionLimpiasController < ApplicationController
     end 
     
     def guardar_fondo_temporal
-      custom_params = {
-          fondo_produccion_limpia: {
-            cantidad_micro_empresa: params[:cantidad_micro_empresa],
-            cantidad_pequeña_empresa: params[:cantidad_pequeña_empresa],
-            cantidad_mediana_empresa: params[:cantidad_mediana_empresa],
-            cantidad_grande_empresa: params[:cantidad_grande_empresa],
-            empresas_asociadas_ag: params[:empresas_asociadas_ag],
-            empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
-            duracion: params[:duracion],
-            fortalezas_consultores: params[:fortalezas_consultores],
-            elementos_micro_empresa: params[:elementos_micro_empresa],
-            elementos_pequena_empresa: params[:elementos_pequena_empresa],
-            elementos_mediana_empresa: params[:elementos_mediana_empresa],
-            elementos_grande_empresa: params[:elementos_grande_empresa]
+      respond_to do |format|
+        custom_params = {
+            fondo_produccion_limpia: {
+              cantidad_micro_empresa: params[:cantidad_micro_empresa],
+              cantidad_pequeña_empresa: params[:cantidad_pequeña_empresa],
+              cantidad_mediana_empresa: params[:cantidad_mediana_empresa],
+              cantidad_grande_empresa: params[:cantidad_grande_empresa],
+              empresas_asociadas_ag: params[:empresas_asociadas_ag],
+              empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
+              duracion: params[:duracion],
+              fortalezas_consultores: params[:fortalezas_consultores]
+            }
           }
-        }
-        @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-        set_flujo
-        if params[:comunasIds].present? && params[:comunasIds].any?
-          params[:comunasIds].each do |comuna_id|
-            # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
-            if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
-              puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
-            else
-              # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
-              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
-          
-              # Intentar guardar el objeto ComunaFlujo en la base de datos
-              if comuna_flujo.save
-                # Operación exitosa, puedes hacer algo si es necesario
+          @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+          set_flujo
+          if params[:comunasIds].present? && params[:comunasIds].any?
+            params[:comunasIds].each do |comuna_id|
+              # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
+              if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
+                puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
               else
-                # Si hay algún error al guardar el objeto, puedes manejarlo aquí
-                puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+                # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
+                comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+            
+                # Intentar guardar el objeto ComunaFlujo en la base de datos
+                if comuna_flujo.save
+                  # Operación exitosa, puedes hacer algo si es necesario
+                else
+                  # Si hay algún error al guardar el objeto, puedes manejarlo aquí
+                  puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+                end
               end
-            end
-          end   
-        else
-          puts "No se selecciono ninguna comuna"
-        end 
+            end   
+          else
+            puts "No se selecciono ninguna comuna"
+          end 
+        
+          flash[:success] = 'Datos guardados correctamente'
+          #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+          format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+          
+        end
     end
 
     def subir_documento
