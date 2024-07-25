@@ -8,6 +8,7 @@ class Flujo < ApplicationRecord
   belongs_to :manifestacion_de_interes, optional: true, dependent: :destroy #dependencia creada para poder instanciar y usar el id de manifestación dentro de la vista _table en tarea_pendiente 
   belongs_to :registro_proveedor, optional: true, dependent: :destroy #dependencia creada para poder instanciar y usar el id de registro_proveedor dentro de la vista _table en tarea_pendiente
   belongs_to :ppp, foreign_key: :programa_proyecto_propuesta_id, class_name: :ProgramaProyectoPropuesta, optional: true, dependent: :destroy
+  belongs_to :fondo_produccion_limpia, optional: true
   has_one :adhesion, dependent: :destroy
   #has_many :adhesion_elementos, through: :adhesion #DZC 2018-11-05 13:09:56 se agrega relación para efectos de la bandeja de entrada de la APL-032
   has_many :ppf_metas_establecimientos, dependent: :destroy
@@ -60,18 +61,14 @@ class Flujo < ApplicationRecord
 
   def nombre_instrumento
     nombre = "ACUERDO, PROYECTO O PROGRAMA NO INICIADO"
-    
-    #if!self.proyecto.blank?   
-      #nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
-
-    if self.proyecto_id.present?
-      #Obtiene nombre del proyecto de la tabla fondo produccion limpia
-      fpl = FondoProduccionLimpia.find(proyecto_id)
-      nombre = fpl.codigo_proyecto
+    if !self.proyecto.blank?   
+      nombre = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
     elsif !self.manifestacion_de_interes.blank?
       nombre = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?
       nombre = self.ppp.nombre_propuesta.blank? ? "Sin nombre": self.ppp.nombre_propuesta
+    elsif !self.fondo_produccion_limpia.blank?
+      nombre = self.fondo_produccion_limpia.codigo_proyecto.blank? ? "Sin nombre": self.fondo_produccion_limpia.codigo_proyecto
     end
     nombre
   end
@@ -85,7 +82,10 @@ class Flujo < ApplicationRecord
     end 
     #verificar que es ppl
     if self.proyecto_id.present?
-      return "FPL" #"PPL"
+      return "PPL"
+    end
+    if self.fondo_produccion_limpia_id.present?
+      return "FPL"
     end
   end
 
@@ -97,9 +97,10 @@ class Flujo < ApplicationRecord
         self.manifestacion_de_interes.tipo_instrumento.present? ? self.manifestacion_de_interes.tipo_instrumento.nombre_subtipo : no_hay
       when 'PPF'
         self.ppp.tipo_instrumento.present? ? self.ppp.tipo_instrumento.nombre_subtipo : no_hay
-      when 'FPL' #'PPL'
+      when 'PPL'
+        self.proyecto.tipo_instrumento.present? ? self.proyecto.tipo_instrumento.nombre_subtipo : no_hay
+      when 'FPL'
         no_hay = tipo_instrumento.nombre
-        #self.proyecto.tipo_instrumento.present? ? self.proyecto.tipo_instrumento.nombre_subtipo : no_hay
       else
         no_hay
     end
@@ -118,8 +119,12 @@ class Flujo < ApplicationRecord
     self.programa_proyecto_propuesta_id.present?
   end
 
-  def fpl?
+  def ppl?
     self.proyecto_id.present?
+  end
+
+  def fpl?
+    self.fondo_produccion_limpia_id.present?
   end
 
   def set_metas_acciones_by_estandar estandar_id
@@ -236,7 +241,7 @@ class Flujo < ApplicationRecord
             objeto_tres = self
           end
 
-        when "FPL" #"PPL"
+        when "PPL"
           tareas_pendientes = self.tarea_pendientes.where(user_id: usuario.id, tarea_id: Tarea::ID_FPL_007, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
           tarea_pendiente = tareas_pendientes.blank? ? nil : tareas_pendientes.first
           if tarea_pendiente.present?
@@ -267,6 +272,8 @@ class Flujo < ApplicationRecord
             
 
           end
+        when "FPL"
+
       end
       datos << {
           tipo_instrumento: self.tipo_instrumento.nombre_tipo, #self.tipo_instrumento.nombre,
@@ -565,16 +572,14 @@ class Flujo < ApplicationRecord
 
 
   def tipo_instrumento_por_proceso
-    #if !self.proyecto.blank? 
-    #  instrumento = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
-
-    if self.proyecto_id.present?
-      fpl = FondoProduccionLimpia.find(proyecto_id)
-      instrumento = fpl.codigo_proyecto
+    if !self.proyecto.blank? 
+      instrumento = self.proyecto.nombre.blank? ? "Sin nombre": self.proyecto.nombre
     elsif !self.manifestacion_de_interes.blank?
       instrumento = self.manifestacion_de_interes.nombre_acuerdo.blank? ? "Sin nombre": self.manifestacion_de_interes.nombre_acuerdo
     elsif !self.ppp.blank?
       instrumento = self.ppp.nombre_propuesta.blank? ? "Sin nombre": self.ppp.nombre_propuesta
+    elsif !self.fondo_produccion_limpia.blank?
+      instrumento = self.fondo_produccion_limpia.codigo_proyecto.blank? ? "Sin nombre": self.fondo_produccion_limpia.codigo_proyecto
     end
     instrumento
   end

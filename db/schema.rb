@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240708132024) do
+ActiveRecord::Schema.define(version: 20240723212432) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -934,6 +934,8 @@ ActiveRecord::Schema.define(version: 20240708132024) do
     t.boolean "terminado", default: false
     t.string "codigo"
     t.integer "registro_proveedor_id"
+    t.bigint "fondo_produccion_limpia_id"
+    t.index ["fondo_produccion_limpia_id"], name: "index_flujos_on_fondo_produccion_limpia_id"
   end
 
   create_table "fondo_produccion_limpia", force: :cascade do |t|
@@ -2244,6 +2246,7 @@ ActiveRecord::Schema.define(version: 20240708132024) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
+  add_foreign_key "flujos", "fondo_produccion_limpia", column: "fondo_produccion_limpia_id"
   add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"

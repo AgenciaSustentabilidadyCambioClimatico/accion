@@ -132,7 +132,7 @@ class FondoProduccionLimpiasController < ApplicationController
           })
 
           #guarda el fpl id en la tabla flujo
-          flujo.proyecto_id = fpl.id
+          flujo.fondo_produccion_limpia_id = fpl.id
           flujo.save
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
@@ -1438,7 +1438,11 @@ class FondoProduccionLimpiasController < ApplicationController
               empresas_asociadas_ag: params[:empresas_asociadas_ag],
               empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
               duracion: params[:duracion],
-              fortalezas_consultores: params[:fortalezas_consultores]
+              fortalezas_consultores: params[:fortalezas_consultores],
+              elementos_micro_empresa: params[:elementos_micro_empresa],
+              elementos_pequena_empresa: params[:elementos_pequena_empresa],
+              elementos_mediana_empresa: params[:elementos_mediana_empresa],
+              elementos_grande_empresa: params[:elementos_grande_empresa]
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
