@@ -141,7 +141,7 @@
     }
   }
   
-- solo_lectura = @solo_lectura == 'solo_lectura'
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 - titulo t(:asignar_postulante_y_encargado_de_financiamiento)
 = simple_form_for @manifestacion_de_interes, url: usuario_entregables_fondo_produccion_limpias_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
@@ -159,65 +159,114 @@
           %h5.no-margin=titulo_apl.html_safe
           %h5.no-margin=datos_beneficiario_fpl.html_safe
         .card-body
-          .row
-            .col-12.my-2
-              .ayuda-campo-div-48.alert.ayuda-div.small.mb-1.mt-1{style: "padding: 0.5rem 0.75rem;"}
-                %i.fa.fa-info-circle{style: "margin-right: 5px"}
-                Si la institución o persona a designar no aparece en el listado, comuníquese con el Administrador de la plataforma.
-            .col-12.my-2
-              1.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que postulará a financiamiento?
-              %br  
-              Si      
-              = f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
-              No      
-              = f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }
-          .row#financiamiento_seccion{style: 'display: none;'}
-            .col-12.col-lg-6.mb-2
-              .row.align-items-end
-                .col-12
-                  %label.string.control-label
-                    %abbr{title: :required}*
-                    = t(:elegir_institucion_postulante)
-                  .row
-                    .col-12.col-lg-2.pr-1
-                      = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: 'buscar-contribuyente-fpl' do
-                        %i.fa.fa-search-plus
-                        Buscar
-                    .col-12.col-lg-10.pl-1
-                      = f.input :institucion_entregables_id, as: :hidden, wrapper: false
-                      = f.input :institucion_entregables_name, required: true, readonly: true, label: false, input_html: {class: 'required-field'}
-                .col-12
-                  %label.string.control-label
-                    %abbr{title: :required}*
-                    = t(:elegir_postulante)
-                  .row
-                    .col-12.col-lg-2.pr-1
-                      = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-usuario", class: 'form-control btn btn-primary btn-sm', id: 'buscar-usuario-postulante-fpl' do
-                        %i.fa.fa-search-plus
-                        Buscar
-                    .col-12.col-lg-10.pl-1
-                      = f.input :usuario_entregables_id, as: :hidden, wrapper: false
-                      = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
-          .row
-            .col-12.my-2
-              2.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que recibirá el cofinanciamiento?
-              %br  
-              Si      
-              = f.radio_button :proponente, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
-              No      
-              = f.radio_button :proponente, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
-          .row#cofinanciamiento_seccion{style: 'display: none;'}
-            .col-12.col-lg-6.mb-2
-              -if !solo_lectura
-                = f.input :proponente, collection: @contribuyentes_entregables.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
-              -else
-                .form-group
-                  -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
-                  -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
-                  -no_data = rev_tecnico.nil?
-                  %label.control-label.string=t(:revisor_tecnico)
-                  %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                    =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
+          -if !solo_lectura
+            .row
+              .col-12.my-2
+                .ayuda-campo-div-48.alert.ayuda-div.small.mb-1.mt-1{style: "padding: 0.5rem 0.75rem;"}
+                  %i.fa.fa-info-circle{style: "margin-right: 5px"}
+                  Si la institución o persona a designar no aparece en el listado, comuníquese con el Administrador de la plataforma.
+              .col-12.my-2
+                1.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que postulará a financiamiento?
+                %br  
+                Si      
+                = f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(1);' }
+                No      
+                = f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2_financiamiento', onclick: 'optionSelectInstitucionFinanciamiento(2);' }
+            .row#financiamiento_seccion{style: 'display: none;'}
+              .col-12.col-lg-6.mb-2
+                .row.align-items-end
+                  .col-12
+                    %label.string.control-label
+                      %abbr{title: :required}*
+                      = t(:elegir_institucion_postulante)
+                    .row
+                      .col-12.col-lg-2.pr-1
+                        = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: 'buscar-contribuyente-fpl' do
+                          %i.fa.fa-search-plus
+                          Buscar
+                      .col-12.col-lg-10.pl-1
+                        = f.input :institucion_entregables_id, as: :hidden, wrapper: false
+                        = f.input :institucion_entregables_name, required: true, readonly: true, label: false, input_html: {class: 'required-field'}
+                  .col-12
+                    %label.string.control-label
+                      %abbr{title: :required}*
+                      = t(:elegir_postulante)
+                    .row
+                      .col-12.col-lg-2.pr-1
+                        = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-usuario", class: 'form-control btn btn-primary btn-sm', id: 'buscar-usuario-postulante-fpl' do
+                          %i.fa.fa-search-plus
+                          Buscar
+                      .col-12.col-lg-10.pl-1
+                        = f.input :usuario_entregables_id, as: :hidden, wrapper: false
+                        = f.input :usuario_entregable_name, readonly: true, label: false, required: true, input_html: {class: 'required-field'}
+            .row
+              .col-12.my-2
+                2.- ¿La institución #{@manifestacion_de_interes.institucion_gestora_acuerdo} será la que recibirá el cofinanciamiento?
+                %br  
+                Si      
+                = f.radio_button :proponente, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(1);' }
+                No      
+                = f.radio_button :proponente, 'opcion_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento', onclick: 'optionSelectInstitucionCofinanciamiento(2);' }             
+            .row#cofinanciamiento_seccion{style: 'display: none;'}
+              .col-12.col-lg-6.mb-2
+                -if !solo_lectura
+                  = f.input :proponente, collection: @contribuyentes_entregables.map{|p| [p.razon_social, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un encargado de financiamiento"}, label: t(:receptor_cofinanciamiento), id: 'encargado-financiamiento-fpl'
+                -else
+                  .form-group
+                    -mapa_tecnico = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id, rol_id: Rol::REVISOR_TECNICO).first
+                    -rev_tecnico = mapa_tecnico.nil? ? nil : mapa_tecnico.persona.user.nombre_completo
+                    -no_data = rev_tecnico.nil?
+                    %label.control-label.string=t(:revisor_tecnico)
+                    %p#manifestacion_de_interes_revisor_tecnico_id.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                      =(no_data ? 'No se ingresó respuesta' : rev_tecnico)
+          - else
+            - institucion_postulante = Contribuyente.find(@fondo_produccion_limpia.institucion_entregables_id).razon_social
+            - postulante = User.find(@fondo_produccion_limpia.usuario_entregables_id).nombre_completo
+            - institucion_cofinanciamiento = Contribuyente.find(@fondo_produccion_limpia.institucion_receptor_cof_fpl_id).razon_social
+            .row
+              .col-12.my-2
+                .ayuda-campo-div-48.alert.ayuda-div.small.mb-1.mt-1{style: "padding: 0.5rem 0.75rem;"}
+                  %i.fa.fa-info-circle{style: "margin-right: 5px"}
+                  Si la institución o persona a designar no aparece en el listado, comuníquese con el Administrador de la plataforma.
+              .col-12.my-2
+                1.- Institución que postula al financiamiento
+                %br
+                - if @manifestacion_de_interes.contribuyente_id == @fondo_produccion_limpia.institucion_entregables_id
+                  Si      
+                  = f.radio_button :nombre_acuerdo, 'opcion_1_1', { checked: true, class: 'required-field', id: 'opcion_1_financiamiento' }
+                  No      
+                  = f.radio_button :nombre_acuerdo, 'opcion_2_2', { class: 'required-field', id: 'opcion_2_financiamiento' }
+                -else 
+                  Si      
+                  = f.radio_button :nombre_acuerdo, 'opcion_1_1', { class: 'required-field', id: 'opcion_1_financiamiento' }
+                  No      
+                  = f.radio_button :nombre_acuerdo, 'opcion_2_2', { checked: true, class: 'required-field', id: 'opcion_2_financiamiento' }
+                %br
+                %span{:style => "margin-left: 20px;"} Institución :
+                %br
+                %span{:style => "margin-left: 30px;"}= institucion_postulante 
+                %br
+                %br
+                %span{:style => "margin-left: 20px;"} Postulante :
+                %br
+                %span{:style => "margin-left: 30px;"}= postulante
+            .row
+              .col-12.my-2
+                2.- Institución que recibe el cofinanciamiento
+                %br  
+                - if @manifestacion_de_interes.contribuyente_id == @fondo_produccion_limpia.institucion_receptor_cof_fpl_id
+                  Si      
+                  = f.radio_button :proponente, 'opcion_3_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento'}
+                  No      
+                  = f.radio_button :proponente, 'opcion_4_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento'}    
+                - else
+                  Si      
+                  = f.radio_button :proponente, 'opcion_3_3', { checked: true, class: 'required-field', id: 'opcion_3_cofinanciamiento'}
+                  No      
+                  = f.radio_button :proponente, 'opcion_4_4', { class: 'required-field', id: 'opcion_4_cofinanciamiento'}   
+                %br
+                %span{:style => "margin-left: 20px;"}= institucion_cofinanciamiento
+
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
     -if !solo_lectura

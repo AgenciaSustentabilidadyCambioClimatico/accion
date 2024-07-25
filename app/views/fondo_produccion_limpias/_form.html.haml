@@ -2,9 +2,15 @@
   $(document).ready(function(){
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
+
+      $('.loading-data').show();
+
       const button = document.getElementById('guardar-fondo-temporal-button');
       button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
       button.disabled = true;
+
+      const button1 = document.getElementById('enviar-postulacion-button');
+      button1.disabled = true;
 
       var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
       var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -54,8 +60,7 @@
         elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
         elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
       }
-        
-      $('.loading-data').show();
+  
       $.ajax({
         url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
         data: {
@@ -76,9 +81,9 @@
         },
         method: "GET",
         success: function(response) {
-          $('.loading-data').hide();
-          button.innerHTML = 'Guardar cambios temporales';
-          button.disabled = false;
+          //$('.loading-data').hide();
+          //button.innerHTML = 'Guardar cambios temporales';
+          //button.disabled = false;
           /*$.ajax({
             url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
             data: {
@@ -140,11 +145,13 @@
     });
     
     $('#enviar-postulacion-button').click(function(e){
+      var tipo = document.getElementById('tipos').getAttribute('data-tipo');
       $('.loading-data').show();
       $.ajax({
         url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
         data: {
-          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+          tipo: tipo
         },
        method: "GET",
         success: function(response) {
