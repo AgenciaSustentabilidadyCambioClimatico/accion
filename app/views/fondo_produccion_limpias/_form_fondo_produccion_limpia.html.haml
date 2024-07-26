@@ -876,9 +876,12 @@
       }
     };
 
-    const button = document.getElementById('guardar_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_financiera_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_fondo_produccion_limpia_path}",
@@ -886,13 +889,13 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').hide();
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -1044,9 +1047,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_financiera_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_financiera_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_financiera_fondo_produccion_limpia_path}",
@@ -1054,13 +1060,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
   }
@@ -1127,9 +1133,12 @@
       }
     };
 
-    const button = document.getElementById('guardar_button_admisibilidad_tecnica');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_tecnica');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_tecnica_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -1137,13 +1146,15 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        //button.innerHTML = 'Guardar';
+        //button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').hide();
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -1374,9 +1385,12 @@
     }
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_tecnica_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_tecnica_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_tecnica');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -1384,13 +1398,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
   }  
@@ -1459,9 +1473,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('guardar_button_admisibilidad_juridica');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_juridica_fondo_produccion_limpia_path}",
@@ -1469,15 +1486,17 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        $('.loading-data').hide();
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').show();
+        //$('.loading-data').hide();
+        //button_guardar.innerHTML = 'Guardar';
+        //button_guardar.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -1709,9 +1728,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_juridica_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
@@ -1719,13 +1741,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
 
@@ -2844,9 +2866,10 @@
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
-  - solo_lectura = @solo_lectura
+  -#- solo_lectura = @solo_lectura
   - adm_juridica = @adm_juridica
   %div{ id: "tipos", "data-tipo" => tipo }
+  <input type="hidden" id="codigo_estado" name="codigo_estado" value="">
   <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
   <input type="hidden" id="response_costos" name="response_costos" value="">
   <input type="hidden" id="contador_campos_nulos" name="contador_campos_nulos" value="">
@@ -4606,7 +4629,7 @@
                     = t(:resultado_de_la_pertinencia)
                   %br
 
-                  = f.select :nota, [['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']], {}, { required: true, label: false, class: 'required-field nota_input_pertinencia', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
+                  = f.select :nota, options_for_select([['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']],@nota), {}, { required: true, label: false, class: 'required-field nota_input_pertinencia', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
               %tr
                 %th
                   %label.label-estilo{ for: 'observaciones_y_comentarios' }

@@ -1765,13 +1765,11 @@ class FondoProduccionLimpiasController < ApplicationController
           @cuestionario_fpl.save
         end
       end
-  
-      #respond_to do |format|
-      #  format.js { flash.now[:success] = 'Admisibilidad Financiera enviada correctamente'
-      #    render js: "window.location='#{root_path}'"}
-      #  format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Financiera enviada correctamente' }}
-      #end
-      #binding.pry
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+      end
     end
 
     def enviar_admisibilidad_financiera  #TAREA FPL-003
@@ -1845,29 +1843,24 @@ class FondoProduccionLimpiasController < ApplicationController
       end
   
       respond_to do |format|
-        format.js { flash.now[:success] = 'Admisibilidad Financiera enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Financiera enviada correctamente' }}
+        flash[:success] = 'Admisibilidad Financiera enviada correctamente'
+        format.js { render js: "window.location='#{root_path}'" }
+        format.html { redirect_to root_path, notice: success }
       end
-      #binding.pry
     end
 
     def get_admisibilidad_tecnica #TAREA FPL-04
-      #binding.pry
       @cuestionario_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
-      #binding.pry
       respond_to do |format|
         format.js { render 'get_admisibilidad_tecnica', locals: { cuestionario_fpl: @cuestionario_fpl } }
       end
-      #binding.pry
     end
 
     def admisibilidad_tecnica #TAREA FPL-04
-      #binding.pry
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = true
       @adm_juridica = false
-      #Carga tabs de postulación
+
       set_equipo_trabajo
       set_actividades_x_linea
       set_plan_actividades
@@ -1875,7 +1868,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def revisar_admisibilidad_tecnica  #TAREA FPL-004
-      #binding.pry
       jsonData = params['jsonData']
 
       jsonData.each do |key, value|
@@ -1890,7 +1882,6 @@ class FondoProduccionLimpiasController < ApplicationController
         }
 
         @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
-        #binding.pry
         if @cuestionario_fpl.present?
           @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
@@ -1898,10 +1889,14 @@ class FondoProduccionLimpiasController < ApplicationController
           @cuestionario_fpl.save
         end
       end
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{admisibilidad_tecnica_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to admisibilidad_tecnica_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+      end
     end
 
     def enviar_admisibilidad_tecnica
-      #binding.pry
       jsonData = params['jsonData']
 
       jsonData.each do |key, value|
@@ -1917,7 +1912,6 @@ class FondoProduccionLimpiasController < ApplicationController
         }
 
         @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 2).order(:criterio_id)
-        #binding.pry
         if @cuestionario_fpl.present?
           @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
@@ -1931,7 +1925,7 @@ class FondoProduccionLimpiasController < ApplicationController
       #SE CAMBIA EL ESTADO DEL FPL-04 A 2
       tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
       tarea_pendiente_fpl_04 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_04.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
-      #binding.pry
+
       if tarea_pendiente_fpl_04.present?
         tarea_pendiente_fpl_04.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_04.save  
@@ -1940,17 +1934,13 @@ class FondoProduccionLimpiasController < ApplicationController
       #binding.pry
       #SE CREA FPL-06
       if cuestionario_fpl_count.count == 2
-      #binding.pry
-
         #obtengo el usuario del jefe de linea
         mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
-        #binding.pry
 
         #obtengo el user_id del jefe de linea
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
         tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
 
-    
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
         custom_params_tarea_pendiente = {
           tarea_pendientes: {
@@ -1969,9 +1959,9 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       respond_to do |format|
-        format.js { flash.now[:success] = 'Pertinencia Técnica enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Pertinencia Técnica enviada correctamente' }}
+        flash[:success] = 'Admisibilidad Técnica enviada correctamente'
+        format.js { render js: "window.location='#{root_path}'" }
+        format.html { redirect_to root_path, notice: success }
       end
     end  
 
@@ -1998,8 +1988,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
     end
   
-    def revisar_admisibilidad_juridica  #DZC TAREA APL-005
-      #binding.pry
+    def revisar_admisibilidad_juridica  #TAREA FPL-05
       jsonData = params['jsonData']
 
       jsonData.each do |key, value|
@@ -2019,7 +2008,6 @@ class FondoProduccionLimpiasController < ApplicationController
         }
 
         @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 3).order(:criterio_id)
-        #binding.pry
         if @cuestionario_fpl.present?
           @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
@@ -2027,10 +2015,14 @@ class FondoProduccionLimpiasController < ApplicationController
           @cuestionario_fpl.save
         end  
       end  
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{admisibilidad_juridica_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to admisibilidad_juridica_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+      end
     end
 
-    def enviar_admisibilidad_juridica  #DZC TAREA APL-005
-      #binding.pry
+    def enviar_admisibilidad_juridica  #TAREA FPL-05
       jsonData = params['jsonData']
 
       jsonData.each do |key, value|
@@ -2050,9 +2042,7 @@ class FondoProduccionLimpiasController < ApplicationController
             revision: revision
           }
         }
-        #binding.pry
         @cuestionario_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], criterio_id: value['criterio_id'], tipo_cuestionario_id: 3).order(:criterio_id)
-        #binding.pry
         if @cuestionario_fpl.present?
           @cuestionario_fpl.update(custom_params[:cuestionario_fpl])
         else
@@ -2148,14 +2138,13 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
       respond_to do |format|
-        format.js { flash.now[:success] = 'Admisibilidad Jurídica enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Admisibilidad Jurídica enviada correctamente' }}
-      end    
+        flash[:success] = 'Admisibilidad Jurídica enviada correctamente'
+        format.js { render js: "window.location='#{root_path}'" }
+        format.html { redirect_to root_path, notice: success }
+      end
     end
 
-    def get_pertinencia_factibilidad #TAREA FPL-05
-      #binding.pry
+    def get_pertinencia_factibilidad #TAREA FPL-06 paso 2
       @cuestionario_pert_financiera_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
       @cuestionario_pert_tecnica_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
       @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).order(:criterio_id).first
@@ -2163,10 +2152,9 @@ class FondoProduccionLimpiasController < ApplicationController
       respond_to do |format|
         format.js { render 'get_pertinencia_factibilidad', locals: { cuestionario_pert_financiera_fpl: @cuestionario_pert_financiera_fpl ,cuestionario_pert_tecnica_fpl: @cuestionario_pert_tecnica_fpl, cuestionario_obs_fpl: @cuestionario_obs_fpl} }
       end
-      #binding.pry
     end
 
-    def pertinencia_factibilidad #TAREA FPL-06
+    def pertinencia_factibilidad #TAREA FPL-06  paso 1
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
@@ -2180,7 +2168,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def revisar_pertinencia_factibilidad
-      #binding.pry
       case params[:nota_input_pertinencia]
       when "1"
         revision = 1
@@ -2256,6 +2243,12 @@ class FondoProduccionLimpiasController < ApplicationController
         @cuestionario_obs_fpl = CuestionarioFpl.new(custom_params[:cuestionario_obs_fpl])
         @cuestionario_obs_fpl.save
       end  
+
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{pertinencia_factibilidad_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to pertinencia_factibilidad_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+      end
   
     end
 
@@ -2485,9 +2478,9 @@ class FondoProduccionLimpiasController < ApplicationController
       end 
       
       respond_to do |format|
-        format.js { flash.now[:success] = 'Evaluación General del Proyecto enviada correctamente'
+        format.js { flash.now[:success] = 'Evaluación del Proyecto enviada correctamente'
           render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Evaluación General del Proyecto enviada correctamente' }}
+        format.html { redirect_to root_path, flash: {notice: 'Evaluación del Proyecto enviada correctamente' }}
       end
 
     end
