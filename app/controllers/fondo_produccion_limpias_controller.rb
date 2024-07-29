@@ -10,7 +10,8 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
-    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor]
+    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor,
+    :resolver_observaciones_admisibilidad]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -2391,7 +2392,7 @@ class FondoProduccionLimpiasController < ApplicationController
           
       else
         #GENERA FOTO DE DIAGNOSTICO Y LA CONVIERTE EN PDF
-        @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.proyecto_id)
+        @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.fondo_produccion_limpia_id)
         cuestionario_observacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).first 
 
         if cuestionario_observacion
@@ -2530,7 +2531,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
     end
 
-    def revisar_observaciones_admisibilidad  #TAREA FPL-07
+    def resolver_observaciones_admisibilidad  #TAREA FPL-07
       #binding.pry
       jsonData = params['jsonData']
 
@@ -2924,11 +2925,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def descargar_pdf
       flujo = Flujo.find(params[:id])
-      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.proyecto_id)
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.proyecto_id}_#{params[:revision]}.pdf")
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
       if File.exist?(pdf_file_path)
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.proyecto_id}_#{params[:revision]}.pdf"
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path

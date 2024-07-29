@@ -188,7 +188,7 @@
 
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:observaciones_admisibilidad_financiera)
-= simple_form_for @fondo_produccion_limpia, url: admisibilidad_juridica_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @fondo_produccion_limpia, url: observaciones_admisibilidad_fondo_produccion_limpia_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   = f.hidden_field :temp_siguientes, as: :boolean, value: true
   = f.submit "", class: 'd-none'
