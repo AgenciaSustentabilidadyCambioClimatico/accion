@@ -2027,7 +2027,7 @@ class FondoProduccionLimpiasController < ApplicationController
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
           tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
-          binding.pry
+          #binding.pry
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
               custom_params_tarea_pendiente = {
