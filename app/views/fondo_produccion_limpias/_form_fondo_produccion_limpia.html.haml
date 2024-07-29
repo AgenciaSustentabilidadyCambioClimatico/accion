@@ -1789,7 +1789,6 @@
   }
 
   function enviarObservacionesAdmisibilidadFinanciera(){
-    alert('entro');
     var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
@@ -1802,10 +1801,6 @@
     var elementos_pequena_empresa = 0;
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
-
-    var tipo_instrumento = #{@flujo.tipo_instrumento_id}
-
-    alert(tipo_instrumento);
 
     if(#{@flujo.tipo_instrumento_id} == 11)  {
 
