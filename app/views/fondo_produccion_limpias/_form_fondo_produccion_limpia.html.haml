@@ -2584,7 +2584,7 @@
         return response.json();
       })
       .then(data => {
-        console.log('Documentos subidos correctamente:', data);
+        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
       })
       .catch(error => {
@@ -2621,11 +2621,11 @@
         return response.json();
       })
       .then(data => {
-        console.log('Documentos subidos correctamente:', data);
+        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
       })
       .catch(error => {
-        console.error('Error:', error);
+        //console.error('Error:', error);
         // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
       });
     }
@@ -3273,34 +3273,35 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             En este punto se debe indicar si se contratarán los servicios de una empresa consultora o de un equipo de consultor(es), para realizar una parte o todo el proyecto.
-        %div.table-responsive       
-          %table 
-            -#-if @count_user_empresa == 0 && @count_user_equipo == 0
-            -if @tipo == 0
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
-                %td.option-form Equipo de Consultores
+        - if !solo_lectura
+          %div.table-responsive       
+            %table 
+              -#-if @count_user_empresa == 0 && @count_user_equipo == 0
+              -if @tipo == 0
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                  %td.option-form Equipo de Consultores
 
-            -#-if @count_user_empresa > 0
-            -if @tipo == 2
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
-                %td.option-form Equipo de Consultores
-            
-            -#-if @count_user_equipo > 0
-            -if @tipo == 1
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { checked: true, class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
-                %td.option-form Equipo de Consultores
+              -#-if @count_user_empresa > 0
+              -if @tipo == 2
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
+                  %td.option-form Equipo de Consultores
+              
+              -#-if @count_user_equipo > 0
+              -if @tipo == 1
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { checked: true, class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                  %td.option-form Equipo de Consultores
         %br   
         %div#div_empresa_consultora.table-responsive  
           - if !solo_lectura
@@ -3962,7 +3963,7 @@
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte líquido del postulante
                   - if @costos.present?
                     %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
-                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
                     %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center
                       - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
@@ -3971,7 +3972,7 @@
                         NO
                   - else
                     %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo $0
-                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto del total del proyecto
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo $0
                     %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center NO  
                 %tr

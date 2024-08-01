@@ -2066,27 +2066,22 @@ class FondoProduccionLimpiasController < ApplicationController
       tarea_fondo_fpl_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
       #tarea_pendiente_fpl_05 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
       tarea_pendiente_fpl_05 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
-      #binding.pry
+
       if tarea_pendiente_fpl_05.present?
         tarea_pendiente_fpl_05.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_05.save  
       end
 
-      #SE CREA FPL-10
-      if cuestionario_fpl_aprobados.count  == 3 
-        #binding.pry
+      #SE CREA FPL-10 
+      if cuestionario_fpl_aprobados.count  == 3 && (cuestionario_fpl_rechazado_jur[3] == 0 || cuestionario_fpl_rechazado_jur[3] == nil)
         #obtengo el usuario del jefe de linea
-
         #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
         existe_fpl_06 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
-        #binding.pry
+
         if existe_fpl_06.present?
-          #binding.pry
         else
-          #binding.pry
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
-          #binding.pry
 
           #obtengo el user_id del jefe de linea
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
@@ -2110,14 +2105,13 @@ class FondoProduccionLimpiasController < ApplicationController
           send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
         end
       else
-        #binding.pry
         #consulto si la admisibilidad juridica es distinto a 0 se devuelve la evaluacion al postulante FPL-009, y el postulante debe corregir y volver a enviar al FPL-05
         if cuestionario_fpl_rechazado_jur[3] != nil && cuestionario_fpl_rechazado_jur[3] != 0 
           #OBTENGO USER_ID DEL POSTULANTE
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
           tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
-          #binding.pry
+
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
               custom_params_tarea_pendiente = {
@@ -2130,7 +2124,7 @@ class FondoProduccionLimpiasController < ApplicationController
                   data: { }
               }
             }
-            #binding.pry
+
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
@@ -2418,9 +2412,11 @@ class FondoProduccionLimpiasController < ApplicationController
         empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
         actividades = PlanActividad.actividad_detalle(@tarea_pendiente.flujo_id)
         costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
+        tipo_instrumento = @flujo.tipo_instrumento_id
+        costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
 
 
-        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos)
+        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, costos_seguimiento)
      
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03

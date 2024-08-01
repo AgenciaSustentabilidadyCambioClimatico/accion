@@ -95,7 +95,7 @@ class FondoProduccionLimpia < ApplicationRecord
       .order("id DESC")
   end 
 
-  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil)
+  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil)
     require 'stringio'
   
     pdf = Prawn::Document.new
@@ -129,11 +129,18 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_objetivos(pdf, objetivo_especificos)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
-      self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
-      self.pdf_separador(pdf, 20)
-      self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
-      self.pdf_tabla_empresas_A_G(pdf, self.empresas_asociadas_ag, self.empresas_no_asociadas_ag)
-      self.pdf_separador(pdf, 20)
+      
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+        self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
+        self.pdf_separador(pdf, 20)  
+        self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
+        self.pdf_tabla_empresas_A_G(pdf, self.empresas_asociadas_ag, self.empresas_no_asociadas_ag)
+        self.pdf_separador(pdf, 20)
+      else
+        #implementar tabla elementos 
+        self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
+        self.pdf_separador(pdf, 20)
+      end
       self.pdf_sub_titulo_formato(pdf, "Duración del proyecto")
 
       duracion_formateado = if self.duracion.blank?
@@ -162,7 +169,12 @@ class FondoProduccionLimpia < ApplicationRecord
       
   
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
-      self.pdf_tabla_plan_actividades(pdf, planes)
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+        self.pdf_tabla_plan_actividades(pdf, planes)
+      else
+        #binding.pry
+        self.pdf_tabla_plan_actividades_tipos(pdf, planes)
+      end  
       self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
@@ -170,7 +182,11 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_costos(pdf, costos)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
-      self.pdf_tabla_validacion(pdf, costos)
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+        self.pdf_tabla_validacion(pdf, costos)
+      else
+        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento)
+      end
       self.pdf_separador(pdf, 20)
     end
     
@@ -228,7 +244,7 @@ class FondoProduccionLimpia < ApplicationRecord
     begin
       # Crear la tabla en el PDF
       data = [
-        ["Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
+        ["Micro","Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
         [campo1.to_s, campo2.to_s, campo3.to_s, campo4.to_s] # Datos de los campos
       ]
     
@@ -238,6 +254,26 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.move_down 10 # Espacio después de la tabla
 
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+  def pdf_tabla_cantidad_empresas_elementos(pdf, campo_empresas1, campo_empresas2, campo_empresas3, campo_empresas4, campo_elementos1, campo_elementos2, campo_elementos3, campo_elementos4)
+    begin
+      # Crear la tabla en el PDF
+      data = [
+        ["", "Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
+        ["Empresas Totales a Adherir", campo_empresas1.to_s, campo_empresas2.to_s, campo_empresas3.to_s, campo_empresas4.to_s], # Datos de los campos
+        ["Elementos Totales a Adherir", campo_elementos1.to_s, campo_elementos2.to_s, campo_elementos3.to_s, campo_elementos4.to_s] # Datos de los campos
+      ]
+    
+      pdf.table(data, header: true, column_widths: [120, 100, 100, 100, 100], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
     rescue => e
       Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
       puts "Error creando la tabla en el PDF: #{e.message}"
@@ -394,6 +430,50 @@ class FondoProduccionLimpia < ApplicationRecord
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
   end
+
+  def pdf_tabla_plan_actividades_tipos(pdf, planes)
+    begin
+      # Encabezados de la tabla
+      headers = ["Actividades", "Periodos", "Recursos Humanos Propios", "Recursos Humanos Externos", "Gastos de Operación", "Gastos de Administración"]
+  
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+  
+      # Agregar cada objetivo específico a la tabla
+      duracion_total = self.duracion.to_i
+      planes.each do |plan|
+        # Verifica si duracion_total y plan.duracion son válidos
+        #meses = plan.duracion.to_s.split(',').map(&:to_i) # Asegúrate de convertir a entero
+
+        meses = plan.duracion.to_s.split(',').map(&:strip).join(' - ')
+        fila = [
+          plan.nombre,
+          meses,
+          #*Array.new(duracion_total) do |index|
+          #  mes = index + 1
+          #  meses.include?(mes) ? 'X' : ''
+          #end,
+          plan.valor_hh_tipo_3,
+          plan.valor_hh_tipos_1_2,
+          plan.total_gastos_tipo_1,
+          plan.total_gastos_tipo_2
+        ]
+        data << fila
+      end
+  
+      # Generar la tabla en el PDF
+      pdf.table(data, header: true, column_widths: [90,90,90,90,90,90], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Opcional: Configura estilos adicionales si es necesario
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+  
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+  
 
   def pdf_tabla_costos(pdf, costos)
     begin
@@ -597,6 +677,93 @@ class FondoProduccionLimpia < ApplicationRecord
     end
   end
 
+  def pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento)
+    begin
+      monto = 0
+      flujo = Flujo.find_by(id: self.flujo_id)
+      if flujo
+        case flujo.tipo_instrumento_id
+        when 12
+          monto = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+        when 29
+          monto = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+        else
+          nil
+        end
+      else
+        nil
+      end
+
+      valida_pregunta__aporte_del_postulante = (costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
+      if costos.aporte_propio_liquido + costos.aporte_propio_valorado >= valida_pregunta__aporte_del_postulante && costos.costo_total_de_la_propuesta != ''
+        cumple1 = 'SI'
+      else
+        cumple1 = 'NO'
+      end
+
+      valida_pregunta_costo_total_de_la_propuesta = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
+      if costos.aporte_propio_liquido + costos.aporte_propio_valorado >= valida_pregunta_costo_total_de_la_propuesta && costos.costo_total_de_la_propuesta != ''
+        cumple2 = 'SI'
+      else
+        cumple2 = 'NO'
+      end
+
+      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
+      if costos.gastos_administrativos <= valida_pregunta_gastos_administrativos && costos.costo_total_de_la_propuesta != ''
+        cumple3 = 'SI'
+      else
+        cumple3 = 'NO'
+      end
+
+      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
+      if costos.gastos_administrativos <= valida_pregunta_gastos_administrativos && costos.costo_total_de_la_propuesta != ''
+        cumple4 = 'SI'
+      else
+        cumple4 = 'NO'
+      end
+
+      valida_pregunta_aporte_propio_liquido = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100
+      if costos.aporte_propio_liquido >= valida_pregunta_aporte_propio_liquido && costos.costo_total_de_la_propuesta != ''
+        cumple5 = 'SI'
+      else
+        cumple5 = 'NO'
+      end
+
+      #valida_pregunta_aporte_solicitado_al_fondo = (costos.costo_total_de_la_propuesta * monto) / 100
+      if costos.aporte_solicitado_al_fondo <= monto && costos.costo_total_de_la_propuesta != ''
+        cumple6 = 'SI'
+      else
+        cumple6 = 'NO'
+      end
+      binding.pry
+
+      #@costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && 
+      #@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && 
+      #@costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && 
+      #@costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) &&
+      #@costos['aporte_propio_liquido'].to_f >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) &&
+      #@costos['gastos_administrativos'].to_f <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+
+      # Datos de la tabla validación
+      data_validacion = [
+        ["Tipo de Actividades", "Glosa", "Monto", "Criterio", "Límite", "Cumple?"],
+        ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_propio_liquido + costos_seguimiento[0].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta_costo_total_de_la_propuesta).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
+        ["De apoyo general al postulante", "Cofinanciamiento CPL", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple2],
+        ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_propio_liquido + costos_seguimiento[1].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta_costo_total_de_la_propuesta).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
+        ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento CPL", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
+        ["Total Proyecto", "Aporte líquido del postulante", sprintf("$%<costo>.0f", costo: costos.aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple5],
+        ["Total Proyecto", "Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual al #{Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple6]
+      ]
+      binding.pry
+      pdf.table(data_validacion, header: true, column_widths: [100, 100, 75, 75, 75, 75], cell_style: { size: 9, padding: [4, 8] }) do |table|
+      binding.pry
+      end
+      pdf.move_down 10
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
 
   def pdf_contenido_formato_custom pdf, variable, valor, validaciones, forzar_mostrar=false
     var = validaciones[:manifestacion_de_interes][variable]
