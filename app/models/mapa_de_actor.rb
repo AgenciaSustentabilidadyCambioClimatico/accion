@@ -365,7 +365,7 @@ class MapaDeActor < ApplicationRecord
 							usuario = User.includes(:personas).where(personas: {id: _actor.persona_id}).where(users: {rut: "", email: ""}).where.not(users: {id: usuarios_vacios_procesados}).first
 							if !usuario.nil?
 								usuarios_vacios_procesados << usuario.id
-								usuario.update(email: fila[:email_institucional].to_s)
+								usuario.update(email: 'no')
 								pem_lista.delete(_actor.id)
 								break
 							end
