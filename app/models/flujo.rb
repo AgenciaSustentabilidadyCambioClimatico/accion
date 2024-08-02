@@ -90,7 +90,6 @@ class Flujo < ApplicationRecord
   end
 
   def subtipo_de_instrumento
-    #binding.pry
     no_hay = 'Pendiente de aprobación'
     case self.tipo_de_flujo
       when 'APL'

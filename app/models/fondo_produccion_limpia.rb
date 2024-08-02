@@ -95,7 +95,7 @@ class FondoProduccionLimpia < ApplicationRecord
       .order("id DESC")
   end 
 
-  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil)
+  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil, confinanciamiento_empresa = nil)
     require 'stringio'
   
     pdf = Prawn::Document.new
@@ -172,7 +172,6 @@ class FondoProduccionLimpia < ApplicationRecord
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
         self.pdf_tabla_plan_actividades(pdf, planes)
       else
-        #binding.pry
         self.pdf_tabla_plan_actividades_tipos(pdf, planes)
       end  
       self.pdf_separador(pdf, 20)
@@ -185,7 +184,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
         self.pdf_tabla_validacion(pdf, costos)
       else
-        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento)
+        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
       end
       self.pdf_separador(pdf, 20)
     end
@@ -677,7 +676,7 @@ class FondoProduccionLimpia < ApplicationRecord
     end
   end
 
-  def pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento)
+  def pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
     begin
       monto = 0
       flujo = Flujo.find_by(id: self.flujo_id)
@@ -694,69 +693,64 @@ class FondoProduccionLimpia < ApplicationRecord
         nil
       end
 
-      valida_pregunta__aporte_del_postulante = (costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
-      if costos.aporte_propio_liquido + costos.aporte_propio_valorado >= valida_pregunta__aporte_del_postulante && costos.costo_total_de_la_propuesta != ''
+      valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
+      if costos_seguimiento[0].aporte_propio_valorado.to_f + costos_seguimiento[0].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0].aporte_propio_valorado.present?
         cumple1 = 'SI'
       else
         cumple1 = 'NO'
       end
 
-      valida_pregunta_costo_total_de_la_propuesta = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
-      if costos.aporte_propio_liquido + costos.aporte_propio_valorado >= valida_pregunta_costo_total_de_la_propuesta && costos.costo_total_de_la_propuesta != ''
+      if costos_seguimiento[0].aporte_solicitado_al_fondo <= monto && costos_seguimiento[0].aporte_solicitado_al_fondo.present?
         cumple2 = 'SI'
       else
         cumple2 = 'NO'
       end
+    
+      # Redondear el valor a dos decimales
+      confinanciamiento = confinanciamiento_empresa[1].round(2)
+      # Formatear el valor como porcentaje con coma como separador decimal
+      confinanciamiento_formateado = sprintf("%.2f", confinanciamiento).gsub('.', ',') + " %"
 
-      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
-      if costos.gastos_administrativos <= valida_pregunta_gastos_administrativos && costos.costo_total_de_la_propuesta != ''
+      valida_pregunta__aporte_del_empresa = ((costos_seguimiento[1].aporte_solicitado_al_fondo + costos_seguimiento[1].aporte_propio_valorado + costos_seguimiento[1].aporte_propio_liquido) * confinanciamiento_empresa[1]) / 100
+      if costos_seguimiento[1].aporte_propio_valorado.to_f + costos_seguimiento[1].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_empresa && costos_seguimiento[1].aporte_propio_valorado.present?
         cumple3 = 'SI'
       else
         cumple3 = 'NO'
       end
 
-      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
-      if costos.gastos_administrativos <= valida_pregunta_gastos_administrativos && costos.costo_total_de_la_propuesta != ''
+      monto_cofinanciamiento = confinanciamiento_empresa[0]
+      if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
         cumple4 = 'SI'
       else
         cumple4 = 'NO'
       end
 
-      valida_pregunta_aporte_propio_liquido = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100
+      valida_pregunta_aporte_propio_liquido = ((costos.costo_total_de_la_propuesta)* Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100
       if costos.aporte_propio_liquido >= valida_pregunta_aporte_propio_liquido && costos.costo_total_de_la_propuesta != ''
         cumple5 = 'SI'
       else
         cumple5 = 'NO'
       end
 
-      #valida_pregunta_aporte_solicitado_al_fondo = (costos.costo_total_de_la_propuesta * monto) / 100
+      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
       if costos.aporte_solicitado_al_fondo <= monto && costos.costo_total_de_la_propuesta != ''
         cumple6 = 'SI'
       else
         cumple6 = 'NO'
       end
-      binding.pry
-
-      #@costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && 
-      #@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && 
-      #@costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && 
-      #@costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) &&
-      #@costos['aporte_propio_liquido'].to_f >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) &&
-      #@costos['gastos_administrativos'].to_f <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
-
+  
       # Datos de la tabla validación
       data_validacion = [
         ["Tipo de Actividades", "Glosa", "Monto", "Criterio", "Límite", "Cumple?"],
-        ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_propio_liquido + costos_seguimiento[0].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta_costo_total_de_la_propuesta).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
+        ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_propio_liquido + costos_seguimiento[0].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_postulante).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
         ["De apoyo general al postulante", "Cofinanciamiento CPL", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple2],
-        ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_propio_liquido + costos_seguimiento[1].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta_costo_total_de_la_propuesta).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
-        ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento CPL", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
+        ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_propio_liquido + costos_seguimiento[1].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al " + confinanciamiento_formateado + " del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_empresa).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
+        ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento CPL", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
         ["Total Proyecto", "Aporte líquido del postulante", sprintf("$%<costo>.0f", costo: costos.aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple5],
         ["Total Proyecto", "Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual al #{Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple6]
       ]
-      binding.pry
       pdf.table(data_validacion, header: true, column_widths: [100, 100, 75, 75, 75, 75], cell_style: { size: 9, padding: [4, 8] }) do |table|
-      binding.pry
+
       end
       pdf.move_down 10
     rescue => e

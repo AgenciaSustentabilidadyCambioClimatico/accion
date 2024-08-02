@@ -1377,7 +1377,6 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def revisar_pertinencia_factibilidad #DZC TAREA APL-005
-    #binding.pry
     @manifestacion_de_interes.assign_attributes(manifestacion_pertinencia_params)
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
