@@ -4922,23 +4922,21 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         
                         %tr
-                          %td.contenido-popup-form=t(:descripcion)
-                          %td.contenido-popup-form 
-                            -# = @objetivo_especifico.metodologia
-                            -# = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.descripcion
-                            = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 66.67%;')  
+                            = f.text_area  :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:metodologia)
-                          %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:metodologia)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' 
                         %tr
-                          %td.contenido-popup-form=t(:resultado)
-                          %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:resultado)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:indicadores)
-                          %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores' 
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:indicadores)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :indicadores, class: 'required-field', id: 'indicadores', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' 
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
@@ -4953,31 +4951,28 @@
                 .card
                   .card-header
                     %h5.no-margin
-                      XXX nuevo objetivo
+                      Editar objetivo
                   .card-body
                     %div.table-responsive
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
-                        = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'
-                        
-                        
+                        = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'                       
                         %tr
-                          %td.contenido-popup-form=t(:descripcion)
-                          %td.contenido-popup-form 
-                            = f.text_field :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:metodologia)
-                          %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:metodologia)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :metodologia, required: true, id: 'metodologia_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:resultado)
-                          %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado_edit' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:resultado)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :resultado, required: true, id: 'resultado_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:indicadores)
-                          %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores_edit'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:indicadores)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :indicadores, class: 'required-field', id: 'indicadores_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'actualizarObjetivo(); return false;'
