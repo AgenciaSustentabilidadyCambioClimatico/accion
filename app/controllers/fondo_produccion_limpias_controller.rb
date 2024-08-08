@@ -156,94 +156,165 @@ class FondoProduccionLimpiasController < ApplicationController
       # Obtener el fondo_produccion_limpia
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: params[:flujo_id])
 
+      set_equipo_trabajo
+      set_actividades_x_linea
+      set_costos
+      
+      @total_de_errores_por_tab = {}
+   
       # Crear un arreglo para almacenar los campos nulos y los campos completos
       campos_completos = []
       campos_nulos = []
 
+      propuesta_tecnica = []
+      equipo_trabajo = []
+      plan_de_actividades = []
+      documentacion_legal = []
+      costos = []
+
+      #Campos Propuesta Tecnica
+
+      propuesta_tecnica << @objetivos.count if @objetivos.count == 0
       # Verificar si los campos están nulos y agregarlos a los arreglos correspondientes
       campos_completos << :cantidad_micro_empresa if @fondo_produccion_limpia.cantidad_micro_empresa.present?
       campos_nulos << :cantidad_micro_empresa if @fondo_produccion_limpia.cantidad_micro_empresa.nil?
+      propuesta_tecnica << :cantidad_micro_empresa if @fondo_produccion_limpia.cantidad_micro_empresa.nil?
 
       campos_completos << :cantidad_pequeña_empresa if @fondo_produccion_limpia.cantidad_pequeña_empresa.present?
       campos_nulos << :cantidad_pequeña_empresa if @fondo_produccion_limpia.cantidad_pequeña_empresa.nil?
+      propuesta_tecnica << :cantidad_pequeña_empresa if @fondo_produccion_limpia.cantidad_pequeña_empresa.nil?
 
       campos_completos << :cantidad_mediana_empresa if @fondo_produccion_limpia.cantidad_mediana_empresa.present?
       campos_nulos << :cantidad_mediana_empresa if @fondo_produccion_limpia.cantidad_mediana_empresa.nil?
+      propuesta_tecnica << :cantidad_mediana_empresa if @fondo_produccion_limpia.cantidad_mediana_empresa.nil?
 
       campos_completos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.present?
       campos_nulos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
+      propuesta_tecnica << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
 
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1    
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
+        
+        comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
+        if comuna_flujo == 0
+          campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
+          propuesta_tecnica << "manifestacion_de_interes_comunas_ids".to_sym
+        else
+          campos_completos << "manifestacion_de_interes_comunas_ids".to_sym
+        end
+
         campos_completos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.present?
         campos_nulos << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
+        propuesta_tecnica << :empresas_asociadas_ag if @fondo_produccion_limpia.empresas_asociadas_ag.nil?
 
         campos_completos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.present?
         campos_nulos << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
-      else     
+        propuesta_tecnica << :empresas_no_asociadas_ag if @fondo_produccion_limpia.empresas_no_asociadas_ag.nil?
+
+      else   
+
         campos_completos << :elementos_micro_empresa if @fondo_produccion_limpia.elementos_micro_empresa.present?
+        propuesta_tecnica << :elementos_micro_empresa if @fondo_produccion_limpia.elementos_micro_empresa.nil?
         campos_nulos << :elementos_micro_empresa if @fondo_produccion_limpia.elementos_micro_empresa.nil?
 
         campos_completos << :elementos_pequena_empresa if @fondo_produccion_limpia.elementos_pequena_empresa.present?
         campos_nulos << :elementos_pequena_empresa if @fondo_produccion_limpia.elementos_pequena_empresa.nil?
+        propuesta_tecnica << :elementos_pequena_empresa if @fondo_produccion_limpia.elementos_pequena_empresa.nil?
 
         campos_completos << :elementos_mediana_empresa if @fondo_produccion_limpia.elementos_mediana_empresa.present?
         campos_nulos << :elementos_mediana_empresa if @fondo_produccion_limpia.elementos_mediana_empresa.nil?
+        propuesta_tecnica << :elementos_mediana_empresa if @fondo_produccion_limpia.elementos_mediana_empresa.nil?
 
         campos_completos << :elementos_grande_empresa if @fondo_produccion_limpia.elementos_grande_empresa.present?
         campos_nulos << :elementos_grande_empresa if @fondo_produccion_limpia.elementos_grande_empresa.nil?
-      end  
-
+        propuesta_tecnica << :elementos_grande_empresa if @fondo_produccion_limpia.elementos_grande_empresa.nil?
+        
+      end
+      
       campos_completos << :duracion if @fondo_produccion_limpia.duracion.present?
       campos_nulos << :duracion if @fondo_produccion_limpia.duracion.nil?
+      propuesta_tecnica << :duracion if @fondo_produccion_limpia.duracion.nil?
+
+      @total_de_errores_por_tab[:"propuesta-tecnica"] = propuesta_tecnica.count if propuesta_tecnica.count != 0
+
+      #Campos Equipo Trabajo
+
+      equipo_trabajo << @user_equipo.count if @user_equipo.count == 0
+
+      equipo_trabajo << @postulantes.count if @postulantes.count == 0
+
+      equipo_trabajo << @count_empresa_equipo if @count_empresa_equipo == 0
 
       campos_completos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.present?
       campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
+      equipo_trabajo << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
 
-      # Verificar si los campos están nulos y agregarlos al arreglo
-      @descargables_postulante.each do |descargable|
-        campo = descargable.nombre_campo.to_sym
-        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
-        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
-      end
+      @total_de_errores_por_tab[:"equipo-trabajo"] = equipo_trabajo.count if equipo_trabajo.count != 0
 
-      @descargables_receptor.each do |descargable|
-        campo = descargable.nombre_campo.to_sym
-        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
-        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present? 
-      end
-
-      @descargables_ejecutor.each do |descargable|
-        campo = descargable.nombre_campo.to_sym
-        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
-        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
-      end
-
-      set_equipo_trabajo
-      set_actividades_x_linea
-      set_costos
-      @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
-     
+      #Campos Plan de Actividades
+      
       #consulta si el numero de plan es igual al numero de actividades
       plan = nil
       if @count_plan_actividades != @actividad_x_linea.length
         
         #SE DEBE DESCOMENTAR AL TERMINAR LAS PRUEBAS
         #plan = 0
-        #campos_nulos << plan
-      end  
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1    
-        comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
-        if comuna_flujo == 0
-          campos_nulos << "manifestacion_de_interes_comunas_ids".to_sym
-        else
-          campos_completos << "manifestacion_de_interes_comunas_ids".to_sym
-        end
+        #plan_de_actividades << plan
+
+        @total_de_errores_por_tab[:"plan-de-actividades"] = plan_de_actividades.count if plan_de_actividades.count != 0
+        
+      end 
+
+      #Campos Documentación
+
+      # Verificar si los campos están nulos y agregarlos al arreglo
+      @descargables_postulante.each do |descargable|
+        campo = descargable.nombre_campo.to_sym
+        documentacion_legal << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
       end
 
+      @descargables_receptor.each do |descargable|
+        campo = descargable.nombre_campo.to_sym
+        documentacion_legal << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present? 
+      end
+
+      @descargables_ejecutor.each do |descargable|
+        campo = descargable.nombre_campo.to_sym
+        documentacion_legal << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_nulos << campo if @fondo_produccion_limpia.public_send(campo).blank?
+        campos_completos << campo if @fondo_produccion_limpia.public_send(campo).present?
+      end
+
+      @total_de_errores_por_tab[:"documentacion-legal"] = documentacion_legal.count if documentacion_legal.count != 0
+
+      @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
+  
       @tipo = params['tipo']
 
-      respond_to do |format|
-        format.js { render 'get_valida_campos_nulos', locals: { campos_nulos: campos_nulos, campos_completos: campos_completos, objetivos_especificos: @objetivos.count, equipo_consultor: @user_equipo.count, postulantes: @postulantes.count, equipo_empresa: @count_empresa_equipo, plan: plan, actividad_x_linea: @actividad_x_linea, tipo: @tipo} }
+      #Costos
+
+      #@total_de_errores_por_tab[:"costos"] = 1 if @response_costos == 1
+      
+      if @total_de_errores_por_tab == {} && @response_costos == 0
+        respond_to do |format|
+          format.js { render js: "window.location='#{enviar_postulacion_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        end
+      else
+        respond_to do |format|
+          if (@response_costos == 1 && @total_de_errores_por_tab == {}) # || (@response_costos == 1 && @total_de_errores_por_tab[:"costos"] = 1))
+            flash[:error] = @mensaje
+            format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?total_de_errores_por_tab=#{@total_de_errores_por_tab}&tabs=costos'" }
+          else
+            flash[:error] = 'Antes de enviar la postulación debe completar todos los campos requeridos'
+            format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?total_de_errores_por_tab=#{@total_de_errores_por_tab}'" }
+          end
+
+          #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?total_de_errores_por_tab=#{@total_de_errores_por_tab}'" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+        end
       end
     end
     
@@ -382,19 +453,56 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def get_value_from_hash_string_manually(hash_string, key)
+      # Limpia el string eliminando llaves y espacios innecesarios
+      cleaned_string = hash_string.gsub(/[{}]/, '')
+ 
+      # Divide el string en pares clave-valor
+      pairs = cleaned_string.split(',').map do |pair|
+        k, v = pair.split('=>').map(&:strip)
+        # Maneja los casos en que las claves están entre comillas
+        k = k.gsub(/:\s*|"/, '').to_sym
+        v = v.to_i
+        [k, v]
+      end
+   
+      # Convierte los pares en un hash
+      hash = Hash[pairs]
+
+      # Accede al valor usando la clave proporcionada
+      value = hash[key.to_sym]
+
+      value
+    end
+    
+
     def edit 
       @solo_lectura = false
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @mantener_temporal = 'true'
-      @objetivo_especifico = ObjetivosEspecifico.new
+      #@objetivo_especifico = ObjetivosEspecifico.new
       @es_para_seleccion = 'true'
       @tipo_aporte = TipoAporte.all
       @contribuyentes = nil
       @custom_id = 'fpl'
       @adm_juridica = true
 
+      #Obtiene el numero de campos nulos por tab para renderizar
+      if params[:total_de_errores_por_tab].present?
+        hash_string = params[:total_de_errores_por_tab]
+        @total_de_errores_por_tab = {}
+        @total_de_errores_por_tab[:"propuesta-tecnica"] = get_value_from_hash_string_manually(hash_string, "propuesta-tecnica")
+        @total_de_errores_por_tab[:"equipo-trabajo"] = get_value_from_hash_string_manually(hash_string, "equipo-trabajo")
+        @total_de_errores_por_tab[:"plan-de-actividades"] = get_value_from_hash_string_manually(hash_string, "plan-de-actividades")
+        @total_de_errores_por_tab[:"documentacion-legal"] = get_value_from_hash_string_manually(hash_string, "documentacion-legal")
+        @total_de_errores_por_tab[:"costos"] = get_value_from_hash_string_manually(hash_string, "costos")
+      else
+        @total_de_errores_por_tab = {}
+      end
+      
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
+      @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
 
       set_actividades_x_linea
       set_plan_actividades

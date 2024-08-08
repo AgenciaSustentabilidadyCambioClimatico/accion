@@ -147,74 +147,35 @@
     $('#enviar-postulacion-button').click(function(e){
       var tipo = document.getElementById('tipos').getAttribute('data-tipo');
       $('.loading-data').show();
-      $.ajax({
-        url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-        data: {
-          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
-          tipo: tipo
-        },
-       method: "GET",
-        success: function(response) {
-          var contador_campos_nulos = document.getElementById('contador_campos_nulos').value;
-          if (contador_campos_nulos > 0) {
-            alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
-            event.preventDefault();
-            return;
-          }
-          var resp = document.getElementById('response_costos').value;
-          if (resp == 1) {
-            alert("El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos.");
-            event.preventDefault();
-            return;
-          }
-
-          var valor = document.getElementById('campos_pendientes').value;
-
-          const button = document.getElementById('enviar-postulacion-button');
-          const button_guardar = document.getElementById('guardar-fondo-temporal-button');
-          button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-          button.disabled = true;
-          button_guardar.disabled = true;
-
-          if (valor == 0) {
-            if(confirm("¿Está seguro que desea enviar?")){
-              $('.loading-data').show();
-              $.ajax({
-                url: "#{enviar_postulacion_fondo_produccion_limpia_path}",
-                data: {
-                  flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-                },
-                method: "GET",
-                success: function(response) {
-                },
-                error: function(error) {
-                  console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
-                  button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
-                  button.disabled = false;
-                  button_guardar.disabled = false;
-                }
-              });
-            }else{
-              $('.loading-data').hide();
-              button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
-              button.disabled = false;
-              button_guardar.disabled = false
-            }
-          }else{
+      if(confirm("¿Está seguro que desea enviar?")){
+        $.ajax({
+          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+            tipo: tipo
+          },
+        method: "GET",
+          success: function(response) {
+            const button = document.getElementById('enviar-postulacion-button');
+            const button_guardar = document.getElementById('guardar-fondo-temporal-button');
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+            button.disabled = true;
+            button_guardar.disabled = true;
+          },
+          error: function(error) {
+            console.error("Error al llamar al método del controlador", error);
+            $('.loading-data').hide();
             button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
             button.disabled = false;
             button_guardar.disabled = false;
-            alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
-            $('.loading-data').hide();
-            
-          } 
-        },
-        error: function(error) {
-          console.error("Error al llamar al método del controlador", error);
-          $('.loading-data').hide();
-        }
-      });  
+          }
+        });  
+      }else{
+        $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
+        button.disabled = false;
+        button_guardar.disabled = false;
+      }
     });
 
     $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
@@ -241,9 +202,9 @@
         %li.nav-item.tab-block{id: "#{tab}-tab"}
           %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
             =t(tab.to_s.gsub('-','_'))
-          - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].size > 0
+          - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].present? && @total_de_errores_por_tab[tab].size > 0
             %small.total-error
-              = @total_de_errores_por_tab[tab].size 
+              = @total_de_errores_por_tab[tab]
       - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
         - formulario_remote = false
   = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura

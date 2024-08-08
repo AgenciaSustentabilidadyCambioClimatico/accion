@@ -2831,6 +2831,11 @@
       border-radius: 0.25rem;
     }
 
+    .border-error {
+      border: 1px solid #de2d0f; 
+      border-radius: 0.25rem;
+    }
+
     .mensaje-rojo {
         color: red;
     }
@@ -2861,6 +2866,14 @@
 
     .icono-celeste {
       color: #0069d9;
+    }
+
+    .text-success {
+      color: green; /* Cambia el color a verde si es necesario */
+    }
+
+    .text-danger {
+      color: red; /* Color rojo para cuando la condición no se cumple */
     }
 
 = render 'modal_recuerde_guardar'
@@ -3015,7 +3028,9 @@
         %h1= t(:objetivo_específico)
         %br
         - if !solo_lectura
-          = button_tag 'Agregar Objetivo', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
+          - button_class = @total_de_errores_por_tab.present? ? (@objetivo_especificos.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+          = button_tag 'Agregar Objetivo', id: 'open-modal-button', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'
+
         %div#div_objetivo_especifico.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -3043,16 +3058,24 @@
                   %th.encabezado2-form Total
                   
                 %tr
-                  -if !solo_lectura
+                  -if !solo_lectura                 
                     %th
-                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_micro_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
                     %th
-                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_pequeña_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
                     %th
-                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_mediana_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
                     %th
-                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
-                    %th#total_tecnica 
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_grande_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
+                    %th#total_tecnica
                   -else
                     %th
                       = f.object.cantidad_micro_empresa
@@ -3113,12 +3136,16 @@
                         %label.label-estilo{ for: 'empresas_asociadas_ag' }
                           %abbr{ title: "Campo requerido" } *
                           N° Empresas Asociadas AG: 
-                        = f.text_field :empresas_asociadas_ag, class: 'border-text', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag' 
+                        - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_asociadas_ag.nil? ? 'border-error' : 'border-text'
+                        - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_asociadas_ag.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                        = f.text_field :empresas_asociadas_ag, class: "#{border_class}", type: 'number', id: 'empresas_asociadas_ag', data: tooltip_data 
                       %th
                         %label.label-estilo{ for: 'empresas_asociadas_ag' }
                           %abbr{ title: "Campo requerido" } *
                           N° Empresas No Asociadas AG: 
-                        = f.text_field :empresas_no_asociadas_ag, class: 'border-text', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag'
+                        - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_no_asociadas_ag.nil? ? 'border-error' : 'border-text'
+                        - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_no_asociadas_ag.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                        = f.text_field :empresas_no_asociadas_ag, class: "#{border_class}", type: 'number', id: 'empresas_no_asociadas_ag', data: tooltip_data 
                     -else
                       %th
                         = f.object.empresas_asociadas_ag
@@ -3138,19 +3165,26 @@
                   %th.encabezado2-form Mediana
                   %th.encabezado2-form Grande
                   %th.encabezado2-form Total
-                  
                 %tr
                   -if !solo_lectura
                     %th
                       Empresas Totales a Adherir
                     %th
-                      = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_micro_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
                     %th
-                      = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_pequeña_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
                     %th
-                      = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_mediana_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
                     %th
-                      = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_grande_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
                     %th#total_tecnica 
                   -else
                     %th
@@ -3170,13 +3204,21 @@
                     %th
                       Elementos Totales a Adherir
                     %th
-                      = f.text_field :elementos_micro_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_micro_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa', data: tooltip_data  
                     %th
-                      = f.text_field :elementos_pequena_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa'            
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_pequena_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa', data: tooltip_data        
                     %th
-                      = f.text_field :elementos_mediana_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_mediana_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa', data: tooltip_data  
                     %th
-                      = f.text_field :elementos_grande_empresa, class: 'valor-a-sumar-tec-elementos border-text', type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa'
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_grande_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa', data: tooltip_data           
                     %th#total_tecnica_elementos
                   -else
                     %th
@@ -3218,7 +3260,8 @@
         %br
         %div#div_postulante.table-responsive  
           - if !solo_lectura
-            = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@postulantes.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3305,7 +3348,8 @@
         %br   
         %div#div_empresa_consultora.table-responsive  
           - if !solo_lectura
-            = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@empresa_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3330,7 +3374,8 @@
         -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
-            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3371,7 +3416,8 @@
         </br>
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
-            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'  
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3418,7 +3464,13 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.input :fortalezas_consultores, as: :text, input_html: { id: 'fortalezas_consultores' }, label:  t(:fortaleza_equipo), required: true
+                    %label.label-estilo{ for: 'fortaleza_equipo' }
+                      %abbr{ title: "Campo requerido" } *
+                      Describir Fortalezas del Equipo
+                      %br
+                    - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.fortalezas_consultores == "" ? 'border-error' : 'border-text'
+                    - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.fortalezas_consultores == "" ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                    = f.text_area :fortalezas_consultores, class: "#{border_class}", type: 'text', id: 'fortalezas_consultores', style: 'width: 100%;', data: tooltip_data         
                 -else
                   %th
                     = f.object.fortalezas_consultores
@@ -3510,7 +3562,14 @@
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br              
         <h1>B) Receptor cofinanciamiento </h1>              
         %div.table-responsive
@@ -3531,7 +3590,14 @@
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
         <h1>C) Ejecutor </h1>              
         %div#div_ejecutor.table-responsive  
@@ -3552,8 +3618,14 @@
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica 
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
-
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
   #costos.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"costos"] ? 'true' : 'false'), "aria-labelledby" => "costos-tab", :role => "tabpanel", class: ("show active" if tabs[:"costos"])}
     .card
       .card-body
@@ -3823,14 +3895,15 @@
                     %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
                     %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
                       - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_aporte_propio_liquido.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo  0,00%
-                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center  NO
+                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
+                      %span{ class: 'text-danger' } NO
                 %tr
                   %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
                   - if @costos.present?
@@ -3839,14 +3912,15 @@
                     %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
                     %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
                       - if (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado']) >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_costo_total_de_la_propuesta.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo  0,00%
-                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center  NO
+                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
+                      %span{ class: 'text-danger' } NO
                 %tr
                   %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
                   - if @costos.present?
@@ -3855,14 +3929,15 @@
                     %td#valida_porcentaje_gastos_administrativos.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
                     %td#valida_pregunta_gastos_administrativos.contenido-form-center
                       - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_gastos_administrativos.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
                     %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
-                    %td#valida_pregunta_gastos_administrativos.contenido-form-center  NO
+                    %td#valida_pregunta_gastos_administrativos.contenido-form-center
+                      %span{ class: 'text-danger' } NO
                 %tr
                   %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
                   - if @costos.present?
@@ -3871,14 +3946,15 @@
                     %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
                       - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
-                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center NO
+                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
+                      %span{ class: 'text-danger' } NO
           %br
         - else
           %div.table-responsive 
@@ -3901,14 +3977,15 @@
                     %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
                     %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center
                       - if @costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'] >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo  $0
-                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center  NO
+                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
                   - if @costos_seguimiento[0].present?
@@ -3917,14 +3994,15 @@
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center
                       - if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo $0
                     %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo  $0
-                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center  NO    
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO    
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
@@ -3934,14 +4012,15 @@
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center
                       - if @costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'] >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo $0
                     %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo  $0
-                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  NO        
+                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO        
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
                   - if @costos_seguimiento[1].present?
@@ -3950,14 +4029,15 @@
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
                       - if @costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].to_f != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo $0
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo  $0
-                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  NO      
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO      
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Total Proyecto
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte líquido del postulante
@@ -3967,14 +4047,15 @@
                     %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
                     %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center
                       - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo $0
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
                     %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo $0
-                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center NO  
+                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO  
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Gastos de Administración
                   - if @costos.present?
@@ -3983,14 +4064,15 @@
                     %td#total_proyecto_gastos_administracion_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
                     %td#total_proyecto_gastos_administracion_cumple.contenido-form-center
                       - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                        SI
+                        %span{ class: 'text-success' } SI
                       - else
-                        NO
+                        %span{ class: 'text-danger' } NO
                   - else
                     %td#total_proyecto_gastos_administracion_monto.contenido-form-costo $0
                     %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
                     %td#total_proyecto_gastos_administracion_limite.contenido-form-costo $0
-                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center NO            
+                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO            
   - if @revisor      
     #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
       .card
