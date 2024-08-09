@@ -247,8 +247,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end   
   
       campos_completos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.present?
-      campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
-      equipo_trabajo << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
+      campos_nulos << :fortalezas_consultores if (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?)
+      equipo_trabajo << :fortalezas_consultores if (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?)
 
       @total_de_errores_por_tab[:"equipo-trabajo"] = equipo_trabajo.count if equipo_trabajo.count != 0
 

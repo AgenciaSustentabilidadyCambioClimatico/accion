@@ -187,27 +187,30 @@
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
 - mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
 = simple_form_for [@fondo_produccion_limpia], :url => guardar_fondo_temporal_fondo_produccion_limpia_path, method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'fondo-produccion-limpias-form', class: 'ajax-form'} do |f|
-  .card
-  .card-header
-    %h5.no-margin=titulo_instrumento_fpl.html_safe
-    %h5.no-margin=titulo_instrumento.html_safe
-    %h5.no-margin=titulo_proyecto_fpl.html_safe
-    %h5.no-margin=titulo_apl.html_safe
-    %h5.no-margin=datos_beneficiario_fpl.html_safe
-  = f.input :id, as: :hidden, wrapper: false, input_html: { value: @tarea_pendiente.id, id: 'tarea_pendiente_id' }  
-  = f.submit "", class: 'd-none'
-  #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
-    %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-      - tabs.each do |tab,active|
-        %li.nav-item.tab-block{id: "#{tab}-tab"}
-          %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-            =t(tab.to_s.gsub('-','_'))
-          - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].present? && @total_de_errores_por_tab[tab].size > 0
-            %small.total-error
-              = @total_de_errores_por_tab[tab]
-      - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
-        - formulario_remote = false
-  = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_instrumento.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=titulo_apl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+        = f.input :id, as: :hidden, wrapper: false, input_html: { value: @tarea_pendiente.id, id: 'tarea_pendiente_id' }  
+        = f.submit "", class: 'd-none'
+        #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+          %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+            - tabs.each do |tab,active|
+              %li.nav-item.tab-block{id: "#{tab}-tab"}
+                %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                  =t(tab.to_s.gsub('-','_'))
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].present? && @total_de_errores_por_tab[tab].size > 0
+                  %small.total-error
+                    = @total_de_errores_por_tab[tab]
+            - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
+              - formulario_remote = false
+        = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
   -if !solo_lectura
     .float-left
       = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
