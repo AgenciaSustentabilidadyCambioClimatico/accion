@@ -242,8 +242,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       equipo_trabajo << @postulantes.count if @postulantes.count == 0
 
-      equipo_trabajo << @count_empresa_equipo if @count_empresa_equipo == 0
-
+      if @count_empresa_equipo == 0 && @user_equipo.count == 0
+        equipo_trabajo << 1
+      end   
+  
       campos_completos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores.present?
       campos_nulos << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
       equipo_trabajo << :fortalezas_consultores if @fondo_produccion_limpia.fortalezas_consultores == ""
@@ -503,6 +505,7 @@ class FondoProduccionLimpiasController < ApplicationController
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
+      @comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).all
 
       set_actividades_x_linea
       set_plan_actividades

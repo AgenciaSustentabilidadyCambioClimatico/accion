@@ -3060,18 +3060,22 @@
                 %tr
                   -if !solo_lectura                 
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_micro_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_pequeña_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_mediana_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_grande_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
@@ -3097,7 +3101,9 @@
                   -card_class = ''
                   -card_class += ' border-0' if solo_lectura
                   -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
-                  .card.m-0.card-preview-seleccionados{class: card_class}
+                  -border_class = @total_de_errores_por_tab.present? && @comuna_flujo.blank? ? 'border-error' : 'border-text'
+                  -tooltip_data = @total_de_errores_por_tab.present? && @comuna_flujo.blank? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                  .card.m-0.card-preview-seleccionados{class: "#{card_class} #{border_class}", data: tooltip_data}
                     -if !solo_lectura
                       #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3.titulo-sector 
                         %h5.no-margin.float-left.display_select_title
@@ -3170,18 +3176,22 @@
                     %th
                       Empresas Totales a Adherir
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_micro_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_pequeña_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_mediana_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :cantidad_grande_empresa, class: "valor-a-sumar-tec #{border_class}", type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
@@ -3204,18 +3214,22 @@
                     %th
                       Elementos Totales a Adherir
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :elementos_micro_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa', data: tooltip_data  
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :elementos_pequena_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa', data: tooltip_data        
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :elementos_mediana_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa', data: tooltip_data  
                     %th
+                      %abbr{ title: "Campo requerido" } *
                       - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? 'border-error' : 'border-text'
                       - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                       = f.text_field :elementos_grande_empresa, class: "valor-a-sumar-tec-elementos #{border_class}", type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa', data: tooltip_data           
@@ -3555,7 +3569,9 @@
               %tbody
                 - @descargables_postulante.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
@@ -3583,7 +3599,9 @@
               %tbody
                 - @descargables_receptor.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
@@ -3611,7 +3629,9 @@
               %tbody
                 - @descargables_ejecutor.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
