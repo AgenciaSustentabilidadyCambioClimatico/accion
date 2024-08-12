@@ -42,6 +42,9 @@ class FondoProduccionLimpia < ApplicationRecord
   mount_uploader :declaracion_jurada_simple_anexo_a_ejecutor, ArchivoDeclaracionJuradaSimpleAnexoAEjecutorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_simple_anexo_b_ejecutor, ArchivoDeclaracionJuradaSimpleAnexoBEjecutorFondoProduccionLimpiaUploader
 
+  mount_uploader :archivo_resolucion, ArchivoResolucionFondoProduccionLimpiaUploader
+  mount_uploader :archivo_contrato, ArchivoContratoFondoProduccionLimpiaUploader
+
   def comunas
     self.flujo.comunas
   end

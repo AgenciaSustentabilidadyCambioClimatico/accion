@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240723212432) do
+ActiveRecord::Schema.define(version: 20240812194207) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -995,6 +995,8 @@ ActiveRecord::Schema.define(version: 20240723212432) do
     t.integer "elementos_pequena_empresa"
     t.integer "elementos_mediana_empresa"
     t.integer "elementos_grande_empresa"
+    t.string "archivo_resolucion"
+    t.string "archivo_contrato"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"

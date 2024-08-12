@@ -10,7 +10,8 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
-    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor]
+    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
+    :resolucion_contrato, :adjuntar_resolucion_contrato]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -2874,6 +2875,24 @@ class FondoProduccionLimpiasController < ApplicationController
 
     end
 
+    def resolucion_contrato
+      #binding.pry
+    end
+
+    def adjuntar_resolucion_contrato
+      respond_to do |format|
+        if @fondo_produccion_limpia.update(fondo_produccion_limpia_archivos_params)
+          flash[:success] = 'Información ingresada correctamente'
+          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+        else
+          flash[:error] = "Error al actualizar: #{@fondo_produccion_limpia.errors.full_messages.join(', ')}"
+          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: error }
+        end
+      end
+    end
+    
     def descargar_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
@@ -4057,6 +4076,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def create_fondo_produccion_limpia_params
         params.require(:fondo_produccion_limpia).permit(:flujo_id, :flujo_apl_id, :codigo_proyecto)
+      end
+
+      def fondo_produccion_limpia_archivos_params
+        params.require(:fondo_produccion_limpia).permit(:archivo_resolucion, :archivo_contrato)
       end
 
 end

@@ -915,6 +915,9 @@ module ApplicationHelper
     when Tarea::COD_FPL_10
       data[:url] =  evaluacion_general_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_11
+      data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
     #Nuevo flujo postulacion FPL  
     end
   end

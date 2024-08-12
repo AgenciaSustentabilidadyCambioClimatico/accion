@@ -319,7 +319,9 @@ Rails.application.routes.draw do
   get 'get_evaluacion_general/:id', to: "fondo_produccion_limpias#get_evaluacion_general", as: :get_evaluacion_general_fondo_produccion_limpia
   post ':id/enviar_evaluacion_general', to: "fondo_produccion_limpias#enviar_evaluacion_general", as: :enviar_evaluacion_general_fondo_produccion_limpia
 
-
+  #Tarea FPL-11
+  get ':id/resolucion_contrato', to: "fondo_produccion_limpias#resolucion_contrato", as: :resolucion_contrato_fondo_produccion_limpia
+  patch ':id/resolucion_contrato', to: "fondo_produccion_limpias#adjuntar_resolucion_contrato", as: :adjuntar_resolucion_contrato_fondo_produccion_limpia
   
   #------------------------------------------------------------------------------------------------------------#
 
