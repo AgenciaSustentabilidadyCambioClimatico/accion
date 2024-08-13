@@ -3528,8 +3528,8 @@
                       %abbr{ title: "Campo requerido" } *
                       Describir Fortalezas del Equipo
                       %br
-                    - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.fortalezas_consultores.nil? ? 'border-error' : 'border-text'
-                    - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.fortalezas_consultores.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                    - border_class = @total_de_errores_por_tab.present? && (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?) ? 'border-error' : 'border-text'
+                    - tooltip_data = @total_de_errores_por_tab.present? && (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?) ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
                     = f.text_area :fortalezas_consultores, class: "form-control text required tooltip-block #{border_class}", required: 'required', type: 'text', id: 'fortalezas_consultores', style: 'width: 100%;', data: tooltip_data         
                 -else
                   %th
@@ -4152,33 +4152,28 @@
               %br
               = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, id: 'codigo_proyecto'
             .col-12.col-lg-6
-              -#= f.input :revisor_tecnico_id, collection: @revisores_tecnicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id'}, label: t(:revisor_tecnico)
               %label.label-estilo{ for: 'revisor_tecnico_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_tecnico)
               %br
-              = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
+              = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
             .col-12.col-lg-6
-              -#= f.input :revisor_financiero_id, collection: @revisores_financieros.map{|p| [p.user.nombre_completo, p.user.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id'}, label: t(:revisor_financiero)
               %label.label-estilo{ for: 'revisor_financiero_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_financiero)
               %br
-              = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
+              = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
             .col-12.col-lg-6
-              -#= f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.user.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id'}, label: t(:revisor_juridico)
               %label.label-estilo{ for: 'revisor_juridico_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_juridico)
               %br
-              = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
+              = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
             .col-12
-              -#= f.input :comentario_asignar_revisor, as: :text, label: t(:comentario), input_html: {class: "required-field", id: 'comentario_asignar_revisor_fpl'}, required: true
               %label.label-estilo{ for: 'comentario_asignar_revisor' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:comentario)
               %br
-              -#= f.text_field :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 50%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem;'
               = f.text_area :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 50%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem; font-size: 12px; border-bottom: 2px solid #dee2e6; border-right: 2px solid #dee2e6; border-left: 2px solid #dee2e6;'
           .col-12
             .float-right

@@ -2858,21 +2858,55 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def enviar_evaluacion_general
-      #SE CAMBIA EL ESTADO DEL FPL-09 A 2
-      tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+      cuestionario_observacion = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).first 
+      binding.pry
+
+      if cuestionario_observacion.nota == 1
+        #SE CAMBIA EL ESTADO DEL FPL-09 A 2
+        tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+        
+        tarea_pendiente_fpl_10 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_10.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+        if tarea_pendiente_fpl_10.present?
+          tarea_pendiente_fpl_10.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+          tarea_pendiente_fpl_10.save  
+        end
+
+        #obtengo el usuario del jefe de linea
+        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_JURIDICO)
+        binding.pry
+        #obtengo el user_id del jefe de linea
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+        tarea_pendiente_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+        binding.pry
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_11)
+        custom_params_tarea_pendiente = {
+          tarea_pendientes: {
+            flujo_id: @flujo.id,
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente_juridica.user_id,
+            persona_id: tarea_pendiente_juridica.persona_id,
+            data: { }
+          }
+        }
+        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+        binding.pry
+        #SE ENVIAR EL MAIL AL RESPONSABLE
+        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+
+        respond_to do |format|
+          format.js { flash.now[:success] = 'Evaluación General enviada correctamente'
+            render js: "window.location='#{root_path}'"}
+          format.html { redirect_to root_path, flash: {notice: 'Evaluación General enviada correctamente' }}
+        end
       
-      tarea_pendiente_fpl_10 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_10.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
-      if tarea_pendiente_fpl_10.present?
-        tarea_pendiente_fpl_10.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-        tarea_pendiente_fpl_10.save  
+      else
+        respond_to do |format|
+          flash[:error] = "La postulación debe estar en estado Aprobada para su envio"
+          format.js { render js: "window.location='#{evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id)}'" }
+          format.html { redirect_to evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id), notice: error }
+        end
       end
-
-      respond_to do |format|
-        format.js { flash.now[:success] = 'Evaluación General enviada correctamente'
-          render js: "window.location='#{root_path}'"}
-        format.html { redirect_to root_path, flash: {notice: 'Evaluación General enviada correctamente' }}
-      end
-
     end
 
     def resolucion_contrato
