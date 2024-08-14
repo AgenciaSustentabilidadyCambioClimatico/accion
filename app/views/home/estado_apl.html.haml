@@ -6,7 +6,7 @@
     %div{class: 'd-flex justify-content-between pb-3'}
       %div
       %div
-        = form_tag manifestacion_de_interes_index_path, method: :get, enforce_utf8: false, class: "d-flex"  do
+        = form_tag estado_apl_path, method: :get, enforce_utf8: false, class: "d-flex"  do
           = text_field_tag :query, '',class: 'form-control'
           = button_tag "Buscar", name: "", class: "btn btn-primary"
     %table.table.acuerdos-pendientes{id: 'guillo-diez'}
