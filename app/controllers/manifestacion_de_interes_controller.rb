@@ -1,7 +1,7 @@
 class ManifestacionDeInteresController < ApplicationController
   before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
-  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
-  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
+  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl, :index]
+  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl, :index]
 
   before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
