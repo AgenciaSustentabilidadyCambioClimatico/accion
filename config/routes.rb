@@ -42,6 +42,7 @@ Rails.application.routes.draw do
   get 'adherir-a-un-acuerdo', to: "home#adherir_a_un_acuerdo", as: :adherir_a_un_acuerdo
   get 'solicitar-adhesion/:manifestacion_de_interes_id', to: "home#solicitar_adhesion", as: :solicitar_adhesion
   get 'get_comunas', to: "home#get_comunas", as: :get_comunas
+
   get 'get_contribuyentes', to: "registro_proveedores#get_contribuyentes", as: :get_contribuyentes
   get 'get_by_rut', to: 'registro_proveedores#get_by_rut', as: :get_by_rut
   post 'solicitar-adhesion/:manifestacion_de_interes_id/save', to: "home#solicitar_adhesion_guardar", as: :solicitar_adhesion_guardar
@@ -69,6 +70,7 @@ Rails.application.routes.draw do
 
   # agregado para acceso a proveedores
   get 'proveedores' => 'admin/proveedores#index'
+  get 'estado-apl', to: "home#estado_apl", as: :estado_apl
 
   if Rails.env.production?
     post "geo-localization/coordinates" => "geo_localization#coordinates"
@@ -598,7 +600,7 @@ Rails.application.routes.draw do
   patch '/cambio_nombre_apl/:manifestacion_de_interes_id', to: "manifestacion_de_interes#cambio_nombre_apl", as: :cambio_nombre
   # ToDo GABM - Mayo 29 2018 : Quitar params: :tarea_pendiente_id al resources de manifestacion_de_interes y agrupar todo el resources con
   # scope '/:tarea_pendientes_id' do. Luego quitar todos lo :id de cada metodo declarado y quitar :tarea_pendiente del grupo collection.
-  resources :manifestacion_de_interes, only: :index
+
   resources :manifestacion_de_interes, param: :tarea_pendiente_id, path: "manifestacion-de-interes", except: [:show,:index,:create,:edit,:update] do
     collection do
       get :lista_usuarios_entregables

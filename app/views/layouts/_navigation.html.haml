@@ -135,7 +135,7 @@
                       %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
                   %li= link_to t(:historial_instrumentos), admin_historial_instrumentos_path, class: 'dropdown-item'
                   - if current_user.is_ascc?
-                    %li= link_to 'Estado APL', manifestacion_de_interes_index_path, class: 'dropdown-item'
+                    %li= link_to 'Estado APL', estado_apl_path, class: 'dropdown-item'
                   - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                     %li= link_to t(:carga_datos_históricos), admin_cargas_historicas_index_path, class: 'dropdown-item'
                     -#
