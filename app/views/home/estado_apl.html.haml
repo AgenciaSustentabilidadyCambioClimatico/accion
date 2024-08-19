@@ -30,7 +30,7 @@
             %td= m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
-            %td= tarea_en_curso.tarea.nombre
+            %td= tarea_en_curso&.tarea&.nombre
             %td
               - usuarios_coordinadores.each do |coordinador|
                 %p= coordinador&.nombre_completo
@@ -76,7 +76,7 @@
               - c = Convocatoria.where(flujo_id: m.id).order(created_at: :asc)
               %td
                 - c.each do |convocatoria|
-                  %p= convocatoria.fecha.strftime("%d/%m/%Y")
+                  %p= convocatoria&.fecha&.strftime("%d/%m/%Y")
               %td
                 - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 69)
                 - unless t.blank?
@@ -86,7 +86,7 @@
             %tr{class: 'd-none', id: "propuesta#{m.id}"}
               %td
               %td Firma de Acuerdo
-              %td= m.firma_fecha_was&.strftime("%d/%m/%Y")
+              %td= m&.firma_fecha_was&.strftime("%d/%m/%Y")
               - c = Convocatoria.where(flujo_id: m.id)
               - convocatoria = c.first
               - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 62).first
