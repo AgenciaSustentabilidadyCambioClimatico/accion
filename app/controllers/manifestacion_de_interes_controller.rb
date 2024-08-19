@@ -1324,7 +1324,7 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.seleccion_de_radios
 
     #Obtiene las lineas para el diagnostico del FPL
-    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO])
     @fondo_produccion_limpia_id = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id, ).pluck(:flujo_id).first
     @intrumento_seleccionado = nil
     if @fondo_produccion_limpia_id.present?
@@ -1480,7 +1480,7 @@ class ManifestacionDeInteresController < ApplicationController
         @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
         @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
         #Obtiene las lineas para el diagnostico del FPL
-        @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
+        @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO])
 
         @manifestacion_de_interes.seleccion_de_radios
 

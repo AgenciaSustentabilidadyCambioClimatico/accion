@@ -990,67 +990,36 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def search
-      @contribuyente = Contribuyente.new(params.require(:contribuyente).permit(
-        :rut,
-        :razon_social,
-        :actividad_economica_id,
-        :es_para_seleccion,
-        :seleccion_basica,
-        :tipo_instrumento,
-        :buscar_por_actividad_economica,
-        :resultado_mostrados,
-        :es_maquinaria,
-        :custom_id,
-        :data_table
-      ))
-      @custom_id = @contribuyente.custom_id
-      @contribuyente.filter_mode = true
+      # Inicializar variables
+      @contribuyentes = Contribuyente.all
+      @filtro_utilizado = ''
       @es_para_seleccion = false #( @contribuyente.es_para_seleccion == "true" )
       @seleccion_basica = true #@contribuyente.seleccion_basica
       @tipo_instrumento = 4 #@contribuyente.tipo_instrumento
       @es_maquinaria = false #( @contribuyente.es_maquinaria == "true" )
-      
       @buscar_por_actividad_economica = false#( @contribuyente.buscar_por_actividad_economica == "true" )
-      @resultado_mostrados = 30 #@contribuyente.resultado_mostrados
-
+      @resultado_mostrados = 25 #@contribuyente.resultado_mostrados
       @data_table = true #(@contribuyente.data_table == "true")
-      if @contribuyente.valid?
-        if @seleccion_basica == "true"
-          @contribuyentes = Contribuyente
-        else
-          @contribuyentes = Contribuyente.includes([:actividad_economica_contribuyentes,:dato_anual_contribuyentes,:establecimiento_contribuyentes])
-        end
-        if @contribuyente.actividad_economica_id.blank?
-          unless @contribuyente.razon_social.blank?
-            @contribuyentes = @contribuyentes.where("razon_social ILIKE '%#{@contribuyente.razon_social}%'")
-            @filtro_utilizado = "Razón Social: #{@contribuyente.razon_social}"
-          end
-          unless @contribuyente.rut.blank?
-            @contribuyentes = @contribuyentes.where("rut = ?", @contribuyente.rut)
-            filtro = "RUT: #{@contribuyente.rut}"
-            if @filtro_utilizado.blank?
-              @filtro_utilizado = filtro
-            else
-              @filtro_utilizado = " Y #{filtro}"
-            end
-          end
-          @contribuyentes = @contribuyentes.all
-        else
-          @contribuyentes = @contribuyentes
-            .joins(:actividad_economica_contribuyentes)
-            .where("actividad_economica_contribuyentes.actividad_economica_id = (?)",@contribuyente.actividad_economica_id)
-          @filtro_utilizado = "Actividad Económica : #{ActividadEconomica.find(@contribuyente.actividad_economica_id).descripcion}"
-        end
-        @contribuyente = Contribuyente.new
-      else
-        @errors = true
+    
+      # Filtrar por razón social si el parámetro no está en blanco
+      if params[:razon_social].present?
+        @contribuyentes = @contribuyentes.where("razon_social ILIKE ?", "%#{params[:razon_social]}%")
+        @filtro_utilizado = "Razón Social: #{params[:razon_social]}"
       end
 
+      # Filtrar por RUT si el parámetro no está en blanco
+      if params[:rut].present?
+        @contribuyentes = @contribuyentes.where(rut: params[:rut])
+        filtro = "RUT: #{params[:rut]}"
+        @filtro_utilizado = @filtro_utilizado.blank? ? filtro : "Y #{filtro}"
+      end
+
+      # Manejar la respuesta
       respond_to do |format|
-        format.js { render 'fondo_produccion_limpias/contribuyentes/search', locals: { contribuyentes: @contribuyentes, filtro_utilizado: @filtro_utilizado, errors: @errors } }
+        format.js { render 'fondo_produccion_limpias/contribuyentes/search', locals: { contribuyentes: @contribuyentes, filtro_utilizado: @filtro_utilizado } }
       end
     end
-
+    
     def eliminar_empresa
       equipo_empresa = EquipoEmpresa.find(params[:contribuyente_id])
       equipo_trabajo = EquipoTrabajo.where(flujo_id: equipo_empresa.flujo_id, contribuyente_id: equipo_empresa.contribuyente_id)
@@ -1666,17 +1635,17 @@ class FondoProduccionLimpiasController < ApplicationController
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
             rol_id: Rol::REVISOR_TECNICO, 
-            persona_id: params[:revisor_tecnico_id]
+            persona_id: Persona.find_by(user_id: params[:revisor_tecnico_id]).id
           })
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
             rol_id: Rol::REVISOR_FINANCIERO,
-            persona_id: params[:revisor_financiero_id]
+            persona_id: Persona.find_by(user_id: params[:revisor_financiero_id]).id
           })
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
             rol_id: Rol::REVISOR_JURIDICO,
-            persona_id: params[:revisor_juridico_id]
+            persona_id: Persona.find_by(user_id: params[:revisor_juridico_id]).id
           })          
           mapa = MapaDeActor.find_or_create_by({
             flujo_id: @tarea_pendiente.flujo_id,
@@ -2859,7 +2828,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def enviar_evaluacion_general
       cuestionario_observacion = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).first 
-      binding.pry
 
       if cuestionario_observacion.nota == 1
         #SE CAMBIA EL ESTADO DEL FPL-09 A 2
@@ -2871,13 +2839,9 @@ class FondoProduccionLimpiasController < ApplicationController
           tarea_pendiente_fpl_10.save  
         end
 
-        #obtengo el usuario del jefe de linea
-        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_JURIDICO)
-        binding.pry
-        #obtengo el user_id del jefe de linea
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
-        tarea_pendiente_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
-        binding.pry
+        tarea_pendiente_juridica = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
+
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_11)
         custom_params_tarea_pendiente = {
           tarea_pendientes: {
@@ -2890,9 +2854,8 @@ class FondoProduccionLimpiasController < ApplicationController
           }
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
-        binding.pry
         #SE ENVIAR EL MAIL AL RESPONSABLE
-        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+        send_message(tarea_fondo, tarea_pendiente_juridica.user_id)
 
         respond_to do |format|
           format.js { flash.now[:success] = 'Evaluación General enviada correctamente'

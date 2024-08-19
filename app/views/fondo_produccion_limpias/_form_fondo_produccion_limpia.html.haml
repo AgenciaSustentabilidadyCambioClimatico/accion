@@ -41,6 +41,12 @@
       $('#modal_objetivos-form').modal('show');
     });
 
+    $('#modal_objetivos-form').on('show.bs.modal', function () {
+      // Limpiar los campos del formulario
+      $('#modal_objetivos-form').find('textarea').val('');
+      $('#modal_objetivos-form').find('input[type="hidden"]').val('');
+    });
+
     $('#open-modal-button_crear_equipo_receptora').click(function(){
       $('#modal_postulante_create-form').modal('show');
     });
@@ -4156,19 +4162,19 @@
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_tecnico)
               %br
-              = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
+              = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
             .col-12.col-lg-6
               %label.label-estilo{ for: 'revisor_financiero_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_financiero)
               %br
-              = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
+              = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
             .col-12.col-lg-6
               %label.label-estilo{ for: 'revisor_juridico_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_juridico)
               %br
-              = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
+              = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
             .col-12
               %label.label-estilo{ for: 'comentario_asignar_revisor' }
                 %abbr{ title: "Campo requerido" } *
