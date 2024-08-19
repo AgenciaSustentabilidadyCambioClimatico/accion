@@ -20,8 +20,8 @@
           %th Más Info
       %tbody
         - @acuerdos.each do |m|
-          - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.id).last
-          - coordinadores = TareaPendiente.where(flujo_id: m.id).select { |f| f.tarea.codigo == 'APL-003.1' || f.tarea.codigo == 'APL-018' || f.tarea.codigo == 'APL-023' }
+          - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.flujo.id).last
+          - coordinadores = TareaPendiente.where(flujo_id: m.flujo.id).select { |f| f.tarea.codigo == 'APL-003.1' || f.tarea.codigo == 'APL-018' || f.tarea.codigo == 'APL-023' }
           - user_id = []
           - coordinadores.each { |f| user_id << f.user_id}
           - usuarios_coordinadores = []
@@ -45,7 +45,7 @@
             %tr
               %td
               %td{style: 'font-weight: bold;'} Manifestación de interés
-              - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 30)
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
               %td= t.first.created_at.strftime("%d/%m/%Y")
               - vacio = m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
               %td
@@ -56,7 +56,7 @@
             %tr
               %td
               %td{style: 'font-weight: bold;'} Diagnostico General
-              - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 66)
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
               %td= t&.first&.created_at&.strftime("%d/%m/%Y")
               %td
                 -unless t.empty?
@@ -66,7 +66,7 @@
             %tr
               %td
               %td{style: 'font-weight: bold;', :onClick => "unfoldTareasPropuesta()", :id => "#{m.id}" } Propuesta Acuerdo (+)
-              - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 69)
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
               - convocatoria = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
               %td= convocatoria.first.blank? ? '' : convocatoria.first.fecha.strftime("%d/%m/%Y")
               %td
@@ -78,7 +78,7 @@
                 - c.each do |convocatoria|
                   %p= convocatoria&.fecha&.strftime("%d/%m/%Y")
               %td
-                - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 69)
+                - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
                 - unless t.blank?
                   = link_to descargar_compilado_adjuntos_path(t&.first&.id, codigo: "016"), class: "btn-tabla-instrumentos" do
                     =fa_icon 'download'
@@ -89,7 +89,7 @@
               %td= m&.firma_fecha_was&.strftime("%d/%m/%Y")
               - c = Convocatoria.where(flujo_id: m.id)
               - convocatoria = c.first
-              - t = TareaPendiente.where(flujo_id: m.id, tarea_id: 62).first
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
               %td
                 - if !convocatoria&.minuta&.acta&.file.nil? and !t.blank?
                   - minuta_id = convocatoria&.minuta&.id
@@ -105,7 +105,7 @@
               %td
               %td Adhesión
               %td
-              - tarea_pendiente = TareaPendiente.where(flujo_id: m.id, tarea_id: 54).first
+              - tarea_pendiente = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
               %td
                 - unless tarea_pendiente.blank?
                   = link_to descargar_compilado_adhesion_path(tarea_pendiente), class: "btn-tabla-instrumentos" do
@@ -119,12 +119,12 @@
             %tr{class: 'd-none', id: "implementacion#{m.id}"}
               %td
               %td Coordinación
-              - t1 = TareaPendiente.where(flujo_id: m.id, tarea_id: 51)
+              - t1 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
               - data = t1.blank? ? '' : t1&.first&.data[:convocatoria_id]
               - c1 = data.blank? ? '' : Convocatoria.where(id: data)
               %td= c1.blank? ? '' : c1.first.fecha.strftime("%d/%m/%Y")
               %td
-                - t2 = TareaPendiente.where(flujo_id: m.id, tarea_id: 51)
+                - t2 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
                 - unless t2.blank?
                   = link_to descargar_compilado_adjuntos_path(t2&.first&.id, codigo: "030"), class: "btn-tabla-instrumentos" do
                     =fa_icon 'download'
@@ -134,7 +134,7 @@
               %td Auditoría I
               %td
               %td
-                - t4 = TareaPendiente.where(flujo_id: m.id, tarea_id: 47).first
+                - t4 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
                 - unless t4.nil?
                   = link_to descargar_auditorias_manifestacion_de_interes_path(t4, m), class: "btn-tabla-instrumentos" do
                     =fa_icon 'download'
@@ -144,7 +144,7 @@
               %td Auditoría II
               %td
               %td
-                - t5 = TareaPendiente.where(flujo_id: m.id, tarea_id: 47).first
+                - t5 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
                 - unless t5.nil?
                   = link_to descargar_auditorias_manifestacion_de_interes_path(t5, m), class: "btn-tabla-instrumentos" do
                     =fa_icon 'download'
@@ -154,7 +154,7 @@
               %td Auditoría III
               %td
               %td
-                - t6 = TareaPendiente.where(flujo_id: m.id, tarea_id: 47).last
+                - t6 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).last
                 - unless t6.nil?
                   = link_to descargar_auditorias_manifestacion_de_interes_path(t6, m), class: "btn-tabla-instrumentos" do
                     =fa_icon 'download'
@@ -172,7 +172,7 @@
             %tr{class: 'd-none', id: "evaluacion#{m.id}"}
               %td
               %td Certificación
-              - t3 = TareaPendiente.where(flujo_id: m.id, tarea_id: 45).first
+              - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
               %td= t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
               %td
             %tr{class: 'd-none', id: "evaluacion#{m.id}"}
