@@ -332,9 +332,9 @@ class MapaDeActor < ApplicationRecord
 			# relación persona pero no en la tabla user.
 			fila[:rut_persona] = fila[:rut_persona].to_s.gsub('k', 'K').gsub(".", "")
 			rut_persona = fila[:rut_persona]
-			if rut_persona.blank? || rut_persona == "no"
+			if rut_persona.blank? || rut_persona.downcase == "no"
 				#debo buscar segun mi condicion
-				if fila[:email_institucional].to_s.blank? || fila[:email_institucional].to_s == "no"
+				if fila[:email_institucional].to_s.blank? || fila[:email_institucional].to_s.downcase == "no"
 					#puede ser que no tenga email, entonces primero me fijaré en traer a persona que tenga el rol de mi fila en el mapa
 					#asi, aunque no sea el mismo nombre da lo mismo porque se actualizará
 					#y ordenaré por fecha de actualizacion asc en mapa y traere el primero
@@ -365,7 +365,7 @@ class MapaDeActor < ApplicationRecord
 							usuario = User.includes(:personas).where(personas: {id: _actor.persona_id}).where(users: {rut: "", email: ""}).where.not(users: {id: usuarios_vacios_procesados}).first
 							if !usuario.nil?
 								usuarios_vacios_procesados << usuario.id
-								usuario.update(email: fila[:email_institucional].to_s)
+								usuario.update(email: 'no')
 								pem_lista.delete(_actor.id)
 								break
 							end

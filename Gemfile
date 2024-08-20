@@ -64,6 +64,8 @@ gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
 gem "cocoon"
 gem "dotenv-rails", groups: [:development, :test]
+gem 'will_paginate'
+gem 'will_paginate-bootstrap4'
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

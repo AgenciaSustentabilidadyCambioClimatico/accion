@@ -9,18 +9,18 @@ class InformeAcuerdo < ApplicationRecord
   validates :plazo_vigencia_acuerdo, presence: true, unless: -> { self.solo_respuesta_observaciones || self.solo_guarda_archivos }
   validates :vigencia_certificacion_final, presence: true, unless: -> { self.solo_respuesta_observaciones || self.solo_guarda_archivos }
   validates :tipo_acuerdo, presence: true, unless: -> { self.solo_respuesta_observaciones || self.solo_guarda_archivos }
-  
+
   # DZC 2019-06-11 17:56:58 se agrega para validar :con_extension
   validate :extension_valida?, unless: -> { self.tarea_codigo == Tarea::COD_APL_018 || self.solo_guarda_archivos}
 
   mount_uploaders :archivos_anexos, ArchivosAnexosInformeAcuerdosUploader
   mount_uploaders :archivos_anexos_posteriores_firmas, ArchivosAnexosPosterioresFirmasInformeAcuerdosUploader #DZC se agrega para tarea APL-023
 
-  # DZC 2018-11-02 20:08:24 valida que los archivos subidos se correspondan con el tipo de archivo 
+  # DZC 2018-11-02 20:08:24 valida que los archivos subidos se correspondan con el tipo de archivo
   # DZC 2018-11-08 13:54:26 evita la validación de la existencia de los archivos de evidencia en la APL-018
   # se incluye tarea 20 para agregar respuesta a observaciones
   # se agrega tarea 23 para no lanzar error al enviar sin tener archivos, ahora lo exige posterior al envio
-  validates :archivos_anexos_posteriores_firmas, presence: true, on: :update, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)} 
+  validates :archivos_anexos_posteriores_firmas, presence: true, on: :update, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)}
 
   enum tipo_acuerdo: [:desde_firma_acuerdo, :desde_aprobación_de_la_adhesión]
   enum mecanismo_implementacion_palabras_claves: [:tipo_acuerdo, :plazo_maximo_adhesion, :plazo_finalizacion_implementacion]
@@ -51,7 +51,7 @@ class InformeAcuerdo < ApplicationRecord
   # end
 
   # def plazos_auditorias?
-  #   
+  #
   #   auditorias = []
   #   self.auditorias.each do |k,v|
   #    auditorias << k.each do |k2,v2|
@@ -147,12 +147,12 @@ class InformeAcuerdo < ApplicationRecord
               errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al resultado de la suma entre #{pm_nombre} y el #{pma_nombre} (#{(pm + pma)}).") if (pmn < (pm + pma))
               errors.add(:plazo_maximo, "El #{pm_nombre} (#{pm}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pm < pmai)
               errors.add(:plazo_maximo, "El #{paf_nombre} (#{paf}) DEBE SER MENOR O IGUAL al #{pm_nombre} (#{pm}).") if (paf > pm)
-            else 
+            else
               errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL que el #{pma_nombre} (#{(pma)}).") if (pmn < pma)
-              errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pmn < pmai) 
+              errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pmai_nombre} (#{pmai}).") if (pmn < pmai)
               errors.add(:plazo_maximo_neto, "El #{paf_nombre} (#{paf}) DEBE SER MENOR O IGUAL al #{pmn_nombre} (#{pmn}).") if (paf > pmn)
             end
-          else 
+          else
             #DZC tipo de acuerdo simultáneo
             errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pma_nombre} (#{pma}).") if (pmn < pma)
             errors.add(:plazo_maximo_neto, "El #{pmn_nombre} (#{pmn}) DEBE SER MAYOR O IGUAL al #{pfi_nombre} (#{pfi}).") if (pmn < pfi)
@@ -165,13 +165,13 @@ class InformeAcuerdo < ApplicationRecord
         errors.messages[:auditorias] += [": debe existir una Auditoría Final, y debe ser única."]
         plazos_correctos = false
       end
-      
+
       plazos_correctos
     end
   end
 
   def _a_datos(auditorias)
-    
+
     datos = self.attributes
     datos.each{ |k,v| datos[k] = "" if v.nil? }
     datos["archivos_anexos"] = datos["archivos_anexos"].join(",")
@@ -195,7 +195,7 @@ class InformeAcuerdo < ApplicationRecord
 
     ActionView::Base.new(
       Rails.configuration.paths["app/views"]).render(
-      :partial => 'acuerdo_actores/informe', :format => :txt, 
+      :partial => 'acuerdo_actores/informe', :format => :txt,
       :locals => {
         datos: self::_a_datos(auditorias),
         actores_mapa: actores_mapa,
@@ -226,7 +226,7 @@ class InformeAcuerdo < ApplicationRecord
     end
     fecha_comparativa
   end
-    
+
   #DZC calcula fechas
   def calcula_fechas
     self.calcula_fecha_firma
@@ -242,26 +242,26 @@ class InformeAcuerdo < ApplicationRecord
   end
 
   def calcula_fecha_vigencia_acuerdo(anios=self.plazo_vigencia_acuerdo)
-    
+
     anios = anios.blank? ? 0 : anios
     self.fecha_vigencia_acuerdo = self.calcula_fecha_firma + anios.years
   end
 
   def calcula_fecha_plazo_maximo_adhesion(meses=self.plazo_maximo_adhesion)
-    
+
     meses = meses.blank? ? 0 : meses
     self.fecha_plazo_maximo_adhesion = self.calcula_fecha_firma + meses.months
   end
 
   #DZC depende del tipo_acuerdo
   def calcula_fecha_plazo_finalizacion_implementacion(meses=self.plazo_finalizacion_implementacion)
-    
+
     meses = meses.blank? ? 0 : meses
     self.fecha_plazo_finalizacion_implementacion = self.calcula_fecha_firma + meses.months
   end
 
   def calcula_fecha_plazo_maximo(meses=self.plazo_maximo)
-    
+
     meses = meses.blank? ? 0 : meses
     self.fecha_plazo_maximo = self.calcula_fecha_plazo_maximo_adhesion + meses.months
   end
@@ -324,7 +324,7 @@ class InformeAcuerdo < ApplicationRecord
   def __contenido(editor_hash,image_width,justify,sizes)
     data  = []
     # Cabecera fija con el logo de la agencia
-    data  << { value: Rails.root.join('app','assets','images','logo-ascc.jpg').to_s, attributes: { width: image_width, in_header: true }, image: true }
+    data  << { value: Rails.root.join('app','assets','images','logo-ascc-nuevo-png').to_s, attributes: { width: image_width, in_header: true }, image: true }
     data  << { value: "\n"}
     editor_hash.each do |k,lines|
       skip_to_next = nil
@@ -335,7 +335,7 @@ class InformeAcuerdo < ApplicationRecord
         align = :left
         color = '000000'
         nxti  = lines[i+1]
-        
+
         # Ignoramos los saltos de líneas continuos
         unless skip_to_next
           # Normalizamos attributos cuando esto existen
@@ -347,7 +347,7 @@ class InformeAcuerdo < ApplicationRecord
             size    = attributes["size"].blank? ? sizes[:normal] : sizes[attributes["size"].to_sym]
             color   = attributes["color"].to_s.upcase.sub(/[^0-9A-Z]/,'') unless attributes["color"].blank?
           end
-          
+
           # Si la línea siguiente es un salto de línea y posee los atributos de alineación de la línea actual, entonces se presume que no es
           # un salto de línea deseado. Es por esto que nos "robamos" su atributo de centrado y la ignoramos.
           if ! nxti.blank? && nxti["insert"].gsub(/\n/,'').blank? && nxti.has_key?("attributes") && nxti["attributes"].has_key?("align")
@@ -362,7 +362,7 @@ class InformeAcuerdo < ApplicationRecord
           end
 
           attributes = { style: style, size: size, align: align, color: color }
-          
+
           # Procesamos de forma disntas las líneas que empiezan con uno o más salto de línea
           if line["insert"].match(/^[\n]{2,}$/).blank?
             values = []

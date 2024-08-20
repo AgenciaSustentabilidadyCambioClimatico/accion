@@ -1,7 +1,7 @@
 class ManifestacionDeInteresController < ApplicationController
   before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
-  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
-  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl]
+  before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl, :index]
+  before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :nombre_apl, :editar_nombre_apl, :cambio_nombre_apl, :index]
 
   before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
     :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad,
@@ -53,6 +53,21 @@ class ManifestacionDeInteresController < ApplicationController
   before_action :set_archivo_mapa_actores, only: [:edit]
   before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
   before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
+
+  def index
+    if params[:query].present?
+      if params[:query].to_i == 0
+        manifestacion_de_intereses = ManifestacionDeInteres.where("nombre_acuerdo ILIKE ?", "%#{params[:query]}%")
+        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+      else
+        manifestacion_de_intereses = ManifestacionDeInteres.where(id: params[:query].to_i)
+        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+      end
+    else
+      manifestacion_de_intereses = ManifestacionDeInteres.all
+      @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+    end
+  end
 
   def iniciar_flujo #DZC TAREA APL-001 al iniciar proceso
     warning   = nil

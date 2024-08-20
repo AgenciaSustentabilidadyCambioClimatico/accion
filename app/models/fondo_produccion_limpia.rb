@@ -30,7 +30,7 @@ class FondoProduccionLimpia < ApplicationRecord
   mount_uploader :documento_coste_rol_unico_tributario_receptor, ArchivoDocumentoCosteRolUnicoTributarioReceptorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_representante_legal_anexo_a_receptor, ArchivoDeclaracionJuradaRepresentanteLegalAnexoAReceptorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_representante_legal_anexo_b_receptor, ArchivoDeclaracionJuradaRepresentanteLegalAnexoBReceptorFondoProduccionLimpiaUploader
-  
+
   mount_uploader :instrumento_constitucion_estatutos_ejecutor , ArchivoInstrumentoConstitucionEstatutosEjecutorFondoProduccionLimpiaUploader
   mount_uploader :certificado_vigencia_constitucion_ejecutor, ArchivoCertificadoVigenciaConstitucionEjecutorFondoProduccionLimpiaUploader
   mount_uploader :copia_instrumento_nombre_representante_ejecutor, ArchivoCopiaInstrumentoNombreRepresentanteEjecutorFondoProduccionLimpiaUploader
@@ -48,7 +48,7 @@ class FondoProduccionLimpia < ApplicationRecord
   def comunas
     self.flujo.comunas
   end
-  
+
   def comunas_beauty_tree_selector
     Pais.find(Pais::CHILE).beauty_tree_selector(self.comunas.pluck(:id))
   end
@@ -89,27 +89,27 @@ class FondoProduccionLimpia < ApplicationRecord
 
   def revisores_select
     nombre_acuerdo = self.nombre_acuerdo.blank? ? self.flujo.tipo_instrumento_id : self.nombre_acuerdo
-    Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}     
+    Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}
   end
- 
+
   def self.fpls
     select("fondo_produccion_limpia.flujo_id AS id, CONCAT('ID ', fondo_produccion_limpia.flujo_id, ' - FPL - ', fondo_produccion_limpia.codigo_proyecto) AS nombre_para_raa")
       .joins("INNER JOIN flujos ON fondo_produccion_limpia.flujo_id = flujos.id")
       .order("id DESC")
-  end 
+  end
 
   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil, confinanciamiento_empresa = nil)
     require 'stringio'
-  
+
     pdf = Prawn::Document.new
     pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
-  
+
     # HEADER
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
-        pdf.image Rails.root.join("app/assets/images/logo-ascc.png"), width: 119
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
-          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
             pdf.text "FORMULARIO DE DIAGNÓSTICO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
           end
         end
@@ -121,10 +121,10 @@ class FondoProduccionLimpia < ApplicationRecord
         end
       end
     end
-  
+
     # CONTENIDO
     validaciones = self.get_campos_validaciones
-  
+
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
       # Aquí se agregan los elementos del PDF, según el contenido necesario.
       self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica))
@@ -153,7 +153,7 @@ class FondoProduccionLimpia < ApplicationRecord
       else
         self.duracion.to_s
       end
-    
+
       self.pdf_contenido_formato(pdf, duracion_formateado)
       self.pdf_separador(pdf, 20)
       # Añade más contenido según sea necesario
@@ -169,8 +169,8 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, "Indicar fortalezas del o los consultores")
       self.pdf_contenido_formato(pdf, self.fortalezas_consultores)
       self.pdf_separador(pdf, 20)
-      
-  
+
+
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
         self.pdf_tabla_plan_actividades(pdf, planes)
@@ -178,6 +178,10 @@ class FondoProduccionLimpia < ApplicationRecord
         self.pdf_tabla_plan_actividades_tipos(pdf, planes)
       end  
       self.pdf_separador(pdf, 20)
+
+      #self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
+      #self.pdf_sub_titulo_formato(pdf, "Antecedentes que se deben adjuntar")
+      #self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
@@ -191,16 +195,16 @@ class FondoProduccionLimpia < ApplicationRecord
       end
       self.pdf_separador(pdf, 20)
     end
-    
+
     # Ruta donde se guardará el archivo PDF
     pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
 
     # Asegúrate de que el directorio existe
     FileUtils.mkdir_p(File.dirname(pdf_file_path))
-  
+
     # Guardar el PDF en la ruta especificada
     pdf.render_file(pdf_file_path)
-  
+
     # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
     pdf_file_path.to_s
 
@@ -211,20 +215,20 @@ class FondoProduccionLimpia < ApplicationRecord
 
   # Método para crear una tabla con cuatro campos en el PDF
   def pdf_tabla_objetivos(pdf, objetivo_especificos)
-    
+
     begin
       # Encabezados de la tabla
       headers = ["Descripción", "Metodología", "Resultado", "Indicadores"]
-      
+
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
 
       # Agregar cada objetivo específico a la tabla
       objetivo_especificos.each do |objetivo|
         fila = [
-          objetivo[:descripcion].to_s, 
-          objetivo[:metodologia].to_s, 
-          objetivo[:resultado].to_s, 
+          objetivo[:descripcion].to_s,
+          objetivo[:metodologia].to_s,
+          objetivo[:resultado].to_s,
           objetivo[:indicadores].to_s
         ]
         data << fila
@@ -249,7 +253,7 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Micro","Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
         [campo1.to_s, campo2.to_s, campo3.to_s, campo4.to_s] # Datos de los campos
       ]
-    
+
       pdf.table(data, header: true, column_widths: [130, 130, 130, 130], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
@@ -289,7 +293,7 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Empresas socias de la A.G. potenciales suscriptoras del APL", "Empresas potenciales no socias de la A.G."], # Encabezados de la tabla
         [campo1.to_s, campo2.to_s] # Datos de los campos
       ]
-    
+
       pdf.table(data, header: true, column_widths: [260, 260], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
@@ -303,7 +307,7 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def pdf_titulo_formato pdf, titulo
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
       pdf.text titulo, size: 11
     end
     pdf.text "··········<color rgb='003DA6'>··········</color>", size: 20, color: 'EB0029', inline_format: true, leading: 0
@@ -311,15 +315,17 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def pdf_sub_titulo_formato pdf, subtitulo
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
       #pdf.text titulo, size: 11
       pdf.text subtitulo, size: 10
     end
+
+    #pdf.text "··········<color rgb='003DA6'>··········</color>", size: 20, color: 'EB0029', inline_format: true, leading: 0
     pdf.move_down 5
   end
 
   def pdf_contenido_formato pdf, contenido
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
     #  pdf.text titulo, size: 11
     end
     pdf.text contenido.to_s, size: 9
@@ -327,23 +333,23 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def pdf_tabla_equipo_trabajo(pdf, equipos)
-    
+
     begin
       # Encabezados de la tabla
       headers = ["Nombre Completo", "RUT", "Teléfono", "E-mail", "Profesión", "Funciones", "Valor HH"]
-      
+
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
 
       # Agregar cada objetivo específico a la tabla
       equipos.each do |equipo|
         fila = [
-          equipo.user.nombre_completo.to_s, 
-          equipo.user.rut.to_s, 
-          equipo.user.telefono.to_s, 
-          equipo.user.email.to_s, 
-          equipo.profesion.to_s, 
-          equipo.funciones_proyecto.to_s, 
+          equipo.user.nombre_completo.to_s,
+          equipo.user.rut.to_s,
+          equipo.user.telefono.to_s,
+          equipo.user.email.to_s,
+          equipo.profesion.to_s,
+          equipo.funciones_proyecto.to_s,
           equipo.valor_hh.to_s
         ]
         data << fila
@@ -361,13 +367,13 @@ class FondoProduccionLimpia < ApplicationRecord
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
   end
-  
+
   def pdf_tabla_empresa(pdf, empresas)
-    
+
     begin
       # Encabezados de la tabla
       headers = ["Razón Social", "RUT"]
-      
+
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
 
@@ -375,12 +381,12 @@ class FondoProduccionLimpia < ApplicationRecord
       empresas.each do |empresa|
 
         fila = [
-          empresa.contribuyente.razon_social.to_s, 
+          empresa.contribuyente.razon_social.to_s,
           empresa.contribuyente.rut.to_s
         ]
         data << fila
       end
-  
+
       pdf.table(data, header: true, column_widths: [260, 260], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
@@ -397,7 +403,7 @@ class FondoProduccionLimpia < ApplicationRecord
     begin
       # Encabezados de la tabla
       headers = ["Etapa / Actividades", "1", "2", "3", "4", "Recursos Humanos Propios", "Recursos Humanos Externos", "Gastos de Operación", "Gastos de Administración"]
-    
+
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
 
@@ -482,7 +488,7 @@ class FondoProduccionLimpia < ApplicationRecord
       # Encabezados de la tabla principal
 
       # Datos de la tabla principal
-      
+
       porcentaje = (costos.costo_total_de_la_propuesta.to_f / costos.costo_total_de_la_propuesta) * 100
       porcentaje_costo_total_de_la_propuesta = "%.2f %%" % porcentaje
 
@@ -509,6 +515,8 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # Encabezados de la segunda tabla (Estructura de costos por partida)
 
+      #data_partida = [headers_partida] # Comienza con los encabezados
+
       porcentaje6 = (costos.recursos_humanos_propios.to_f / costos.costo_total_de_la_propuesta) * 100
       porcentaje_recursos_humanos_propios = "%.2f %%" % porcentaje6
 
@@ -531,6 +539,12 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), porcentaje_gastos_administrativos]
       ]
       # Encabezados de la tercera tabla (Aporte beneficiario por partida)
+      #headers_aporte = ["Aporte beneficiario por partida", "$ Aporte Valorado", "% Aporte Valorado", "$ Aporte Líquido", "% Aporte Líquido"]
+
+      #data_aporte = [headers_aporte] # Comienza con los encabezados
+
+
+
       porcentaje10 = (costos.aporte_propio_valorado_rrhh_propio.to_f / costos.aporte_propio_valorado) * 100
       porcentaje_aporte_propio_valorado_rrhh_propio = "%.2f %%" % porcentaje10
 
@@ -539,7 +553,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       porcentaje12 = (costos.aporte_propio_valorado_rrhh_externo.to_f / costos.aporte_propio_valorado) * 100
       porcentaje_aporte_propio_valorado_rrhh_externo = "%.2f %%" % porcentaje12
-      
+
       porcentaje13 = (costos.aporte_propio_liquido_rrhh_externo.to_f / costos.aporte_propio_liquido) * 100
       porcentaje_aporte_propio_liquido_rrhh_externo = "%.2f %%" % porcentaje13
 
@@ -567,7 +581,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos.aporte_solicitado_al_fondo != 0
         porcentaje18 = (costos.aporte_solicitado_fondo_rrhh_externo.to_f / costos.aporte_solicitado_al_fondo) * 100
         porcentaje_aporte_solicitado_fondo_rrhh_externo = "%.2f %%" % porcentaje18
-    
+
         porcentaje19 = (costos.aporte_solicitado_fondo_gasto_operacion.to_f / costos.aporte_solicitado_al_fondo) * 100
         porcentaje_aporte_solicitado_fondo_gasto_operacion = "%.2f %%" % porcentaje19
 
@@ -660,7 +674,7 @@ class FondoProduccionLimpia < ApplicationRecord
       else
         cumple4 = 'NO'
       end
-    
+
       # Datos de la tabla validación
       data_validacion = [
         ["Glosa", "Monto", "Criterio", "Límite", "Cumple?"],
@@ -765,13 +779,13 @@ class FondoProduccionLimpia < ApplicationRecord
   def pdf_contenido_formato_custom pdf, variable, valor, validaciones, forzar_mostrar=false
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       valor_por_variable = self.send(variable.to_s)
       if((valor_por_variable.blank? || valor.blank?) && !forzar_mostrar)
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
@@ -784,13 +798,13 @@ class FondoProduccionLimpia < ApplicationRecord
   def pdf_contenido_formato_select pdf, variable, valor_real, link, validaciones
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       valor = self.send(variable.to_s)
       if valor.blank?
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
@@ -807,12 +821,12 @@ class FondoProduccionLimpia < ApplicationRecord
   def pdf_contenido_formato_checks pdf, variable, valores, validaciones
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       if valores.blank? || valores.select{|v| v[:status] == "indeterminate" || v[:status] == "checked" }.size == 0
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
