@@ -2904,6 +2904,10 @@
       height: 50px; /* Ajusta la altura si es necesario */
     }
 
+    .icon-red {
+      color: red;
+    }
+
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
@@ -3591,6 +3595,9 @@
                         %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipos_1_2)
                         %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_1)
                         %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_2)
+                        %td.contenido-form.dos.iconos-acciones
+                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                            %i.fa.fa-edit 
                       - else
                         - (1..@duracion).each do |d|
                           %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
@@ -3598,9 +3605,13 @@
                         %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
-                      %td.contenido-form.dos.iconos-acciones
-                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                          %i.fa.fa-edit 
+                        %td.contenido-form.dos.iconos-acciones
+                          - if @total_de_errores_por_tab.present?
+                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                              %i.fa.fa-edit.icon-red
+                          - else
+                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                              %i.fa.fa-edit
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body

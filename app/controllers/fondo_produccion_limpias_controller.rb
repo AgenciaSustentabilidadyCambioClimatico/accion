@@ -254,17 +254,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @total_de_errores_por_tab[:"equipo-trabajo"] = equipo_trabajo.count if equipo_trabajo.count != 0
 
       #Campos Plan de Actividades
+      @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
       
       #consulta si el numero de plan es igual al numero de actividades
-      plan = nil
+      plan_de_actividades = nil
       if @count_plan_actividades != @actividad_x_linea.length
-        
-        #SE DEBE DESCOMENTAR AL TERMINAR LAS PRUEBAS
-        #plan = 0
-        #plan_de_actividades << plan
-
-        @total_de_errores_por_tab[:"plan-de-actividades"] = plan_de_actividades.count if plan_de_actividades.count != 0
-        
+        plan_de_actividades = @actividad_x_linea.length - @count_plan_actividades
+        @total_de_errores_por_tab[:"plan-de-actividades"] = plan_de_actividades
       end 
 
       #Campos Documentación
@@ -293,7 +289,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @total_de_errores_por_tab[:"documentacion-legal"] = documentacion_legal.count if documentacion_legal.count != 0
 
-      @count_plan_actividades = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).count  
+      
   
       @tipo = params['tipo']
 
@@ -2873,7 +2869,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def resolucion_contrato
-      #binding.pry
     end
 
     def adjuntar_resolucion_contrato
