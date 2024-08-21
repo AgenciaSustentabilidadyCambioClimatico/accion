@@ -524,6 +524,7 @@
 
     var duracion = checkboxesSeleccionados;
     var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
+    var tipo_actividad = document.getElementById('tipo_actividad').value;
 
     var nombre_actividad = document.getElementById('nombre_actividad').value;
     var alertaMostrada = false;
@@ -555,6 +556,15 @@
       event.preventDefault();
       return;
     }
+
+    if (tipo_actividad == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, seleccione un tipo de actividad');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
     
     if (plan_id != 0) {
       $.ajax({
@@ -579,7 +589,8 @@
                 nombre_actividad: nombre_actividad,
                 duracion: duracion, 
                 objetivos_especifico_id: objetivos_especifico_id, 
-                opcion: 'insert'},
+                opcion: 'insert',
+                tipo_actividad_id: tipo_actividad},
         method: "POST",
         success: function(response) {
         },
@@ -5349,6 +5360,14 @@
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                             - else
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
+                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
+                          %tr
+                            %td.contenido-popup-form=t(:tipo_de_actividad)
+                            %td.contenido-popup-form 
+                              - if @plan_actividades.present?
+                                = f.select :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
+                              - else
+                                = f.select :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
                           %td.contenido-popup-form{colspan: @duracion}
                             %div#div_duracion.table-responsive

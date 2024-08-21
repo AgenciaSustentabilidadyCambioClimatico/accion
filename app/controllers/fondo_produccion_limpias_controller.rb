@@ -1079,6 +1079,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad = Actividad.find_by(id: params['plan_id'])
         @nombre_actividad = @actividad.nombre if @actividad&.present?  
         @objetivos_especifico_id = nil
+        @tipo_actividad = nil
         @existe_plan = 0
   
         maximo = @duracion_general.duracion
@@ -1097,6 +1098,14 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
+        @tipo_act = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad?
+
+        if @tipo_act == "tipo_a"
+          @tipo_actividad = 0
+        else
+          @tipo_actividad = 1
+        end
+
         @existe_plan = 1
         maximo = @duracion_general.duracion
         1.upto(maximo) do |numero|
@@ -1139,7 +1148,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad } } 
       end
     end
     
@@ -1390,12 +1399,12 @@ class FondoProduccionLimpiasController < ApplicationController
     end  
 
     def new_plan_actividades
-      @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
+      @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
       arreglo = []
-
+   
       if params['opcion'] == 'create'
     
-        maximo = @duracion_general.duracion
+        maximo = @fondo_produccion_limpia.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
@@ -1410,7 +1419,7 @@ class FondoProduccionLimpiasController < ApplicationController
           format.js { render 'new_plan_actividades', locals: { duracion: @duracion, plan_id: params['plan_id'] } }
         end
       else
-        maximo = @duracion_general.duracion
+        maximo = @fondo_produccion_limpia.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
         end
@@ -1427,16 +1436,15 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad = Actividad.new(custom_params_actividades[:actividades])
         @actividad.save
 
-
         #inserta en tabla actividades la actividad_por_linea
         custom_params_actividad_por_linea = {
           actividad_por_linea: {
             actividad_id: @actividad.id,
-            tipo_instrumento_id: 11, #SE DEBE CAMBIAR POR EL SELECCIONADO EN LA TAREA APL-005
-            tipo_permiso: 3
+            tipo_instrumento_id: @fondo_produccion_limpia.flujo.tipo_instrumento_id,
+            tipo_permiso: 3,
+            tipo_actividad: params['tipo_actividad_id'].to_i
           }
         }
-        
         @actividad_por_linea = ActividadPorLinea.new(custom_params_actividad_por_linea [:actividad_por_linea])
         @actividad_por_linea.save
 

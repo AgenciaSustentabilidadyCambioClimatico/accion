@@ -60,7 +60,9 @@ document.getElementById('plan_id').value = <%= plan_id %>;
 <% end %>
 $('#objetivos_especifico_id').val('<%= @objetivos_especifico_id %>');
 
-//console.log("<%= @duracion %>");
+$('#tipo_actividad').val('<%= @tipo_actividad %>');
+
+//console.log("<%= @tipo_actividad %>");
 $('#div_duracion table tbody').empty();
 var newRowDuracion = "<%= @duracion.html_safe %>";
 $('#div_duracion table tbody').append(newRowDuracion);

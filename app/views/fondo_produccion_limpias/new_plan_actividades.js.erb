@@ -1,3 +1,8 @@
+var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propios');
+var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
+var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
+var div_plan_gastos_administracion = document.getElementById('div_plan_gastos_administracion');
+
 $('#div_plan_recursos_propios table tbody').empty();
 $('#div_plan_recursos_externos table tbody').empty();
 
@@ -18,3 +23,8 @@ $('#div_duracion table tbody').append(newRowDuracion);
 
 $('#div_plan_gastos_operacion table tbody').empty();
 $('#div_plan_gastos_administracion table tbody').empty();
+
+div_plan_recursos_propios.style.display = 'none';
+div_plan_recursos_externos.style.display = 'none';
+div_plan_gastos_operacion.style.display = 'none';
+div_plan_gastos_administracion.style.display = 'none';
