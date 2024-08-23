@@ -164,7 +164,7 @@
   }
 
   function sumarValoresTec() {
-    if(#{@solo_lectura} != true)  {
+    if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
       var total = document.getElementById('total_tecnica');
@@ -188,8 +188,8 @@
   }
 
   function sumarValoresTecElementosCarga() {
-    if(#{@solo_lectura} != true)  {
-      if(#{@flujo.tipo_instrumento_id} != 11)  {
+    if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
+      if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29)  {
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
         var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
         var total = document.getElementById('total_tecnica_elementos');
@@ -213,7 +213,7 @@
   }
 
   function sumarValoresTecElementos(campo_a, campo_b, nombre) {
-    if(#{@flujo.tipo_instrumento_id} != 11)  {
+    if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29)  {
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
       var total = document.getElementById('total_tecnica_elementos');
@@ -408,6 +408,7 @@
               solo_lectura: solo_lectura},
       method: "GET",
       success: function(response) {
+        $('#flag').val(2);
         $('#modal_create_plan_actividades-form').modal('show');
       },
       error: function(error) {
@@ -508,7 +509,7 @@
     });
   }
 
-  function guardarPlanActividad(plan_id){
+  function guardarPlanActividad(plan_id, flag){
     // Seleccionar todos los checkboxes dentro de la tabla
     var checkboxes = document.querySelectorAll('#div_duracion input[type="checkbox"]');
 
@@ -524,10 +525,9 @@
 
     var duracion = checkboxesSeleccionados;
     var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
-    var tipo_actividad = document.getElementById('tipo_actividad').value;
-
     var nombre_actividad = document.getElementById('nombre_actividad').value;
     var alertaMostrada = false;
+    var tipo_actividad = null;
 
     // Si el campo está vacío, muestra una alerta y evita el envío del formulario
     if (nombre_actividad == "") {
@@ -557,13 +557,18 @@
       return;
     }
 
-    if (tipo_actividad == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, seleccione un tipo de actividad');
-        alertaMostrada = true;
+    if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29) {
+      if(flag == 1)  {
+        tipo_actividad = document.getElementById('tipo_actividad').value;
+        if (tipo_actividad == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, seleccione un tipo de actividad');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        } 
       }
-      event.preventDefault();
-      return;
     }
     
     if (plan_id != 0) {
@@ -844,6 +849,7 @@
               opcion: 'create'},
       method: "POST",
       success: function(response) {
+        $('#flag').val(1);
         $('#modal_create_plan_actividades-form').modal('show');
       },
       error: function(error) {
@@ -1819,7 +1825,7 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11)  {
+    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22)  {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -1921,7 +1927,7 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11)  {
+    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22)  {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -2919,10 +2925,21 @@
       color: red;
     }
 
+    #modal-dialog-plan {
+      max-width: 60%;
+      margin: 30px auto;
+    }
+
+    #modal-dialog-objetivo {
+      max-width: 60%;
+      margin: 30px auto;
+    }
+
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
-  - solo_lectura = @solo_lectura
+  -#- solo_lectura = @solo_lectura
+  - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura
   - adm_juridica = @adm_juridica
   %div{ id: "tipos", "data-tipo" => tipo }
   <input type="hidden" id="codigo_estado" name="codigo_estado" value="">
@@ -3557,7 +3574,6 @@
                     = f.object.fortalezas_consultores
   #plan-de-actividades.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"plan-de-actividades"] ? 'true' : 'false'), "aria-labelledby" => "plan-de-actividades-tab", :role => "tabpanel", class: ("show active" if tabs[:"plan-de-actividades"])}
     .card
-      .card-header
       .card-body
         <h1>Plan de Actividades</h1>
         .alert.alert-primary
@@ -3582,18 +3598,24 @@
                 %th.encabezado-form="Recursos Humanos Externos"
                 %th.encabezado-form="Gastos de Operación"
                 %th.encabezado-form="Gastos de Administración"
+              -#%tr
+                -#%th.encabezado-form{colspan: @duracion + 1, style: 'text-align: center; border-right: 1px solid #dee2e6;'} Total Actividades
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form
               %tbody
                 - if @actividad_x_linea.present?  
                   - current_tipo_actividad = nil
                   - @actividad_x_linea.each do |actividad|
-                    - if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
+                    - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 
                       - if current_tipo_actividad != actividad.tipo_actividad
                         - current_tipo_actividad = actividad.tipo_actividad
                         %tr
                           %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                     %tr
                       %td.contenido-form=actividad.nombre
-                      -#- if @actividad_detalle.present?
                       - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
                       - if detalle_existente.present?
                         - duraciones = detalle_existente.duracion.split(',')
@@ -4033,7 +4055,7 @@
                     %td#valida_pregunta_gastos_administrativos.contenido-form-center
                       %span{ class: 'text-danger' } NO
                 %tr
-                  %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
+                  %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento ASCC
                   - if @costos.present?
                     %td#valida_aporte_solicitado_al_fondo.contenido-form-costo=number_to_currency @costos.aporte_solicitado_al_fondo
                     %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
@@ -4081,7 +4103,7 @@
                     %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center 
                       %span{ class: 'text-danger' } NO
                 %tr
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento ASCC
                   - if @costos_seguimiento[0].present?
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f)
                     %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
@@ -4116,7 +4138,7 @@
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  
                       %span{ class: 'text-danger' } NO        
                 %tr
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento CPL
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento ASCC
                   - if @costos_seguimiento[1].present?
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f)
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
@@ -5076,7 +5098,7 @@
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar)                                               
   #modal_objetivos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-objetivo
       .modal-content
         .modal-body
           = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -5113,7 +5135,7 @@
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
             
   #modal_objetivos-edit-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-objetivo
       .modal-content
         .modal-body
           = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -5333,7 +5355,7 @@
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
   -# POPUP PLAN DE ACTIVIDADES
   #modal_create_plan_actividades-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-plan
       .modal-content
         .modal-body
           = form_with(model: @plan_actividades, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -5348,11 +5370,11 @@
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         = hidden_field_tag 'plan_id', id: 'plan_id'
+                        = hidden_field_tag 'flag', '', id: 'flag'
                         %tr
                           %td.contenido-popup-form=t(:nombre_actividades)
                           %td.contenido-popup-form 
                             = f.text_area  :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;', disabled: true
-                            -#= f.text_area :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, disabled: true
                         %tr
                           %td.contenido-popup-form=t(:objetivos_específicos)
                           %td.contenido-popup-form 
@@ -5361,13 +5383,7 @@
                             - else
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
-                          %tr
-                            %td.contenido-popup-form=t(:tipo_de_actividad)
-                            %td.contenido-popup-form 
-                              - if @plan_actividades.present?
-                                = f.select :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
-                              - else
-                                = f.select :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
+                          %tr#tr_tipo_actividad
                         %tr
                           %td.contenido-popup-form{colspan: @duracion}
                             %div#div_duracion.table-responsive
@@ -5382,8 +5398,7 @@
                                       %td.sub-contenido-popup-form{:colspan => @duracion} No checkboxes
                                 %tbody
                         %tr
-                          %td.contenido-popup-form{colspan: 4}
-                            %div.table-responsive  
+                          %td#td_plan_recursos_propios.contenido-popup-form{colspan: 4}
                             %div#div_plan_recursos_propios.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -5402,8 +5417,7 @@
                                         %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", id: "agregar_rr_pp", style: 'color: #5d759e;'} Agregar
                                         %i.fa.fa-plus-square.icono-celeste
                         %tr
-                          %td.contenido-popup-form{colspan: 4}
-                            %div.table-responsive  
+                          %td#td_plan_recursos_externos.contenido-popup-form{colspan: 4}
                             %div#div_plan_recursos_externos.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -5423,8 +5437,7 @@
                                         %i.fa.fa-plus-square.icono-celeste
 
                         %tr 
-                          %td.contenido-popup-form{colspan: 6}
-                            %div.table-responsive  
+                          %td#td_plan_gastos_operacion.contenido-popup-form{colspan: 6}
                             %div#div_plan_gastos_operacion.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -5446,8 +5459,7 @@
                                         %a{href: "#-1", onclick: "modalGastosOperacion(document.getElementById('plan_id').value); return false;", id: "agregar_gas_ope", style: 'color: #5d759e;'} Agregar Fila
                                         %i.fa.fa-plus-square.icono-celeste
                         %tr 
-                          %td.contenido-popup-form{colspan: 6}
-                            %div.table-responsive  
+                          %td#td_plan_gastos_administracion.contenido-popup-form{colspan: 6}
                             %div#div_plan_gastos_administracion.table-responsive 
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -5473,7 +5485,7 @@
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             - if !solo_lectura
               -#= button_to #button_name, '#', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;"
-              = button_to 'Crear Actividad', '#', id: 'button_id', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;" 
+              = button_to 'Crear Actividad', '#', id: 'button_id', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value, document.getElementById('flag').value); return false;" 
 
   -# POPUP RRHH PROPIOS
   #modal_rrhh_propios-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
@@ -5658,7 +5670,7 @@
         __show_hide_(childGroup,childControl);      
     });
 
-    if(#{@flujo.tipo_instrumento_id} == 11) {
+    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22) {
       init_coordenadas_territorios();
     }  
       

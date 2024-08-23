@@ -618,7 +618,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def get_objetivo_especifico
-
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
       set_costos
@@ -1436,13 +1435,19 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad = Actividad.new(custom_params_actividades[:actividades])
         @actividad.save
 
+        if params['tipo_actividad_id'].to_i == 0
+          tipo_actividad = nil
+        else
+          tipo_actividad = params['tipo_actividad_id'].to_i
+        end
+
         #inserta en tabla actividades la actividad_por_linea
         custom_params_actividad_por_linea = {
           actividad_por_linea: {
             actividad_id: @actividad.id,
             tipo_instrumento_id: @fondo_produccion_limpia.flujo.tipo_instrumento_id,
             tipo_permiso: 3,
-            tipo_actividad: params['tipo_actividad_id'].to_i
+            tipo_actividad: tipo_actividad
           }
         }
         @actividad_por_linea = ActividadPorLinea.new(custom_params_actividad_por_linea [:actividad_por_linea])

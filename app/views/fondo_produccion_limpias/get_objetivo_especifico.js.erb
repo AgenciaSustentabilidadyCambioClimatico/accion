@@ -12,7 +12,7 @@ $('#div_objetivo_especifico table tbody').empty();
   "<td class='contenido-form' id='objetivo_resultado_<%= objetivo_especifico.id %>'>" + resultado + "</td>" +
   "<td class='contenido-form' id='objetivo_indicadores_<%= objetivo_especifico.id %>'>" + indicadores + "</td>";
 
-    <% if !solo_lectura %>
+    <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1%>
       newRow += "<td class='contenido-form dos iconos-acciones'>" +
                 "<a title='Editar los objetivos específicos' class='editar-objetivo' id='editar-objetivo-especifico-" + objetivo_id + "' data-objetivo-id='" + objetivo_id + "' href='#' onclick='editarObjetivo(" + objetivo_id + ")'><i class='fa fa-edit'></i></a> ";
       <% if objetivo_especifico_existente?(objetivo_especifico.id) %>

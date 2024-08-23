@@ -2,6 +2,10 @@ var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propi
 var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
 var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
 var div_plan_gastos_administracion = document.getElementById('div_plan_gastos_administracion');
+var td_plan_recursos_propios = document.getElementById('td_plan_recursos_propios');
+var td_plan_recursos_externos = document.getElementById('td_plan_recursos_externos');
+var td_plan_gastos_operacion = document.getElementById('td_plan_gastos_operacion');
+var td_plan_gastos_administracion = document.getElementById('td_plan_gastos_administracion');
 
 $('#div_plan_recursos_propios table tbody').empty();
 $('#div_plan_recursos_externos table tbody').empty();
@@ -28,3 +32,15 @@ div_plan_recursos_propios.style.display = 'none';
 div_plan_recursos_externos.style.display = 'none';
 div_plan_gastos_operacion.style.display = 'none';
 div_plan_gastos_administracion.style.display = 'none';
+td_plan_recursos_propios.style.borderTop = 'none';
+td_plan_recursos_externos.style.borderTop = 'none';
+td_plan_gastos_administracion.style.borderTop = 'none';
+td_plan_gastos_operacion.style.borderTop = 'none';
+
+$('#tr_tipo_actividad').empty();
+var htmlContent = "<td class='contenido-popup-form'>" +
+                    "<%= j t(:tipo_de_actividad) %></td>" +
+                  "<td class='contenido-popup-form'>" +
+                    "<%= j select_tag :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], include_blank: 'Seleccione una opción'), include_blank: 'Seleccione una opción', class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' %>" + 
+                  "</td>";
+$('#tr_tipo_actividad').append(htmlContent);
