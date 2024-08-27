@@ -7,11 +7,14 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_manifestacion_de_interes
 
   def index
-    #Obtiene las lineas para el diagnostico del FPL
-    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2])
+    #Obtiene las lineas para el seguimiento del FPL
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
     @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: TipoInstrumento::FPL_LINEA_1_2_2)
-    @intrumento_seleccionado = TipoInstrumento::FPL_LINEA_1_2_2
+    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
+    @instrumento_seleccionado = nil
+    if @flujos_con_tipo_instrumento.present?
+      @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
+    end
 
     @estandares_certificacion = []
     estandares_certificacion_ids = []

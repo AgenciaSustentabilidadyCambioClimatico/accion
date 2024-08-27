@@ -181,7 +181,7 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   <% end %>
 
   //VALIDACIÓN
-  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 %>
+  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  %>
     //Aporte líquido del postulante
     document.getElementById('valida_aporte_propio_liquido').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] %>';
     <% if @costos['costo_total_de_la_propuesta'] != 0 %>
@@ -450,7 +450,7 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_administracion').innerText = '0,00%';
   
   //VALIDACIÓN
-  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 %>
+  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  %>
     //Aporte líquido del postulante
     document.getElementById('valida_aporte_propio_liquido').innerText = '$0'; 
     document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';

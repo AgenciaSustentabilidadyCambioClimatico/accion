@@ -25,7 +25,17 @@
       var elementos_mediana_empresa = 0;
       var elementos_grande_empresa = 0;
 
-      if(#{@flujo.tipo_instrumento_id} == 11)  {
+      var tipoInstrumentoValores = {
+        LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+        LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+      };
+
+      var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
         empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
         empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -146,6 +156,8 @@
     
     $('#enviar-postulacion-button').click(function(e){
       var tipo = document.getElementById('tipos').getAttribute('data-tipo');
+      const button = document.getElementById('enviar-postulacion-button');
+      const button_guardar = document.getElementById('guardar-fondo-temporal-button');
       $('.loading-data').show();
       if(confirm("¿Está seguro que desea enviar?")){
         $.ajax({
@@ -156,8 +168,6 @@
           },
         method: "GET",
           success: function(response) {
-            const button = document.getElementById('enviar-postulacion-button');
-            const button_guardar = document.getElementById('guardar-fondo-temporal-button');
             button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
             button.disabled = true;
             button_guardar.disabled = true;

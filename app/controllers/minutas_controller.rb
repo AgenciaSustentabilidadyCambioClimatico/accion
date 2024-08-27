@@ -23,10 +23,13 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 
   def edit
     #Obtiene las lineas para el diagnostico del FPL
-    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_1])
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
     @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: TipoInstrumento::FPL_LINEA_1_2_1)
-    @intrumento_seleccionado = TipoInstrumento::FPL_LINEA_1_2_1
+    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
+    @instrumento_seleccionado = nil
+    if @flujos_con_tipo_instrumento.present?
+      @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
+    end
   end
 
   # PATCH/PUT

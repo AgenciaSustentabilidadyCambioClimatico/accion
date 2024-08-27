@@ -189,7 +189,19 @@
 
   function sumarValoresTecElementosCarga() {
     if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
-      if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29)  {
+
+      var tipoInstrumentoValores = {
+        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+      };
+
+      var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
         var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
         var total = document.getElementById('total_tecnica_elementos');
@@ -213,7 +225,19 @@
   }
 
   function sumarValoresTecElementos(campo_a, campo_b, nombre) {
-    if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29)  {
+    
+    var tipoInstrumentoValores = {
+      LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+      LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
       var total = document.getElementById('total_tecnica_elementos');
@@ -557,7 +581,18 @@
       return;
     }
 
-    if(#{@flujo.tipo_instrumento_id} == 12 || #{@flujo.tipo_instrumento_id} == 29) {
+    var tipoInstrumentoValores = {
+      LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+      LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+
       if(flag == 1)  {
         tipo_actividad = document.getElementById('tipo_actividad').value;
         if (tipo_actividad == "") {
@@ -1825,7 +1860,7 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22)  {
+    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30)  {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -1927,7 +1962,7 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22)  {
+    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30)  {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -3104,7 +3139,7 @@
             %tbody
         %br
         <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3992,7 +4027,7 @@
                   %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form-costo  0,00%
         %br
         <h1>Validación</h1>   
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
           %div.table-responsive 
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -4072,7 +4107,7 @@
                     %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
                       %span{ class: 'text-danger' } NO
           %br
-        - else
+        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
           %div.table-responsive 
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -5670,7 +5705,20 @@
         __show_hide_(childGroup,childControl);      
     });
 
-    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22) {
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
+
+    //if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30) {
+
       init_coordenadas_territorios();
     }  
       

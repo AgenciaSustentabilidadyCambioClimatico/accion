@@ -82,6 +82,8 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_regiones, only: [:edit,  :revisor, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general]
+
+    before_action :set_tipo_instrumento_valores
   
     def initialize
       super
@@ -120,7 +122,7 @@ class FondoProduccionLimpiasController < ApplicationController
           send_message(tarea_fondo, tarea_pendiente.user_id)
           
           #Inicia el flujo con el nombre Sin nombre
-          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
             codigo_proyecto = "Proyecto diagnóstico FPL"
           else
             codigo_proyecto = "Proyecto seguimiento FPL"
@@ -193,7 +195,7 @@ class FondoProduccionLimpiasController < ApplicationController
       campos_nulos << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
       propuesta_tecnica << :cantidad_grande_empresa if @fondo_produccion_limpia.cantidad_grande_empresa.nil?
 
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
         
         comuna_flujo = ComunasFlujo.where(flujo_id: @tarea_pendiente.flujo_id).count
         if comuna_flujo == 0
@@ -289,12 +291,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @total_de_errores_por_tab[:"documentacion-legal"] = documentacion_legal.count if documentacion_legal.count != 0
 
-      
-  
       @tipo = params['tipo']
 
       #Costos
-
       #@total_de_errores_por_tab[:"costos"] = 1 if @response_costos == 1
       
       if @total_de_errores_por_tab == {} && @response_costos == 0
@@ -303,7 +302,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
         respond_to do |format|
-          if (@response_costos == 1 && @total_de_errores_por_tab == {}) # || (@response_costos == 1 && @total_de_errores_por_tab[:"costos"] = 1))
+          if (@response_costos == 1 && @total_de_errores_por_tab == {})
             flash[:error] = @mensaje
             format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?total_de_errores_por_tab=#{@total_de_errores_por_tab}&tabs=costos'" }
           else
@@ -401,8 +400,12 @@ class FondoProduccionLimpiasController < ApplicationController
         #Se asigna duracion en meses segun tipo de instrumento
         if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
-        else
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          meses = FondoProduccionLimpia::DURACION_FPL_EXTRAPRESUPUESTARIO
+        else
+          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
         end
 
         custom_params = {
@@ -520,7 +523,7 @@ class FondoProduccionLimpiasController < ApplicationController
           @tipo = 0
         end
       end
-      
+     
       #ESTE ID SE OBTIENE DESDE EL FPL00, CONSIDERAR ID_CONTRIBUYENTE EN LA TABLA FONDO PRODUCCION LIMPIA
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
@@ -657,13 +660,17 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find_by(id: flujo_id)
       if flujo
         case flujo.tipo_instrumento_id
-        when 11
+        when TipoInstrumento::FPL_LINEA_1_1
           Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO
-        when 22
+        when TipoInstrumento::FPL_LINEA_5_1
           Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO_L5
-        when 12
+        when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+          Gasto::TOPE_MAXIMO_SOLICITAR_DIAGNOSTICO
+        when TipoInstrumento::FPL_LINEA_1_2_1
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
-        when 29
+        when TipoInstrumento::FPL_LINEA_1_2_2
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
+        when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
         else
           nil
@@ -672,7 +679,7 @@ class FondoProduccionLimpiasController < ApplicationController
         nil
       end
     end
-    
+   
     helper_method :tope_maximo_solicitar_diagnostico
     
   
@@ -1400,9 +1407,9 @@ class FondoProduccionLimpiasController < ApplicationController
     def new_plan_actividades
       @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
       arreglo = []
-   
+
       if params['opcion'] == 'create'
-    
+
         maximo = @fondo_produccion_limpia.duracion
         1.upto(maximo) do |numero|
           arreglo << numero
@@ -1435,7 +1442,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad = Actividad.new(custom_params_actividades[:actividades])
         @actividad.save
 
-        if params['tipo_actividad_id'].to_i == 0
+        if params['tipo_actividad_id'] == ""
           tipo_actividad = nil
         else
           tipo_actividad = params['tipo_actividad_id'].to_i
@@ -2561,7 +2568,7 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_fpl_07.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_07.save  
       end
-
+      #binding.pry
       #SE CREA FPL-06
       #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
       if existe_fpl_08.present?
@@ -2589,7 +2596,7 @@ class FondoProduccionLimpiasController < ApplicationController
         #SE ENVIAR EL MAIL AL RESPONSABLE
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
-  
+      #binding.pry
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Financiera enviada correctamente'
           render js: "window.location='#{root_path}'"}
@@ -3949,7 +3956,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @response_costos = 1
             end
           end  
-        else
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2
           if @costos.present? && @costos_seguimiento[0].present? && @costos_seguimiento[1].present?
             if @costos.costo_total_de_la_propuesta.present? && (
                 @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && 
@@ -3966,6 +3973,9 @@ class FondoProduccionLimpiasController < ApplicationController
               @response_costos = 1
             end
           end
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          @mensaje = mensaje_success
+          @response_costos = 0
         end
       end
 
@@ -4085,6 +4095,18 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def fondo_produccion_limpia_archivos_params
         params.require(:fondo_produccion_limpia).permit(:archivo_resolucion, :archivo_contrato)
+      end
+
+      def set_tipo_instrumento_valores
+        @tipo_instrumento_valores = {
+          linea_1_1: TipoInstrumento::FPL_LINEA_1_1,
+          linea_5_1: TipoInstrumento::FPL_LINEA_5_1,
+          linea_1_2_1: TipoInstrumento::FPL_LINEA_1_2_1,
+          linea_1_2_2: TipoInstrumento::FPL_LINEA_1_2_2,
+          extrapresupuestario_diagnostico: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO,
+          extrapresupuestario_seguimiento: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO,
+          extrapresupuestario_evaluacion: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        }
       end
 
 end
