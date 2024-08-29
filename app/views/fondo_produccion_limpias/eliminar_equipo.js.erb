@@ -1,0 +1,8 @@
+$('.loading-data').hide();
+$("#eliminar-usuario-<%= user %>").closest('tr').remove();
+$("#eliminar-usuario_empresa-<%= user %>").closest('tr').remove();
+
+<% if @count_equipo == 0 %>    
+    $('#opcion_1').prop('disabled', false);
+    $('#div_equipo_consultora_empresa').css('display', 'none');
+<% end %>

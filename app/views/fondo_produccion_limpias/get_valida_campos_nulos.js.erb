@@ -1,0 +1,76 @@
+$('#campos_pendientes').val('0');
+
+var mensajeCosto = document.getElementById('mensaje-costo');
+<% if @mensaje.present? %>
+  var contenido = '<%= j @mensaje %>';
+  mensajeCosto.innerHTML = contenido;
+<% end %>
+
+$('#response_costos').val('<%= @response_costos %>');
+
+$('#contador_campos_nulos').val(<%= campos_nulos.count %>);
+<% campos_nulos.each do |campo| %>
+  var $elemento = $('#<%= escape_javascript(campo.to_s) %>');
+  $elemento.removeClass('border-text');
+  $elemento.addClass('border-error');
+  $elemento.attr('data-tooltip', 'true');
+  $elemento.attr('data-original-title', 'Campo no puede estar vacío');
+  $('#campos_pendientes').val('1');
+<% end %>
+
+<% campos_completos.each do |campo| %>
+  var $elemento = $('#<%= escape_javascript(campo.to_s) %>');
+  $elemento.removeClass('border-error');
+  $elemento.addClass('border-text');
+  $elemento.attr('data-tooltip', 'false');
+<% end %>
+
+<% if objetivos_especificos === 0 %>
+  var $objetivo = $('#open-modal-button');
+  $objetivo.removeClass('btn-primary').addClass('btn-danger');
+  $objetivo.attr('data-tooltip', 'true');
+  $objetivo.attr('data-original-title', 'Debe tener a lo menos un registro');
+  $('#campos_pendientes').val('1');
+<% end %>
+
+<% if postulantes === 0 %>
+  var $postulante = $('#open-modal-button_buscar_usuario_postulante');
+  $postulante.removeClass('btn-primary').addClass('btn-danger');
+  $postulante.attr('data-tooltip', 'true');
+  $postulante.attr('data-original-title', 'Debe tener a lo menos un registro');
+  $('#campos_pendientes').val('1');
+<% end %>
+
+<% if tipo === 0 %>
+  <% if equipo_empresa === 0 %>
+    var $empresa = $('#open-modal-button_buscar_contribuyente');
+    $empresa.removeClass('btn-primary').addClass('btn-danger');
+    $empresa.attr('data-tooltip', 'true');
+    $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
+    $('#campos_pendientes').val('1');
+  <% end %>
+<% end %>
+
+<% if equipo_consultor === 0 %>
+  var $consultor = $('#open-modal-button_buscar_usuario_consultora');
+  $consultor.removeClass('btn-primary').addClass('btn-danger');
+  $consultor.attr('data-tooltip', 'true');
+  $consultor.attr('data-original-title', 'Debe tener a lo menos un registro');
+
+  var $user = $('#open-modal-button_buscar_usuario');
+  $user.removeClass('btn-primary').addClass('btn-danger');
+  $user.attr('data-tooltip', 'true');
+  $user.attr('data-original-title', 'Debe tener a lo menos un registro');
+
+  $('#campos_pendientes').val('1');
+<% end %>
+
+<% if plan === 0 %>
+  <% actividad_x_linea.each do |actividad| %>
+    var $plan = $('#crear_plan_actividad_<%= actividad.id %>');
+    $plan.addClass('border-error');
+    //$plan.attr('data-tooltip', 'true');
+    //$plan.attr('data-original-title', 'Debe tener a lo menos un registro');
+    $('#campos_pendientes').val('1');
+  <% end %>
+<% end %>

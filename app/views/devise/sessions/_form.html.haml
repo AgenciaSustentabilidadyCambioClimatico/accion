@@ -10,8 +10,8 @@
     .card-header
       %h5.titulo-caja.text-center= "Ingreso de usuarios"
     .card-body
-      .text-center.mb-4
-        = image_tag ("logo-ascc.png")
+      .text-center.mb-4.w-100
+        =image_tag ("logo-ascc-nuevo.png"), class: 'w-100'
       = f.input :rut, required: false, placeholder: 'R.U.T.', label: false, fa_icon: 'id-card-o', input_html: { class: 'identificacion required-field' }
       = f.input :password, required: false, placeholder: 'Contraseña', label: false, fa_icon: :key, input_html: { class: 'required-field' }
       = f.button :submit, "Ingresar", class: 'btn btn-sm btn-agencia btn-block mt-3 btn-disabled', disabled: :disabled

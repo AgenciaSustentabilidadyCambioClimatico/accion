@@ -1,0 +1,15 @@
+<% @duracion.each do |d| %>
+  //console.log("Valor en índice #mes_<%= @plan_actividades.actividad_id %>_<%= d %>");
+  <% if @duracion_x.split(',').include?(d.to_s) %>
+    $('#mes_<%= @plan_actividades.actividad_id %>_<%= d %>').text('X');
+  <% else %>
+    $('#mes_<%= @plan_actividades.actividad_id %>_<%= d %>').text('');
+  <% end %>
+<% end %>
+
+$("#valor_hh_tipo_3_<%= @plan_actividades.actividad_id %>").text('$0');
+$('#valor_hh_tipos_1_2_<%= @plan_actividades.actividad_id %>').text('$0');
+$('#total_gastos_tipo_1_<%= @plan_actividades.actividad_id %>').text('$0');
+$('#total_gastos_tipo_2_<%= @plan_actividades.actividad_id %>').text('$0');
+
+$('#modal_create_plan_actividades-form').modal("hide");

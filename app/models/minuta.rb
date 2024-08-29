@@ -4,6 +4,8 @@ class Minuta < ApplicationRecord
 
 	enum tipo_reunion: [:presencial, :virtual]
 
+	attr_accessor :tipo_linea_seleccionada
+
 	validates :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
 	validate :direccion_en_mapa
 	validate :acta, :lista_asistencia, on: :update, unless: -> {self.convocatoria.tarea_codigo == Tarea::COD_APL_021} #DZC necesario para condiciones de flujo 'A' y 'B' en APL-022

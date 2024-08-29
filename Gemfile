@@ -64,6 +64,8 @@ gem 'globalid', '~> 1.0'
 gem 'letter_opener', group: :development
 gem "cocoon"
 gem "dotenv-rails", groups: [:development, :test]
+gem 'will_paginate'
+gem 'will_paginate-bootstrap4'
 gem 'rollbar'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
@@ -90,4 +92,5 @@ group :development do
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'web-console', '>= 3.3.0'
+  gem 'hirb'
 end

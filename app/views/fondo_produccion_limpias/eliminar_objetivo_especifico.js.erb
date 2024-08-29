@@ -1,0 +1,20 @@
+$("#eliminar-objetivo-especifico-<%= objetivo_especifico %>").closest('tr').remove();
+
+// Remover todas las opciones actuales del combo box
+$('#objetivos_especifico_id').empty();
+
+// Agregar una opción en blanco por defecto
+$('#objetivos_especifico_id').append($('<option>', {
+  value: '',
+  text: 'Seleccione una opción'
+}));
+
+// Agregar las nuevas opciones al combo box
+<% @objetivos_options.each do |descripcion, id| %>
+  $('#objetivos_especifico_id').append($('<option>', {
+    value: '<%= id %>',
+    text: '<%= descripcion %>'
+  }));
+<% end %>
+
+$('.loading-data').hide();

@@ -1,0 +1,236 @@
+.card
+  .card-header
+    %h5.no-margin
+      = 'Acuerdos de Producción Limpia'
+  .card-body
+    %div{class: 'd-flex justify-content-between pb-3'}
+      %div
+      %div
+        = form_tag estado_apl_path, method: :get, enforce_utf8: false, class: "d-flex"  do
+          = text_field_tag :query, '',class: 'form-control'
+          = button_tag "Buscar", name: "", class: "btn btn-primary"
+    %table.table.acuerdos-pendientes{id: 'guillo-diez'}
+      %thead
+        %tr
+          %th ID (Código)
+          %th APL
+          %th Última Actualización
+          %th Última Tarea en curso
+          %th Coordinador
+          %th Más Info
+      %tbody
+        - @acuerdos.each do |m|
+          - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.flujo.id).last
+          - coordinadores = TareaPendiente.where(flujo_id: m.flujo.id).select { |f| f.tarea.codigo == 'APL-003.1' || f.tarea.codigo == 'APL-018' || f.tarea.codigo == 'APL-023' }
+          - user_id = []
+          - coordinadores.each { |f| user_id << f.user_id}
+          - usuarios_coordinadores = []
+          - user_id.uniq.each { |f| usuarios_coordinadores << User.find(f)}
+          %tr
+            %td= m.id
+            %td= m.nombre_acuerdo
+            %td= m.updated_at.strftime("%d/%m/%Y")
+            %td= tarea_en_curso&.tarea&.nombre
+            %td
+              - usuarios_coordinadores.each do |coordinador|
+                %p= coordinador&.nombre_completo
+            %td{:onClick => "unfoldTareasManifestacion()", :id => "#{m.id}", class: 'btn btn-success btn-sm mt-2 ml-2 fa fa-plus', style:"cursor: pointer;"}
+          %thead{class: 'd-none', :id => "flujo#{m.id}"}
+            %tr
+              %th
+              %th Etapa
+              %th Fecha Ingreso/Carga
+              %th Documento Asociados Descargable
+          %tbody{class: 'd-none', :id => "flujo#{m.id}"}
+            %tr
+              %td
+              %td{style: 'font-weight: bold;'} Manifestación de interés
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
+              %td= t.first.created_at.strftime("%d/%m/%Y")
+              - vacio = m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
+              %td
+                = vacio ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
+                =link_to descargar_manifestacion_pdf_admin_historial_instrumentos_path(m), class: "btn-tabla-instrumentos" do
+                  =fa_icon 'download'
+                  ='Manifestación de Interés'
+            %tr
+              %td
+              %td{style: 'font-weight: bold;'} Diagnostico General
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
+              %td= t&.first&.created_at&.strftime("%d/%m/%Y")
+              %td
+                -unless t.empty?
+                  = link_to descargar_compilado_manif_manifestacion_de_interes_path(m, 66), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Documentación Diagnóstico'
+            %tr
+              %td
+              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasPropuesta()", :id => "#{m.id}" } Propuesta Acuerdo (+)
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
+              - convocatoria = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
+              %td= convocatoria.first.blank? ? '' : convocatoria.first.fecha.strftime("%d/%m/%Y")
+              %td
+            %tr{class: 'd-none', id: "propuesta#{m.id}"}
+              %td
+              %td Negociación
+              - c = Convocatoria.where(flujo_id: m.id).order(created_at: :asc)
+              %td
+                - c.each do |convocatoria|
+                  %p= convocatoria&.fecha&.strftime("%d/%m/%Y")
+              %td
+                - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
+                - unless t.blank?
+                  = link_to descargar_compilado_adjuntos_path(t&.first&.id, codigo: "016"), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Reuniones de Comité de Negociación'
+            %tr{class: 'd-none', id: "propuesta#{m.id}"}
+              %td
+              %td Firma de Acuerdo
+              %td= m&.firma_fecha_was&.strftime("%d/%m/%Y")
+              - c = Convocatoria.where(flujo_id: m.id)
+              - convocatoria = c.first
+              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
+              %td
+                - if !convocatoria&.minuta&.acta&.file.nil? and !t.blank?
+                  - minuta_id = convocatoria&.minuta&.id
+                  = link_to descargar_acta_path(tarea_pendiente_id: t.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "acta"), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Texto Acuerdo Firmado'
+                - if !convocatoria&.minuta&.archivo_resolucion&.file.nil?
+                  - minuta_id = convocatoria&.minuta&.id
+                  = link_to descargar_archivo_resolucion_path(tarea_pendiente_id: t.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "resolucion"), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Resolución Aprueba APL'
+            %tr{class: 'd-none', id: "propuesta#{m.id}"}
+              %td
+              %td Adhesión
+              %td
+              - tarea_pendiente = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
+              %td
+                - unless tarea_pendiente.blank?
+                  = link_to descargar_compilado_adhesion_path(tarea_pendiente), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Documentos Adhesiones'
+            %tr
+              %td
+              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasImplementacion()", :id => "#{m.id}" } Implementación (+)
+              %td
+              %td
+            %tr{class: 'd-none', id: "implementacion#{m.id}"}
+              %td
+              %td Coordinación
+              - t1 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+              - data = t1.blank? ? '' : t1&.first&.data[:convocatoria_id]
+              - c1 = data.blank? ? '' : Convocatoria.where(id: data)
+              %td= c1.blank? ? '' : c1.first.fecha.strftime("%d/%m/%Y")
+              %td
+                - t2 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+                - unless t2.blank?
+                  = link_to descargar_compilado_adjuntos_path(t2&.first&.id, codigo: "030"), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Reuniones de Comité de Negociación'
+            %tr{class: 'd-none', id: "implementacion#{m.id}"}
+              %td
+              %td Auditoría I
+              %td
+              %td
+                - t4 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+                - unless t4.nil?
+                  = link_to descargar_auditorias_manifestacion_de_interes_path(t4, m), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Informe Consolidado'
+            %tr{class: 'd-none', id: "implementacion#{m.id}"}
+              %td
+              %td Auditoría II
+              %td
+              %td
+                - t5 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+                - unless t5.nil?
+                  = link_to descargar_auditorias_manifestacion_de_interes_path(t5, m), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Informe Consolidado'
+            %tr{class: 'd-none', id: "implementacion#{m.id}"}
+              %td
+              %td Auditoría III
+              %td
+              %td
+                - t6 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).last
+                - unless t6.nil?
+                  = link_to descargar_auditorias_manifestacion_de_interes_path(t6, m), class: "btn-tabla-instrumentos" do
+                    =fa_icon 'download'
+                    ='Informe Consolidado'
+            %tr
+              %td
+              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasEvaluacion()", :id => "#{m.id}"} Evaluación Final de Cumplimiento (+)
+              %td
+              %td
+            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
+              %td
+              %td Auditoría final
+              %td
+              %td
+            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
+              %td
+              %td Certificación
+              - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
+              %td= t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
+              %td
+            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
+              %td
+              %td Mantención
+              %td
+              %td
+    %div{class: 'd-flex justify-content-center'}
+      = will_paginate @acuerdos
+
+:javascript
+
+  $(document).ready(function() {
+    //   $('#guillo-diez').DataTable({
+    //     paging: true,
+    //     searching: true,
+    //     ordering: true,
+    //     responsive: true,
+    //     orderable: true,
+    //     "pageLength": 10,       // Set the number of records per page
+    // });
+  })
+
+  function unfoldTareasManifestacion(evento) {
+    const guillo = document.querySelectorAll('#flujo' + `${event.target.id}`)
+
+    $('#' + `${event.target.id}`).toggleClass("fa-minus")
+
+    guillo.forEach((e, index) => {
+      e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold");
+    })
+  }
+
+
+  function unfoldTareasPropuesta(evento) {
+    const guillo = document.querySelectorAll('#propuesta' + `${event.target.id}`)
+    console.log(guillo)
+
+    guillo.forEach((e, index) => {
+      console.log(e.classList)
+      e.classList.toggle("d-none");
+    })
+  }
+
+  function unfoldTareasImplementacion(evento) {
+    const guillo = document.querySelectorAll('#implementacion' + `${event.target.id}`)
+    console.log(guillo)
+    guillo.forEach((e, index) => {
+      console.log(e.classList)
+      e.classList.toggle("d-none");
+    })
+  }
+
+  function unfoldTareasEvaluacion(evento) {
+    const guillo = document.querySelectorAll('#evaluacion' + `${event.target.id}`)
+    console.log(guillo)
+    guillo.forEach((e, index) => {
+      console.log(e.classList)
+      e.classList.toggle("d-none");
+    })
+  }

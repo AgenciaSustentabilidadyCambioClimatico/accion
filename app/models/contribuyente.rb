@@ -8,6 +8,7 @@ class Contribuyente < ApplicationRecord
 	has_many :personas, dependent: :destroy
 	has_many :maquinarias, dependent: :destroy
 	has_many :otros, dependent: :destroy
+	has_many :equipo_empresas
   belongs_to :contribuyente, optional: true
   belongs_to :flujo, optional: true
 

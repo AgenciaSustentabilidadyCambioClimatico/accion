@@ -118,6 +118,17 @@
     
   }
 
+  // Cuando cambia el valor de fondo_produccion_limpia
+  $('#fondo_produccion_limpia_true, #fondo_produccion_limpia_false').change(function() {
+    // Si se selecciona "true", hacer que el campo tipo_linea_seleccionada sea obligatorio
+    if ($('#fondo_produccion_limpia_true').is(':checked')) {
+      $('#tipo_linea_seleccionada').prop('required', true);
+    } else {
+      // Si se selecciona "false", quitar la obligatoriedad del campo tipo_linea_seleccionada
+      $('#tipo_linea_seleccionada').prop('required', false);
+    }
+  });
+
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:revisar_pertinencia_factibilidad)
 = simple_form_for @manifestacion_de_interes, url: pertinencia_factibilidad_manifestacion_de_interes_path(@tarea_pendiente), method: :patch, remote: false, html: { autocomplete: :off, multipart: true } do |f|
@@ -265,9 +276,31 @@
                               .form-group
                                 = label_tag "Adjuntar Ficha de Manifestación de Interés (Consejo Directivo)", nil, class: 'string mb-0'
                                 = __descargar_archivo(f.object.archivo_pertinencia_factibilidad,f.object, false)
-
-                      .col-lg-6.d-none.d-lg-block
-
+                      .col-12.col-lg-6
+                        .row.align-items-end
+                          -if !solo_lectura
+                            .col-12.col-lg-6
+                              .form-group
+                              %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
+                              %br
+                              = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia'
+                            .col-12.col-lg-6
+                              = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:selección_de_linea), input_html: {class: "chosen-control", type: :string, "data-placeholder"=>"Seleccione una Línea", id: 'tipo_linea_seleccionada'}
+                          -else
+                            .col-12.col-lg-6
+                              .form-group
+                              %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
+                              %br
+                              - if @instrumento_seleccionado.present?
+                                = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia', disabled: true do |b|
+                                  = b.radio_button onchange: 'habilitaOpciones(this);'
+                                  = b.label
+                              - else
+                                = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia', disabled: true do |b|
+                                  = b.radio_button onchange: 'habilitaOpciones(this);'
+                                  = b.label
+                            .col-12.col-lg-6
+                              = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}, selected: @instrumento_seleccionado
                       -if !@manifestacion_de_interes.respuesta_observaciones_pertinencia_factibilidad.blank?
                         .col-12.col-lg-6
                           -if !solo_lectura

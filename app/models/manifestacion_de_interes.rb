@@ -11,11 +11,11 @@ class ManifestacionDeInteres < ApplicationRecord
   #belongs_to :institucion_gestora, optional: true, foreign_key: :contribuyente_id, class_name: :Contribuyente
   has_many :documento_diagnosticos, foreign_key: :manifestacion_de_interes_id, dependent: :destroy
   accepts_nested_attributes_for :documento_diagnosticos, allow_destroy: true
-  
-  # DOSSA 2019-07-24 
+
+  # DOSSA 2019-07-24
   attr_accessor :estandar_certificable_cache, :descarga_estandar_seleccionado, :diagnostico_de_acuerdo_anterior_cache, :informe_de_acuerdo_anterior_cache,
                 :descarga_formato_listado_de_actores, :listado_de_actores, :descarga_formato_cartas, :cartas_de_interes, :buscar_institución_gestora, :descarga_formato_carta_manifestacion_de_interes,
-                :elegir_representante_institucion, :gantt_proyecto, :estudio_de_mercado, :anteproyecto, :otros_estudios, 
+                :elegir_representante_institucion, :gantt_proyecto, :estudio_de_mercado, :anteproyecto, :otros_estudios,
                 :area_de_influencia, :alternativa_de_instalacion
 
 
@@ -77,7 +77,7 @@ class ManifestacionDeInteres < ApplicationRecord
                               :solicita_condiciones_y_contiene_observaciones,:no_aceptada], _prefix: :resultado_pertinencia
   enum respuesta_resultado_pertinencia: [:aceptada, :solicita_condiciones_o_información, :no_aceptada], _prefix: :respuesta_resultado_pertinencia
 
-  attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id
+  attr_accessor :revisor_tecnico_id, :revisor_juridico_id,:coordinador_subtipo_instrumento_id, :encargado_hitos_prensa_id, :fondo_produccion_limpia, :tipo_linea_seleccionada
   attr_accessor :accion_en_mapa_de_actores, :mapa_de_actores_correctamente_construido, :actores_con_observaciones
   attr_accessor :accion_en_documento_diagnostico, :aprueba_documentos_diagnostico, :documentos_diagnostico_con_observaciones
   attr_accessor :accion_en_set_metas_accion, :aprueba_set_metas_accion, :propuestas_con_observaciones
@@ -103,7 +103,7 @@ class ManifestacionDeInteres < ApplicationRecord
   mount_uploader :archivo_admisibilidad_juridica, ArchivoAdmisibilidadesManifestacionDeInteresUploader
   mount_uploader :archivo_pertinencia_factibilidad, ArchivoPertinenciasFactibilidadesManifestacionDeInteresUploader
   mount_uploader :archivo_respuesta_pertinencia_factibilidad, ArchivoRespuestasPertinenciasFactibilidadesManifestacionDeInteresUploader
-  mount_uploader :archivo_usuario_entregables, ArchivoUsuariosEntregablesManifestacionDeInteresUploader 
+  mount_uploader :archivo_usuario_entregables, ArchivoUsuariosEntregablesManifestacionDeInteresUploader
   mount_uploaders :firma_archivo, ArchivoFirmasManifestacionDeInteresUploader
   mount_uploader :archivo_carga_auditoria, ArchivoCargaAuditoriasManifestacionDeInteresUploader
 
@@ -123,7 +123,7 @@ class ManifestacionDeInteres < ApplicationRecord
   #validates :territorios_regiones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :tipo_instrumento_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" } 
+  #validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :contribuyente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :descripcion_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :carta_de_interes_institucion_gestora_firmada, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
@@ -132,7 +132,7 @@ class ManifestacionDeInteres < ApplicationRecord
   #validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :mapa_de_actores_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
-  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true"} 
+  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true"}
 
   # DZC 2019-06-25 16:26:07 se agrega para manejar monto máximo a ingresar
   validates :numero_empresas, presence: true, on: :update, if: -> { self.numero_empresas.present? && temporal.to_s != "true" }
@@ -142,7 +142,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
   # DZC 2019-06-25 16:20:54 se agrega para manejar monto máximo a ingresar
   validates :ventas, presence: true, on: :update, if: -> { self.ventas.present? && temporal.to_s != "true" }
-  
+
   #validates :porcentaje_exportaciones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :principales_mercados, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :cadena_de_valor, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
@@ -155,11 +155,11 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :principales_problemas_y_desafios, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   validates :principales_conflictos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #Validaciones datos del proyecto
-  
+
   #validates :nombre_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
   #validates :descripcion_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
   #validates :justificacion_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  
+
   #ya no usaran archivos kml
   # validates :area_influencia_proyecto_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
   # validates :alternativas_instalacion_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
@@ -184,15 +184,15 @@ class ManifestacionDeInteres < ApplicationRecord
   #validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :otros_recursos_comprometidos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # validates :carta_de_apoyo_y_compromiso, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  
+
   # DOSSA 2019-10-10 12:02 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
   # validates :numero_participantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # validates :lista_participantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # validates :priorizacion, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  
+
   #validates :diagnostico_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   #validates :estandar_de_certificacion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  
+
   # DOSSA 2019-10-10 12:04 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
   # validates :otros_estudios_relevantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
   # validates :otros_objetivos_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
@@ -200,7 +200,7 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :revisor_tecnico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
   validates :revisor_juridico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
   validates :comentario_jefe_de_linea, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
-  
+
   #validates :respuesta_resultado_pertinencia, presence: true, on: :update, if: -> { update_respuesta_pertinencia.present? } El campo ya no corresponde al apl-006
 
   validates :institucion_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
@@ -236,17 +236,20 @@ class ManifestacionDeInteres < ApplicationRecord
   validates :coordinador_subtipo_instrumento_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
   validates :encargado_hitos_prensa_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
   validates :resultado_pertinencia, presence: true, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :fondo_produccion_limpia, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_linea_seleccionada, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+
   #apl-006
   validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
   validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
-  
+
 
 
   # DOSSA 2019-11-28 12:53 se añade ya que campo no se encuentra en mantenedor, sin embargo, es obligatorio
   #validates :unidad_de_medida_volumen, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
 
   before_save :procesar_archivos_google_maps
-  
+
   after_save :data_mapa_de_actores, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   # DZC 2019-07-09 16:39:51 prueba de validación genérica de tamaños minimos y maximos contenido de campos
@@ -322,25 +325,25 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def seleccion_de_radios
-    if self[:estandar_certificable].present? 
-      self.radio_estandar = 0 
-    elsif self[:estandar_de_certificacion_id].present? 
+    if self[:estandar_certificable].present?
+      self.radio_estandar = 0
+    elsif self[:estandar_de_certificacion_id].present?
       self.radio_estandar = 1
     else
       self.radio_estandar = 3
     end
 
-    if self[:diagnostico_de_acuerdo_anterior].present? 
-      self.radio_diagnostico = 0 
-    elsif self[:diagnostico_id].present? 
+    if self[:diagnostico_de_acuerdo_anterior].present?
+      self.radio_diagnostico = 0
+    elsif self[:diagnostico_id].present?
       self.radio_diagnostico = 1
     else
       self.radio_diagnostico = 3
     end
 
-    if self[:informe_de_acuerdo_anterior].present? 
-      self.radio_informe = 0 
-    elsif self[:acuerdo_previo_con_informe_id].present? 
+    if self[:informe_de_acuerdo_anterior].present?
+      self.radio_informe = 0
+    elsif self[:acuerdo_previo_con_informe_id].present?
       self.radio_informe = 1
     else
       self.radio_informe = 3
@@ -350,13 +353,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def procesar_archivos_google_maps
     # resultado = { area_influencia_proyecto_data: {}, alternativas_instalacion_data: {} }
     # unless self.area_influencia_proyecto_archivo.blank?
-      
+
     # end
 
     # unless self.alternativas_instalacion_archivo.blank?
-      
+
     # end
-      
+
     # resultado
 
     #con cache significa que subio un archivo
@@ -371,13 +374,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def informe
     if self[:informe].nil?
       {
-        "fundamentos"=>"", "antecedentes"=>"", "normativas_aplicables"=>"", "alcance"=>"", 
-        "campo_de_aplicacion"=>"", "definiciones"=>"", "objetivo_general"=>"", 
-        "objetivo_especifico"=>"", "mecanismo_de_implementacion"=>" ", "tipo_acuerdo"=>"", 
-        "plazo_maximo_adhesion"=>"", "plazo_finalizacion_implementacion"=>"", 
-        "mecanismo_evaluacion_cumplimiento"=>"", "plazo_maximo_neto"=>"", "plazo_maximo"=>"", 
-        "adhesiones"=>"", "con_extension"=>"", "derechos"=>"", "obligaciones"=>"", 
-        "difusion"=>"", "promocion"=>"", "incentivos"=>"", "sanciones"=>"", "personerias"=>"", 
+        "fundamentos"=>"", "antecedentes"=>"", "normativas_aplicables"=>"", "alcance"=>"",
+        "campo_de_aplicacion"=>"", "definiciones"=>"", "objetivo_general"=>"",
+        "objetivo_especifico"=>"", "mecanismo_de_implementacion"=>" ", "tipo_acuerdo"=>"",
+        "plazo_maximo_adhesion"=>"", "plazo_finalizacion_implementacion"=>"",
+        "mecanismo_evaluacion_cumplimiento"=>"", "plazo_maximo_neto"=>"", "plazo_maximo"=>"",
+        "adhesiones"=>"", "con_extension"=>"", "derechos"=>"", "obligaciones"=>"",
+        "difusion"=>"", "promocion"=>"", "incentivos"=>"", "sanciones"=>"", "personerias"=>"",
         "ejemplares"=>"", "firmas"=>"", "anexos"=>""
       }
     else
@@ -417,7 +420,7 @@ class ManifestacionDeInteres < ApplicationRecord
       roles_minimos = MapaDeActor.roles_minimos_necesarios(self.tarea_codigo) unless self.tarea_codigo.blank?
       ##
       # DZC 2019-08-16 20:26:20
-      # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente      
+      # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
       errores = []
       ruts_invalidos=[]
       emails_invalidos=[]
@@ -440,7 +443,7 @@ class ManifestacionDeInteres < ApplicationRecord
           archivo_correcto = validaciones[:correcto] unless validaciones[:correcto].nil?
         end
 
-        # DZC 2018-10-26 15:20:58 se reemplaza validación de eMail repetidos por validación eMail + RUT implementada por Ricardo 
+        # DZC 2018-10-26 15:20:58 se reemplaza validación de eMail repetidos por validación eMail + RUT implementada por Ricardo
         # validaciones del encargado
         emails = data.map{|d| d[:email_institucional]} - ["no"]
         if emails.include?(fila[:email_institucional])
@@ -497,7 +500,7 @@ class ManifestacionDeInteres < ApplicationRecord
           archivo_correcto = false
         end
       end
-      
+
       if emails_invalidos.size > 0
         # DZC 2019-08-05 se modifica a requerimiento del cliente a fin de disminuir el tamaño del mensaje de error mostrado en tooltip
         ##
@@ -508,7 +511,7 @@ class ManifestacionDeInteres < ApplicationRecord
         archivo_correcto = false
       else
 
-        # DZC 2018-10-26 15:20:58 se reemplaza validación de eMail repetidos por validación eMail + RUT implementada por Ricardo 
+        # DZC 2018-10-26 15:20:58 se reemplaza validación de eMail repetidos por validación eMail + RUT implementada por Ricardo
         # emails = data.map{|d|d[:email_institucional]}
         # repetidos = emails.uniq.size - emails.size
         # if repetidos != 0
@@ -526,7 +529,7 @@ class ManifestacionDeInteres < ApplicationRecord
         #errors.add(:mapa_de_actores_archivo, "El archivo contiene #{telefonos_invalidos.size} Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir")
         archivo_correcto = false
       end
-      
+
       if archivo_correcto
         unless roles_minimos.blank? #DZC revisa que se cumpla con los roles minimos
           roles_correctos = true
@@ -541,8 +544,8 @@ class ManifestacionDeInteres < ApplicationRecord
             end
 
             roles_correctos = (personas_unicas.count < v) ? false : roles_correctos
-          } 
-          if !roles_correctos 
+          }
+          if !roles_correctos
             ##
             # DZC 2019-08-16 20:26:20
             # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
@@ -553,7 +556,7 @@ class ManifestacionDeInteres < ApplicationRecord
         end
       end
 
-      if archivo_correcto #DZC se mantiene el almacenamiento de data en el campo mapa_actores_data, para mantener la comparación de archivo 
+      if archivo_correcto #DZC se mantiene el almacenamiento de data en el campo mapa_actores_data, para mantener la comparación de archivo
 
         # self.mapa_de_actores_data = data
         self.mapa_de_actores_data = MapaDeActor.adecua_actores_para_vista(data)
@@ -564,15 +567,15 @@ class ManifestacionDeInteres < ApplicationRecord
         # se ajusta la cantidad de errores de acuerdo a lo solicitado por el cliente
         cinco_errores = ""
         errores[0..(ManifestacionDeInteres::MAPA_DE_ACTORES_CANTIDAD_ERRORES-1)].each do |e|
-          cinco_errores += e +". <br/>" 
+          cinco_errores += e +". <br/>"
         end
         errors.add(:mapa_de_actores_archivo, cinco_errores)
         #self.mapa_de_actores_data = nil
         #self.mapa_de_actores_archivo.remove!
         #self.mapa_de_actores_archivo = nil
-        
+
         return false
-      end   
+      end
     end
   end
 
@@ -622,7 +625,7 @@ class ManifestacionDeInteres < ApplicationRecord
         end
       end
     end
-    
+
     no_hay_errores_con_los_dominios = true
 
     if roles_invalidos.size > 0
@@ -657,14 +660,14 @@ class ManifestacionDeInteres < ApplicationRecord
       validaciones[:emails_invalidos] = fila[:email_institucional]
     end
 
-    ## 
-    # DZC 2018-10-20 21:05:30 se agrega la validación para el caso de que el rut y/o el eMail prexistan 
+    ##
+    # DZC 2018-10-20 21:05:30 se agrega la validación para el caso de que el rut y/o el eMail prexistan
     # en la tabla de usuarios, en registros distintos
     if validaciones[:ruts_invalidos].nil? && validaciones[:emails_invalidos].nil? && fila[:email_institucional].to_s != "no" && fila[:rut_persona].to_s != "no"
       ##
-      # DZC 2019-08-08 13:17:17 se modifica para solo se considera el hecho de que el un usuario con rut 
+      # DZC 2019-08-08 13:17:17 se modifica para solo se considera el hecho de que el un usuario con rut
       # distinto tenga el mismo email, pues los demás casos son irrelevantes.
-      #user = User.find_by(rut: fila[:rut_persona].to_s.gsub("k","K").gsub(".","")) 
+      #user = User.find_by(rut: fila[:rut_persona].to_s.gsub("k","K").gsub(".",""))
       email = User.find_by(email: fila[:email_institucional].to_s)
       if email.present? && email.rut.to_s.gsub("k","K").gsub(".","") != fila[:rut_persona].to_s.gsub("k","K").gsub(".","")
         validaciones[:emails_invalidos] = "El eMail #{fila[:email_institucional]} ya existe en la base de datos de usuarios y dicho usuario tiene asociado otro RUT."
@@ -681,7 +684,7 @@ class ManifestacionDeInteres < ApplicationRecord
     unless dominios_mapa_de_actores_validos?(fila)
       validaciones[:correcto] = false
     end
-    # 
+    #
     validaciones
   end
 
@@ -726,7 +729,7 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def atributos_agrupados
-    { 
+    {
       "objetivo-acuerdo": [
         :nombre_acuerdo,
         :motivacion_y_objetivos,
@@ -735,7 +738,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :programas_o_proyectos_relacionados_ids,
         :fuente_de_fondos,
         :justificacion_de_estimacion_de_fondos_requeridos,
-        :nombre_de_estandar_certificable, 
+        :nombre_de_estandar_certificable,
         :estandar_certificable,
         :estandar_de_certificacion_id,
         :diagnostico_de_acuerdo_propuesto,
@@ -846,12 +849,12 @@ class ManifestacionDeInteres < ApplicationRecord
   def revisores_select
     # DZC 2018-10-03 17:41:49 se corrige la búsqueda de responsables según el tipo de instrumento de la instancia
     tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
-    Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}     
+    Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}
   end
 
   def usuarios_entregables_select
     # DZC 2018-10-03 17:41:49 se corrige la búsqueda de responsables según el tipo de instrumento de la instancia
-    tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id   
+    tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
     Responsable.__personas_responsables(Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento_id).map{|p| [p.user.nombre_completo, p.id]}
   end
 
@@ -911,7 +914,7 @@ class ManifestacionDeInteres < ApplicationRecord
       #verificar_es_cogestora
       self.representante_institucion_para_solicitud_id = nil
     end
-    completar_representate_institucion    
+    completar_representate_institucion
   end
   def completar_institucion_cogestora
     if self.contribuyente_id.present?
@@ -921,7 +924,7 @@ class ManifestacionDeInteres < ApplicationRecord
       self.institucion_gestora_acuerdo = contribuyente.razon_social
       self.rut_institucion_gestora_acuerdo = contribuyente.rut_completo
       self.tipo_contribuyente_de_institucion_gestora = contribuyente.tipo_contribuyente
-      
+
       casa_matriz = contribuyente.direccion_casa_matriz(false,true)
       self.direccion_institucion_gestora_acuerdo = "#{casa_matriz[:direccion]} #{casa_matriz[:comuna]} #{casa_matriz[:region]} #{casa_matriz[:pais]}"
       self.lugar_institucion_gestora_acuerdo = casa_matriz[:comuna]
@@ -979,17 +982,17 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def comentarios_diagnostico_ordenados
-    self.comentarios_y_observaciones_documento_diagnosticos.present? ? 
+    self.comentarios_y_observaciones_documento_diagnosticos.present? ?
       self.comentarios_y_observaciones_documento_diagnosticos.sort_by{|c| c[:datetime]}.reverse : []
   end
 
   def comentarios_mapa_de_actores_ordenados
-    self.comentarios_y_observaciones_actualizacion_mapa_de_actores.present? ? 
+    self.comentarios_y_observaciones_actualizacion_mapa_de_actores.present? ?
       self.comentarios_y_observaciones_actualizacion_mapa_de_actores.sort_by{|c| c[:datetime]}.reverse : []
   end
 
   def comentarios_set_metas_acciones_ordenados
-    self.comentarios_y_observaciones_set_metas_acciones.present? ? 
+    self.comentarios_y_observaciones_set_metas_acciones.present? ?
       self.comentarios_y_observaciones_set_metas_acciones.sort_by{|c| c[:datetime]}.reverse : []
   end
 
@@ -1000,7 +1003,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
     # tipo_instrumento_id = self.tipo_instrumento_id.blank? ? self.flujo.tipo_instrumento_id : self.tipo_instrumento_id
     personas = Responsable.__personas_responsables(rol, tipo_instrumento_id).uniq
-    
+
     if !contribuyente_id.blank?
       personas.map!{|p| p if p[:contribuyente_id] == contribuyente_id}
       personas = personas.compact
@@ -1067,10 +1070,10 @@ class ManifestacionDeInteres < ApplicationRecord
     ##HEADER
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], :width  => pdf.bounds.width do
-        #pdf.image Rails.root.join('app','assets','images','logo-ascc.png').to_s, width: 150
-        pdf.image Rails.root.join("app/assets/images/logo-ascc.png"), width: 119
+        #pdf.image Rails.root.join('app','assets','images','logo-ascc-nuevo.png').to_s, width: 150
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], :width  => pdf.bounds.width do
-          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
             pdf.text "FORMULARIO DE MANIFESTACIÓN DE INTERÉS", size: 10, color: "003DA6", align: :right
           end
         end
@@ -1102,20 +1105,20 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :nombre_de_estandar_certificable, validaciones)
       self.pdf_contenido_formato(pdf, :estandar_certificable, validaciones)
       self.pdf_contenido_formato_select(
-        pdf, 
-        :estandar_de_certificacion_id, 
-        (self.estandar_homologacion.nil? ? '' : self.estandar_homologacion.nombre), 
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,estandar_id: self.estandar_de_certificacion_id), 
+        pdf,
+        :estandar_de_certificacion_id,
+        (self.estandar_homologacion.nil? ? '' : self.estandar_homologacion.nombre),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,estandar_id: self.estandar_de_certificacion_id),
         validaciones
       )
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :diagnostico_de_acuerdo_propuesto, validaciones)
       self.pdf_contenido_formato(pdf, :diagnostico_de_acuerdo_anterior, validaciones)
       self.pdf_contenido_formato_select(
-        pdf, 
-        :diagnostico_id, 
-        (self.antiguo.nil? ? '' : self.antiguo.nombre_acuerdo), 
-        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,diagnostico_id: self.diagnostico_id), 
+        pdf,
+        :diagnostico_id,
+        (self.antiguo.nil? ? '' : self.antiguo.nombre_acuerdo),
+        Rails.application.routes.url_helpers.descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, self,diagnostico_id: self.diagnostico_id),
         validaciones
       )
       self.pdf_contenido_formato(pdf, :informe_de_acuerdo_anterior, validaciones)
@@ -1215,7 +1218,7 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def pdf_titulo_formato pdf, titulo, subtitulo
-    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do 
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
       pdf.text titulo, size: 11
     end
     pdf.text subtitulo, size: 9
@@ -1226,13 +1229,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def pdf_contenido_formato pdf, variable, validaciones
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       valor = self.send(variable.to_s)
       if valor.blank?
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       elsif valor.class.superclass == CarrierWave::Uploader::Base
@@ -1250,13 +1253,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def pdf_contenido_formato_custom pdf, variable, valor, validaciones, forzar_mostrar=false
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       valor_por_variable = self.send(variable.to_s)
       if((valor_por_variable.blank? || valor.blank?) && !forzar_mostrar)
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
@@ -1269,13 +1272,13 @@ class ManifestacionDeInteres < ApplicationRecord
   def pdf_contenido_formato_select pdf, variable, valor_real, link, validaciones
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       valor = self.send(variable.to_s)
       if valor.blank?
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
@@ -1293,12 +1296,12 @@ class ManifestacionDeInteres < ApplicationRecord
   def pdf_contenido_formato_checks pdf, variable, valores, validaciones
     var = validaciones[:manifestacion_de_interes][variable]
     if !var.nil?
-      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do 
+      pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-SemiBold.ttf") do
         pdf.text var[:nombre], size: 9
       end
       pdf.move_down 4
       if valores.blank? || valores.select{|v| v[:status] == "indeterminate" || v[:status] == "checked" }.size == 0
-        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do 
+        pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf") do
           pdf.text 'No se ingresa respuesta', size: 9, color: 'A4A5A7'
         end
       else
@@ -1410,7 +1413,7 @@ class ManifestacionDeInteres < ApplicationRecord
     AdhesionElemento.where(adhesion_id: adhesiones_ids).each do |elem|
       institucion = Contribuyente.find_by(rut: elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
       dir_principal = institucion.direccion_principal
-      
+
       elementos_adheridos << {
         fecha_adhesion: elem.fila[:fecha_adhesion],
         nombre_institucion: institucion.razon_social,
@@ -1431,7 +1434,7 @@ class ManifestacionDeInteres < ApplicationRecord
     adhesiones = Adhesion.unscoped.where(flujo_id: self.flujo.id)
     #obtengo elementos
     AdhesionElemento.where(adhesion_id: adhesiones.pluck(:id)).each do |adhesion_elemento|
-        
+
       institucion = Contribuyente.find_by(rut: adhesion_elemento.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
 
       auditorias = Auditoria.where(flujo_id: self.flujo.id, con_certificacion: true).order(plazo_cierre: :desc)
@@ -1483,7 +1486,7 @@ class ManifestacionDeInteres < ApplicationRecord
           nivel = adhesion_elemento.cumple_nivel(aud)
           if !nivel.nil?
             _fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
-            
+
             #cargo el plazo del nivel
             _tiempo = nivel.plazo
             #si nivel no tiene cargo el de auditoria
@@ -1522,7 +1525,7 @@ class ManifestacionDeInteres < ApplicationRecord
           nombre_elemento: adhesion_elemento.nombre_del_elemento_v2,
           fecha_certificacion: fecha_certificacion,
           con_extension: "No",
-          vigencia_certificacion: vigencia_certificacion, 
+          vigencia_certificacion: vigencia_certificacion,
           nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
           nombre_estandar: nil,
           nombre_institucion: institucion.razon_social,
@@ -1545,9 +1548,9 @@ class ManifestacionDeInteres < ApplicationRecord
           nombre_elemento: adhesion_elemento.nombre_segun_alcance,
           fecha_certificacion: data[:fecha_certificacion],
           con_extension: "No",
-          vigencia_certificacion: data[:vigencia_certificacion], 
+          vigencia_certificacion: data[:vigencia_certificacion],
           nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
-          nombre_estandar: data[:aud_nivel].estandar_nivel.estandar_homologacion.nombre+"-"+data[:aud_nivel].estandar_nivel.nombre, 
+          nombre_estandar: data[:aud_nivel].estandar_nivel.estandar_homologacion.nombre+"-"+data[:aud_nivel].estandar_nivel.nombre,
           nombre_institucion: institucion.razon_social,
           rut_institucion: adhesion_elemento.fila[:rut_institucion],
           region: institucion.direccion_principal.comuna.provincia.region.nombre,

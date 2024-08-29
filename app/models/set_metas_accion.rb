@@ -23,9 +23,9 @@ class SetMetasAccion < ApplicationRecord
 	
 	validates :accion_id, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
 	validates :meta_id, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
-	validates :valor_referencia, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
+
 	validates :alcance_id, presence: true , if: -> { ppf_metas_establecimiento_id.blank? && !solo_comentar && !solo_ultimos_2_campos }
-	validates :criterio_inclusion_exclusion, presence: true, if: -> { !solo_comentar }
+
 	validates :descripcion_accion, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
 	#validates :detalle_medio_verificacion, presence: true
 	validates :plazo_valor, presence: true, if: -> { !solo_comentar && !solo_ultimos_2_campos }
