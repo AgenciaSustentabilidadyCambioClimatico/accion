@@ -343,6 +343,7 @@ GEM
       railties (>= 4.2.0, < 5.3)
     retriable (3.1.2)
     rexml (3.2.5)
+    rollbar (3.5.2)
     roo (2.7.1)
       nokogiri (~> 1)
       rubyzip (~> 1.1, < 2.0.0)
@@ -501,6 +502,7 @@ DEPENDENCIES
   quilljs-rails
   rails (~> 5.1.6)
   rails-erd
+  rollbar
   roo
   roo-xls
   ruby-units (~> 2.3)
