@@ -402,7 +402,7 @@ class FondoProduccionLimpiasController < ApplicationController
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
         elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
           meses = FondoProduccionLimpia::DURACION_FPL_EXTRAPRESUPUESTARIO
         else
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
@@ -671,7 +671,9 @@ class FondoProduccionLimpiasController < ApplicationController
         when TipoInstrumento::FPL_LINEA_1_2_2
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
         when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
-          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1 
+        when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2    
         else
           nil
         end
@@ -2090,7 +2092,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       #SE CREA FPL-10 
-      if cuestionario_fpl_aprobados.count  == 3 && (cuestionario_fpl_rechazado_jur[3] == 0 || cuestionario_fpl_rechazado_jur[3] == nil)
+      if cuestionario_fpl_aprobados.count  >= 3 && (cuestionario_fpl_rechazado_jur[3] == 0 || cuestionario_fpl_rechazado_jur[3] == nil)
         #obtengo el usuario del jefe de linea
         #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
@@ -2099,12 +2101,10 @@ class FondoProduccionLimpiasController < ApplicationController
         if existe_fpl_06.present?
         else
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
-
           #obtengo el user_id del jefe de linea
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
           tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
 
-      
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
           custom_params_tarea_pendiente = {
             tarea_pendientes: {
@@ -2550,17 +2550,9 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def enviar_observaciones_admisibilidad  #TAREA FPL-07
-      
-
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_08)
       existe_fpl_08 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
 
-      #envia_notificacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [4]).count
-      #if envia_notificacion.present?
-      #  envia_notificacion.revision = envia_notificacion.revision + 1
-      #  envia_notificacion.save  
-      #end
-   
       #SE CAMBIA EL ESTADO DEL FPL-07 A 2
       tarea_fondo_fpl_07 = Tarea.find_by_codigo(Tarea::COD_FPL_07)
       tarea_pendiente_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_07.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
@@ -2568,7 +2560,6 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_fpl_07.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_07.save  
       end
-      #binding.pry
       #SE CREA FPL-06
       #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
       if existe_fpl_08.present?
@@ -2596,7 +2587,6 @@ class FondoProduccionLimpiasController < ApplicationController
         #SE ENVIAR EL MAIL AL RESPONSABLE
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
-      #binding.pry
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Financiera enviada correctamente'
           render js: "window.location='#{root_path}'"}
@@ -3973,7 +3963,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @response_costos = 1
             end
           end
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
           @mensaje = mensaje_success
           @response_costos = 0
         end
@@ -4105,6 +4095,7 @@ class FondoProduccionLimpiasController < ApplicationController
           linea_1_2_2: TipoInstrumento::FPL_LINEA_1_2_2,
           extrapresupuestario_diagnostico: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO,
           extrapresupuestario_seguimiento: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO,
+          extrapresupuestario_seguimiento_2: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2,
           extrapresupuestario_evaluacion: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
         }
       end

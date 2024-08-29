@@ -134,7 +134,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
       
-      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
         self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
         self.pdf_separador(pdf, 20)  
         self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
@@ -173,7 +173,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
 
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
-      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO   
         self.pdf_tabla_plan_actividades(pdf, planes)
       else
         self.pdf_tabla_plan_actividades_tipos(pdf, planes)
@@ -189,7 +189,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_costos(pdf, costos)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
-      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
         self.pdf_tabla_validacion(pdf, costos)
       else
         self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)

@@ -193,14 +193,16 @@
       var tipoInstrumentoValores = {
         LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
         LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
       };
 
       var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
         var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -229,14 +231,16 @@
     var tipoInstrumentoValores = {
       LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
       LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
     };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -584,14 +588,16 @@
     var tipoInstrumentoValores = {
       LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
       LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]}
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
     };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
       if(flag == 1)  {
         tipo_actividad = document.getElementById('tipo_actividad').value;
@@ -1860,7 +1866,17 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30)  {
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -1916,29 +1932,21 @@
       },
       method: "GET",
       success: function(response) {
-        $.ajax({
-          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-          data: {
-            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-          },
-          method: "GET",
-          success: function(response) {
-            if(confirm("¿Está seguro que desea enviar?")){
-              $.ajax({
-                url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
-                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-                contentType: "application/json",
-                method: "POST",
-                success: function(response) {
-                  //$('.loading-data').hide();
-                },
-                error: function(error) {
-                  console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
-                }
-              });
+        if(confirm("¿Está seguro que desea enviar?")){
+          $.ajax({
+            url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
+            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+            contentType: "application/json",
+            method: "POST",
+            success: function(response) {
+              //$('.loading-data').hide();
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+              $('.loading-data').hide();
             }
-          }})
+          });
+        }   
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1962,7 +1970,17 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
 
-    if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30)  {
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
@@ -2018,30 +2036,22 @@
       },
       method: "GET",
       success: function(response) {
-        $.ajax({
-          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-          data: {
-            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-          },
-          method: "GET",
-          success: function(response) {
-            if(confirm("¿Está seguro que desea enviar?")){
-              $('.loading-data').show();
-              $.ajax({
-                url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-                contentType: "application/json",
-                method: "POST",
-                success: function(response) {
-                  //$('.loading-data').hide();
-                },
-                error: function(error) {
-                  console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
-                }
-              });
+        if(confirm("¿Está seguro que desea enviar?")){
+          $('.loading-data').show();
+          $.ajax({
+            url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+            contentType: "application/json",
+            method: "POST",
+            success: function(response) {
+              //$('.loading-data').hide();
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+              $('.loading-data').hide();
             }
-          }})
+          });
+        }   
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -3644,7 +3654,7 @@
                 - if @actividad_x_linea.present?  
                   - current_tipo_actividad = nil
                   - @actividad_x_linea.each do |actividad|
-                    - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 
+                    - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   
                       - if current_tipo_actividad != actividad.tipo_actividad
                         - current_tipo_actividad = actividad.tipo_actividad
                         %tr
@@ -4107,7 +4117,7 @@
                     %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
                       %span{ class: 'text-danger' } NO
           %br
-        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
           %div.table-responsive 
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -5417,7 +5427,7 @@
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                             - else
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
-                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
+                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2  
                           %tr#tr_tipo_actividad
                         %tr
                           %td.contenido-popup-form{colspan: @duracion}

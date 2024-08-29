@@ -38,7 +38,8 @@ class TipoInstrumento < ApplicationRecord
   L5                                      = "L5"
   FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO     = 30
   FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO     = 31
-  FPL_EXTRAPRESUPUESTARIO_EVALUACION      = 32
+  FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   = 32
+  FPL_EXTRAPRESUPUESTARIO_EVALUACION      = 33
 
   def self.por_padre(key=:name,object=false,include_parent=true,by_type=nil)
     tipo_instrumento = TipoInstrumento.includes([:tipo])
