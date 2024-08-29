@@ -1,0 +1,20 @@
+$('#div_postulantes_faltantes table tbody').empty();
+<% postulantes_faltantes.each do |postulantes_faltante| %>
+  var rrhh_propio_id = '<%= postulantes_faltante.id %>';
+  var rrhh_equipo_id = '<%= postulantes_faltante.rrhh_equipo_id %>'; // Aquí asumo que hay un campo en el modelo llamado equipo_id
+  var nombre_usuario = '<%= postulantes_faltante.nombre_usuario %>';
+  var hh = '<%= postulantes_faltante.hh %>'; // Obtener las horas hombre de los datos
+
+  var newRow = "<tr>" +
+    "<td class='contenido-form' id='rrhh_propio_id_<%= postulantes_faltante.id %>'>" + rrhh_propio_id + "</td>" +
+    "<td class='contenido-form' id='rrhh_equipo_id_<%= postulantes_faltante.id %>'>" + rrhh_equipo_id + "</td>" +
+    "<td class='contenido-form'>" + nombre_usuario + "</td>" +
+    "<td class='contenido-form'>" +
+    "<input type='text' name='rrhh_propios_hh' id='rrhh_propios_hh' value='" + hh + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='3' onKeyPress='return soloNumeros(event)'>" +
+    "</td>" +
+    "</tr>";
+  $('#div_postulantes_faltantes table tbody').append(newRow);
+  $('#rrhh_propio_id_<%= postulantes_faltante.id %>').hide();
+  $('#rrhh_equipo_id_<%= postulantes_faltante.id %>').hide();
+<% end %>
+

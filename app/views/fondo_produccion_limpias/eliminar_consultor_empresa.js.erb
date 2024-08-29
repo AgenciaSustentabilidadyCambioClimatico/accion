@@ -1,0 +1,23 @@
+$('.loading-data').hide();
+$("#eliminar-usuario_empresa-<%= user %>").closest('tr').remove();
+$("#eliminar-usuario-<%= user %>").closest('tr').remove();
+
+<% if @count_user_empresa == 0 %>
+    $('#div_empresa_consultora table tbody').empty();
+    <% @empresa_equipo.each do |contribuyente| %>
+        var razonSocial = '<%= contribuyente.razon_social %>';
+        var rut = '<%= contribuyente.rut %>';
+        var contribuyente_id = '<%= contribuyente.id%>';
+        var tarea_pendiente_id = '<%= tarea_pendiente_id %>';
+
+        var newRow = "<tr>" +
+        "<td class='contenido-form'>" + razonSocial + "</td>" +
+        "<td class='contenido-form'>" + rut + "</td>" +
+        "<td class='contenido-form dos iconos-acciones'>" +
+        "<a data-contribuyente--id="+ contribuyente_id + " data-confirm='¿Está seguro que desea borrar este(a) Contribuyente?' class='eliminar-empresa' id='eliminar-empresa-"+ contribuyente_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_empresa/"+ tarea_pendiente_id +"?contribuyente_id="+ contribuyente_id +"' data-original-title='Eliminar Contribuyente'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "</td>" +
+        "</tr>";    
+        $('#div_empresa_consultora table tbody').append(newRow); 
+    <% end %>
+<% end %>
+

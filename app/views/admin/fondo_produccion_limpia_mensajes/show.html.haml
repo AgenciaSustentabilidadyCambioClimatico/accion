@@ -1,0 +1,25 @@
+.row
+  .col-12.mt-3
+    %h1.titulo='Mensaje para Fondo Producción Limpia'
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            %b Mensaje
+          %h5.no-margin=titulo_acuerdo.html_safe
+        .card-body
+          .row
+            .col-12
+              %p
+                %strong Tarea:
+                #{@fondo_produccion_limpia_mensaje.tarea.nombre}
+            .col-12
+              %p
+                %strong Asunto:
+                #{@fondo_produccion_limpia_mensaje.asunto}
+            .col-12
+              %p
+                %strong Mensaje:
+                #{@fondo_produccion_limpia_mensaje.body}
+.float-right
+  =link_to t(:back), admin_fondo_produccion_limpia_mensajes_path, class: 'btn btn-warning '

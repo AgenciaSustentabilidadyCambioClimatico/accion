@@ -1,0 +1,240 @@
+:javascript
+  $(document).ready(function(){
+    var anular_confirmado = false;
+    $('#guardar-fondo-temporal-button').click(function(){
+
+      $('.loading-data').show();
+
+      const button = document.getElementById('guardar-fondo-temporal-button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+      button.disabled = true;
+
+      const button1 = document.getElementById('enviar-postulacion-button');
+      button1.disabled = true;
+
+      var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+      var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+      var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+      var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+      var duracion = document.getElementById('duracion').value;
+      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
+      var empresas_asociadas_ag = 0;   
+      var empresas_no_asociadas_ag = 0;
+      var elementos_micro_empresa = 0;
+      var elementos_pequena_empresa = 0;
+      var elementos_mediana_empresa = 0;
+      var elementos_grande_empresa = 0;
+
+      var tipoInstrumentoValores = {
+        LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+        LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+      };
+
+      var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
+
+        empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+        empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+
+        // Obtener el elemento <ul> con la clase seleccionados_tree
+        var ulElement = document.querySelector('.seleccionados_tree');
+
+        // Verificar si se encontró el elemento <ul>
+        if (ulElement) {
+            // Obtener todos los elementos <li> dentro del <ul>
+            var liElements = ulElement.querySelectorAll('li');
+
+            // Crear un array para almacenar los IDs de las comunas seleccionadas
+            var comunasIds = [];
+
+            // Iterar sobre los elementos <li> para obtener los IDs
+            liElements.forEach(function(liElement) {
+                // Obtener el ID del elemento <li>
+                var comunaId = liElement.id;
+                // Agregar el ID al array de IDs de comunas seleccionadas
+                comunasIds.push(comunaId);
+            });
+
+            // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+            // console.log('IDs de comunas seleccionadas:', comunasIds);
+        } else {
+            console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+        }
+      }else{
+        elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+        elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+        elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+        elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
+      }
+  
+      $.ajax({
+        url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
+        data: {
+          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+          cantidad_micro_empresa: cantidad_micro_empresa,
+          cantidad_pequeña_empresa: cantidad_pequeña_empresa,
+          cantidad_mediana_empresa: cantidad_mediana_empresa,
+          cantidad_grande_empresa: cantidad_grande_empresa,
+          empresas_asociadas_ag: empresas_asociadas_ag,
+          empresas_no_asociadas_ag: empresas_no_asociadas_ag,
+          duracion: duracion,
+          fortalezas_consultores: fortalezas_consultores,
+          comunasIds : comunasIds,
+          elementos_micro_empresa: elementos_micro_empresa,
+          elementos_pequena_empresa: elementos_pequena_empresa,
+          elementos_mediana_empresa: elementos_mediana_empresa,
+          elementos_grande_empresa: elementos_grande_empresa         
+        },
+        method: "GET",
+        success: function(response) {
+          //$('.loading-data').hide();
+          //button.innerHTML = 'Guardar cambios temporales';
+          //button.disabled = false;
+          /*$.ajax({
+            url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
+            data: {
+              flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+            },
+            method: "GET",
+            success: function(response) {
+              var contador_campos_nulos = document.getElementById('contador_campos_nulos').value;
+                if (contador_campos_nulos > 0) {
+                  alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
+                }
+                $('.loading-data').hide();
+                button.innerHTML = 'Guardar cambios temporales';
+                button.disabled = false;
+            }})*/
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
+          button.innerHTML = 'Guardar cambios temporales';
+          button.disabled = false;
+        }
+      });
+    });
+
+    $('#anular_y_eliminar').click(function(e){
+      if(!anular_confirmado){
+        e.preventDefault();
+        dataConfirmModal.confirm({
+          title: 'Confirme antes de continuar',
+          text: "Esta acción eliminará la información ingresada en la manifestación de interés",
+          commit: 'Confirmar',
+          cancel: 'Cancelar',
+          zIindex: 10099,
+          onConfirm: function() { 
+            dataConfirmModal.confirm({
+              title: 'Confirme antes de continuar',
+              text: "¿Desea anular y eliminar la postulación al Acuerdo?",
+              commit: 'Si, anular y eliminar',
+              cancel: 'No',
+              zIindex: 10099,
+              onConfirm: function() { 
+                anular_confirmado = true;
+                $("#manifestacion_de_interes_anulado").val(true);
+                $('#anular_y_eliminar').trigger("click");
+              },
+              onCancel:  function() {
+              },
+              onHide:    function() {
+              }
+            });
+          },
+          onCancel:  function() {
+          },
+          onHide:    function() {
+          }
+        });
+      }
+    });
+    
+    $('#enviar-postulacion-button').click(function(e){
+      var tipo = document.getElementById('tipos').getAttribute('data-tipo');
+      const button = document.getElementById('enviar-postulacion-button');
+      const button_guardar = document.getElementById('guardar-fondo-temporal-button');
+      $('.loading-data').show();
+      if(confirm("¿Está seguro que desea enviar?")){
+        $.ajax({
+          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+            tipo: tipo
+          },
+        method: "GET",
+          success: function(response) {
+            button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+            button.disabled = true;
+            button_guardar.disabled = true;
+          },
+          error: function(error) {
+            console.error("Error al llamar al método del controlador", error);
+            $('.loading-data').hide();
+            button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
+            button.disabled = false;
+            button_guardar.disabled = false;
+          }
+        });  
+      }else{
+        $('.loading-data').hide();
+        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar postulación';
+        button.disabled = false;
+        button_guardar.disabled = false;
+      }
+    });
+
+    $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
+  });
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- titulo t(:postulacion_fondo_produccion_limpia)
+-# - tabs = { "sector": true, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+- tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
+- formulario_remote = true #flag para mostrar/ocultar el botón de guardado
+- mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
+= simple_form_for [@fondo_produccion_limpia], :url => guardar_fondo_temporal_fondo_produccion_limpia_path, method: :patch, remote: formulario_remote, html: { autocomplete: :off, multipart: true, id: 'fondo-produccion-limpias-form', class: 'ajax-form'} do |f|
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin=titulo_instrumento_fpl.html_safe
+            %h5.no-margin=titulo_instrumento.html_safe
+            %h5.no-margin=titulo_proyecto_fpl.html_safe
+            %h5.no-margin=titulo_apl.html_safe
+            %h5.no-margin=datos_beneficiario_fpl.html_safe
+        = f.input :id, as: :hidden, wrapper: false, input_html: { value: @tarea_pendiente.id, id: 'tarea_pendiente_id' }  
+        = f.submit "", class: 'd-none'
+        #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+          %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+            - tabs.each do |tab,active|
+              %li.nav-item.tab-block{id: "#{tab}-tab"}
+                %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                  =t(tab.to_s.gsub('-','_'))
+                - if !@total_de_errores_por_tab.blank? && @total_de_errores_por_tab.has_key?(tab) && @total_de_errores_por_tab[tab].present? && @total_de_errores_por_tab[tab].size > 0
+                  %small.total-error
+                    = @total_de_errores_por_tab[tab]
+            - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
+              - formulario_remote = false
+        = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
+  -if !solo_lectura
+    .float-left
+      = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
+      = link_to t(:descargar_postulacion), descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
+    .float-right
+      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+      = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
+      = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
+      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do
+      -#  %i.fa.fa-arrow-circle-right
+      -#  = t(:enviar_postulación)
+-if !solo_lectura
+  = render 'admin/users/buscador'
+  -# - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+  -#- tipo_instrumento = 28 
+  -#= render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
+-#= render 'admin/contribuyentes/buscador', es_para_seleccion: true

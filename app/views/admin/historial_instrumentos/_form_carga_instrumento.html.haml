@@ -18,11 +18,13 @@
       -if current_user.is_admin? || current_user.is_ascc?
         .card-body.pb-0        
           .row.justify-content-left       
-            .col-md-4
+            .col-md-3
               = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
-            .col-md-4
+            .col-md-3
               = select_tag :ppf, options_from_collection_for_select(@ppfs, "id", "nombre_para_raa", :selected=>@ppf), { class: 'form-control',:prompt => 'Seleccione un Programa y/o Proyecto de Financiamiento' }  
-            .col-md-4
+            .col-md-3
+              = select_tag :ppl, options_from_collection_for_select(@ppls, "id", "nombre_para_raa", :selected=>@ppl), { class: 'form-control',:prompt => 'Seleccione una Rendición / Seguimiento' }         
+            .col-md-3
               = select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }  
       .card-body.p-0
         .table-responsive.mis-instrumentos
@@ -51,6 +53,12 @@
                   %td=ins[:activacion]
                   %td=ins[:ejecucion]
                   %td
+                    -# Botón de descarga de PDF Fondo Producción Limpia
+                    - if ins[:tarea][:codigo] == 'FPL-06'
+                      - ins[:tarea_fpl_06].each do |revision|
+                        = link_to descargar_pdf_fondo_produccion_limpia_path(ins[:id_instrumento], revision: revision), class: "btn-tabla-instrumentos" do
+                          = fa_icon 'file-pdf-o'
+                          = "Revisión #{revision}"
                     -# Se recorre arreglo con los documentos asociados a cada APL.
                     - ins[:documentos_asociados].each do |documento| 
                       - if documento[:url].blank?
@@ -140,6 +148,27 @@
         type: "GET",
         dataType: "script",
         data: { apl: $(this).val() },
+        beforeSend: function(){
+          loadingParent = $(".loading-data").parent().parent()[0]
+          $('.loading-data').height(loadingParent.scrollHeight).show();
+          spinner = $('.loading-data > .spinner').css({'display':'block'})
+          scrollTop = document.documentElement.scrollTop || document.body.scrollTop
+          spinner.css({'margin-top':window.innerHeight/2+scrollTop-spinner.height()/2});
+        }
+      }).fail(function() {
+        alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+        $('.loading-data').hide();
+      }).success(function(){
+        $('.loading-data').hide();
+      });
+    });
+    $('#ppl').chosen(chosenOptions);
+    $('#ppl').change(function(){
+      $.ajax({
+        url: "#{cargar_instrumento_admin_historial_instrumentos_path}",
+        type: "GET",
+        dataType: "script",
+        data: { ppl: $(this).val() },
         beforeSend: function(){
           loadingParent = $(".loading-data").parent().parent()[0]
           $('.loading-data').height(loadingParent.scrollHeight).show();

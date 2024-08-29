@@ -4,7 +4,8 @@ class Tarea < ApplicationRecord
 	has_many :campos, through: :campo_tareas
 	has_many :encuesta_descarga_roles
 	has_many :encuesta_ejecucion_roles
-  has_many :registro_proveedor_mensajes
+  	has_many :registro_proveedor_mensajes
+	has_many :fondo_produccion_limpia_mensajes
 
 	# DOSSA 18-07-2019 se agrega para los recursos anidados de campos
 	accepts_nested_attributes_for :campos
@@ -22,7 +23,7 @@ class Tarea < ApplicationRecord
 	#validates :etapa_id, presence: true
 	validates :tipo_instrumento_id, presence: true
 	validates :rol_id, presence: true
-	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL|PRO)-[\0-9]{3}(\.[0-9])?\Z/ }
+	validates :codigo, presence: true, format: { with: /\A(APL|PPF|FPL|PRO)-[\0-9]\d{1,3}(\.[0-9])?\Z/ }
 	validates :nombre, presence: true
 	validates :descripcion, presence: true
 
@@ -327,7 +328,7 @@ class Tarea < ApplicationRecord
 	COD_FPL_005	=	'FPL-005'	 #[9}		-	FPL-005-Designar responsables
 	COD_FPL_006	=	'FPL-006'	 #[10}	-	FPL-006-Agendar reunión con beneficiario y encargados entregables
 	COD_FPL_007	=	'FPL-007'	 #[12}	-	FPL-007-Calendarizar rendiciones y carga de respaldo.
-	COD_FPL_008	=	'FPL-018'	 #[13}	-	FPL-008-Solicitar pago
+	COD_FPL_008	=	'FPL-008'	 #[13}	-	FPL-008-Solicitar pago
 	COD_FPL_009	=	'FPL-009'	 #[14}	-	FPL-009-Ingresar N° orden de pago
 	COD_FPL_010	=	'FPL-010'	 #[15}	-	FPL-010-Ingresar fecha de pago
 	COD_FPL_011	=	'FPL-011'	 #[16}	-	FPL-011-Enviar rendición
@@ -400,6 +401,19 @@ class Tarea < ApplicationRecord
   COD_PRO_008 = 'PRO-008'
   COD_PRO_009 = 'PRO-009'
   COD_PRO_010 = 'PRO-010'
+
+  	COD_FPL_00 = 'FPL-00'
+	COD_FPL_01 = 'FPL-01'
+	COD_FPL_02 = 'FPL-02'
+	COD_FPL_03 = 'FPL-03'
+	COD_FPL_04 = 'FPL-04'
+	COD_FPL_05 = 'FPL-05'
+	COD_FPL_06 = 'FPL-06'
+	COD_FPL_07 = 'FPL-07'
+	COD_FPL_08 = 'FPL-08'
+	COD_FPL_09 = 'FPL-09'
+	COD_FPL_10 = 'FPL-10'
+	COD_FPL_11 = 'FPL-11'
 
 	#etapas de acuerdo
 	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]

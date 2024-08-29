@@ -1,0 +1,74 @@
+
+- modal_id = modal_id.nil? ? 'buscar-usuario' : modal_id
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
+- lista_usuarios = lista_usuarios.nil? ? @usuarios : lista_usuarios
+- tipo_equipo = tipo_equipo.nil? ? @tipo_equipo : tipo_equipo
+.row
+  .col-12
+    .usuarios-form-buscar
+      .resultado-consulta-remote-block
+        - if @filtro_utilizado
+          .alert.alert-dismissible.fade.show.mb-3{class: @usuarios.size == 0 ? 'alert-danger' : 'alert-success' }
+            = "<b>Resultados:</b> #{@usuarios.size}</b> - <b>Filtro:</b> #{@filtro_utilizado}.".html_safe
+      .card
+        .card-header
+          %h5.no-margin
+            = t(:buscar_, item: t(:usuario).downcase)
+        .card-body
+          %div{id: "usuarios-remote-filter"}
+            = simple_form_for :buscador, url: buscador_fondo_produccion_limpia_path, method: :get, class: 'filter', autocomplete: :off, remote: true do |f|
+              =f.hidden_field :flujo_id, value: (@flujo_id.present? ? @flujo_id : nil)
+              =f.hidden_field :modal_id, value: modal_id
+              =f.hidden_field :tipo_equipo, value: tipo_equipo
+              .row
+                .col-lg-4.pr-lg-0.col-12
+                  = f.input :rut, label: false, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0' }, placeholder: "R.U.T", as: :string, required: true
+                .col-12.col-lg-7
+                  = f.input :nombre_completo, input_html: { class: 'not-required-if-other-like-me-is-present form-control-sm m-0', type: :string }, label: false, placeholder: 'Nombre completo', required: true
+                .col-lg-1.col-12
+                  = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled
+                %br
+  -unless @usuario_temporal.nil?
+    .col-12.text-right
+      %button.btn.btn-primary#nuevo-usuario-fpl-button{type: :button, 'data-tipo-equipo': tipo_equipo}
+        =t(:nuevo_representante)
+  .col-12.mt-2
+    .usuarios-remote-table
+      .card
+        .card-header
+          %h5.no-margin
+            = t(:lista_de_, items: t(:usuarios).downcase)
+        %div.my-2 
+          %table.table.usuarios.table-striped{id: 'tabla_usuarios_' + (modal_id || '')}
+            %thead
+              %tr
+                %th.rut=t(:rut)
+                %th.razon-social=t(:nombre)
+                %th.iconos-acciones=t(:seleccione)
+
+            %tbody
+              -# DZC 2019-08-23 18:20:14 se corrige error
+              - if lista_usuarios.is_a?(Array)
+                - lista_usuarios.each do |u|
+                  %tr
+                    %td= "#{u.rut}"
+                    %td= u.nombre_completo
+                    %td.iconos-acciones
+                      - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
+                      = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }          
+              - else
+                - if @lista_usuarios.present? 
+                  - lista_usuarios.all.each do |u|
+                    %tr
+                      %td= "#{u.rut}"
+                      %td= u.nombre_completo
+                      %td.iconos-acciones
+                        - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
+                        = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }
+  .col-12.mt-2.text-right
+    -unless @contribuyente_temporal.nil?
+      %button.btn.btn-primary.seleccionar-y-actualizar-usuario-fpl-button{type: :button, disabled: :disabled }
+        Seleccionar
+    -else
+      %button.btn.btn-primary.seleccionar-usuario-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled, "data-modal-id" => modal_id}
+        Seleccionar

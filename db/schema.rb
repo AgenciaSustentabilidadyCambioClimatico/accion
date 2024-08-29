@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20230809181130) do
+ActiveRecord::Schema.define(version: 20240812194207) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -89,6 +89,7 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.integer "tipo_permiso", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "tipo_actividad"
   end
 
   create_table "actividades", force: :cascade do |t|
@@ -513,6 +514,13 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
 
+  create_table "correlativos", force: :cascade do |t|
+    t.integer "year"
+    t.integer "valor"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "cuencas", force: :cascade do |t|
     t.string "codigo_cuenca"
     t.string "nombre_cuenca"
@@ -528,6 +536,18 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.datetime "updated_at", null: false
     t.index ["cuenca_id"], name: "index_cuencas_flujos_on_cuenca_id"
     t.index ["flujo_id"], name: "index_cuencas_flujos_on_flujo_id"
+  end
+
+  create_table "cuestionario_fpls", force: :cascade do |t|
+    t.bigint "flujo_id"
+    t.integer "criterio_id"
+    t.integer "nota"
+    t.string "justificacion"
+    t.integer "tipo_cuestionario_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "revision"
+    t.index ["flujo_id"], name: "index_cuestionario_fpls_on_flujo_id"
   end
 
   create_table "dato_anual_contribuyentes", force: :cascade do |t|
@@ -614,6 +634,46 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["codigo"], name: "index_descargable_tareas_on_codigo", unique: true
+  end
+
+  create_table "detalle_documentacion_legals", force: :cascade do |t|
+    t.bigint "documentacion_legal_id"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["documentacion_legal_id"], name: "index_detalle_documentacion_legals_on_documentacion_legal_id"
+    t.index ["flujo_id"], name: "index_detalle_documentacion_legals_on_flujo_id"
+  end
+
+  create_table "detalle_documentacions", force: :cascade do |t|
+    t.string "rol_unico_tributario_postulante"
+    t.string "certificado_vigencia"
+    t.string "declaracion_jurada_anexo_b"
+    t.string "copia_instrumento_nombre_representante"
+    t.string "copia_cedula_representantes_legales"
+    t.string "instrumento_constitucion_estatutos"
+    t.string "antecedentes_contrato_anexo_c"
+    t.string "declaracion_jurada_representante_legal_anexo_a"
+    t.string "declaracion_jurada_representante_legal_anexo_b"
+    t.string "certificado_inicio_actividades"
+    t.string "copia_cedula_persona"
+    t.string "declaracion_jurada_anexo_a"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flujo_id"], name: "index_detalle_documentacions_on_flujo_id"
+  end
+
+  create_table "documentacion_legals", force: :cascade do |t|
+    t.integer "estado"
+    t.bigint "descargable_tareas_id"
+    t.bigint "tipo_contribuyentes_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tipo_descargable"
+    t.string "nombre_campo"
+    t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
+    t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end
 
   create_table "documento_diagnosticos", force: :cascade do |t|
@@ -724,6 +784,32 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "base", default: false, null: false
+  end
+
+  create_table "equipo_empresas", force: :cascade do |t|
+    t.integer "id_empresa"
+    t.bigint "flujo_id"
+    t.bigint "contribuyente_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["contribuyente_id"], name: "index_equipo_empresas_on_contribuyente_id"
+    t.index ["flujo_id"], name: "index_equipo_empresas_on_flujo_id"
+  end
+
+  create_table "equipo_trabajos", force: :cascade do |t|
+    t.string "profesion"
+    t.string "funciones_proyecto"
+    t.integer "valor_hh"
+    t.string "copia_ci"
+    t.string "curriculum"
+    t.integer "tipo_equipo"
+    t.bigint "user_id"
+    t.bigint "flujo_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "contribuyente_id"
+    t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
+    t.index ["user_id"], name: "index_equipo_trabajos_on_user_id"
   end
 
   create_table "establecimiento_contribuyentes", force: :cascade do |t|
@@ -848,6 +934,97 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.boolean "terminado", default: false
     t.string "codigo"
     t.integer "registro_proveedor_id"
+    t.bigint "fondo_produccion_limpia_id"
+    t.index ["fondo_produccion_limpia_id"], name: "index_flujos_on_fondo_produccion_limpia_id"
+  end
+
+  create_table "fondo_produccion_limpia", force: :cascade do |t|
+    t.string "proponente"
+    t.string "nombre_acuerdo"
+    t.bigint "flujo_id"
+    t.bigint "linea_id"
+    t.bigint "sub_linea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "flujo_apl_id"
+    t.integer "institucion_entregables_id"
+    t.integer "usuario_entregables_id"
+    t.integer "institucion_receptor_cof_fpl_id"
+    t.integer "cantidad_micro_empresa"
+    t.integer "cantidad_pequeña_empresa"
+    t.integer "cantidad_mediana_empresa"
+    t.integer "cantidad_grande_empresa"
+    t.string "territorios_regiones"
+    t.string "territorios_provincias"
+    t.string "territorios_comunas"
+    t.integer "empresas_asociadas_ag"
+    t.integer "empresas_no_asociadas_ag"
+    t.integer "duracion"
+    t.string "fortalezas_consultores"
+    t.string "codigo_proyecto"
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.integer "revisor_juridico_id"
+    t.string "comentario_asignar_revisor"
+    t.string "instrumento_constitucion_estatutos_postulante"
+    t.string "certificado_vigencia_constitucion_postulante"
+    t.string "copia_instrumento_nombre_representante_postulante"
+    t.string "certificado_vigencia_copia_instrumento_postulante"
+    t.string "copia_cedula_representantes_legales_postulantes"
+    t.string "documento_coste_rol_unico_tributario_postulante"
+    t.string "antecedentes_contrato_anexo_c_postulante"
+    t.string "instrumento_constitucion_estatutos_receptor"
+    t.string "certificado_vigencia_constitucion_receptor"
+    t.string "copia_instrumento_nombre_representante_receptor"
+    t.string "certificado_vigencia_copia_instrumento_receptor"
+    t.string "copia_cedula_representantes_legales_receptor"
+    t.string "documento_coste_rol_unico_tributario_receptor"
+    t.string "declaracion_jurada_representante_legal_anexo_a_receptor"
+    t.string "declaracion_jurada_representante_legal_anexo_b_receptor"
+    t.string "instrumento_constitucion_estatutos_ejecutor"
+    t.string "certificado_vigencia_constitucion_ejecutor"
+    t.string "copia_instrumento_nombre_representante_ejecutor"
+    t.string "certificado_vigencia_copia_instrumento_ejecutor"
+    t.string "declaracion_jurada_representante_legal_anexo_a_ejecutor"
+    t.string "declaracion_jurada_representante_legal_anexo_b_ejecutor"
+    t.string "certificado_inicio_actividades_sii_ejecutor"
+    t.string "cedula_identidad_persona_ejecutor"
+    t.string "declaracion_jurada_simple_anexo_a_ejecutor"
+    t.string "declaracion_jurada_simple_anexo_b_ejecutor"
+    t.integer "elementos_micro_empresa"
+    t.integer "elementos_pequena_empresa"
+    t.integer "elementos_mediana_empresa"
+    t.integer "elementos_grande_empresa"
+    t.string "archivo_resolucion"
+    t.string "archivo_contrato"
+    t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
+    t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
+    t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
+  end
+
+  create_table "fondo_produccion_limpia_mensajes", force: :cascade do |t|
+    t.text "body"
+    t.string "asunto"
+    t.bigint "tarea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["tarea_id"], name: "index_fondo_produccion_limpia_mensajes_on_tarea_id"
+  end
+
+  create_table "gastos", force: :cascade do |t|
+    t.string "nombre"
+    t.integer "valor_unitario"
+    t.integer "cantidad"
+    t.bigint "tipo_aporte_id"
+    t.bigint "flujo_id"
+    t.bigint "plan_actividad_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "tipo_gasto"
+    t.integer "unidad_medida"
+    t.index ["flujo_id"], name: "index_gastos_on_flujo_id"
+    t.index ["plan_actividad_id"], name: "index_gastos_on_plan_actividad_id"
+    t.index ["tipo_aporte_id"], name: "index_gastos_on_tipo_aporte_id"
   end
 
   create_table "glosas", force: :cascade do |t|
@@ -952,6 +1129,13 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.text "poligono_ubicacion"
     t.string "glosario"
     t.string "certificaciones_homologables"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "lineas", force: :cascade do |t|
+    t.string "codigo"
+    t.string "descripcion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -1241,12 +1425,22 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   create_table "nota_registro_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "manifestacion_de_interes_id"
+    t.integer "nota", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "calificado", default: false
-    t.float "nota", default: 0.0
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
+  end
+
+  create_table "objetivos_especificos", force: :cascade do |t|
+    t.bigint "flujo_id"
+    t.string "descripcion"
+    t.string "metodologia"
+    t.string "resultado"
+    t.string "indicadores"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flujo_id"], name: "index_objetivos_especificos_on_flujo_id"
   end
 
   create_table "otros", force: :cascade do |t|
@@ -1297,6 +1491,18 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.string "telefono_institucional"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "plan_actividades", force: :cascade do |t|
+    t.string "duracion"
+    t.bigint "actividad_id"
+    t.bigint "flujo_id"
+    t.bigint "objetivos_especifico_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actividad_id"], name: "index_plan_actividades_on_actividad_id"
+    t.index ["flujo_id"], name: "index_plan_actividades_on_flujo_id"
+    t.index ["objetivos_especifico_id"], name: "index_plan_actividades_on_objetivos_especifico_id"
   end
 
   create_table "ppf_actividades", force: :cascade do |t|
@@ -1545,6 +1751,20 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "recurso_humanos", force: :cascade do |t|
+    t.integer "hh"
+    t.bigint "equipo_trabajo_id"
+    t.bigint "flujo_id"
+    t.bigint "plan_actividad_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "tipo_aporte_id"
+    t.index ["equipo_trabajo_id"], name: "index_recurso_humanos_on_equipo_trabajo_id"
+    t.index ["flujo_id"], name: "index_recurso_humanos_on_flujo_id"
+    t.index ["plan_actividad_id"], name: "index_recurso_humanos_on_plan_actividad_id"
+    t.index ["tipo_aporte_id"], name: "index_recurso_humanos_on_tipo_aporte_id"
+  end
+
   create_table "regiones", id: :serial, force: :cascade do |t|
     t.string "nombre", limit: 42
     t.bigint "pais_id"
@@ -1619,9 +1839,9 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -1729,6 +1949,15 @@ ActiveRecord::Schema.define(version: 20230809181130) do
     t.index ["estandar_nivel_id"], name: "index_set_metas_acciones_on_estandar_nivel_id"
     t.index ["flujo_id"], name: "index_set_metas_acciones_on_flujo_id"
     t.index ["ppf_metas_establecimiento_id"], name: "index_set_metas_acciones_on_ppf_metas_establecimiento_id"
+  end
+
+  create_table "sub_lineas", force: :cascade do |t|
+    t.string "codigo"
+    t.string "descripcion"
+    t.bigint "linea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["linea_id"], name: "index_sub_lineas_on_linea_id"
   end
 
   create_table "tamano_contribuyentes", force: :cascade do |t|
@@ -1972,11 +2201,15 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "convocatorias", "manifestacion_de_intereses"
   add_foreign_key "cuencas_flujos", "cuencas"
   add_foreign_key "cuencas_flujos", "flujos"
+  add_foreign_key "cuestionario_fpls", "flujos"
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"
   add_foreign_key "dato_productivo_elemento_adheridos", "set_metas_acciones"
   add_foreign_key "descargable_tareas", "tareas"
+  add_foreign_key "detalle_documentacion_legals", "documentacion_legals"
+  add_foreign_key "detalle_documentacion_legals", "flujos"
+  add_foreign_key "detalle_documentacions", "flujos"
   add_foreign_key "documento_diagnosticos", "manifestacion_de_intereses"
   add_foreign_key "documento_diagnosticos", "tipo_documento_diagnosticos"
   add_foreign_key "documento_garantias", "documento_garantias"
@@ -1997,6 +2230,10 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "encuesta_user_respuestas", "preguntas"
   add_foreign_key "encuesta_user_respuestas", "tarea_pendientes"
   add_foreign_key "encuesta_user_respuestas", "users"
+  add_foreign_key "equipo_empresas", "contribuyentes"
+  add_foreign_key "equipo_empresas", "flujos"
+  add_foreign_key "equipo_trabajos", "flujos"
+  add_foreign_key "equipo_trabajos", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"
   add_foreign_key "establecimiento_contribuyentes", "paises"
@@ -2011,12 +2248,20 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_entrada_id"
   add_foreign_key "flujo_tareas", "tareas", column: "tarea_salida_id"
   add_foreign_key "flujos", "contribuyentes"
+  add_foreign_key "flujos", "fondo_produccion_limpia", column: "fondo_produccion_limpia_id"
   add_foreign_key "flujos", "manifestacion_de_intereses"
   add_foreign_key "flujos", "manifestacion_de_intereses", name: "flujos_manifestacion_de_interes_id_fkey"
   add_foreign_key "flujos", "programa_proyecto_propuestas"
   add_foreign_key "flujos", "proyectos"
   add_foreign_key "flujos", "registro_proveedores"
   add_foreign_key "flujos", "tipo_instrumentos"
+  add_foreign_key "fondo_produccion_limpia", "flujos"
+  add_foreign_key "fondo_produccion_limpia", "lineas"
+  add_foreign_key "fondo_produccion_limpia", "sub_lineas"
+  add_foreign_key "fondo_produccion_limpia_mensajes", "tareas"
+  add_foreign_key "gastos", "flujos"
+  add_foreign_key "gastos", "plan_actividades"
+  add_foreign_key "gastos", "tipo_aportes"
   add_foreign_key "hito_de_prensa_archivos", "hitos_de_prensa", column: "hitos_de_prensa_id"
   add_foreign_key "hito_de_prensa_instrumentos", "flujos"
   add_foreign_key "hito_de_prensa_instrumentos", "hitos_de_prensa", column: "hitos_de_prensa_id"
@@ -2044,6 +2289,7 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "modificacion_calendarios", "proyectos"
   add_foreign_key "nota_registro_proveedores", "manifestacion_de_intereses"
   add_foreign_key "nota_registro_proveedores", "registro_proveedores"
+  add_foreign_key "objetivos_especificos", "flujos"
   add_foreign_key "otros", "alcances"
   add_foreign_key "otros", "contribuyentes"
   add_foreign_key "otros", "establecimiento_contribuyentes"
@@ -2052,6 +2298,9 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "personas", "contribuyentes"
   add_foreign_key "personas", "establecimiento_contribuyentes"
   add_foreign_key "personas", "users"
+  add_foreign_key "plan_actividades", "actividades"
+  add_foreign_key "plan_actividades", "flujos"
+  add_foreign_key "plan_actividades", "objetivos_especificos"
   add_foreign_key "ppf_metas_comentarios", "ppf_metas_establecimientos"
   add_foreign_key "ppf_metas_comentarios", "users"
   add_foreign_key "ppf_metas_establecimientos", "flujos"
@@ -2074,6 +2323,10 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "provincias", "regiones"
   add_foreign_key "proyecto_pagos", "proyectos"
   add_foreign_key "rango_venta_contribuyentes", "tamano_contribuyentes"
+  add_foreign_key "recurso_humanos", "equipo_trabajos"
+  add_foreign_key "recurso_humanos", "flujos"
+  add_foreign_key "recurso_humanos", "plan_actividades"
+  add_foreign_key "recurso_humanos", "tipo_aportes"
   add_foreign_key "regiones", "paises"
   add_foreign_key "registro_apertura_correos", "convocatoria_destinatarios"
   add_foreign_key "registro_apertura_correos", "flujo_tareas"
@@ -2096,6 +2349,7 @@ ActiveRecord::Schema.define(version: 20230809181130) do
   add_foreign_key "set_metas_acciones", "flujos"
   add_foreign_key "set_metas_acciones", "materia_sustancias"
   add_foreign_key "set_metas_acciones", "ppf_metas_establecimientos"
+  add_foreign_key "sub_lineas", "lineas"
   add_foreign_key "tarea_pendientes", "estado_tarea_pendientes"
   add_foreign_key "tarea_pendientes", "flujos"
   add_foreign_key "tarea_pendientes", "personas"

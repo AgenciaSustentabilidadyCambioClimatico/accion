@@ -1,5 +1,5 @@
 class HomeController < ApplicationController
-  #before_action :authenticate_user!, only: [:consulta_publica_propuestas_acuerdo]
+  before_action :authenticate_user!, only: [:estado_apl]
   before_action :set_datos_publicos, only: [:acuerdos_firmados, :empresas_y_elementos_adheridos, :empresas_y_elementos_certificados]
   before_action :datos_header_no_signed, except: [:get_comunas, :solicitar_adhesion_guardar]
   before_action :set_manif_de_interes, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
@@ -55,6 +55,21 @@ class HomeController < ApplicationController
   end
 
   def registro_proveedores
+  end
+
+  def estado_apl
+    if params[:query].present?
+      if params[:query].to_i == 0
+        manifestacion_de_intereses = ManifestacionDeInteres.where("nombre_acuerdo ILIKE ?", "%#{params[:query]}%")
+        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+      else
+        manifestacion_de_intereses = ManifestacionDeInteres.where(id: params[:query].to_i)
+        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+      end
+    else
+      manifestacion_de_intereses = ManifestacionDeInteres.all
+      @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
+    end
   end
 
   def solicitar_adhesion_guardar

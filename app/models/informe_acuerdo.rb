@@ -37,6 +37,8 @@ class InformeAcuerdo < ApplicationRecord
 
   attr_accessor :acta_convocatoria
 
+  attr_accessor :tipo_linea_seleccionada
+
   has_many :comentarios_informe_acuerdos, dependent: :destroy
 	accepts_nested_attributes_for :comentarios_informe_acuerdos, allow_destroy: true
 
@@ -322,7 +324,7 @@ class InformeAcuerdo < ApplicationRecord
   def __contenido(editor_hash,image_width,justify,sizes)
     data  = []
     # Cabecera fija con el logo de la agencia
-    data  << { value: Rails.root.join('app','assets','images','logo-ascc-nuevo.png').to_s, attributes: { width: image_width, in_header: true }, image: true }
+    data  << { value: Rails.root.join('app','assets','images','logo-ascc-nuevo-png').to_s, attributes: { width: image_width, in_header: true }, image: true }
     data  << { value: "\n"}
     editor_hash.each do |k,lines|
       skip_to_next = nil

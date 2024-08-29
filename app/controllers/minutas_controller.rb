@@ -22,6 +22,14 @@ class MinutasController < ApplicationController #crea la depencia con convocator
   # end
 
   def edit
+    #Obtiene las lineas para el diagnostico del FPL
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
+    @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
+    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
+    @instrumento_seleccionado = nil
+    if @flujos_con_tipo_instrumento.present?
+      @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
+    end
   end
 
   # PATCH/PUT
@@ -52,6 +60,45 @@ class MinutasController < ApplicationController #crea la depencia con convocator
             continua_flujo_segun_tipo_tarea
           end
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if !@minuta.acta.blank? && !@minuta.archivo_resolucion.blank?
+
+          #INICIO PROCESO FPL Línea 1.2.1 - Implementación de APL - Fase 1
+          if params[:minuta][:fondo_produccion_limpia] == "true"
+            flujo_apl = Flujo.find(@tarea_pendiente.flujo_id)
+            @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
+
+            flujo = Flujo.new({
+              contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
+              tipo_instrumento_id: params[:minuta][:tipo_linea_seleccionada]
+            })
+
+            if flujo.save
+              tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+              flujo.tarea_pendientes.create([{
+                  tarea_id: tarea_fondo.id,
+                  estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+                  user_id: @tarea_pendiente.user_id,
+                  data: { }
+                }]
+              )
+
+            #SE ENVIAR EL MAIL AL RESPONSABLE
+              send_message(tarea_fondo, @tarea_pendiente.user_id)
+              
+              #Inicia el flujo con el nombre Sin nombre
+              codigo_proyecto = "Proyecto seguimiento FPL"
+
+              fpl = FondoProduccionLimpia.create({
+                flujo_id: flujo.id,
+                flujo_apl_id: @tarea_pendiente.flujo_id,
+                codigo_proyecto: codigo_proyecto
+              })
+
+            #guarda el fpl id en la tabla flujo
+              flujo.fondo_produccion_limpia_id = fpl.id
+              flujo.save
+            end
+          end
+
         else
           # 
           @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
@@ -435,6 +482,14 @@ class MinutasController < ApplicationController #crea la depencia con convocator
       unless @tarea_pendiente.tengo_permiso? current_user
         flash[:warning] = 'No tiene permiso para acceder a esta tarea'
         redirect_to root_path
+      end
+    end
+
+    def send_message(tarea, user)
+      u = User.find(user)
+      mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
+      mensajes.each do |mensaje|
+        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
       end
     end
 end

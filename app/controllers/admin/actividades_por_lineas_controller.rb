@@ -56,7 +56,8 @@ class Admin::ActividadesPorLineasController < ApplicationController
       params.require(:actividad_por_linea).permit(
         :actividad_id,
         :tipo_instrumento_id,
-        :tipo_permiso
+        :tipo_permiso,
+        :tipo_actividad
       )
     end
 end

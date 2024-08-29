@@ -54,7 +54,7 @@
             .d-block.d-lg-none.d-flex.justify-content-end.pb-3.pr-3
               = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
             .d-flex.justify-content-between
-              - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "set-metas-accion": true, "auditoria-plazos-remote-form": false  } : tabs = { "listado-de-actores": true, "set-metas-accion": false, "auditoria-plazos-remote-form": false } # DZC 2018-11-02 20:50:54  se agrega para posicionar la vista en la pestaña set de metas y acciones
+              - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "set-metas-accion": true, "auditoria-plazos-remote-form": false, "fondo-produccion-limpia": false  } : tabs = { "listado-de-actores": true, "set-metas-accion": false, "auditoria-plazos-remote-form": false, "fondo-produccion-limpia": false } # DZC 2018-11-02 20:50:54  se agrega para posicionar la vista en la pestaña set de metas y acciones
               #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
                 %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
                   - tabs.each do |tab,active|
@@ -84,3 +84,5 @@
                     = render 'set_metas_acciones/modal'
               #auditoria-plazos-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"miembros-comite-remote-form"], "aria-labelledby" => "miembros-comite-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"miembros-comite-remote-form"])}
                 = render 'form_auditoria_plazos'
+              #fondo-produccion-limpia.tab-pane.fade{"aria-expanded" => tabs[:"fondo-produccion-limpia"], "aria-labelledby" => "fondo-produccion-limpia-tab", :role => "tabpanel", class: ("show active" if tabs[:"fondo-produccion-limpia"])}
+                = render 'form_fpl'
