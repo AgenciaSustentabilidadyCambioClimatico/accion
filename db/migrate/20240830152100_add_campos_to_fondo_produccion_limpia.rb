@@ -1,4 +1,4 @@
-class AddFieldsNewToFondoProduccionLimpia < ActiveRecord::Migration[5.1]
+class AddCamposToFondoProduccionLimpia < ActiveRecord::Migration[5.1]
   def change
     add_column :fondo_produccion_limpia, :flujo_apl_id, :integer
     add_column :fondo_produccion_limpia, :institucion_receptor_cof_fpl_id, :integer

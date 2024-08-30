@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240409131705) do
+ActiveRecord::Schema.define(version: 20240314183508) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -517,13 +517,6 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.index ["flujo_id"], name: "index_convocatorias_on_flujo_id"
   end
 
-  create_table "correlativos", force: :cascade do |t|
-    t.integer "year"
-    t.integer "valor"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "cuencas", force: :cascade do |t|
     t.string "codigo_cuenca"
     t.string "nombre_cuenca"
@@ -539,18 +532,6 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.datetime "updated_at", null: false
     t.index ["cuenca_id"], name: "index_cuencas_flujos_on_cuenca_id"
     t.index ["flujo_id"], name: "index_cuencas_flujos_on_flujo_id"
-  end
-
-  create_table "cuestionario_fpls", force: :cascade do |t|
-    t.bigint "flujo_id"
-    t.integer "criterio_id"
-    t.integer "nota"
-    t.string "justificacion"
-    t.integer "tipo_cuestionario_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "revision"
-    t.index ["flujo_id"], name: "index_cuestionario_fpls_on_flujo_id"
   end
 
   create_table "dato_anual_contribuyentes", force: :cascade do |t|
@@ -652,17 +633,6 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["codigo"], name: "index_descargable_tareas_on_codigo", unique: true
-  end
-
-  create_table "documentacion_legals", force: :cascade do |t|
-    t.integer "estado"
-    t.bigint "descargable_tareas_id"
-    t.bigint "tipo_contribuyentes_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.integer "tipo_descargable"
-    t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
-    t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end
 
   create_table "documento_diagnosticos", force: :cascade do |t|
@@ -934,8 +904,6 @@ ActiveRecord::Schema.define(version: 20240409131705) do
     t.bigint "sub_linea_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "institucion_entregables_id"
-    t.integer "usuario_entregables_id"
     t.integer "flujo_apl_id"
     t.integer "institucion_receptor_cof_fpl_id"
     t.integer "cantidad_micro_empresa"
@@ -2154,7 +2122,6 @@ ActiveRecord::Schema.define(version: 20240409131705) do
   add_foreign_key "convocatorias", "manifestacion_de_intereses"
   add_foreign_key "cuencas_flujos", "cuencas"
   add_foreign_key "cuencas_flujos", "flujos"
-  add_foreign_key "cuestionario_fpls", "flujos"
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"
