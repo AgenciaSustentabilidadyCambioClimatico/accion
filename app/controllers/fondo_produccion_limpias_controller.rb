@@ -123,9 +123,9 @@ class FondoProduccionLimpiasController < ApplicationController
           
           #Inicia el flujo con el nombre Sin nombre
           if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
-            codigo_proyecto = "Proyecto diagnóstico FPL"
+            codigo_proyecto = "Proyecto DyAPL"
           else
-            codigo_proyecto = "Proyecto seguimiento FPL"
+            codigo_proyecto = "Proyecto SyC"
           end
 
           fpl = FondoProduccionLimpia.create({
@@ -772,7 +772,7 @@ class FondoProduccionLimpiasController < ApplicationController
             user_id: params[:user][:user_id]
           }
         }
-        tipo_proveedor = TipoProveedor.find(3)
+        tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
 
         #SETEO PARAMETROS PROVEEDOR
         @registro_proveedor = RegistroProveedor.new()
@@ -781,7 +781,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @registro_proveedor.email = @user.email
         @registro_proveedor.telefono = @user.telefono
         @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-        @registro_proveedor.tipo_proveedor_id = 3
+        @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
         @registro_proveedor.calificado = false
         @registro_proveedor.apellido = '.'
         @registro_proveedor.direccion = '.'
@@ -874,7 +874,7 @@ class FondoProduccionLimpiasController < ApplicationController
           user_id: params[:user][:user_id]
         }
       }
-      tipo_proveedor = TipoProveedor.find(3)
+      tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
 
       #SETEO PARAMETROS PROVEEDOR
       @registro_proveedor = RegistroProveedor.new()
@@ -883,7 +883,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @registro_proveedor.email = @user.email
       @registro_proveedor.telefono = @user.telefono
       @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-      @registro_proveedor.tipo_proveedor_id = 3
+      @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
       @registro_proveedor.calificado = false
       @registro_proveedor.apellido = '.'
       @registro_proveedor.direccion = '.'
@@ -1477,8 +1477,13 @@ class FondoProduccionLimpiasController < ApplicationController
         @solo_lectura = false                                            
         @duracion_x = params['duracion'].join(',')
 
+        #respond_to do |format|
+        #  format.js { render 'insert_plan_y_actividad', solo_lectura: @solo_lectura}
+        #end
+
         respond_to do |format|
-          format.js { render 'insert_plan_y_actividad', solo_lectura: @solo_lectura}
+          format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(params['tarea_pendiente_id'])}?tabs=plan-de-actividades'" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(params['tarea_pendiente_id']), notice: success }
         end
       end
     end 
@@ -2884,9 +2889,20 @@ class FondoProduccionLimpiasController < ApplicationController
     def adjuntar_resolucion_contrato
       respond_to do |format|
         if @fondo_produccion_limpia.update(fondo_produccion_limpia_archivos_params)
-          flash[:success] = 'Información ingresada correctamente'
-          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
-          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+
+          #SE CAMBIA EL ESTADO DEL FPL-11 A 2
+          tarea_fondo_fpl_11 = Tarea.find_by_codigo(Tarea::COD_FPL_11)
+          tarea_pendiente_fpl_11 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_11.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+
+          if tarea_pendiente_fpl_11.present?
+            tarea_pendiente_fpl_11.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+            tarea_pendiente_fpl_11.save  
+          end
+
+          format.js { flash.now[:success] = 'Documentos ingresados correctamente'
+            render js: "window.location='#{root_path}'"}
+          format.html { redirect_to root_path, flash: {notice: 'Documentos ingresados correctamente' }}
+       
         else
           flash[:error] = "Error al actualizar: #{@fondo_produccion_limpia.errors.full_messages.join(', ')}"
           format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }

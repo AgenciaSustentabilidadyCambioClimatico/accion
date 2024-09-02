@@ -14,6 +14,7 @@ class FondoProduccionLimpia < ApplicationRecord
   PORCENTAJE_APORTE_BENEFICIARIO_MICRO_EMPRESA = 0.1
   PORCENTAJE_APORTE_BENEFICIARIO_PEQUEÑA_EMPRESA = 0.3
   PORCENTAJE_APORTE_BENEFICIARIO_MEDIANA_EMPRESA = 0.7
+  TIPO_CONSULTOR_FPL = 3
 
   mount_uploader :instrumento_constitucion_estatutos_postulante, ArchivoInstrumentoConstitucionEstatutosPostulanteFondoProduccionLimpiaUploader
   mount_uploader :certificado_vigencia_constitucion_postulante, ArchivoCertificadoVigenciaConstitucionPostulanteFondoProduccionLimpiaUploader
@@ -94,9 +95,25 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def self.fpls
-    select("fondo_produccion_limpia.flujo_id AS id, CONCAT('ID ', fondo_produccion_limpia.flujo_id, ' - FPL - ', fondo_produccion_limpia.codigo_proyecto) AS nombre_para_raa")
-      .joins("INNER JOIN flujos ON fondo_produccion_limpia.flujo_id = flujos.id")
-      .order("id DESC")
+    #select("fondo_produccion_limpia.flujo_id AS id, CONCAT('ID ', fondo_produccion_limpia.flujo_id, ' - FPL - ', fondo_produccion_limpia.codigo_proyecto) AS nombre_para_raa")
+    #  .joins("INNER JOIN flujos ON fondo_produccion_limpia.flujo_id = flujos.id")
+    #  .order("id DESC")
+    select(
+      'fondo_produccion_limpia.flujo_id AS id',
+      "CONCAT(fondo_produccion_limpia.codigo_proyecto, ' - ', 
+        CASE 
+          WHEN flujos_2.tipo_instrumento_id IN (11, 22, 30) THEN 'DyAPL'
+          WHEN flujos_2.tipo_instrumento_id IN (12, 29, 31, 32) THEN 'SyC'
+          WHEN flujos_2.tipo_instrumento_id IN (4) THEN 'EdC'
+          ELSE 'Unknown'
+        END, ' - ', manifestacion_de_intereses.nombre_acuerdo) AS nombre_para_raa"
+    )
+    .joins(
+      'INNER JOIN flujos ON fondo_produccion_limpia.flujo_apl_id = flujos.id ' \
+      'INNER JOIN flujos AS flujos_2 ON fondo_produccion_limpia.flujo_id = flujos_2.id ' \
+      'INNER JOIN manifestacion_de_intereses ON flujos.manifestacion_de_interes_id = manifestacion_de_intereses.id'
+    )
+    .order('id DESC')
   end
 
   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil, confinanciamiento_empresa = nil)
