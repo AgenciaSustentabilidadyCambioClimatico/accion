@@ -95,9 +95,6 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def self.fpls
-    #select("fondo_produccion_limpia.flujo_id AS id, CONCAT('ID ', fondo_produccion_limpia.flujo_id, ' - FPL - ', fondo_produccion_limpia.codigo_proyecto) AS nombre_para_raa")
-    #  .joins("INNER JOIN flujos ON fondo_produccion_limpia.flujo_id = flujos.id")
-    #  .order("id DESC")
     select(
       'fondo_produccion_limpia.flujo_id AS id',
       "CONCAT(fondo_produccion_limpia.codigo_proyecto, ' - ', 

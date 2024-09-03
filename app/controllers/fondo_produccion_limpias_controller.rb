@@ -388,6 +388,7 @@ class FondoProduccionLimpiasController < ApplicationController
         })
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, postulante)
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
@@ -1572,6 +1573,7 @@ class FondoProduccionLimpiasController < ApplicationController
           }
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
           #SE ENVIAR EL MAIL AL RESPONSABLE
+          mdi = @manifestacion_de_interes
           send_message(tarea_fondo, responsable.user_id)
         end  
 
@@ -1690,6 +1692,7 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_03[:tarea_pendientes]).save
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
+          mdi = @manifestacion_de_interes
           send_message(tarea_fondo_FPL_03, params[:revisor_financiero_id])
 
           #SE CREA FPL-04
@@ -1706,6 +1709,7 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_04[:tarea_pendientes]).save
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
+          mdi = @manifestacion_de_interes
           send_message(tarea_fondo_FPL_04, params[:revisor_tecnico_id])
 
           #SE CREA FPL-05
@@ -1722,6 +1726,7 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente_FPL_05[:tarea_pendientes]).save
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
+          mdi = @manifestacion_de_interes
           send_message(tarea_fondo_FPL_05, params[:revisor_juridico_id])
 
           #SE CAMBIA EL ESTADO DEL FPL-02 A 2
@@ -1867,6 +1872,7 @@ class FondoProduccionLimpiasController < ApplicationController
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
   
@@ -1982,6 +1988,7 @@ class FondoProduccionLimpiasController < ApplicationController
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
 
@@ -2124,6 +2131,7 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
+          mdi = @manifestacion_de_interes
           send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
         end
       else
@@ -2150,6 +2158,7 @@ class FondoProduccionLimpiasController < ApplicationController
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
+            mdi = @manifestacion_de_interes
             send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end
       end
@@ -2389,6 +2398,7 @@ class FondoProduccionLimpiasController < ApplicationController
               TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
               #SE ENVIAR EL MAIL AL RESPONSABLE
+              mdi = @manifestacion_de_interes
               send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
           end
         end
@@ -2451,6 +2461,7 @@ class FondoProduccionLimpiasController < ApplicationController
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
+            mdi = @manifestacion_de_interes
             send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end  
 
@@ -2475,6 +2486,7 @@ class FondoProduccionLimpiasController < ApplicationController
             TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
+            mdi = @manifestacion_de_interes
             send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
         end  
       end 
@@ -2590,6 +2602,7 @@ class FondoProduccionLimpiasController < ApplicationController
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
       respond_to do |format|
@@ -2703,6 +2716,7 @@ class FondoProduccionLimpiasController < ApplicationController
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
       end
   
@@ -2806,6 +2820,7 @@ class FondoProduccionLimpiasController < ApplicationController
       TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
 
       #SE ENVIAR EL MAIL AL RESPONSABLE
+      mdi = @manifestacion_de_interes
       send_message(tarea_fondo, tarea_pendiente_admisibilidad_juridica.user_id)
      
       respond_to do |format|
@@ -2866,6 +2881,7 @@ class FondoProduccionLimpiasController < ApplicationController
         }
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
         #SE ENVIAR EL MAIL AL RESPONSABLE
+        mdi = @manifestacion_de_interes
         send_message(tarea_fondo, tarea_pendiente_juridica.user_id)
 
         respond_to do |format|
