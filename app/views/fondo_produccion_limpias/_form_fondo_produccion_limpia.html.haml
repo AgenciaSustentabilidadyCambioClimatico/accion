@@ -632,6 +632,7 @@
       $.ajax({
         url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
         data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
+                tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
                 nombre_actividad: nombre_actividad,
                 duracion: duracion, 
                 objetivos_especifico_id: objetivos_especifico_id, 
@@ -639,6 +640,7 @@
                 tipo_actividad_id: tipo_actividad},
         method: "POST",
         success: function(response) {
+          $('#modal_create_plan_actividades-form').modal('hide');
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);

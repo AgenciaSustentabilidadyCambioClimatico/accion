@@ -1454,7 +1454,7 @@ class ManifestacionDeInteresController < ApplicationController
                   send_message(tarea_fondo, @tarea_pendiente.user_id)
                   
                   #Inicia el flujo con el nombre Sin nombre
-                  codigo_proyecto = "Proyecto diagnóstico FPL"
+                  codigo_proyecto = "Proyecto DyAPL"
 
                   fpl = FondoProduccionLimpia.new({
                     flujo_id: flujo.id,
