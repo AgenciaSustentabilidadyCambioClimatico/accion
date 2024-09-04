@@ -527,6 +527,19 @@ class Flujo < ApplicationRecord
           end
         end
       end 
+      if t.codigo == Tarea::COD_FPL_11
+        #VALIDAR SI LA TABLA DEL FONDO TIENE ESTOS DOCUMENTOS ALMACENADOS, SI LOS TIENE QUE EJECUTE LA SIGUIENTE LINEA
+        @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
+        # Obtener la ruta completa del archivo
+        archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
+
+        # Extraer el nombre del archivo
+        archivo_resolucion = File.basename(archivo_resolucion_ruta)
+        
+        if archivo_resolucion != nil
+          documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+        end
+      end
       instancias << {
         tipo_instrumento: self.tipo_instrumento.nombre,
         id_instrumento: self.id,

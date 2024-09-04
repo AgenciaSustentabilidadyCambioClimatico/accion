@@ -2940,6 +2940,44 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def descargar_contrato_pdf
+      flujo = Flujo.find(params[:id])
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
+     
+      # Obtener la ruta completa del archivo
+      archivo_contrato_ruta = @fondo_produccion_limpia.archivo_contrato.file.path
+
+      # Extraer el nombre del archivo
+      archivo_contrato = File.basename(archivo_contrato_ruta)
+
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'archivo_contrato', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_contrato}")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_contrato}"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
+      end
+    end
+
+    def descargar_resolucion_pdf
+      flujo = Flujo.find(params[:id])
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
+ 
+      # Obtener la ruta completa del archivo
+      archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
+
+      # Extraer el nombre del archivo
+      archivo_resolucion = File.basename(archivo_resolucion_ruta)
+
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'archivo_resolucion', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_resolucion}")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_resolucion}"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
+      end
+    end
+
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
       tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
