@@ -527,17 +527,21 @@ class Flujo < ApplicationRecord
           end
         end
       end 
-      if t.codigo == Tarea::COD_FPL_11
-        #VALIDAR SI LA TABLA DEL FONDO TIENE ESTOS DOCUMENTOS ALMACENADOS, SI LOS TIENE QUE EJECUTE LA SIGUIENTE LINEA
-        @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
-        # Obtener la ruta completa del archivo
-        archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
 
-        # Extraer el nombre del archivo
-        archivo_resolucion = File.basename(archivo_resolucion_ruta)
-        
-        if archivo_resolucion != nil
-          documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+      tareas_validaciones_fpl_11 = false
+      if t.codigo == Tarea::COD_FPL_11
+        @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
+        if @fondo_produccion_limpia.archivo_resolucion.present?
+          # Obtener la ruta completa del archivo
+          archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
+
+          # Extraer el nombre del archivo
+          archivo_resolucion = File.basename(archivo_resolucion_ruta)
+          
+          if archivo_resolucion != nil
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+          end
+          tareas_validaciones_fpl_11 = true
         end
       end
       instancias << {
@@ -556,6 +560,7 @@ class Flujo < ApplicationRecord
         auditorias_tarea_033: tareas_auditoria,
         validaciones_tarea_034: tareas_validaciones,
         tarea_fpl_06: tareas_validaciones_fpl_06,
+        tarea_fpl_11: tareas_validaciones_fpl_11,
         activacion: activacion,
         ejecucion: ejecucion
       } 

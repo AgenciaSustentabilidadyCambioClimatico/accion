@@ -1,5 +1,6 @@
 class Admin::FondoProduccionLimpiaMensajesController < ApplicationController
     include ApplicationHelper
+    before_action :authenticate_user!
     before_action :set_fondo_produccion_limpia_mensaje, only: %i[show edit update destroy]
     before_action :set_metodos
   
