@@ -94,49 +94,40 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id)
     end
 
-    #Graba las postulaciones de las distintas fases del FPL
+    # Graba las postulaciones de las distintas fases del FPL
     def grabar_postulacion
-
-      if params[:informe_acuerdo][:fondo_produccion_limpia] == "true"
+      informe_acuerdo = params[:informe_acuerdo]
+      fondo_produccion_limpia = informe_acuerdo[:fondo_produccion_limpia] == "true"
+      fondo_produccion_limpia_l13 = informe_acuerdo[:fondo_produccion_limpia_l13] == "true"
+   
+      if fondo_produccion_limpia || fondo_produccion_limpia_l13
         tarea_pendiente = TareaPendiente.find(params[:id])
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
-
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
-        flujo = Flujo.new({
-          contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
-          tipo_instrumento_id: params[:informe_acuerdo][:tipo_linea_seleccionada]
-        })
+        tipo_instrumento_id = fondo_produccion_limpia ? informe_acuerdo[:tipo_linea_seleccionada] : informe_acuerdo[:tipo_linea_seleccionada_l13]
+        flujo = Flujo.new(contribuyente_id: @manifestacion_de_interes.contribuyente_id, tipo_instrumento_id: tipo_instrumento_id)
 
         if flujo.save
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
-          flujo.tarea_pendientes.create([{
-              tarea_id: tarea_fondo.id,
-              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: tarea_pendiente.user_id,
-              data: { }
-            }]
+          flujo.tarea_pendientes.create(
+            tarea_id: tarea_fondo.id,
+            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+            user_id: tarea_pendiente.user_id,
+            data: {}
           )
 
-          #SE ENVIAR EL MAIL AL RESPONSABLE
           send_message(tarea_fondo, tarea_pendiente.user_id)
-          
-          #Inicia el flujo con el nombre Sin nombre
-          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
-            codigo_proyecto = "Proyecto DyAPL"
-          else
-            codigo_proyecto = "Proyecto SyC"
-          end
 
-          fpl = FondoProduccionLimpia.create({
+          codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
+
+          fpl = FondoProduccionLimpia.create(
             flujo_id: flujo.id,
             flujo_apl_id: tarea_pendiente.flujo_id,
             codigo_proyecto: codigo_proyecto
-          })
+          )
 
-          #guarda el fpl id en la tabla flujo
-          flujo.fondo_produccion_limpia_id = fpl.id
-          flujo.save
+          flujo.update(fondo_produccion_limpia_id: fpl.id)
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
           respond_to do |format|
@@ -150,10 +141,8 @@ class FondoProduccionLimpiasController < ApplicationController
           format.js { flash.now[:error] = msj; render js: "window.location='#{root_path}'" }
           format.html { redirect_to root_path, flash: { notice: msj } }
         end
-        
       end
-
-    end  
+    end
 
     def get_valida_campos_nulos
       # Obtener el fondo_produccion_limpia
@@ -4102,14 +4091,6 @@ class FondoProduccionLimpiasController < ApplicationController
           :tipo_equipo)
       end
 
-      #def registro_proveedores_params
-      #  params.require(:registro_proveedor).permit(:rut, :nombre, :apellido, :email, :telefono, :profesion, :direccion, :region, :comuna, :ciudad, :asociar_institucion, :tipo_contribuyente_id, :terminos_y_servicion,
-      #    :rut_institucion, :nombre_institucion, :tipo_contribuyente, :tipo_proveedor_id, :direccion_casa_matriz, :region_casa_matriz, :comuna_casa_matriz, :ciudad_casa_matriz, :contribuyente_id, :respuesta_comentario,
-      #    :archivo_respuesta_rechazo, :comentario_directiva, :respuesta_comentario_directiva, :archivo_respuesta_rechazo_directiva, :fecha_aprobado, :fecha_actualizado, :archivo_aprobado_directiva, :archivo_aprobado_directiva_cache,
-      #    certificado_proveedores_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo_certificado, :archivo_certificado_cache, :_destroy], documento_registro_proveedores_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy],
-      #    certificado_proveedor_extras_attributes: [:id, :materia_sustancia_id, :actividad_economica_id, :archivo, :archivo_cache, :_destroy], documento_proveedor_extras_attributes: [:id, :description, :archivo, :archivo_cache, :_destroy])
-      #end
-
       def registro_proveedores_params
         params.require(:registro_proveedor).permit(:rut, :nombre, :email, :telefono, :profesion, :tipo_proveedor_id, :calificado)
       end
@@ -4168,6 +4149,19 @@ class FondoProduccionLimpiasController < ApplicationController
           extrapresupuestario_seguimiento_2: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2,
           extrapresupuestario_evaluacion: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
         }
+      end
+
+      def determine_codigo_proyecto(tipo_instrumento_id)
+        case tipo_instrumento_id
+        when TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_LINEA_5_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+          "Proyecto DyAPL"
+        when TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+          "Proyecto SyC"
+        when TipoInstrumento::FPL_LINEA_1_3, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          "Proyecto EdC"
+        else
+          "Unknown"
+        end
       end
 
 end

@@ -6,15 +6,27 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_informe
   before_action :set_manifestacion_de_interes
 
+  attr_accessor :tipo_linea_seleccionada_l13
+
   def index
-    #Obtiene las lineas para el seguimiento del FPL
+    #Obtiene las lineas para el seguimiento del FPL Línea 1.2 - Implementación de APL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
     @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
     @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
    
-    @instrumento_seleccionado = nil
+    @instrumento_seleccionado = []
     if @flujos_con_tipo_instrumento.present?
       @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
+    end
+
+    #Obtiene las lineas para el seguimiento del FPL Línea 1.3 - Certificación de APL
+    @lineas_fpl_1_3 = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_3,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION])
+    @fondo_produccion_limpia_1_3_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
+    @flujos_con_tipo_instrumento_1_3 = Flujo.where(id: @fondo_produccion_limpia_1_3_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_3,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION])
+    
+    @instrumento_seleccionado_1_3 = []
+    if @flujos_con_tipo_instrumento_1_3.present?
+      @instrumento_seleccionado_1_3 = Flujo.where(id: @flujos_con_tipo_instrumento_1_3).pluck(:tipo_instrumento_id) 
     end
 
     @estandares_certificacion = []
