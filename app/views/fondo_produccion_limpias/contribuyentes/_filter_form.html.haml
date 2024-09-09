@@ -21,6 +21,32 @@
       width: '100%'
     });
   });
+
+  function obtieneContribuyentes() {
+    // Obtener los valores de los campos de entrada
+    var rut = document.getElementById('contribuyente_rut').value;
+    var razon_social = document.getElementById('contribuyente_razon_social').value;
+    $.ajax({
+      url: "#{search_fondo_produccion_limpia_path}",
+      data: JSON.stringify({ 
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        rut: rut,
+        razon_social: razon_social
+      }),
+      contentType: 'application/json',
+      method: "PUT",
+      headers: {
+        'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content') // CSRF token
+      },
+      success: function(response) {
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+
+  }
+
 - if buscar_por_actividad_economica
   .alert.alert-dismissible.fade.show.mb-3{class: 'alert-warning'}
     El resultado será mas rápido dependiendo del nivel de detalle de búsqueda
@@ -53,4 +79,4 @@
       .col-lg-11.pr-lg-0.col-12
         = f.input :actividad_economica_id, collection: ActividadEconomica.__select(false), input_html: { class: 'chosen-control not-required-if-other-like-me-is-present', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, required: true
     .col-lg-1.col-12
-      = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled
+      = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled, onclick: 'obtieneContribuyentes(); return false;'

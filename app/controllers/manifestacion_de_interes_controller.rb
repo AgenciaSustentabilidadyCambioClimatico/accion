@@ -1339,11 +1339,11 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.seleccion_de_radios
 
     #Obtiene las lineas para el diagnostico del FPL
-    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
+    @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
     @fondo_produccion_limpia_id = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id, ).pluck(:flujo_id).first
-    @intrumento_seleccionado = nil
+    @instrumento_seleccionado = nil
     if @fondo_produccion_limpia_id.present?
-      @intrumento_seleccionado = Flujo.where(id: @fondo_produccion_limpia_id).pluck(:tipo_instrumento_id) 
+      @instrumento_seleccionado = Flujo.where(id: @fondo_produccion_limpia_id).pluck(:tipo_instrumento_id) 
     end
 
     unless @manifestacion_de_interes.contribuyente_id.nil?
@@ -1392,7 +1392,6 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def revisar_pertinencia_factibilidad #DZC TAREA APL-005
-    #binding.pry
     @manifestacion_de_interes.assign_attributes(manifestacion_pertinencia_params)
     respond_to do |format|
       @manifestacion_de_interes.tarea_codigo = @tarea.codigo
@@ -1452,10 +1451,11 @@ class ManifestacionDeInteresController < ApplicationController
                   })
 
                   #SE ENVIAR EL MAIL AL RESPONSABLE
+                  mdi = @manifestacion_de_interes
                   send_message(tarea_fondo, @tarea_pendiente.user_id)
                   
                   #Inicia el flujo con el nombre Sin nombre
-                  codigo_proyecto = "Proyecto diagnóstico FPL"
+                  codigo_proyecto = "Proyecto DyAPL"
 
                   fpl = FondoProduccionLimpia.new({
                     flujo_id: flujo.id,
@@ -1465,7 +1465,7 @@ class ManifestacionDeInteresController < ApplicationController
                   fpl.save 
 
                     #guarda el fpl id en la tabla flujo
-                    flujo.proyecto_id = fpl.id
+                    flujo.fondo_produccion_limpia_id = fpl.id
                     flujo.save
 
                   success = 'Flujo fondo de producción limpia creado correctamente.'
@@ -1496,7 +1496,7 @@ class ManifestacionDeInteresController < ApplicationController
         @responsables_coordinador = Responsable.__personas_responsables(Rol::COORDINADOR, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
         @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) 
         #Obtiene las lineas para el diagnostico del FPL
-        @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1])
+        @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
 
         @manifestacion_de_interes.seleccion_de_radios
 

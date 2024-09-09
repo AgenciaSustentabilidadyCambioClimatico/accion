@@ -29,6 +29,7 @@
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
+    sumarValoresTecElementosCarga();
     cargarObjetivosEspecificos();
     valida_div();
    
@@ -38,6 +39,12 @@
 
     $('#open-modal-button').click(function(){
       $('#modal_objetivos-form').modal('show');
+    });
+
+    $('#modal_objetivos-form').on('show.bs.modal', function () {
+      // Limpiar los campos del formulario
+      $('#modal_objetivos-form').find('textarea').val('');
+      $('#modal_objetivos-form').find('input[type="hidden"]').val('');
     });
 
     $('#open-modal-button_crear_equipo_receptora').click(function(){
@@ -157,27 +164,118 @@
   }
 
   function sumarValoresTec() {
-    // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
-    var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
-    var total = document.getElementById('total_tecnica');
+    if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
+      // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
+      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
+      var total = document.getElementById('total_tecnica');
 
-    // Inicializar la variable para la suma
-    var suma = 0;
+      // Inicializar la variable para la suma
+      var suma = 0;
 
-    // Iterar sobre los campos de texto y sumar los valores
-    camposDeTexto.forEach(function (campo) {
-      // Obtener el valor del campo de texto y convertirlo a un número
-      var valor = parseFloat(campo.value) || 0;
+      // Iterar sobre los campos de texto y sumar los valores
+      camposDeTexto.forEach(function (campo) {
+        // Obtener el valor del campo de texto y convertirlo a un número
+        var valor = parseFloat(campo.value) || 0;
 
-      // Sumar al total
-      suma += valor;
-    });
+        // Sumar al total
+        suma += valor;
+      
+      });
 
     // Mostrar el resultado o hacer algo con la suma
     total.textContent = suma;
+    }
   }
 
-   function sumarTrabajadoresPermanentes() {
+  function sumarValoresTecElementosCarga() {
+    if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
+
+      var tipoInstrumentoValores = {
+        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+      };
+
+      var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
+        // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+        var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+        var total = document.getElementById('total_tecnica_elementos');
+
+        // Inicializar la variable para la suma
+        var suma = 0;
+
+        // Iterar sobre los campos de texto y sumar los valores
+        camposDeTexto.forEach(function (campo) {
+          // Obtener el valor del campo de texto y convertirlo a un número
+          var valor = parseFloat(campo.value) || 0;
+
+          // Sumar al total
+          suma += valor;
+        });
+
+        // Mostrar el resultado o hacer algo con la suma
+        total.textContent = suma;
+      }
+    }
+  }
+
+  function sumarValoresTecElementos(campo_a, campo_b, nombre) {
+    
+    var tipoInstrumentoValores = {
+      LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+      LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
+      // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
+      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
+      var total = document.getElementById('total_tecnica_elementos');
+
+      // Inicializar la variable para la suma
+      var suma = 0;
+
+      // Iterar sobre los campos de texto y sumar los valores
+      camposDeTexto.forEach(function (campo) {
+        // Obtener el valor del campo de texto y convertirlo a un número
+        var valor = parseFloat(campo.value) || 0;
+
+        // Sumar al total
+        suma += valor;
+      });
+
+      // Mostrar el resultado o hacer algo con la suma
+      total.textContent = suma;
+
+      validarCampos(campo_a, campo_b, nombre);
+    }
+  }
+
+  function validarCampos(campo_a, campo_b, nombre) {
+    var campoA = document.getElementById(campo_a).value;
+    var campoB = document.getElementById(campo_b).value;
+
+    if (parseFloat(campoA) > parseFloat(campoB)) {
+      alert('En la tabla "Elementos Totales a Adherir", el valor de la columna "' + nombre + '" debe ser menor o igual que el de la fila "Empresas Totales a Adherir".');
+      document.getElementById(campo_b).value = '';
+    }
+  }
+
+  function sumarTrabajadoresPermanentes() {
     // Obtener todos los elementos con la clase 'valor-a-sumar'
     var camposDeTexto = document.querySelectorAll('.valor-permanentes');
     var total = document.getElementById('total_permanente');
@@ -337,13 +435,8 @@
       data: { plan_id: plan_id, 
               solo_lectura: solo_lectura},
       method: "GET",
-      cache: false, // Deshabilitar caché
-      headers: { 
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          "Pragma": "no-cache",
-          "Expires": "0"
-      },
       success: function(response) {
+        $('#flag').val(2);
         $('#modal_create_plan_actividades-form').modal('show');
       },
       error: function(error) {
@@ -353,6 +446,7 @@
   }
 
   function modalRrhhPropios(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $.ajax({
       url: "#{get_recursos_propios_fondo_produccion_limpia_path}",
       data: { actividad_id: id},
@@ -361,12 +455,13 @@
         $('#modal_rrhh_propios-form').modal('show');
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
   function modalRrhhExternos(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $.ajax({
       url: "#{get_recursos_externos_fondo_produccion_limpia_path}",
       data: { actividad_id: id},
@@ -375,17 +470,18 @@
         $('#modal_rrhh_externos-form').modal('show');
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
   function modalGastosOperacion(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $('#modal_gastos_operacion-form').modal('show');
-  
   }
 
   function modalGastosAdministrativos(id){
+    $('#modal_create_plan_actividades-form').modal('hide');
     $('#modal_gastos_administracion-form').modal('show');
   }
 
@@ -407,9 +503,10 @@
               tipo_aporte_id: tipo_aporte_id},
       method: "GET",
       success: function(response) {
+        
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
@@ -435,12 +532,12 @@
       success: function(response) {
       },
       error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
+        //console.error("Error al llamar al método del controlador", error);
       }
     });
   }
 
-  function guardarPlanActividad(plan_id){
+  function guardarPlanActividad(plan_id, flag){
     // Seleccionar todos los checkboxes dentro de la tabla
     var checkboxes = document.querySelectorAll('#div_duracion input[type="checkbox"]');
 
@@ -456,9 +553,9 @@
 
     var duracion = checkboxesSeleccionados;
     var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
-
     var nombre_actividad = document.getElementById('nombre_actividad').value;
     var alertaMostrada = false;
+    var tipo_actividad = null;
 
     // Si el campo está vacío, muestra una alerta y evita el envío del formulario
     if (nombre_actividad == "") {
@@ -487,6 +584,33 @@
       event.preventDefault();
       return;
     }
+
+    var tipoInstrumentoValores = {
+      LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+      LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+    };
+
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
+      if(flag == 1)  {
+        tipo_actividad = document.getElementById('tipo_actividad').value;
+        if (tipo_actividad == "") {
+          if (!alertaMostrada) {
+            alert('Por favor, seleccione un tipo de actividad');
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        } 
+      }
+    }
     
     if (plan_id != 0) {
       $.ajax({
@@ -497,6 +621,8 @@
                 objetivos_especifico_id: objetivos_especifico_id},
         method: "POST",
         success: function(response) {
+          //alert("Plan de actividad creado exitosamente");
+         
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
@@ -506,18 +632,22 @@
       $.ajax({
         url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
         data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
+                tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
                 nombre_actividad: nombre_actividad,
                 duracion: duracion, 
                 objetivos_especifico_id: objetivos_especifico_id, 
-                opcion: 'insert'},
+                opcion: 'insert',
+                tipo_actividad_id: tipo_actividad},
         method: "POST",
         success: function(response) {
+          $('#modal_create_plan_actividades-form').modal('hide');
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
         }
       });
     }
+    //crearPlanActividades(plan_id, 'false');
   }
 
   function guardarRrhhPropioshh(plan_id){
@@ -762,6 +892,7 @@
               opcion: 'create'},
       method: "POST",
       success: function(response) {
+        $('#flag').val(1);
         $('#modal_create_plan_actividades-form').modal('show');
       },
       error: function(error) {
@@ -811,9 +942,12 @@
       }
     };
 
-    const button = document.getElementById('guardar_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_financiera_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_fondo_produccion_limpia_path}",
@@ -821,13 +955,13 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').hide();
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -979,9 +1113,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_financiera_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_financiera_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_financiera_fondo_produccion_limpia_path}",
@@ -989,13 +1126,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
   }
@@ -1062,9 +1199,12 @@
       }
     };
 
-    const button = document.getElementById('guardar_button_admisibilidad_tecnica');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_tecnica');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_tecnica_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -1072,13 +1212,15 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        //button.innerHTML = 'Guardar';
+        //button.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').hide();
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -1309,9 +1451,12 @@
     }
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_tecnica_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_tecnica_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_tecnica');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_tecnica_fondo_produccion_limpia_path}",
@@ -1319,13 +1464,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
   }  
@@ -1394,9 +1539,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('guardar_button_admisibilidad_juridica');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
-    button.disabled = true;
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
+    button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button_guardar.disabled = true;
+
+    const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
+    button_enviar.disabled = true;
 
     $.ajax({
       url: "#{revisar_admisibilidad_juridica_fondo_produccion_limpia_path}",
@@ -1404,15 +1552,17 @@
       contentType: "application/json",
       method: "PATCH",
       success: function(response) {
-        $('.loading-data').hide();
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        $('.loading-data').show();
+        //$('.loading-data').hide();
+        //button_guardar.innerHTML = 'Guardar';
+        //button_guardar.disabled = false;
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = 'Guardar';
-        button.disabled = false;
+        button_guardar.innerHTML = 'Guardar';
+        button_guardar.disabled = false;
+        button_enviar.disabled = false;
       }
     });
   }
@@ -1644,9 +1794,12 @@
 
     $('.loading-data').show();
 
-    const button = document.getElementById('enviar_admisibilidad_juridica_button');
-    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button.disabled = true;
+    const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
+    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+    button_enviar.disabled = true;
+
+    const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
+    button_guardar.disabled = true;
 
     $.ajax({
       url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
@@ -1654,13 +1807,13 @@
       contentType: "application/json",
       method: "POST",
       success: function(response) {
-        //$('.loading-data').hide();
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
         $('.loading-data').hide();
-        button.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button.disabled = false;
+        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+        button_enviar.disabled = false;
+        button_guardar.disabled = false;
       }
     });
 
@@ -1706,34 +1859,59 @@
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
     var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
-    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
     var duracion = document.getElementById('duracion').value;
     var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+    var empresas_asociadas_ag = 0;   
+    var empresas_no_asociadas_ag = 0;
+    var elementos_micro_empresa = 0;
+    var elementos_pequena_empresa = 0;
+    var elementos_mediana_empresa = 0;
+    var elementos_grande_empresa = 0;
 
-    // Obtener el elemento <ul> con la clase seleccionados_tree
-    var ulElement = document.querySelector('.seleccionados_tree');
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
 
-    // Verificar si se encontró el elemento <ul>
-    if (ulElement) {
-        // Obtener todos los elementos <li> dentro del <ul>
-        var liElements = ulElement.querySelectorAll('li');
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
-        // Crear un array para almacenar los IDs de las comunas seleccionadas
-        var comunasIds = [];
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
-        // Iterar sobre los elementos <li> para obtener los IDs
-        liElements.forEach(function(liElement) {
-            // Obtener el ID del elemento <li>
-            var comunaId = liElement.id;
-            // Agregar el ID al array de IDs de comunas seleccionadas
-            comunasIds.push(comunaId);
-        });
+      var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+      var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+   
+      // Obtener el elemento <ul> con la clase seleccionados_tree
+      var ulElement = document.querySelector('.seleccionados_tree');
 
-        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        // console.log('IDs de comunas seleccionadas:', comunasIds);
-    } else {
-        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      // Verificar si se encontró el elemento <ul>
+      if (ulElement) {
+          // Obtener todos los elementos <li> dentro del <ul>
+          var liElements = ulElement.querySelectorAll('li');
+
+          // Crear un array para almacenar los IDs de las comunas seleccionadas
+          var comunasIds = [];
+
+          // Iterar sobre los elementos <li> para obtener los IDs
+          liElements.forEach(function(liElement) {
+              // Obtener el ID del elemento <li>
+              var comunaId = liElement.id;
+              // Agregar el ID al array de IDs de comunas seleccionadas
+              comunasIds.push(comunaId);
+          });
+
+          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+          // console.log('IDs de comunas seleccionadas:', comunasIds);
+      } else {
+          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      }
+    }else{
+      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
     $.ajax({
@@ -1748,33 +1926,29 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds
+        comunasIds : comunasIds,
+        elementos_micro_empresa: elementos_micro_empresa,
+        elementos_pequena_empresa: elementos_pequena_empresa,
+        elementos_mediana_empresa: elementos_mediana_empresa,
+        elementos_grande_empresa: elementos_grande_empresa
       },
       method: "GET",
       success: function(response) {
-        $.ajax({
-          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-          data: {
-            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-          },
-          method: "GET",
-          success: function(response) {
-            if(confirm("¿Está seguro que desea enviar?")){
-              $.ajax({
-                url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
-                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-                contentType: "application/json",
-                method: "POST",
-                success: function(response) {
-                  //$('.loading-data').hide();
-                },
-                error: function(error) {
-                  console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
-                }
-              });
+        if(confirm("¿Está seguro que desea enviar?")){
+          $.ajax({
+            url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
+            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+            contentType: "application/json",
+            method: "POST",
+            success: function(response) {
+              //$('.loading-data').hide();
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+              $('.loading-data').hide();
             }
-          }})
+          });
+        }   
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -1787,34 +1961,61 @@
     var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
     var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
     var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-    var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
-    var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
     var duracion = document.getElementById('duracion').value;
     var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
 
-    // Obtener el elemento <ul> con la clase seleccionados_tree
-    var ulElement = document.querySelector('.seleccionados_tree');
+    var empresas_asociadas_ag = 0;   
+    var empresas_no_asociadas_ag = 0;
 
-    // Verificar si se encontró el elemento <ul>
-    if (ulElement) {
-        // Obtener todos los elementos <li> dentro del <ul>
-        var liElements = ulElement.querySelectorAll('li');
+    var elementos_micro_empresa = 0;
+    var elementos_pequena_empresa = 0;
+    var elementos_mediana_empresa = 0;
+    var elementos_grande_empresa = 0;
 
-        // Crear un array para almacenar los IDs de las comunas seleccionadas
-        var comunasIds = [];
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
 
-        // Iterar sobre los elementos <li> para obtener los IDs
-        liElements.forEach(function(liElement) {
-            // Obtener el ID del elemento <li>
-            var comunaId = liElement.id;
-            // Agregar el ID al array de IDs de comunas seleccionadas
-            comunasIds.push(comunaId);
-        });
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
-        // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-        // console.log('IDs de comunas seleccionadas:', comunasIds);
-    } else {
-        console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
+
+      var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
+      var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
+
+      // Obtener el elemento <ul> con la clase seleccionados_tree
+      var ulElement = document.querySelector('.seleccionados_tree');
+
+      // Verificar si se encontró el elemento <ul>
+      if (ulElement) {
+          // Obtener todos los elementos <li> dentro del <ul>
+          var liElements = ulElement.querySelectorAll('li');
+
+          // Crear un array para almacenar los IDs de las comunas seleccionadas
+          var comunasIds = [];
+
+          // Iterar sobre los elementos <li> para obtener los IDs
+          liElements.forEach(function(liElement) {
+              // Obtener el ID del elemento <li>
+              var comunaId = liElement.id;
+              // Agregar el ID al array de IDs de comunas seleccionadas
+              comunasIds.push(comunaId);
+          });
+
+          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
+          // console.log('IDs de comunas seleccionadas:', comunasIds);
+      } else {
+          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
+      }
+    }else{
+      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
     $.ajax({
@@ -1829,34 +2030,30 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds
+        comunasIds : comunasIds,
+        elementos_micro_empresa: elementos_micro_empresa,
+        elementos_pequena_empresa: elementos_pequena_empresa,
+        elementos_mediana_empresa: elementos_mediana_empresa,
+        elementos_grande_empresa: elementos_grande_empresa
       },
       method: "GET",
       success: function(response) {
-        $.ajax({
-          url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-          data: {
-            flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-          },
-          method: "GET",
-          success: function(response) {
-            if(confirm("¿Está seguro que desea enviar?")){
-              $('.loading-data').show();
-              $.ajax({
-                url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-                data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-                contentType: "application/json",
-                method: "POST",
-                success: function(response) {
-                  //$('.loading-data').hide();
-                },
-                error: function(error) {
-                  console.error("Error al llamar al método del controlador", error);
-                  $('.loading-data').hide();
-                }
-              });
+        if(confirm("¿Está seguro que desea enviar?")){
+          $('.loading-data').show();
+          $.ajax({
+            url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
+            contentType: "application/json",
+            method: "POST",
+            success: function(response) {
+              //$('.loading-data').hide();
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+              $('.loading-data').hide();
             }
-          }})
+          });
+        }   
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -2457,7 +2654,7 @@
         return response.json();
       })
       .then(data => {
-        console.log('Documentos subidos correctamente:', data);
+        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
       })
       .catch(error => {
@@ -2494,11 +2691,11 @@
         return response.json();
       })
       .then(data => {
-        console.log('Documentos subidos correctamente:', data);
+        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
       })
       .catch(error => {
-        console.error('Error:', error);
+        //console.error('Error:', error);
         // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
       });
     }
@@ -2704,6 +2901,11 @@
       border-radius: 0.25rem;
     }
 
+    .border-error {
+      border: 1px solid #de2d0f; 
+      border-radius: 0.25rem;
+    }
+
     .mensaje-rojo {
         color: red;
     }
@@ -2736,12 +2938,58 @@
       color: #0069d9;
     }
 
+    .text-success {
+      color: green; /* Cambia el color a verde si es necesario */
+    }
+
+    .text-danger {
+      color: red; /* Color rojo para cuando la condición no se cumple */
+    }
+
+    .tooltip-error .tooltip-inner {
+      background: #DE2D0F !important; /* Color de fondo en rojo */
+    }
+
+    .tooltip-error .tooltip-inner::before {
+      border-top-color: #DE2D0F !important; /* Color del triángulo de la tooltip */
+    }
+
+    #total_tecnica {
+      text-align: center; /* Centra horizontalmente */
+      vertical-align: middle; /* Centra verticalmente */
+      width: 100px; /* Ajusta el ancho si es necesario */
+      height: 50px; /* Ajusta la altura si es necesario */
+    }
+
+    #total_tecnica_elementos {
+      text-align: center; /* Centra horizontalmente */
+      vertical-align: middle; /* Centra verticalmente */
+      width: 100px; /* Ajusta el ancho si es necesario */
+      height: 50px; /* Ajusta la altura si es necesario */
+    }
+
+    .icon-red {
+      color: red;
+    }
+
+    #modal-dialog-plan {
+      max-width: 60%;
+      margin: 30px auto;
+    }
+
+    #modal-dialog-objetivo {
+      max-width: 60%;
+      margin: 30px auto;
+    }
+
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
-  - solo_lectura = @solo_lectura
+  -#- solo_lectura = @solo_lectura
+  - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura
   - adm_juridica = @adm_juridica
   %div{ id: "tipos", "data-tipo" => tipo }
+  <input type="hidden" id="codigo_estado" name="codigo_estado" value="">
   <input type="hidden" id="campos_pendientes" name="campos_pendientes" value="">
   <input type="hidden" id="response_costos" name="response_costos" value="">
   <input type="hidden" id="contador_campos_nulos" name="contador_campos_nulos" value="">
@@ -2887,7 +3135,9 @@
         %h1= t(:objetivo_específico)
         %br
         - if !solo_lectura
-          = button_tag 'Agregar Objetivo', id: 'open-modal-button', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button'
+          - button_class = @total_de_errores_por_tab.present? ? (@objetivo_especificos.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+          = button_tag 'Agregar Objetivo', id: 'open-modal-button', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'
+
         %div#div_objetivo_especifico.table-responsive  
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
@@ -2901,100 +3151,234 @@
             %tbody
         %br
         <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
-              %tr
-                %th.encabezado2-form Micro
-                %th.encabezado2-form Pequeña
-                %th.encabezado2-form Mediana
-                %th.encabezado2-form Grande
-                %th.encabezado2-form Total
-                
-              %tr
-                -if !solo_lectura
-                  %th
-                    = f.text_field :cantidad_micro_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa'
-                  %th
-                    = f.text_field :cantidad_pequeña_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa'            
-                  %th
-                    = f.text_field :cantidad_mediana_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa'
-                  %th
-                    = f.text_field :cantidad_grande_empresa, class: 'valor-a-sumar-tec border-text', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa'
-                  %th#total_tecnica 
-                -else
-                  %th
-                    = f.object.cantidad_micro_empresa
-                  %th
-                    = f.object.cantidad_pequeña_empresa
-                  %th
-                    = f.object.cantidad_mediana_empresa
-                  %th
-                    = f.object.cantidad_grande_empresa                  
-                  %th#total_tecnica 
-        %br   
-        .row
-          .col-12
-            -if solo_lectura
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
-              #manifestacion_de_interes_comunas_ids
-            #checkbox-tree-selector-regiones-provincias-comunas.mb-3
-              -card_class = ''
-              -card_class += ' border-0' if solo_lectura
-              -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
-              .card.m-0.card-preview-seleccionados{class: card_class}
-                -if !solo_lectura
-                  #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3.titulo-sector 
-                    %h5.no-margin.float-left.display_select_title
-                      %abbr{title: :required} *
-                      =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
-                    .float-right
-                      %i.fa.fa-chevron-right#boton_expandir_territorios
-                .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
-                  .row
-                    .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
-                      =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
-                    .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
-                      = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
-                      #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
-                  - if f.object.errors.messages.has_key?(:comunas_ids)
-                    %span.help-block
-                      = f.object.errors.messages[:comunas_ids].first
-                -if !solo_lectura
-                  .card-footer.p-0
-                    %ul.list-group.seleccionados_tree.m-0
-                -else
-                  .card-footer.px-0.pb-0.pt-1.border-0
-                    %ul.list-group.seleccionados_tree_solo_lectura.m-0
-          
-        %div.table-responsive
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr
-                %th.encabezado2-form 
-                  Empresas socias de la A.G. potenciales suscriptoras del APL
-                %th.encabezado2-form 
-                  Empresas potenciales no socias de la A.G.       
-              %tr
-                -if !solo_lectura
-                  %th
-                    %label.label-estilo{ for: 'empresas_asociadas_ag' }
-                      %abbr{ title: "Campo requerido" } *
-                      N° Empresas Asociadas AG: 
-                    = f.text_field :empresas_asociadas_ag, class: 'border-text', required: true, label: 'Empresas socias de la A.G. potenciales suscriptoras del APL*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_asociadas_ag' 
-                  %th
-                    %label.label-estilo{ for: 'empresas_asociadas_ag' }
-                      %abbr{ title: "Campo requerido" } *
-                      N° Empresas No Asociadas AG: 
-                    = f.text_field :empresas_no_asociadas_ag, class: 'border-text', required: true, label: 'Empresas potenciales no socias de la A.G.*', type: 'number', onchange: 'sumarValoresTec();', id: 'empresas_no_asociadas_ag'
-                -else
-                  %th
-                    = f.object.empresas_asociadas_ag
-                  %th
-                    = f.object.empresas_no_asociadas_ag
-        %br
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                %tr
+                  %th.encabezado2-form Micro
+                  %th.encabezado2-form Pequeña
+                  %th.encabezado2-form Mediana
+                  %th.encabezado2-form Grande
+                  %th.encabezado2-form Total
+                  
+                %tr
+                  -if !solo_lectura                 
+                    %th
+                      %label.label-estilo{ for: 'cantidad_micro_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Micro Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_micro_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data
+                    %th
+                      %label.label-estilo{ for: 'cantidad_pequeña_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Pequeña Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_pequeña_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
+                    %th
+                      %label.label-estilo{ for: 'cantidad_mediana_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Mediana Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_mediana_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
+                    %th
+                      %label.label-estilo{ for: 'cantidad_grande_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Grande Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_grande_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
+                    %th#total_tecnica
+                  -else
+                    %th
+                      = f.object.cantidad_micro_empresa
+                    %th
+                      = f.object.cantidad_pequeña_empresa
+                    %th
+                      = f.object.cantidad_mediana_empresa
+                    %th
+                      = f.object.cantidad_grande_empresa                  
+                    %th
+                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
+          %br 
+            .row
+              .col-12
+                -if solo_lectura
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                  #manifestacion_de_interes_comunas_ids
+                #checkbox-tree-selector-regiones-provincias-comunas.mb-3
+                  -card_class = ''
+                  -card_class += ' border-0' if solo_lectura
+                  -card_class += ' has-error' if f.object.errors.messages.has_key?(:comunas_ids)
+                  -border_class = @total_de_errores_por_tab.present? && @comuna_flujo.blank? ? 'border-error' : 'border-text'
+                  -tooltip_data = @total_de_errores_por_tab.present? && @comuna_flujo.blank? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                  .card.m-0.card-preview-seleccionados{class: "#{card_class} #{border_class} tooltip-block", data: tooltip_data}
+                    -if !solo_lectura
+                      #manifestacion_de_interes_comunas_ids.card-header.pt-2.pb-1.pl-3.titulo-sector 
+                        %h5.no-margin.float-left.display_select_title
+                          %abbr{title: :required} *
+                          =@validaciones[:manifestacion_de_interes][:comunas_ids][:nombre]
+                        .float-right
+                          %i.fa.fa-chevron-right#boton_expandir_territorios
+                    .card-body.py-0.required{class: (solo_lectura ? 'px-0' : 'group-hide')}
+                      .row
+                        .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
+                          =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
+                        .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
+                          = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
+                          #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
+                      - if f.object.errors.messages.has_key?(:comunas_ids)
+                        %span.help-block
+                          = f.object.errors.messages[:comunas_ids].first
+                    -if !solo_lectura
+                      .card-footer.p-0
+                        %ul.list-group.seleccionados_tree.m-0
+                    -else
+                      .card-footer.px-0.pb-0.pt-1.border-0
+                        %ul.list-group.seleccionados_tree_solo_lectura.m-0
+            
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th.encabezado2-form 
+                      Empresas socias de la A.G. potenciales suscriptoras del APL
+                    %th.encabezado2-form 
+                      Empresas potenciales no socias de la A.G.       
+                  %tr
+                    -if !solo_lectura
+                      %th{style: 'width: 50%;'}
+                        %label.label-estilo{ for: 'empresas_asociadas_ag' }
+                          %abbr{ title: "Campo requerido" } *
+                          N° Empresas Asociadas AG: 
+                        - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_asociadas_ag.nil? ? 'border-error' : 'border-text'
+                        - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_asociadas_ag.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                        = f.text_field :empresas_asociadas_ag, class: "form-control text required tooltip-block #{border_class}", required: 'required', type: 'number', id: 'empresas_asociadas_ag', data: tooltip_data 
+                      %th{style: 'width: 50%;'}
+                        %label.label-estilo{ for: 'empresas_no_asociadas_ag' }
+                          %abbr{ title: "Campo requerido" } *
+                          N° Empresas No Asociadas AG: 
+                        - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_no_asociadas_ag.nil? ? 'border-error' : 'border-text'
+                        - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.empresas_no_asociadas_ag.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                        = f.text_field :empresas_no_asociadas_ag, class: "form-control text required tooltip-block #{border_class}", required: 'required', type: 'number', id: 'empresas_no_asociadas_ag', data: tooltip_data 
+                    -else
+                      %th
+                        = f.object.empresas_asociadas_ag
+                      %th
+                        = f.object.empresas_no_asociadas_ag
+              %br
+        - else
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                %tr
+                  %th.encabezado2-form 
+                  %th.encabezado2-form Micro
+                  %th.encabezado2-form Pequeña
+                  %th.encabezado2-form Mediana
+                  %th.encabezado2-form Grande
+                  %th.encabezado2-form Total
+                %tr
+                  -if !solo_lectura
+                    %th
+                      Empresas Totales a Adherir
+                    %th
+                      %label.label-estilo{ for: 'cantidad_micro_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Micro Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_micro_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
+                    %th
+                      %label.label-estilo{ for: 'cantidad_pequeña_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Pequeña Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_pequeña_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
+                    %th
+                      %label.label-estilo{ for: 'cantidad_mediana_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Mediana Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_mediana_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
+                    %th
+                      %label.label-estilo{ for: 'cantidad_grande_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Cantidad Grande Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :cantidad_grande_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
+                    %th#total_tecnica 
+                  -else
+                    %th
+                      Empresas Totales a Adherir
+                    %th
+                      = f.object.cantidad_micro_empresa
+                    %th
+                      = f.object.cantidad_pequeña_empresa
+                    %th
+                      = f.object.cantidad_mediana_empresa
+                    %th
+                      = f.object.cantidad_grande_empresa                  
+                    %th
+                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
+                %tr
+                  -if !solo_lectura
+                    %th
+                      Elementos Totales a Adherir
+                    %th
+                      %label.label-estilo{ for: 'elementos_micro_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Elementos Micro Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_micro_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa', data: tooltip_data  
+                    %th
+                      %label.label-estilo{ for: 'elementos_pequena_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Elementos Pequeña Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_pequena_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa', data: tooltip_data        
+                    %th
+                      %label.label-estilo{ for: 'elementos_mediana_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Elementos Mediana Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_mediana_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa', data: tooltip_data  
+                    %th
+                      %label.label-estilo{ for: 'elementos_grande_empresa' }
+                        %abbr{ title: "Campo requerido" } *
+                        Elementos Grande Empresas
+                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? 'border-error' : 'border-text'
+                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                      = f.text_field :elementos_grande_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa', data: tooltip_data           
+                    %th#total_tecnica_elementos
+                  -else
+                    %th
+                      Elementos Totales a Adherir
+                    %th
+                      = f.object.elementos_micro_empresa
+                    %th
+                      = f.object.elementos_pequena_empresa
+                    %th
+                      = f.object.elementos_mediana_empresa
+                    %th
+                      = f.object.elementos_grande_empresa                  
+                    %th
+                      = f.object.elementos_micro_empresa + f.object.elementos_pequena_empresa + f.object.elementos_mediana_empresa + f.object.elementos_grande_empresa    
+            %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -3002,7 +3386,7 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.input :duracion, required: true, label: t(:duracion_proyecto), collection: (1..4).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion'}
+                    = f.input :duracion, required: true, label: t(:duracion_proyecto), collection: (1..@duracion).map { |num| [num, num] }, input_html: { class: 'required-field', onchange: 'duracion()', id: 'duracion'}
                 -else
                   %th
                     = f.object.duracion
@@ -3021,7 +3405,8 @@
         %br
         %div#div_postulante.table-responsive  
           - if !solo_lectura
-            = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@postulantes.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Postulante', id: 'open-modal-button_buscar_usuario_postulante', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3076,38 +3461,40 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             En este punto se debe indicar si se contratarán los servicios de una empresa consultora o de un equipo de consultor(es), para realizar una parte o todo el proyecto.
-        %div.table-responsive       
-          %table 
-            -#-if @count_user_empresa == 0 && @count_user_equipo == 0
-            -if @tipo == 0
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
-                %td.option-form Equipo de Consultores
+        - if !solo_lectura
+          %div.table-responsive       
+            %table 
+              -#-if @count_user_empresa == 0 && @count_user_equipo == 0
+              -if @tipo == 0
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                  %td.option-form Equipo de Consultores
 
-            -#-if @count_user_empresa > 0
-            -if @tipo == 2
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
-                %td.option-form Equipo de Consultores
-            
-            -#-if @count_user_equipo > 0
-            -if @tipo == 1
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
-                %td.option-form Empresa Consultora
-              %tr
-                %td= f.radio_button :nombre_acuerdo, 'opcion_2', { checked: true, class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
-                %td.option-form Equipo de Consultores
+              -#-if @count_user_empresa > 0
+              -if @tipo == 2
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
+                  %td.option-form Equipo de Consultores
+              
+              -#-if @count_user_equipo > 0
+              -if @tipo == 1
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { checked: true, class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                  %td.option-form Equipo de Consultores
         %br   
         %div#div_empresa_consultora.table-responsive  
           - if !solo_lectura
-            = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@empresa_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3132,7 +3519,8 @@
         -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
-            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3173,7 +3561,8 @@
         </br>
         %div#div_equipo_consultora.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
-            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm', type: 'button' 
+            - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+            = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'  
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3220,13 +3609,18 @@
               %tr
                 -if !solo_lectura
                   %th
-                    = f.input :fortalezas_consultores, as: :text, input_html: { id: 'fortalezas_consultores' }, label:  t(:fortaleza_equipo), required: true
+                    %label.label-estilo{ for: 'fortalezas_consultores' }
+                      %abbr{ title: "Campo requerido" } *
+                      Describir Fortalezas del Equipo
+                      %br
+                    - border_class = @total_de_errores_por_tab.present? && (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?) ? 'border-error' : 'border-text'
+                    - tooltip_data = @total_de_errores_por_tab.present? && (@fondo_produccion_limpia.fortalezas_consultores == "" || @fondo_produccion_limpia.fortalezas_consultores.nil?) ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
+                    = f.text_area :fortalezas_consultores, class: "form-control text required tooltip-block #{border_class}", required: 'required', type: 'text', id: 'fortalezas_consultores', style: 'width: 100%;', data: tooltip_data         
                 -else
                   %th
                     = f.object.fortalezas_consultores
   #plan-de-actividades.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"plan-de-actividades"] ? 'true' : 'false'), "aria-labelledby" => "plan-de-actividades-tab", :role => "tabpanel", class: ("show active" if tabs[:"plan-de-actividades"])}
     .card
-      .card-header
       .card-body
         <h1>Plan de Actividades</h1>
         .alert.alert-primary
@@ -3239,50 +3633,36 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
-                -#%th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:etapa_actividades)
+                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
                 -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                 %th.encabezado-form.dos.iconos-acciones{style: 'vertical-align: middle;', rowspan: 2}=t(:acción)
               %tr
-                - if @duracion == 1
-                  %th.encabezado-form="1"
-                - elsif @duracion == 2
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                - elsif @duracion == 3
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                - elsif @duracion == 4
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                - elsif @duracion == 5
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                  %th.encabezado-form="5"
-                - elsif @duracion == 6
-                  %th.encabezado-form="1"
-                  %th.encabezado-form="2"
-                  %th.encabezado-form="3"
-                  %th.encabezado-form="4"
-                  %th.encabezado-form="5"
-                  %th.encabezado-form="6"
+                - (1..@duracion).each do |d|
+                  %th.encabezado-form=d
                 %th.encabezado-form="Recursos Humanos Propios"
                 %th.encabezado-form="Recursos Humanos Externos"
                 %th.encabezado-form="Gastos de Operación"
                 %th.encabezado-form="Gastos de Administración"
+              -#%tr
+                -#%th.encabezado-form{colspan: @duracion + 1, style: 'text-align: center; border-right: 1px solid #dee2e6;'} Total Actividades
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form $100.000
+                -#%th.encabezado-form
               %tbody
                 - if @actividad_x_linea.present?  
+                  - current_tipo_actividad = nil
                   - @actividad_x_linea.each do |actividad|
+                    - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   
+                      - if current_tipo_actividad != actividad.tipo_actividad
+                        - current_tipo_actividad = actividad.tipo_actividad
+                        %tr
+                          %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                     %tr
                       %td.contenido-form=actividad.nombre
-                      -#- if @actividad_detalle.present?
                       - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
                       - if detalle_existente.present?
                         - duraciones = detalle_existente.duracion.split(',')
@@ -3295,6 +3675,9 @@
                         %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipos_1_2)
                         %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_1)
                         %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_2)
+                        %td.contenido-form.dos.iconos-acciones
+                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                            %i.fa.fa-edit 
                       - else
                         - (1..@duracion).each do |d|
                           %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
@@ -3302,16 +3685,13 @@
                         %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
                         %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
-                      -#-else
-                      -#  - (1..@duracion).each do |d|
-                      -#    %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
-                      -#  %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
-                      -#  %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
-                      %td.contenido-form.dos.iconos-acciones
-                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},solo_lectura)", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                          %i.fa.fa-edit 
+                        %td.contenido-form.dos.iconos-acciones
+                          - if @total_de_errores_por_tab.present?
+                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                              %i.fa.fa-edit.icon-red
+                          - else
+                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                              %i.fa.fa-edit
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body
@@ -3332,14 +3712,23 @@
               %tbody
                 - @descargables_postulante.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br              
         <h1>B) Receptor cofinanciamiento </h1>              
         %div.table-responsive
@@ -3353,14 +3742,23 @@
               %tbody
                 - @descargables_receptor.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
         %br
         <h1>C) Ejecutor </h1>              
         %div#div_ejecutor.table-responsive  
@@ -3374,15 +3772,23 @@
               %tbody
                 - @descargables_ejecutor.each do |descargable|
                   %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                    %td.contenido-form{style: 'vertical-align: middle;'}= descargable.nombre
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
                     %td.contenido-form
                       = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica 
                       %td.contenido-form
-                        = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "archivos_#{descargable.id}", class: "form-control smaller-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
-
+                        - if @total_de_errores_por_tab.present?
+                          - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
+                          - if valor.nil? || valor.file.nil? || !valor.file.present?
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          - else
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                        - else
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
   #costos.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"costos"] ? 'true' : 'false'), "aria-labelledby" => "costos-tab", :role => "tabpanel", class: ("show active" if tabs[:"costos"])}
     .card
       .card-body
@@ -3633,81 +4039,203 @@
                   %td#porcentaje_aporte_solicitado_fondo_gasto_administracion.contenido-form-costo  0,00%
         %br
         <h1>Validación</h1>   
-        %div.table-responsive 
-          %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-            %thead
-              %tr{style: 'background-color: #5d759e;'}
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
-                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
-            %tbody
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Aporte líquido del postulante
-                - if @costos.present?
-                  %td#valida_aporte_propio_liquido.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
-                    - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_aporte_propio_liquido.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo  0,00%
-                  %td#valida_pregunta_aporte_propio_liquido.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
-                - if @costos.present?
-                  %td#valida_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'])
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
-                    - if (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado']) >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_costo_total_de_la_propuesta.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo  0,00%
-                  %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
-                - if @costos.present?
-                  %td#valida_gastos_administrativos.contenido-form-costo=number_to_currency @costos.gastos_administrativos
-                  %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_gastos_administrativos.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
-                  %td#valida_pregunta_gastos_administrativos.contenido-form-center
-                    - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_gastos_administrativos.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                  %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
-                  %td#valida_pregunta_gastos_administrativos.contenido-form-center  NO
-              %tr
-                %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento CPL
-                - if @costos.present?
-                  %td#valida_aporte_solicitado_al_fondo.contenido-form-costo=number_to_currency @costos.aporte_solicitado_al_fondo
-                  %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
-                    - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
-                      SI
-                    - else
-                      NO
-                - else
-                  %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
-                  %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
-                  %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
-                  %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center NO
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+          %div.table-responsive 
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr{style: 'background-color: #5d759e;'}
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
+              %tbody
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Aporte líquido del postulante
+                  - if @costos.present?
+                    %td#valida_aporte_propio_liquido.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
+                      - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#valida_aporte_propio_liquido.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_aporte_propio_liquido.contenido-form-costo  0,00%
+                    %td#valida_pregunta_aporte_propio_liquido.contenido-form-center
+                      %span{ class: 'text-danger' } NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Aporte del postulante
+                  - if @costos.present?
+                    %td#valida_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'])
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
+                      - if (@costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado']) >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#valida_costo_total_de_la_propuesta.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_costo_total_de_la_propuesta.contenido-form-costo  0,00%
+                    %td#valida_pregunta_costo_total_de_la_propuesta.contenido-form-center
+                      %span{ class: 'text-danger' } NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Gastos de Administración
+                  - if @costos.present?
+                    %td#valida_gastos_administrativos.contenido-form-costo=number_to_currency @costos.gastos_administrativos
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_gastos_administrativos.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                    %td#valida_pregunta_gastos_administrativos.contenido-form-center
+                      - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#valida_gastos_administrativos.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
+                    %td#valida_pregunta_gastos_administrativos.contenido-form-center
+                      %span{ class: 'text-danger' } NO
+                %tr
+                  %td.contenido-form(width="33%" class="tabla_grisC") Cofinanciamiento ASCC
+                  - if @costos.present?
+                    %td#valida_aporte_solicitado_al_fondo.contenido-form-costo=number_to_currency @costos.aporte_solicitado_al_fondo
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
+                      - if @costos.aporte_solicitado_al_fondo <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
+                    %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
+                      %span{ class: 'text-danger' } NO
           %br
+        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+          %div.table-responsive 
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr{style: 'background-color: #5d759e;'}
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Tipo de Actividades
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 30%;'} Glosa
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Monto
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 40%;'} Criterio
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle; width: 10%;'} Límite
+                  %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
+              %tbody
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo general al postulante
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
+                  - if @costos_seguimiento[0].present?
+                    %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'])
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
+                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center
+                      - if @costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'] >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo  $0
+                    %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento ASCC
+                  - if @costos_seguimiento[0].present?
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f)
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center
+                      - if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_monto.contenido-form-costo $0
+                    %td.contenido-form Menor o igual a #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_limite.contenido-form-costo  $0
+                    %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO    
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
+                  - if @costos_seguimiento[1].present?
+                    %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'])
+                    %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
+                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center
+                      - if @costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'] >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'] != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo $0
+                    %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo  $0
+                    %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO        
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento ASCC
+                  - if @costos_seguimiento[1].present?
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f)
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
+                      - if @costos_seguimiento[1]['aporte_propio_valorado'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].to_f != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo $0
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo  $0
+                    %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  
+                      %span{ class: 'text-danger' } NO      
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Total Proyecto
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte líquido del postulante
+                  - if @costos.present?
+                    %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center
+                      - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo $0
+                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo $0
+                    %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO  
+                %tr
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Gastos de Administración
+                  - if @costos.present?
+                    %td#total_proyecto_gastos_administracion_monto.contenido-form-costo=number_to_currency @costos.gastos_administrativos
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center
+                      - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
+                        %span{ class: 'text-success' } SI
+                      - else
+                        %span{ class: 'text-danger' } NO
+                  - else
+                    %td#total_proyecto_gastos_administracion_monto.contenido-form-costo $0
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo $0
+                    %td#total_proyecto_gastos_administracion_cumple.contenido-form-center 
+                      %span{ class: 'text-danger' } NO            
   - if @revisor      
     #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs[:"asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs[:"asignar-revisor"])}
       .card
@@ -3721,33 +4249,28 @@
               %br
               = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, id: 'codigo_proyecto'
             .col-12.col-lg-6
-              -#= f.input :revisor_tecnico_id, collection: @revisores_tecnicos.map{|p| [p.user.nombre_completo, p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id'}, label: t(:revisor_tecnico)
               %label.label-estilo{ for: 'revisor_tecnico_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_tecnico)
               %br
               = f.select :revisor_tecnico_id, [['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
             .col-12.col-lg-6
-              -#= f.input :revisor_financiero_id, collection: @revisores_financieros.map{|p| [p.user.nombre_completo, p.user.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id'}, label: t(:revisor_financiero)
               %label.label-estilo{ for: 'revisor_financiero_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_financiero)
               %br
               = f.select :revisor_financiero_id, [['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
             .col-12.col-lg-6
-              -#= f.input :revisor_juridico_id, collection: @revisores_juridicos.map{|p| [p.user.nombre_completo, p.user.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id'}, label: t(:revisor_juridico)
               %label.label-estilo{ for: 'revisor_juridico_id' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:revisor_juridico)
               %br
               = f.select :revisor_juridico_id, [['Seleccione un revisor jurídico', '']] + @revisores_juridicos.map { |p| [p.user.nombre_completo, p.user.id] }, {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor jurídico", id: 'revisor_juridico_fpl_id' }
             .col-12
-              -#= f.input :comentario_asignar_revisor, as: :text, label: t(:comentario), input_html: {class: "required-field", id: 'comentario_asignar_revisor_fpl'}, required: true
               %label.label-estilo{ for: 'comentario_asignar_revisor' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:comentario)
               %br
-              -#= f.text_field :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 50%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem;'
               = f.text_area :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 50%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem; font-size: 12px; border-bottom: 2px solid #dee2e6; border-right: 2px solid #dee2e6; border-left: 2px solid #dee2e6;'
           .col-12
             .float-right
@@ -4347,7 +4870,7 @@
                     = t(:resultado_de_la_pertinencia)
                   %br
 
-                  = f.select :nota, [['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']], {}, { required: true, label: false, class: 'required-field nota_input_pertinencia', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
+                  = f.select :nota, options_for_select([['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']],@nota), {}, { required: true, label: false, class: 'required-field nota_input_pertinencia', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
               %tr
                 %th
                   %label.label-estilo{ for: 'observaciones_y_comentarios' }
@@ -4622,7 +5145,7 @@
                 %i.fa.fa-arrow-circle-right
                 =t(:enviar)                                               
   #modal_objetivos-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-objetivo
       .modal-content
         .modal-body
           = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -4639,29 +5162,27 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         
                         %tr
-                          %td.contenido-popup-form=t(:descripcion)
-                          %td.contenido-popup-form 
-                            -# = @objetivo_especifico.metodologia
-                            -# = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', value: @objetivo_especifico.descripcion
-                            = f.text_field :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 66.67%;')  
+                            = f.text_area  :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:metodologia)
-                          %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;' 
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:metodologia)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :metodologia, required: true, id: 'metodologia', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' 
                         %tr
-                          %td.contenido-popup-form=t(:resultado)
-                          %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:resultado)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :resultado, required: true, id: 'resultado' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:indicadores)
-                          %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores' 
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:indicadores)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :indicadores, class: 'required-field', id: 'indicadores', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' 
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
             
   #modal_objetivos-edit-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-objetivo
       .modal-content
         .modal-body
           = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -4670,31 +5191,28 @@
                 .card
                   .card-header
                     %h5.no-margin
-                      XXX nuevo objetivo
+                      Editar objetivo
                   .card-body
                     %div.table-responsive
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
-                        = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'
-                        
-                        
+                        = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'                       
                         %tr
-                          %td.contenido-popup-form=t(:descripcion)
-                          %td.contenido-popup-form 
-                            = f.text_field :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:metodologia)
-                          %td.contenido-popup-form
-                            = f.text_field :metodologia, required: true, id: 'metodologia_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:metodologia)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :metodologia, required: true, id: 'metodologia_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:resultado)
-                          %td.contenido-popup-form
-                            = f.text_field :resultado, required: true, id: 'resultado_edit' , class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:resultado)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :resultado, required: true, id: 'resultado_edit', class: 'required-field', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
-                          %td.contenido-popup-form=t(:indicadores)
-                          %td.contenido-popup-form
-                            = f.text_field :indicadores, class: 'required-field numero', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', id: 'indicadores_edit'
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:indicadores)
+                          %td.contenido-popup-form(style='width: 66.67%;')
+                            = f.text_area :indicadores, class: 'required-field', id: 'indicadores_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'actualizarObjetivo(); return false;'
@@ -4884,7 +5402,7 @@
             = button_to 'Guardar', '#', class: 'btn btn-primary', onclick: 'guardarObjetivo(); return false;'
   -# POPUP PLAN DE ACTIVIDADES
   #modal_create_plan_actividades-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
+    .modal-dialog#modal-dialog-plan
       .modal-content
         .modal-body
           = form_with(model: @plan_actividades, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
@@ -4899,11 +5417,11 @@
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         = hidden_field_tag 'plan_id', id: 'plan_id'
+                        = hidden_field_tag 'flag', '', id: 'flag'
                         %tr
                           %td.contenido-popup-form=t(:nombre_actividades)
                           %td.contenido-popup-form 
                             = f.text_area  :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;', disabled: true
-                            -#= f.text_area :descripcion, value: @nombre_actividad, class: 'required-field', id: 'nombre_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, disabled: true
                         %tr
                           %td.contenido-popup-form=t(:objetivos_específicos)
                           %td.contenido-popup-form 
@@ -4911,6 +5429,8 @@
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                             - else
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
+                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2  
+                          %tr#tr_tipo_actividad
                         %tr
                           %td.contenido-popup-form{colspan: @duracion}
                             %div#div_duracion.table-responsive
@@ -4925,8 +5445,7 @@
                                       %td.sub-contenido-popup-form{:colspan => @duracion} No checkboxes
                                 %tbody
                         %tr
-                          %td.contenido-popup-form{colspan: 4}
-                            %div.table-responsive  
+                          %td#td_plan_recursos_propios.contenido-popup-form{colspan: 4}
                             %div#div_plan_recursos_propios.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -4945,8 +5464,7 @@
                                         %a{href: "#-1", onclick: "modalRrhhPropios(document.getElementById('plan_id').value); return false;", id: "agregar_rr_pp", style: 'color: #5d759e;'} Agregar
                                         %i.fa.fa-plus-square.icono-celeste
                         %tr
-                          %td.contenido-popup-form{colspan: 4}
-                            %div.table-responsive  
+                          %td#td_plan_recursos_externos.contenido-popup-form{colspan: 4}
                             %div#div_plan_recursos_externos.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -4966,8 +5484,7 @@
                                         %i.fa.fa-plus-square.icono-celeste
 
                         %tr 
-                          %td.contenido-popup-form{colspan: 6}
-                            %div.table-responsive  
+                          %td#td_plan_gastos_operacion.contenido-popup-form{colspan: 6}
                             %div#div_plan_gastos_operacion.table-responsive  
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -4989,8 +5506,7 @@
                                         %a{href: "#-1", onclick: "modalGastosOperacion(document.getElementById('plan_id').value); return false;", id: "agregar_gas_ope", style: 'color: #5d759e;'} Agregar Fila
                                         %i.fa.fa-plus-square.icono-celeste
                         %tr 
-                          %td.contenido-popup-form{colspan: 6}
-                            %div.table-responsive  
+                          %td#td_plan_gastos_administracion.contenido-popup-form{colspan: 6}
                             %div#div_plan_gastos_administracion.table-responsive 
                               %table.table.table-striped.usuarios.no-margin
                                 %thead
@@ -5016,7 +5532,7 @@
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             - if !solo_lectura
               -#= button_to #button_name, '#', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;"
-              = button_to 'Crear Actividad', '#', id: 'button_id', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value); return false;" 
+              = button_to 'Crear Actividad', '#', id: 'button_id', class: 'btn btn-primary', onclick: "guardarPlanActividad(document.getElementById('plan_id').value, document.getElementById('flag').value); return false;" 
 
   -# POPUP RRHH PROPIOS
   #modal_rrhh_propios-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
@@ -5201,8 +5717,23 @@
         __show_hide_(childGroup,childControl);      
     });
 
-    init_coordenadas_territorios();
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+    };
 
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
+
+    //if(#{@flujo.tipo_instrumento_id} == 11 || #{@flujo.tipo_instrumento_id} == 22 || #{@flujo.tipo_instrumento_id} == 30) {
+
+      init_coordenadas_territorios();
+    }  
+      
     document_ready = true;
     if(typeof google != "undefined"){
       mapLoaded();

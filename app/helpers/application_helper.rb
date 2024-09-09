@@ -134,11 +134,15 @@ module ApplicationHelper
   end
 
   def titulo_proyecto_fpl
-    @manifestacion_de_interes.present? ? "<b>Proyecto: </b> #{@fondo_produccion_limpia.codigo_proyecto} <br>" : ""
+    @fondo_produccion_limpia.present? ? "<b>Proyecto: </b> #{@fondo_produccion_limpia.codigo_proyecto} <br>" : ""
   end
 
   def datos_beneficiario_fpl
-    @flujo.present? ? "<b>Beneficiario: </b> #{@manifestacion_de_interes.institucion_gestora_acuerdo} <br><b>Rut: </b> #{@manifestacion_de_interes.rut_institucion_gestora_acuerdo}" : ""
+    if @fondo_produccion_limpia.institucion_entregables_id.present?
+      @flujo.present? ? "<b>Beneficiario: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).razon_social} <br><b>Rut: </b> #{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(@fondo_produccion_limpia.institucion_entregables_id).dv}" : ""
+    else
+      @flujo.present? ? "<b>Beneficiario: </b> #{@manifestacion_de_interes.institucion_gestora_acuerdo} <br><b>Rut: </b> #{@manifestacion_de_interes.rut_institucion_gestora_acuerdo}" : ""
+    end
   end
   #**
 
@@ -910,6 +914,9 @@ module ApplicationHelper
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_10
       data[:url] =  evaluacion_general_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_11
+      data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     #Nuevo flujo postulacion FPL  
     end

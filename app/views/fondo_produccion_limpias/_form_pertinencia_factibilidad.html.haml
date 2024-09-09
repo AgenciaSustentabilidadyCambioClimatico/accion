@@ -308,16 +308,25 @@
             { value: '3', text: 'Rechazada' }
         ];
 
-        // Limpiar el select actual
-        $('#nota_input_pertinencia').empty();
+        var $select = $('#nota_input_pertinencia');
+        $select.empty();
 
-        // Iterar sobre los nuevos valores y agregar opciones al select
+        // Añadir las nuevas opciones
         nuevosValores.forEach(function(opcion) {
-            $('#nota_input_pertinencia').append($('<option>', {
-                value: opcion.value,
-                text: opcion.text
-            }));
+          $select.append($('<option>', {
+            value: opcion.value,
+            text: opcion.text
+          }));
         });
+
+        // Establecer el valor seleccionado por defecto
+        var valorSeleccionado = document.getElementById('codigo_estado').value;
+       
+        // Si hay un valor seleccionado, configúralo en el select
+        if (valorSeleccionado) {
+          $select.val(valorSeleccionado);
+        }
+
       }else{
         // Define los nuevos valores para el select
         var nuevosValores = [
@@ -325,16 +334,26 @@
             { value: '3', text: 'Rechazada' }
         ];
 
-        // Limpiar el select actual
-        $('#nota_input_pertinencia').empty();
+        
 
-        // Iterar sobre los nuevos valores y agregar opciones al select
+        var $select = $('#nota_input_pertinencia');
+        $select.empty();
+
+        // Añadir las nuevas opciones
         nuevosValores.forEach(function(opcion) {
-            $('#nota_input_pertinencia').append($('<option>', {
-                value: opcion.value,
-                text: opcion.text
-            }));
+          $select.append($('<option>', {
+            value: opcion.value,
+            text: opcion.text
+          }));
         });
+
+        // Establecer el valor seleccionado por defecto
+        var valorSeleccionado = document.getElementById('codigo_estado').value;
+
+        // Si hay un valor seleccionado, configúralo en el select
+        if (valorSeleccionado) {
+          $select.val(valorSeleccionado);
+        }
       }
     }else{
       // Define los nuevos valores para el select
@@ -343,16 +362,24 @@
           { value: '3', text: 'Rechazada' }
       ];
 
-      // Limpiar el select actual
-      $('#nota_input_pertinencia').empty();
+      var $select = $('#nota_input_pertinencia');
+      $select.empty();
 
-      // Iterar sobre los nuevos valores y agregar opciones al select
+      // Añadir las nuevas opciones
       nuevosValores.forEach(function(opcion) {
-          $('#nota_input_pertinencia').append($('<option>', {
-              value: opcion.value,
-              text: opcion.text
-          }));
+        $select.append($('<option>', {
+          value: opcion.value,
+          text: opcion.text
+        }));
       });
+
+      // Establecer el valor seleccionado por defecto
+      var valorSeleccionado = document.getElementById('codigo_estado').value;
+
+      // Si hay un valor seleccionado, configúralo en el select
+      if (valorSeleccionado) {
+        $select.val(valorSeleccionado);
+      }
     }
   }
 

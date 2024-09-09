@@ -1,5 +1,6 @@
 $('.loading-data').hide();
 $("#eliminar-usuario_empresa-<%= user %>").closest('tr').remove();
+$("#eliminar-usuario-<%= user %>").closest('tr').remove();
 
 <% if @count_user_empresa == 0 %>
     $('#div_empresa_consultora table tbody').empty();

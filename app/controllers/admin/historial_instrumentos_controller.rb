@@ -150,7 +150,8 @@ class Admin::HistorialInstrumentosController < ApplicationController
       # @tareas_pendientes = TareaPendiente.where(flujo_id: @instrumentos.pluck(:id))
       @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
       @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
-      #@fpls = @instrumentos.where.not(proyecto_id: nil)
+      @ppls = @instrumentos.where.not(proyecto_id: nil)
+      #@fpls = @instrumentos.where.not(fondo_produccion_limpia_id: nil)
       @fpls = FondoProduccionLimpia.fpls()
 
       @instancias = []
@@ -166,6 +167,8 @@ class Admin::HistorialInstrumentosController < ApplicationController
         instrumento_id = params[:apl].to_i
       elsif params[:ppf].present?
         instrumento_id = params[:ppf].to_i
+      elsif params[:ppl].present?
+        instrumento_id = params[:ppl].to_i  
       elsif params[:fpl].present?
         instrumento_id = params[:fpl].to_i
       elsif params[:instrumento].present?

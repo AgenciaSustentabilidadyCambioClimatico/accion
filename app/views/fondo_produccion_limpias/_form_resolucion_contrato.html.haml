@@ -1,0 +1,28 @@
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    $("input:file").on('change',function (){
+      $(this).parent().siblings("label").html($(this)[0].files[0].name);
+    });
+    htmlErrorToTooltip('top');
+  });
+- titulo t(:resolucion_contrato)
+= simple_form_for @fondo_produccion_limpia, url: adjuntar_resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin=t(:adjuntar_resolucion_contrato)
+        .card-body
+          .row
+            .col-lg-6.col-12
+              = f.input :archivo_resolucion, as: :file, label: t(:subir_archivo_resolucion), required: true, input_html: { class: 'form-control' }
+            .col-lg-6.col-12
+              = f.input :archivo_contrato, as: :file, label: t(:subir_archivo_contrato), required: true, input_html: { class: 'form-control' }
+  .float-right
+    = volver_root
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

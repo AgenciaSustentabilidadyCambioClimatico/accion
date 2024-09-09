@@ -184,6 +184,9 @@ Rails.application.routes.draw do
   #------------------------------------------------------------------------------------------------------------#
   #Fondo Producción Limpia
   resources :fondo_produccion_limpia
+
+  patch ':id/grabar_postulacion', to: "fondo_produccion_limpias#grabar_postulacion", as: :grabar_postulacion_fondo_produccion_limpia
+
   #Tarea FPL-00
   get ':id/usuario-entregables', to: "fondo_produccion_limpias#usuario_entregables", as: :usuario_entregables_fondo_produccion_limpias
   #post ':id/guardar_usuario_entregables', to: "fondo_produccion_limpias#guardar_usuario_entregables", as: :guardar_usuario_entregables_fondo_produccion_limpia
@@ -318,8 +321,11 @@ Rails.application.routes.draw do
   get 'get_evaluacion_general/:id', to: "fondo_produccion_limpias#get_evaluacion_general", as: :get_evaluacion_general_fondo_produccion_limpia
   post ':id/enviar_evaluacion_general', to: "fondo_produccion_limpias#enviar_evaluacion_general", as: :enviar_evaluacion_general_fondo_produccion_limpia
 
-
-  
+  #Tarea FPL-11
+  get ':id/resolucion_contrato', to: "fondo_produccion_limpias#resolucion_contrato", as: :resolucion_contrato_fondo_produccion_limpia
+  patch ':id/resolucion_contrato', to: "fondo_produccion_limpias#adjuntar_resolucion_contrato", as: :adjuntar_resolucion_contrato_fondo_produccion_limpia
+  get ':id/descargar_contrato_pdf', to: "fondo_produccion_limpias#descargar_contrato_pdf", as: :descargar_contrato_pdf_fondo_produccion_limpia
+  get ':id/descargar_resolucion_pdf', to: "fondo_produccion_limpias#descargar_resolucion_pdf", as: :descargar_resolucion_pdf_fondo_produccion_limpia
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

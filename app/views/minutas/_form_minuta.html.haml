@@ -178,6 +178,8 @@
                   = button_tag class: "btn btn-success btn-sm d-none", id: "btn_mostrar_mapa" do
                     %i.fa.fa-map-marker
                     =t(:mostrar_en_mapa)
+                .col-12    
+                  = render 'form_fpl', f: f
                 .col-12
                   = render 'table_descargables', render_js: true
                 -if @tarea.codigo == Tarea::COD_APL_022

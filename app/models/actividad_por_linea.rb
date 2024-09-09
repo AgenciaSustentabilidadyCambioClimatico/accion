@@ -1,5 +1,6 @@
 class ActividadPorLinea < ApplicationRecord
 	enum tipo_permiso: [ :obligatoria, :permitida, :no_permitida, :nueva ]
+	enum tipo_actividad: [ :tipo_a, :tipo_b ]
 
 	belongs_to :actividad
 	belongs_to :linea, class_name: :TipoInstrumento, foreign_key: :tipo_instrumento_id
@@ -7,6 +8,7 @@ class ActividadPorLinea < ApplicationRecord
 	validates :actividad_id, presence: true
 	validates :tipo_instrumento_id, presence: true
 	validates :tipo_permiso, presence: true
+	#validates :tipo_actividad, presence: true
 	#, inclusion: { in: %w( obligatoria permitida no_permitida ), message: "El tipo %{value} no es un permiso válido" }
 
 
@@ -18,6 +20,10 @@ class ActividadPorLinea < ApplicationRecord
 
 	def self.permisos
 		self.tipo_permisos.map{|n,i|[I18n.t(n.to_sym),n]}
+	end
+
+	def self.actividades
+		self.tipo_actividades.map{|n,i|[I18n.t(n.to_sym),n]}
 	end
 	
 	#PERMISO_OBLIGATORIA	= 0

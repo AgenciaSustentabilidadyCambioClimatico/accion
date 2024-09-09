@@ -2,7 +2,6 @@ class ObjetivoEspecificosController < ApplicationController
     before_action :set_objetivo_especifico, only: [:edit, :update]
 
     def new
-      #binding.pry
         @objetivo_especifico = ObjetivosEspecifico.new
         respond_to do |format|
           format.html

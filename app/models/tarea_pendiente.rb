@@ -184,10 +184,12 @@ class TareaPendiente < ApplicationRecord
     if self.save
       #despauso flujo pero dejo datos de cuando se pauso
       manif = self.flujo.manifestacion_de_interes
-      if manif.detenido
-        manif.temporal = true
-        manif.detenido = false
-        manif.save
+      if manif != nil
+        if manif.detenido
+          manif.temporal = true
+          manif.detenido = false
+          manif.save
+        end
       end
       # aqui se crea el filtro para la condicion de salida, si no viene el campo lo crea como hash vacio, no afectado la busqueda
       filtro_condicion_salida = condicion_de_salida.blank? ? {} : {condicion_de_salida: condicion_de_salida}

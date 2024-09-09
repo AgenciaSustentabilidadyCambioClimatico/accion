@@ -41,12 +41,14 @@ $('#contador_campos_nulos').val(<%= campos_nulos.count %>);
   $('#campos_pendientes').val('1');
 <% end %>
 
-<% if equipo_empresa === 0 %>
-  var $empresa = $('#open-modal-button_buscar_contribuyente');
-  $empresa.removeClass('btn-primary').addClass('btn-danger');
-  $empresa.attr('data-tooltip', 'true');
-  $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
-  $('#campos_pendientes').val('1');
+<% if tipo === 0 %>
+  <% if equipo_empresa === 0 %>
+    var $empresa = $('#open-modal-button_buscar_contribuyente');
+    $empresa.removeClass('btn-primary').addClass('btn-danger');
+    $empresa.attr('data-tooltip', 'true');
+    $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
+    $('#campos_pendientes').val('1');
+  <% end %>
 <% end %>
 
 <% if equipo_consultor === 0 %>

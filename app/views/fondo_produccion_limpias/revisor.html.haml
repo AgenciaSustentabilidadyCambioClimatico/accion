@@ -1,3 +1,4 @@
-= render 'gmap_initializer'
+- if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
+	= render 'gmap_initializer'
 #revisor-remote-form
 	=render 'form_revisor'

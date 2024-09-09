@@ -328,7 +328,7 @@ class Tarea < ApplicationRecord
 	COD_FPL_005	=	'FPL-005'	 #[9}		-	FPL-005-Designar responsables
 	COD_FPL_006	=	'FPL-006'	 #[10}	-	FPL-006-Agendar reunión con beneficiario y encargados entregables
 	COD_FPL_007	=	'FPL-007'	 #[12}	-	FPL-007-Calendarizar rendiciones y carga de respaldo.
-	COD_FPL_008	=	'FPL-018'	 #[13}	-	FPL-008-Solicitar pago
+	COD_FPL_008	=	'FPL-008'	 #[13}	-	FPL-008-Solicitar pago
 	COD_FPL_009	=	'FPL-009'	 #[14}	-	FPL-009-Ingresar N° orden de pago
 	COD_FPL_010	=	'FPL-010'	 #[15}	-	FPL-010-Ingresar fecha de pago
 	COD_FPL_011	=	'FPL-011'	 #[16}	-	FPL-011-Enviar rendición
@@ -413,6 +413,7 @@ class Tarea < ApplicationRecord
 	COD_FPL_08 = 'FPL-08'
 	COD_FPL_09 = 'FPL-09'
 	COD_FPL_10 = 'FPL-10'
+	COD_FPL_11 = 'FPL-11'
 
 	#etapas de acuerdo
 	ETAPA_ACUERDO_MANIFESTACION_INTERES = [ID_APL_001, ID_APL_002, ID_APL_003_1, ID_APL_003_2, ID_APL_004_1, ID_APL_004_2, ID_APL_005, ID_APL_006]

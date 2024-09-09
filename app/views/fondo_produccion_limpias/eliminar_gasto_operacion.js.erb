@@ -181,61 +181,197 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   <% end %>
 
   //VALIDACIÓN
-  //Aporte líquido del postulante
-  document.getElementById('valida_aporte_propio_liquido').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] %>';
-  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
-  <% else %>
-    document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
-  <% end %>
+  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  %>
+    //Aporte líquido del postulante
+    document.getElementById('valida_aporte_propio_liquido').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] %>';
+    <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+      document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
+    <% else %>
+      document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
+    <% end %>
 
-  <% if @costos['aporte_propio_liquido'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100) %>
-    document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'SI';
-  <% else %>
-    document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
-  <% end %>
+    <% if @costos['aporte_propio_liquido'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100) %>
+      document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'SI';
+    <% else %>
+      document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
+    <% end %>
 
-  //Aporte del postulante
-  document.getElementById('valida_costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'] %>';
-  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
-  <% else %>
-    document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '0%';
-  <% end %>
-  
-  <% if @costos['costo_total_de_la_propuesta'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100) && @costos['costo_total_de_la_propuesta'] != '' %>
-    document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'SI';
-  <% else %>
-    document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'NO';
-  <% end %>
+    //Aporte del postulante
+    document.getElementById('valida_costo_total_de_la_propuesta').innerText = '<%= number_to_currency @costos['aporte_propio_liquido'] + @costos['aporte_propio_valorado'] %>';
+    <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+      document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100), precision: 2) %>';
+    <% else %>
+      document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '0%';
+    <% end %>
+    
+    <% if @costos['costo_total_de_la_propuesta'] >= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100) && @costos['costo_total_de_la_propuesta'] != '' %>
+      document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'SI';
+    <% else %>
+      document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'NO';
+    <% end %>
 
-  //Gastos de Administración
-  document.getElementById('valida_gastos_administrativos').innerText = '<%= number_to_currency @costos['gastos_administrativos'] %>';
-  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100), precision: 2) %>';
-  <% else %>
-    document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '0%';
-  <% end %>
-  
-  <% if @costos['gastos_administrativos'] <= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100) && @costos.costo_total_de_la_propuesta != '' %>
-    document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'SI';
-  <% else %>
-    document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'NO';
-  <% end %>
+    //Gastos de Administración
+    document.getElementById('valida_gastos_administrativos').innerText = '<%= number_to_currency @costos['gastos_administrativos'] %>';
+    <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+      document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100), precision: 2) %>';
+    <% else %>
+      document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '0%';
+    <% end %>
+    
+    <% if @costos['gastos_administrativos'] <= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100) && @costos.costo_total_de_la_propuesta != '' %>
+      document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'SI';
+    <% else %>
+      document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'NO';
+    <% end %>
 
-  //Cofinanciamiento CPL
-  document.getElementById('valida_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency @costos['aporte_solicitado_al_fondo'] %>';
-  <% if @costos['costo_total_de_la_propuesta'] != 0 %>
-    document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)) %>';
+    //Cofinanciamiento CPL
+    document.getElementById('valida_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency @costos['aporte_solicitado_al_fondo'] %>';
+    <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+      document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '<%= number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)) %>';
+    <% else %>
+      document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
+    <% end %>
+    
+    <% if @costos['aporte_solicitado_al_fondo'] <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && ['@costos.costo_total_de_la_propuesta'] != '' %>
+      document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'SI';
+    <% else %>
+      document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
+    <% end %>
   <% else %>
-    document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
-  <% end %>
-  
-  <% if @costos['aporte_solicitado_al_fondo'] <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && ['@costos.costo_total_de_la_propuesta'] != '' %>
-    document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'SI';
-  <% else %>
-    document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
-  <% end %>
+    <% if @costos_seguimiento.present? %>
+      // De apoyo general al postulante
+      // Aporte del postulante
+      <% if @costos_seguimiento[0].present? %>
+        document.getElementById('apoyo_general_postulante_aporte_postulante_monto').innerText = '<%= number_to_currency(@costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) %>';
+      <% else %>
+        document.getElementById('apoyo_general_postulante_aporte_postulante_monto').innerText = '$0';
+      <% end %>
+
+      <% if @costos_seguimiento[0].present? %>
+        <% if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f != 0 %>
+          document.getElementById('apoyo_general_postulante_aporte_postulante_limite').innerText = '<%= number_to_currency(((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100) %>';
+        <% else %>
+          document.getElementById('apoyo_general_postulante_aporte_postulante_limite').innerText = '$0';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_postulante_aporte_postulante_limite').innerText = '$0';
+      <% end %>
+
+      <% if @costos_seguimiento[0].present? %>
+        <% if @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f  >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'].present? %>
+          document.getElementById('apoyo_general_postulante_aporte_postulante_cumple').innerText = 'SI';
+        <% else %>
+          document.getElementById('apoyo_general_postulante_aporte_postulante_cumple').innerText = 'NO';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_postulante_aporte_postulante_cumple').innerText = 'NO';
+      <% end %>
+
+      // Cofinanciamiento CPL
+      <% if @costos_seguimiento[0].present? %>
+        document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_monto').innerText = '<%= number_to_currency(@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f) %>';
+      <% else %>
+        document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_monto').innerText = '$0';
+      <% end %>
+      
+      document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_limite').innerText = '<%= number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id)) %>';
+      
+      <% if @costos_seguimiento[0].present? %>
+        <% if @costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[0]['aporte_solicitado_al_fondo'].present? %>
+          document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_cumple').innerText = 'SI';
+        <% else %>
+          document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_cumple').innerText = 'NO';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_cumple').innerText = 'NO';
+      <% end %>
+
+      // De apoyo directo a las empresas de menor tamaño
+      // Aporte del postulante
+      <% if @costos_seguimiento[1].present? %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_monto').innerText = '<%= number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) %>';
+      <% else %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_monto').innerText = '$0';
+      <% end %>
+
+      <% if @confinanciamiento_empresa[1].present? %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_porcentaje').innerText = 'Mayor o igual al <%= number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2) %> del total Actividades Tipo B';
+      <% else %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_porcentaje').innerText = 'Mayor o igual al 0% del total Actividades Tipo B';
+      <% end %>
+
+      <% if @costos_seguimiento[1].present? %>
+        <% if @costos_seguimiento[1]['aporte_propio_valorado'].to_f != 0 %>
+          document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '<%= number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.') %>';
+        <% else %>
+          document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '$0';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '$0';
+      <% end %>
+
+      <% if @costos_seguimiento[1].present? %>
+        <% if @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido']).to_f * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'].present? %>
+          document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'SI';
+        <% else %>
+          document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'NO';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'NO';
+      <% end %>
+
+      // Cofinanciamiento CPL
+      <% if @costos_seguimiento[1].present? %>
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_monto').innerText = '<%= number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f) %>';
+      <% else %>
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_monto').innerText = '$0';
+      <% end %>
+      
+      <% if @confinanciamiento_empresa[0].present? %>
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a <%= number_to_currency(@confinanciamiento_empresa[0]) %>';
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '<%= number_to_currency(@confinanciamiento_empresa[0]) %>';
+      <% else %>
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a $0 %>';
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '$0';
+      <% end %>
+
+      <% if @costos_seguimiento[1].present? %>
+        <% if @costos_seguimiento[1]['aporte_propio_valorado'].to_f  <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].present? %>
+          document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'SI';
+        <% else %>
+          document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'NO';
+        <% end %>
+      <% else %>
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'NO';
+      <% end %>
+
+      //Total Proyecto
+      //Aporte líquido del postulante
+      document.getElementById('total_proyecto_aporte_liquido_postulante_monto').innerText = '<%= number_to_currency(@costos['aporte_propio_liquido'].to_f) %>';
+      document.getElementById('total_proyecto_aporte_liquido_postulante_limite').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) %>';
+      <% if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta.present? %> 
+        document.getElementById('total_proyecto_aporte_liquido_postulante_cumple').innerText = 'SI';
+      <% else %>
+        document.getElementById('total_proyecto_aporte_liquido_postulante_cumple').innerText = 'NO';
+      <% end %>
+
+      //Gastos de Administración
+      document.getElementById('total_proyecto_gastos_administracion_monto').innerText = '<%= number_to_currency @costos['gastos_administrativos'] %>';
+      <% if @costos['costo_total_de_la_propuesta'] != 0 %>
+        document.getElementById('total_proyecto_gastos_administracion_limite').innerText = '<%= number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100), precision: 2) %>';
+      <% else %>
+        document.getElementById('total_proyecto_gastos_administracion_limite').innerText = '0%';
+      <% end %>
+      
+      <% if @costos['gastos_administrativos'] <= ((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100) && @costos.costo_total_de_la_propuesta != '' %>
+        document.getElementById('total_proyecto_gastos_administracion_cumple').innerText = 'SI';
+      <% else %>
+        document.getElementById('total_proyecto_gastos_administracion_cumple').innerText = 'NO';
+      <% end %>
+
+    <% end %> 
+    
+  <% end %>  
 <% else %>
   //ESTRUCTURA DE COSTOS
   //Costo total de la propuesta
@@ -314,24 +450,63 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   document.getElementById('porcentaje_aporte_solicitado_fondo_gasto_administracion').innerText = '0,00%';
   
   //VALIDACIÓN
-  //Aporte líquido del postulante
-  document.getElementById('valida_aporte_propio_liquido').innerText = '$0'; 
-  document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
-  document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
+  <% if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  %>
+    //Aporte líquido del postulante
+    document.getElementById('valida_aporte_propio_liquido').innerText = '$0'; 
+    document.getElementById('valida_porcentaje_aporte_propio_liquido').innerText = '0%';
+    document.getElementById('valida_pregunta_aporte_propio_liquido').innerText = 'NO';
+    
+    //Aporte del postulante
+    document.getElementById('valida_costo_total_de_la_propuesta').innerText = '$0'; 
+    document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '0%';
+    document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'NO';
+    
+    //Gastos de Administración
+    document.getElementById('valida_gastos_administrativos').innerText = '$0'; 
+    document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '0%';
+    document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'NO';
+    
+    //Cofinanciamiento CPL
+    document.getElementById('valida_aporte_solicitado_al_fondo').innerText ='$0'; 
+    document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
+    document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
   
-  //Aporte del postulante
-  document.getElementById('valida_costo_total_de_la_propuesta').innerText = '$0'; 
-  document.getElementById('valida_porcentaje_costo_total_de_la_propuesta').innerText = '0%';
-  document.getElementById('valida_pregunta_costo_total_de_la_propuesta').innerText = 'NO';
-  
-  //Gastos de Administración
-  document.getElementById('valida_gastos_administrativos').innerText = '$0'; 
-  document.getElementById('valida_porcentaje_gastos_administrativos').innerText = '0%';
-  document.getElementById('valida_pregunta_gastos_administrativos').innerText = 'NO';
-  
-  //Cofinanciamiento CPL
-  document.getElementById('valida_aporte_solicitado_al_fondo').innerText ='$0'; 
-  document.getElementById('valida_porcentaje_aporte_solicitado_al_fondo').innerText = '0%';
-  document.getElementById('valida_pregunta_aporte_solicitado_al_fondo').innerText = 'NO';
+  <% else %>  
+    
+    // De apoyo general al postulante
+    // Aporte del postulante
+    document.getElementById('apoyo_general_postulante_aporte_postulante_monto').innerText ='$0'; 
+    document.getElementById('apoyo_general_postulante_aporte_postulante_limite').innerText = '$0';
+    document.getElementById('apoyo_general_postulante_aporte_postulante_cumple').innerText = 'NO';
+
+    // Cofinanciamiento CPL
+    document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_monto').innerText ='$0'; 
+    document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_limite').innerText = '$0';
+    document.getElementById('apoyo_general_postulante_cofinanciamiento_cpl_cumple').innerText = 'NO';
+
+    // De apoyo directo a las empresas de menor tamaño
+    // Aporte del postulante
+    document.getElementById('apoyo_general_empresa_aporte_postulante_monto').innerText ='$0'; 
+    document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '$0';
+    document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'NO';
+
+    // Cofinanciamiento CPL
+    document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_monto').innerText ='$0'; 
+    document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = '0%';
+    document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '$0';
+    document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'NO';
+
+    //Total Proyecto
+    //Aporte líquido del postulante
+    document.getElementById('total_proyecto_aporte_liquido_postulante_monto').innerText = '$0';
+    document.getElementById('total_proyecto_aporte_liquido_postulante_limite').innerText = '$0';
+    document.getElementById('total_proyecto_aporte_liquido_postulante_cumple').innerText = 'NO';
+    
+    //Gastos de Administración
+    document.getElementById('total_proyecto_gastos_administracion_monto').innerText = '$0';
+    document.getElementById('total_proyecto_gastos_administracion_limite').innerText = '0%';
+    document.getElementById('total_proyecto_gastos_administracion_cumple').innerText = 'NO';
+
+  <% end %>   
       
 <% end %>

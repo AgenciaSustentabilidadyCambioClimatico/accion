@@ -1481,7 +1481,7 @@ es:
   linea_instrumento: Linea del instrumento
   sub_linea_instrumento: Sublinea del instrumento
   titulo_proyecto: Título del Proyecto
-  postular_a_fonfo_produccion_limpia: ¿Postular a Fondo Producción Limpia?
+  postular_a_fondo_produccion_limpia: ¿Postular a Fondo Producción Limpia?
   enviar_postulación: Enviar postulación
   descargar_postulacion: Descargar postulación
   descripcion: Descripción
@@ -1552,7 +1552,14 @@ es:
   revision_pertinencia_financiera: Revisión Pertinencia Financiera
   revision_pertinencia_tecnica: Revisión Pertinencia Técnica
   observaciones_admisibilidad_tecnica: Observaciones admisibilidad técnica
-  admisibilidad_tecnica: Admisibilidad tecnica
+  admisibilidad_tecnica: Admisibilidad técnica
+  fondo_produccion_limpia: Fondo producción Limpia
+  seleccion_de_linea: Selección de línea
+  tipo_de_actividad: Tipo de actividad
+  tipo_a: Tipo A
+  tipo_b: Tipo B
+  adjuntar_resolucion_contrato: Adjuntar Resolución y Contrato
+  resolucion_contrato: Resolución y Contrato
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
