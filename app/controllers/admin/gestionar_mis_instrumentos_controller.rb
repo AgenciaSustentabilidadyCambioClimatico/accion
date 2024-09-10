@@ -63,12 +63,17 @@ class Admin::GestionarMisInstrumentosController < ApplicationController
       personas_id = personas.pluck(:id)
       user_actores = MapaDeActor.where(persona_id: personas.pluck(:id))
       @instrumentos = Flujo.where(id: user_actores.pluck(:flujo_id).uniq).order(id: :desc)
+      #persona = personas.first
+      #user_id = persona.user_id 
+
       unless @instrumentos.blank?
         @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
         @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
         @ppls = @instrumentos.where.not(proyecto_id: nil)
-        #@fpls = @instrumentos.where.not(fondo_produccion_limpia_id: nil)
-        @fpls = FondoProduccionLimpia.fpls()
+        @fpls = @instrumentos.where.not(fondo_produccion_limpia_id: nil)
+        #@fpls = FondoProduccionLimpia.fpls()
+        #@fpls = FondoProduccionLimpia.fpls_mis_instrumentos(user_id);
+      
         @instancias = []
         @instrumentos.each do |i|
           @instancias += i.datos_para_gestionar(personas_id)       
