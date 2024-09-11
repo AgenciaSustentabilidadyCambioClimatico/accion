@@ -1,6 +1,8 @@
 class Admin::FondoProduccionLimpiaMensajesController < ApplicationController
     include ApplicationHelper
+    before_action :authenticate_user!
     before_action :set_fondo_produccion_limpia_mensaje, only: %i[show edit update destroy]
+    before_action :set_metodos
   
     def index
       @fondo_produccion_limpia_mensaje = FondoProduccionLimpiaMensaje.all
@@ -55,5 +57,9 @@ class Admin::FondoProduccionLimpiaMensajesController < ApplicationController
   
     def set_fondo_produccion_limpia_mensaje
       @fondo_produccion_limpia_mensaje = FondoProduccionLimpiaMensaje.find(params[:id])
+    end
+
+    def set_metodos
+      @metodos = FondoProduccionLimpiaMensaje.metodos(current_user)
     end
 end
