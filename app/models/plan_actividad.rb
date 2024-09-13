@@ -327,4 +327,86 @@ class PlanActividad < ApplicationRecord
     .first
   end
 
+  ##TOTALES GENERALES
+  def self.total_valor_hh_tipo_3(flujo_id)
+    select('SUM(
+                CASE 
+                WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                ELSE 0 
+                END
+              ) AS total_valor_hh_tipo_3')
+      .joins("
+        LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+        LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+        LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+      ")
+      .where(plan_actividades: { flujo_id: flujo_id })
+      .pluck('SUM(
+                CASE 
+                WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                ELSE 0 
+                END
+              )')
+      .first
+  end
+
+  def self.total_valor_hh_tipos_1_2(flujo_id)
+    select('SUM(
+                CASE 
+                WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                ELSE 0 
+                END
+              ) AS total_valor_hh_tipos_1_2')
+      .joins("
+        LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id
+        LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id
+        LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id
+      ")
+      .where(plan_actividades: { flujo_id: flujo_id })
+      .pluck('SUM(
+                CASE 
+                WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                ELSE 0 
+                END
+              )')
+      .first
+  end
+  
+  def self.total_total_gastos_tipo_1(flujo_id)
+    select('SUM(
+        CASE 
+          WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+          ELSE 0 
+        END
+      ) AS total_total_gastos_tipo_1')
+    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .where(plan_actividades: { flujo_id: flujo_id})
+    .pluck('SUM(
+                CASE 
+                  WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+                  ELSE 0 
+                END
+              )')
+    .first
+  end
+
+  def self.total_total_gastos_tipo_2(flujo_id)
+    select('SUM(
+        CASE 
+          WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+          ELSE 0 
+        END
+      ) AS total_total_gastos_tipo_2')
+    .joins("
+      LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id
+    ")
+    .where(plan_actividades: { flujo_id: flujo_id })
+    .pluck('SUM(
+                CASE 
+                  WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+                  ELSE 0 
+                END
+              )')
+    .first
+  end
 end

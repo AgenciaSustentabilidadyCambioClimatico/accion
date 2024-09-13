@@ -53,6 +53,13 @@ var mensajeCosto = document.getElementById('mensaje-costo');
   document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '$0';
 <% end %>
 
+//Actualiza total por fila
+document.getElementById('total_suma_<%= @valor_hh_tipo_3.actividad_id %>').innerText = '<%= number_to_currency  @valor_hh_tipo_3.valor_hh_tipo_3 + @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ + @total_gastos_tipo_1.total_gastos_tipo_1 + @total_gastos_tipo_2.total_gastos_tipo_2%>';
+ 
+//Actualiza totales generales
+document.getElementById('total_total_gastos_tipo_1').innerText = '<%= number_to_currency  @total_total_gastos_tipo_1 %>';
+document.getElementById('total_total_suma').innerText = '<%= number_to_currency  @total_valor_hh_tipo_3 + @total_valor_hh_tipos_1_2 + @total_total_gastos_tipo_1 + @total_total_gastos_tipo_2%>';
+
 //Actualiza campos de la tabla costo
 //ESTRUCTURA DE COSTOS
 

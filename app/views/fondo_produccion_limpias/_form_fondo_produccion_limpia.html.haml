@@ -3636,7 +3636,7 @@
                 %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
-                -# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                %th.encabezado-form.dos.iconos-acciones{style: 'vertical-align: middle;', rowspan: 2} Total
                 %th.encabezado-form.dos.iconos-acciones{style: 'vertical-align: middle;', rowspan: 2}=t(:acción)
               %tr
                 - (1..@duracion).each do |d|
@@ -3645,53 +3645,77 @@
                 %th.encabezado-form="Recursos Humanos Externos"
                 %th.encabezado-form="Gastos de Operación"
                 %th.encabezado-form="Gastos de Administración"
-              -#%tr
-                -#%th.encabezado-form{colspan: @duracion + 1, style: 'text-align: center; border-right: 1px solid #dee2e6;'} Total Actividades
-                -#%th.encabezado-form $100.000
-                -#%th.encabezado-form $100.000
-                -#%th.encabezado-form $100.000
-                -#%th.encabezado-form $100.000
-                -#%th.encabezado-form
-              %tbody
-                - if @actividad_x_linea.present?  
-                  - current_tipo_actividad = nil
-                  - @actividad_x_linea.each do |actividad|
-                    - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   
-                      - if current_tipo_actividad != actividad.tipo_actividad
-                        - current_tipo_actividad = actividad.tipo_actividad
-                        %tr
-                          %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
-                    %tr
-                      %td.contenido-form=actividad.nombre
-                      - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
-                      - if detalle_existente.present?
-                        - duraciones = detalle_existente.duracion.split(',')
-                        - (1..@duracion).each do |d|
-                          - if duraciones.include?(d.to_s)
-                            %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= "X"
-                          - else
-                            %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
-                        %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipo_3)
-                        %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipos_1_2)
-                        %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_1)
-                        %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_2)
-                        %td.contenido-form.dos.iconos-acciones
-                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                            %i.fa.fa-edit 
-                      - else
-                        - (1..@duracion).each do |d|
+            %tbody
+              - total_valor_hh_tipo_3 = 0
+              - total_valor_hh_tipos_1_2 = 0
+              - total_total_gastos_tipo_1 = 0
+              - total_total_gastos_tipo_2 = 0
+              - total_total_suma = 0
+
+              - if @actividad_x_linea.present?  
+                - current_tipo_actividad = nil
+                - @actividad_x_linea.each do |actividad|
+                  - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   
+                    - if current_tipo_actividad != actividad.tipo_actividad
+                      - current_tipo_actividad = actividad.tipo_actividad
+                      %tr
+                        %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
+                  %tr
+                    %td.contenido-form=actividad.nombre
+                    - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
+                    - if detalle_existente.present?
+                      - duraciones = detalle_existente.duracion.split(',')
+                      - (1..@duracion).each do |d|
+                        - if duraciones.include?(d.to_s)
+                          %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= "X"
+                        - else
                           %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
-                        %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}
-                        %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
-                        %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
-                        %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
-                        %td.contenido-form.dos.iconos-acciones
-                          - if @total_de_errores_por_tab.present?
-                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                              %i.fa.fa-edit.icon-red
-                          - else
-                            = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
-                              %i.fa.fa-edit
+                      %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipo_3)
+                      %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}= number_to_currency(detalle_existente.valor_hh_tipos_1_2)
+                      %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_1)
+                      %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}= number_to_currency(detalle_existente.total_gastos_tipo_2)
+
+                      - valor_hh_tipo_3 = detalle_existente.valor_hh_tipo_3.to_f
+                      - valor_hh_tipos_1_2 = detalle_existente.valor_hh_tipos_1_2.to_f
+                      - total_gastos_tipo_1 = detalle_existente.total_gastos_tipo_1.to_f
+                      - total_gastos_tipo_2 = detalle_existente.total_gastos_tipo_2.to_f
+
+                      - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
+
+                      - total_valor_hh_tipo_3 += valor_hh_tipo_3
+                      - total_valor_hh_tipos_1_2 += valor_hh_tipos_1_2
+                      - total_total_gastos_tipo_1 += total_gastos_tipo_1
+                      - total_total_gastos_tipo_2 += total_gastos_tipo_2
+                      - total_total_suma += suma
+
+                      %td.contenido-form{id: "total_suma_#{actividad.id}"}= number_to_currency(suma)
+                      %td.contenido-form.dos.iconos-acciones
+                        = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                          %i.fa.fa-edit 
+                    - else
+                      - (1..@duracion).each do |d|
+                        %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
+                      %td.contenido-form{id: "valor_hh_tipo_3_#{actividad.id}"}
+                      %td.contenido-form{id: "valor_hh_tipos_1_2_#{actividad.id}"}
+                      %td.contenido-form{id: "total_gastos_tipo_1_#{actividad.id}"}
+                      %td.contenido-form{id: "total_gastos_tipo_2_#{actividad.id}"}
+                      %td.contenido-form{id: "total_suma_#{actividad.id}"}
+                      %td.contenido-form.dos.iconos-acciones
+                        - if @total_de_errores_por_tab.present?
+                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                            %i.fa.fa-edit.icon-red
+                        - else
+                          = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
+                            %i.fa.fa-edit
+              %tr
+                %td.contenido-form{style: 'font-weight: bold;', colspan: 1 + @duracion} Total
+                %td.contenido-form{id: "total_valor_hh_tipo_3", colspan: 1}= number_to_currency(total_valor_hh_tipo_3)
+                %td.contenido-form{id: "total_valor_hh_tipos_1_2", colspan: 1}= number_to_currency(total_valor_hh_tipos_1_2)
+                %td.contenido-form{id: "total_total_gastos_tipo_1", colspan: 1}= number_to_currency(total_total_gastos_tipo_1)
+                %td.contenido-form{id: "total_total_gastos_tipo_2", colspan: 1}= number_to_currency(total_total_gastos_tipo_2)
+                %td.contenido-form{id: "total_total_suma", colspan: 1}= number_to_currency(total_total_suma)
+                %td.contenido-form{colspan: 1}
+
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
       .card-body
@@ -4119,7 +4143,7 @@
                     %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
                       %span{ class: 'text-danger' } NO
           %br
-        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
           %div.table-responsive 
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -5429,7 +5453,7 @@
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, @plan_actividades.objetivos_especifico_id), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                             - else
                               = f.select :objetivos_especifico_id, options_for_select(@objetivos_options, include_blank: 'Seleccione una opción'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'objetivos_especifico_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
-                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2  
+                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
                           %tr#tr_tipo_actividad
                         %tr
                           %td.contenido-popup-form{colspan: @duracion}

@@ -660,10 +660,14 @@ class FondoProduccionLimpiasController < ApplicationController
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
         when TipoInstrumento::FPL_LINEA_1_2_2
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2  
+        when TipoInstrumento::FPL_LINEA_1_3
+          Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3  
         when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
           Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1 
         when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
-          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2    
+          Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2   
+        when TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3   
         else
           nil
         end
@@ -673,7 +677,6 @@ class FondoProduccionLimpiasController < ApplicationController
     end
    
     helper_method :tope_maximo_solicitar_diagnostico
-    
   
     def buscador
       rut = buscador_params[:rut]
@@ -1181,14 +1184,26 @@ class FondoProduccionLimpiasController < ApplicationController
       
       @gastos_operaciones = Gasto.new(custom_params[:gasto])
         if @gastos_operaciones.save 
-          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
-          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
+           # se obtiene el valor de la suma de los gastos ope, recursos internos, ecternos y gastos adm por id y se renderiza al dashboard principal
+           @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
+           @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
+           @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
+           @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(params[:flujo_id])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(params[:flujo_id])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(params[:flujo_id])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(params[:flujo_id])
+
           #Actualiza costos
           set_costos 
 
           @plan_id = params['plan_id']
           respond_to do |format|
-            format.js { render 'insert_gastos_operacion', locals: { gastos_operaciones: @gastos_operaciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_1: @total_gastos_tipo_1 } }
+            format.js { render 'insert_gastos_operacion', locals: { gastos_operaciones: @gastos_operaciones, tarea_pendiente: @tarea_pendiente, 
+            valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2,
+            total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
           end
         end
     end
@@ -1224,13 +1239,25 @@ class FondoProduccionLimpiasController < ApplicationController
       
       @gastos_administraciones = Gasto.new(custom_params[:gasto])
         if @gastos_administraciones.save 
-          # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          # se obtiene el valor de la suma de los gastos adm, recursos internos, externos y gastos ope por id y se renderiza al dashboard principal
           @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(params[:flujo_id])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(params[:flujo_id])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(params[:flujo_id])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(params[:flujo_id])
+
           #Actualiza costos
           set_costos 
           @plan_id = params['plan_id']
           respond_to do |format|
-            format.js { render 'insert_gastos_administracion', locals: { gastos_administraciones: @gastos_administraciones, tarea_pendiente: @tarea_pendiente, total_gastos_tipo_2:@total_gastos_tipo_2, plan: @plan } }
+            format.js { render 'insert_gastos_administracion', locals: { gastos_administraciones: @gastos_administraciones, tarea_pendiente: @tarea_pendiente, plan: @plan, 
+            valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2,
+            total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
           end
         end
     end
@@ -1286,8 +1313,17 @@ class FondoProduccionLimpiasController < ApplicationController
       ### Utilizar rrhh_propio_ids como necesites fuera del bucle
       @recursos_internos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_propio_ids)
 
-      ### se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm, gastos ope por id y se renderiza al dashboard principal
       @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
+      @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
+      @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
+      @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
+
+      #Totales generales
+      @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(params[:flujo_id])
+      @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(params[:flujo_id])
+      @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(params[:flujo_id])
+      @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(params[:flujo_id])
 
       ###Actualiza costos
       set_costos  
@@ -1300,7 +1336,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #@solo_lectura = false
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, valor_hh_tipo_3: @valor_hh_tipo_3, plan_id: @plan_id, flujo_id: params[:flujo_id]} }
+        format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
+        valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
+        total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
       end
     end
 
@@ -1346,8 +1384,18 @@ class FondoProduccionLimpiasController < ApplicationController
       ### Utilizar rrhh_externo_ids como necesites fuera del bucle
       @recursos_externos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_externo_ids)
 
-      ### se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+      ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm y gastos ope por id y se renderiza al dashboard principal
       @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
+      @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
+      @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
+      @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
+
+      #Totales generales
+      @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(params[:flujo_id])
+      @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(params[:flujo_id])
+      @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(params[:flujo_id])
+      @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(params[:flujo_id])
+
       ###Actualiza costos
       set_costos 
 
@@ -1358,11 +1406,12 @@ class FondoProduccionLimpiasController < ApplicationController
              .where(flujo_id: params[:flujo_id], tipo_equipo: [1,2])
      
       respond_to do |format|
-        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, plan_id: @plan_id, flujo_id: params[:flujo_id] } }
+        format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
+        valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
+        total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
       end
     end
     
-
     def insert_plan_actividades
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
@@ -1382,16 +1431,18 @@ class FondoProduccionLimpiasController < ApplicationController
             objetivos_especifico_id: params['objetivos_especifico_id']
           }
         }
+        @valida_ceros = false
         if @plan_actividades.present?
-          @plan_actividades.update(custom_params[:plan_actividades])
+          @plan_actividades.update(custom_params[:plan_actividades])       
         else
           @plan_actividades = PlanActividad.new(custom_params[:plan_actividades])
           @plan_actividades.save
+          @valida_ceros = true
         end
         @plan_id = params['plan_id']
         @duracion_x = params['duracion'].join(',')
         respond_to do |format|
-          format.js { render 'insert_plan_actividades' }
+          format.js { render 'insert_plan_actividades', locals: { valida_ceros: @valida_ceros }}
         end
       
     end  
