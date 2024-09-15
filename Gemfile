@@ -4,17 +4,18 @@ git_source(:github) do |repo_name|
   repo_name = "#{repo_name}/#{repo_name}" unless repo_name.include?("/")
   "https://github.com/#{repo_name}.git"
 end
-ruby '2.7.6'
+ruby '3.0.6'
 
 gem 'caracal-rails'
 gem "animate-rails"
 gem "hashid-rails", "~> 1.0"
 gem 'activerecord-session_store'
 gem 'autonumeric-rails'
+gem 'rails', '~> 6.0.1'
 gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.0.0'
 gem 'carrierwave', '~> 1.0'
-gem 'chartkick'
+gem 'chartkick', '~>5.0.4'
 gem 'ckeditor', git: 'https://github.com/galetahub/ckeditor.git', ref: 'dc2cef2c2c3358124ebd86ca2ef2335cc898b41f'
 gem 'crontab_syntax_checker'
 gem 'daemons'
@@ -39,11 +40,10 @@ gem 'nested_form'
 gem 'pg'
 gem 'prawn', '~>2.4.0'
 gem 'prawn-table', '~> 0.2.2'
-gem 'puma', '~> 3.7'
+gem 'puma', '~> 4.0'
 gem 'pundit'
 gem 'puredocx', '~> 0.0.2'
 gem 'quilljs-rails'
-gem 'rails', '~> 5.1.6'
 gem 'roo'
 gem 'roo-xls'
 gem 'ruby-units', '~> 2.3'
