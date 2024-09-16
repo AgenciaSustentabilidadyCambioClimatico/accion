@@ -3655,7 +3655,7 @@
               - if @actividad_x_linea.present?  
                 - current_tipo_actividad = nil
                 - @actividad_x_linea.each do |actividad|
-                  - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2   
+                  - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
                     - if current_tipo_actividad != actividad.tipo_actividad
                       - current_tipo_actividad = actividad.tipo_actividad
                       %tr
