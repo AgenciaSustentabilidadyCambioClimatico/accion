@@ -1429,6 +1429,10 @@ class ManifestacionDeInteresController < ApplicationController
 
               #FPL-00 - SE CREA NUEVO FLUJO FPL PARA EL DIAGNOSTICO 
               if manifestacion_pertinencia_params[:fondo_produccion_limpia] == "true"
+                #obtengo el user_id del postulante de la manifestacion de interes
+                tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+                postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+
                 flujo = Flujo.new({
                   contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
                   tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada] #params[:manifestacion_de_interes][:tipo_instrumento_id] 
@@ -1438,19 +1442,21 @@ class ManifestacionDeInteresController < ApplicationController
                   flujo.tarea_pendientes.create([{
                       tarea_id: tarea_fondo.id,
                       estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-                      user_id: @tarea_pendiente.user_id,
+                      user_id: postulante.user_id,
                       data: { }
                     }]
                   )
+
+                  persona_by_user = Persona.where(user_id: postulante.user_id).first
 
                   #Se inserta en el mapa de actores al postulante
                   mapa = MapaDeActor.find_or_create_by({
                     flujo_id: flujo.id,
                     rol_id: Rol::PROPONENTE, 
-                    persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
+                    persona_id: persona_by_user.id 
                   })
 
-                  #SE ENVIAR EL MAIL AL RESPONSABLE
+                  #SE ENVIAR EL MAIL AL RESPONSABLE  
                   mdi = @manifestacion_de_interes
                   send_message(tarea_fondo, @tarea_pendiente.user_id)
                   

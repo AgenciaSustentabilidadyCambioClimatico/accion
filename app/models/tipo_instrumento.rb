@@ -23,6 +23,7 @@ class TipoInstrumento < ApplicationRecord
   FPL_LINEA_1_1                           = 11
   FPL_LINEA_1_2_1                         = 12
   FPL_LINEA_1_2_2                         = 29
+  FPL_LINEA_1_3                           = 13
   STR_FPL_LINEA_1_1                       = "Línea 1.1 - Diagnóstico de APL NCH"
   STR_FPL_LINEA_1_2_1                     = "Línea 1.2.1 - Implementación de APL - Fase 1"
   STR_FPL_LINEA_1_2_2                     = "Línea 1.2.2 - Implementación de APL - Fase 2"
