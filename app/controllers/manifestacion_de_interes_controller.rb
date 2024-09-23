@@ -1456,7 +1456,7 @@ class ManifestacionDeInteresController < ApplicationController
                     persona_id: persona_by_user.id 
                   })
 
-                  #SE ENVIAR EL MAIL AL RESPONSABLE
+                  #SE ENVIAR EL MAIL AL RESPONSABLE  
                   mdi = @manifestacion_de_interes
                   send_message(tarea_fondo, @tarea_pendiente.user_id)
                   
