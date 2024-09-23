@@ -234,6 +234,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       equipo_trabajo << @postulantes.count if @postulantes.count == 0
 
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+        equipo_trabajo << @auditores.count if @auditores.count == 0
+      end
+
       if @count_empresa_equipo == 0 && @user_equipo.count == 0
         equipo_trabajo << 1
       end   
@@ -3992,6 +3996,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @count_user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
         @user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1, 2])
         @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
+        @auditores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4)
 
         if @count_user_equipo > 0
           @show_consultor_div = true

@@ -16,6 +16,9 @@
   $('#tabla_usuarios_buscar-usuario-postulante').dataTable({
       destroy: true
   });
+  $('#tabla_usuarios_buscar-usuario-auditor').dataTable({
+      destroy: true
+  });
 
   $(document).on('click focus mouseover', '*',function(e){
     if(!$(this).is('abbr')){
@@ -71,6 +74,11 @@
 
     $('#open-modal-button_buscar_usuario_postulante').click(function(){
       $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: '3')}");
+      $('#buscar-usuario').modal("show");
+    });
+
+    $('#open-modal-button_buscar_usuario_auditor').click(function(){
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-auditor', tipo_equipo: '4')}");
       $('#buscar-usuario').modal("show");
     });
 
@@ -3600,6 +3608,49 @@
                           - else
                             = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
                               %i.fa.fa-trash 
+        %br
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION   
+          %div#div_auditor.table-responsive
+            - if !solo_lectura
+              - button_class = @total_de_errores_por_tab.present? ? (@auditores.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+              = button_tag 'Agregar Auditor', id: 'open-modal-button_buscar_usuario_auditor', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'  
+            %br
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
+                  %tr
+                    %th.encabezado2-form=t(:nombre_completo_persona)
+                    %th.encabezado2-form.center=t(:rut)
+                    %th.encabezado2-form=t(:telefono)
+                    %th.encabezado2-form=t(:email)
+                    %th.encabezado2-form=t(:profesion)
+                    %th.encabezado2-form=t(:funciones_proyecto)
+                    %th.encabezado2-form=t(:valor_hh)
+                    %th.encabezado2-form=t(:copia_ci)
+                    %th.encabezado2-form=t(:curriculum_vitae)
+                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA)
+                      %th.encabezado2-form.dos.iconos-acciones=t(:acción)
+                %tbody
+                  - if @auditores.present?
+                    - @auditores.each do |user|
+                      %tr
+                        %td.contenido-form= user.user.nombre_completo
+                        %td.contenido-form= user.user.rut
+                        %td.contenido-form= user.user.telefono
+                        %td.contenido-form= user.user.email
+                        %td.contenido-form= user.profesion
+                        %td.contenido-form= user.funciones_proyecto
+                        %td.contenido-form= number_to_currency user.valor_hh
+                        %td.contenido-form
+                          = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
+                        %td.contenido-form
+                          = __descargar_archivo(user.curriculum,user.curriculum,false,false)
+                        - if !solo_lectura
+                          %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
+                            - if recurso_humano_existente?(user.id, user.flujo.id)
+                              %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El auditor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                            - else
+                              = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al auditor", class: 'eliminar-user-auditor', id: "eliminar-auditor-#{user.id}" do
+                                %i.fa.fa-trash 
         </br>
         %div.table-responsive       
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
