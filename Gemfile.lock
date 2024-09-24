@@ -184,9 +184,9 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
-    devise_invitable (1.7.5)
-      actionmailer (>= 4.1.0)
-      devise (>= 4.0.0)
+    devise_invitable (2.0.9)
+      actionmailer (>= 5.0)
+      devise (>= 4.6)
     dotenv (2.8.1)
     dotenv-rails (2.8.1)
       dotenv (= 2.8.1)
@@ -535,7 +535,7 @@ DEPENDENCIES
   delayed_job
   delayed_job_active_record
   devise (~> 4.7.2)
-  devise_invitable (~> 1.7.4)
+  devise_invitable (~> 2.0.0)
   dotenv-rails
   faker!
   font-awesome-rails

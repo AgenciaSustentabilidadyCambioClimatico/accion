@@ -1,7 +1,5 @@
 class String
-  def upcase
-  	self.mb_chars.upcase.to_s
-  end
+
   def capitalize(o=nil)
   	if o == :all
   		self.downcase.split.map(&:capitalize).join(' ')
