@@ -1,7 +1,8 @@
 class EquipoTrabajo < ApplicationRecord
-  belongs_to :user
+  belongs_to :user, optional: true
   belongs_to :flujo
   belongs_to :contribuyente, optional: true
+  belongs_to :registro_proveedor, optional: true
 
   has_many :recurso_humanos, foreign_key: :equipo_trabajo_id, dependent: :destroy
 
@@ -10,7 +11,7 @@ class EquipoTrabajo < ApplicationRecord
   
 
   # Validación para asegurarse de que la combinación de user_id, flujo_id, tipo_equipo y contribuyente_id no se repita
-  validates :user_id, uniqueness: { scope: [:flujo_id, :tipo_equipo, :contribuyente_id], message: "La combinación de user_id, flujo_id, tipo_equipo y contribuyente_id ya está en uso" }
+  validates :user_id, uniqueness: { scope: [:flujo_id, :tipo_equipo, :contribuyente_id], message: "La combinación de user_id, flujo_id, tipo_equipo y contribuyente_id ya está en uso" }, unless: -> { registro_proveedores_id.present? }
 
   def self.postulantes_faltantes(actividad_id, flujo_id)
     select("equipo_trabajos.*, users.nombre_completo AS nombre_usuario, rh.hh AS HH, rh.equipo_trabajo_id AS rrhh_equipo_id")

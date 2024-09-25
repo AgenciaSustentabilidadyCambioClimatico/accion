@@ -16,9 +16,6 @@
   $('#tabla_usuarios_buscar-usuario-postulante').dataTable({
       destroy: true
   });
-  $('#tabla_usuarios_buscar-usuario-auditor').dataTable({
-      destroy: true
-  });
 
   $(document).on('click focus mouseover', '*',function(e){
     if(!$(this).is('abbr')){
@@ -78,8 +75,7 @@
     });
 
     $('#open-modal-button_buscar_usuario_auditor').click(function(){
-      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-auditor', tipo_equipo: '4')}");
-      $('#buscar-usuario').modal("show");
+      $('#modal_auditores-form').modal("show");
     });
 
     $('body').on('change','.usuario-radio',function() {
@@ -2732,6 +2728,46 @@
       guardarArchivos(event, id, nombreCampo);
       actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo);
     } 
+
+       
+    function guardarAuditor() {
+    var audioria_id = document.getElementById('auditor_id').value;
+    
+    /*var alertaMostrada = false;
+    if (audioria_id == "") {
+      if (!alertaMostrada) {
+        alert('Por favor, ingresa el revisor técnico.');
+        alertaMostrada = true;
+      }
+      event.preventDefault();
+      return;
+    }
+
+    $('.loading-data').show();
+    const button = document.getElementById('button_auditor_id');
+    button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+    button.disabled = true;*/
+
+    $.ajax({
+      url: "#{insert_registro_proveedores_equipo_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+        auditor_id: audioria_id,
+        tipo_equipo: 4
+      },
+      method: "PATCH",
+      success: function(response) {
+        //$('.loading-data').hide();
+        $('#modal_auditores-form').modal("hide");
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+        //$('.loading-data').hide();
+      }
+    });
+  }
+
                                         
 %style
   :css
@@ -3409,8 +3445,6 @@
         - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
           -# = link_to 'Agregar', new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
         <h1>Equipo de Institución Receptora del Cofinanciamiento</h1>
-        -#<h1>A) Equipo de Trabajo del Postulante  </h1>
-        %br
         %div#div_postulante.table-responsive  
           - if !solo_lectura
             - button_class = @total_de_errores_por_tab.present? ? (@postulantes.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
@@ -3464,7 +3498,6 @@
         -#        %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_consultores) 
         -# %br
           -# = link_to 'Agregar', new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
-        %br
         .alert.alert-primary
           %small  
             %i.fa.fa-question-circle.fa-1-5x
@@ -3608,8 +3641,8 @@
                           - else
                             = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
                               %i.fa.fa-trash 
-        %br
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION   
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
+          <h1>Equipo Auditor</h1> 
           %div#div_auditor.table-responsive
             - if !solo_lectura
               - button_class = @total_de_errores_por_tab.present? ? (@auditores.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
@@ -3623,33 +3656,26 @@
                     %th.encabezado2-form=t(:telefono)
                     %th.encabezado2-form=t(:email)
                     %th.encabezado2-form=t(:profesion)
-                    %th.encabezado2-form=t(:funciones_proyecto)
-                    %th.encabezado2-form=t(:valor_hh)
-                    %th.encabezado2-form=t(:copia_ci)
-                    %th.encabezado2-form=t(:curriculum_vitae)
                     - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA)
                       %th.encabezado2-form.dos.iconos-acciones=t(:acción)
                 %tbody
                   - if @auditores.present?
-                    - @auditores.each do |user|
+                    -#- @auditores.each do |auditor|
+                    - @auditores.each do |entry|
+                      - auditor = entry[:auditor]
+                      - equipo_trabajo_id = entry[:equipo_trabajo_ids][0]
                       %tr
-                        %td.contenido-form= user.user.nombre_completo
-                        %td.contenido-form= user.user.rut
-                        %td.contenido-form= user.user.telefono
-                        %td.contenido-form= user.user.email
-                        %td.contenido-form= user.profesion
-                        %td.contenido-form= user.funciones_proyecto
-                        %td.contenido-form= number_to_currency user.valor_hh
-                        %td.contenido-form
-                          = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
-                        %td.contenido-form
-                          = __descargar_archivo(user.curriculum,user.curriculum,false,false)
+                        %td.contenido-form= auditor.nombre
+                        %td.contenido-form= auditor.rut
+                        %td.contenido-form= auditor.telefono
+                        %td.contenido-form= auditor.email
+                        %td.contenido-form= auditor.profesion
                         - if !solo_lectura
-                          %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
-                            - if recurso_humano_existente?(user.id, user.flujo.id)
+                          %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{auditor.id}"}
+                            - if recurso_humano_existente?(equipo_trabajo_id, @tarea_pendiente.flujo_id)
                               %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El auditor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                             - else
-                              = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al auditor", class: 'eliminar-user-auditor', id: "eliminar-auditor-#{user.id}" do
+                              = link_to eliminar_equipo_auditor_fondo_produccion_limpia_path(user_id: equipo_trabajo_id), remote: true, method: :delete, data: { user_id: equipo_trabajo_id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al auditor", class: 'eliminar-user-auditor', id: "eliminar-auditor-#{equipo_trabajo_id}" do
                                 %i.fa.fa-trash 
         </br>
         %div.table-responsive       
@@ -5747,7 +5773,31 @@
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "insertGastosAdministracion(document.getElementById('plan_id').value); return false;"
-            
+
+  #modal_auditores-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
+    .modal-dialog#modal-dialog-plan
+      .modal-content
+        .modal-body
+          = form_with(model: @equipo_trabajo, url: new_equipo_trabajo_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+            .row
+              .col-12
+                .card
+                  .card-header
+                    %h5.no-margin
+                      Listado de Auditores
+                  .card-body
+                    %div.table-responsive  
+                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                        = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
+                        %tr
+                          %td.contenido-popup-form Auditores
+                          %td.contenido-popup-form 
+                            = f.select :id, options_for_select(@registro_options, include_blank: 'Seleccione un auditor'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'auditor_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'            
+          .modal-footer
+            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
+            - if !solo_lectura
+              = button_to 'Guardar', '#', id: 'button_auditor_id', class: 'btn btn-primary', onclick: "guardarAuditor(); return false;" 
+          
 -# POPUP BUSCAR CONTRIBUYENTE
 - custom_id = custom_id.blank? ? nil : custom_id
 - data_table = data_table.nil? ? true : data_table

@@ -210,6 +210,10 @@ Rails.application.routes.draw do
   get 'eliminar_equipo_postulante/:id', to: "fondo_produccion_limpias#eliminar_equipo_postulante", as: :eliminar_equipo_postulante_fondo_produccion_limpia
   delete '/eliminar_equipo_postulante/:id', to: 'fondo_produccion_limpias#eliminar_equipo_postulante', as: 'eliminar_equipo_postulante'
 
+  #Auditores
+  get 'eliminar_equipo_auditor/:id', to: "fondo_produccion_limpias#eliminar_equipo_auditor", as: :eliminar_equipo_auditor_fondo_produccion_limpia
+  delete '/eliminar_equipo_auditor/:id', to: 'fondo_produccion_limpias#eliminar_equipo_auditor', as: 'eliminar_equipo_auditor'
+
   #Objetivos
   get 'new_objetivo_especifico/:id', to: "fondo_produccion_limpias#new_objetivo_especifico", as: :new_objetivo_especifico_fondo_produccion_limpia
   get 'insert_objetivo_especifico/:id', to: "fondo_produccion_limpias#insert_objetivo_especifico", as: :insert_objetivo_especifico_fondo_produccion_limpia
@@ -221,7 +225,10 @@ Rails.application.routes.draw do
   patch 'update_objetivo_especifico/:id', to: "fondo_produccion_limpias#update_objetivo_especifico", as: :update_objetivo_especifico_fondo_produccion_limpia
   delete '/eliminar_objetivo_especifico/:id', to: 'fondo_produccion_limpias#eliminar_objetivo_especifico', as: 'eliminar_objetivo_especifico'
   get 'get_objetivo_especifico/:id', to: "fondo_produccion_limpias#get_objetivo_especifico", as: :get_objetivo_especifico_fondo_produccion_limpia
-    
+
+  get 'new_equipo_trabajo/:id', to: "fondo_produccion_limpias#new_equipo_trabajo", as: :new_equipo_trabajo_fondo_produccion_limpia
+  patch  'insert_registro_proveedores_equipo', to: "fondo_produccion_limpias#insert_registro_proveedores_equipo", as: :insert_registro_proveedores_equipo_fondo_produccion_limpia
+
   #Modal User
   get 'edit_modal', to: "fondo_produccion_limpias#edit_modal", as: :edit_modal_fondo_produccion_limpia
   patch  'update_modal', to: "fondo_produccion_limpias#update_modal", as: :update_modal_fondo_produccion_limpia

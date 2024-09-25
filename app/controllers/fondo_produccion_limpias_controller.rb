@@ -3,10 +3,10 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -72,6 +72,10 @@ class FondoProduccionLimpiasController < ApplicationController
   
   
     before_action :set_objetivos_especificos, only: [:edit, :revisor, :admisibilidad, :admisibilidad_tecnica, 
+    :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
+    :evaluacion_general, :get_valida_campos_nulos]
+
+    before_action :set_registro_proveedores, only: [:edit, :revisor, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :get_valida_campos_nulos]
 
@@ -762,8 +766,8 @@ class FondoProduccionLimpiasController < ApplicationController
             profesion: params[:equipo_trabajo][:profesion],
             funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
             valor_hh: params[:equipo_trabajo][:valor_hh],
-            copia_ci: params[:archivos_copia_ci], #params[:equipo_trabajo][:copia_ci],
-            curriculum: params[:archivos_curriculum], #params[:equipo_trabajo][:curriculum],
+            copia_ci: params[:archivos_copia_ci],
+            curriculum: params[:archivos_curriculum],
             tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
             flujo_id: params[:user][:flujo_id],
             user_id: params[:user][:user_id]
@@ -844,6 +848,32 @@ class FondoProduccionLimpiasController < ApplicationController
       equipo.update(custom_params[:equipo_trabajo])
     end
 
+    def new_equipo_trabajo
+      @equipo_consultor = EquipoTrabajo.new
+      respond_to do |format|
+        format.html
+        format.js
+      end
+    end
+
+    def insert_registro_proveedores_equipo
+      custom_params_equipo = {
+        equipo_trabajo: {
+          tipo_equipo: params[:tipo_equipo],
+          flujo_id: params[:flujo_id],
+          registro_proveedores_id: params[:auditor_id]
+        }
+      }
+      @equipo = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
+      @equipo.save
+
+      @auditor = RegistroProveedor.find(@equipo.registro_proveedores_id)
+
+      respond_to do |format|
+        format.js { render 'insert_registro_proveedores_equipo', locals: { auditor: @auditor, tarea_pendiente: params[:tarea_pendiente_id] } }
+      end
+    end
+
     def update_modal
       tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
@@ -864,8 +894,8 @@ class FondoProduccionLimpiasController < ApplicationController
           profesion: params[:equipo_trabajo][:profesion],
           funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
           valor_hh: params[:equipo_trabajo][:valor_hh],
-          copia_ci: params[:archivos_copia_ci], #params[:equipo_trabajo][:copia_ci],
-          curriculum: params[:archivos_curriculum], #params[:equipo_trabajo][:curriculum],
+          copia_ci: params[:archivos_copia_ci],
+          curriculum: params[:archivos_curriculum],
           tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
           flujo_id: params[:user][:flujo_id],
           user_id: params[:user][:user_id]
@@ -927,7 +957,6 @@ class FondoProduccionLimpiasController < ApplicationController
       if equipo_trabajo.destroy
         @count_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1,2]).count
         respond_to do |format|
-          #flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_equipo', locals: { user: equipo_trabajo.id, count_equipo: @count_equipo } }
         end
       else
@@ -938,11 +967,21 @@ class FondoProduccionLimpiasController < ApplicationController
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
         respond_to do |format|
-          #flash[:success] = 'Consultor eliminado exitosamente.'
           format.js { render 'eliminar_equipo_postulante', locals: { user: equipo_trabajo.id } }
         end
       else
         flash[:error] = 'El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
+      end
+    end
+
+    def eliminar_equipo_auditor
+      equipo_trabajo = EquipoTrabajo.find(params[:user_id])
+      if equipo_trabajo.destroy  
+        respond_to do |format|
+          format.js { render 'eliminar_equipo_auditor', locals: { user: equipo_trabajo.id } }
+        end
+      else
+        flash[:error] = 'El auditor no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
       end
     end
 
@@ -3990,13 +4029,34 @@ class FondoProduccionLimpiasController < ApplicationController
         @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
       end
 
+      def set_registro_proveedores
+        @registro_proveedores = RegistroProveedor.where(estado: 4)
+        @registro_proveedor = RegistroProveedor.where(estado: 4).select(:nombre, :id)
+        @registro_options = @registro_proveedor.map { |registro_proveedor| [registro_proveedor.nombre, registro_proveedor.id] }
+      end  
+
       def set_equipo_trabajo
         set_equipo_empresa
 
         @count_user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
         @user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1, 2])
         @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
-        @auditores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4)
+        
+        # Obtener los equipos de trabajo que coinciden
+        equipo_trabajos = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4)
+
+        # Crear un hash para acceder rápidamente a los IDs de EquipoTrabajo por registro_proveedores_id
+        equipo_trabajo_hash = equipo_trabajos.group_by(&:registro_proveedores_id)
+
+        @auditor_all = RegistroProveedor.where(id: equipo_trabajo_hash.keys)
+
+        # Ahora iteramos sobre @auditores y obtenemos los IDs de EquipoTrabajo
+        @auditores = @auditor_all.map do |auditor|
+          {
+            auditor: auditor,
+            equipo_trabajo_ids: equipo_trabajo_hash[auditor.id].map(&:id) # Obtener los IDs de EquipoTrabajo
+          }
+        end
 
         if @count_user_equipo > 0
           @show_consultor_div = true

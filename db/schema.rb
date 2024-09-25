@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20240812194207) do
+ActiveRecord::Schema.define(version: 20240924174409) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -808,7 +808,9 @@ ActiveRecord::Schema.define(version: 20240812194207) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "contribuyente_id"
+    t.bigint "registro_proveedores_id"
     t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
+    t.index ["registro_proveedores_id"], name: "index_equipo_trabajos_on_registro_proveedores_id"
     t.index ["user_id"], name: "index_equipo_trabajos_on_user_id"
   end
 
@@ -2233,6 +2235,7 @@ ActiveRecord::Schema.define(version: 20240812194207) do
   add_foreign_key "equipo_empresas", "contribuyentes"
   add_foreign_key "equipo_empresas", "flujos"
   add_foreign_key "equipo_trabajos", "flujos"
+  add_foreign_key "equipo_trabajos", "registro_proveedores", column: "registro_proveedores_id"
   add_foreign_key "equipo_trabajos", "users"
   add_foreign_key "establecimiento_contribuyentes", "comunas"
   add_foreign_key "establecimiento_contribuyentes", "contribuyentes"
