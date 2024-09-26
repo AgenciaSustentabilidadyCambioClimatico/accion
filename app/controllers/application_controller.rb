@@ -1,10 +1,10 @@
 class ApplicationController < ActionController::Base
-  include Pundit
+  include Pundit::Authorization
 
   rescue_from Pundit::NotAuthorizedError do
     redirect_to root_url, alert: "No tiene permiso para acceder a esta página"
   end
-  protect_from_forgery with: :exception
+  protect_from_forgery with: :exception, prepend: true
   before_action :configure_permitted_parameters, if: :devise_controller?
 
   before_action :set_personas
