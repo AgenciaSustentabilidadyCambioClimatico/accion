@@ -1458,7 +1458,7 @@ class ManifestacionDeInteresController < ApplicationController
 
                   #SE ENVIAR EL MAIL AL RESPONSABLE  
                   mdi = @manifestacion_de_interes
-                  send_message(tarea_fondo, @tarea_pendiente.user_id)
+                  send_message(tarea_fondo, postulante.user_id)
                   
                   #Inicia el flujo con el nombre Sin nombre
                   codigo_proyecto = "Proyecto DyAPL"
