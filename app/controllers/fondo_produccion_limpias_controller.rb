@@ -577,10 +577,10 @@ class FondoProduccionLimpiasController < ApplicationController
       custom_params = {
         objetivos_especifico: {
           flujo_id: params['flujo_id'],
-          descripcion: params['descripcion'],
-          metodologia: params['metodologia'],
-          resultado: params['resultado'],
-          indicadores: params['indicadores']
+          descripcion: normalize_string(params['descripcion']),
+          metodologia: normalize_string(params['metodologia']),
+          resultado: normalize_string(params['resultado']),
+          indicadores: normalize_string(params['indicadores'])
         }
       }
       @objetivo_especifico = ObjetivosEspecifico.new(custom_params[:objetivos_especifico])
@@ -606,10 +606,10 @@ class FondoProduccionLimpiasController < ApplicationController
         objetivos_especifico: {
           id: params['objetivo_id'],
           flujo_id: params['flujo_id'],
-          descripcion: params['descripcion'],
-          metodologia: params['metodologia'],
-          resultado: params['resultado'],
-          indicadores: params['indicadores']
+          descripcion: normalize_string(params['descripcion']),
+          metodologia: normalize_string(params['metodologia']),
+          resultado: normalize_string(params['resultado']),
+          indicadores: normalize_string(params['indicadores'])
         }
       }
       respond_to do |format|
@@ -4168,6 +4168,11 @@ class FondoProduccionLimpiasController < ApplicationController
           extrapresupuestario_seguimiento_2: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2,
           extrapresupuestario_evaluacion: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
         }
+      end
+
+      def normalize_string(string)
+        return string unless string.is_a?(String)  # Verifica que sea un string
+        string.gsub(/\n+/, ' ').strip  # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
       end
 
 end
