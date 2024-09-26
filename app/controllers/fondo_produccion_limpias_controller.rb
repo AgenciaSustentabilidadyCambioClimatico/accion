@@ -1500,7 +1500,7 @@ class FondoProduccionLimpiasController < ApplicationController
               empresas_asociadas_ag: params[:empresas_asociadas_ag],
               empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
               duracion: params[:duracion],
-              fortalezas_consultores: params[:fortalezas_consultores],
+              fortalezas_consultores: normalize_string(params[:fortalezas_consultores]),
               elementos_micro_empresa: params[:elementos_micro_empresa],
               elementos_pequena_empresa: params[:elementos_pequena_empresa],
               elementos_mediana_empresa: params[:elementos_mediana_empresa],
@@ -1652,7 +1652,7 @@ class FondoProduccionLimpiasController < ApplicationController
             revisor_tecnico_id: params[:revisor_tecnico_id],
             revisor_financiero_id: params[:revisor_financiero_id],
             revisor_juridico_id: params[:revisor_juridico_id],
-            comentario_asignar_revisor: params[:comentario_asignar_revisor]
+            comentario_asignar_revisor: normalize_string(params[:comentario_asignar_revisor])
           }
         }
 
@@ -1794,7 +1794,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1
           }
         }
@@ -1823,7 +1823,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: 1
           }
@@ -1910,7 +1910,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2
           }
         }
@@ -1939,7 +1939,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: 1
           }
@@ -2032,7 +2032,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2068,7 +2068,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2210,7 +2210,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: revision
             
@@ -2235,7 +2235,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: revision
           }
@@ -2296,7 +2296,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: revision
           }
@@ -2321,7 +2321,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: revision
           }
@@ -2342,7 +2342,7 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo_id: params['flujo_id'],
           criterio_id: nil,
           nota: params[:nota_input_pertinencia],
-          justificacion: params[:obs_input_pertinencia],
+          justificacion: normalize_string(params[:obs_input_pertinencia]),
           tipo_cuestionario_id: 4
         }
       }
@@ -2551,7 +2551,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1
           }
         }
@@ -2656,7 +2656,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2
           }
         }
@@ -2776,7 +2776,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
