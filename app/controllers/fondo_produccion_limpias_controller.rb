@@ -860,17 +860,24 @@ class FondoProduccionLimpiasController < ApplicationController
       custom_params_equipo = {
         equipo_trabajo: {
           tipo_equipo: params[:tipo_equipo],
+          valor_hh: params[:valor_hh],
           flujo_id: params[:flujo_id],
           registro_proveedores_id: params[:auditor_id]
         }
       }
-      @equipo = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-      @equipo.save
-
-      @auditor = RegistroProveedor.find(@equipo.registro_proveedores_id)
+  
+      @equipo = EquipoTrabajo.where(tipo_equipo: params[:tipo_equipo], flujo_id: params[:flujo_id]).first
+      if @equipo.present?
+        @equipo.update(custom_params_equipo[:equipo_trabajo])
+      else
+        @equipo = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
+        @equipo.save
+      end
+   
+      @auditor = RegistroProveedor.find(params[:auditor_id])
 
       respond_to do |format|
-        format.js { render 'insert_registro_proveedores_equipo', locals: { auditor: @auditor, tarea_pendiente: params[:tarea_pendiente_id] } }
+        format.js { render 'insert_registro_proveedores_equipo', locals: { auditor: @auditor, tarea_pendiente: params[:tarea_pendiente_id], equipo: @equipo} }
       end
     end
 
@@ -4031,8 +4038,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_registro_proveedores
         @registro_proveedores = RegistroProveedor.where(estado: 4)
-        @registro_proveedor = RegistroProveedor.where(estado: 4).select(:nombre, :id)
-        @registro_options = @registro_proveedor.map { |registro_proveedor| [registro_proveedor.nombre, registro_proveedor.id] }
+        @registro_proveedor = RegistroProveedor.where(estado: 4).select(:nombre, :apellido, :id)
+        @registro_options = @registro_proveedor.map { |registro_proveedor| [registro_proveedor.nombre + ' ' + registro_proveedor.apellido, registro_proveedor.id] }
       end  
 
       def set_equipo_trabajo
@@ -4054,7 +4061,8 @@ class FondoProduccionLimpiasController < ApplicationController
         @auditores = @auditor_all.map do |auditor|
           {
             auditor: auditor,
-            equipo_trabajo_ids: equipo_trabajo_hash[auditor.id].map(&:id) # Obtener los IDs de EquipoTrabajo
+            equipo_trabajo_ids: equipo_trabajo_hash[auditor.id].map(&:id), # Obtener los IDs de EquipoTrabajo
+            valor_hh: equipo_trabajo_hash[auditor.id].map(&:valor_hh) # Obtener el valor_hh
           }
         end
 

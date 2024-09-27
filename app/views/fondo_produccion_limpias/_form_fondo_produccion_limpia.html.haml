@@ -2732,6 +2732,7 @@
        
     function guardarAuditor() {
     var audioria_id = document.getElementById('auditor_id').value;
+    var valor_hh = document.getElementById('valor_hh').value;
     
     /*var alertaMostrada = false;
     if (audioria_id == "") {
@@ -2754,6 +2755,7 @@
         flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
         tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
         auditor_id: audioria_id,
+        valor_hh: valor_hh,
         tipo_equipo: 4
       },
       method: "PATCH",
@@ -3642,7 +3644,7 @@
                             = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
                               %i.fa.fa-trash 
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
-          <h1>Equipo Auditor</h1> 
+          <h1>Auditor</h1> 
           %div#div_auditor.table-responsive
             - if !solo_lectura
               - button_class = @total_de_errores_por_tab.present? ? (@auditores.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
@@ -3656,6 +3658,7 @@
                     %th.encabezado2-form=t(:telefono)
                     %th.encabezado2-form=t(:email)
                     %th.encabezado2-form=t(:profesion)
+                    %th.encabezado2-form=t(:valor_hh)
                     - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA)
                       %th.encabezado2-form.dos.iconos-acciones=t(:acción)
                 %tbody
@@ -3664,12 +3667,14 @@
                     - @auditores.each do |entry|
                       - auditor = entry[:auditor]
                       - equipo_trabajo_id = entry[:equipo_trabajo_ids][0]
+                      - valor_hh = entry[:valor_hh][0]
                       %tr
-                        %td.contenido-form= auditor.nombre
+                        %td.contenido-form= auditor.nombre + ' ' + auditor.apellido
                         %td.contenido-form= auditor.rut
                         %td.contenido-form= auditor.telefono
                         %td.contenido-form= auditor.email
                         %td.contenido-form= auditor.profesion
+                        %td.contenido-form= valor_hh
                         - if !solo_lectura
                           %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{auditor.id}"}
                             - if recurso_humano_existente?(equipo_trabajo_id, @tarea_pendiente.flujo_id)
@@ -5790,9 +5795,14 @@
                       %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         %tr
-                          %td.contenido-popup-form Auditores
+                          %td.contenido-popup-form Auditores:
                           %td.contenido-popup-form 
                             = f.select :id, options_for_select(@registro_options, include_blank: 'Seleccione un auditor'), { include_blank: 'Seleccione una opción' }, class: 'required-field', id: 'auditor_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'            
+                        %tr
+                          %td.contenido-popup-form Valor Unitario:
+                          %td.contenido-popup-form 
+                            = f.text_field :valor_hh, class: 'required-field', id: 'valor_hh', style: 'border: 1px solid #ced4da; border-radius: 0.25rem;', maxlength: 10, onKeyPress: 'return soloNumeros(event)'
+
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             - if !solo_lectura
