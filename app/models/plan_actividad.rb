@@ -259,6 +259,16 @@ class PlanActividad < ApplicationRecord
       .where(plan_actividades: { actividad_id: actividad_id })
   end    
 
+  def self.recursos_auditores(flujo_id, actividad_id)
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, registro_proveedores.nombre || \' \' || registro_proveedores.apellido AS user_name')
+      .joins("INNER JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id")
+      .joins("INNER JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id")
+      .joins("INNER JOIN registro_proveedores ON registro_proveedores.id = equipo_trabajos.registro_proveedores_id")
+      .where(recurso_humanos: { flujo_id: flujo_id })
+      .where(equipo_trabajos: { tipo_equipo: 4 })
+      .where(plan_actividades: { actividad_id: actividad_id })
+  end
+
   def self.gastos_operaciones(flujo_id, actividad_id)
     select('gastos.id, gastos.nombre, gastos.valor_unitario, gastos.cantidad, 
             CASE gastos.unidad_medida 

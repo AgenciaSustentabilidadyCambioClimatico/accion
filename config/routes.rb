@@ -260,6 +260,8 @@ Rails.application.routes.draw do
   get 'insert_recursos_humanos_propios/:id', to: "fondo_produccion_limpias#insert_recursos_humanos_propios", as: :insert_recursos_humanos_propios_fondo_produccion_limpia
   get 'insert_recursos_humanos_externos/:id', to: "fondo_produccion_limpias#insert_recursos_humanos_externos", as: :insert_recursos_humanos_externos_fondo_produccion_limpia
   post 'new_plan_actividades', to: "fondo_produccion_limpias#new_plan_actividades", as: :new_plan_actividades_fondo_produccion_limpia
+  get 'insert_recurso_humano_auditor/:id', to: "fondo_produccion_limpias#insert_recurso_humano_auditor", as: :insert_recurso_humano_auditor_fondo_produccion_limpia
+  get 'get_recurso_auditor/:id', to: "fondo_produccion_limpias#get_recurso_auditor", as: :get_recurso_auditor_fondo_produccion_limpia
   #post 'insert_new_plan_actividades', to: "fondo_produccion_limpias#insert_new_plan_actividades", as: :insert_new_plan_actividades_fondo_produccion_limpia
   
   post 'subir_documento', to: 'fondo_produccion_limpias#subir_documento', as: :subir_documento

@@ -65,6 +65,24 @@ $('#div_plan_recursos_externos table tbody').empty();
   <% end %>
 <% end %>
 
+$('#td_plan_recurso_auditor table tbody').empty();
+<% if @recursos_auditores.present? %>
+  <% recursos_auditores.each do |recursos_auditores| %>
+    var plan_id = '<%= recursos_auditores.id %>';
+    var user_name = '<%= recursos_auditores.user_name %>';
+    var hh = '<%= recursos_auditores.hh %>';
+    var valor_hh = '<%=number_to_currency recursos_auditores.valor_hh %>';
+    var costo = '<%=number_to_currency recursos_auditores.valor_hh.to_i * recursos_auditores.hh.to_i %>';
+    var newRow = "<tr>" +
+      "<td class='contenido-form'>" + user_name + "</td>" +
+      "<td class='contenido-form'>" + hh + "</td>" +
+      "<td class='contenido-form'>" + valor_hh + "</td>" +
+      "<td class='contenido-form'>" + costo + "</td>" +
+      "</tr>";
+    $('#td_plan_recurso_auditor table tbody').append(newRow);
+  <% end %>
+<% end %>
+
 document.getElementById('plan_id').value = <%= plan_id %>;
 
 <% if @nombre_actividad.present? %>
