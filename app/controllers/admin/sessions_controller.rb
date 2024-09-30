@@ -1,5 +1,5 @@
 class Admin::SessionsController < Devise::SessionsController
-
+  skip_before_action :verify_authenticity_token, only: [:create]
   # GET /resource/sign_in
   def new
     @header = ReporteriaDato.find_by(ruta: nil)
@@ -29,7 +29,7 @@ class Admin::SessionsController < Devise::SessionsController
       }
       format.js {
         begin
-          self.resource = warden.authenticate(auth_options)
+          self.resource = warden.authenticate!(auth_options)
           sign_in(resource_name, resource)
           yield resource if block_given?
           flash[:notice] = t('devise.sessions.signed_in')
@@ -56,4 +56,5 @@ class Admin::SessionsController < Devise::SessionsController
   def after_sign_out_path_for(resource)
     root_url
   end
+
 end

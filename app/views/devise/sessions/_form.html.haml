@@ -1,5 +1,6 @@
 -mensaje = mensaje.nil? ? false : mensaje
-= simple_form_for(resource, url: session_path(resource_name), wrapper: :group_with_icon, remote: form_remote, method: :post, html: { authenticity_token: true, class: 'form-devise row p-0', autocomplete: :off } ) do |f|
+= simple_form_for(resource, url: session_path(resource_name), wrapper: :group_with_icon, remote: form_remote, method: :post, html: { 'data-turbolinks' => false, class: 'form-devise row p-0', autocomplete: :off } ) do |f|
+  = hidden_field_tag :authenticity_token, form_authenticity_token
   -if !@correcto.nil? && !@correcto
     .alert.alert-danger.w-100
       =t('devise.sessions.invalid')
@@ -24,4 +25,19 @@
 :javascript
   $(document).ready(function(){
     checkFieldValidity($('#user_rut'));
+  });
+
+  $(document).on('ajaxSend', function(e, xhr, options) {
+    var token = $('meta[name="csrf-token"]').attr('content');
+    xhr.setRequestHeader('X-CSRF-Token', token);
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    var forms = document.querySelectorAll('form[data-remote=true]');
+    forms.forEach(function(form) {
+      form.addEventListener('ajax:beforeSend', function(event) {
+        event.detail[0].setRequestHeader('X-CSRF-Token', token);
+      });
+    });
   });
