@@ -98,6 +98,11 @@ class FondoProduccionLimpiasController < ApplicationController
     def grabar_postulacion
 
       if params[:informe_acuerdo][:fondo_produccion_limpia] == "true"
+
+        #obtengo el user_id del postulante de la manifestacion de interes
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+        postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+
         tarea_pendiente = TareaPendiente.find(params[:id])
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
 
@@ -113,13 +118,13 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo.tarea_pendientes.create([{
               tarea_id: tarea_fondo.id,
               estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: tarea_pendiente.user_id,
+              user_id: postulante.user_id,
               data: { }
             }]
           )
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
-          send_message(tarea_fondo, tarea_pendiente.user_id)
+          send_message(tarea_fondo, postulante.user_id)
           
           #Inicia el flujo con el nombre Sin nombre
           if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
