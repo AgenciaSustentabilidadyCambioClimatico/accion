@@ -98,6 +98,11 @@ class FondoProduccionLimpiasController < ApplicationController
     def grabar_postulacion
 
       if params[:informe_acuerdo][:fondo_produccion_limpia] == "true"
+
+        #obtengo el user_id del postulante de la manifestacion de interes
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+        postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+
         tarea_pendiente = TareaPendiente.find(params[:id])
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
 
@@ -113,13 +118,13 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo.tarea_pendientes.create([{
               tarea_id: tarea_fondo.id,
               estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: tarea_pendiente.user_id,
+              user_id: postulante.user_id,
               data: { }
             }]
           )
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
-          send_message(tarea_fondo, tarea_pendiente.user_id)
+          send_message(tarea_fondo, postulante.user_id)
           
           #Inicia el flujo con el nombre Sin nombre
           if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
@@ -1500,7 +1505,7 @@ class FondoProduccionLimpiasController < ApplicationController
               empresas_asociadas_ag: params[:empresas_asociadas_ag],
               empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
               duracion: params[:duracion],
-              fortalezas_consultores: params[:fortalezas_consultores],
+              fortalezas_consultores: normalize_string(params[:fortalezas_consultores]),
               elementos_micro_empresa: params[:elementos_micro_empresa],
               elementos_pequena_empresa: params[:elementos_pequena_empresa],
               elementos_mediana_empresa: params[:elementos_mediana_empresa],
@@ -1652,7 +1657,7 @@ class FondoProduccionLimpiasController < ApplicationController
             revisor_tecnico_id: params[:revisor_tecnico_id],
             revisor_financiero_id: params[:revisor_financiero_id],
             revisor_juridico_id: params[:revisor_juridico_id],
-            comentario_asignar_revisor: params[:comentario_asignar_revisor]
+            comentario_asignar_revisor: normalize_string(params[:comentario_asignar_revisor])
           }
         }
 
@@ -1794,7 +1799,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1
           }
         }
@@ -1823,7 +1828,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: 1
           }
@@ -1910,7 +1915,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2
           }
         }
@@ -1939,7 +1944,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: 1
           }
@@ -2032,7 +2037,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2068,7 +2073,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2210,7 +2215,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: revision
             
@@ -2235,7 +2240,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: revision
           }
@@ -2296,7 +2301,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1,
             revision: revision
           }
@@ -2321,7 +2326,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2,
             revision: revision
           }
@@ -2342,7 +2347,7 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo_id: params['flujo_id'],
           criterio_id: nil,
           nota: params[:nota_input_pertinencia],
-          justificacion: params[:obs_input_pertinencia],
+          justificacion: normalize_string(params[:obs_input_pertinencia]),
           tipo_cuestionario_id: 4
         }
       }
@@ -2551,7 +2556,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 1
           }
         }
@@ -2656,7 +2661,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 2
           }
         }
@@ -2776,7 +2781,7 @@ class FondoProduccionLimpiasController < ApplicationController
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: value['justificacion'],
+            justificacion: normalize_string(value['justificacion']),
             tipo_cuestionario_id: 3,
             revision: revision
           }
