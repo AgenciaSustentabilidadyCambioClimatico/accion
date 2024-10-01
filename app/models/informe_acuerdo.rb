@@ -111,6 +111,10 @@ class InformeAcuerdo < ApplicationRecord
     self.con_extension.present? || [true,false].include?(self.con_extension)
   end
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
   def plazos_correctos? #DZC MODIFICAR PREGUNTANDO VALIDACIONES DE PENDIENTES
     # si no se envia la variable validamos
     if solo_respuesta_observaciones.nil?

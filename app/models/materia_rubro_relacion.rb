@@ -13,6 +13,9 @@ class MateriaRubroRelacion < ApplicationRecord
 
 	validate :tupla_existe
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
 
 	def tupla_existe
 		if !omite_val

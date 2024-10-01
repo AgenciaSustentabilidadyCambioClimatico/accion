@@ -201,6 +201,10 @@ class ProgramaProyectoPropuesta < ApplicationRecord
     end
   end 
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
 
 #DZC
 	def completar_informacion!

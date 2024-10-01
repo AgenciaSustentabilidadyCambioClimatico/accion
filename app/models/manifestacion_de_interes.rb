@@ -319,6 +319,10 @@ class ManifestacionDeInteres < ApplicationRecord
     estado_inicial
   end
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
   def tree_selectors
     #errors.add(:actividad_economicas_ids, "No puede estar en blanco") if actividad_economicas_ids.blank? || (!actividad_economicas_ids.blank? && actividad_economicas_ids.size <= 1)
     #errors.add(:comunas_ids, "No puede estar en blanco") if !acuerdo_de_alcance_nacional && (comunas_ids.blank? || (!comunas_ids.blank? && comunas_ids.size <= 1))

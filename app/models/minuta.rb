@@ -24,6 +24,10 @@ class Minuta < ApplicationRecord
 		end
 	end
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
 	#DZC 2018-10-26 12:56:14 devuelve el listado de archivos como array
 	# def get_archivos
 	# 	
