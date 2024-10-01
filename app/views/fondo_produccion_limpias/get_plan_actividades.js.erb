@@ -1,29 +1,35 @@
 var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propios');
 var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
+var div_plan_recurso_auditor = document.getElementById('div_plan_recurso_auditor');
 var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
 var div_plan_gastos_administracion = document.getElementById('div_plan_gastos_administracion');
 var td_plan_recursos_propios = document.getElementById('td_plan_recursos_propios');
 var td_plan_recursos_externos = document.getElementById('td_plan_recursos_externos');
+var td_plan_recurso_auditor = document.getElementById('td_plan_recurso_auditor');
 var td_plan_gastos_operacion = document.getElementById('td_plan_gastos_operacion');
 var td_plan_gastos_administracion = document.getElementById('td_plan_gastos_administracion');
 
 <% if @existe_plan == 0 %>
   div_plan_recursos_propios.style.display = 'none';
   div_plan_recursos_externos.style.display = 'none';
+  div_plan_recurso_auditor.style.display = 'none';
   div_plan_gastos_operacion.style.display = 'none';
   div_plan_gastos_administracion.style.display = 'none';
   td_plan_recursos_propios.style.borderTop = 'none';
   td_plan_recursos_externos.style.borderTop = 'none';
+  td_plan_recurso_auditor.style.borderTop = 'none';
   td_plan_gastos_operacion.style.borderTop = 'none';
   td_plan_gastos_administracion.style.borderTop = 'none';
   $('#button_id').val('Grabar Plan Actividad');
 <% else %>  
   div_plan_recursos_propios.style.display = 'block';
   div_plan_recursos_externos.style.display = 'block';
+  div_plan_recurso_auditor.style.display = 'block';
   div_plan_gastos_operacion.style.display = 'block';
   div_plan_gastos_administracion.style.display = 'block';
   td_plan_recursos_propios.style.borderTop = '1px solid #dee2e6';
   td_plan_recursos_externos.style.borderTop = '1px solid #dee2e6';
+  td_plan_recurso_auditor.style.borderTop = '1px solid #dee2e6';
   td_plan_gastos_operacion.style.borderTop = '1px solid #dee2e6';
   td_plan_gastos_administracion.style.borderTop = '1px solid #dee2e6';
   $('#button_id').val('Continuar');
@@ -65,7 +71,7 @@ $('#div_plan_recursos_externos table tbody').empty();
   <% end %>
 <% end %>
 
-$('#td_plan_recurso_auditor table tbody').empty();
+$('#div_plan_recurso_auditor table tbody').empty();
 <% if @recursos_auditores.present? %>
   <% recursos_auditores.each do |recursos_auditores| %>
     var plan_id = '<%= recursos_auditores.id %>';
@@ -79,7 +85,7 @@ $('#td_plan_recurso_auditor table tbody').empty();
       "<td class='contenido-form'>" + valor_hh + "</td>" +
       "<td class='contenido-form'>" + costo + "</td>" +
       "</tr>";
-    $('#td_plan_recurso_auditor table tbody').append(newRow);
+    $('#div_plan_recurso_auditor table tbody').append(newRow);
   <% end %>
 <% end %>
 
