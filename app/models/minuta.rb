@@ -6,9 +6,9 @@ class Minuta < ApplicationRecord
 
 	attr_accessor :tipo_linea_seleccionada
 
-	validates :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
+	validates :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, if: :updating_record?
 	validate :direccion_en_mapa
-	validate :acta, :lista_asistencia, on: :update, unless: -> {self.convocatoria.tarea_codigo == Tarea::COD_APL_021} #DZC necesario para condiciones de flujo 'A' y 'B' en APL-022
+	validate :acta, :lista_asistencia, unless: -> {self.convocatoria.tarea_codigo == Tarea::COD_APL_021}, if: :updating_record? #DZC necesario para condiciones de flujo 'A' y 'B' en APL-022
 	#validate :acta, on: :update, if: -> {self.convocatoria.tarea_codigo != Tarea::COD_APL_021 && self.convocatoria.tarea_codigo == Tarea::COD_APL_022}
 
 	mount_uploader :lista_asistencia, ArchivoListaAsistenciaMinutaUploader

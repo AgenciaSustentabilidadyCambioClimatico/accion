@@ -20,7 +20,7 @@ class InformeAcuerdo < ApplicationRecord
   # DZC 2018-11-08 13:54:26 evita la validación de la existencia de los archivos de evidencia en la APL-018
   # se incluye tarea 20 para agregar respuesta a observaciones
   # se agrega tarea 23 para no lanzar error al enviar sin tener archivos, ahora lo exige posterior al envio
-  validates :archivos_anexos_posteriores_firmas, presence: true, on: :update, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)}
+  validates :archivos_anexos_posteriores_firmas, presence: true, unless: -> {[Tarea::COD_APL_018,Tarea::COD_APL_020,Tarea::COD_APL_023].include?(self.tarea_codigo)}, if: :updating_record?
 
   enum tipo_acuerdo: [:desde_firma_acuerdo, :desde_aprobación_de_la_adhesión]
   enum mecanismo_implementacion_palabras_claves: [:tipo_acuerdo, :plazo_maximo_adhesion, :plazo_finalizacion_implementacion]

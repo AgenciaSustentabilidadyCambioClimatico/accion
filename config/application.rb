@@ -38,6 +38,8 @@ module Ascc
       # g.test_unit false # con este queda test_unit/system... con -> system_tests false desaparece
     end
     #config.action_mailer.asset_host = '190.215.33.11:3999'
-    
+    def updating_record?
+      persisted? # This checks if the record already exists (i.e., it's an update)
+    end
   end
 end

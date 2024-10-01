@@ -23,6 +23,12 @@
         = clave_unica_btn
   = render "devise/shared/links", form_remote: form_remote
 :javascript
+  $.ajaxSetup({
+    headers: {
+      'X-CSRF-Token': $('meta[name="csrf-token"]').attr('content')
+    }
+  });
+
   $(document).ready(function(){
     checkFieldValidity($('#user_rut'));
   });

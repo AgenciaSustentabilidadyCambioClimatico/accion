@@ -4,8 +4,10 @@ class ApplicationController < ActionController::Base
   rescue_from Pundit::NotAuthorizedError do
     redirect_to root_url, alert: "No tiene permiso para acceder a esta página"
   end
-  protect_from_forgery with: :exception, prepend: true
+
   before_action :configure_permitted_parameters, if: :devise_controller?
+  protect_from_forgery with: :exception, prepend: true
+
 
   before_action :set_personas
   before_action :set_flash_trio
@@ -49,6 +51,7 @@ class ApplicationController < ActionController::Base
         :fields_visibility => {}
       ]
     end
+
     def set_header
       @header = ReporteriaDato.find_by(ruta: nil)
     end
