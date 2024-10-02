@@ -138,8 +138,7 @@
           .card-body
             .row
               .col-12
-              - if !@descargables.blank?
-                = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:descargables_de_la_tarea), {tarea_pendiente: @tarea_pendiente})
+                = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:descargables_de_la_tarea), @tarea_pendiente)
               .col-12
                 .form-group
                   %label.string.control-label

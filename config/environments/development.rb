@@ -16,7 +16,7 @@ Rails.application.configure do
   # end
   # config.web_console.whitelisted_ips = ['190.215.33.10']
   # # config.web_console.whitelisted_ips += ['190.215.33.11']
-  config.web_console.whitelisted_ips = ['0.0.0.0/0']
+  config.web_console.allowed_ips = ['0.0.0.0/0']
   # config.web_console.whitelisted_ips += ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
 
   # Do not eager load code on boot.
