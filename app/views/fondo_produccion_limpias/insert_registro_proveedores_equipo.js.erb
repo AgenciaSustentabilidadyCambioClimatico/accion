@@ -6,17 +6,21 @@ var profesion = '<%= @auditor.profesion %>';
 var user_id = '<%= @equipo.id %>';
 var valor_hh = '<%= @equipo.valor_hh %>';
 var tarea_pendiente_id = '<%= tarea_pendiente %>';
+var flag = '<%= @flag %>';
 
-$('#div_auditor table tbody').empty();
-var newRow = "<tr>" +
-"<td class='contenido-form'>" + nombre + "</td>" +
-"<td class='contenido-form'>" + rut + "</td>" +
-"<td class='contenido-form'>" + telefono + "</td>" +
-"<td class='contenido-form'>" + email + "</td>" +
-"<td class='contenido-form'>" + profesion + "</td>" +
-"<td class='contenido-form'>" + valor_hh + "</td>" +
-"<td id='iconos-acciones-" + user_id + "' class='contenido-form dos iconos-acciones'>" +
-"<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-auditor' id='eliminar-auditor-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo_auditor/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al auditor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
-"</td>" +
-"</tr>";     
-$('#div_auditor table tbody').append(newRow); 
+<% if flag == 1 %>
+    $("#td-auditores-valor-hh-<%= @auditor.id %>").text(valor_hh);
+<% else %>
+    var newRow = "<tr id='tr-auditores-<%= @auditor.id %>'>" +
+    "<td class='contenido-form'>" + nombre + "</td>" +
+    "<td class='contenido-form'>" + rut + "</td>" +
+    "<td class='contenido-form'>" + telefono + "</td>" +
+    "<td class='contenido-form'>" + email + "</td>" +
+    "<td class='contenido-form'>" + profesion + "</td>" +
+    "<td class='contenido-form'>" + valor_hh + "</td>" +
+    "<td id='iconos-acciones-" + user_id + "' class='contenido-form dos iconos-acciones'>" +
+    "<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-auditor' id='eliminar-auditor-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo_auditor/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al auditor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+    "</td>" +
+    "</tr>";     
+    $('#div_auditor table tbody').append(newRow); 
+<% end %>

@@ -400,6 +400,8 @@ class FondoProduccionLimpiasController < ApplicationController
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_1
         elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 
           meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_2
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3
+          meses = FondoProduccionLimpia::DURACION_FPL_LINEA_1_3
         elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
           meses = FondoProduccionLimpia::DURACION_FPL_EXTRAPRESUPUESTARIO
         else
@@ -480,7 +482,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = false
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @mantener_temporal = 'true'
-      #@objetivo_especifico = ObjetivosEspecifico.new
       @es_para_seleccion = 'true'
       @tipo_aporte = TipoAporte.all
       @contribuyentes = nil
@@ -866,9 +867,12 @@ class FondoProduccionLimpiasController < ApplicationController
         }
       }
   
-      @equipo = EquipoTrabajo.where(tipo_equipo: params[:tipo_equipo], flujo_id: params[:flujo_id]).first
+      @equipo = EquipoTrabajo.where(tipo_equipo: params[:tipo_equipo], flujo_id: params[:flujo_id], registro_proveedores_id: params[:auditor_id]).first
+    
+      @flag = 0
       if @equipo.present?
         @equipo.update(custom_params_equipo[:equipo_trabajo])
+        @flag = 1
       else
         @equipo = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
         @equipo.save
@@ -877,7 +881,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @auditor = RegistroProveedor.find(params[:auditor_id])
 
       respond_to do |format|
-        format.js { render 'insert_registro_proveedores_equipo', locals: { auditor: @auditor, tarea_pendiente: params[:tarea_pendiente_id], equipo: @equipo} }
+        format.js { render 'insert_registro_proveedores_equipo', locals: { auditor: @auditor, tarea_pendiente: params[:tarea_pendiente_id], equipo: @equipo, flag: @flag } }
       end
     end
 
@@ -1003,6 +1007,19 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     helper_method :recurso_humano_existente?
+
+    #def auditor_existente?(user_id)
+    #  EquipoTrabajo.exists?(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4, registro_proveedores_id: user_id).first
+    #end
+
+    #helper_method :auditor_existente?
+
+    def verificar_auditor_existente
+      #binding.pry
+      exists = EquipoTrabajo.where(flujo_id: params[:flujo_id], tipo_equipo: 4, registro_proveedores_id: params[:auditor_id]).count
+      #binding.pry
+      render json: { exists: exists }
+    end
 
     ###CONTRIBUYENTES
     def insert_modal_contribuyente
@@ -1189,8 +1206,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @recursos_internos = PlanActividad.recursos_internos(@tarea_pendiente.flujo_id, params['plan_id'])
     
       @recursos_externos = PlanActividad.recursos_externos(@tarea_pendiente.flujo_id, params['plan_id'])
-
-      @recursos_auditores = PlanActividad.recursos_auditores(@tarea_pendiente.flujo_id, params['plan_id'])
     
       @gastos_operaciones = PlanActividad.gastos_operaciones(@tarea_pendiente.flujo_id, params['plan_id'])
  
@@ -1201,7 +1216,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, recursos_auditores: @recursos_auditores, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad } } 
       end
     end
     
@@ -1216,13 +1231,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @consultor_faltantes = EquipoTrabajo.consultor_faltantes(params['actividad_id'], @tarea_pendiente.flujo_id)
       respond_to do |format|
         format.js { render 'get_recursos_externos', locals: { consultor_faltantes: @consultor_faltantes } }
-      end
-    end
-
-    def get_recurso_auditor
-      @auditor_faltantes = EquipoTrabajo.auditor_faltantes(params['actividad_id'], @tarea_pendiente.flujo_id)
-      respond_to do |format|
-        format.js { render 'get_recurso_auditor', locals: { auditor_faltantes: @auditor_faltantes } }
       end
     end
 
@@ -1466,76 +1474,6 @@ class FondoProduccionLimpiasController < ApplicationController
      
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
-        valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
-        total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
-      end
-    end
-
-    def insert_recurso_humano_auditor
-      data = JSON.parse(params[:data])
-      @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
-    
-      rrhh_auditor_ids = []  # Array para almacenar los IDs de rrhhPropioId
-     
-      data.each do |clave, valor|
-        #if clave['hh'] != ""
-          if clave['nombreUsuario'] != ""
-            custom_params = {
-              recursos: {
-                hh: clave['hh'],
-                equipo_trabajo_id: clave['rrhhAuditorId'],
-                flujo_id: params[:flujo_id],
-                plan_actividad_id: @plan_actividades.id,
-                  tipo_aporte_id: params['tipoAporte']
-                }  
-              }
-
-            if (clave['rhhEquipoId'] == "")
-              #se inserta un nuevo usuario
-              @recursos = RecursoHumano.new(custom_params[:recursos])
-              @recursos.save 
-            else
-              #se actualiza un usuario
-              @recursos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhAuditorId'])
-              @recursos.update(custom_params[:recursos])
-            end
-      
-            if (clave['hh'] == "")
-              eliminar_rrhh_externos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhAuditorId'])
-              eliminar_rrhh_externos.destroy
-            else
-              rrhh_auditor_ids << clave['rrhhAuditorId']  # Agregar el ID a la lista
-            end
-
-          end
-        #end
-      end
-      ### Utilizar rrhh_auditor_ids como necesites fuera del bucle
-      @recursos_auditores = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_auditor_ids)
-
-      ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm y gastos ope por id y se renderiza al dashboard principal
-      @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(params[:flujo_id], params['plan_id'])
-      @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(params[:flujo_id], params['plan_id'])
-      @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(params[:flujo_id], params['plan_id'])
-      @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(params[:flujo_id], params['plan_id'])
-
-      #Totales generales
-      @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(params[:flujo_id])
-      @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(params[:flujo_id])
-      @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(params[:flujo_id])
-      @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(params[:flujo_id])
-
-      ###Actualiza costos
-      set_costos 
-
-      @plan_id =  params['plan_id']
-
-      @recurso_auditor_no_asignados = EquipoTrabajo.left_outer_joins(:recurso_humanos)
-             .where(recurso_humanos: { equipo_trabajo_id: nil })
-             .where(flujo_id: params[:flujo_id], tipo_equipo: 4)
-     
-      respond_to do |format|
-        format.js { render 'insert_recurso_humano_auditor', locals: { recursos_auditores: @recursos_auditores, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
         valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
         total_valor_hh_tipo_3: @total_valor_hh_tipo_3, total_valor_hh_tipos_1_2: @total_valor_hh_tipos_1_2, total_total_gastos_tipo_1: @total_total_gastos_tipo_1, total_total_gastos_tipo_2: @total_total_gastos_tipo_2 } }
       end
@@ -4208,7 +4146,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @response_costos = 1
             end
           end  
-        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2
+        elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3
           if @costos.present? && @costos_seguimiento[0].present? && @costos_seguimiento[1].present?
             if @costos.costo_total_de_la_propuesta.present? && (
                 @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && 
@@ -4347,6 +4285,7 @@ class FondoProduccionLimpiasController < ApplicationController
           linea_5_1: TipoInstrumento::FPL_LINEA_5_1,
           linea_1_2_1: TipoInstrumento::FPL_LINEA_1_2_1,
           linea_1_2_2: TipoInstrumento::FPL_LINEA_1_2_2,
+          linea_1_3: TipoInstrumento::FPL_LINEA_1_3,
           extrapresupuestario_diagnostico: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO,
           extrapresupuestario_seguimiento: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO,
           extrapresupuestario_seguimiento_2: TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2,

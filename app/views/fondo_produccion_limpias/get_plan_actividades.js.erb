@@ -1,35 +1,29 @@
 var div_plan_recursos_propios = document.getElementById('div_plan_recursos_propios');
 var div_plan_recursos_externos = document.getElementById('div_plan_recursos_externos');
-var div_plan_recurso_auditor = document.getElementById('div_plan_recurso_auditor');
 var div_plan_gastos_operacion = document.getElementById('div_plan_gastos_operacion');
 var div_plan_gastos_administracion = document.getElementById('div_plan_gastos_administracion');
 var td_plan_recursos_propios = document.getElementById('td_plan_recursos_propios');
 var td_plan_recursos_externos = document.getElementById('td_plan_recursos_externos');
-var td_plan_recurso_auditor = document.getElementById('td_plan_recurso_auditor');
 var td_plan_gastos_operacion = document.getElementById('td_plan_gastos_operacion');
 var td_plan_gastos_administracion = document.getElementById('td_plan_gastos_administracion');
 
 <% if @existe_plan == 0 %>
   div_plan_recursos_propios.style.display = 'none';
   div_plan_recursos_externos.style.display = 'none';
-  div_plan_recurso_auditor.style.display = 'none';
   div_plan_gastos_operacion.style.display = 'none';
   div_plan_gastos_administracion.style.display = 'none';
   td_plan_recursos_propios.style.borderTop = 'none';
   td_plan_recursos_externos.style.borderTop = 'none';
-  td_plan_recurso_auditor.style.borderTop = 'none';
   td_plan_gastos_operacion.style.borderTop = 'none';
   td_plan_gastos_administracion.style.borderTop = 'none';
   $('#button_id').val('Grabar Plan Actividad');
 <% else %>  
   div_plan_recursos_propios.style.display = 'block';
   div_plan_recursos_externos.style.display = 'block';
-  div_plan_recurso_auditor.style.display = 'block';
   div_plan_gastos_operacion.style.display = 'block';
   div_plan_gastos_administracion.style.display = 'block';
   td_plan_recursos_propios.style.borderTop = '1px solid #dee2e6';
   td_plan_recursos_externos.style.borderTop = '1px solid #dee2e6';
-  td_plan_recurso_auditor.style.borderTop = '1px solid #dee2e6';
   td_plan_gastos_operacion.style.borderTop = '1px solid #dee2e6';
   td_plan_gastos_administracion.style.borderTop = '1px solid #dee2e6';
   $('#button_id').val('Continuar');
@@ -58,34 +52,26 @@ $('#div_plan_recursos_externos table tbody').empty();
   <% recursos_externos.each do |recursos_externos| %>
     var plan_id = '<%= recursos_externos.id %>';
     var user_name = '<%= recursos_externos.user_name %>';
+    var nombre_proveedor = '<%= recursos_externos.nombre_proveedor %> (Auditor)';
     var hh = '<%= recursos_externos.hh %>';
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
     var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
-    var newRow = "<tr>" +
-      "<td class='contenido-form'>" + user_name + "</td>" +
-      "<td class='contenido-form'>" + hh + "</td>" +
-      "<td class='contenido-form'>" + valor_hh + "</td>" +
-      "<td class='contenido-form'>" + costo + "</td>" +
-      "</tr>";
+    <% if recursos_externos.tipo_equipo == 4 %>
+      var newRow = "<tr>" +
+        "<td class='contenido-form'>" + nombre_proveedor + "</td>" +
+        "<td class='contenido-form'>" + hh + "</td>" +
+        "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>" +
+        "</tr>";
+    <% else %>
+      var newRow = "<tr>" +
+        "<td class='contenido-form'>" + user_name + "</td>" +
+        "<td class='contenido-form'>" + hh + "</td>" +
+        "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>" +
+        "</tr>";
+    <% end %>
     $('#div_plan_recursos_externos table tbody').append(newRow);
-  <% end %>
-<% end %>
-
-$('#div_plan_recurso_auditor table tbody').empty();
-<% if @recursos_auditores.present? %>
-  <% recursos_auditores.each do |recursos_auditores| %>
-    var plan_id = '<%= recursos_auditores.id %>';
-    var user_name = '<%= recursos_auditores.user_name %>';
-    var hh = '<%= recursos_auditores.hh %>';
-    var valor_hh = '<%=number_to_currency recursos_auditores.valor_hh %>';
-    var costo = '<%=number_to_currency recursos_auditores.valor_hh.to_i * recursos_auditores.hh.to_i %>';
-    var newRow = "<tr>" +
-      "<td class='contenido-form'>" + user_name + "</td>" +
-      "<td class='contenido-form'>" + hh + "</td>" +
-      "<td class='contenido-form'>" + valor_hh + "</td>" +
-      "<td class='contenido-form'>" + costo + "</td>" +
-      "</tr>";
-    $('#div_plan_recurso_auditor table tbody').append(newRow);
   <% end %>
 <% end %>
 

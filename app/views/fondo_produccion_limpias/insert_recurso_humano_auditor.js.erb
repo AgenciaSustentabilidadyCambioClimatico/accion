@@ -2,7 +2,7 @@
   $('#iconos-acciones-<%= recurso_auditor_no_asignados.id %>').html('<a data-user-id="<%= recurso_auditor_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recurso_auditor_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recurso_auditor_no_asignados.id %>"><i class="fa fa-trash"></i>');
 <% end %>
 
-$('#td_plan_recurso_auditor table tbody').empty();
+$('#div_plan_recurso_auditor table tbody').empty();
 <% recursos_auditores.each do |recursos_auditor| %>
     var equipo_trabajos_id = '<%= recursos_externo.equipo_trabajos_id %>';
     var user_name = '<%= recursos_auditor.user_name %>';
@@ -15,7 +15,7 @@ $('#td_plan_recurso_auditor table tbody').empty();
       "<td class='contenido-form'>" + valor_hh + "</td>" +
       "<td class='contenido-form'>" + costo + "</td>" +
       "</tr>";
-    $('#td_plan_recurso_auditor table tbody').append(newRow);
+    $('#div_plan_recurso_auditor table tbody').append(newRow);
 
     <% if recurso_humano_existente?(recursos_auditor.equipo_trabajos_id, flujo_id) %>
       $('#iconos-acciones-<%= recursos_auditor.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');

@@ -197,16 +197,20 @@
       var tipoInstrumentoValores = {
         LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
         LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
         EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+        EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
       };
 
       var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
 
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
         var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -235,16 +239,20 @@
     var tipoInstrumentoValores = {
       LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
       LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
       EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+      EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
     };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
 
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -479,21 +487,6 @@
     });
   }
 
-  function modalRrhhAuditor(id){
-    $('#modal_create_plan_actividades-form').modal('hide');
-    $.ajax({
-      url: "#{get_recurso_auditor_fondo_produccion_limpia_path}",
-      data: { actividad_id: id},
-      method: "GET",
-      success: function(response) {
-        $('#modal_rrhh_auditor-form').modal('show');
-      },
-      error: function(error) {
-        //console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
-
   function modalGastosOperacion(id){
     $('#modal_create_plan_actividades-form').modal('hide');
     $('#modal_gastos_operacion-form').modal('show');
@@ -607,16 +600,20 @@
     var tipoInstrumentoValores = {
       LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
       LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
       EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+      EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
     };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 ||
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
 
       if(flag == 1)  {
         tipo_actividad = document.getElementById('tipo_actividad').value;
@@ -771,73 +768,6 @@
         }
     });
   }  
-
-  function guardarRrhhAuditorhh(plan_id){
-    var data = [];// Arreglo para almacenar los datos
-    // Recorre cada fila de la tabla
-    var alertaMostrada = false;
-    $('#div_auditor_faltantes table tbody tr').each(function() {
-      var rrhhAuditorId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
-      var rrhhEquipoId = $(this).find('td:nth-child(2)').text(); // Cambiar el selector según la estructura de tu tabla
-      var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
-      var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
-      
-      if (nombreUsuario !== "Fuente de financiamiento*") {
-
-        // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
-        var radioButtons = document.getElementsByName('radio_tipo_aporte');
-
-        // Iterar sobre los radio buttons para verificar si alguno está seleccionado
-
-        var seleccionado = false;
-        for (var i = 0; i < radioButtons.length; i++) {
-            if (radioButtons[i].checked) {
-                seleccionado = true;
-                break;
-            }
-        }
-        // Verificar si al menos uno está seleccionado
-        if (seleccionado) {
-        // Agrega los datos al arreglo
-          data.push({
-              rrhhAuditorId: rrhhAuditorId,
-              rhhEquipoId: rrhhEquipoId,
-              nombreUsuario: nombreUsuario,
-              hh: hh
-          });
-          var alertaMostrada = true;
-        }else{ 
-          ///REVISAR ALERT
-          if (!alertaMostrada) {
-            var alertaMostrada = true;
-            alert('Por favor, seleccione alguna Fuente de financiamiento');
-            event.preventDefault();
-            //return;
-          }
-        }
-      }
-    });
-
-    var tipoAporteSeleccionado = $('#div_auditor_faltantes input[name="radio_tipo_aporte"]:checked').val();
-
-    // Envía el arreglo al controlador utilizando AJAX
-    $.ajax({
-        type: "GET",
-        url: "#{insert_recurso_humano_auditor_fondo_produccion_limpia_path}",
-        data: { data: JSON.stringify(data), 
-                flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
-                plan_id: plan_id, 
-                tipoAporte: tipoAporteSeleccionado},// Envía los datos como JSON
-        success: function(response) {
-          // Maneja la respuesta del servidor
-          //console.log(response);
-        },
-        error: function(xhr, status, error) {
-          // Maneja los errores de la solicitud AJAX
-          console.error(error);
-        }
-    });
-  } 
   
   function optionSelect(tipo){
     var divEquipoConsultora = document.getElementById('div_equipo_consultora');
@@ -2814,7 +2744,7 @@
        
     function guardarAuditor() {
     var audioria_id = document.getElementById('auditor_id').value;
-    var valor_hh = document.getElementById('valor_hh').value;
+    var valor_hh = document.getElementById('valor_hh_auditor').value;
 
     var alertaMostrada = false;
     if (audioria_id == "") {
@@ -2834,7 +2764,10 @@
       event.preventDefault();
       return;
     }
-
+    
+    //if (auditor_existente(audioria_id) > 0) {
+    //  alert("El usuario seleccionado ya se encuentra asociado al listado de auditores");
+    //}else{
     $.ajax({
       url: "#{insert_registro_proveedores_equipo_fondo_produccion_limpia_path}",
       data: {
@@ -2852,8 +2785,30 @@
         console.error("Error al llamar al método del controlador", error);
       }
     });
+      
+    //} 
   }
-                                  
+
+  // Llama a un endpoint para verificar la existencia
+  /*function auditor_existente(auditoria_id) {
+    alert("entro auditor_existente");
+    let exists = false;
+    $.ajax({
+      url: "#{verificar_auditor_existente_fondo_produccion_limpia_path}",
+      data: { auditor_id: auditoria_id,
+              flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" },
+      method: "GET",
+      success: function(response) {
+        alert(response.exists);
+        exists = response.exists; // Asegúrate de que tu controlador devuelva un JSON con { exists: true/false }
+      },
+      error: function(error) {
+        console.error("Error al verificar auditor", error);
+      }
+    });
+    return exists;
+  }*/
+                                    
 %style
   :css
     .table-responsive {
@@ -3751,13 +3706,13 @@
                       - auditor = entry[:auditor]
                       - equipo_trabajo_id = entry[:equipo_trabajo_ids][0]
                       - valor_hh = entry[:valor_hh][0]
-                      %tr
+                      %tr{id: "tr-auditores-#{auditor.id}"}
                         %td.contenido-form= auditor.nombre + ' ' + auditor.apellido
                         %td.contenido-form= auditor.rut
                         %td.contenido-form= auditor.telefono
                         %td.contenido-form= auditor.email
                         %td.contenido-form= auditor.profesion
-                        %td.contenido-form= valor_hh
+                        %td.contenido-form{id: "td-auditores-valor-hh-#{auditor.id}"}= valor_hh
                         - if !solo_lectura
                           %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{auditor.id}"}
                             - if recurso_humano_existente?(equipo_trabajo_id, @tarea_pendiente.flujo_id)
@@ -5671,27 +5626,6 @@
                                       %td{style: 'text-align: left; background-color: #fff;'}
                                         %a{href: "#-1", onclick: "modalRrhhExternos(document.getElementById('plan_id').value); return false;", id: "agregar_rr_ex", style: 'color: #5d759e;'} Agregar
                                         %i.fa.fa-plus-square.icono-celeste
-
-                        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
-                          %tr
-                            %td#td_plan_recurso_auditor.contenido-popup-form{colspan: 4}
-                              %div#div_plan_recurso_auditor.table-responsive  
-                                %table.table.table-striped.usuarios.no-margin
-                                  %thead
-                                    %tr.contenido-popup-form{colspan: 4}= t(:recurso_humano_auditor)
-                                    %tr.contenido-popup-form{colspan: 4}
-                                      %td.sub-contenido-popup-form Nombre
-                                      %td.sub-contenido-popup-form HH
-                                      %td.sub-contenido-popup-form Valor HH
-                                      %td.sub-contenido-popup-form Costo
-                                  %tbody
-                                - if !solo_lectura  
-                                  %table
-                                    %thead
-                                      %tr.contenido-popup-form{colspan: 4}
-                                        %td{style: 'text-align: left; background-color: #fff;'}
-                                          %a{href: "#-1", onclick: "modalRrhhAuditor(document.getElementById('plan_id').value); return false;", id: "agregar_rr_au", style: 'color: #5d759e;'} Agregar
-                                          %i.fa.fa-plus-square.icono-celeste
                         %tr 
                           %td#td_plan_gastos_operacion.contenido-popup-form{colspan: 6}
                             %div#div_plan_gastos_operacion.table-responsive  
@@ -5793,32 +5727,6 @@
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarRrhhExternoshh(document.getElementById('plan_id').value); return false;"
-
-  -# POPUP RRHH AUDITOR
-  #modal_rrhh_auditor-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
-    .modal-dialog
-      .modal-content
-        .modal-body
-          = form_with(model: @objetivo_especifico, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
-            .row
-              .col-12
-                .card
-                  .card-header
-                    %h5.no-margin
-                      Recurso Humano Auditor
-                  .card-body
-                    %div#div_auditor_faltantes.table-responsive  
-                      %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                        = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
-                        %thead
-                          %tr
-                            -#%td.sub-contenido-popup-form ID
-                            %td.sub-contenido-popup-form Nombre
-                            %td.sub-contenido-popup-form HH en la actividad
-                        %tbody
-          .modal-footer
-            %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
-            = button_to 'Continuar', '#', class: 'btn btn-primary', onclick: "guardarRrhhAuditorhh(document.getElementById('plan_id').value); return false;"
 
   -# POPUP GASTOS OPERACION
   #modal_gastos_operacion-form.modal.fade{tabindex: -1, role: 'dialog', 'aria-labelledby' => 'exampleModalLabel', 'aria-hidden' => 'true'}
@@ -5927,13 +5835,14 @@
                             %label.label-estilo{ for: 'auditor' }
                               %abbr{ title: "Campo requerido" } *
                               Auditor
-                            = f.select :id, options_for_select(@registro_options, include_blank: 'Seleccione un auditor'), { include_blank: 'Seleccione una opción' }, class: 'chosen-control required-field', id: 'auditor_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'            
+                            = f.select :id, options_for_select(@registro_options, include_blank: 'Seleccione un auditor'), { include_blank: 'Seleccione una opción' }, class: 'chosen-control required-field', id: 'auditor_id', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'         
                           .col-12.col-lg-6
                             %label.label-estilo{ for: 'valor_hh' }
                               %abbr{ title: "Campo requerido" } *
                               Valor HH
                               %br
-                            = f.text_field :valor_hh, class: 'required-field', id: 'valor_hh', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;', maxlength: 10, onKeyPress: 'return soloNumeros(event)'
+                            = f.text_field :valor_hh, class: 'required-field', id: 'valor_hh_auditor', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;', maxlength: 10, onKeyPress: 'return soloNumeros(event)'
+           
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             - if !solo_lectura

@@ -17,7 +17,7 @@ class PlanActividad < ApplicationRecord
         'actividades.nombre',
         'plan_actividades.duracion',
         'SUM(CASE WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipo_3',
-        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipos_1_2'
+        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipos_1_2'
       )
       .joins('LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id')
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
@@ -74,15 +74,15 @@ class PlanActividad < ApplicationRecord
       .select(
         'recurso_humanos.flujo_id',
         'SUM(CASE WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipo_3',
-        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipos_1_2',
+        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipos_1_2',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 1 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_valorado',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 2 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_solicitado_al_fondo',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 1 AND equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_valorado_rrhh_propio',
-        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 1 AND equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido_rrhh_propio',
+        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 1 AND equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido_rrhh_propio',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 2 AND equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_valorado_rrhh_externo',
-        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 2 AND equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido_rrhh_externo',
-        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 3 AND equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_solicitado_fondo_rrhh_externo'
+        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 2 AND equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido_rrhh_externo',
+        'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 3 AND equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_solicitado_fondo_rrhh_externo'
       )
       .joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
       .where(flujo_id: flujo_id)
@@ -251,13 +251,28 @@ class PlanActividad < ApplicationRecord
       .where(plan_actividades: { actividad_id: actividad_id })
   end
 
-  def self.recursos_externos(flujo_id, actividad_id)
+  def self.recursos_externos_old(flujo_id, actividad_id)
     select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
       .joins(recurso_humanos: { equipo_trabajo: :user })
       .where(recurso_humanos: { flujo_id: flujo_id })
-      .where(equipo_trabajos: { tipo_equipo: [1, 2] })
+      .where(equipo_trabajos: { tipo_equipo: [1, 2, 4] })
       .where(plan_actividades: { actividad_id: actividad_id })
-  end    
+  end  
+  
+  def self.recursos_externos(flujo_id, actividad_id)
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, 
+            equipo_trabajos.valor_hh AS valor_hh, 
+            equipo_trabajos.tipo_equipo,
+            users.nombre_completo AS user_name,
+            registro_proveedores.nombre || \' \' || registro_proveedores.apellido AS nombre_proveedor')
+      .joins('LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id')
+      .joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
+      .joins('LEFT JOIN users ON equipo_trabajos.user_id = users.id')
+      .joins('LEFT JOIN registro_proveedores ON registro_proveedores.id = equipo_trabajos.registro_proveedores_id')
+      .where('recurso_humanos.flujo_id = ?', flujo_id)
+      .where('equipo_trabajos.tipo_equipo IN (?)', [1, 2, 4])
+      .where('plan_actividades.actividad_id = ?', actividad_id)
+  end
 
   def self.recursos_auditores(flujo_id, actividad_id)
     select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, registro_proveedores.nombre || \' \' || registro_proveedores.apellido AS user_name')
@@ -306,7 +321,7 @@ class PlanActividad < ApplicationRecord
   def self.valor_hh_tipos_1_2_(flujo_id, actividad_id)
     select('plan_actividades.id, plan_actividades.actividad_id, SUM(
               CASE 
-              WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+              WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
               ELSE 0 
               END
             ) AS valor_hh_tipos_1_2_')
@@ -363,7 +378,7 @@ class PlanActividad < ApplicationRecord
   def self.total_valor_hh_tipos_1_2(flujo_id)
     select('SUM(
                 CASE 
-                WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
                 ELSE 0 
                 END
               ) AS total_valor_hh_tipos_1_2')
@@ -375,7 +390,7 @@ class PlanActividad < ApplicationRecord
       .where(plan_actividades: { flujo_id: flujo_id })
       .pluck('SUM(
                 CASE 
-                WHEN equipo_trabajos.tipo_equipo IN (1, 2) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh
                 ELSE 0 
                 END
               )')
