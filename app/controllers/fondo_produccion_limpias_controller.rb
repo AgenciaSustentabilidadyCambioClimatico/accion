@@ -500,7 +500,12 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         @total_de_errores_por_tab = {}
       end
-      
+
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
@@ -1015,9 +1020,7 @@ class FondoProduccionLimpiasController < ApplicationController
     #helper_method :auditor_existente?
 
     def verificar_auditor_existente
-      #binding.pry
       exists = EquipoTrabajo.where(flujo_id: params[:flujo_id], tipo_equipo: 4, registro_proveedores_id: params[:auditor_id]).count
-      #binding.pry
       render json: { exists: exists }
     end
 
@@ -1611,10 +1614,17 @@ class FondoProduccionLimpiasController < ApplicationController
               elementos_micro_empresa: params[:elementos_micro_empresa],
               elementos_pequena_empresa: params[:elementos_pequena_empresa],
               elementos_mediana_empresa: params[:elementos_mediana_empresa],
-              elementos_grande_empresa: params[:elementos_grande_empresa]
+              elementos_grande_empresa: params[:elementos_grande_empresa],
+              empresas_adheridas: params[:empresas_adheridas]
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+          #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
+          if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
+            obtiene_y_graba_empresas_adheridas(true)
+          end
+
           set_flujo
           if params[:comunasIds].present? && params[:comunasIds].any?
             params[:comunasIds].each do |comuna_id|
@@ -4122,7 +4132,15 @@ class FondoProduccionLimpiasController < ApplicationController
         @costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
         if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
           @costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
-          @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
+
+          @confinanciamiento_empresa = nil
+          if @fondo_produccion_limpia.present?
+            if @fondo_produccion_limpia.cantidad_micro_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_mediana_empresa != 0
+                @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
+            end
+          end
         end  
 
         # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
@@ -4306,4 +4324,67 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
 
+      def obtiene_y_graba_empresas_adheridas(flag_guarda_datos)
+      #Obtenie empresas adheridas FASE 3
+        @empresas_adheridas_ids = ''
+        if @fondo_produccion_limpia.empresas_adheridas.present?
+          @empresas_adheridas_ids = JSON.parse(@fondo_produccion_limpia.empresas_adheridas)
+        end
+        @adhesiones = Adhesion.unscoped.where(flujo_id: @fondo_produccion_limpia.flujo_apl_id)
+        
+        @empresas_adheridas = {}
+        @adhesiones.each do |adh|
+          puts "adhesion: #{adh}"
+          @empresas_adheridas[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
+            tamano = empresa["tamaño_empresa"].split('-')
+            tamano_empresa = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano[2])
+            empresa.merge(
+              'tamano_empresa_id' => tamano_empresa.tamano_contribuyente_id,
+              'tamano_contribuyente_nombre' => tamano_empresa.tamano_contribuyente.nombre,
+              'seleccionada' => @empresas_adheridas_ids.include?(empresa['id'].to_s)
+            )
+          end
+        end
+        @empresas_adheridas = @empresas_adheridas.values.flatten
+
+        if flag_guarda_datos == true
+          # Filtrar empresas seleccionadas
+          empresas_seleccionadas = @empresas_adheridas.select { |empresa| empresa["seleccionada"] }
+          
+          # Obtener la cantidad de empresas únicas por rut_institucion
+          empresas_unicas = empresas_seleccionadas.uniq { |empresa| empresa["rut_institucion"] }
+          
+          # Contar el número de empresas
+          numero_empresas = empresas_unicas.count
+          
+          # Contar el número de tamaños de empresa por elementos (tamano_empresa_id)
+          tamano_elementos_count = empresas_seleccionadas.group_by { |empresa| empresa["tamano_empresa_id"] }
+          numero_tamanos = tamano_elementos_count.count
+          
+          # Para obtener específicamente el conteo por tamaño de elementos
+          tamanos_detalle_elementos = tamano_elementos_count.transform_values(&:count)
+      
+          # Contar el número de tamaños de empresa (tamano_empresa_id)
+          tamano_empresas_count = empresas_unicas.group_by { |empresa| empresa["tamano_empresa_id"] }
+          
+          # Para obtener específicamente el conteo por tamaño de empresa
+          tamanos_detalle_empresas = tamano_empresas_count.transform_values(&:count)
+          
+          custom_params = {
+            fondo_produccion_limpia: {
+              cantidad_micro_empresa: (tamanos_detalle_empresas[2].nil? ? 0 : tamanos_detalle_empresas[2]),
+              cantidad_pequeña_empresa: (tamanos_detalle_empresas[3].nil? ? 0 : tamanos_detalle_empresas[3]),
+              cantidad_mediana_empresa: (tamanos_detalle_empresas[4].nil? ? 0 : tamanos_detalle_empresas[4]),
+              cantidad_grande_empresa: (tamanos_detalle_empresas[5].nil? ? 0 : tamanos_detalle_empresas[5]),
+              elementos_micro_empresa: (tamanos_detalle_elementos[2].nil? ? 0 : tamanos_detalle_elementos[2]),
+              elementos_pequena_empresa: (tamanos_detalle_elementos[3].nil? ? 0 : tamanos_detalle_elementos[3]),
+              elementos_mediana_empresa: (tamanos_detalle_elementos[4].nil? ? 0 : tamanos_detalle_elementos[4]),
+              elementos_grande_empresa: (tamanos_detalle_elementos[5].nil? ? 0 : tamanos_detalle_elementos[5])
+            }
+          }
+          @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+        
+        end
+
+      end
 end

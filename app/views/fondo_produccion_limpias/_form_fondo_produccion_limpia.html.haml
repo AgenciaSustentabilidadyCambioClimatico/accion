@@ -169,25 +169,48 @@
 
   function sumarValoresTec() {
     if(#{@solo_lectura} != true && #{@tarea_pendiente.estado_tarea_pendiente_id} == 1)  {
-      // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
-      var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
-      var total = document.getElementById('total_tecnica');
 
-      // Inicializar la variable para la suma
-      var suma = 0;
+      var tipoInstrumentoValores = {
+        LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+        LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+      }
 
-      // Iterar sobre los campos de texto y sumar los valores
-      camposDeTexto.forEach(function (campo) {
-        // Obtener el valor del campo de texto y convertirlo a un número
-        var valor = parseFloat(campo.value) || 0;
+      var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
-        // Sumar al total
-        suma += valor;
-      
-      });
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 ) {
 
-    // Mostrar el resultado o hacer algo con la suma
-    total.textContent = suma;
+        
+        // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
+        var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec');
+        var total = document.getElementById('total_tecnica');
+
+        // Inicializar la variable para la suma
+        var suma = 0;
+
+        // Iterar sobre los campos de texto y sumar los valores
+        camposDeTexto.forEach(function (campo) {
+          // Obtener el valor del campo de texto y convertirlo a un número
+          var valor = parseFloat(campo.value) || 0;
+
+          // Sumar al total
+          suma += valor;
+        
+        });
+
+        // Mostrar el resultado o hacer algo con la suma
+        total.textContent = suma;
+      }
     }
   }
 
@@ -197,20 +220,16 @@
       var tipoInstrumentoValores = {
         LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
         LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-        LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
         EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
-        EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
       };
 
       var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
         var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -239,20 +258,17 @@
     var tipoInstrumentoValores = {
       LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
       LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-      LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
       EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
-      EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
     };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) 
+        {
 
       // Obtener todos los elementos con la clase 'valor-a-sumar-tec-elementos'
       var camposDeTexto = document.querySelectorAll('.valor-a-sumar-tec-elementos');
@@ -1871,26 +1887,47 @@
   }
 
   function enviarObservacionesAdmisibilidadFinanciera(){
-    var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
-    var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
-    var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
-    var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
     var duracion = document.getElementById('duracion').value;
-    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
     var empresas_asociadas_ag = 0;   
     var empresas_no_asociadas_ag = 0;
+    var cantidad_micro_empresa = 0; 
+    var cantidad_pequeña_empresa = 0;
+    var cantidad_mediana_empresa = 0; 
+    var cantidad_grande_empresa = 0;
     var elementos_micro_empresa = 0;
     var elementos_pequena_empresa = 0;
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
+    var empresas_adh = '';
 
     var tipoInstrumentoValores = {
-      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
-      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
-      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
-    };
+        LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+        LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+        EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}    
+      };
 
     var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
+      cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+      cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+      cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+      cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+    }
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
@@ -1923,17 +1960,37 @@
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
-    }else{
+    }
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
       elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
       elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
       elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
       elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
+
+      // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
+      const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
+      
+      // Crea un array para almacenar los valores de los checkboxes seleccionados
+      const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
+      empresas_adh = empresas_adheridas;
+    }
+
     $.ajax({
       url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
       data: {
         flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        tipo_instrumento_id: tipoInstrumentoId,
         cantidad_micro_empresa: cantidad_micro_empresa,
         cantidad_pequeña_empresa: cantidad_pequeña_empresa,
         cantidad_mediana_empresa: cantidad_mediana_empresa,
@@ -1946,7 +2003,8 @@
         elementos_micro_empresa: elementos_micro_empresa,
         elementos_pequena_empresa: elementos_pequena_empresa,
         elementos_mediana_empresa: elementos_mediana_empresa,
-        elementos_grande_empresa: elementos_grande_empresa
+        elementos_grande_empresa: elementos_grande_empresa,
+        empresas_adheridas: empresas_adh         
       },
       method: "GET",
       success: function(response) {
@@ -1973,28 +2031,47 @@
   }
 
   function enviarObservacionesAdmisibilidadTecnica(){
-    var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
-    var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
-    var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
-    var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-    var duracion = document.getElementById('duracion').value;
-    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value;    
+    var tipoInstrumentoValores = {
+      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
+      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
+      LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+      LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+      LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
+      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+      EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+      EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
+    };
 
+    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+
+    var duracion = document.getElementById('duracion').value;
+    var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
     var empresas_asociadas_ag = 0;   
     var empresas_no_asociadas_ag = 0;
-
+    var cantidad_micro_empresa = 0; 
+    var cantidad_pequeña_empresa = 0;
+    var cantidad_mediana_empresa = 0; 
+    var cantidad_grande_empresa = 0;
     var elementos_micro_empresa = 0;
     var elementos_pequena_empresa = 0;
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
+    var empresas_adh = '';
+  
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
-    var tipoInstrumentoValores = {
-      LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
-      LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
-      EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
-    };
-
-    var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
+      cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+      cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+      cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+      cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+    }
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
@@ -2027,17 +2104,38 @@
       } else {
           console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
       }
-    }else{
+    }
+    
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
       elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
       elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
       elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
       elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
     }
 
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
+
+      // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
+      const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
+      
+      // Crea un array para almacenar los valores de los checkboxes seleccionados
+      const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
+      empresas_adh = empresas_adheridas;
+    }
+
     $.ajax({
       url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
       data: {
         flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        tipo_instrumento_id: tipoInstrumentoId
         cantidad_micro_empresa: cantidad_micro_empresa,
         cantidad_pequeña_empresa: cantidad_pequeña_empresa,
         cantidad_mediana_empresa: cantidad_mediana_empresa,
@@ -2050,7 +2148,8 @@
         elementos_micro_empresa: elementos_micro_empresa,
         elementos_pequena_empresa: elementos_pequena_empresa,
         elementos_mediana_empresa: elementos_mediana_empresa,
-        elementos_grande_empresa: elementos_grande_empresa
+        elementos_grande_empresa: elementos_grande_empresa,
+        empresas_adheridas: empresas_adh         
       },
       method: "GET",
       success: function(response) {
@@ -3214,7 +3313,7 @@
         .alert.alert-primary
           %small  
             %i.fa.fa-question-circle.fa-1-5x
-            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores ya la comunidad en general y que pongan de relieve impactos, beneficios, mejores practicas, tecnicas, avances o innovaviones fruto de la implementación de Acuendos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentable con una visión preventiva de la contaminacion y uso eficiente de los recursos. </br></br> <a href="http://fpl.cpl.cl/ayuda/guias/documentos/guia_1.pdf" target="_blank">Descargar Guía Nº1</a>
+            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores ya la comunidad en general y que pongan de relieve impactos, beneficios, mejores practicas, tecnicas, avances o innovaviones fruto de la implementación de Acuendos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentable con una visión preventiva de la contaminacion y uso eficiente de los recursos. </br></br> <a href="https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view" target="_blank">Descargar Guía Nº1</a>
         %br
         %h1= t(:objetivo_específico)
         %br
@@ -3233,9 +3332,34 @@
                 - if !solo_lectura
                   %th.encabezado2-form.dos.iconos-acciones=t(:acción)
             %tbody
+      
         %br
-        <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+          <h1>Empresas Adheridas</h1>
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Nombre
+                  %th.encabezado2-form R.U.T.
+                  %th.encabezado2-form Establecimiento
+                  %th.encabezado2-form Comuna
+                  %th.encabezado2-form Tamaño Empresa
+                  %th.encabezado2-form Seleccionar
+                %tbody
+                - if @empresas_adheridas.present?
+                  - @empresas_adheridas.each do |empresas_adherida|
+                    %tr
+                      %td.contenido-form= empresas_adherida['nombre_institucion']
+                      %td.contenido-form= empresas_adherida['rut_institucion']
+                      %td.contenido-form= empresas_adherida['nombre_elemento']
+                      %td.contenido-form= empresas_adherida['comuna_instalacion']
+                      %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
+                      %td.contenido-form
+                        %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
+        %br
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
+          <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3357,7 +3481,8 @@
                       %th
                         = f.object.empresas_no_asociadas_ag
               %br
-        - else
+        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+          <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -4324,7 +4449,10 @@
                         %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo $0
-                    %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    - if @confinanciamiento_empresa.present?
+                      %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
+                    - else
+                      %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al 0% del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo  $0
                     %td#apoyo_general_empresa_aporte_postulante_cumple.contenido-form-center  
                       %span{ class: 'text-danger' } NO        
@@ -4341,7 +4469,10 @@
                         %span{ class: 'text-danger' } NO
                   - else
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo $0
-                    %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    - if @confinanciamiento_empresa.present?
+                      %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
+                    - else
+                      %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form Menor o igual a 0
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo  $0
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center  
                       %span{ class: 'text-danger' } NO      

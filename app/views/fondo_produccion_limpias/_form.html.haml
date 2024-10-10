@@ -12,27 +12,48 @@
       const button1 = document.getElementById('enviar-postulacion-button');
       button1.disabled = true;
 
-      var cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
-      var cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
-      var cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
-      var cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
-      var duracion = document.getElementById('duracion').value;
-      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
-      var empresas_asociadas_ag = 0;   
-      var empresas_no_asociadas_ag = 0;
-      var elementos_micro_empresa = 0;
-      var elementos_pequena_empresa = 0;
-      var elementos_mediana_empresa = 0;
-      var elementos_grande_empresa = 0;
-
       var tipoInstrumentoValores = {
         LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
         LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
-        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
+        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
+        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
+        LINEA_1_3: #{@tipo_instrumento_valores[:linea_1_3]},
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
+        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]},
+        EXTRAPRESUPUESTARIO_EVALUACION: #{@tipo_instrumento_valores[:extrapresupuestario_evaluacion]}
       };
 
       var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
+      var duracion = document.getElementById('duracion').value;
+      var fortalezas_consultores = document.getElementById('fortalezas_consultores').value; 
+      var empresas_asociadas_ag = 0;   
+      var empresas_no_asociadas_ag = 0;
+      var cantidad_micro_empresa = 0; 
+      var cantidad_pequeña_empresa = 0;
+      var cantidad_mediana_empresa = 0; 
+      var cantidad_grande_empresa = 0;
+      var elementos_micro_empresa = 0;
+      var elementos_pequena_empresa = 0;
+      var elementos_mediana_empresa = 0;
+      var elementos_grande_empresa = 0;
+      var empresas_adh = '';
+    
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
+        cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
+        cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
+        cantidad_mediana_empresa = document.getElementById('cantidad_mediana_empresa').value;
+        cantidad_grande_empresa = document.getElementById('cantidad_grande_empresa').value;
+      }
+      
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
@@ -64,17 +85,38 @@
         } else {
             console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
         }
-      }else{
+      }
+      
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+
         elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
         elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
         elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
         elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
       }
-  
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
+
+        // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
+        const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
+        
+        // Crea un array para almacenar los valores de los checkboxes seleccionados
+        const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
+        empresas_adh = empresas_adheridas;
+      }
+    
       $.ajax({
         url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
         data: {
           flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+          tipo_instrumento_id: tipoInstrumentoId,
           cantidad_micro_empresa: cantidad_micro_empresa,
           cantidad_pequeña_empresa: cantidad_pequeña_empresa,
           cantidad_mediana_empresa: cantidad_mediana_empresa,
@@ -87,7 +129,8 @@
           elementos_micro_empresa: elementos_micro_empresa,
           elementos_pequena_empresa: elementos_pequena_empresa,
           elementos_mediana_empresa: elementos_mediana_empresa,
-          elementos_grande_empresa: elementos_grande_empresa         
+          elementos_grande_empresa: elementos_grande_empresa,
+          empresas_adheridas: empresas_adh         
         },
         method: "GET",
         success: function(response) {
