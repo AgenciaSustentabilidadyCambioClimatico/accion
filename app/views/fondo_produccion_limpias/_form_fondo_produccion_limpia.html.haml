@@ -87,6 +87,20 @@
       $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
     });
 
+    $('.seleccionar-elemento-adhesion').click(function(){
+      cambio_estado_check();
+    });
+
+    $('#boton_sel_todos').click(function(){
+      $('.seleccionar-elemento-adhesion').prop("checked", true);
+      cambio_estado_check();
+    });
+
+    $('#boton_desel_todos').click(function(){
+      $('.seleccionar-elemento-adhesion').prop("checked", false);
+      cambio_estado_check();
+    });
+
     function checkbox_related_element(c) {
       element = $('#'+$(c).parents('.form-group').find('label.boolean').attr('for'));
       if (element === undefined) {
@@ -2888,25 +2902,18 @@
     //} 
   }
 
-  // Llama a un endpoint para verificar la existencia
-  /*function auditor_existente(auditoria_id) {
-    alert("entro auditor_existente");
-    let exists = false;
-    $.ajax({
-      url: "#{verificar_auditor_existente_fondo_produccion_limpia_path}",
-      data: { auditor_id: auditoria_id,
-              flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" },
-      method: "GET",
-      success: function(response) {
-        alert(response.exists);
-        exists = response.exists; // Asegúrate de que tu controlador devuelva un JSON con { exists: true/false }
-      },
-      error: function(error) {
-        console.error("Error al verificar auditor", error);
-      }
-    });
-    return exists;
-  }*/
+  function cambio_estado_check(){
+    check_length = $('.seleccionar-elemento-adhesion:checked').length
+    total_length = $('.seleccionar-elemento-adhesion').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
+  }
                                     
 %style
   :css
@@ -3165,6 +3172,11 @@
       margin: 30px auto;
     }
 
+    .row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
@@ -3336,6 +3348,12 @@
         %br
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
           <h1>Empresas Adheridas</h1>
+          .card-header
+            .d-flex.justify-content-between.align-items-center
+              %h5.no-margin
+              %div
+                %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+                %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
