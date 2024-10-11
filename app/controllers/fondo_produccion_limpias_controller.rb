@@ -123,6 +123,15 @@ class FondoProduccionLimpiasController < ApplicationController
             }]
           )
 
+          persona_by_user = Persona.where(user_id: postulante.user_id).first
+
+          #Se inserta en el mapa de actores al postulante
+          mapa = MapaDeActor.find_or_create_by({
+            flujo_id: flujo.id,
+            rol_id: Rol::PROPONENTE, 
+            persona_id: persona_by_user.id 
+          })
+
           #SE ENVIAR EL MAIL AL RESPONSABLE
           send_message(tarea_fondo, postulante.user_id)
           
