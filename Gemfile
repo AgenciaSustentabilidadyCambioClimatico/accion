@@ -16,7 +16,6 @@ gem 'autonumeric-rails'
 gem 'rails', '~> 6.0.1'
 gem 'caxlsx_rails'
 gem 'bootstrap', '~> 4.0.0'
-gem 'carrierwave', '~> 1.0'
 gem 'chartkick', '~>5.0.4'
 gem 'ckeditor', git: 'https://github.com/galetahub/ckeditor.git', ref: 'dc2cef2c2c3358124ebd86ca2ef2335cc898b41f'
 gem 'crontab_syntax_checker'
@@ -68,6 +67,9 @@ gem 'will_paginate'
 gem 'will_paginate-bootstrap4'
 gem 'rollbar'
 gem 'ruby-graphviz'
+gem "carrierwave", "~> 2.0"
+gem 'carrierwave-aws'
+gem 'aws-sdk', '~> 3'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
