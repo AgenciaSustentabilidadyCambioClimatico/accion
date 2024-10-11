@@ -11,7 +11,8 @@ class FondoProduccionLimpiasController < ApplicationController
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
-    :resolucion_contrato, :adjuntar_resolucion_contrato]
+    :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
+    :insert_gastos_administracion, :eliminar_gasto_administracion]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -2551,7 +2552,31 @@ class FondoProduccionLimpiasController < ApplicationController
         costos = PlanActividad.costos(@tarea_pendiente.flujo_id)
         tipo_instrumento = @flujo.tipo_instrumento_id
         costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
-        confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
+
+        aporte_micro = 0
+        aporte_pequena = 0
+        aporte_mediana = 0
+        tope_maximo = 0
+
+        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
+          tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+        else
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
+
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+          elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+          end
+        end
+
+        confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
 
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, costos_seguimiento, confinanciamiento_empresa)
      
@@ -4133,16 +4158,38 @@ class FondoProduccionLimpiasController < ApplicationController
         if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
           @costos_seguimiento = PlanActividad.costos_seguimiento(@tarea_pendiente.flujo_id, @flujo.tipo_instrumento_id)
 
+          aporte_micro = 0
+          aporte_pequena = 0
+          aporte_mediana = 0
+          tope_maximo = 0
+
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+            aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
+            aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
+            aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+          else
+            aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
+            aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
+            aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
+
+            if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+              tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+            elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+              tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+            end
+          end
+          
           @confinanciamiento_empresa = nil
           if @fondo_produccion_limpia.present?
             if @fondo_produccion_limpia.cantidad_micro_empresa != 0 || 
               @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
               @fondo_produccion_limpia.cantidad_mediana_empresa != 0
-                @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id)
+                @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
             end
           end
         end  
-
+        
         # Modifica mensaje y envia flag para permitir seguir con el proceso de diagnostico, en donde en la validación debe ir todo en SI
         mensaje_success = "La estructura de costos cumple con las Bases Técnicas y Administrativas del Fondo de Producción Limpia"   
         mensaje_error = "El costo total del proyecto no es válido, porque hay criterios que no cumplen con los límites de costos."

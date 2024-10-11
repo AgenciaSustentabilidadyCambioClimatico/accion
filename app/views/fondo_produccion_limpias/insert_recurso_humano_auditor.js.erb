@@ -335,13 +335,13 @@ $('#div_plan_recurso_auditor table tbody').empty();
           document.getElementById('apoyo_general_empresa_aporte_postulante_monto').innerText = '$0';
         <% end %>
 
-        <% if @confinanciamiento_empresa[1].present? %>
+        <% if @confinanciamiento_empresa.present? %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_porcentaje').innerText = 'Mayor o igual al <%= number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2) %> del total Actividades Tipo B';
         <% else %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_porcentaje').innerText = 'Mayor o igual al 0% del total Actividades Tipo B';
         <% end %>
 
-        <% if @costos_seguimiento[1].present? %>
+        <% if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present? %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '<%= number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.') %>';
         <% else %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '$0';
@@ -364,7 +364,7 @@ $('#div_plan_recurso_auditor table tbody').empty();
           document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_monto').innerText = '$0';
         <% end %>
 
-        <% if @confinanciamiento_empresa[0].present? %>
+        <% if @confinanciamiento_empresa.present? %>
           document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a <%= number_to_currency(@confinanciamiento_empresa[0]) %>';
           document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '<%= number_to_currency(@confinanciamiento_empresa[0]) %>';
         <% else %>

@@ -12,6 +12,9 @@ class FondoProduccionLimpia < ApplicationRecord
   APORTE_MICRO_EMPRESA = 900000
   APORTE_PEQUEÑA_EMPRESA = 700000
   APORTE_MEDIANA_EMPRESA = 300000
+  APORTE_MICRO_EMPRESA_L13 = 135000
+  APORTE_PEQUEÑA_EMPRESA_L13 = 105000
+  APORTE_MEDIANA_EMPRESA_L13 = 45000
   PORCENTAJE_APORTE_BENEFICIARIO_MICRO_EMPRESA = 0.1
   PORCENTAJE_APORTE_BENEFICIARIO_PEQUEÑA_EMPRESA = 0.3
   PORCENTAJE_APORTE_BENEFICIARIO_MEDIANA_EMPRESA = 0.7
@@ -913,13 +916,13 @@ class FondoProduccionLimpia < ApplicationRecord
     end
   end
 
-  def self.calcular_suma_y_porcentaje(flujo_id)
+  def self.calcular_suma_y_porcentaje(flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
     resultados = where(flujo_id: flujo_id)
       .group(:id)
       .select(
-        "SUM(cantidad_micro_empresa * #{APORTE_MICRO_EMPRESA}) +
-         SUM(cantidad_pequeña_empresa * #{APORTE_PEQUEÑA_EMPRESA}) +
-         SUM(cantidad_mediana_empresa * #{APORTE_MEDIANA_EMPRESA}) AS suma_total",
+        "SUM(cantidad_micro_empresa * #{aporte_micro}) +
+         SUM(cantidad_pequeña_empresa * #{aporte_pequena}) +
+         SUM(cantidad_mediana_empresa * #{aporte_mediana}) AS suma_total",
         "(#{PORCENTAJE_APORTE_BENEFICIARIO_MICRO_EMPRESA} * SUM(cantidad_micro_empresa) + 
           #{PORCENTAJE_APORTE_BENEFICIARIO_PEQUEÑA_EMPRESA} * SUM(cantidad_pequeña_empresa) + 
           #{PORCENTAJE_APORTE_BENEFICIARIO_MEDIANA_EMPRESA} * SUM(cantidad_mediana_empresa)) /
@@ -929,7 +932,12 @@ class FondoProduccionLimpia < ApplicationRecord
       ).first
 
     if resultados.present?
-      suma_total = resultados.suma_total.to_f
+      suma_total = 0
+      if resultados.suma_total.to_f >= tope_maximo.to_f
+        suma_total = tope_maximo.to_f
+      else
+        suma_total = resultados.suma_total.to_f
+      end
       porcentaje_empresa = resultados.porcentaje_empresa.to_f
       return suma_total, porcentaje_empresa
     else
