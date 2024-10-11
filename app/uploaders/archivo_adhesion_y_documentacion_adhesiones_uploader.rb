@@ -1,5 +1,5 @@
 class ArchivoAdhesionYDocumentacionAdhesionesUploader < CarrierWave::Uploader::Base
-  storage :file
+  storage :aws
 
   CarrierWave.configure do |config|
     config.remove_previously_stored_files_after_update = false

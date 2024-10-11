@@ -4,7 +4,7 @@ class ArchivoDatoLevantadoMensualUploader < CarrierWave::Uploader::Base
   # include CarrierWave::MiniMagick
 
   # Choose what kind of storage to use for this uploader:
-  storage :file
+  storage :aws
   # storage :fog
 
   # Override the directory where uploaded files will be stored.
@@ -36,7 +36,7 @@ class ArchivoDatoLevantadoMensualUploader < CarrierWave::Uploader::Base
   # Add a white list of extensions which are allowed to be uploaded.
   # For images you might use something like this:
   def extension_whitelist
-    %w(jpg jpeg png zip rar pdf) 
+    %w(jpg jpeg png zip rar pdf)
   end
 
   # Override the filename of the uploaded files:

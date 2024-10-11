@@ -1,5 +1,5 @@
 class ArchivosAnexosPosterioresFirmasInformeAcuerdosUploader < CarrierWave::Uploader::Base
-  storage :file
+  storage :aws
 
   attr_accessor :indice
 

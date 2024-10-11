@@ -1,5 +1,5 @@
 class ArchivoInformeDeAcuerdoAnteriorUploader < CarrierWave::Uploader::Base
-  storage :file
+  storage :aws
 
   def store_dir
     "uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
@@ -8,7 +8,7 @@ class ArchivoInformeDeAcuerdoAnteriorUploader < CarrierWave::Uploader::Base
   def extension_whitelist
     %w(jpg jpeg png pdf zip rar xls xlsx doc docx)
   end
-  
+
   def size_range
     1..400.megabytes
   end
