@@ -1724,6 +1724,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @revisor = true
       @adm_juridica = false
 
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       #Carga tabs de postulación
       set_equipo_trabajo
       set_actividades_x_linea
@@ -1896,6 +1901,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       #Carga tabs de postulación
       set_equipo_trabajo
       set_actividades_x_linea
@@ -2013,6 +2023,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       set_equipo_trabajo
       set_actividades_x_linea
       set_plan_actividades
@@ -2129,6 +2144,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
       @adm_juridica = false
+
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2302,6 +2322,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
       @adm_juridica = false
+
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
 
       #Carga tabs de postulación
       set_equipo_trabajo
@@ -2657,6 +2682,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.temp_siguientes = "true"
       @manifestacion_de_interes.seleccion_de_radios
 
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       @admisibilidad = true
       @solo_lectura = false
       @adm_juridica = false
@@ -2764,6 +2794,11 @@ class FondoProduccionLimpiasController < ApplicationController
     def observaciones_admisibilidad_tecnica #TAREA FPL-04
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = false
+
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
 
       @adm_juridica = false
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
@@ -2882,6 +2917,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = true
 
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
+
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
 
@@ -2986,6 +3026,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
+
+      #Obtenie empresas adheridas Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        obtiene_y_graba_empresas_adheridas(false)
+      end
 
       #Carga tabs de postulación
       set_equipo_trabajo

@@ -3348,12 +3348,13 @@
         %br
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
           <h1>Empresas Adheridas</h1>
-          .card-header
-            .d-flex.justify-content-between.align-items-center
-              %h5.no-margin
-              %div
-                %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
-                %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
+          - if !solo_lectura
+            .card-header
+              .d-flex.justify-content-between.align-items-center
+                %h5.no-margin
+                %div
+                  %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+                  %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -3374,7 +3375,10 @@
                       %td.contenido-form= empresas_adherida['comuna_instalacion']
                       %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
                       %td.contenido-form
-                        %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
+                        - if !solo_lectura
+                          %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
+                        - else
+                          %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, disabled: true, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
         %br
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
           <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
@@ -3665,22 +3669,12 @@
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
-                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
+                            %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El postulante no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
                             = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
                               %i.fa.fa-trash 
         </br>
         <h1>Equipo de Institución Ejecutora</h1>
-        -#<h1>B) Equipo de Trabajo de la Consultora</h1>
-        - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) && !solo_lectura
-          -# = link_to 'Agregar', new_admin_user_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' 
-        -# %div.table-responsive
-        -#  %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-        -#    %thead
-        -#      %tr
-        -#        %th.encabezado-form{colspan: 9}=t(:equipo_trabajo_consultores) 
-        -# %br
-          -# = link_to 'Agregar', new_objetivo_especifico_fondo_produccion_limpia_path(id: @tarea_pendiente.id), class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm'
         .alert.alert-primary
           %small  
             %i.fa.fa-question-circle.fa-1-5x
@@ -3688,7 +3682,6 @@
         - if !solo_lectura
           %div.table-responsive       
             %table 
-              -#-if @count_user_empresa == 0 && @count_user_equipo == 0
               -if @tipo == 0
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_0_Option').value);" }
@@ -3696,8 +3689,6 @@
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
                   %td.option-form Equipo de Consultores
-
-              -#-if @count_user_empresa > 0
               -if @tipo == 2
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_1', { checked: true, class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
@@ -3705,8 +3696,6 @@
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);', disabled: 'disabled'  }
                   %td.option-form Equipo de Consultores
-              
-              -#-if @count_user_equipo > 0
               -if @tipo == 1
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);", disabled: 'disabled' }
@@ -3740,7 +3729,6 @@
                           - else
                             = link_to eliminar_empresa_fondo_produccion_limpia_path(contribuyente_id: empresa.id), remote: true, method: :delete, data: { contribuyente_id: empresa.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:contribuyente)) }, title: "Eliminar Contribuyente", class: 'eliminar-empresa', id: "eliminar-empresa-#{empresa.id}" do
                               %i.fa.fa-trash 
-        -#- if @count_empresa_equipo.present? && @count_empresa_equipo > 0
         %div#div_equipo_consultora_empresa.table-responsive{ style: 'display: none;' }
           - if !solo_lectura
             - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
@@ -3840,11 +3828,10 @@
                     %th.encabezado2-form=t(:email)
                     %th.encabezado2-form=t(:profesion)
                     %th.encabezado2-form=t(:valor_hh)
-                    - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA)
+                    - if !solo_lectura
                       %th.encabezado2-form.dos.iconos-acciones=t(:acción)
                 %tbody
                   - if @auditores.present?
-                    -#- @auditores.each do |auditor|
                     - @auditores.each do |entry|
                       - auditor = entry[:auditor]
                       - equipo_trabajo_id = entry[:equipo_trabajo_ids][0]
@@ -4456,7 +4443,7 @@
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
-                  - if @costos_seguimiento[1].present?
+                  - if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present?
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'])
                     %td#apoyo_general_empresa_aporte_postulante_porcentaje.contenido-form Mayor o igual al #{number_to_percentage((@confinanciamiento_empresa[1]).round(2), precision: 2)} del total Actividades Tipo B
                     %td#apoyo_general_empresa_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo']+@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido']) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.')
@@ -4476,7 +4463,7 @@
                       %span{ class: 'text-danger' } NO        
                 %tr
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Cofinanciamiento ASCC
-                  - if @costos_seguimiento[1].present?
+                  - if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present?
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f)
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])

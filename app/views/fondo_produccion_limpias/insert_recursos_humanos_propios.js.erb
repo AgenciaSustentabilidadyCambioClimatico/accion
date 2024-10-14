@@ -18,7 +18,7 @@ $('#div_plan_recursos_propios table tbody').empty();
     $('#div_plan_recursos_propios table tbody').append(newRow);
 
     <% if recurso_humano_existente?(recurso_interno.equipo_trabajos_id, flujo_id) %>
-      $('#iconos-acciones-<%= recurso_interno.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');
+      $('#iconos-acciones-<%= recurso_interno.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El postulante no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');
     <% end %>
   <% end %>
 
