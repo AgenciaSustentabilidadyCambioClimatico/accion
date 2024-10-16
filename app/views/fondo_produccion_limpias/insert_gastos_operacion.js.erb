@@ -376,7 +376,7 @@ document.getElementById('total_total_suma').innerText = '<%= number_to_currency 
         document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a <%= number_to_currency(@confinanciamiento_empresa[0]) %>';
         document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '<%= number_to_currency(@confinanciamiento_empresa[0]) %>';
       <% else %>
-        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a $0 %>';
+        document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_porcentaje').innerText = 'Menor o igual a $0';
         document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_limite').innerText = '$0';
       <% end %>
 

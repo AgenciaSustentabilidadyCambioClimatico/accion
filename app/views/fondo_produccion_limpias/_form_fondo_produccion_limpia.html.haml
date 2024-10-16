@@ -32,6 +32,24 @@
     sumarValoresTecElementosCarga();
     cargarObjetivosEspecificos();
     valida_div();
+
+    $('#adhesiones_revisadas').DataTable({
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      lengthMenu: [[8], [4]],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 3 },
+        { responsivePriority: 2, targets: -1 },
+        { responsivePriority: 3, targets: -2 }
+      ]
+    });
    
     //$("#intitucion_cogestora").click(function(){
     //  $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
@@ -3172,11 +3190,6 @@
       margin: 30px auto;
     }
 
-    .row {
-      display: flex;
-      justify-content: flex-end;
-    }
-
 = render 'modal_recuerde_guardar'
 #fondoContent.tab-content.px-2.pt-0
   - tipo = @tipo
@@ -3325,7 +3338,12 @@
         .alert.alert-primary
           %small  
             %i.fa.fa-question-circle.fa-1-5x
-            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores ya la comunidad en general y que pongan de relieve impactos, beneficios, mejores practicas, tecnicas, avances o innovaviones fruto de la implementación de Acuendos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentable con una visión preventiva de la contaminacion y uso eficiente de los recursos. </br></br> <a href="https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view" target="_blank">Descargar Guía Nº1</a>
+            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
+            
+            - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1  
+              %br{ :style => 'margin-bottom: 10px;' }
+              
+              %a{ href: "https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view", target: "_blank" } Descargar Guía Nº1
         %br
         %h1= t(:objetivo_específico)
         %br
@@ -3349,36 +3367,39 @@
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
           <h1>Empresas Adheridas</h1>
           - if !solo_lectura
-            .card-header
-              .d-flex.justify-content-between.align-items-center
-                %h5.no-margin
-                %div
-                  %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
-                  %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
-          %div.table-responsive
-            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-              %thead
-                %tr
-                  %th.encabezado2-form Nombre
-                  %th.encabezado2-form R.U.T.
-                  %th.encabezado2-form Establecimiento
-                  %th.encabezado2-form Comuna
-                  %th.encabezado2-form Tamaño Empresa
-                  %th.encabezado2-form Seleccionar
-                %tbody
-                - if @empresas_adheridas.present?
-                  - @empresas_adheridas.each do |empresas_adherida|
-                    %tr
-                      %td.contenido-form= empresas_adherida['nombre_institucion']
-                      %td.contenido-form= empresas_adherida['rut_institucion']
-                      %td.contenido-form= empresas_adherida['nombre_elemento']
-                      %td.contenido-form= empresas_adherida['comuna_instalacion']
-                      %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
-                      %td.contenido-form
-                        - if !solo_lectura
-                          %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
-                        - else
-                          %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, disabled: true, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
+            .d-flex.justify-content-between.align-items-center
+              %h5.no-margin
+              %div
+                %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
+                %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
+          %br
+          .row
+            .col-12
+              .card
+                .card-body.p-0
+                  %table.table.table-striped.table-bordered#adhesiones_revisadas{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+                    %thead
+                      %tr
+                        %th.encabezado2-form Nombre
+                        %th.encabezado2-form R.U.T.
+                        %th.encabezado2-form Establecimiento
+                        %th.encabezado2-form Comuna
+                        %th.encabezado2-form Tamaño Empresa
+                        %th.encabezado2-form Seleccionar
+                    %tbody
+                      - if @empresas_adheridas.present?
+                        - @empresas_adheridas.each do |empresas_adherida|
+                          %tr{"data-id" => empresas_adherida['id']} 
+                            %td.contenido-form= empresas_adherida['nombre_institucion']
+                            %td.contenido-form= empresas_adherida['rut_institucion']
+                            %td.contenido-form= empresas_adherida['nombre_elemento']
+                            %td.contenido-form= empresas_adherida['comuna_instalacion']
+                            %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
+                            %td.contenido-form
+                              - if !solo_lectura
+                                %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
+                              - else
+                                %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, disabled: true, value: "#{empresas_adherida['id']}", checked: empresas_adherida['seleccionada'] ? 'checked' : nil}
         %br
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO 
           <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
