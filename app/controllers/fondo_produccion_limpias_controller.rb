@@ -1627,27 +1627,96 @@ class FondoProduccionLimpiasController < ApplicationController
           end
 
           set_flujo
-          if params[:comunasIds].present? && params[:comunasIds].any?
-            params[:comunasIds].each do |comuna_id|
-              # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
-              if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
-                puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
-              else
-                # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
-                comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+
+          # Convierte la cadena JSON a un array de hashes
+          comunas = JSON.parse(params[:comunasIds])
+          
+          if params[:comunasIds].present?
+            # Eliminar todas las entradas para el flujo actual
+            ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
             
-                # Intentar guardar el objeto ComunaFlujo en la base de datos
+            # Recorre el array de comunas
+            comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
+            comunas.each do |comuna|
+              tipo = comuna["tipo"]
+              
+              if tipo == 'región'
+                region_id = comuna["id"]
+                # Busca o crea la región
+                region = Region.find_or_create_by(id: region_id) do |r|
+                  r.nombre = comuna["nombre"] # Ajusta según tu modelo
+                end
+                
+                # Almacena las comunas de esta región en ComunasFlujo
+                region.comunas.each do |comuna_de_region|
+                  comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_region.id, flujo_id: @flujo.id)
+                  if comuna_flujo.save
+                    puts "Comuna de región guardada: #{comuna_de_region.id} en flujo #{@flujo.id}"
+                  else
+                    puts "Error al guardar comuna de región: #{comuna_flujo.errors.full_messages.join(', ')}"
+                  end
+                end
+          
+              elsif tipo == 'provincia'
+                provincia_id = comuna["id"]
+                # Busca o crea la provincia
+                provincia = Provincia.find_or_create_by(id: provincia_id) do |p|
+                  p.nombre = comuna["nombre"] # Ajusta según tu modelo
+                end
+                
+                # Almacena las comunas de esta provincia en ComunasFlujo
+                provincia.comunas.each do |comuna_de_provincia|
+                  comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_provincia.id, flujo_id: @flujo.id)
+                  if comuna_flujo.save
+                    puts "Comuna de provincia guardada: #{comuna_de_provincia.id} en flujo #{@flujo.id}"
+                  else
+                    puts "Error al guardar comuna de provincia: #{comuna_flujo.errors.full_messages.join(', ')}"
+                  end
+                end
+          
+              elsif tipo == 'comuna'
+                comuna_id = comuna["id"]
+                comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
                 if comuna_flujo.save
-                  # Operación exitosa, puedes hacer algo si es necesario
+                  puts "Comuna guardada: #{comuna_id} en flujo #{@flujo.id}"
                 else
-                  # Si hay algún error al guardar el objeto, puedes manejarlo aquí
-                  puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+                  puts "Error al guardar comuna: #{comuna_flujo.errors.full_messages.join(', ')}"
                 end
               end
-            end   
+            end
           else
-            puts "No se selecciono ninguna comuna"
-          end 
+            # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
+            ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+            puts "No se seleccionó ninguna comuna"
+          end
+          
+
+          #if params[:comunasIds].present?# && params[:comunasIds].any?
+          #  ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+          #  params[:comunasIds].each do |comuna_id|
+          #  
+          #    binding.pry
+          #    # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
+          #    if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
+          #      puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
+          #    else
+          #      # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
+          #      comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+          #  
+          #      # Intentar guardar el objeto ComunaFlujo en la base de datos
+          #      if comuna_flujo.save
+          #        # Operación exitosa, puedes hacer algo si es necesario
+          #      else
+          #        # Si hay algún error al guardar el objeto, puedes manejarlo aquí
+          #        puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
+          #      end
+          #    end
+          #  end   
+          #else
+          #  # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
+          #  ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+          #  puts "No se selecciono ninguna comuna"
+          #end 
         
           flash[:success] = 'Datos guardados correctamente'
           #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
