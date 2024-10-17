@@ -954,8 +954,12 @@ class FondoProduccionLimpiasController < ApplicationController
         respond_to do |format|
         if @user.update(custom_params[:user]) && @equipo_temporal.save
           if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
-            if @registro_proveedor.save
-              #flash[:success] = 'Consultor creado exitosamente.'
+            if params[:equipo_trabajo][:tipo_equipo].to_i != 3
+              if @registro_proveedor.save
+                #flash[:success] = 'Consultor creado exitosamente.'
+                format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
+              end
+            else
               format.js { render 'update_modal', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
             end
           else
@@ -1171,6 +1175,12 @@ class FondoProduccionLimpiasController < ApplicationController
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
         @tipo_act = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad?
+        @tipo_perm = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso?
+
+        @tipo_permiso = 0
+        if @tipo_perm == "nueva"
+          @tipo_permiso = 1
+        end    
 
         if @tipo_act == "tipo_a"
           @tipo_actividad = 0
@@ -1220,7 +1230,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = params['solo_lectura'] == "true" ? true : false
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
       end
     end
     
@@ -1510,6 +1520,22 @@ class FondoProduccionLimpiasController < ApplicationController
           @plan_actividades.save
           @valida_ceros = true
         end
+
+        #Actualiza nombre de actividad, solo para cuando sea una actividad nueva
+        @tipo_permiso = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso?
+        @tipo_perm = 0
+        if @tipo_permiso == "nueva"
+          custom_params_actividades = {
+            actividades: {
+              nombre: params['nombre_actividad']
+            }
+          }
+          @actividad = Actividad.find(params[:plan_id])
+          @actividad.update(custom_params_actividades[:actividades])
+          @nombre_actividad = params['nombre_actividad']
+          @tipo_perm = 1
+        end
+
         @plan_id = params['plan_id']
         @duracion_x = params['duracion'].join(',')
         respond_to do |format|
@@ -1695,7 +1721,6 @@ class FondoProduccionLimpiasController < ApplicationController
           #  ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
           #  params[:comunasIds].each do |comuna_id|
           #  
-          #    binding.pry
           #    # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
           #    if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
           #      puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"

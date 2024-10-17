@@ -679,7 +679,8 @@
     if (plan_id != 0) {
       $.ajax({
         url: "#{insert_plan_actividades_fondo_produccion_limpia_path}",
-        data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
+        data: { flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+                nombre_actividad: nombre_actividad, 
                 plan_id: plan_id, 
                 duracion: duracion, 
                 objetivos_especifico_id: objetivos_especifico_id},
@@ -3932,7 +3933,7 @@
                       %tr
                         %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                   %tr
-                    %td.contenido-form=actividad.nombre
+                    %td.contenido-form{id: "nombre_actividad_#{actividad.id}"}=actividad.nombre
                     - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
                     - if detalle_existente.present?
                       - duraciones = detalle_existente.duracion.split(',')

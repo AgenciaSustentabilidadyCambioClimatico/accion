@@ -84,6 +84,16 @@ $('#objetivos_especifico_id').val('<%= @objetivos_especifico_id %>');
 
 $('#tipo_actividad').val('<%= @tipo_actividad %>');
 
+var tipoPermiso = <%= @tipo_permiso %>;
+
+if (tipoPermiso === 1) {
+    // Habilitar el campo de texto
+    document.getElementById('nombre_actividad').disabled = false;
+} else {
+    // Deshabilitar el campo de texto si no es tipo 3
+    document.getElementById('nombre_actividad').disabled = true;
+}
+
 //console.log("<%= @tipo_actividad %>");
 $('#div_duracion table tbody').empty();
 var newRowDuracion = "<%= @duracion.html_safe %>";

@@ -7,6 +7,11 @@
   <% end %>
 <% end %>
 
+var tipoPermiso = <%= @tipo_perm %>;
+if (tipoPermiso === 1) {
+  $("#nombre_actividad_<%= @plan_actividades.actividad_id %>").text("<%= @nombre_actividad %>");
+}
+
 //llena los cmapos de cero al momento de crear el plan de actividad
 <% if @valida_ceros %>
   $("#valor_hh_tipo_3_<%= @plan_actividades.actividad_id %>").text('$0');
