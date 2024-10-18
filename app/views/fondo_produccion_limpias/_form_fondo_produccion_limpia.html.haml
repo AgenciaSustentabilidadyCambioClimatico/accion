@@ -1934,6 +1934,8 @@
     var elementos_grande_empresa = 0;
     var empresas_adh = '';
 
+    const datos = [];
+
     var tipoInstrumentoValores = {
         LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
         LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
@@ -1969,36 +1971,29 @@
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
    
-      // Obtener el elemento <ul> con la clase seleccionados_tree
-      var ulElement = document.querySelector('.seleccionados_tree');
-
-      // Verificar si se encontró el elemento <ul>
-      if (ulElement) {
-          // Obtener todos los elementos <li> dentro del <ul>
-          var liElements = ulElement.querySelectorAll('li');
-
-          // Crear un array para almacenar los IDs de las comunas seleccionadas
-          var comunasIds = [];
-
-          // Iterar sobre los elementos <li> para obtener los IDs
-          liElements.forEach(function(liElement) {
-              // Obtener el ID del elemento <li>
-              var comunaId = liElement.id;
-              // Agregar el ID al array de IDs de comunas seleccionadas
-              comunasIds.push(comunaId);
+      const listaSeleccionados = document.querySelector('.list-group.seleccionados_tree.m-0');
+        
+      if (listaSeleccionados) {
+        const items = listaSeleccionados.querySelectorAll('li.list-group-item');
+        
+        
+        items.forEach(item => {
+          const id = item.id; // Obtenemos el ID del elemento <li>
+          const nombre= item.childNodes[0].textContent.trim(); // Obtenemos el nombre de la comuna
+          const tipo = item.querySelector('.type').textContent.trim(); // Obtenemos el tipo (comuna, provincia, región)
+          
+          datos.push({
+            id: id,
+            nombre: nombre,
+            tipo: tipo
           });
-
-          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-          // console.log('IDs de comunas seleccionadas:', comunasIds);
-      } else {
-          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
-      }
+        });
+        
+        console.log(datos); // Muestra los datos en la consola
+      }  
     }
-    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
@@ -2032,7 +2027,7 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds,
+        comunasIds : JSON.stringify(datos),
         elementos_micro_empresa: elementos_micro_empresa,
         elementos_pequena_empresa: elementos_pequena_empresa,
         elementos_mediana_empresa: elementos_mediana_empresa,
@@ -2091,6 +2086,8 @@
     var elementos_mediana_empresa = 0;
     var elementos_grande_empresa = 0;
     var empresas_adh = '';
+
+    const datos = [];
   
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
@@ -2113,37 +2110,28 @@
       var empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
       var empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
 
-      // Obtener el elemento <ul> con la clase seleccionados_tree
-      var ulElement = document.querySelector('.seleccionados_tree');
-
-      // Verificar si se encontró el elemento <ul>
-      if (ulElement) {
-          // Obtener todos los elementos <li> dentro del <ul>
-          var liElements = ulElement.querySelectorAll('li');
-
-          // Crear un array para almacenar los IDs de las comunas seleccionadas
-          var comunasIds = [];
-
-          // Iterar sobre los elementos <li> para obtener los IDs
-          liElements.forEach(function(liElement) {
-              // Obtener el ID del elemento <li>
-              var comunaId = liElement.id;
-              // Agregar el ID al array de IDs de comunas seleccionadas
-              comunasIds.push(comunaId);
+      const listaSeleccionados = document.querySelector('.list-group.seleccionados_tree.m-0');
+        
+        if (listaSeleccionados) {
+          const items = listaSeleccionados.querySelectorAll('li.list-group-item');
+          items.forEach(item => {
+            const id = item.id; // Obtenemos el ID del elemento <li>
+            const nombre= item.childNodes[0].textContent.trim(); // Obtenemos el nombre de la comuna
+            const tipo = item.querySelector('.type').textContent.trim(); // Obtenemos el tipo (comuna, provincia, región)
+            
+            datos.push({
+              id: id,
+              nombre: nombre,
+              tipo: tipo
+            });
           });
-
-          // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-          // console.log('IDs de comunas seleccionadas:', comunasIds);
-      } else {
-          console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
-      }
+          
+          console.log(datos); // Muestra los datos en la consola
+        } 
     }
     
-    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
+    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
@@ -2177,7 +2165,7 @@
         empresas_no_asociadas_ag: empresas_no_asociadas_ag,
         duracion: duracion,
         fortalezas_consultores: fortalezas_consultores,
-        comunasIds : comunasIds,
+        comunasIds : JSON.stringify(datos),
         elementos_micro_empresa: elementos_micro_empresa,
         elementos_pequena_empresa: elementos_pequena_empresa,
         elementos_mediana_empresa: elementos_mediana_empresa,
@@ -2848,9 +2836,10 @@
       });
     }
 
-    function actualizarContenidoDescarga(id, nombreArchivo, nombreCampo) {
+    function actualizarContenidoDescarga(id, nombreArchivo, nombreCampo, origen) {
       var fila = document.getElementById(`fila_${id}`);
-      var linkDescarga = fila.querySelector('a.btn-descargar');
+      var linkDescarga = fila.querySelector(`#archivo_cargado_${origen}${id} a.btn-descargar`);
+
       if (nombreArchivo !== "") {
         // Si se ha cargado un archivo, actualizar el contenido del enlace de descarga
         linkDescarga.dataset.originalTitle = nombreArchivo;
@@ -2868,9 +2857,9 @@
       }
     }
 
-    function guardarYActualizar(event, id, nombreCampo) {
+    function guardarYActualizar(event, id, nombreCampo, origen) {
       guardarArchivos(event, id, nombreCampo);
-      actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo);
+      actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo, origen);
     } 
 
        
@@ -4002,7 +3991,8 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
+                %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
                 - if adm_juridica
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
@@ -4011,8 +4001,10 @@
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
-                    %td.contenido-form
-                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                    %td.contenido-form   
+                      = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
+                    %td.contenido-form{id: "archivo_cargado_postulante_#{descargable.id}"} 
+                      = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
@@ -4020,11 +4012,11 @@
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
                           - if valor.nil? || valor.file.nil? || !valor.file.present?
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'postulante_')", label: false
                           - else
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'postulante_')", label: false
                         - else
-                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'postulante_')", label: false
         %br              
         <h1>B) Receptor cofinanciamiento </h1>              
         %div.table-responsive
@@ -4032,7 +4024,8 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
+                %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
                 - if adm_juridica  
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
@@ -4042,7 +4035,9 @@
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
                     %td.contenido-form
-                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                      = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
+                    %td.contenido-form{id: "archivo_cargado_receptor_#{descargable.id}"} 
+                      = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica
@@ -4050,11 +4045,11 @@
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
                           - if valor.nil? || valor.file.nil? || !valor.file.present?
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'receptor_')", label: false
                           - else
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'receptor_')", label: false
                         - else
-                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'receptor_')", label: false
         %br
         <h1>C) Ejecutor </h1>              
         %div#div_ejecutor.table-responsive  
@@ -4062,7 +4057,8 @@
             %thead
               %tr
                 %th.encabezado-form{style: 'width: 25%;'} Documento
-                %th.encabezado-form{style: 'width: 25%;'} Descargar Archivo
+                %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
+                %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
                 - if adm_juridica
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
@@ -4072,7 +4068,9 @@
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
                     %td.contenido-form
-                      = __descargar_archivo(f.object.send(descargable.nombre_campo), f.object)
+                      = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
+                    %td.contenido-form{id: "archivo_cargado_ejecutor_#{descargable.id}"} 
+                      = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
                     - if adm_juridica 
@@ -4080,11 +4078,11 @@
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
                           - if valor.nil? || valor.file.nil? || !valor.file.present?
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'ejecutor_')", label: false
                           - else
-                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                            = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'ejecutor_')", label: false
                         - else
-                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}')", label: false
+                          = f.file_field descargable.nombre_campo, id: "#{descargable.nombre_campo}", name: "#{descargable.nombre_campo}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{descargable.id}', '#{descargable.nombre_campo}', 'ejecutor_')", label: false
   #costos.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"costos"] ? 'true' : 'false'), "aria-labelledby" => "costos-tab", :role => "tabpanel", class: ("show active" if tabs[:"costos"])}
     .card
       .card-body

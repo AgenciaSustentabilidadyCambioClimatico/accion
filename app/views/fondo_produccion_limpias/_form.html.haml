@@ -63,38 +63,10 @@
         empresas_asociadas_ag = document.getElementById('empresas_asociadas_ag').value;
         empresas_no_asociadas_ag = document.getElementById('empresas_no_asociadas_ag').value;
 
-        /*// Obtener el elemento <ul> con la clase seleccionados_tree
-        var ulElement = document.querySelector('.seleccionados_tree');
-
-        // Verificar si se encontró el elemento <ul>
-        if (ulElement) {
-            // Obtener todos los elementos <li> dentro del <ul>
-            var liElements = ulElement.querySelectorAll('li');
-
-            // Crear un array para almacenar los IDs de las comunas seleccionadas
-            var comunasIds = [];
-
-            // Iterar sobre los elementos <li> para obtener los IDs
-            liElements.forEach(function(liElement) {
-                // Obtener el ID del elemento <li>
-                var comunaId = liElement.id;
-                // Agregar el ID al array de IDs de comunas seleccionadas
-                comunasIds.push(comunaId);
-            });
-
-            // Ahora tienes el array comunasIds que contiene los IDs de las comunas seleccionadas
-            // console.log('IDs de comunas seleccionadas:', comunasIds);
-        } else {
-            console.log('No se encontró el elemento <ul> con la clase seleccionados_tree');
-        }*/
-
-
         const listaSeleccionados = document.querySelector('.list-group.seleccionados_tree.m-0');
         
         if (listaSeleccionados) {
           const items = listaSeleccionados.querySelectorAll('li.list-group-item');
-          
-          
           items.forEach(item => {
             const id = item.id; // Obtenemos el ID del elemento <li>
             const nombre= item.childNodes[0].textContent.trim(); // Obtenemos el nombre de la comuna
@@ -108,13 +80,7 @@
           });
           
           console.log(datos); // Muestra los datos en la consola
-          //return datos; // Retorna los datos obtenidos
-        } //else {
-          //console.log('No se encontró la lista de seleccionados.');
-          //return []; // Retorna un array vacío si no se encontró la lista
-        //} 
-              
-        
+        }  
       }
       
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
@@ -161,24 +127,6 @@
         },
         method: "GET",
         success: function(response) {
-          //$('.loading-data').hide();
-          //button.innerHTML = 'Guardar cambios temporales';
-          //button.disabled = false;
-          /*$.ajax({
-            url: "#{get_valida_campos_nulos_fondo_produccion_limpia_path}",
-            data: {
-              flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-            },
-            method: "GET",
-            success: function(response) {
-              var contador_campos_nulos = document.getElementById('contador_campos_nulos').value;
-                if (contador_campos_nulos > 0) {
-                  alert("Falta completar datos en el formulario los cuales son obligatorios (Se encuentran marcados en rojo)");
-                }
-                $('.loading-data').hide();
-                button.innerHTML = 'Guardar cambios temporales';
-                button.disabled = false;
-            }})*/
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);

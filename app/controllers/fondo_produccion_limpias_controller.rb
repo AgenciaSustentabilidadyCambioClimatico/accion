@@ -1150,6 +1150,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @duracion_general = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
       arreglo = []
       @existe_plan = nil
+      @tipo_permiso = 0
       
       if @plan_actividades.nil?
         @actividad = Actividad.find_by(id: params['plan_id'])
@@ -1177,7 +1178,6 @@ class FondoProduccionLimpiasController < ApplicationController
         @tipo_act = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad?
         @tipo_perm = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_permiso?
 
-        @tipo_permiso = 0
         if @tipo_perm == "nueva"
           @tipo_permiso = 1
         end    
