@@ -201,7 +201,7 @@ GEM
     faraday-net_http (3.3.0)
       net-http
     fastimage (2.3.1)
-    ffi (1.17.0-x86_64-darwin)
+    ffi (1.17.0)
     font-awesome-rails (4.7.0.8)
       railties (>= 3.2, < 8.0)
     gems (1.2.0)
@@ -323,6 +323,8 @@ GEM
     net-ssh (7.2.3)
     nio4r (2.7.3)
     nokogiri (1.16.7-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.16.7-x86_64-linux)
       racc (~> 1.4)
     orm_adapter (0.5.0)
     os (1.1.4)
@@ -505,6 +507,7 @@ GEM
 
 PLATFORMS
   x86_64-darwin-20
+  x86_64-linux
 
 DEPENDENCIES
   activerecord-session_store (~> 2.0)
