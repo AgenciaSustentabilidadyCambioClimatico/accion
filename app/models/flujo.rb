@@ -106,8 +106,15 @@ class Flujo < ApplicationRecord
   end
 
   #DZC se obtienen label para reporte automatizado de avances - historial de instrumentos
-  def nombre_para_raa
-    return "ID #{self.id} - #{self.tipo_de_flujo} - #{self.nombre_instrumento}"
+  def nombre_para_raa 
+    if self.tipo_de_flujo == "FPL"
+      flujo_mdi = FondoProduccionLimpia.where(flujo_id: self.id).pluck(:flujo_apl_id)
+      mdi_id = Flujo.find(flujo_mdi).pluck(:manifestacion_de_interes_id)
+      nombre_acuerdo = ManifestacionDeInteres.find(mdi_id).pluck(:nombre_acuerdo).first
+      return "ID #{self.id} - #{self.nombre_instrumento} - #{self.codigo_proyecto} - #{nombre_acuerdo}" 
+    else  
+      return "ID #{self.id} - #{self.tipo_de_flujo} - #{self.nombre_instrumento}"
+    end
   end
 
   def apl?
@@ -124,6 +131,17 @@ class Flujo < ApplicationRecord
 
   def fpl?
     self.fondo_produccion_limpia_id.present?
+  end
+
+  def codigo_proyecto
+    case self.fondo_produccion_limpia.flujo.tipo_instrumento_id
+    when TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_LINEA_5_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+      "DyAPL"        
+    when TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+      "SyC"           
+    else
+      nil
+    end
   end
 
   def set_metas_acciones_by_estandar estandar_id
