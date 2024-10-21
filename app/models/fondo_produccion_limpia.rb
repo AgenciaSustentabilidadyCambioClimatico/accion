@@ -99,25 +99,6 @@ class FondoProduccionLimpia < ApplicationRecord
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}
   end
 
-  def self.fpls
-    select(
-      'fondo_produccion_limpia.flujo_id AS id',
-      "CONCAT(fondo_produccion_limpia.codigo_proyecto, ' - ', 
-        CASE 
-          WHEN flujos_2.tipo_instrumento_id IN (11, 22, 30) THEN 'DyAPL'
-          WHEN flujos_2.tipo_instrumento_id IN (12, 29, 31, 32) THEN 'SyC'
-          WHEN flujos_2.tipo_instrumento_id IN (4) THEN 'EdC'
-          ELSE 'Unknown'
-        END, ' - ', manifestacion_de_intereses.nombre_acuerdo) AS nombre_para_raa"
-    )
-    .joins(
-      'INNER JOIN flujos ON fondo_produccion_limpia.flujo_apl_id = flujos.id ' \
-      'INNER JOIN flujos AS flujos_2 ON fondo_produccion_limpia.flujo_id = flujos_2.id ' \
-      'INNER JOIN manifestacion_de_intereses ON flujos.manifestacion_de_interes_id = manifestacion_de_intereses.id'
-    )
-    .order('id DESC')
-  end
-
   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil, confinanciamiento_empresa = nil)
     require 'stringio'
 

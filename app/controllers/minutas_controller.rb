@@ -66,6 +66,10 @@ class MinutasController < ApplicationController #crea la depencia con convocator
             flujo_apl = Flujo.find(@tarea_pendiente.flujo_id)
             @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
+            #obtengo el user_id del postulante de la manifestacion de interes
+            tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+            postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+
             flujo = Flujo.new({
               contribuyente_id: @manifestacion_de_interes.contribuyente_id, 
               tipo_instrumento_id: params[:minuta][:tipo_linea_seleccionada]
@@ -76,13 +80,22 @@ class MinutasController < ApplicationController #crea la depencia con convocator
               flujo.tarea_pendientes.create([{
                   tarea_id: tarea_fondo.id,
                   estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-                  user_id: @tarea_pendiente.user_id,
+                  user_id: postulante.user_id,
                   data: { }
                 }]
               )
 
-            #SE ENVIAR EL MAIL AL RESPONSABLE
-              send_message(tarea_fondo, @tarea_pendiente.user_id)
+              persona_by_user = Persona.where(user_id: postulante.user_id).first
+
+              #Se inserta en el mapa de actores al postulante
+              mapa = MapaDeActor.find_or_create_by({
+                flujo_id: flujo.id,
+                rol_id: Rol::PROPONENTE, 
+                persona_id: persona_by_user.id 
+              })
+
+              #SE ENVIAR EL MAIL AL RESPONSABLE
+              send_message(tarea_fondo, postulante.user_id)
               
               #Inicia el flujo con el nombre Sin nombre
               codigo_proyecto = "Proyecto SyC"
