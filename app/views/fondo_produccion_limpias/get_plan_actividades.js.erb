@@ -52,15 +52,25 @@ $('#div_plan_recursos_externos table tbody').empty();
   <% recursos_externos.each do |recursos_externos| %>
     var plan_id = '<%= recursos_externos.id %>';
     var user_name = '<%= recursos_externos.user_name %>';
+    var nombre_proveedor = '<%= recursos_externos.nombre_proveedor %> (Auditor)';
     var hh = '<%= recursos_externos.hh %>';
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
     var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
-    var newRow = "<tr>" +
-      "<td class='contenido-form'>" + user_name + "</td>" +
-      "<td class='contenido-form'>" + hh + "</td>" +
-      "<td class='contenido-form'>" + valor_hh + "</td>" +
-      "<td class='contenido-form'>" + costo + "</td>" +
-      "</tr>";
+    <% if recursos_externos.tipo_equipo == 4 %>
+      var newRow = "<tr>" +
+        "<td class='contenido-form'>" + nombre_proveedor + "</td>" +
+        "<td class='contenido-form'>" + hh + "</td>" +
+        "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>" +
+        "</tr>";
+    <% else %>
+      var newRow = "<tr>" +
+        "<td class='contenido-form'>" + user_name + "</td>" +
+        "<td class='contenido-form'>" + hh + "</td>" +
+        "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>" +
+        "</tr>";
+    <% end %>
     $('#div_plan_recursos_externos table tbody').append(newRow);
   <% end %>
 <% end %>
@@ -73,6 +83,16 @@ document.getElementById('plan_id').value = <%= plan_id %>;
 $('#objetivos_especifico_id').val('<%= @objetivos_especifico_id %>');
 
 $('#tipo_actividad').val('<%= @tipo_actividad %>');
+
+var tipoPermiso = <%= @tipo_permiso %>;
+
+if (tipoPermiso === 1) {
+    // Habilitar el campo de texto
+    document.getElementById('nombre_actividad').disabled = false;
+} else {
+    // Deshabilitar el campo de texto si no es tipo 3
+    document.getElementById('nombre_actividad').disabled = true;
+}
 
 //console.log("<%= @tipo_actividad %>");
 $('#div_duracion table tbody').empty();

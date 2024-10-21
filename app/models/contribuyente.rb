@@ -404,4 +404,11 @@ class Contribuyente < ApplicationRecord
 
     elementos_certificados
   end
+
+  def self.obtener_tamano_empresas(rut)
+    select('contribuyentes.id, tamano_contribuyentes.id AS tamano_contribuyente_id, tamano_contribuyentes.nombre AS tamano_contribuyente_nombre')
+      .joins(dato_anual_contribuyentes: { rango_venta_contribuyente: :tamano_contribuyente })
+      .where(contribuyentes: { rut: rut })
+  end
+
 end
