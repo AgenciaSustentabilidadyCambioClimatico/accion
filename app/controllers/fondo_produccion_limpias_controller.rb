@@ -67,7 +67,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :usuario_entregables, :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
                                         :carga_auditoria, :enviar_carga_auditoria]
-    before_action :set_archivo_mapa_actores, only: [:edit]
+
     before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
     before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
   
@@ -354,11 +354,9 @@ class FondoProduccionLimpiasController < ApplicationController
           postulante = params[:manifestacion_de_interes][:usuario_entregables_id]
         end  
  
-        #if params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento] == ""
         if params[:manifestacion_de_interes][:proponente] == ""
           institucion_receptora = contribuyente.id
         else
-        #institucion_receptora = params[:manifestacion_de_interes][:institucion_receptor_cofinanciamiento]
           institucion_receptora = params[:manifestacion_de_interes][:proponente]
         end  
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
@@ -3831,17 +3829,6 @@ class FondoProduccionLimpiasController < ApplicationController
         @area_influencia_proyecto_data  = @manifestacion_de_interes.area_influencia_proyecto_data.blank? ? nil :  @manifestacion_de_interes.area_influencia_proyecto_data
         @alternativas_instalacion_data  = @manifestacion_de_interes.alternativas_instalacion_data.blank? ? nil :  @manifestacion_de_interes.alternativas_instalacion_data
         
-      end
-  
-      def set_archivo_mapa_actores
-        @manifestacion_de_interes.update(tarea_codigo: Tarea::COD_APL_001)
-        if @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
-          MapaDeActor.find_or_create_by(
-              flujo_id: @flujo.id,
-              persona_id: current_user.personas.first.id,
-              rol_id: Rol::PROPONENTE
-          )
-        end
       end
   
       def set_contribuyentes
