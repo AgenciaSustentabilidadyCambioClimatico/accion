@@ -110,6 +110,10 @@ class FondoProduccionLimpiasController < ApplicationController
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
+        #obtengo el user_id del postulante de la manifestacion de interes
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+        postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: flujo_apl)
+
         tipo_instrumento_id = fondo_produccion_limpia ? informe_acuerdo[:tipo_linea_seleccionada] : informe_acuerdo[:tipo_linea_seleccionada_l13]
         flujo = Flujo.new(contribuyente_id: @manifestacion_de_interes.contribuyente_id, tipo_instrumento_id: tipo_instrumento_id)
 
@@ -118,11 +122,11 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo.tarea_pendientes.create(
             tarea_id: tarea_fondo.id,
             estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente.user_id,
+            user_id: postulante.user_id,
             data: {}
           )
 
-          send_message(tarea_fondo, tarea_pendiente.user_id)
+          send_message(tarea_fondo, postulante.user_id)
 
           codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
 
