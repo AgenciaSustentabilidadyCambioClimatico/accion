@@ -197,7 +197,7 @@ class ManifestacionDeInteres < ApplicationRecord
   # validates :otros_estudios_relevantes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   # validates :otros_objetivos_acuerdo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  validates :revisor_tecnico_id, presence: true, if: :updating_record?, if: -> {update_asignar_revisor.present?}
+  validates :revisor_tecnico_id, presence: true, if: :updating_record? && update_asignar_revisor.present?
   validates :revisor_juridico_id, presence: true, if: :updating_record?, if: -> {update_asignar_revisor.present?}
   validates :comentario_jefe_de_linea, presence: true, if: :updating_record?, if: -> {update_asignar_revisor.present?}
 
