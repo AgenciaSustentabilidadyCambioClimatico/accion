@@ -769,6 +769,15 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
         format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
       else
+        # Verificación de archivos
+        unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+          respond_to do |format|
+            format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
+            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+          end
+          return
+        end
+
         #SETEO PARAMETROS EQUIPO
         custom_params_equipo = {
           equipo_trabajo: {
@@ -906,6 +915,15 @@ class FondoProduccionLimpiasController < ApplicationController
           email: params[:user][:email]
         }
       }
+
+      # Verificación de archivos
+      unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+        respond_to do |format|
+          format.js { render js: "alert('Las extensiones de los archivos no son válidas. Las permitidas son: (pdf jpg png tiff zip rar doc docx)');" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "Las extensiones de archivo no son válidas." }
+        end
+        return
+      end
 
       #SETEO PARAMETROS EQUIPO
       custom_params_equipo = {
@@ -4266,8 +4284,8 @@ class FondoProduccionLimpiasController < ApplicationController
      
         @empresa_equipo = Contribuyente
         .unscoped
-        .joins(:equipo_empresas, :establecimiento_contribuyentes)
-        .select("contribuyentes.id, contribuyentes.rut || \'\' || contribuyentes.dv AS rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
+        .joins(:equipo_empresas)
+        .select("contribuyentes.id, contribuyentes.rut || \'\' || contribuyentes.dv AS rut, contribuyentes.razon_social, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
 
@@ -4568,5 +4586,14 @@ class FondoProduccionLimpiasController < ApplicationController
       def normalize_string(string)
         return string unless string.is_a?(String)  # Verifica que sea un string
         string.gsub(/\n+/, ' ').strip  # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+      end
+
+      def valid_extensions?(archivo)
+        return true if archivo.nil? # Si no hay archivo, considera válido
+      
+        # Extensiones permitidas
+        extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]
+        extension = File.extname(archivo.original_filename).delete('.').downcase
+        extensiones_permitidas.include?(extension)
       end
 end
