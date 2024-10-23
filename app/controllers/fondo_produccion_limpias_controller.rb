@@ -949,7 +949,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @contribuyente = Contribuyente
         .unscoped
         .joins(:equipo_empresas)
-        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social")
+        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.dv, contribuyentes.razon_social")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
      
@@ -1050,7 +1050,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @contribuyente = Contribuyente
               .unscoped
               .joins(:equipo_empresas)
-              .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social")
+              .select("contribuyentes.id, contribuyentes.rut, contribuyentes.dv, contribuyentes.razon_social")
               .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
               .all
 
@@ -4267,7 +4267,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @empresa_equipo = Contribuyente
         .unscoped
         .joins(:equipo_empresas, :establecimiento_contribuyentes)
-        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
+        .select("contribuyentes.id, contribuyentes.rut || \'\' || contribuyentes.dv AS rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
 
