@@ -132,23 +132,23 @@ class ManifestacionDeInteres < ApplicationRecord
   #validates :principales_actores, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #validates :mapa_de_actores_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   # DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
-  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, if: -> {self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true"}, if: :updating_record?
+  validates :numero_de_socios_institucion_gestora, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { (self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true") && :updating_record? }
 
   # DZC 2019-06-25 16:26:07 se agrega para manejar monto máximo a ingresar
-  validates :numero_empresas, presence: true, if: :updating_record?, if: -> { self.numero_empresas.present? && temporal.to_s != "true" }
+  validates :numero_empresas, presence: true, if: -> { (self.numero_empresas.present? && temporal.to_s != "true") && :updating_record? }
 
   #validates :porcentaje_mipymes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
-  validates :produccion, presence: true, if: :updating_record?, if: -> { self.produccion.present? && temporal.to_s != "true" }
+  validates :produccion, presence: true, if: -> { (self.produccion.present? && temporal.to_s != "true") && :updating_record? }
 
   # DZC 2019-06-25 16:20:54 se agrega para manejar monto máximo a ingresar
-  validates :ventas, presence: true, if: :updating_record?, if: -> { self.ventas.present? && temporal.to_s != "true" }
+  validates :ventas, presence: true, if: -> { (self.ventas.present? && temporal.to_s != "true") && :updating_record? }
 
   #validates :porcentaje_exportaciones, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   validates :principales_mercados, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   validates :cadena_de_valor, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DZC 2019-06-25 16:20:35 se agrega para manejar monto máximo a ingresar
-  validates :numero_trabajadores, presence: true, if: :updating_record?, if: -> { self.numero_trabajadores.present? && temporal.to_s != "true" }
+  validates :numero_trabajadores, presence: true, if: -> { (self.numero_trabajadores.present? && temporal.to_s != "true") && :updating_record? }
 
   validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   validates :principales_impactos_socioambientales_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
