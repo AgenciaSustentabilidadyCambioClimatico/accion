@@ -197,51 +197,51 @@ class ManifestacionDeInteres < ApplicationRecord
   # validates :otros_estudios_relevantes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   # validates :otros_objetivos_acuerdo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  validates :revisor_tecnico_id, presence: true, if: :updating_record? && update_asignar_revisor.present?
-  validates :revisor_juridico_id, presence: true, if: :updating_record?, if: -> {update_asignar_revisor.present?}
-  validates :comentario_jefe_de_linea, presence: true, if: :updating_record?, if: -> {update_asignar_revisor.present?}
+  validates :revisor_tecnico_id, presence: true, if: -> { :updating_record? && update_asignar_revisor.present? }
+  validates :revisor_juridico_id, presence: true, if: -> { :updating_record? && update_asignar_revisor.present? }
+  validates :comentario_jefe_de_linea, presence: true, if: -> { :updating_record? && update_asignar_revisor.present?}
 
   #validates :respuesta_resultado_pertinencia, presence: true, if: :updating_record?, if: -> { update_respuesta_pertinencia.present? } El campo ya no corresponde al apl-006
 
-  validates :institucion_entregables_id, presence: true, if: :updating_record?, if: -> { update_usuario_entregables.present? }
-  validates :institucion_entregables_name, presence: true, if: :updating_record?, if: -> { update_usuario_entregables.present? }
-  validates :usuario_entregables_id, presence: true, if: :updating_record?, if: -> { update_usuario_entregables.present? }
-  validates :usuario_entregable_name, presence: true, if: :updating_record?, if: -> { update_usuario_entregables.present? }
-  #validates :usuario_entregables_comentario, presence: true, if: :updating_record?, if: -> { update_usuario_entregables.present? }
+  validates :institucion_entregables_id, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :institucion_entregables_name, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :usuario_entregables_id, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :usuario_entregable_name, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  #validates :usuario_entregables_comentario, presence: true, if: :updating_record? &&  update_usuario_entregables.present? }
 
   validates :comentarios_y_observaciones_actualizacion_mapa_de_actores, presence: true, if: -> { temporal.to_s == "true" && mapa_de_actores_correctamente_construido.present? && mapa_de_actores_correctamente_construido == 'false' }
   validates :comentarios_y_observaciones_documento_diagnosticos, presence: true, if: -> { temporal.to_s == "true" && aprueba_documentos_diagnostico.present? && aprueba_documentos_diagnostico == 'false' }
   validates :comentarios_y_observaciones_set_metas_acciones, presence: true, if: -> { temporal.to_s == "true" && aprueba_set_metas_accion.present? && aprueba_set_metas_accion == 'false' }
   validates :observaciones_propuesta_acuerdo, presence: true, if: -> { temporal.to_s == "true" && envia_termino_proceso === true }
 
-  validate :data_mapa_de_actores, if: :updating_record?, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
+  validate :data_mapa_de_actores, if: -> { :updating_record? && self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   #apl-003.1
-  validates :resultado_admisibilidad, presence: true, if: :updating_record?, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
-  validates :tipo_instrumento_id, presence: true, if: :updating_record?, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
-  validates :observaciones_admisibilidad,presence: true, if: :updating_record?, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
-  validate :secciones_observadas_admisibilidad_requerido, if: :updating_record?, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
+  validates :resultado_admisibilidad, presence: true, if: -> { :updating_record? && update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_instrumento_id, presence: true, if: -> { :updating_record? && update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad,presence: true, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_requerido, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
   #apl-003.2
-  validates :resultado_admisibilidad_juridica, presence: true, if: :updating_record?, if: -> {update_admisibilidad_juridica.present? && temp_siguientes.to_s != "true"}
-  validates :observaciones_admisibilidad_juridica,presence: true, if: :updating_record?, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
-  validate :secciones_observadas_admisibilidad_juridica_requerido, if: :updating_record?, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  validates :resultado_admisibilidad_juridica, presence: true, if: -> { :updating_record? && update_admisibilidad_juridica.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad_juridica,presence: true, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_juridica_requerido, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
   #apl-004.1
-  validates :respuesta_observaciones_admisibilidad, presence: true, if: :updating_record?, if: -> {update_obs_admisibilidad == "true" && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_admisibilidad, presence: true, if: -> { :updating_record? && update_obs_admisibilidad == "true" && temp_siguientes.to_s != "true"}
   #apl-004.2
-  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, if: :updating_record?, if: -> {update_obs_admisibilidad_juridica == "true" && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, if: -> { :updating_record? && update_obs_admisibilidad_juridica == "true" && temp_siguientes.to_s != "true"}
   #apl-005
-  validate :is_observaciones_pertinencia_factibilidad, if: :updating_record?, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validate :is_compromiso_pertinencia_factibilidad, if: :updating_record?, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validate :pertinencia_secciones_observadas, if: :updating_record?, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validates :coordinador_subtipo_instrumento_id, presence: true, if: :updating_record?, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :encargado_hitos_prensa_id, presence: true, if: :updating_record?, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :resultado_pertinencia, presence: true, if: :updating_record?, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validates :fondo_produccion_limpia, presence: true, if: :updating_record?, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :tipo_linea_seleccionada, presence: true, if: :updating_record?, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validate :is_observaciones_pertinencia_factibilidad, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :is_compromiso_pertinencia_factibilidad, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :pertinencia_secciones_observadas, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :coordinador_subtipo_instrumento_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :encargado_hitos_prensa_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :resultado_pertinencia, presence: true, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :fondo_produccion_limpia, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_linea_seleccionada, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
 
   #apl-006
-  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, if: :updating_record?, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
-  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, if: :updating_record?, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, if: -> { :updating_record? &&  update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, if: -> { :updating_record? && update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
 
 
 
