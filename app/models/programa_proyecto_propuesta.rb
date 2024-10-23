@@ -163,7 +163,7 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	validates :fecha_entrega_resultados, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
 	validates :motivos_resultado, presence: true, if: -> { (forzar_validacion_en == :datos_postulacion && resultado_postulacion == 1) && :updating_record? }
 	# DZC 2019-06-25 16:19:36 se agrega para manejar monto máximo a ingresar
-	validates :monto_aprobado, presence: true, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :monto_aprobado, presence: true, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { (forzar_validacion_en == :datos_postulacion) && :updating_record? }
 	validates :organismo_ejecutor_id, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
 	validates :responsable_coordinacion_ejecucion_seguimiento_id, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
 	validates :documentos_administrativos_aprobando_el_proyecto, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
