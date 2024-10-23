@@ -2799,8 +2799,7 @@
       });
     }
 
-    function guardarArchivos(event, id_doc, nombreCampo) {
-      //var archivoInput = document.getElementById('archivoInput_'+ id_doc);
+    function guardarArchivos(event, id_doc, nombreCampo, origen) {
       var archivoInput = document.getElementById(nombreCampo);
       var archivo = archivoInput.files[0];
       var formData = new FormData();
@@ -2809,8 +2808,6 @@
 
       // Obtener el ID del flujo
       var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
-
-      // Agregar el ID del flujo como parte de los datos del formulario
       formData.append('id', Id);
 
       fetch('/subir_documento', {
@@ -2822,17 +2819,17 @@
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Error al subir el archivo');
+          return response.json().then(err => { throw new Error(err.error || 'Error al subir el archivo'); });
         }
         return response.json();
       })
       .then(data => {
-        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
+        alert(data.message); // Muestra el mensaje de éxito
+        actualizarContenidoDescarga(id_doc, event.target.value.split('\\').pop(), nombreCampo, origen);
       })
       .catch(error => {
-        //console.error('Error:', error);
-        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
+        alert(error.message); // Muestra el mensaje de error
       });
     }
 
@@ -2858,8 +2855,7 @@
     }
 
     function guardarYActualizar(event, id, nombreCampo, origen) {
-      guardarArchivos(event, id, nombreCampo);
-      actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo, origen);
+      guardarArchivos(event, id, nombreCampo, origen);
     } 
 
        

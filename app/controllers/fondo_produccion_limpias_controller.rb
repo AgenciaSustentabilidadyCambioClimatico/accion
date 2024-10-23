@@ -1773,19 +1773,32 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def subir_documento
       nombre_campo = params[:nombre_campo]
-      @campo = nombre_campo
       archivo = params[:archivo]
-
+    
+      unless valid_extensions?(archivo)
+        respond_to do |format|
+          format.json { render json: { error: 'La extensión del archivo no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.' }, status: :unprocessable_entity }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión del archivo no es válida." }
+        end
+        return
+      end
+    
       custom_params = {
         fondo_produccion_limpia: {
           nombre_campo => archivo
-        } 
-      }   
-      @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-      respond_to do |format|
-        format.js { render 'subir_documento', locals: { campo: @campo } }
+        }
+      }
+    
+      if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+        respond_to do |format|
+          format.json { render json: { success: true, message: 'Archivo subido correctamente.' } }
+        end
+      else
+        respond_to do |format|
+          format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+        end
       end
-    end
+    end     
 
     def enviar_postulacion
       respond_to do |format|
@@ -4592,8 +4605,8 @@ class FondoProduccionLimpiasController < ApplicationController
         return true if archivo.nil? # Si no hay archivo, considera válido
       
         # Extensiones permitidas
-        extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]
         extension = File.extname(archivo.original_filename).delete('.').downcase
+        extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]
         extensiones_permitidas.include?(extension)
       end
 end
