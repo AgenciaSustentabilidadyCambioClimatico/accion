@@ -151,8 +151,7 @@ class Admin::HistorialInstrumentosController < ApplicationController
       @apls = @instrumentos.where.not(manifestacion_de_interes_id: nil)
       @ppfs = @instrumentos.where.not(programa_proyecto_propuesta_id: nil)
       @ppls = @instrumentos.where.not(proyecto_id: nil)
-      #@fpls = @instrumentos.where.not(fondo_produccion_limpia_id: nil)
-      @fpls = FondoProduccionLimpia.fpls()
+      @fpls = @instrumentos.where.not(fondo_produccion_limpia_id: nil)
 
       @instancias = []
       #@instrumentos.each do |i|
