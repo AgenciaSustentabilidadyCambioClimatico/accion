@@ -24,8 +24,8 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-001
   def new
-    @tarea = Tarea.find(104)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+    @tarea = Tarea.find(101)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
     @registro_proveedor.documento_registro_proveedores.build
@@ -33,8 +33,8 @@ class RegistroProveedoresController < ApplicationController
 
   # PRO-001
   def create
-    @tarea = Tarea.find(104)
-    @descargables_tarea = DescargableTarea.where(tarea_id: 104)
+    @tarea = Tarea.find(101)
+    @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
     if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
       @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
