@@ -553,28 +553,35 @@ module ApplicationHelper
   end
 
   # DZC 2018-11-05 14:37:46 se descomenta para uso por helper de Ricardo
-  def generar_zip archivos
+
+
+def generar_zip(archivos)
+  require 'open-uri'
   require 'zip'
   file = Zip::OutputStream.write_buffer do |stream|
-    archivos.each_with_index do |archivo_tecnica|
-    if archivo_tecnica.class == Hash
-      # rename the file
-      stream.put_next_entry(archivo_tecnica[:nombre])
-      # add file to zip
-      stream.write archivo_tecnica[:data]
-    else
-      split = archivo_tecnica.current_path.split('/')
-      nombre = split[split.length-1]
-      # rename the file
-      stream.put_next_entry(nombre)
-      # add file to zip
-      stream.write IO.read(archivo_tecnica.current_path)
+    archivos.each do |archivo_tecnica|
+      if archivo_tecnica.is_a?(Hash)
+        # Handle hash entries with in-memory data
+        nombre = archivo_tecnica[:nombre]
+        stream.put_next_entry(nombre)
+        stream.write archivo_tecnica[:data] if archivo_tecnica[:data]
+      else
+        # Retrieve the S3 URL from CarrierWave uploader
+        url = archivo_tecnica.url
+        nombre = File.basename(URI.parse(url).path)
+
+        # Open and read the file from S3
+        URI.open(url) do |file_data|
+          stream.put_next_entry(nombre)
+          stream.write file_data.read
+        end
       end
     end
   end
+
   file.rewind
-  file.sysread
-  end
+  file.read
+end
 
   def descarga_formato_carta_de_patrocinio()
   

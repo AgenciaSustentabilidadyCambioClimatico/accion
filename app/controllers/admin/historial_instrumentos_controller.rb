@@ -11,10 +11,12 @@ class Admin::HistorialInstrumentosController < ApplicationController
   end
 
   def descargar_manifestacion_pdf
+    binding.pry
     @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
   end
 
   def descargar_manifestacion_pdf_archivo
+    binding.pry
     @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
     pdf = @manifestacion_de_interes.generar_pdf(params[:url_territorio],params[:url_area_influencia],params[:url_alternativas])
     send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "Manifestacion de interes.pdf"

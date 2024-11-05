@@ -80,8 +80,8 @@
                         -else
                           -enlace = documento[:metodo] ? public_send(documento[:url], *documento[:parametros]) : documento[:url]
                           =link_to enlace, class: "btn-tabla-instrumentos" do
-                            =fa_icon 'download'
-                            =documento[:nombre]
+                            =fa_icon ''
+                            =documento[:url]
                           - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
                             -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
                             - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
