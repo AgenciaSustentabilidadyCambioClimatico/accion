@@ -1,12 +1,60 @@
 :javascript
+  $(document).ready(function() {
+    var instrumentoSeleccionado =  #{@instrumento_seleccionado};
+    var instrumentoSeleccionado1_3 = #{@instrumento_seleccionado_1_3}; 
+
+    if (instrumentoSeleccionado.length === 1 && instrumentoSeleccionado1_3.length === 0) {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+    } else if (instrumentoSeleccionado.length === 1 && instrumentoSeleccionado1_3.length === 1) {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = true;
+    } else {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+    }
+  });
+
   function habilitaOpciones(radio) {
     var valorSeleccionado = radio.value === 'true';
-    if (valorSeleccionado) {
-      document.getElementById('tipo_linea_seleccionada').disabled = false;
-      document.getElementById('grabar-postulacion-fpl-button').disabled = false;
-    } else {
-      document.getElementById('tipo_linea_seleccionada').disabled = true;
-      document.getElementById('grabar-postulacion-fpl-button').disabled = true;
+    var botonGuardar = document.getElementById('grabar-postulacion-fpl-button');
+    document.getElementById('tipo_linea_seleccionada').disabled = !valorSeleccionado;
+    botonGuardar.disabled = !valorSeleccionado;
+  }
+
+  function habilitaOpcionesL13(radio) {
+      var valorSeleccionado = radio.value === 'true';
+      var botonGuardar = document.getElementById('grabar-postulacion-fpl-button');
+      document.getElementById('tipo_linea_seleccionada_l13').disabled = !valorSeleccionado;
+      botonGuardar.disabled = !valorSeleccionado;
+  }
+
+  function confirmarGuardar(event) {
+    var instrumentoSeleccionado =  #{@instrumento_seleccionado};
+    var fondo_produccion_limpia = document.getElementById('fondo_produccion_limpia');
+    var fondo_produccion_limpia_l13 = document.getElementById('fondo_produccion_limpia_l13');
+
+    if (document.getElementById('grabar-postulacion-fpl-button').disabled) {
+        event.preventDefault();
+        return;
+    }
+
+    if (instrumentoSeleccionado.length === 1) {
+      if (confirm('Se recomienda que, al iniciar la etapa de Certificación de APL, la etapa de Implementación del APL esté cerrada.')) {
+        $.ajax({
+          url: "#{grabar_postulacion_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+            tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+            fondo_produccion_limpia: fondo_produccion_limpia,
+            fondo_produccion_limpia_l13: fondo_produccion_limpia_l13
+          },
+          method: "GET",
+          success: function(response) {
+
+          },
+          error: function(error) {
+ 
+          }
+        });
+      }
     }
   }
 
@@ -19,6 +67,7 @@
             = t(:postulacion_fondo_produccion_limpia)
         .card-body 
           .col-12.mb-3
+            %label.control-label.string Línea 1.2
             .row
               .col-6
                 .form-group
@@ -40,6 +89,29 @@
                   = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: false}, selected: primer_id
         
                 %br 
+            - if @instrumento_seleccionado.present?
+              %label.control-label.string Línea 1.3
+              .row
+                .col-6
+                  .form-group
+                    %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
+                    %br
+                    - if @flujos_con_tipo_instrumento_1_3.present?
+                      = f.collection_radio_buttons :fondo_produccion_limpia_l13, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia_l13', disabled: true do |b|
+                        = b.radio_button(disabled: true, onchange: 'habilitaOpcionesL13(this);')
+                        = b.label
+                    - else
+                      = f.collection_radio_buttons :fondo_produccion_limpia_l13, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia_l13' do |b|
+                        = b.radio_button onchange: 'habilitaOpcionesL13(this);'
+                        = b.label
+                .col-6
+                  - primer_id = @lineas_fpl_1_3.first.id if @lineas_fpl_1_3.present?
+                  - if @flujos_con_tipo_instrumento_1_3.present?
+                    = f.input :tipo_linea_seleccionada_l13, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_l13', disabled: true}, selected: @instrumento_seleccionado_1_3
+                  - else
+                    = f.input :tipo_linea_seleccionada_l13, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_l13', disabled: false}, selected: primer_id
+          
+                  %br 
           .col-12
             .float-right
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "grabar-postulacion-fpl-button btn btn-sm btn-primary button-send", id:"grabar-postulacion-fpl-button", disabled: true
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "grabar-postulacion-fpl-button btn btn-sm btn-primary button-send", id:"grabar-postulacion-fpl-button", disabled: true #, onclick: 'confirmarGuardar(event); return false;'

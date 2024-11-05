@@ -1,30 +1,30 @@
-<% @recursos_externos_no_asignados.each do |recursos_externos_no_asignados| %>
-  $('#iconos-acciones-<%= recursos_externos_no_asignados.id %>').html('<a data-user-id="<%= recursos_externos_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recursos_externos_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recursos_externos_no_asignados.id %>"><i class="fa fa-trash"></i>');
+<% @recurso_auditor_no_asignados.each do |recurso_auditor_no_asignados| %>
+  $('#iconos-acciones-<%= recurso_auditor_no_asignados.id %>').html('<a data-user-id="<%= recurso_auditor_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recurso_auditor_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recurso_auditor_no_asignados.id %>"><i class="fa fa-trash"></i>');
 <% end %>
 
-$('#div_plan_recursos_externos table tbody').empty();
-<% recursos_externos.each do |recursos_externo| %>
+$('#div_plan_recurso_auditor table tbody').empty();
+<% recursos_auditores.each do |recursos_auditor| %>
     var equipo_trabajos_id = '<%= recursos_externo.equipo_trabajos_id %>';
-    var user_name = '<%= recursos_externo.user_name %>';
-    var hh = '<%= recursos_externo.hh %>';
-    var valor_hh = '<%=number_to_currency recursos_externo.valor_hh %>';
-    var costo = '<%=number_to_currency recursos_externo.valor_hh.to_i * recursos_externo.hh.to_i %>';
+    var user_name = '<%= recursos_auditor.user_name %>';
+    var hh = '<%= recursos_auditor.hh %>';
+    var valor_hh = '<%=number_to_currency recursos_auditor.valor_hh %>';
+    var costo = '<%=number_to_currency recursos_auditor.valor_hh.to_i * recursos_auditor.hh.to_i %>';
     var newRow = "<tr>" +
       "<td class='contenido-form'>" + user_name + "</td>" +
       "<td class='contenido-form'>" + hh + "</td>" +
       "<td class='contenido-form'>" + valor_hh + "</td>" +
       "<td class='contenido-form'>" + costo + "</td>" +
       "</tr>";
-    $('#div_plan_recursos_externos table tbody').append(newRow);
+    $('#div_plan_recurso_auditor table tbody').append(newRow);
 
-    <% if recurso_humano_existente?(recursos_externo.equipo_trabajos_id, flujo_id) %>
-      $('#iconos-acciones-<%= recursos_externo.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');
+    <% if recurso_humano_existente?(recursos_auditor.equipo_trabajos_id, flujo_id) %>
+      $('#iconos-acciones-<%= recursos_auditor.equipo_trabajos_id %>').html('<i class="fa fa-exclamation-circle" data-toggle="tooltip" title="" data-original-title="El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."></i>');
     <% end %>
   <% end %>
 
-  $('#modal_rrhh_externos-form').modal("hide");
+  $('#modal_rrhh_auditor-form').modal("hide");
 
-  $('#modal_rrhh_externos-form').on('hidden.bs.modal', function () {
+  $('#modal_rrhh_auditor-form').on('hidden.bs.modal', function () {
   // Cierra modal_create_plan_actividades-form si está abierto
   $('#modal_create_plan_actividades-form').modal("hide");
 
@@ -341,7 +341,7 @@ $('#div_plan_recursos_externos table tbody').empty();
           document.getElementById('apoyo_general_empresa_aporte_postulante_porcentaje').innerText = 'Mayor o igual al 0% del total Actividades Tipo B';
         <% end %>
 
-        <% if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present?%>
+        <% if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present? %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '<%= number_to_currency((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f) * @confinanciamiento_empresa[1]) / 100), precision: 0, delimiter: '.') %>';
         <% else %>
           document.getElementById('apoyo_general_empresa_aporte_postulante_limite').innerText = '$0';

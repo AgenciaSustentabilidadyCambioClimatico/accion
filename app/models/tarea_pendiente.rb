@@ -325,11 +325,16 @@ class TareaPendiente < ApplicationRecord
         if pend.tarea_vencida_duracion?
           flujo = pend.flujo
           manifestacion = flujo.manifestacion_de_interes
-          manifestacion.temporal = true
-          manifestacion.update({
-            temporal: true,
-            comentarios_y_observaciones_termino_acuerdo: "Plazo vencido tarea #{pend.tarea.codigo}"
-          })
+          if manifestacion
+            manifestacion.temporal = true
+            manifestacion.update({
+              temporal: true,
+              comentarios_y_observaciones_termino_acuerdo: "Plazo vencido tarea #{pend.tarea.codigo}"
+            })
+          else
+            # Manejar el caso en que `manifestacion` es `nil`
+            Rails.logger.warn "Manifestacion de interes es nil para flujo con id #{flujo.id}"
+          end
           TareaPendiente.where(flujo_id: flujo.id).includes([:tarea]).all.update(estado_tarea_pendiente_id: 2)
           flujo.update(terminado: true)
         end

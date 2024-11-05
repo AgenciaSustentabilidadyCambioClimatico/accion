@@ -392,6 +392,26 @@ module ApplicationHelper
     end
   end
 
+  def __mostrar_descargable_sin_titulo(tarea,codigo)
+    descargable = tarea.descargable_tareas.find_by(codigo: codigo)
+    capture_haml do
+      if descargable.blank?
+        haml_tag :div, class: 'form-group' do 
+          haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado) do
+            haml_tag :i, class: 'fa fa-ban'
+          end
+        end
+      else
+        haml_tag :div, class: 'form-group' do 
+          haml_tag :a, href: descargar_admin_tarea_descargable_tarea_path(tarea, descargable), class: 'btn btn-sm btn-descargar btn-block' do
+            haml_tag :i, class: 'fa fa-download', style: 'color: #007bff;'
+
+          end
+        end
+      end
+    end
+  end
+
   # DZC 2018-10-26 10:23:18 modifica el método para que, tratándose de un atributo que contenga múltiples archivos, se permita la descarga de un archivo ZIP que contenga todos esos  archivos
   def __descargar_archivo(field,objeto, label = true, nombre_boton=true, titulo=nil, boton=nil, from_proveedor=false, from_historial=false)
     capture_haml do
@@ -442,6 +462,53 @@ module ApplicationHelper
     end
   end
 
+  def __descargar_archivo_sin_titulo(field,objeto, label = true, nombre_boton=true, titulo=nil, boton=nil, from_proveedor=false, from_historial=false)
+    capture_haml do
+      haml_tag :div, class: 'form-group' do
+        if field.present?
+          padding = 'px-5'
+          padding = '' if nombre_boton.blank?
+          if field.class == Array
+            #
+            archivos = []
+            atributo = []
+            field.each do |archivo|
+              split = archivo.current_path.split('/') rescue archivo.path.split('/')# DZC genera un array de palabras dentro del path
+              archivos << split[split.length-1] # DZC obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier, y lo agrega al arreglo
+              atributo << archivo.path.split('/public').last
+            end
+            begin
+              atributo = field[0].mounted_as
+            rescue
+            end
+            # DZC 2018-10-26 10:24:34 ejecuta el path descarga_zip en aplication_controller, pasando los parámetros nombre de la clase, id del objeto, nombre del atributo
+            haml_tag :a, href: desacarga_zip_path(clase: objeto.class.name, objeto_id: objeto.id, atributo: atributo), class: 'btn btn-sm btn-descargar btn-block tooltip-block '+padding, download: '', title: archivos.to_sentence, "data-original-title" => archivos.to_sentence do
+              haml_tag :i, class: 'fa fa-download'
+              haml_concat (boton.blank? ? archivos.to_sentence : boton) if nombre_boton
+            end
+          else
+            #
+            begin
+              file_name = field.file.filename
+              url = field.url
+            rescue
+              file_split = field.path.split('/public')
+              url = request.base_url + file_split.last
+              file_name = file_split.last.split('/').last
+            end
+            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
+              haml_tag :i, class: 'fa fa-download'
+              haml_concat (boton.blank? ? file_name : boton) if nombre_boton
+            end
+          end
+        else
+          haml_tag :a, class: 'btn btn-sm btn-descargar btn-block tooltip-block', "data-original-title" => "Archivo(s) no subido(s)..." do
+            haml_tag :i, class: 'fa fa-ban'
+          end
+        end
+      end
+    end
+  end
 
   def __subida_archivo(nombre, objeto, label=true, solo_lectura=false)
     field = objeto.send(nombre)
