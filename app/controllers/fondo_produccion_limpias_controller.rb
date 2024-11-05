@@ -110,6 +110,10 @@ class FondoProduccionLimpiasController < ApplicationController
         flujo_apl = Flujo.find(tarea_pendiente.flujo_id)
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
+        #obtengo el user_id del postulante de la manifestacion de interes
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
+        postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: flujo_apl)
+
         tipo_instrumento_id = fondo_produccion_limpia ? informe_acuerdo[:tipo_linea_seleccionada] : informe_acuerdo[:tipo_linea_seleccionada_l13]
         flujo = Flujo.new(contribuyente_id: @manifestacion_de_interes.contribuyente_id, tipo_instrumento_id: tipo_instrumento_id)
 
@@ -118,11 +122,11 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo.tarea_pendientes.create(
             tarea_id: tarea_fondo.id,
             estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente.user_id,
+            user_id: postulante.user_id,
             data: {}
           )
 
-          send_message(tarea_fondo, tarea_pendiente.user_id)
+          send_message(tarea_fondo, postulante.user_id)
 
           codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
 
@@ -765,6 +769,15 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
         format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
       else
+        # Verificación de archivos
+        unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+          respond_to do |format|
+            format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
+            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+          end
+          return
+        end
+
         #SETEO PARAMETROS EQUIPO
         custom_params_equipo = {
           equipo_trabajo: {
@@ -903,6 +916,15 @@ class FondoProduccionLimpiasController < ApplicationController
         }
       }
 
+      # Verificación de archivos
+      unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+        respond_to do |format|
+          format.js { render js: "alert('Las extensiones de los archivos no son válidas. Las permitidas son: (pdf jpg png tiff zip rar doc docx)');" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "Las extensiones de archivo no son válidas." }
+        end
+        return
+      end
+
       #SETEO PARAMETROS EQUIPO
       custom_params_equipo = {
         equipo_trabajo: {
@@ -945,7 +967,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @contribuyente = Contribuyente
         .unscoped
         .joins(:equipo_empresas)
-        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social")
+        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.dv, contribuyentes.razon_social")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
      
@@ -1046,7 +1068,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @contribuyente = Contribuyente
               .unscoped
               .joins(:equipo_empresas)
-              .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social")
+              .select("contribuyentes.id, contribuyentes.rut, contribuyentes.dv, contribuyentes.razon_social")
               .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
               .all
 
@@ -1751,19 +1773,32 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def subir_documento
       nombre_campo = params[:nombre_campo]
-      @campo = nombre_campo
       archivo = params[:archivo]
-
+    
+      unless valid_extensions?(archivo)
+        respond_to do |format|
+          format.json { render json: { error: 'La extensión del archivo no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.' }, status: :unprocessable_entity }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión del archivo no es válida." }
+        end
+        return
+      end
+    
       custom_params = {
         fondo_produccion_limpia: {
           nombre_campo => archivo
-        } 
-      }   
-      @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-      respond_to do |format|
-        format.js { render 'subir_documento', locals: { campo: @campo } }
+        }
+      }
+    
+      if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+        respond_to do |format|
+          format.json { render json: { success: true, message: 'Archivo subido correctamente.' } }
+        end
+      else
+        respond_to do |format|
+          format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+        end
       end
-    end
+    end     
 
     def enviar_postulacion
       respond_to do |format|
@@ -2674,26 +2709,36 @@ class FondoProduccionLimpiasController < ApplicationController
         aporte_pequena = 0
         aporte_mediana = 0
         tope_maximo = 0
+        confinanciamiento_empresa = nil
 
-        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+        if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
 
-          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
-          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
-          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
-          tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
-        else
-          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
-          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
-          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+            aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
+            aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
+            aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+          else
+            aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
+            aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
+            aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
 
-          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
-            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
-          elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
-            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+            if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+              tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+            elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+              tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+            end
           end
-        end
 
-        confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
+          if @fondo_produccion_limpia.present?
+            if @fondo_produccion_limpia.cantidad_micro_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_mediana_empresa != 0
+                confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
+            end
+          end
+
+        end
 
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, costos_seguimiento, confinanciamiento_empresa)
      
@@ -4262,8 +4307,8 @@ class FondoProduccionLimpiasController < ApplicationController
      
         @empresa_equipo = Contribuyente
         .unscoped
-        .joins(:equipo_empresas, :establecimiento_contribuyentes)
-        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.razon_social, establecimiento_contribuyentes.direccion, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
+        .joins(:equipo_empresas)
+        .select("contribuyentes.id, contribuyentes.rut || \'\' || contribuyentes.dv AS rut, contribuyentes.razon_social, equipo_empresas.id, equipo_empresas.contribuyente_id, equipo_empresas.flujo_id")
         .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
         .all
 
@@ -4564,5 +4609,14 @@ class FondoProduccionLimpiasController < ApplicationController
       def normalize_string(string)
         return string unless string.is_a?(String)  # Verifica que sea un string
         string.gsub(/\n+/, ' ').strip  # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+      end
+
+      def valid_extensions?(archivo)
+        return true if archivo.nil? # Si no hay archivo, considera válido
+      
+        # Extensiones permitidas
+        extension = File.extname(archivo.original_filename).delete('.').downcase
+        extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]
+        extensiones_permitidas.include?(extension)
       end
 end

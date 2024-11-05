@@ -33,7 +33,7 @@
   %tbody
     - lista_contribuyentes.each do |i|
       %tr
-        %td= "#{i.rut}-#{i.dv}"
+        %td= format_rut("#{i.rut}-#{i.dv}")
         %td= i.razon_social
         - if es_para_seleccion
           - tipo_contribuyentes = i.dato_anual_contribuyentes.order(periodo: :desc).map{|m| m.tipo_contribuyente_id} #i.dato_anual_contribuyentes.inject({}){|h,anc|h[anc.tipo_contribuyente_id]=anc.nombre;h}

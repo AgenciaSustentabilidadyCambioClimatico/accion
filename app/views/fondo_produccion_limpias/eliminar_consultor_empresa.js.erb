@@ -6,7 +6,7 @@ $("#eliminar-usuario-<%= user %>").closest('tr').remove();
     $('#div_empresa_consultora table tbody').empty();
     <% @empresa_equipo.each do |contribuyente| %>
         var razonSocial = '<%= contribuyente.razon_social %>';
-        var rut = '<%= contribuyente.rut %>';
+        var rut = '<%= format_rut(contribuyente.rut) %>';
         var contribuyente_id = '<%= contribuyente.id%>';
         var tarea_pendiente_id = '<%= tarea_pendiente_id %>';
 

@@ -1,6 +1,6 @@
 
 var nombreCompleto = '<%= @user.nombre_completo %>';
-var rut = '<%= @user.rut %>';
+var rut = '<%= format_rut(@user.rut) %>';
 var telefono = '<%= @user.telefono %>';
 var email = '<%= @user.email %>';
 var profesion = '<%= @equipo_temporal.profesion %>';
@@ -64,7 +64,7 @@ var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     $('#div_empresa_consultora table tbody').empty();
     <% @contribuyente.each do |contribuyente| %>
         var razonSocial = '<%= j contribuyente.razon_social %>';
-        var rut = '<%= contribuyente.rut %>';
+        var rut = '<%= format_rut("#{contribuyente.rut || ''}#{contribuyente.dv || ''}") %>';
 
         var newRow = "<tr>" +
         "<td class='contenido-form'>" + razonSocial + "</td>" +

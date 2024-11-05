@@ -1033,5 +1033,29 @@ module ApplicationHelper
       return 'data:image/png;base64,' + Base64.strict_encode64(file.read)
     end
   end
+
+  def format_rut(rut)
+    return rut unless rut.present?
+  
+    # Limpiar el RUT de espacios, puntos y guiones
+    rut = rut.to_s.gsub(/[\s.-]/, '').strip
+  
+    # Asegúrate de que el RUT tenga solo números y un dígito verificador al final
+    return rut unless rut =~ /^\d{7,8}[kK0-9]$/ 
+  
+    # Dividir el RUT en parte numérica y dígito verificador
+    rut_numerico = rut[0..-2] # Parte numérica
+    dv = rut[-1]               # Dígito verificador
+  
+    # Formatear el RUT con puntos
+    formatted_rut = rut_numerico.reverse.gsub(/(\d{3})(?=\d)/, '\1.').reverse
+  
+    # Asegurarse de que los puntos estén correctamente colocados
+    formatted_rut = formatted_rut.sub(/^(\d{1,2})(\d{3})/, '\1.\2') if formatted_rut.length > 7
+  
+    "#{formatted_rut}-#{dv.upcase}"
+  end
+  
+  
   
 end

@@ -2799,8 +2799,7 @@
       });
     }
 
-    function guardarArchivos(event, id_doc, nombreCampo) {
-      //var archivoInput = document.getElementById('archivoInput_'+ id_doc);
+    function guardarArchivos(event, id_doc, nombreCampo, origen) {
       var archivoInput = document.getElementById(nombreCampo);
       var archivo = archivoInput.files[0];
       var formData = new FormData();
@@ -2809,8 +2808,6 @@
 
       // Obtener el ID del flujo
       var Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
-
-      // Agregar el ID del flujo como parte de los datos del formulario
       formData.append('id', Id);
 
       fetch('/subir_documento', {
@@ -2822,17 +2819,17 @@
       })
       .then(response => {
         if (!response.ok) {
-          throw new Error('Error al subir el archivo');
+          return response.json().then(err => { throw new Error(err.error || 'Error al subir el archivo'); });
         }
         return response.json();
       })
       .then(data => {
-        //console.log('Documentos subidos correctamente:', data);
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
+        alert(data.message); // Muestra el mensaje de éxito
+        actualizarContenidoDescarga(id_doc, event.target.value.split('\\').pop(), nombreCampo, origen);
       })
       .catch(error => {
-        //console.error('Error:', error);
-        // Aquí puedes manejar el error, como mostrar un mensaje de error al usuario
+        alert(error.message); // Muestra el mensaje de error
       });
     }
 
@@ -2858,8 +2855,7 @@
     }
 
     function guardarYActualizar(event, id, nombreCampo, origen) {
-      guardarArchivos(event, id, nombreCampo);
-      actualizarContenidoDescarga(id, event.target.value.split('\\').pop(), nombreCampo, origen);
+      guardarArchivos(event, id, nombreCampo, origen);
     } 
 
        
@@ -3381,7 +3377,7 @@
                         - @empresas_adheridas.each do |empresas_adherida|
                           %tr{"data-id" => empresas_adherida['id']} 
                             %td.contenido-form= empresas_adherida['nombre_institucion']
-                            %td.contenido-form= empresas_adherida['rut_institucion']
+                            %td.contenido-form= format_rut(empresas_adherida['rut_institucion'])
                             %td.contenido-form= empresas_adherida['nombre_elemento']
                             %td.contenido-form= empresas_adherida['comuna_instalacion']
                             %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
@@ -3667,7 +3663,7 @@
                   - @postulantes.each do |postulante|
                     %tr
                       %td.contenido-form= postulante.user.nombre_completo
-                      %td.contenido-form= postulante.user.rut
+                      %td.contenido-form= format_rut(postulante.user.rut)
                       %td.contenido-form= postulante.user.telefono
                       %td.contenido-form= postulante.user.email
                       %td.contenido-form= postulante.profesion
@@ -3732,7 +3728,7 @@
                   - @empresa_equipo.each do |empresa|
                     %tr
                       %td.contenido-form=empresa.razon_social
-                      %td.contenido-form=empresa.rut
+                      %td.contenido-form=format_rut(empresa.rut)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones
                           - if equipo_consultores_existente?(empresa.contribuyente_id, empresa.flujo_id)
@@ -3764,7 +3760,7 @@
                   - @user_equipo.each do |user|
                     %tr
                       %td.contenido-form= user.user.nombre_completo
-                      %td.contenido-form= user.user.rut
+                      %td.contenido-form= format_rut(user.user.rut)
                       %td.contenido-form= user.user.telefono
                       %td.contenido-form= user.user.email
                       %td.contenido-form= user.profesion
@@ -3806,7 +3802,7 @@
                   - @user_equipo.each do |user|
                     %tr
                       %td.contenido-form= user.user.nombre_completo
-                      %td.contenido-form= user.user.rut
+                      %td.contenido-form= format_rut(user.user.rut)
                       %td.contenido-form= user.user.telefono
                       %td.contenido-form= user.user.email
                       %td.contenido-form= user.profesion
@@ -3849,7 +3845,7 @@
                       - valor_hh = entry[:valor_hh][0]
                       %tr{id: "tr-auditores-#{auditor.id}"}
                         %td.contenido-form= auditor.nombre + ' ' + auditor.apellido
-                        %td.contenido-form= auditor.rut
+                        %td.contenido-form= format_rut(auditor.rut)
                         %td.contenido-form= auditor.telefono
                         %td.contenido-form= auditor.email
                         %td.contenido-form= auditor.profesion
