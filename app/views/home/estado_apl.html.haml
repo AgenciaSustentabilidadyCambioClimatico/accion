@@ -25,14 +25,14 @@
           - user_id = []
           - coordinadores.each { |f| user_id << f.user_id}
           - usuarios_coordinadores = []
-          - user_id.uniq.each { |f| usuarios_coordinadores << User.find(f)}
+          - user_id.uniq.each { |f| usuarios_coordinadores << User.where(id: f)}
           %tr
             %td= m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
             %td
-              - usuarios_coordinadores.each do |coordinador|
+              - usuarios_coordinadores.flatten.each do |coordinador|
                 %p= coordinador&.nombre_completo
             %td{:onClick => "unfoldTareasManifestacion()", :id => "#{m.id}", class: 'btn btn-success btn-sm mt-2 ml-2 fa fa-plus', style:"cursor: pointer;"}
           %thead{class: 'd-none', :id => "flujo#{m.id}"}
