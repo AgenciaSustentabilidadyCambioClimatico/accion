@@ -799,12 +799,8 @@ ActiveRecord::Schema.define(version: 20241017184602) do
     t.bigint "contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-<<<<<<< HEAD
-    t.index ["contribuyente_id"], name: "index_equipo_trabajos_on_contribuyente_id"
-=======
     t.integer "contribuyente_id"
     t.bigint "registro_proveedores_id"
->>>>>>> master
     t.index ["flujo_id"], name: "index_equipo_trabajos_on_flujo_id"
     t.index ["registro_proveedores_id"], name: "index_equipo_trabajos_on_registro_proveedores_id"
     t.index ["user_id"], name: "index_equipo_trabajos_on_user_id"
