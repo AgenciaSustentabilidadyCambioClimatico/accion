@@ -1635,10 +1635,6 @@ class FondoProduccionLimpiasController < ApplicationController
         @solo_lectura = false                                            
         @duracion_x = params['duracion'].join(',')
 
-        #respond_to do |format|
-        #  format.js { render 'insert_plan_y_actividad', solo_lectura: @solo_lectura}
-        #end
-
         respond_to do |format|
           format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(params['tarea_pendiente_id'])}?tabs=plan-de-actividades'" }
           format.html { redirect_to edit_fondo_produccion_limpia_path(params['tarea_pendiente_id']), notice: success }
@@ -1736,38 +1732,9 @@ class FondoProduccionLimpiasController < ApplicationController
             puts "No se seleccionó ninguna comuna"
           end
           
-
-          #if params[:comunasIds].present?# && params[:comunasIds].any?
-          #  ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
-          #  params[:comunasIds].each do |comuna_id|
-          #  
-          #    # Consultar si ya existe un registro con la combinación de comuna_id y flujo_id
-          #    if ComunasFlujo.exists?(comuna_id: comuna_id, flujo_id: @flujo.id)
-          #      puts "La combinación de comuna_id #{comuna_id} y flujo_id #{@flujo_id} ya existe en la tabla"
-          #    else
-          #      # Crear un nuevo objeto ComunaFlujo solo si no existe una combinación con las mismas claves
-          #      comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
-          #  
-          #      # Intentar guardar el objeto ComunaFlujo en la base de datos
-          #      if comuna_flujo.save
-          #        # Operación exitosa, puedes hacer algo si es necesario
-          #      else
-          #        # Si hay algún error al guardar el objeto, puedes manejarlo aquí
-          #        puts "Error al guardar comuna_flujo: #{comuna_flujo.errors.full_messages.join(', ')}"
-          #      end
-          #    end
-          #  end   
-          #else
-          #  # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
-          #  ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
-          #  puts "No se selecciono ninguna comuna"
-          #end 
-        
           flash[:success] = 'Datos guardados correctamente'
-          #format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
           format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
-          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-          
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }  
         end
     end
 
@@ -2097,7 +2064,7 @@ class FondoProduccionLimpiasController < ApplicationController
       
       #SE CAMBIA EL ESTADO DEL FPL-03 A 2
       tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
-      tarea_pendiente_fpl_03 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_03.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      tarea_pendiente_fpl_03 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_03.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
       if tarea_pendiente_fpl_03.present?
         tarea_pendiente_fpl_03.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_03.save  
@@ -2218,8 +2185,8 @@ class FondoProduccionLimpiasController < ApplicationController
       
       #SE CAMBIA EL ESTADO DEL FPL-04 A 2
       tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
-      tarea_pendiente_fpl_04 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_04.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
-
+      tarea_pendiente_fpl_04 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_04.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
+     
       if tarea_pendiente_fpl_04.present?
         tarea_pendiente_fpl_04.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_04.save  
@@ -2360,7 +2327,6 @@ class FondoProduccionLimpiasController < ApplicationController
   
       #SE CAMBIA EL ESTADO DEL FPL-05 A 2
       tarea_fondo_fpl_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
-      #tarea_pendiente_fpl_05 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
       tarea_pendiente_fpl_05 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_05.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
 
       if tarea_pendiente_fpl_05.present?
@@ -2819,6 +2785,8 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.temp_siguientes = "true"
       @manifestacion_de_interes.seleccion_de_radios
 
+      @tipo_aporte = TipoAporte.all
+
       #Obtenie empresas adheridas Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
         obtiene_y_graba_empresas_adheridas(false)
@@ -2876,8 +2844,95 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def enviar_observaciones_admisibilidad  #TAREA FPL-07
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_08)
-      existe_fpl_08 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+      custom_params = {
+        fondo_produccion_limpia: {
+          cantidad_micro_empresa: params[:cantidad_micro_empresa],
+          cantidad_pequeña_empresa: params[:cantidad_pequeña_empresa],
+          cantidad_mediana_empresa: params[:cantidad_mediana_empresa],
+          cantidad_grande_empresa: params[:cantidad_grande_empresa],
+          empresas_asociadas_ag: params[:empresas_asociadas_ag],
+          empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
+          duracion: params[:duracion],
+          fortalezas_consultores: normalize_string(params[:fortalezas_consultores]),
+          elementos_micro_empresa: params[:elementos_micro_empresa],
+          elementos_pequena_empresa: params[:elementos_pequena_empresa],
+          elementos_mediana_empresa: params[:elementos_mediana_empresa],
+          elementos_grande_empresa: params[:elementos_grande_empresa],
+          empresas_adheridas: params[:empresas_adheridas]
+        }
+      }
+
+      fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
+      fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+      #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
+        obtiene_y_graba_empresas_adheridas(true)
+      end
+
+      set_flujo
+
+      # Convierte la cadena JSON a un array de hashes
+      comunas = JSON.parse(params[:comunasIds])
+      
+      if params[:comunasIds].present?
+        # Eliminar todas las entradas para el flujo actual
+        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+        
+        # Recorre el array de comunas
+        comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
+        comunas.each do |comuna|
+          tipo = comuna["tipo"]
+          
+          if tipo == 'región'
+            region_id = comuna["id"]
+            # Busca o crea la región
+            region = Region.find_or_create_by(id: region_id) do |r|
+              r.nombre = comuna["nombre"] # Ajusta según tu modelo
+            end
+            
+            # Almacena las comunas de esta región en ComunasFlujo
+            region.comunas.each do |comuna_de_region|
+              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_region.id, flujo_id: @flujo.id)
+              if comuna_flujo.save
+                puts "Comuna de región guardada: #{comuna_de_region.id} en flujo #{@flujo.id}"
+              else
+                puts "Error al guardar comuna de región: #{comuna_flujo.errors.full_messages.join(', ')}"
+              end
+            end
+      
+          elsif tipo == 'provincia'
+            provincia_id = comuna["id"]
+            # Busca o crea la provincia
+            provincia = Provincia.find_or_create_by(id: provincia_id) do |p|
+              p.nombre = comuna["nombre"] # Ajusta según tu modelo
+            end
+            
+            # Almacena las comunas de esta provincia en ComunasFlujo
+            provincia.comunas.each do |comuna_de_provincia|
+              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_provincia.id, flujo_id: @flujo.id)
+              if comuna_flujo.save
+                puts "Comuna de provincia guardada: #{comuna_de_provincia.id} en flujo #{@flujo.id}"
+              else
+                puts "Error al guardar comuna de provincia: #{comuna_flujo.errors.full_messages.join(', ')}"
+              end
+            end
+      
+          elsif tipo == 'comuna'
+            comuna_id = comuna["id"]
+            comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+            if comuna_flujo.save
+              puts "Comuna guardada: #{comuna_id} en flujo #{@flujo.id}"
+            else
+              puts "Error al guardar comuna: #{comuna_flujo.errors.full_messages.join(', ')}"
+            end
+          end
+        end
+      else
+        # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
+        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+        puts "No se seleccionó ninguna comuna"
+      end
 
       #SE CAMBIA EL ESTADO DEL FPL-07 A 2
       tarea_fondo_fpl_07 = Tarea.find_by_codigo(Tarea::COD_FPL_07)
@@ -2886,34 +2941,31 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_fpl_07.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_07.save  
       end
-      #SE CREA FPL-06
-      #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
-      if existe_fpl_08.present?
-      else  
-        #obtengo el usuario del jefe de linea
-        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+ 
+      #obtengo el usuario del jefe de linea
+      mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_FINANCIERO)
 
-        #obtengo el user_id del jefe de linea
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
-
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-        custom_params_tarea_pendiente = {
-          tarea_pendientes: {
-            flujo_id: @flujo.id,
-            tarea_id: tarea_fondo.id,
-            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente_jefe_de_linea.user_id,
-            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
-            data: { }
-          }
+      #obtengo el user_id del jefe de linea
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+      tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+     
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+      custom_params_tarea_pendiente = {
+        tarea_pendientes: {
+          flujo_id: @flujo.id,
+          tarea_id: tarea_fondo.id,
+          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+          user_id: tarea_pendiente.user_id,
+          data: { }
         }
-        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+      }
+  
+      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
 
-        #SE ENVIAR EL MAIL AL RESPONSABLE
-        mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
-      end
+      #SE ENVIAR EL MAIL AL RESPONSABLE
+      mdi = @manifestacion_de_interes
+      send_message(tarea_fondo, tarea_pendiente.user_id)
+
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Financiera enviada correctamente'
           render js: "window.location='#{root_path}'"}
@@ -2928,9 +2980,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def observaciones_admisibilidad_tecnica #TAREA FPL-04
+    def observaciones_admisibilidad_tecnica #TAREA FPL-08
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = false
+
+      @tipo_aporte = TipoAporte.all
 
       #Obtenie empresas adheridas Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
@@ -2961,7 +3015,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
     end
 
-    def revisar_observaciones_admisibilidad_tecnica  #TAREA FPL-004
+    def revisar_observaciones_admisibilidad_tecnica  #TAREA FPL-08
       jsonData = params['jsonData']
 
       jsonData.each do |key, value|
@@ -2987,14 +3041,95 @@ class FondoProduccionLimpiasController < ApplicationController
 
     #FPL-08
     def enviar_observaciones_admisibilidad_tecnica 
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_07)
-      existe_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
- 
-      #envia_notificacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [4]).count
-      #if envia_notificacion.present?
-      #  envia_notificacion.revision = envia_notificacion.revision + 1
-      #  envia_notificacion.save  
-      #end
+      custom_params = {
+        fondo_produccion_limpia: {
+          cantidad_micro_empresa: params[:cantidad_micro_empresa],
+          cantidad_pequeña_empresa: params[:cantidad_pequeña_empresa],
+          cantidad_mediana_empresa: params[:cantidad_mediana_empresa],
+          cantidad_grande_empresa: params[:cantidad_grande_empresa],
+          empresas_asociadas_ag: params[:empresas_asociadas_ag],
+          empresas_no_asociadas_ag: params[:empresas_no_asociadas_ag],
+          duracion: params[:duracion],
+          fortalezas_consultores: normalize_string(params[:fortalezas_consultores]),
+          elementos_micro_empresa: params[:elementos_micro_empresa],
+          elementos_pequena_empresa: params[:elementos_pequena_empresa],
+          elementos_mediana_empresa: params[:elementos_mediana_empresa],
+          elementos_grande_empresa: params[:elementos_grande_empresa],
+          empresas_adheridas: params[:empresas_adheridas]
+        }
+      }
+
+      fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
+      fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+      #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
+        obtiene_y_graba_empresas_adheridas(true)
+      end
+
+      set_flujo
+
+      # Convierte la cadena JSON a un array de hashes
+      comunas = JSON.parse(params[:comunasIds])
+      
+      if params[:comunasIds].present?
+        # Eliminar todas las entradas para el flujo actual
+        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all
+        
+        # Recorre el array de comunas
+        comunas = JSON.parse(params[:comunasIds]) # Asegúrate de parsear el JSON aquí
+        comunas.each do |comuna|
+          tipo = comuna["tipo"]
+          
+          if tipo == 'región'
+            region_id = comuna["id"]
+            # Busca o crea la región
+            region = Region.find_or_create_by(id: region_id) do |r|
+              r.nombre = comuna["nombre"] # Ajusta según tu modelo
+            end
+            
+            # Almacena las comunas de esta región en ComunasFlujo
+            region.comunas.each do |comuna_de_region|
+              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_region.id, flujo_id: @flujo.id)
+              if comuna_flujo.save
+                puts "Comuna de región guardada: #{comuna_de_region.id} en flujo #{@flujo.id}"
+              else
+                puts "Error al guardar comuna de región: #{comuna_flujo.errors.full_messages.join(', ')}"
+              end
+            end
+      
+          elsif tipo == 'provincia'
+            provincia_id = comuna["id"]
+            # Busca o crea la provincia
+            provincia = Provincia.find_or_create_by(id: provincia_id) do |p|
+              p.nombre = comuna["nombre"] # Ajusta según tu modelo
+            end
+            
+            # Almacena las comunas de esta provincia en ComunasFlujo
+            provincia.comunas.each do |comuna_de_provincia|
+              comuna_flujo = ComunasFlujo.new(comuna_id: comuna_de_provincia.id, flujo_id: @flujo.id)
+              if comuna_flujo.save
+                puts "Comuna de provincia guardada: #{comuna_de_provincia.id} en flujo #{@flujo.id}"
+              else
+                puts "Error al guardar comuna de provincia: #{comuna_flujo.errors.full_messages.join(', ')}"
+              end
+            end
+      
+          elsif tipo == 'comuna'
+            comuna_id = comuna["id"]
+            comuna_flujo = ComunasFlujo.new(comuna_id: comuna_id, flujo_id: @flujo.id)
+            if comuna_flujo.save
+              puts "Comuna guardada: #{comuna_id} en flujo #{@flujo.id}"
+            else
+              puts "Error al guardar comuna: #{comuna_flujo.errors.full_messages.join(', ')}"
+            end
+          end
+        end
+      else
+        # Si no se seleccionó ninguna comuna, eliminar todas las que correspondan al flujo_id
+        ComunasFlujo.where(flujo_id: @flujo.id).destroy_all 
+        puts "No se seleccionó ninguna comuna"
+      end
       
       #SE CAMBIA EL ESTADO DEL FPL-07 A 2
       tarea_fondo_fpl_08 = Tarea.find_by_codigo(Tarea::COD_FPL_08)
@@ -3004,35 +3139,29 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_pendiente_fpl_08.save  
       end
 
-      #SE CREA FPL-06
-      #SI EL TIPO_CUESTIONARIO_ID = 4 Y LA REVISION ES IGUAL A DOS, ENVIA EL CORREO AL JEFE EN LINEA
-      if existe_fpl_07.present?
-      else  
-        #obtengo el usuario del jefe de linea
-        mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
+      #obtengo el usuario del jefe de linea
+      mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_TECNICO)
 
-        #obtengo el user_id del jefe de linea
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+      #obtengo el user_id del jefe de linea
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+      tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
 
-    
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-        custom_params_tarea_pendiente = {
-          tarea_pendientes: {
-            flujo_id: @flujo.id,
-            tarea_id: tarea_fondo.id,
-            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente_jefe_de_linea.user_id,
-            persona_id: tarea_pendiente_jefe_de_linea.persona_id,
-            data: { }
-          }
+  
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+      custom_params_tarea_pendiente = {
+        tarea_pendientes: {
+          flujo_id: @flujo.id,
+          tarea_id: tarea_fondo.id,
+          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+          user_id: tarea_pendiente.user_id,
+          data: { }
         }
-        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
+      }
+      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
 
-        #SE ENVIAR EL MAIL AL RESPONSABLE
-        mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
-      end
+      #SE ENVIAR EL MAIL AL RESPONSABLE
+      mdi = @manifestacion_de_interes
+      send_message(tarea_fondo, tarea_pendiente.user_id)
   
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Técnica enviada correctamente'
