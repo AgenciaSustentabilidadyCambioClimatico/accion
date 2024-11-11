@@ -2014,48 +2014,36 @@
       empresas_adh = empresas_adheridas;
     }
 
-    $.ajax({
-      url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
-        tipo_instrumento_id: tipoInstrumentoId,
-        cantidad_micro_empresa: cantidad_micro_empresa,
-        cantidad_pequeña_empresa: cantidad_pequeña_empresa,
-        cantidad_mediana_empresa: cantidad_mediana_empresa,
-        cantidad_grande_empresa: cantidad_grande_empresa,
-        empresas_asociadas_ag: empresas_asociadas_ag,
-        empresas_no_asociadas_ag: empresas_no_asociadas_ag,
-        duracion: duracion,
-        fortalezas_consultores: fortalezas_consultores,
-        comunasIds : JSON.stringify(datos),
-        elementos_micro_empresa: elementos_micro_empresa,
-        elementos_pequena_empresa: elementos_pequena_empresa,
-        elementos_mediana_empresa: elementos_mediana_empresa,
-        elementos_grande_empresa: elementos_grande_empresa,
-        empresas_adheridas: empresas_adh         
-      },
-      method: "GET",
-      success: function(response) {
-        if(confirm("¿Está seguro que desea enviar?")){
-          $.ajax({
-            url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
-            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-            contentType: "application/json",
-            method: "POST",
-            success: function(response) {
-              //$('.loading-data').hide();
-            },
-            error: function(error) {
-              console.error("Error al llamar al método del controlador", error);
-              $('.loading-data').hide();
-            }
-          });
-        }   
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
+    if(confirm("¿Está seguro que desea enviar?")){
+      $.ajax({
+        url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
+        data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+              tipo_instrumento_id: tipoInstrumentoId,
+              cantidad_micro_empresa: cantidad_micro_empresa,
+              cantidad_pequeña_empresa: cantidad_pequeña_empresa,
+              cantidad_mediana_empresa: cantidad_mediana_empresa,
+              cantidad_grande_empresa: cantidad_grande_empresa,
+              empresas_asociadas_ag: empresas_asociadas_ag,
+              empresas_no_asociadas_ag: empresas_no_asociadas_ag,
+              duracion: duracion,
+              fortalezas_consultores: fortalezas_consultores,
+              comunasIds : JSON.stringify(datos),
+              elementos_micro_empresa: elementos_micro_empresa,
+              elementos_pequena_empresa: elementos_pequena_empresa,
+              elementos_mediana_empresa: elementos_mediana_empresa,
+              elementos_grande_empresa: elementos_grande_empresa,
+              empresas_adheridas: empresas_adh }),
+        contentType: "application/json",
+        method: "POST",
+        success: function(response) {
+          //$('.loading-data').hide();
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
+        }
+      });
+    }   
   }
 
   function enviarObservacionesAdmisibilidadTecnica(){
@@ -2151,50 +2139,38 @@
       const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
       empresas_adh = empresas_adheridas;
     }
-
-    $.ajax({
-      url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
-      data: {
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
-        tipo_instrumento_id: tipoInstrumentoId,
-        cantidad_micro_empresa: cantidad_micro_empresa,
-        cantidad_pequeña_empresa: cantidad_pequeña_empresa,
-        cantidad_mediana_empresa: cantidad_mediana_empresa,
-        cantidad_grande_empresa: cantidad_grande_empresa,
-        empresas_asociadas_ag: empresas_asociadas_ag,
-        empresas_no_asociadas_ag: empresas_no_asociadas_ag,
-        duracion: duracion,
-        fortalezas_consultores: fortalezas_consultores,
-        comunasIds : JSON.stringify(datos),
-        elementos_micro_empresa: elementos_micro_empresa,
-        elementos_pequena_empresa: elementos_pequena_empresa,
-        elementos_mediana_empresa: elementos_mediana_empresa,
-        elementos_grande_empresa: elementos_grande_empresa,
-        empresas_adheridas: empresas_adh         
-      },
-      method: "GET",
-      success: function(response) {
-        if(confirm("¿Está seguro que desea enviar?")){
-          $('.loading-data').show();
-          $.ajax({
-            url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
-            data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
-            contentType: "application/json",
-            method: "POST",
-            success: function(response) {
-              //$('.loading-data').hide();
-            },
-            error: function(error) {
-              console.error("Error al llamar al método del controlador", error);
-              $('.loading-data').hide();
-            }
-          });
-        }   
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
+    
+    if(confirm("¿Está seguro que desea enviar?")){
+      $('.loading-data').show();
+      $.ajax({
+        url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
+        data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+              tipo_instrumento_id: tipoInstrumentoId,
+              cantidad_micro_empresa: cantidad_micro_empresa,
+              cantidad_pequeña_empresa: cantidad_pequeña_empresa,
+              cantidad_mediana_empresa: cantidad_mediana_empresa,
+              cantidad_grande_empresa: cantidad_grande_empresa,
+              empresas_asociadas_ag: empresas_asociadas_ag,
+              empresas_no_asociadas_ag: empresas_no_asociadas_ag,
+              duracion: duracion,
+              fortalezas_consultores: fortalezas_consultores,
+              comunasIds : JSON.stringify(datos),
+              elementos_micro_empresa: elementos_micro_empresa,
+              elementos_pequena_empresa: elementos_pequena_empresa,
+              elementos_mediana_empresa: elementos_mediana_empresa,
+              elementos_grande_empresa: elementos_grande_empresa,
+              empresas_adheridas: empresas_adh }),
+        contentType: "application/json",
+        method: "POST",
+        success: function(response) {
+          //$('.loading-data').hide();
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
+        }
+      });
+    }   
   }
 
   function guardarPertinenciaFactibilidad(){
