@@ -2060,7 +2060,10 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
 
-      cuestionario_fpl_count = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [1,2], revision: 1).group(:tipo_cuestionario_id).count
+      #consulta si FPL_04 existe en estado enviada
+      tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
+      tarea_pendiente_fpl_04 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_04.id, flujo_id: @tarea_pendiente.flujo_id).last
+         
       
       #SE CAMBIA EL ESTADO DEL FPL-03 A 2
       tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
@@ -2071,13 +2074,13 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       #SE CREA FPL-06
-      if cuestionario_fpl_count.count == 2
+      if tarea_pendiente_fpl_04.estado_tarea_pendiente_id == 2
         #obtengo el usuario del jefe de linea
         mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
  
         #obtengo el user_id del jefe de linea
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
-        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id).last
 
     
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
@@ -2181,7 +2184,9 @@ class FondoProduccionLimpiasController < ApplicationController
         end        
       end
 
-      cuestionario_fpl_count = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: [1,2], revision: 1).group(:tipo_cuestionario_id).count
+      #consulta si FPL_03 existe en estado enviada
+      tarea_fondo_fpl_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
+      tarea_pendiente_fpl_03 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_03.id, flujo_id: @tarea_pendiente.flujo_id).last
       
       #SE CAMBIA EL ESTADO DEL FPL-04 A 2
       tarea_fondo_fpl_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
@@ -2193,13 +2198,13 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       #SE CREA FPL-06
-      if cuestionario_fpl_count.count == 2
+      if tarea_pendiente_fpl_03.estado_tarea_pendiente_id == 2
         #obtengo el usuario del jefe de linea
         mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
 
         #obtengo el user_id del jefe de linea
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
-        tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+        tarea_pendiente_jefe_de_linea = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id).last
 
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
         custom_params_tarea_pendiente = {
@@ -2339,14 +2344,14 @@ class FondoProduccionLimpiasController < ApplicationController
         #obtengo el usuario del jefe de linea
         #PASA AL PASO FPL-10, CONSULTAR SI LA ADMISIBILIDAD JURIDICA ESTE APROBADA
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-        existe_fpl_06 = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1)
+        existe_fpl_06 = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, estado_tarea_pendiente_id: 1).last
 
         if existe_fpl_06.present?
         else
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
           #obtengo el user_id del jefe de linea
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
-          tarea_pendiente_jefe_de_linea = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.first.persona_id)
+          tarea_pendiente_jefe_de_linea = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id).last
 
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
           custom_params_tarea_pendiente = {
@@ -2616,9 +2621,10 @@ class FondoProduccionLimpiasController < ApplicationController
           if existe_fpl_09.present?
             #existe
           else
-            mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
+            mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::JEFE_DE_LINEA)
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-            tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
+            tarea_pendiente_postulante = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id).last
+           
             #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
               tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_10)
                 custom_params_tarea_pendiente = {
@@ -2936,7 +2942,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #SE CAMBIA EL ESTADO DEL FPL-07 A 2
       tarea_fondo_fpl_07 = Tarea.find_by_codigo(Tarea::COD_FPL_07)
-      tarea_pendiente_fpl_07 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_07.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      tarea_pendiente_fpl_07 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_07.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
       if tarea_pendiente_fpl_07.present?
         tarea_pendiente_fpl_07.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_07.save  
@@ -2947,7 +2953,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #obtengo el user_id del jefe de linea
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
-      tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+      tarea_pendiente = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
      
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
       custom_params_tarea_pendiente = {
@@ -3133,7 +3139,7 @@ class FondoProduccionLimpiasController < ApplicationController
       
       #SE CAMBIA EL ESTADO DEL FPL-07 A 2
       tarea_fondo_fpl_08 = Tarea.find_by_codigo(Tarea::COD_FPL_08)
-      tarea_pendiente_fpl_08 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_08.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      tarea_pendiente_fpl_08 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_08.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
       if tarea_pendiente_fpl_08.present?
         tarea_pendiente_fpl_08.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_08.save  
@@ -3144,7 +3150,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #obtengo el user_id del jefe de linea
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
-      tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
+      tarea_pendiente = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
 
   
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
@@ -3244,18 +3250,18 @@ class FondoProduccionLimpiasController < ApplicationController
       #SE CAMBIA EL ESTADO DEL FPL-09 A 2
       tarea_fondo_fpl_09 = Tarea.find_by_codigo(Tarea::COD_FPL_09)
       
-      tarea_pendiente_fpl_09 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_09.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+      tarea_pendiente_fpl_09 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_09.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
       if tarea_pendiente_fpl_09.present?
         tarea_pendiente_fpl_09.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         tarea_pendiente_fpl_09.save  
       end
-      
+
       #APERTURA NUEVAMENTE LA TAREA FPL-05
       #obtengo el user_id del revisor juridico
       mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::REVISOR_JURIDICO)
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
-      tarea_pendiente_admisibilidad_juridica = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id)
-  
+      tarea_pendiente_admisibilidad_juridica = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
+      
       custom_params_tarea_pendiente = {
         tarea_pendientes: {
           flujo_id: @flujo.id,
