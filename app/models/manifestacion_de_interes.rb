@@ -1067,7 +1067,6 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def generar_pdf mapa_territorio, mapa_area_influencia, mapa_alternativas
-    binding.pry
     require 'stringio'
 
     pdf = Prawn::Document.new
