@@ -368,6 +368,13 @@ Rails.application.routes.draw do
     end
 
     resources :fondo_produccion_limpia_mensajes
+
+    resources :mantenedor_fondo_produccion_limpia, only: [:index, :create] do
+      collection do
+        get :cargar_lineas
+      end
+    end
+
     # resources :proveedores, except: [:show] do
     #   patch 'proveedores/establecimientos(.:format)', to: 'proveedores#establecimientos', as: :proveedores_establecimientos
     # end
