@@ -1,0 +1,107 @@
+:javascript	
+	$(document).ready(function(){
+		$("#guardarFlujo").prop("disabled", true);
+	})
+
+	function actualizarTipoInstrumento(selectId) {
+		// Obtén el valor seleccionado del select
+		var valorSeleccionado = document.getElementById(selectId).value;
+
+		// Actualiza el campo oculto con el valor seleccionado
+		document.getElementById('tipo_instrumento_id').value = valorSeleccionado;
+	}
+
+	function cargarLineas(aplId) {
+		$('#columna_linea_1_1').show();
+		$('#columna_linea_1_2_1').show();
+		$('#columna_linea_1_2_2').show();
+		$('#columna_linea_1_3').show();
+		$.ajax({
+			url: "#{cargar_lineas_admin_mantenedor_fondo_produccion_limpia_path}",
+			data: { apl_id: aplId },
+			method: "GET",
+			success: function(response) {
+			// Si la respuesta es exitosa, el servidor retornará el HTML actualizado.
+			// Esto ya está siendo manejado por 'cargar_lineas.js.erb'
+			},
+			error: function(xhr, status, error) {
+			console.error("Error al cargar las líneas:", error);
+			}
+		});
+	}
+
+	function ocultarCombos(combo){
+		if (combo === 1){
+			$('#columna_linea_1_2_1').hide();
+			$('#columna_linea_1_2_2').hide();
+			$('#columna_linea_1_3').hide();
+			actualizarTipoInstrumento('tipo_linea_seleccionada_1_1');
+		}else if (combo === 2){
+			$('#columna_linea_1_1').hide();
+			$('#columna_linea_1_2_2').hide();
+			$('#columna_linea_1_3').hide();
+			actualizarTipoInstrumento('tipo_linea_seleccionada_1_2_1');
+		}else if (combo === 3){
+			$('#columna_linea_1_1').hide();
+			$('#columna_linea_1_2_1').hide();
+			$('#columna_linea_1_3').hide();
+			actualizarTipoInstrumento('tipo_linea_seleccionada_1_2_2');
+		}else if (combo === 4){
+			$('#columna_linea_1_1').hide();
+			$('#columna_linea_1_2_1').hide();
+			$('#columna_linea_1_2_2').hide();
+			actualizarTipoInstrumento('tipo_linea_seleccionada_1_3');	
+		}
+		$("#guardarFlujo").prop("disabled", false);
+	}
+
+	function guardarFlujo(){
+		if(confirm("¿Está seguro que desea crar la postulación del fondo de producción limpia?")){
+			$('.loading-data').show();
+			var apl = document.getElementById('apl').value;
+			var tipo_instrumento_id = document.getElementById('tipo_instrumento_id').value;
+
+
+			$.ajax({
+			url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
+			data: { tipo_instrumento_id : tipo_instrumento_id, apl: apl },
+			method: "POST",
+			success: function(response) {
+				$('.loading-data').hide();
+			},
+			error: function(error) {
+				console.error("Error al llamar al método del controlador", error);
+				$('.loading-data').hide();
+			}
+			});
+		}
+	}
+
+- titulo t(:nuevo_flujo_fpl)
+- url = (@flujo.nil? or @flujo.id.nil?) ? admin_mantenedor_fondo_produccion_limpia_path : admin_mantenedor_fondo_produccion_limpia_path
+= simple_form_for @flujo, url: url, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						-#= action_label_of_(@actividad_por_linea)
+						Crea nuevo flujo FPL
+				.card-body
+					.row
+						= f.hidden_field :tipo_instrumento_id, id: 'tipo_instrumento_id'
+
+						.col-lg-12
+							= select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia', onchange: 'cargarLineas(this.value);' }
+							%br
+						.col-lg-6.col-12#columna_linea_1_1
+							= f.input :tipo_instrumento_1_id, collection: (@lineas_fpl_1_1.present? ? @lineas_fpl_1_1.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Diagnostico', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_1', onchange: 'ocultarCombos(1);'}, selected: @instrumento_seleccionado_1_1
+						.col-lg-6.col-12#columna_linea_1_2_1
+							= f.input :tipo_instrumento_2_id, collection: (@lineas_fpl_1_2_1.present? ? @lineas_fpl_1_2_1.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Seguimiento y Control Fase 1', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_2_1', onchange: 'ocultarCombos(2);'}, selected: @instrumento_seleccionado_1_2_1
+						.col-lg-6.col-12#columna_linea_1_2_2
+							= f.input :tipo_instrumento_3_id, collection: (@lineas_fpl_1_2_2.present? ? @lineas_fpl_1_2_2.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Seguimiento y Control Fase 2', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_2_2', onchange: 'ocultarCombos(3);'}, selected: @instrumento_seleccionado_1_2_2
+						.col-lg-6.col-12#columna_linea_1_3
+							= f.input :tipo_instrumento_4_id, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Evaluación', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_3', onchange: 'ocultarCombos(4);'}, selected: @instrumento_seleccionado_1_3								
+	.float-right
+		= link_to t(:back), admin_actividades_por_lineas_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", id: 'guardarFlujo', disabled: :disabled, onclick: 'guardarFlujo(); return false;'
