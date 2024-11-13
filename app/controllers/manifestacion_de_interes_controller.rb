@@ -2278,19 +2278,27 @@ class ManifestacionDeInteresController < ApplicationController
     file = descargable.file(metodos)
     send_data file[:content], type: "application/#{file[:format]}", charset: "iso-8859-1", filename: file[:filename]
   end
+
   def descargar_compilado
     require 'zip'
+    require 'open-uri'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @manifestacion_de_interes.documento_diagnosticos.each do |doc|
-          if File.exists?(doc.archivo.path)
-            # add file to zip
-            stream.put_next_entry(doc.archivo.file.identifier)
-            archivo_data = IO.read((doc.archivo.current_path rescue doc.archivo.path))
-            stream.write archivo_data
+        if !doc.archivo.url.nil?
+          # add file to zip
+          url = doc.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          # Open and read the file from S3
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
         end
       end
     end
     archivo_zip.rewind
+    # archivo_zip.read
     #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
