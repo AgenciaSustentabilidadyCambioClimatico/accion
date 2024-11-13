@@ -586,6 +586,135 @@ class Flujo < ApplicationRecord
     instancias
   end
 
+  def instancias_del_flujo_fpl current_user
+    instancias = []
+    ascc = Contribuyente.find_by_rut(75980060)
+    #Si es admin veo todo
+    puedo_ver_tareas = current_user.is_admin? || current_user.is_ascc?
+    personas = current_user.personas
+    personas_id = personas.pluck(:id)
+
+    if !puedo_ver_tareas
+      #jefe de linea ve todo lo relacionado a los tipos de instrumento donde es responsable
+      #consulto directo a responsables
+      jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, self.tipo_instrumento_id)
+      puedo_ver_tareas = (personas_id & jefes_de_linea.map{|jl| jl.id}).size > 0
+
+      if !puedo_ver_tareas
+        #los roles descritos abajo ven todo lo relacionado al flujo
+        #por eso consulto al mapa de actores, para saber cual fue su rol de participacion en el flujo
+        roles = self.mapa_de_actores.where(persona_id: personas.pluck(:id)).pluck(:rol_id)
+        puedo_ver_tareas = (roles & [Rol::COORDINADOR, Rol::RESPONSABLE_ENTREGABLES, Rol::REVISOR_TECNICO]).size > 0
+      end
+    end
+
+    jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
+    puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
+
+    fpl_02_added = false
+    revision = 1
+
+    self.tarea_pendientes.order(id: :asc).each do |tarea_pend|
+      documentos_asociados = [{nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}]
+      #tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
+      estado = tarea_pend.estado_tarea_pendiente.nombre_historial
+      pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : tarea_pend
+      activacion = tarea_pend.created_at.strftime("%F %T")
+      ejecucion = tarea_pend.created_at != tarea_pend.updated_at ? tarea_pend.updated_at.strftime("%F %T") : ""
+      #finalmente solo puede ver la tarea en especifico si es el que la respondio
+      puedo_ver_tarea = puedo_ver_tareas
+      puedo_ver_tarea = tarea_pend.user_id == current_user.id if !puedo_ver_tarea
+
+      if tarea_pend.tarea.codigo == Tarea::COD_FPL_02
+        # Si el código es FPL-02 y ya se añadió, saltar al siguiente
+        next if fpl_02_added
+  
+        # Marcar que el FPL-02 ya fue añadido
+        fpl_02_added = true
+      end
+
+      if tarea_pend.tarea.es_convocatoria?
+        instancia = Convocatoria.where(flujo_id: self.id, tarea_codigo: tarea_pend.tarea.codigo).pluck(:nombre)
+      elsif tarea_pend.tarea.es_minuta?
+        tps = self.tarea_pendientes.where(tarea_id: t.tarea.id)
+        convocatorias_ids = []
+        tps.each do |tp|
+          convocatorias_ids << tp.data[:convocatoria_id] if (tp.data.present? && tp.data.has_key?(:convocatoria_id))
+        end
+        convocatorias_ids = convocatorias_ids.uniq
+        instancia = Convocatoria.where(flujo_id: self.id, id: convocatorias_ids).order(nombre: :asc).pluck(:nombre)
+      elsif tarea_pend.tarea.es_auditoria?
+        # 
+        instancia = []
+        contador = 0
+        self.auditorias.each do |aud|
+          # 
+          instancia << (aud.nombre.blank? ? "Sin nombre-#{contador+1}" : aud.nombre)
+        end
+      else
+        instancia = ["Única"]
+      end
+     
+      # Inicializa tareas_validaciones_fpl_06 como un arreglo vacío
+      tareas_validaciones_fpl_06 = []
+
+      # Comprueba si la tarea tiene el código FPL_06
+      if tarea_pend.tarea.codigo == Tarea::COD_FPL_06
+        # Intenta encontrar el cuestionario relevante
+        cuestionario_fpl = CuestionarioFpl.where(flujo_id: self.id, tipo_cuestionario_id: 4).first 
+
+        # Asegúrate de que se encontró el cuestionario y que tiene una revisión válida
+        if cuestionario_fpl && cuestionario_fpl.revision
+          # Genera un rango de números hasta la revisión máxima
+          maximo = cuestionario_fpl.revision
+          if revision <= maximo
+            tareas_validaciones_fpl_06 << revision
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+            revision += 1
+          end
+        end
+      end 
+
+      tareas_validaciones_fpl_11 = false
+      if tarea_pend.tarea.codigo == Tarea::COD_FPL_11
+        @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
+        if @fondo_produccion_limpia.archivo_resolucion.present?
+          # Obtener la ruta completa del archivo
+          archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
+
+          # Extraer el nombre del archivo
+          archivo_resolucion = File.basename(archivo_resolucion_ruta)
+          
+          if archivo_resolucion != nil
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+          end
+          tareas_validaciones_fpl_11 = true
+        end
+      end
+      instancias << {
+        tipo_instrumento: self.tipo_instrumento.nombre,
+        id_instrumento: self.id,
+        nombre_instrumento: self.nombre_instrumento,
+        tarea: tarea_pend.tarea,
+        manifestacion_de_interes: self.manifestacion_de_interes,
+        nombre_tarea: tarea_pend.tarea.nombre,
+        responsables: tarea_pend.tarea.responsables_de_la_tarea(self.id),
+        documentos_asociados: documentos_asociados,
+        instancia: instancia,
+        estado: estado,
+        pendiente: pendiente,
+        puedo_ver_tarea: puedo_ver_tarea,
+        auditorias_tarea_033: {},
+        validaciones_tarea_034: {},
+        tarea_fpl_06: tareas_validaciones_fpl_06,
+        tarea_fpl_11: tareas_validaciones_fpl_11,
+        activacion: activacion,
+        ejecucion: ejecucion
+      } 
+    end
+    instancias 
+  end
+
   # DZC 2018-10-30 15:31:04 devuelve el listado de usuarios con tareas pendientes en el flujo
   def usuarios_con_tarea_pendiente
     usuarios_con_tareas_pendientes = self.tarea_pendientes.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).pluck(:user_id).uniq

@@ -1562,6 +1562,8 @@ es:
   adjuntar_resolucion_contrato: Adjuntar Resolución y Contrato
   resolucion_contrato: Resolución y Contrato
   no_aplica: No Aplica
+  iniciar_flujo_fpl: Iniciar Flujo FPL
+  nuevo_flujo_fpl: Nuevo Flujo FPL
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:

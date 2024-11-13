@@ -1,0 +1,128 @@
+$("#guardarFlujo").prop("disabled", true);
+$("#tipo_linea_seleccionada_1_1").empty();  // Limpiar el combo actual
+
+<% if @lineas_fpl_1_1.present? %>
+    // Agregar la opción "Seleccione una Línea" como primera opción
+    $("#tipo_linea_seleccionada_1_1").append("<option value=''>Seleccione una Línea</option>");
+        
+    <% @lineas_fpl_1_1.each do |linea| %>
+        // Agregar las opciones al combo
+        $("#tipo_linea_seleccionada_1_1").append("<option value='<%= linea.id %>'><%= linea.nombre %></option>");
+    <% end %>
+
+    // Establecer el valor seleccionado
+    $("#tipo_linea_seleccionada_1_1").val('<%= @instrumento_seleccionado_1_1.first %>');
+
+    // Si hay una línea seleccionada
+    <% if @instrumento_seleccionado_1_1.present? %>
+        // Establecer el valor seleccionado y deshabilitar el combo
+        $("#tipo_linea_seleccionada_1_1").val('<%= @instrumento_seleccionado_1_1.first %>');
+        $("#tipo_linea_seleccionada_1_1").prop("disabled", true);  // Deshabilitar el combo si ya hay una línea seleccionada
+    <% else %>
+        // Si no hay selección, seleccionar la primera opción y habilitar el combo
+        //$("#tipo_linea_seleccionada_1_1").val('<%= @lineas_fpl_1_1.first.id %>');
+        $("#tipo_linea_seleccionada_1_1").prop("disabled", false);  // Habilitar el combo si no hay selección
+    <% end %>
+
+<% else %>
+    $("#tipo_linea_seleccionada_1_1").append("<option value=''>No se encontraron líneas</option>");
+    $("#tipo_linea_seleccionada_1_1").prop("disabled", false);  // Habilitar el combo si no hay líneas
+<% end %>
+
+$("#tipo_linea_seleccionada_1_2_1").empty();  // Limpiar el combo actual
+
+<% if @lineas_fpl_1_2_1.present? %>
+    // Agregar la opción "Seleccione una Línea" como primera opción
+    $("#tipo_linea_seleccionada_1_2_1").append("<option value=''>Seleccione una Línea</option>");
+    
+    <% @lineas_fpl_1_2_1.each do |linea| %>
+        // Agregar las opciones al combo
+        $("#tipo_linea_seleccionada_1_2_1").append("<option value='<%= linea.id %>'><%= linea.nombre %></option>");
+    <% end %>
+
+    // Establecer el valor seleccionado
+    $("#tipo_linea_seleccionada_1_2_1").val('<%= @instrumento_seleccionado_1_2_1.first %>');
+
+    // Si hay una línea seleccionada
+    <% if @instrumento_seleccionado_1_2_1.present? %>
+        // Establecer el valor seleccionado y deshabilitar el combo
+        $("#tipo_linea_seleccionada_1_2_1").val('<%= @instrumento_seleccionado_1_2_1.first %>');
+        $("#tipo_linea_seleccionada_1_2_1").prop("disabled", true);  // Deshabilitar el combo si ya hay una línea seleccionada
+    <% else %>
+        // Si no hay selección, seleccionar la primera opción y habilitar el combo
+        //$("#tipo_linea_seleccionada_1_2_1").val('<%= @lineas_fpl_1_2_1.first.id %>');
+        $("#tipo_linea_seleccionada_1_2_1").prop("disabled", false);  // Habilitar el combo si no hay selección
+    <% end %>
+
+<% else %>
+    ("#tipo_linea_seleccionada_1_2_1").append("<option value=''>No se encontraron líneas</option>");
+    $("#tipo_linea_seleccionada_1_2_1").prop("disabled", false);  // Habilitar el combo si no hay líneas
+<% end %>
+
+$("#tipo_linea_seleccionada_1_2_2").empty();  // Limpiar el combo actual
+
+<% if @lineas_fpl_1_2_2.present? %>
+    // Agregar la opción "Seleccione una Línea" como primera opción
+    $("#tipo_linea_seleccionada_1_2_2").append("<option value=''>Seleccione una Línea</option>");
+    
+    <% @lineas_fpl_1_2_2.each do |linea| %>
+        // Agregar las opciones al combo
+        $("#tipo_linea_seleccionada_1_2_2").append("<option value='<%= linea.id %>'><%= linea.nombre %></option>");
+    <% end %>
+
+    // Establecer el valor seleccionado
+    $("#tipo_linea_seleccionada_1_2_2").val('<%= @instrumento_seleccionado_1_2_2.first %>');
+
+    // Si hay una línea seleccionada
+    <% if @instrumento_seleccionado_1_2_2.present? %>
+        // Establecer el valor seleccionado y deshabilitar el combo
+        $("#tipo_linea_seleccionada_1_2_2").val('<%= @instrumento_seleccionado_1_2_2.first %>');
+        $("#tipo_linea_seleccionada_1_2_2").prop("disabled", true);  // Deshabilitar el combo si ya hay una línea seleccionada
+    <% else %>
+        // Si no hay selección, seleccionar la primera opción y habilitar el combo
+        //$("#tipo_linea_seleccionada_1_2_2").val('<%= @lineas_fpl_1_2_2.first.id %>');
+        $("#tipo_linea_seleccionada_1_2_2").prop("disabled", false);  // Habilitar el combo si no hay selección
+    <% end %>
+
+<% else %>
+    $("#tipo_linea_seleccionada_1_2_2").append("<option value=''>No se encontraron líneas</option>");
+    $("#tipo_linea_seleccionada_1_2_2").prop("disabled", false);  // Habilitar el combo si no hay líneas
+<% end %>
+
+
+$("#tipo_linea_seleccionada_1_3").empty();  // Limpiar el combo actual
+
+<% if @lineas_fpl_1_3.present? %>
+    // Agregar la opción "Seleccione una Línea" como primera opción
+    $("#tipo_linea_seleccionada_1_3").append("<option value=''>Seleccione una Línea</option>");
+
+    <% @lineas_fpl_1_3.each do |linea| %>
+        // Agregar las opciones al combo
+        $("#tipo_linea_seleccionada_1_3").append("<option value='<%= linea.id %>'><%= linea.nombre %></option>");
+    <% end %>
+
+    // Establecer el valor seleccionado
+    $("#tipo_linea_seleccionada_1_3").val('<%= @instrumento_seleccionado_1_3.first %>');
+
+    // Si hay una línea seleccionada
+    <% if @instrumento_seleccionado_1_3.present? %>
+        // Establecer el valor seleccionado y deshabilitar el combo
+        $("#tipo_linea_seleccionada_1_3").val('<%= @instrumento_seleccionado_1_3.first %>');
+        $("#tipo_linea_seleccionada_1_3").prop("disabled", true);  // Deshabilitar el combo si ya hay una línea seleccionada
+    <% else %>
+        // Si no hay selección, seleccionar la primera opción y habilitar el combo
+        //$("#tipo_linea_seleccionada_1_3").val('<%= @lineas_fpl_1_3.first.id %>');
+        $("#tipo_linea_seleccionada_1_3").prop("disabled", false);  // Habilitar el combo si no hay selección
+    <% end %>
+
+<% else %>
+    $("#tipo_linea_seleccionada_1_3").append("<option value=''>No se encontraron líneas</option>");
+    $("#tipo_linea_seleccionada_1_3").prop("disabled", false);  // Habilitar el combo si no hay líneas
+<% end %>
+
+
+/*<% if @instrumento_seleccionado_1_1.present? && @instrumento_seleccionado_1_2_1.present? && @instrumento_seleccionado_1_2_2.present? && @instrumento_seleccionado_1_3.present? %>
+    $("#guardarFlujo").prop("disabled", true);
+<% else %>
+    $("#guardarFlujo").prop("disabled", false);
+<% end %>*/
