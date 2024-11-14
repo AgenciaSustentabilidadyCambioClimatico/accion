@@ -1338,14 +1338,16 @@ class ManifestacionDeInteresController < ApplicationController
     @responsables_prensa = Responsable.__personas_responsables(Rol::PRENSA, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id) #DZC se reemplaza la constante por el valor del registro en la tabla. ESTO NO EVITA QUE SE DEBA MANTENER EL NOMBRE EN LA TABLA
     @manifestacion_de_interes.seleccion_de_radios
 
-    #Obtiene las lineas para el diagnostico del FPL
+    #Obtiene las lineas para el seguimiento del FPL Línea 1.2 - Implementación de APL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
-    @fondo_produccion_limpia_id = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id, ).pluck(:flujo_id).first
-    @instrumento_seleccionado = nil
-    if @fondo_produccion_limpia_id.present?
-      @instrumento_seleccionado = Flujo.where(id: @fondo_produccion_limpia_id).pluck(:tipo_instrumento_id) 
+    @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
+    @flujos_con_tipo_instrumento = Flujo.where(id: @fondo_produccion_limpia_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_1,TipoInstrumento::FPL_LINEA_5_1,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
+   
+    @instrumento_seleccionado = []
+    if @flujos_con_tipo_instrumento.present?
+      @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
     end
-
+ 
     unless @manifestacion_de_interes.contribuyente_id.nil?
       #Elimino todos los que no sean el id guardado
       Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
