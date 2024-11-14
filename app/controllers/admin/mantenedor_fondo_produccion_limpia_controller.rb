@@ -19,46 +19,41 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
   end
 
   def cargar_lineas
-    #Obtiene las lineas para el seguimiento del FPL Línea 1.1 - Implementación de APL
-    @lineas_fpl_1_1 = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
-    @fondo_produccion_limpia_1_1_ids = FondoProduccionLimpia.where(flujo_apl_id: params["apl_id"]).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento_1_1 = Flujo.where(id: @fondo_produccion_limpia_1_1_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO])
-    
-    @instrumento_seleccionado_1_1 = []
-    if @flujos_con_tipo_instrumento_1_1.present?
-      @instrumento_seleccionado_1_1 = Flujo.where(id: @flujos_con_tipo_instrumento_1_1).pluck(:tipo_instrumento_id)
-    end
-   
-    #Obtiene las lineas para el seguimiento del FPL Línea 1.2.1 - Implementación de APL
-    @lineas_fpl_1_2_1 = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
-    @fondo_produccion_limpia_1_2_1_ids = FondoProduccionLimpia.where(flujo_apl_id: params["apl_id"]).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento_1_2_1 = Flujo.where(id: @fondo_produccion_limpia_1_2_1_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO])
-    
-    @instrumento_seleccionado_1_2_1 = []
-    if @flujos_con_tipo_instrumento_1_2_1.present?
-      @instrumento_seleccionado_1_2_1 = Flujo.where(id: @flujos_con_tipo_instrumento_1_2_1).pluck(:tipo_instrumento_id)
-    end
-
-    #Obtiene las lineas para el seguimiento del FPL Línea 1.2.2 - Implementación de APL
-    @lineas_fpl_1_2_2 = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
-    @fondo_produccion_limpia_1_2_2_ids = FondoProduccionLimpia.where(flujo_apl_id: params["apl_id"]).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento_1_2_2 = Flujo.where(id: @fondo_produccion_limpia_1_2_2_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
-    
-    @instrumento_seleccionado_1_2_2 = []
-    if @flujos_con_tipo_instrumento_1_2_2.present?
-      @instrumento_seleccionado_1_2_2 = Flujo.where(id: @flujos_con_tipo_instrumento_1_2_2).pluck(:tipo_instrumento_id)
-    end
-
-    ##Obtiene las lineas para el seguimiento del FPL Línea 1.3 - Certificación de APL
-    @lineas_fpl_1_3 = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_3,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION])
-    @fondo_produccion_limpia_1_3_ids = FondoProduccionLimpia.where(flujo_apl_id: params["apl_id"]).pluck(:flujo_id)
-    @flujos_con_tipo_instrumento_1_3 = Flujo.where(id: @fondo_produccion_limpia_1_3_ids, tipo_instrumento_id: [TipoInstrumento::FPL_LINEA_1_3,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION])
+    # Configuración de líneas y sus respectivos tipo_instrumento_id
+    lineas_config = [
+      { linea: '1_1', tipos: [TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO] },
+      { linea: '1_2_1', tipos: [TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO] },
+      { linea: '1_2_2', tipos: [TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2] },
+      { linea: '1_3', tipos: [TipoInstrumento::FPL_LINEA_1_3, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION] }
+    ]
   
-    @instrumento_seleccionado_1_3 = []
-    if @flujos_con_tipo_instrumento_1_3.present?
-      @instrumento_seleccionado_1_3 = Flujo.where(id: @flujos_con_tipo_instrumento_1_3).pluck(:tipo_instrumento_id) 
+    # Recorrer cada línea y obtener la información
+    lineas_config.each do |config|
+      tipo_ids = config[:tipos]
+      linea_id = "lineas_fpl_#{config[:linea]}"
+      flujo_id = "fondo_produccion_limpia_#{config[:linea]}_ids"
+      flujo_instrumento_id = "flujos_con_tipo_instrumento_#{config[:linea]}"
+      instrumento_seleccionado_id = "instrumento_seleccionado_#{config[:linea]}"
+  
+      # Obtener las lineas
+      instance_variable_set("@#{linea_id}", TipoInstrumento.where(id: tipo_ids))
+  
+      # Obtener los ids de FondoProduccionLimpia
+      instance_variable_set("@#{flujo_id}", FondoProduccionLimpia.where(flujo_apl_id: params["apl_id"]).pluck(:flujo_id))
+  
+      # Obtener los flujos con tipo_instrumento_id
+      instance_variable_set("@#{flujo_instrumento_id}", Flujo.where(id: instance_variable_get("@#{flujo_id}"), tipo_instrumento_id: tipo_ids))
+  
+      # Obtener los instrumentos seleccionados
+      selected_instrumento_ids = instance_variable_get("@#{flujo_instrumento_id}").pluck(:tipo_instrumento_id)
+      instance_variable_set("@#{instrumento_seleccionado_id}", selected_instrumento_ids)
     end
-
+  
+    # Verificar la existencia de las tareas
+    @existe_apl_005 = tarea_existente?(Tarea::COD_APL_005)
+    @existe_apl_022 = tarea_existente?(Tarea::COD_APL_022)
+    @existe_apl_023 = tarea_existente?(Tarea::COD_APL_023)
+  
     # Responder con un fragmento HTML que renderice el nuevo select
     respond_to do |format|
       format.js
@@ -125,4 +120,11 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
         "Unknown"
       end
     end
+
+    # Método para verificar la existencia de una tarea
+    def tarea_existente?(codigo)
+      tarea = Tarea.find_by_codigo(codigo)
+      TareaPendiente.exists?(tarea_id: tarea.id, flujo_id: params["apl_id"])
+    end
+  
 end
