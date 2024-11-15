@@ -175,9 +175,14 @@ class Admin::HistorialInstrumentosController < ApplicationController
       else
         instrumento_id = nil
       end
+
       @instrumento = Flujo.find_by(id: instrumento_id)
       if @instrumentos.pluck(:id).include?(instrumento_id) #DZC 2018-10-17 16:49:01 evita que se muestren instrumentos a los que no se debería tener acceso
-        @instancias = @instrumento.instancias_del_flujo(current_user)#.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
+        if params[:fpl].to_i != 0
+          @instancias = @instrumento.instancias_del_flujo_fpl(current_user)
+        else         
+          @instancias = @instrumento.instancias_del_flujo(current_user)#.sort_by { |hsh| [hsh[:tipo_instrumento], hsh[:id_instrumento], hsh[:nombre_tarea]]}
+        end
       else
         @instancias = []
         flash.now[:warning] = "Usted no tiene permiso para acceder al historial del instrumento '#{instrumento_id}'."

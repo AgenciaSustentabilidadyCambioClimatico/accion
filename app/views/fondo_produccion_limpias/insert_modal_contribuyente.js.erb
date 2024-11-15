@@ -1,7 +1,7 @@
 
 <% @contribuyente.each do |contribuyente| %>
     var razonSocial = '<%= contribuyente.razon_social %>';
-    var rut = '<%= contribuyente.rut %>';
+    var rut = '<%= format_rut("#{contribuyente.rut || ''}#{contribuyente.dv || ''}") %>';
     var contribuyente_id = '<%= @empresa_temporal.id%>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
 

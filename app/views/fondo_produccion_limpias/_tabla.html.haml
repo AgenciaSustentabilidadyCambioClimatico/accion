@@ -28,7 +28,7 @@
         - if lista_usuarios.is_a?(Array)
           - lista_usuarios.each do |u|
             %tr
-              %td= "#{u.rut}"
+              %td= "#{format_rut(u.rut)}"
               %td= u.nombre_completo
               %td.iconos-acciones
                 - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
@@ -37,7 +37,7 @@
           -#- if @lista_usuarios.present?  
           - lista_usuarios.all.each do |u|
             %tr
-              %td= "#{u.rut}"
+              %td= "#{format_rut(u.rut)}"
               %td= u.nombre_completo
               %td.iconos-acciones
                 - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
