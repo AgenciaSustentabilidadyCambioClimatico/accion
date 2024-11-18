@@ -1541,66 +1541,89 @@
   }  
 
   function guardarAdmisibilidadJuridica(){
-    var nota_input_id_1 = document.getElementById('nota_input_juridica_id_1').value;
-    var nota_input_id_2 = document.getElementById('nota_input_juridica_id_2').value;
-    var nota_input_id_3 = document.getElementById('nota_input_juridica_id_3').value;
-    var nota_input_id_4 = document.getElementById('nota_input_juridica_id_4').value;
-    var nota_input_id_5 = document.getElementById('nota_input_juridica_id_5').value;
-    var nota_input_id_6 = document.getElementById('nota_input_juridica_id_6').value;
-    var nota_input_id_7 = document.getElementById('nota_input_juridica_id_7').value;
-    var nota_input_id_8 = document.getElementById('nota_input_juridica_id_8').value;
+    /*// Creamos un objeto con la información de `@descargables_postulante`
+    var descargablesPostulante = #{ @descargables_postulante.to_json.html_safe };
+    var descargables_receptor = #{ @descargables_receptor.to_json.html_safe };
+    var descargables_ejecutor = #{ @descargables_ejecutor.to_json.html_safe };
 
-    var obs_input_id_1 = document.getElementById('obs_input_juridica_id_1').value;
-    var obs_input_id_2 = document.getElementById('obs_input_juridica_id_2').value;
-    var obs_input_id_3 = document.getElementById('obs_input_juridica_id_3').value;
-    var obs_input_id_4 = document.getElementById('obs_input_juridica_id_4').value;
-    var obs_input_id_5 = document.getElementById('obs_input_juridica_id_5').value;
-    var obs_input_id_6 = document.getElementById('obs_input_juridica_id_6').value;
-    var obs_input_id_7 = document.getElementById('obs_input_juridica_id_7').value;
-    var obs_input_id_8 = document.getElementById('obs_input_juridica_id_8').value;
+    // Verificamos que los datos están correctos (esto imprimirá el JSON en la consola)
+    //console.log(descargablesPostulante);
 
-    var jsonData = {
-      1: {
-          criterio_id: 1,
-          nota: nota_input_id_1,
-          justificacion: obs_input_id_1
-      },
-      2: {
-          criterio_id: 2,
-          nota: nota_input_id_2,
-          justificacion: obs_input_id_2
-      },
-      3: {
-          criterio_id: 3,
-          nota: nota_input_id_3,
-          justificacion: obs_input_id_3
-      },
-      4: {
-          criterio_id: 4,
-          nota: nota_input_id_4,
-          justificacion: obs_input_id_4
-      },
-      5: {
-          criterio_id: 5,
-          nota: nota_input_id_5,
-          justificacion: obs_input_id_5
-      },
-      6: {
-          criterio_id: 6,
-          nota: nota_input_id_6,
-          justificacion: obs_input_id_6
-      },
-      7: {
-          criterio_id: 7,
-          nota: nota_input_id_7,
-          justificacion: obs_input_id_7
-      },
-      8: {
-          criterio_id: 8,
-          nota: nota_input_id_8,
-          justificacion: obs_input_id_8
+    var jsonData = {};
+
+    // Iteramos sobre el array de objetos `descargablesPostulante` en JavaScript
+    descargablesPostulante.forEach(function(descargable) {
+      var nota_input = document.getElementById("nota_input_juridica_id_" + descargable.id);
+      var obs_input = document.getElementById("obs_input_juridica_id_" + descargable.id);
+
+      // Solo si los elementos existen, agregamos los valores al objeto jsonData
+      if (nota_input && obs_input) {
+        jsonData[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: nota_input.value,
+          justificacion: obs_input.value
+        };
       }
-    };
+    });
+
+    // Iteramos sobre el array de objetos `descargables_receptor` en JavaScript
+    descargables_receptor.forEach(function(descargable) {
+      var nota_input = document.getElementById("nota_input_juridica_id_" + descargable.id);
+      var obs_input = document.getElementById("obs_input_juridica_id_" + descargable.id);
+
+      // Solo si los elementos existen, agregamos los valores al objeto jsonData
+      if (nota_input && obs_input) {
+        jsonData[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: nota_input.value,
+          justificacion: obs_input.value
+        };
+      }
+    });
+
+    // Iteramos sobre el array de objetos `descargables_ejecutor` en JavaScript
+    descargables_ejecutor.forEach(function(descargable) {
+      var nota_input = document.getElementById("nota_input_juridica_id_" + descargable.id);
+      var obs_input = document.getElementById("obs_input_juridica_id_" + descargable.id);
+
+      // Solo si los elementos existen, agregamos los valores al objeto jsonData
+      if (nota_input && obs_input) {
+        jsonData[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: nota_input.value,
+          justificacion: obs_input.value
+        };
+      }
+    });*/
+
+
+    // Creamos un objeto con la información de `@descargables_postulante`, `@descargables_receptor`, `@descargables_ejecutor`
+    var descargablesPostulante = #{ @descargables_postulante.to_json.html_safe };
+    var descargablesReceptor = #{ @descargables_receptor.to_json.html_safe };
+    var descargablesEjecutor = #{ @descargables_ejecutor.to_json.html_safe };
+
+    // Creamos un objeto JSON para guardar los datos
+    var jsonData = {};
+
+    // Combinamos todos los arrays para iterar sobre ellos
+    var allDescargables = descargablesPostulante.concat(descargablesReceptor, descargablesEjecutor);
+
+    // Iteramos sobre el array de todos los objetos descargables
+    allDescargables.forEach(function(descargable) {
+      var notaInput = document.getElementById("nota_input_juridica_id_" + descargable.id);
+      var obsInput = document.getElementById("obs_input_juridica_id_" + descargable.id);
+
+      // Si los elementos existen, procesamos los valores
+      if (notaInput && obsInput) {
+        // Añadimos los valores al objeto jsonData
+        jsonData[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: notaInput.value,
+          justificacion: obsInput.value
+        };
+      }
+    });
+
 
     $('.loading-data').show();
 
@@ -1633,260 +1656,87 @@
   }
 
   function enviarAdmisibilidadJuridica(){
-    var nota_input_id_1 = document.getElementById('nota_input_juridica_id_1').value;
-    var nota_input_id_2 = document.getElementById('nota_input_juridica_id_2').value;
-    var nota_input_id_3 = document.getElementById('nota_input_juridica_id_3').value;
-    var nota_input_id_4 = document.getElementById('nota_input_juridica_id_4').value;
-    var nota_input_id_5 = document.getElementById('nota_input_juridica_id_5').value;
-    var nota_input_id_6 = document.getElementById('nota_input_juridica_id_6').value;
-    var nota_input_id_7 = document.getElementById('nota_input_juridica_id_7').value;
-    var nota_input_id_8 = document.getElementById('nota_input_juridica_id_8').value;
+    // Creamos un objeto con la información de `@descargables_postulante`, `@descargables_receptor`, `@descargables_ejecutor`
+    var descargablesPostulante = #{ @descargables_postulante.to_json.html_safe };
+    var descargablesReceptor = #{ @descargables_receptor.to_json.html_safe };
+    var descargablesEjecutor = #{ @descargables_ejecutor.to_json.html_safe };
 
-    var obs_input_id_1 = document.getElementById('obs_input_juridica_id_1').value;
-    var obs_input_id_2 = document.getElementById('obs_input_juridica_id_2').value;
-    var obs_input_id_3 = document.getElementById('obs_input_juridica_id_3').value;
-    var obs_input_id_4 = document.getElementById('obs_input_juridica_id_4').value;
-    var obs_input_id_5 = document.getElementById('obs_input_juridica_id_5').value;
-    var obs_input_id_6 = document.getElementById('obs_input_juridica_id_6').value;
-    var obs_input_id_7 = document.getElementById('obs_input_juridica_id_7').value;
-    var obs_input_id_8 = document.getElementById('obs_input_juridica_id_8').value;
+    // Creamos un objeto JSON para guardar los datos
+    var jsonData = {};
 
-    var jsonData = {
-      1: {
-          criterio_id: 1,
-          nota: nota_input_id_1,
-          justificacion: obs_input_id_1
-      },
-      2: {
-          criterio_id: 2,
-          nota: nota_input_id_2,
-          justificacion: obs_input_id_2
-      },
-      3: {
-          criterio_id: 3,
-          nota: nota_input_id_3,
-          justificacion: obs_input_id_3
-      },
-      4: {
-          criterio_id: 4,
-          nota: nota_input_id_4,
-          justificacion: obs_input_id_4
-      },
-      5: {
-          criterio_id: 5,
-          nota: nota_input_id_5,
-          justificacion: obs_input_id_5
-      },
-      6: {
-          criterio_id: 6,
-          nota: nota_input_id_6,
-          justificacion: obs_input_id_6
-      },
-      7: {
-          criterio_id: 7,
-          nota: nota_input_id_7,
-          justificacion: obs_input_id_7
-      },
-      8: {
-          criterio_id: 8,
-          nota: nota_input_id_8,
-          justificacion: obs_input_id_8
-      }
-    };
+    // Combinamos todos los arrays para iterar sobre ellos
+    var allDescargables = descargablesPostulante.concat(descargablesReceptor, descargablesEjecutor);
 
+    // Variable para evitar mostrar varias alertas
     var alertaMostrada = false;
 
-    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
-    if (nota_input_id_1 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 1.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_1 == "2") {
-        if (obs_input_id_1 == "") {
+    // Iteramos sobre el array de todos los objetos descargables
+    allDescargables.forEach(function(descargable) {
+      var notaInput = document.getElementById("nota_input_juridica_id_" + descargable.id);
+      var obsInput = document.getElementById("obs_input_juridica_id_" + descargable.id);
+
+      // Si los elementos existen, procesamos los valores
+      if (notaInput && obsInput) {
+        // Añadimos los valores al objeto jsonData
+        jsonData[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: notaInput.value,
+          justificacion: obsInput.value
+        };
+
+        // Verificamos si la respuesta (nota) está vacía
+        if (notaInput.value === "") {
           if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 1.');
+            alert('Por favor, selecciona una respuesta para la pregunta: ' + descargable.nombre);
             alertaMostrada = true;
           }
           event.preventDefault();
           return;
         }
-      }
-    }
 
-    if (nota_input_id_2 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 2.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_2 == "2") {
-        if (obs_input_id_2 == "") {
+        // Si la respuesta es "No Cumple" (nota == 2), verificamos si la observación está vacía
+        if (notaInput.value === "2" && obsInput.value === "") {
           if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 2.');
+            alert('Por favor, ingresa una observación para la pregunta: ' + descargable.nombre);
             alertaMostrada = true;
           }
           event.preventDefault();
           return;
         }
-      }
-    }
-
-    if (nota_input_id_3 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 3.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_3 == "2") {
-        if (obs_input_id_3 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 3.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (nota_input_id_4 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 4.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_4 == "2") {
-        if (obs_input_id_4 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 4.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (nota_input_id_5 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 5.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_5 == "2") {
-        if (obs_input_id_5 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 5.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (nota_input_id_6 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 6.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_6 == "2") {
-        if (obs_input_id_6 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 6.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (nota_input_id_7 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 7.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_7 == "2") {
-        if (obs_input_id_7 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 7.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (nota_input_id_8 == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, selecciona respuesta a la pregunta 8.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }else{
-      if (nota_input_id_8 == "2") {
-        if (obs_input_id_8 == "") {
-          if (!alertaMostrada) {
-            alert('Por favor, ingresa una observación a la pregunta 8.');
-            alertaMostrada = true;
-          }
-          event.preventDefault();
-          return;
-        }
-      }
-    }
-
-    $('.loading-data').show();
-
-    const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
-    button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
-    button_enviar.disabled = true;
-
-    const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
-    button_guardar.disabled = true;
-
-    $.ajax({
-      url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
-      data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
-      contentType: "application/json",
-      method: "POST",
-      success: function(response) {
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-        $('.loading-data').hide();
-        button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
-        button_enviar.disabled = false;
-        button_guardar.disabled = false;
       }
     });
 
+    if (!alertaMostrada) {
+      
+      $('.loading-data').show();
+
+      const button_enviar = document.getElementById('enviar_admisibilidad_juridica_button');
+      button_enviar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button_enviar.disabled = true;
+
+      const button_guardar = document.getElementById('guardar_button_admisibilidad_juridica');
+      button_guardar.disabled = true;
+
+      $.ajax({
+        url: "#{enviar_admisibilidad_juridica_fondo_produccion_limpia_path}",
+        data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", jsonData }),
+        contentType: "application/json",
+        method: "POST",
+        success: function(response) {
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+          $('.loading-data').hide();
+          button_enviar.innerHTML = '<i class="fa fa-arrow-circle-right"></i> Enviar';
+          button_enviar.disabled = false;
+          button_guardar.disabled = false;
+        }
+      });
+    }
   }
 
   function guardarObservacionesAdmisibilidadJuridica(){
     $('.loading-data').show();
-
     $.ajax({
       url: "#{resolver_observaciones_admisibilidad_juridica_fondo_produccion_limpia_path}",
       data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}" }),
@@ -4757,6 +4607,7 @@
       .card-header
         .card-body
           = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+            <h1>A) Postulante </h1>  
             %div.table-responsive
               %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                 %thead
@@ -4764,54 +4615,75 @@
                     %th.encabezado2-form Criterios
                     %th.encabezado2-form ¿Cumple?
                     %th.encabezado2-form Observación
+                  - @descargables_postulante.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-form
+                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                          { required: true, label: false, 
+                            class: 'required-field nota_input_juridica', 
+                            id: "nota_input_juridica_id_#{descargable.id}",
+                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                            style: 'width: 100%; text-align: center;' }
+                      %th.contenido3-form
+                        = f.text_area :justificacion, required: true, label: false, 
+                            class: 'required-field-text', 
+                            id: "obs_input_juridica_id_#{descargable.id}", 
+                            style: 'visibility: hidden; width: 100%; text-align: center;'
+            %br
+            <h1>B) Receptor cofinanciamiento </h1>  
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
                   %tr
-                    %th.contenido1-form Solicitud de cofinanciamiento
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_1', id: 'nota_input_juridica_id_1', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_1','obs_input_juridica_id_1')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form 
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    %th.encabezado2-form Criterios
+                    %th.encabezado2-form ¿Cumple?
+                    %th.encabezado2-form Observación
+                  - @descargables_receptor.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-form
+                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                          { required: true, label: false, 
+                            class: 'required-field nota_input_juridica', 
+                            id: "nota_input_juridica_id_#{descargable.id}",
+                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                            style: 'width: 100%; text-align: center;' }
+                      %th.contenido3-form
+                        = f.text_area :justificacion, required: true, label: false, 
+                            class: 'required-field-text', 
+                            id: "obs_input_juridica_id_#{descargable.id}", 
+                            style: 'visibility: hidden; width: 100%; text-align: center;'
+            %br
+            <h1>C) Ejecutor </h1>  
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
                   %tr
-                    %th.contenido1-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_2', id: 'nota_input_juridica_id_2', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_2','obs_input_juridica_id_2')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form                           
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Copia simple del Rol Único Tributario de la organización postulante
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_3', id: 'nota_input_juridica_id_3', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_3','obs_input_juridica_id_3')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form   
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Copia simple de la cédula de identidad del o los representantes legales
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_4', id: 'nota_input_juridica_id_4', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_4','obs_input_juridica_id_4')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form         
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_5', id: 'nota_input_juridica_id_5', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_5','obs_input_juridica_id_5')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form      
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_6', id: 'nota_input_juridica_id_6', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_6','obs_input_juridica_id_6')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form    
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_7', id: 'nota_input_juridica_id_7', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_7','obs_input_juridica_id_7')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form    
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
-                    %th.contenido2-form 
-                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_id_8', id: 'nota_input_juridica_id_8', onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_8','obs_input_juridica_id_8')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form 
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    %th.encabezado2-form Criterios
+                    %th.encabezado2-form ¿Cumple?
+                    %th.encabezado2-form Observación
+                  - @descargables_ejecutor.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-form
+                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                          { required: true, label: false, 
+                            class: 'required-field nota_input_juridica', 
+                            id: "nota_input_juridica_id_#{descargable.id}",
+                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                            style: 'width: 100%; text-align: center;' }
+                      %th.contenido3-form
+                        = f.text_area :justificacion, required: true, label: false, 
+                            class: 'required-field-text', 
+                            id: "obs_input_juridica_id_#{descargable.id}", 
+                            style: 'visibility: hidden; width: 100%; text-align: center;'
           %br 
           .col-12
             .float-right
@@ -4910,6 +4782,7 @@
       .card-header
         .card-body
           = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+            <h1>A) Postulante </h1>  
             %div.table-responsive
               %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
                 %thead
@@ -4917,38 +4790,45 @@
                     %th.encabezado2-form Criterios
                     %th.encabezado2-form ¿Cumple?
                     %th.encabezado2-form Observación
+                  - @descargables_postulante.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+            %br
+            <h1>B) Receptor cofinanciamiento </h1>  
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
                   %tr
-                    %th.contenido1-det-form Solicitud de cofinanciamiento
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_1 
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_1
+                    %th.encabezado2-form Criterios
+                    %th.encabezado2-form ¿Cumple?
+                    %th.encabezado2-form Observación
+                  - @descargables_receptor.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+            %br
+            <h1>C) Ejecutor </h1>  
+            %div.table-responsive
+              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                %thead
                   %tr
-                    %th.contenido1-det-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_2 
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_2                           
-                  %tr
-                    %th.contenido1-det-form Copia simple del Rol Único Tributario de la organización postulante
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_3
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_3   
-                  %tr
-                    %th.contenido1-det-form Copia simple de la cédula de identidad del o los representantes legales
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_4
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_4          
-                  %tr
-                    %th.contenido1-det-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_5
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_5       
-                  %tr
-                    %th.contenido1-det-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_6 
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_6    
-                  %tr
-                    %th.contenido1-det-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_7
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_7     
-                  %tr
-                    %th.contenido1-det-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
-                    %th.contenido2-det-form#nota_input_juridica_obs_id_8
-                    %th.contenido3-det-form#obs_input_juridica_obs_id_8  
+                    %th.encabezado2-form Criterios
+                    %th.encabezado2-form ¿Cumple?
+                    %th.encabezado2-form Observación
+                  - @descargables_ejecutor.each do |descargable|
+                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                      %th.contenido1-det-form{style: 'vertical-align: middle;'}
+                        %abbr{ title: "Campo requerido" } *
+                        = descargable.nombre
+                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
           %br 
           .col-12
             .float-right
