@@ -2254,6 +2254,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_descargables
     end
   
     def revisar_admisibilidad_juridica  #TAREA FPL-05
@@ -3215,6 +3216,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_descargables
     end
   
     def resolver_observaciones_admisibilidad_juridica  #TAREA FPL-09
