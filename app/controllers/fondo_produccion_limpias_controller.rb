@@ -3,10 +3,12 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
+    :descargar_admisibilidad_juridica_pdf]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo]
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
+    :descargar_admisibilidad_juridica_pdf]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -2262,15 +2264,17 @@ class FondoProduccionLimpiasController < ApplicationController
 
       jsonData.each do |key, value|
         revision = nil
+        justificacion = nil
         if value['nota'] == '2'
           revision = 3
+          justificacion = normalize_string(value['justificacion'])
         end
         custom_params = {
           cuestionario_fpl: {
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: normalize_string(value['justificacion']),
+            justificacion: justificacion,
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2296,17 +2300,19 @@ class FondoProduccionLimpiasController < ApplicationController
 
       jsonData.each do |key, value|
         revision = nil
+        justificacion = nil
         if value['nota'] == '2'
           revision = 3
+          justificacion = normalize_string(value['justificacion'])
         else
-          revision = 1  
+          revision = 1 
         end
         custom_params = {
           cuestionario_fpl: {
             flujo_id: params['flujo_id'],
             criterio_id: value['criterio_id'],
             nota: value['nota'],
-            justificacion: normalize_string(value['justificacion']),
+            justificacion: justificacion,
             tipo_cuestionario_id: 3,
             revision: revision
           }
@@ -2375,9 +2381,21 @@ class FondoProduccionLimpiasController < ApplicationController
         #consulto si la admisibilidad juridica es distinto a 0 se devuelve la evaluacion al postulante FPL-009, y el postulante debe corregir y volver a enviar al FPL-05
         if cuestionario_fpl_rechazado_jur[3] != nil && cuestionario_fpl_rechazado_jur[3] != 0 
           #OBTENGO USER_ID DEL POSTULANTE
+          @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.fondo_produccion_limpia_id)
+          manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
+          manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
+
           mapa = MapaDeActor.where(flujo_id: @tarea_pendiente.flujo_id,rol_id: Rol::PROPONENTE)
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_01)
           tarea_pendiente_postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, persona_id: mapa.last.persona_id)
+
+          ##GENERA FOTO CON ENCUESTA
+          tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+          revision = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).count
+        
+          tipo_contribuyente_id = TipoContribuyente.tipo_contribuyente_id_postulante(@tarea_pendiente.flujo_id)  
+          tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
+          pdf = @fondo_produccion_limpia.generar_admisibilidad_juridica_pdf(revision, @tarea_pendiente.flujo_id, tipo_contribuyente_id[:tipo_contribuyente_id], @fondo_produccion_limpia, manifestacion_de_interes, tipo_instrumento)
 
           #SE CREA TAREA PARA RESOLVER OBSERVACIONES JURIDICAS
             tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_09)
@@ -2713,7 +2731,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
         end
 
-        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, costos_seguimiento, confinanciamiento_empresa)
+        manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
+        manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
+        nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
+        pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
+                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento)
      
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
@@ -3438,6 +3460,20 @@ class FondoProduccionLimpiasController < ApplicationController
         redirect_to request.referer || root_path
       end
     end
+
+    def descargar_admisibilidad_juridica_pdf
+      flujo = Flujo.find(params[:id])
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
+
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
+      end
+    end
+    
 
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
@@ -4756,4 +4792,8 @@ class FondoProduccionLimpiasController < ApplicationController
         extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]
         extensiones_permitidas.include?(extension)
       end
+
+      def obtiene_nombre_tipo_instrumento(tipo_instrumento_id)
+        TipoInstrumento.find(tipo_instrumento_id).nombre
+      end  
 end
