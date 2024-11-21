@@ -28,10 +28,10 @@
                 .col-lg-1.col-12
                   = button_tag "<i class='fa fa-search fa-2x'></i>".html_safe, 'data-disable-with' => "<i class='fa fa-spinner fa-spin fa-2x'></i>".html_safe, id: 'consultar-button', class: "btn btn-sm btn-light btn-block p-0 btn-disabled", disabled: :disabled
                 %br
-  -unless @usuario_temporal.nil?
-    .col-12.text-right
-      %button.btn.btn-primary#nuevo-usuario-fpl-button{type: :button, 'data-tipo-equipo': tipo_equipo}
-        Agregar nuevo
+  -#-unless @usuario_temporal.nil?
+  .col-12.text-right
+    %button.btn.btn-primary#nuevo-usuario-fpl-button{type: :button, 'data-tipo-equipo': tipo_equipo}
+      Agregar nuevo
   .col-12.mt-2
     .usuarios-remote-table
       .card
@@ -66,9 +66,5 @@
                         - data_usuario ={ id: u.id, nombre: u.nombre_completo, rut: u.rut}
                         = radio_button_tag :usuario, data_usuario.to_json, false, { id: "usuario-#{u.id}", class: 'usuario-radio', name: "usuario_#{modal_id}" }
   .col-12.mt-2.text-right
-    -unless @contribuyente_temporal.nil?
-      %button.btn.btn-primary.seleccionar-y-actualizar-usuario-fpl-button{type: :button, disabled: :disabled }
-        Seleccionar
-    -else
-      %button.btn.btn-primary.seleccionar-usuario-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled, "data-modal-id" => modal_id}
-        Seleccionar
+    %button.btn.btn-primary.seleccionar-y-actualizar-usuario-fpl-button{type: :button, disabled: :disabled }
+      Seleccionar

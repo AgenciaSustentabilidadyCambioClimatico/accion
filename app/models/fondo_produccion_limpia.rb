@@ -99,7 +99,8 @@ class FondoProduccionLimpia < ApplicationRecord
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}
   end
 
-  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, costos_seguimiento = nil, confinanciamiento_empresa = nil)
+  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
+                  costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -128,6 +129,20 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
       # Aquí se agregan los elementos del PDF, según el contenido necesario.
+      proyecto_fpl = "Proyecto: #{fondo_produccion_limpia.codigo_proyecto}"
+      proyecto_apl = "APL: #{manifestacion_de_interes.flujo.nombre_instrumento}"
+      beneficiario = "Beneficiario: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).razon_social}"
+      rut_beneficiario = "Rut: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).dv}"
+      
+      self.pdf_titulo_formato(pdf, TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA)
+
+      self.pdf_sub_titulo_formato(pdf, nombre_tipo_instrumento)
+      self.pdf_sub_titulo_formato(pdf, proyecto_fpl)
+      self.pdf_sub_titulo_formato(pdf, proyecto_apl)
+      self.pdf_sub_titulo_formato(pdf, beneficiario)
+      self.pdf_sub_titulo_formato(pdf, rut_beneficiario)
+      self.pdf_separador(pdf, 20)
+
       self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica))
       self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
       self.pdf_tabla_objetivos(pdf, objetivo_especificos)
@@ -199,6 +214,81 @@ class FondoProduccionLimpia < ApplicationRecord
 
     # Ruta donde se guardará el archivo PDF
     pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
+
+    # Asegúrate de que el directorio existe
+    FileUtils.mkdir_p(File.dirname(pdf_file_path))
+
+    # Guardar el PDF en la ruta especificada
+    pdf.render_file(pdf_file_path)
+
+    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
+    pdf_file_path.to_s
+
+  rescue StandardError => e
+    Rails.logger.error "Error generando PDF: #{e.message}"
+    nil
+  end
+
+  def generar_admisibilidad_juridica_pdf(revision = nil, flujo_id = nil, tipo_contribuyentes_id = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, tipo_instrumento = nil)
+    require 'stringio'
+    pdf = Prawn::Document.new
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+
+    # HEADER
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
+          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
+            pdf.text "ADMISIBILIDAD DE LA PROPUESTA", size: 10, color: "003DA6", align: :right
+          end
+        end
+        pdf.move_down 8
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 3
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    ####CONTENIDO ENCUESTA####
+
+    validaciones = self.get_campos_validaciones
+
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
+      # Aquí se agregan los elementos del PDF, según el contenido necesario.
+      proyecto_fpl = "Proyecto: #{fondo_produccion_limpia.codigo_proyecto}"
+      proyecto_apl = "APL: #{manifestacion_de_interes.flujo.nombre_instrumento}"
+      beneficiario = "Beneficiario: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).razon_social}"
+      rut_beneficiario = "Rut: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).dv}"
+      
+      self.pdf_titulo_formato(pdf, TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA)
+      
+      self.pdf_sub_titulo_formato(pdf, tipo_instrumento)
+      self.pdf_sub_titulo_formato(pdf, proyecto_fpl)
+      self.pdf_sub_titulo_formato(pdf, proyecto_apl)
+      self.pdf_sub_titulo_formato(pdf, beneficiario)
+      self.pdf_sub_titulo_formato(pdf, rut_beneficiario)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
+
+      self.pdf_sub_titulo_formato(pdf, "A) Postulante")
+      self.pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, 1)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_sub_titulo_formato(pdf, "B) Receptor cofinanciamiento")
+      self.pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, 2)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_sub_titulo_formato(pdf, "C) Ejecutor")
+      self.pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, 3)
+      self.pdf_separador(pdf, 20)
+    end
+
+    # Ruta donde se guardará el archivo PDF
+    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
 
     # Asegúrate de que el directorio existe
     FileUtils.mkdir_p(File.dirname(pdf_file_path))
@@ -925,6 +1015,50 @@ class FondoProduccionLimpia < ApplicationRecord
     else
       return nil, nil
     end
+  end
+
+  # Método para crear una tabla con cuatro campos en el PDF
+  def pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, tipo_descargable)
+    #obtiene custionarios 
+    cuestionario = CuestionarioFpl.obtener_cuestionarios(flujo_id, tipo_contribuyentes_id, tipo_descargable)
+
+    begin
+      # Encabezados de la tabla
+      headers = ["Criterios", "Cumple?", "Observación"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      cuestionario.each do |resp|
+      if resp[:nota].to_s == "1"
+        nota = "Cumple"
+      else
+        nota = "No Cumple"
+      end
+
+        fila = [
+          resp[:nombre].to_s,
+          nota,
+          resp[:justificacion].to_s,
+        ]
+        data << fila
+      end
+
+      pdf.table(data, header: true, column_widths: [170, 170, 170], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+  def obtiene_contribuyente(id)
+    Contribuyente.find(id)
   end
 
 end

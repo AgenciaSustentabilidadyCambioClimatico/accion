@@ -289,6 +289,7 @@ Rails.application.routes.draw do
   patch ':id/admisibilidad_juridica', to: "fondo_produccion_limpias#revisar_admisibilidad_juridica", as: :revisar_admisibilidad_juridica_fondo_produccion_limpia
   get 'get_admisibilidad_juridica/:id', to: "fondo_produccion_limpias#get_admisibilidad_juridica", as: :get_admisibilidad_juridica_fondo_produccion_limpia
   post ':id/enviar_admisibilidad_juridica', to: "fondo_produccion_limpias#enviar_admisibilidad_juridica", as: :enviar_admisibilidad_juridica_fondo_produccion_limpia
+  get ':id/:revision/descargar_admisibilidad_juridica_pdf', to: "fondo_produccion_limpias#descargar_admisibilidad_juridica_pdf", as: :descargar_admisibilidad_juridica_pdf_fondo_produccion_limpia
 
   #Tarea FPL-06
   get ':id/pertinencia-factibilidad', to: "fondo_produccion_limpias#pertinencia_factibilidad", as: :pertinencia_factibilidad_fondo_produccion_limpia
