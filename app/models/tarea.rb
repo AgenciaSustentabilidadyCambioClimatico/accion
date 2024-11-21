@@ -59,7 +59,7 @@ class Tarea < ApplicationRecord
 
     descargables = {}
     self.descargable_tareas.each do |desc|
-      if ((desc.archivo.path.present? && File.exist?(desc.archivo.path)) || (!desc.subido && desc.contenido.present?))
+      if ((desc.archivo.path.present? && !desc.archivo.url.blank?) || (!desc.subido && desc.contenido.present?))
         descargables[desc.codigo] = { nombre: desc.nombre, args: [id,desc.id] } 
       end
     end

@@ -324,7 +324,8 @@ module ApplicationHelper
         id_descarga = 'manifestacion_de_interes_' + carta_interes
         boton_label = nombre.blank? ? carta_interes : nombre
       end
-      if descargables.blank? || !descargables.has_key?(codigo)
+
+      if descargables.blank? || !descargables.key?(codigo)
         haml_tag :label, nombre, class: 'control-label string pt-06' if carta_interes.blank?
         haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado), id: id_descarga do
           haml_tag :i, class: 'fa fa-ban'
