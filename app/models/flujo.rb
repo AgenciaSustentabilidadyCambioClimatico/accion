@@ -613,6 +613,7 @@ class Flujo < ApplicationRecord
 
     fpl_02_added = false
     revision = 1
+    revision_juridica = 1
 
     self.tarea_pendientes.order(id: :asc).each do |tarea_pend|
       documentos_asociados = [{nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}]
@@ -654,7 +655,29 @@ class Flujo < ApplicationRecord
       else
         instancia = ["Única"]
       end
-     
+
+      # Inicializa tareas_validaciones_fpl_05 como un arreglo vacío
+      tareas_validaciones_fpl_05 = []
+
+      # Comprueba si la tarea tiene el código FPL_05
+      if tarea_pend.tarea.codigo == Tarea::COD_FPL_05
+        # Intenta encontrar el cuestionario relevante
+        tarea_fondo_fpl_09 = Tarea.find_by_codigo(Tarea::COD_FPL_09)
+        existe_fpl_09 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_09.id, flujo_id: self.id).count
+
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
+        maximo = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: self.id).count
+        # Asegúrate de que se encontró el cuestionario y que tiene una revisión válida
+        if existe_fpl_09 >= 1
+          # Genera un rango de números hasta la revisión máxima
+          if revision_juridica <= maximo && revision_juridica <= existe_fpl_09
+            tareas_validaciones_fpl_05 << revision_juridica
+            documentos_asociados = [{nombre: "", url: "", parametros: [], metodo: false}]
+            revision_juridica += 1
+          end
+        end
+      end 
+
       # Inicializa tareas_validaciones_fpl_06 como un arreglo vacío
       tareas_validaciones_fpl_06 = []
 
@@ -706,6 +729,7 @@ class Flujo < ApplicationRecord
         puedo_ver_tarea: puedo_ver_tarea,
         auditorias_tarea_033: {},
         validaciones_tarea_034: {},
+        tarea_fpl_05: tareas_validaciones_fpl_05,
         tarea_fpl_06: tareas_validaciones_fpl_06,
         tarea_fpl_11: tareas_validaciones_fpl_11,
         activacion: activacion,
