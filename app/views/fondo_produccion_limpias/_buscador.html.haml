@@ -22,53 +22,6 @@
     $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
   });
 
-  /*$(document).on('click','#nuevo-usuario-button', function(e){
-    e.preventDefault();
-    $.ajax({
-      url: "#{edit_modal_admin_users_path}",
-      type: "GET",
-      data: {
-        id: "",
-        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
-      }
-    }).fail(function(a, b, c) {
-      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-      $('.loading-data').hide();
-    }).success(function(data){
-      $('##{modal_id} .body-usuario-buscador').html(data);
-      $('.loading-data').hide();
-    });
-  });
-  $(document).on('click','#deshacer-usuario-button', function(e){
-    e.preventDefault();    
-    $('##{modal_id} .body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
-  });
-  $(document).on('change keyup', '.form-temporal-boton-guardar-usuario', function(){
-    nuevo_usuario_temporal_validaciones();
-  });
-
-  $(document).on('click', '.seleccionar-y-actualizar-usuario-button', function(){
-    data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
-    alert(data);
-    $.ajax({
-      url: "#{edit_modal_admin_users_path}",
-      type: "GET",
-      data: {
-        id: data.id,
-        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
-        user_id: data.id
-      }
-    }).fail(function(a, b, c) {
-      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-      $('.loading-data').hide();
-    }).success(function(data){
-      $('##{modal_id} .body-usuario-buscador').html(data);
-      $('.loading-data').hide();
-    });
-  });*/
-
-
-
   $(document).ready(function(){
     $('#usuario_representante_fondo').click(function(e){
       e.preventDefault();

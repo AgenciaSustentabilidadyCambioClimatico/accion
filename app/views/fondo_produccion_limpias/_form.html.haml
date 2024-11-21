@@ -210,7 +210,6 @@
   });
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:postulacion_fondo_produccion_limpia)
--# - tabs = { "sector": true, "propuesta-tecnica": false, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
 - tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
 - mantener_temporal = @mantener_temporal.present? ? @mantener_temporal : false #permite mantener el archivo temporal, a pesar de no tener errors.-
@@ -247,12 +246,5 @@
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
       = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
-      -#= button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1" do
-      -#  %i.fa.fa-arrow-circle-right
-      -#  = t(:enviar_postulación)
--if !solo_lectura
-  = render 'admin/users/buscador'
-  -# - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
-  -#- tipo_instrumento = 28 
-  -#= render 'admin/contribuyentes/buscador', es_para_seleccion: false, seleccion_basica: true, tipo_instrumento: tipo_instrumento
--#= render 'admin/contribuyentes/buscador', es_para_seleccion: true
+
+= render 'fondo_produccion_limpias/buscador'
