@@ -116,18 +116,7 @@
 
   mapa_a_listo = mapa_b_listo = mapa_c_listo = false;
 
-  function ajusteParaImagen(id){
-    var mapNode = document.querySelector(id+'>div>.gm-style>div>div>div:last-child>div');
-    var transformMatrix = getComputedStyle(mapNode).transform.split(',');
-    mapNode.setAttribute(
-      'style',
-      'left:' +
-        parseFloat(transformMatrix[4]) +
-        'px;top:' +
-        parseFloat(transformMatrix[5]) +
-        'px;transform: none;position: absolute;z-index: 983;'
-    );
-  }
+
 
   $(document).ready(function() {
 
@@ -139,9 +128,7 @@
     }
 
     setTimeout(function(){
-      ajusteParaImagen('#representacion-seleccion-territorio-mapa');
-      ajusteParaImagen('#area-influencia-proyecto-mapa');
-      ajusteParaImagen('#alternativas-instalacion-mapa');
+
 
       html2canvas(
         document.querySelector("#representacion-seleccion-territorio-mapa"), 

@@ -82,10 +82,10 @@
                 =flujo.id
               - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)
               - if fondo_produccion_limpia.present?
-                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}
+                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}
                   = fondo_produccion_limpia
               -else
-                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
+                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
               %td
                 -tarea_nombre = tarea.nombre
                 -if pendiente.es_minuta?

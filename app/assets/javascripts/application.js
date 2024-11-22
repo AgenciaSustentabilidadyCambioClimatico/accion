@@ -29,6 +29,7 @@
 // = require_tree .
 // = require select2-full
 // = require cocoon
+//= require rails-ujs
 
 dataConfirmModal.setDefaults({
   title: 'Confirme antes de continuar',
@@ -54,6 +55,9 @@ $(document).on('nested:fieldAdded:hito_de_prensa_instrumentos', function(e) {
 $(document).on('click', '.button-seleccione-archivo', function(){
   $("#"+$(this).data('input-file')).trigger("click");
 });
+
+
+
 
 $(document).on('change', ".file-seleccione-archivo", function(){
   input_cantidad_archivos = $(this)[0].files.length;

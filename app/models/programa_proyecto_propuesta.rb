@@ -89,108 +89,108 @@ class ProgramaProyectoPropuesta < ApplicationRecord
 	mount_uploader :documentos_administrativos_aprobando_el_proyecto, GenericoUploader
 #DZC
 
-	validates :tipo_instrumento_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :proponente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :descripcion, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+	validates :tipo_instrumento_id, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :proponente_id, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :proponente, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :descripcion, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
 
- 	validates :institucion_que_solicita_apoyo_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :rut_institucion_que_solicita_apoyo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :direccion_institucion_que_solicita_apoyo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :lugar_institucion_que_solicita_apoyo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :ubicacion_exacta_institucion_que_solicita_apoyo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :tipo_contribuyente_institucion_que_solicita_apoyo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :nombre_representante_institucion_para_solicitud, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :rut_representante_institucion_para_solicitud, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :telefono_representante_institucion_para_solicitud, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
-	validates :email_representante_institucion_para_solicitud, presence: true, on: :update, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }
+ 	validates :institucion_que_solicita_apoyo_id, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :rut_institucion_que_solicita_apoyo, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :direccion_institucion_que_solicita_apoyo, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :lugar_institucion_que_solicita_apoyo, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :ubicacion_exacta_institucion_que_solicita_apoyo, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :tipo_contribuyente_institucion_que_solicita_apoyo, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :nombre_representante_institucion_para_solicitud, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :rut_representante_institucion_para_solicitud, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :telefono_representante_institucion_para_solicitud, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
+	validates :email_representante_institucion_para_solicitud, presence: true, unless: -> { temporal.to_s == "true" || no_es_ejecutado_por_terceros }, if: :updating_record?
 
- 	validates :nombre_propuesta, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :motivacion_y_objetivos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :equipo_de_trabajo_comprometido, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :instituciones_participantes_propuesta, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :monto_aproximado_a_solicitar, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :fecha_aproximada_postulacion, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :fecha_aproximada_decision, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :motivos_relevantes_para_postular, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :instrumento_relacionado, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :institucion_a_la_cual_se_presentara_la_propuesta_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :nombre_del_fondo_al_cual_se_esta_postulando, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-	validates :documento_con_programa_proyecto_existente, presence: true, on: :update, if: -> {temporal.to_s != "true" && (tipo_instrumento_id.present? && tipo_instrumento_id == TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS)}
-	#validates :programa_proyecto_propuesta_base_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+ 	validates :nombre_propuesta, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :motivacion_y_objetivos, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :equipo_de_trabajo_comprometido, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :instituciones_participantes_propuesta, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :monto_aproximado_a_solicitar, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :fecha_aproximada_postulacion, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :fecha_aproximada_decision, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :motivos_relevantes_para_postular, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :instrumento_relacionado, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :institucion_a_la_cual_se_presentara_la_propuesta_id, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :nombre_del_fondo_al_cual_se_esta_postulando, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
+	validates :documento_con_programa_proyecto_existente, presence: true, if: -> { temporal.to_s != "true" && (tipo_instrumento_id.present? && tipo_instrumento_id == TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS) && :updating_record? }
+	#validates :programa_proyecto_propuesta_base_id, presence: true, unless: -> { temporal.to_s == "true" }, if: :updating_record?
 
-	validates :revisor_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_revisor }
+	validates :revisor_id, presence: true, if: -> { forzar_validacion_en == :asignar_revisor }
 
-	validates :resultado_de_la_revision, presence: true, on: :update, if: -> { forzar_validacion_en == :revision }
-	validate :data_secciones_observadas_revision, on: :update, if: -> { forzar_validacion_en == :revision }
-	validates :actual_observaciones_y_comentarios_revision, presence: true, on: :update, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::CON_OBSERVACIONES }
-	validates :responsable_coordinacion_postulacion_y_seguimiento_id, presence: true, on: :update, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA }
-	validates :responsable_elaboracion_propuesta_y_seguimiento_id, presence: true, on: :update, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA && self.tipo_instrumento_id == TipoInstrumento::PPP_PROPUESTOS_Y_EJECUTADOS_POR_AGENCIA}
+	validates :resultado_de_la_revision, presence: true, if: -> { forzar_validacion_en == :revision }
+	validate :data_secciones_observadas_revision, if: -> { forzar_validacion_en == :revision }
+	validates :actual_observaciones_y_comentarios_revision, presence: true, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::CON_OBSERVACIONES && :updating_record? }
+	validates :responsable_coordinacion_postulacion_y_seguimiento_id, presence: true, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA && :updating_record? }
+	validates :responsable_elaboracion_propuesta_y_seguimiento_id, presence: true, if: -> { (forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA && self.tipo_instrumento_id == TipoInstrumento::PPP_PROPUESTOS_Y_EJECUTADOS_POR_AGENCIA) && :updating_record? }
 
-	validates :actual_respuesta_proponente_revision, presence: true, on: :update, if: -> { (temporal.blank? || temporal.to_s == "false") && forzar_validacion_en == :resolver_observaciones }
+	validates :actual_respuesta_proponente_revision, presence: true, if: -> { (temporal.blank? || temporal.to_s == "false") && forzar_validacion_en == :resolver_observaciones && :updating_record? }
 
 	before_validation :verificar_si_es_ejecutado_por_terceros
 
-	before_save :update_historia_comentarios, on: :update, if: -> { forzar_validacion_en == :revision || forzar_validacion_en == :resolver_observaciones }
-	before_save :set_revision_aceptada, on: :update, if: -> { forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA }
+	before_save :update_historia_comentarios, if: -> { (forzar_validacion_en == :revision || forzar_validacion_en == :resolver_observaciones) && :updating_record? }
+	before_save :set_revision_aceptada, if: -> { (forzar_validacion_en == :revision && self.resultado_de_la_revision == ProgramaProyectoPropuesta::ACEPTADA) && :updating_record? }
 
 #DZC Gino
-	validates :carta_de_apoyo_coordinador, presence: true, on: :update, if: -> { (temporal.blank? || temporal.to_s == "false") && forzar_validacion_en == :carta_de_apoyo }
+	validates :carta_de_apoyo_coordinador, presence: true, if: -> { ((temporal.blank? || temporal.to_s == "false") && forzar_validacion_en == :carta_de_apoyo) && :updating_record? }
 
-	validates :proyecto_adjudicado, presence: true, on: :update, if: -> { forzar_validacion_en == :seguimiento_a_terceros && proyecto_adjudicado != false }
-	validates :motivos_adjudicacion, presence: true, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(false) }
-	validates :fecha_adjudicacion, presence: true, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
-	validates :monto_adjudicado, presence: true, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
-	validates :monto_adjudicado, numericality: { only_integer: true }, if: -> { obligatorio_cuando_adjudicado_es?(true) } #Valida que un numero valido
-	validates :fecha_inicio, presence: true, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
-	validates :fecha_finalizacion, presence: true, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
-	validates :enlace_proyecto, http_url: true, on: :update, if: -> { enlace_proyecto.present? && obligatorio_cuando_adjudicado_es?(true) }
-	validate :fecha_adjudicacion_debe_ser_igual_o_menor_a_fecha_inicio, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
-	validate :fecha_finalizacion_debe_ser_mayor_a_fecha_inicio, on: :update, if: -> { obligatorio_cuando_adjudicado_es?(true) }
+	validates :proyecto_adjudicado, presence: true, if: -> { (forzar_validacion_en == :seguimiento_a_terceros && proyecto_adjudicado != false) && :updating_record? }
+	validates :motivos_adjudicacion, presence: true, if: -> { obligatorio_cuando_adjudicado_es?(false) && :updating_record? }
+	validates :fecha_adjudicacion, presence: true, if: -> { obligatorio_cuando_adjudicado_es?(true) } && :updating_record?
+	validates :monto_adjudicado, presence: true, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
+	validates :monto_adjudicado, numericality: { only_integer: true }, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? } #Valida que un numero valido
+	validates :fecha_inicio, presence: true, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
+	validates :fecha_finalizacion, presence: true, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
+	validates :enlace_proyecto, http_url: true, if: -> { enlace_proyecto.present? && obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
+	validate :fecha_adjudicacion_debe_ser_igual_o_menor_a_fecha_inicio, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
+	validate :fecha_finalizacion_debe_ser_mayor_a_fecha_inicio, if: -> { obligatorio_cuando_adjudicado_es?(true) && :updating_record? }
 
-	validates :archivo_propuesta_elaboracion, presence: true, on: :update, if: -> { forzar_validacion_en == :elaboracion_inicial_propuesta }
+	validates :archivo_propuesta_elaboracion, presence: true, if: -> { forzar_validacion_en == :elaboracion_inicial_propuesta && :updating_record? }
 
-	validates :actual_comentarios_observaciones_tecnicas, presence: true, on: :update, if: -> { forzar_validacion_en == :observaciones_tecnicas }
-	validates :archivo_observaciones_tecnicas, presence: true, on: :update, if: -> { forzar_validacion_en == :observaciones_tecnicas }
-	validates :fecha_observaciones_tecnicas, presence: true, on: :update, if: -> { forzar_validacion_en == :observaciones_tecnicas }
-	validates :resultado_observaciones_tecnicas, presence: true, on: :update, if: -> { forzar_validacion_en == :observaciones_tecnicas }
+	validates :actual_comentarios_observaciones_tecnicas, presence: true, if: -> { forzar_validacion_en == :observaciones_tecnicas && :updating_record? }
+	validates :archivo_observaciones_tecnicas, presence: true, if: -> { forzar_validacion_en == :observaciones_tecnicas && :updating_record? }
+	validates :fecha_observaciones_tecnicas, presence: true, if: -> { forzar_validacion_en == :observaciones_tecnicas && :updating_record? }
+	validates :resultado_observaciones_tecnicas, presence: true, if: -> { forzar_validacion_en == :observaciones_tecnicas && :updating_record? }
 
-	before_save :update_comentarios_observaciones_tecnicas, on: :update, if: -> { forzar_validacion_en == :observaciones_tecnicas }
+	before_save :update_comentarios_observaciones_tecnicas, if: -> { forzar_validacion_en == :observaciones_tecnicas && :updating_record? }
 
-	validates :fecha_postulacion, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :documento_recepcion_postulacion, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :resultado_postulacion, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :fecha_entrega_resultados, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :motivos_resultado, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion && resultado_postulacion == 1 }
+	validates :fecha_postulacion, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :documento_recepcion_postulacion, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :resultado_postulacion, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :fecha_entrega_resultados, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :motivos_resultado, presence: true, if: -> { (forzar_validacion_en == :datos_postulacion && resultado_postulacion == 1) && :updating_record? }
 	# DZC 2019-06-25 16:19:36 se agrega para manejar monto máximo a ingresar
-	validates :monto_aprobado, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :organismo_ejecutor_id, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :responsable_coordinacion_ejecucion_seguimiento_id, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :documentos_administrativos_aprobando_el_proyecto, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :fecha_inicio_legal_proyecto, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :codigo_bip, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validates :plazo_ejecucion_legal, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validate :fecha_postulacion_debe_ser_menor_o_igual_a_hoy, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validate :fecha_entrega_resultados_debe_ser_mayor_o_igual_a_fecha_postulacion, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
-	validate :fecha_inicio_legal_proyecto_debe_ser_mayor_o_igual_a_fecha_postulacion, on: :update, if: -> { forzar_validacion_en == :datos_postulacion }
+	validates :monto_aprobado, presence: true, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { (forzar_validacion_en == :datos_postulacion) && :updating_record? }
+	validates :organismo_ejecutor_id, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :responsable_coordinacion_ejecucion_seguimiento_id, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :documentos_administrativos_aprobando_el_proyecto, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :fecha_inicio_legal_proyecto, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :codigo_bip, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validates :plazo_ejecucion_legal, presence: true, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validate :fecha_postulacion_debe_ser_menor_o_igual_a_hoy, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validate :fecha_entrega_resultados_debe_ser_mayor_o_igual_a_fecha_postulacion, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
+	validate :fecha_inicio_legal_proyecto_debe_ser_mayor_o_igual_a_fecha_postulacion, if: -> { forzar_validacion_en == :datos_postulacion && :updating_record? }
 	
 
-	validates :fecha_inicio_efectiva, presence: true, on: :update, if: -> { forzar_validacion_en == :seguimiento_proyecto }
+	validates :fecha_inicio_efectiva, presence: true, if: -> { forzar_validacion_en == :seguimiento_proyecto && :updating_record? }
 	#Ya no es obligatorio
-	#validates :fecha_finalizacion_efectiva, presence: true, on: :update, if: -> { forzar_validacion_en == :seguimiento_proyecto }
-	validates :participacion_agencia, presence: true, on: :update, if: -> { forzar_validacion_en == :seguimiento_proyecto }
-	validates :productos_y_resultados, presence: true, on: :update, if: -> { forzar_validacion_en == :seguimiento_proyecto }
+	#validates :fecha_finalizacion_efectiva, presence: true, if: -> { forzar_validacion_en == :seguimiento_proyecto }
+	validates :participacion_agencia, presence: true, if: -> { forzar_validacion_en == :seguimiento_proyecto && :updating_record? }
+	validates :productos_y_resultados, presence: true, if: -> { forzar_validacion_en == :seguimiento_proyecto && :updating_record? }
 
-	# validates :institucion_visitas_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
-	validates :usuario_visitas_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
-	validates :comentarios_visitas, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
-	# validates :institucion_carga_datos_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
-	validates :usuario_carga_datos_id, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
-	validates :comentarios_carga_datos, presence: true, on: :update, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
+	# validates :institucion_visitas_id, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
+	validates :usuario_visitas_id, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa && :updating_record? }
+	validates :comentarios_visitas, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa && :updating_record? }
+	# validates :institucion_carga_datos_id, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa }
+	validates :usuario_carga_datos_id, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa && :updating_record? }
+	validates :comentarios_carga_datos, presence: true, if: -> { forzar_validacion_en == :asignar_usuarios_a_cargo_ejecucion_programa && :updating_record? }
 
-	before_validation :set_data_actecos, if: -> { forzar_validacion_en == :datos_ejecucion_presupuestaria_anual }
-	validates :sectores_economicos, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_ejecucion_presupuestaria_anual }
-	validates :proyecto_con_atencion_directa_a_beneficiarios, presence: true, on: :update, if: -> { forzar_validacion_en == :datos_ejecucion_presupuestaria_anual && proyecto_con_atencion_directa_a_beneficiarios != false  }
+	before_validation :set_data_actecos, if: -> { forzar_validacion_en == :datos_ejecucion_presupuestaria_anual && :updating_record? }
+	validates :sectores_economicos, presence: true, if: -> { forzar_validacion_en == :datos_ejecucion_presupuestaria_anual && :updating_record? }
+	validates :proyecto_con_atencion_directa_a_beneficiarios, presence: true, if: -> { (forzar_validacion_en == :datos_ejecucion_presupuestaria_anual && proyecto_con_atencion_directa_a_beneficiarios != false) && :updating_record? }
 	#validar que la fecha de de decision sea mayor que la de postulacion
 	validate :fecha_de_decision_mayor_postulacion, if: -> {fecha_aproximada_postulacion.present? && fecha_aproximada_decision.present?}
 
@@ -200,6 +200,12 @@ class ProgramaProyectoPropuesta < ApplicationRecord
       errors.add(:fecha_aproximada_decision, "Fecha de desicion no puede ser inferior a la fecha de postulacion")
     end
   end 
+
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
+
 #DZC
 	def completar_informacion!
 		#Completa la información de la institución cogestora cuando está cambia

@@ -32,10 +32,14 @@
                       %td
                         -if !data[:diagnostico_de_acuerdo_anterior].blank? && @datos_publicos.visibilidad_documentos.include?("1")
                           %div.text-nowrap
-                            =link_to "Documento Diagnóstico", data[:diagnostico_de_acuerdo_anterior]
+                            - flujo = Flujo.find(data[:flujo_id])
+                            - r = flujo.manifestacion_de_interes.diagnostico_de_acuerdo_anterior.url
+                            = link_to "Documento Diagnóstico",r
                         -if data[:documento_diagnosticos] && @datos_publicos.visibilidad_documentos.include?("2")
                           %div.text-nowrap
                             =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
+
+
                         -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
                           %div.text-nowrap
                             -tarea_pendiente = TareaPendiente.where(flujo_id: data[:flujo_id], tarea_id: Tarea::ID_APL_022).last

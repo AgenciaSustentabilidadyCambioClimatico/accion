@@ -6,13 +6,16 @@ class MateriaRubroRelacion < ApplicationRecord
 	accepts_nested_attributes_for :materia_rubro_dato_relacions, :allow_destroy => true
 
 	validates :materia_sustancia_id, presence: true
-	validates :actividad_economica_id, presence: true, on: :update
+	validates :actividad_economica_id, presence: true, if: :updating_record?
 	validates :actividad_economica_ids, presence: true, on: :create, if: -> { !self.omite_val }
 	#validates_uniqueness_of :materia_sustancia_id, scope: [:actividad_economica_id]
 	attr_accessor :actividad_economica_ids, :omite_val
 
 	validate :tupla_existe
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
 
 	def tupla_existe
 		if !omite_val

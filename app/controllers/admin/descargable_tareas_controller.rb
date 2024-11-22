@@ -90,9 +90,9 @@ class Admin::DescargableTareasController < ApplicationController
       end
     end
 
-    ruta= @descargable.archivo.path
-    if ruta.present? && File.exist?(ruta)
-      send_data File.open(ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: ruta.split("/").last.to_s
+    ruta = @descargable.archivo.url
+    if ruta.present?
+      redirect_to ruta
     elsif @descargable.subido == false && @descargable.contenido.present?
       file = @descargable.file(@metodos)
       send_data file[:content], type: "application/#{file[:format]}", charset: "iso-8859-1", filename: file[:filename] if !file.blank?     

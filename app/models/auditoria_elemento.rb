@@ -44,6 +44,10 @@ class AuditoriaElemento < ApplicationRecord
     end
   end
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
 	def valid_extensions
 		ext_audit = ["xlsx","xls"]
 		ext_extra = ["zip", "rar", "pdf", "jpg", "jpeg", "png"]
