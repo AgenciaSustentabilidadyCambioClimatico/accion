@@ -198,35 +198,31 @@ class AuditoriasController < ApplicationController
 
   def descargar_compilado
     require 'zip'
+    require 'open-uri'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       @auditoria_elementos.each do |auditoria_elemento|
         adhesion = Adhesion.unscoped.where(id: auditoria_elemento.adhesion_elemento.adhesion_externa_id).first
         archivo_evidencia = auditoria_elemento.archivo_evidencia
         archivo_informe = auditoria_elemento.archivo_informe
 
-        if File.exists?(archivo_evidencia.path)
-          if adhesion.externa
-            nombre_evidencia = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - Evidencia - #{archivo_evidencia.file.identifier}"
-          else
-            c = adhesion.flujo.manifestacion_de_interes.contribuyente
-            nombre_evidencia = "#{c.rut}-#{c.dv} - #{c.razon_social} - Evidencia - #{archivo_evidencia.file.identifier}"
+        unless archivo_evidencia.url.nil?
+          url = archivo_evidencia.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
           end
-          # rename the file
-          stream.put_next_entry(nombre_evidencia)
-          # add file to zip
-          stream.write IO.read((archivo_evidencia.current_path rescue archivo_evidencia.path))
         end
-        if File.exists?(archivo_informe.path)
-          if adhesion.externa
-            nombre_informe = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - Informe - #{archivo_informe.file.identifier}"
-          else
-            c = adhesion.flujo.manifestacion_de_interes.contribuyente
-            nombre_informe = "#{c.rut}-#{c.dv} - #{c.razon_social} - Informe - #{archivo_informe.file.identifier}"
+
+        unless archivo_informe.url.nil?
+          url = archivo_informe.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
           end
-          # rename the file
-          stream.put_next_entry(nombre_informe)
-          # add file to zip
-          stream.write IO.read((archivo_informe.current_path rescue archivo_informe.path))
         end
       end
     end

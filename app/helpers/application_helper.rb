@@ -315,7 +315,7 @@ module ApplicationHelper
     "#{titulo}<small>#{con_nombre_proyecto.downcase.gsub(/(apl|acuerdo de producción limpia|acuerdo de produccion limpia)/,'APL').capitalize.gsub(/Apl|apl/,'APL')}</small>".html_safe
   end
 
-  def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil, nombre_boton:'')
+  def __mostrar_descargable(descargables, codigo, titulo = nil, tarea_pendiente = nil, carta_interes = nil, nombre = nil, nombre_boton ='')
     capture_haml do
       if carta_interes.blank?
         id_descarga = 'mostrar_descargable_id'
@@ -324,7 +324,8 @@ module ApplicationHelper
         id_descarga = 'manifestacion_de_interes_' + carta_interes
         boton_label = nombre.blank? ? carta_interes : nombre
       end
-      if descargables.blank? || !descargables.has_key?(codigo)
+
+      if descargables.blank? || !descargables.key?(codigo)
         haml_tag :label, nombre, class: 'control-label string pt-06' if carta_interes.blank?
         haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado), id: id_descarga do
           haml_tag :i, class: 'fa fa-ban'
@@ -357,7 +358,6 @@ module ApplicationHelper
           end
         end
         # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
-        # haml_tag :div, codigo, class: 'form-control'
       else
         haml_tag :div, class: 'form-group' do 
           haml_tag :label, titulo.blank? ? descargable.nombre : titulo, class: 'control-label string'
@@ -620,28 +620,35 @@ module ApplicationHelper
   end
 
   # DZC 2018-11-05 14:37:46 se descomenta para uso por helper de Ricardo
-  def generar_zip archivos
+
+
+def generar_zip(archivos)
+  require 'open-uri'
   require 'zip'
   file = Zip::OutputStream.write_buffer do |stream|
-    archivos.each_with_index do |archivo_tecnica|
-    if archivo_tecnica.class == Hash
-      # rename the file
-      stream.put_next_entry(archivo_tecnica[:nombre])
-      # add file to zip
-      stream.write archivo_tecnica[:data]
-    else
-      split = archivo_tecnica.current_path.split('/')
-      nombre = split[split.length-1]
-      # rename the file
-      stream.put_next_entry(nombre)
-      # add file to zip
-      stream.write IO.read(archivo_tecnica.current_path)
+    archivos.each do |archivo_tecnica|
+      if archivo_tecnica.is_a?(Hash)
+        # Handle hash entries with in-memory data
+        nombre = archivo_tecnica[:nombre]
+        stream.put_next_entry(nombre)
+        stream.write archivo_tecnica[:data] if archivo_tecnica[:data]
+      else
+        # Retrieve the S3 URL from CarrierWave uploader
+        url = archivo_tecnica.url
+        nombre = File.basename(URI.parse(url).path)
+
+        # Open and read the file from S3
+        URI.open(url) do |file_data|
+          stream.put_next_entry(nombre)
+          stream.write file_data.read
+        end
       end
     end
   end
+
   file.rewind
-  file.sysread
-  end
+  file.read
+end
 
   def descarga_formato_carta_de_patrocinio()
   

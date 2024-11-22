@@ -8,8 +8,7 @@ class Convocatoria < ApplicationRecord
 
 	attr_accessor :accion #DZC permite pasar al modelo el nombre de la accion actual (comando REST)
 	validate :direccion_en_mapa
-	validates :nombre, :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :create #, unless: -> { bloque }
-	validates :nombre, :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true, on: :update #, unless: -> { bloque }
+	validates :nombre, :fecha_hora, :tipo_reunion, :direccion, :mensaje_encabezado, :mensaje_cuerpo, presence: true #, unless: -> { bloque }
 
 	mount_uploaders :archivo_adjunto, ArchivoAdjuntosConvocatoriaUploader
 

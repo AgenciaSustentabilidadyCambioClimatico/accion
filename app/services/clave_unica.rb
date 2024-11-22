@@ -29,7 +29,7 @@ class ClaveUnica
 
 	def self.redirect_uri
 		uri = self.host
-		uri += ":"+self.port if(!self.port.blank?)
+		uri += ":" + self.port unless self.port.blank?
 		uri += "/claveunica"
 		uri
 	end

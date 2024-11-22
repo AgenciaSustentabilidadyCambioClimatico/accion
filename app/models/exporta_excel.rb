@@ -92,7 +92,7 @@ class ExportaExcel
             ws.add_data_validation(ws.rows.last.cells[cd[:posicion_celda]].r, {
               :type => :list,
               :formula1 => "Dominios!#{cd[:posicion_dominio]}$2:#{cd[:posicion_dominio]}$1000000",
-              :showDropDown => false,
+              :hideDropDown => false,
               :showInputMessage => true,
               :promptTitle => cd[:titulo],
               :prompt => 'Por favor seleccione'
@@ -108,7 +108,7 @@ class ExportaExcel
             ws.add_data_validation(ws.rows.last.cells[cd[:posicion_celda]].r, {
               :type => :list,
               :formula1 => "Dominios!#{cd[:posicion_dominio]}$2:#{cd[:posicion_dominio]}$1000000",
-              :showDropDown => false,
+              :hideDropDown => false,
               :showInputMessage => true,
               :promptTitle => cd[:titulo],
               :prompt => 'Por favor seleccione'

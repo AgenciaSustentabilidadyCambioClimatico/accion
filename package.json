@@ -1,5 +1,7 @@
 {
   "name": "ascc",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "jquery.csrf": "^0.1.2"
+  }
 }
