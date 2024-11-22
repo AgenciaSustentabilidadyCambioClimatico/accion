@@ -358,7 +358,6 @@ module ApplicationHelper
           end
         end
         # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
-        # haml_tag :div, codigo, class: 'form-control'
       else
         haml_tag :div, class: 'form-group' do 
           haml_tag :label, titulo.blank? ? descargable.nombre : titulo, class: 'control-label string'
