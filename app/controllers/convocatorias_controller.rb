@@ -184,6 +184,7 @@ class ConvocatoriasController < ApplicationController
 	#**descarga de archivos copiado desde rendicion_actividades_controler.descargar_tecnicas
 	def descargar_adjuntos
 		require 'zip'
+
 		archivos = []
 		archivos += @convocatoria.archivo_adjunto if !@convocatoria.archivo_adjunto.blank?
 		if !@convocatoria.minuta.nil?
@@ -221,6 +222,7 @@ class ConvocatoriasController < ApplicationController
 	# Descarga compilado de todos los adjuntos tarea APL-016
 	def descargar_compilado_adjuntos
 		require 'zip'
+    require 'open-uri'
 		if params[:codigo] == "016"
 			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-016").all
 		elsif params[:codigo] == "030"
@@ -228,6 +230,7 @@ class ConvocatoriasController < ApplicationController
 		elsif params[:codigo] == "011"
 			@convocatorias_apl = Convocatoria.where(flujo_id: @flujo.id).where(tarea_codigo: "APL-011").all
 		end
+
 		if !@convocatorias_apl.nil?
 			archivo_zip = Zip::OutputStream.write_buffer do |stream|
 				@convocatorias_apl.each do |convocatoria|
@@ -239,13 +242,17 @@ class ConvocatoriasController < ApplicationController
 					end
 					nombre = convocatoria.nombre
 					stream.put_next_entry("#{nombre}/")
+
 					archivos.each do |archivo|
-						if File.exists?(archivo.path)
-							split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
-							nombre_arch = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-							stream.put_next_entry("#{nombre}/#{nombre_arch}")
-							stream.write(IO.read(archivo.path))
-						end
+            unless archivo.url.nil?
+              url = archivo.url
+              nombre = File.basename(URI.parse(url).path)
+
+              URI.open(url) do |file_data|
+                stream.put_next_entry(nombre)
+                stream.write file_data.read
+              end
+            end
 					end
 				end
 			end
@@ -253,6 +260,7 @@ class ConvocatoriasController < ApplicationController
 			send_data(archivo_zip.sysread, type: 'application/zip',filename: "archivos_adjuntos_compilados.zip")
 		end
 	end
+
 
 	#DZC REVISAR UTILIDAD
 	# def termina_etapa_negociacion_comentarios
