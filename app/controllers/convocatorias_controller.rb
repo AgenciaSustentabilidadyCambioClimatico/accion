@@ -204,13 +204,14 @@ class ConvocatoriasController < ApplicationController
             stream.write IO.read(archivo_path)
           end
         else
-          if File.exists?(archivo.path)
-            split = archivo.current_path.split('/') rescue archivo.path.split('/')# genera un array de palabras dentro del path
-            nombre = split[split.length-1] # obtiene el nombre del archivo separandolo del ultimo '/', en subsidio se puede usar .identifier
-            # rename the file
-            stream.put_next_entry(nombre)
-            # add file to zip
-            stream.write IO.read((archivo.current_path rescue archivo.path))
+          unless archivo.url.nil?
+            url = archivo.url
+            nombre = File.basename(URI.parse(url).path)
+
+            URI.open(url) do |file_data|
+              stream.put_next_entry(nombre)
+              stream.write file_data.read
+            end
           end
         end
       end
