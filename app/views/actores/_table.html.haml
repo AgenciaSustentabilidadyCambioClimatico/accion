@@ -95,4 +95,4 @@
                   -#DZC 2018-10-03 13:33:45 se corrige error en visualización de actores observados para el revisor
                 - elsif ver_actores_con_observaciones
                   %td.text-center
-                    = actores_con_observaciones.include?(record[:rut_persona]+record[:rol_en_acuerdo]) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
+                    = actores_con_observaciones.include?(record[:rut_persona].to_s+record[:rol_en_acuerdo].to_s) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
