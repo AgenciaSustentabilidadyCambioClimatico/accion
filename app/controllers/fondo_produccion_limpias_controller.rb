@@ -1040,12 +1040,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
     helper_method :recurso_humano_existente?
 
-    #def auditor_existente?(user_id)
-    #  EquipoTrabajo.exists?(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4, registro_proveedores_id: user_id).first
-    #end
-
-    #helper_method :auditor_existente?
-
     def verificar_auditor_existente
       exists = EquipoTrabajo.where(flujo_id: params[:flujo_id], tipo_equipo: 4, registro_proveedores_id: params[:auditor_id]).count
       render json: { exists: exists }
@@ -2450,6 +2444,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_comentarios
     end
 
     def revisar_pertinencia_factibilidad
@@ -2516,10 +2511,26 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo_id: params['flujo_id'],
           criterio_id: nil,
           nota: params[:nota_input_pertinencia],
-          justificacion: params[:obs_input_pertinencia],
+          #justificacion: params[:obs_input_pertinencia],
           tipo_cuestionario_id: 4
         }
       }
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+          comentario: params[:obs_input_pertinencia],
+          flujo_id: params['flujo_id'],
+          user_id: @tarea_pendiente.user_id,
+          tarea_id: tarea_fondo_fpl_06.id
+        }
+      }
+
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
                
       @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
       if @cuestionario_obs_fpl.present?
@@ -3333,13 +3344,29 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_descargables
+      set_comentarios
     end
 
     def enviar_evaluacion_general
-      cuestionario_observacion = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).first 
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+          comentario: params[:obs_input_pertinencia],
+          flujo_id: @tarea_pendiente.flujo_id,
+          user_id: @tarea_pendiente.user_id,
+          tarea_id: tarea_fondo_fpl_10.id
+        }
+      }
 
-      if cuestionario_observacion.nota == 1
-        #SE CAMBIA EL ESTADO DEL FPL-09 A 2
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
+
+      if params[:nota_input_pertinencia] == 1
+        #SE CAMBIA EL ESTADO DEL FPL-10 A 2
         tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
         
         tarea_pendiente_fpl_10 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_10.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
@@ -3376,8 +3403,8 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         respond_to do |format|
           flash[:error] = "La postulación debe estar en estado Aprobada para su envio"
-          format.js { render js: "window.location='#{evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id)}'" }
-          format.html { redirect_to evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id), notice: error }
+          format.js { render js: "window.location='#{evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: error }
         end
       end
     end
@@ -4594,6 +4621,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_regiones
         @regiones = Region.order(id: :asc).all
+      end
+
+      def set_comentarios
+        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)   
       end
 
 

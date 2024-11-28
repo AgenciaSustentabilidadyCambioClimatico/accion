@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20241017184602) do
+ActiveRecord::Schema.define(version: 20241121165849) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -391,6 +391,18 @@ ActiveRecord::Schema.define(version: 20241017184602) do
     t.string "archivo"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "comentario_flujos", force: :cascade do |t|
+    t.string "comentario"
+    t.bigint "flujo_id"
+    t.bigint "user_id"
+    t.bigint "tarea_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["flujo_id"], name: "index_comentario_flujos_on_flujo_id"
+    t.index ["tarea_id"], name: "index_comentario_flujos_on_tarea_id"
+    t.index ["user_id"], name: "index_comentario_flujos_on_user_id"
   end
 
   create_table "comentarios", force: :cascade do |t|
@@ -2189,6 +2201,9 @@ ActiveRecord::Schema.define(version: 20241017184602) do
   add_foreign_key "certificado_proveedores", "registro_proveedores"
   add_foreign_key "clasificaciones", "clasificaciones"
   add_foreign_key "comentario_archivos", "comentarios"
+  add_foreign_key "comentario_flujos", "flujos"
+  add_foreign_key "comentario_flujos", "tareas"
+  add_foreign_key "comentario_flujos", "users"
   add_foreign_key "comentarios", "tipo_comentarios"
   add_foreign_key "comentarios_informe_acuerdos", "informe_acuerdos"
   add_foreign_key "comentarios_informe_acuerdos", "users"

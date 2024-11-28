@@ -1,0 +1,19 @@
+- comentarios = @comentarios.blank? ? [] : @comentarios
+- unless comentarios.blank?
+  .form-group
+    %label.string
+      Observaciones y comentarios anteriores
+  %table.table.table-striped
+    %thead
+      %tr
+        %th=t(:fecha_y_hora)
+        %th=t(:usuario)
+        %th=t(:tarea)
+        %th=t(:texto)
+    %tbody
+      - comentarios.each do |c|
+        %tr
+          %td=l c[:created_at], format: '%d-%m-%Y %H:%M:%S'
+          %td=c.user.nombre_completo
+          %td=c.tarea.codigo
+          %td=c[:comentario]
