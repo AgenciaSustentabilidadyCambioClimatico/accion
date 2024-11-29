@@ -1764,9 +1764,7 @@ GEM
     faraday-net_http (3.3.0)
       net-http
     fastimage (2.3.1)
-    ffi (1.17.0-arm64-darwin)
-    ffi (1.17.0-x86_64-darwin)
-    ffi (1.17.0-x86_64-linux-gnu)
+    ffi (1.16.3)
     font-awesome-rails (4.7.0.8)
       railties (>= 3.2, < 8.0)
     gems (1.2.0)
@@ -2117,6 +2115,7 @@ DEPENDENCIES
   devise_invitable (~> 2.0.6)
   dotenv-rails
   faker!
+  ffi (< 1.17.0)
   font-awesome-rails
   geocoder
   geoxml-rails
