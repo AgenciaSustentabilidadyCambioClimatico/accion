@@ -1766,7 +1766,7 @@ GEM
     fastimage (2.3.1)
     ffi (1.17.0-arm64-darwin)
     ffi (1.17.0-x86_64-darwin)
-    ffi (1.17.0-x86_64-linux)
+    ffi (1.17.0-x86_64-linux-gnu)
     font-awesome-rails (4.7.0.8)
       railties (>= 3.2, < 8.0)
     gems (1.2.0)
