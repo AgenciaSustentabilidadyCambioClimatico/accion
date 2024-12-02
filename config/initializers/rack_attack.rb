@@ -5,6 +5,10 @@ class Rack::Attack
     req.user_agent.to_s.include? "python-requests"
   end
 
+  Rack::Attack.blocklist("block requests without domain") do |req|
+    req.host.match?(/\A\d{1,3}(\.\d{1,3}){3}\z/) # Detecta direcciones IP en el host
+  end
+
   Rack::Attack.blocklist("block curl") do |req|
     req.user_agent.to_s.include? "curl"
   end
