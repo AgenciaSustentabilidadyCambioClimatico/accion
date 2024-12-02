@@ -91,7 +91,7 @@
               %td=record[:telefono_institucional]
               - if @tarea.requiere_revision?
                 - if indicar_actores_con_observaciones
-                  %td.text-center=check_box_tag "actors[#{record[:rut_persona]}+#{record[:rol_en_acuerdo]}]",record[:rut_persona]+record[:rol_en_acuerdo], actores_con_observaciones.include?(record[:rut_persona]+record[:rol_en_acuerdo]), class: "actor_observado"
+                  %td.text-center=check_box_tag "actors[#{record[:rut_persona].to_s}+#{record[:rol_en_acuerdo].to_s}]",record[:rut_persona].to_s+record[:rol_en_acuerdo].to_s, actores_con_observaciones.include?(record[:rut_persona].to_s+record[:rol_en_acuerdo].to_s), class: "actor_observado"
                   -#DZC 2018-10-03 13:33:45 se corrige error en visualización de actores observados para el revisor
                 - elsif ver_actores_con_observaciones
                   %td.text-center
