@@ -100,7 +100,8 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
-                  costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil)
+                  costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
+                  comentarios = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -209,6 +210,11 @@ class FondoProduccionLimpia < ApplicationRecord
       else
         self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
       end
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:observaciones))
+      self.pdf_sub_titulo_formato(pdf, "Observaciones y comentarios anteriores")
+      self.pdf_tabla_observaciones(pdf, comentarios)
       self.pdf_separador(pdf, 20)
     end
 
@@ -1085,6 +1091,36 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.table(data, header: true, column_widths: [170, 170, 170], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+  def pdf_tabla_observaciones(pdf, comentarios)
+     begin
+      # Encabezados de la tabla
+      headers = ["Fecha y Hora", "Usuario", "Tarea", "Texto"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      comentarios.each do |resp|
+        fila = [
+          resp[:created_at].strftime('%d-%m-%Y %H:%M:%S'),
+          resp.user.nombre_completo,
+          resp.tarea.codigo,
+          resp[:comentario]
+        ]
+        data << fila
+      end
+      pdf.table(data, header: true, column_widths: [127, 127, 127, 127], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
 

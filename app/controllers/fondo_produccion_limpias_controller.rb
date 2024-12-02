@@ -2531,7 +2531,7 @@ class FondoProduccionLimpiasController < ApplicationController
         comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
         comentario.save
       end 
-               
+
       @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
       if @cuestionario_obs_fpl.present?
         @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
@@ -2583,6 +2583,22 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #VALIDAR EN EL COMBO BOX SI SE APRUEBA LA PERTINENCIA DE FACTIBILIDA
       end
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+          comentario: params[:obs_input_pertinencia],
+          flujo_id: params['flujo_id'],
+          user_id: @tarea_pendiente.user_id,
+          tarea_id: tarea_fondo_fpl_06.id
+        }
+      }
+
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
 
       #GUARDA CORRECCIONES Y OBSERVACIONES ADMISIBILIDAD TECNICA
       jsonDataTecnico = params['jsonDataTecnico']
@@ -2745,8 +2761,9 @@ class FondoProduccionLimpiasController < ApplicationController
         manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
         nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
+        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento)
+                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
      
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
@@ -3365,7 +3382,7 @@ class FondoProduccionLimpiasController < ApplicationController
         comentario.save
       end 
 
-      if params[:nota_input_pertinencia] == 1
+      if params[:nota_input_pertinencia] == '1'
         #SE CAMBIA EL ESTADO DEL FPL-10 A 2
         tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
         
