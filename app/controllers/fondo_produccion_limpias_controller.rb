@@ -4461,6 +4461,12 @@ class FondoProduccionLimpiasController < ApplicationController
       def send_message(tarea, user)
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
+        fpl = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
+
+        flujo_apl = Flujo.find(fpl.flujo_apl_id)
+        mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
+
+        metodo = FondoProduccionLimpiaMensaje.metodos(u,mdi,fpl)
         mensajes.each do |mensaje|
           FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
         end

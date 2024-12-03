@@ -1105,7 +1105,7 @@ class FondoProduccionLimpia < ApplicationRecord
   def pdf_tabla_observaciones(pdf, comentarios)
      begin
       # Encabezados de la tabla
-      headers = ["Fecha y Hora", "Usuario", "Tarea", "Texto"]
+      headers = ["Fecha y Hora", "Usuario", "Tarea", "Comentario"]
 
       # Datos de la tabla
       data = [headers] # Comienza con los encabezados
