@@ -136,7 +136,6 @@
   }
 
    function habilitaObservacionesPertinenciaTecnicaGeneral(nota, observacion) {
-    alert('habilitaObservacionesTecnica');
     var notaSelect = document.getElementById(nota);
     var obsSelect = document.getElementById(observacion);
 
@@ -376,6 +375,23 @@
       }
     });
   }
+
+  function habilitaObservacionesJuridica(nota, observacion) {
+    // Seleccionar el elemento select
+    var notaSelect = document.getElementById(nota);
+    var obsSelect = document.getElementById(observacion);
+    
+    // Obtener el valor seleccionado
+    var valorSeleccionado = notaSelect.value;
+    
+    // Mostrar un alert con el valor seleccionado
+    if (valorSeleccionado && valorSeleccionado == '1') {
+      obsSelect.style.visibility = 'hidden';
+    } else {
+      obsSelect.style.visibility = 'visible';
+    }
+  }
+
 
 %style
   :css

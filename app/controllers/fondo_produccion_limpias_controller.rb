@@ -1040,12 +1040,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
     helper_method :recurso_humano_existente?
 
-    #def auditor_existente?(user_id)
-    #  EquipoTrabajo.exists?(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4, registro_proveedores_id: user_id).first
-    #end
-
-    #helper_method :auditor_existente?
-
     def verificar_auditor_existente
       exists = EquipoTrabajo.where(flujo_id: params[:flujo_id], tipo_equipo: 4, registro_proveedores_id: params[:auditor_id]).count
       render json: { exists: exists }
@@ -2450,6 +2444,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_comentarios
     end
 
     def revisar_pertinencia_factibilidad
@@ -2516,11 +2511,27 @@ class FondoProduccionLimpiasController < ApplicationController
           flujo_id: params['flujo_id'],
           criterio_id: nil,
           nota: params[:nota_input_pertinencia],
-          justificacion: params[:obs_input_pertinencia],
+          #justificacion: params[:obs_input_pertinencia],
           tipo_cuestionario_id: 4
         }
       }
-               
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+          comentario: params[:obs_input_pertinencia],
+          flujo_id: params['flujo_id'],
+          user_id: @tarea_pendiente.user_id,
+          tarea_id: tarea_fondo_fpl_06.id
+        }
+      }
+
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
+
       @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
       if @cuestionario_obs_fpl.present?
         @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
@@ -2616,7 +2627,23 @@ class FondoProduccionLimpiasController < ApplicationController
       end 
 
       cuestionario_fpl_rechazado = CuestionarioFpl.where(flujo_id: params[:flujo_id], nota: [1,2,3,4], tipo_cuestionario_id: [1,2]).group(:tipo_cuestionario_id).count
-      
+
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+           comentario: params[:obs_input_pertinencia],
+           flujo_id: params['flujo_id'],
+           user_id: @tarea_pendiente.user_id,
+           tarea_id: tarea_fondo_fpl_06.id
+        }
+      }
+ 
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
+
       #SE CAMBIA EL ESTADO DEL FPL-05 A 2
       tarea_fondo_fpl_06 = Tarea.find_by_codigo(Tarea::COD_FPL_06)
       tarea_pendiente_fpl_06 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_06.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id).last
@@ -2734,9 +2761,11 @@ class FondoProduccionLimpiasController < ApplicationController
         manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
         nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
+        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)
+        
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento)
-     
+                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+        
         #SE ACTIVA EL FLUJO FPL-07, FPL-08 O AMBOS DEPENDIENDO DE LAS OBSERVACIONES ENCONTRADA SEN CADA UNA DE LAS PERTINENCIAS
         #consulto si la pertinencia financiera es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-03
         if cuestionario_fpl_rechazado[1] != nil && cuestionario_fpl_rechazado[1] != 0
@@ -3333,13 +3362,29 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos 
+      set_descargables
+      set_comentarios
     end
 
     def enviar_evaluacion_general
-      cuestionario_observacion = CuestionarioFpl.where(flujo_id: @tarea_pendiente.flujo_id, tipo_cuestionario_id: 4).first 
+      ##Graba comentarios en tabla comentario_flujos
+      tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
+      custom_params_comentarios = {
+        cuestionario_flujos: {
+          comentario: params[:obs_input_pertinencia],
+          flujo_id: @tarea_pendiente.flujo_id,
+          user_id: @tarea_pendiente.user_id,
+          tarea_id: tarea_fondo_fpl_10.id
+        }
+      }
 
-      if cuestionario_observacion.nota == 1
-        #SE CAMBIA EL ESTADO DEL FPL-09 A 2
+      if params[:obs_input_pertinencia] != ""
+        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
+        comentario.save
+      end 
+
+      if params[:nota_input_pertinencia] == '1'
+        #SE CAMBIA EL ESTADO DEL FPL-10 A 2
         tarea_fondo_fpl_10 = Tarea.find_by_codigo(Tarea::COD_FPL_10)
         
         tarea_pendiente_fpl_10 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_10.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
@@ -3376,8 +3421,8 @@ class FondoProduccionLimpiasController < ApplicationController
       else
         respond_to do |format|
           flash[:error] = "La postulación debe estar en estado Aprobada para su envio"
-          format.js { render js: "window.location='#{evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id)}'" }
-          format.html { redirect_to evaluacion_general_fondo_produccion_limpia(@tarea_pendiente.id), notice: error }
+          format.js { render js: "window.location='#{evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to evaluacion_general_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: error }
         end
       end
     end
@@ -4417,6 +4462,12 @@ class FondoProduccionLimpiasController < ApplicationController
       def send_message(tarea, user)
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
+        fpl = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
+
+        flujo_apl = Flujo.find(fpl.flujo_apl_id)
+        mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
+
+        metodo = FondoProduccionLimpiaMensaje.metodos(u,mdi,fpl)
         mensajes.each do |mensaje|
           FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
         end
@@ -4594,6 +4645,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_regiones
         @regiones = Region.order(id: :asc).all
+      end
+
+      def set_comentarios
+        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)   
       end
 
 
