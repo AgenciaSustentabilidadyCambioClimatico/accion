@@ -78,6 +78,9 @@ group :development, :test do
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
 end
 
+group :production do
+  gem "newrelic_rpm"
+end
 
 group :development do
   gem 'awesome_print'
