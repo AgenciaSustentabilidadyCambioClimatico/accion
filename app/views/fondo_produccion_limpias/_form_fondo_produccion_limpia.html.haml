@@ -1864,6 +1864,10 @@
     }
 
     if(confirm("¿Está seguro que desea enviar?")){
+      $('.loading-data').show();
+      const button = document.getElementById('enviar_observaciones_admisibilidad_financiera_button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button.disabled = true;
       $.ajax({
         url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
         data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
@@ -1991,6 +1995,9 @@
     
     if(confirm("¿Está seguro que desea enviar?")){
       $('.loading-data').show();
+      const button = document.getElementById('enviar_observaciones_admisibilidad_tecnica_button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button.disabled = true;
       $.ajax({
         url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
         data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
@@ -4474,7 +4481,7 @@
         .float-right
           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
           -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadFinanciera(); return false;'
-          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
             %i.fa.fa-arrow-circle-right
             =t(:enviar)                 
   #admisibilidad-tecnica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-tecnica"])}
@@ -4745,7 +4752,7 @@
           .float-right
             = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
             -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadTecnica(); return false;'
-            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarObservacionesAdmisibilidadTecnica(); return false;' do
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_tecnica_button", onclick: 'enviarObservacionesAdmisibilidadTecnica(); return false;' do
               %i.fa.fa-arrow-circle-right
               =t(:enviar) 
 
