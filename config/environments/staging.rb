@@ -1,6 +1,6 @@
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
-  config.ambiente = "stag"
+
   # Code is not reloaded between requests.
   config.cache_classes = true
 
@@ -33,6 +33,8 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
+  require 'email_interceptor'
+  ActionMailer::Base.register_interceptor(EmailInterceptor)
   # Attempt to read encrypted secrets from `config/secrets.yml.enc`.
   # Requires an encryption key in `ENV["RAILS_MASTER_KEY"]` or
   # `config/secrets.yml.key`.
