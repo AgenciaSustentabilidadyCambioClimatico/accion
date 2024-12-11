@@ -20,9 +20,20 @@
         .card-body
           .row
             .col-lg-6.col-12
-              = f.input :archivo_resolucion, as: :file, label: t(:subir_archivo_resolucion), required: true, input_html: { class: 'form-control' }
+              - if @fondo_produccion_limpia['archivo_resolucion'].present?
+                %span{ style: "color: #5d759e; font-weight: 400; font-size: 14px;" } Archivo Resolución: 
+                %br  
+                %span{ style: "color: black; font-weight: 400; font-size: 14px;" }= @fondo_produccion_limpia['archivo_resolucion']
+              - else
+                = f.input :archivo_resolucion, as: :file, label: t(:subir_archivo_resolucion), required: true, input_html: { class: 'form-control' }
             .col-lg-6.col-12
-              = f.input :archivo_contrato, as: :file, label: t(:subir_archivo_contrato), required: true, input_html: { class: 'form-control' }
+              - if @fondo_produccion_limpia['archivo_contrato'].present?
+                %span{ style: "color: #5d759e; font-weight: 400; font-size: 14px;" } Archivo Contrato: 
+                %br
+                %span{ style: "color: black; font-weight: 400; font-size: 14px;" }= @fondo_produccion_limpia['archivo_contrato']
+              - else
+                = f.input :archivo_contrato, as: :file, label: t(:subir_archivo_contrato), required: true, input_html: { class: 'form-control' }
   .float-right
     = volver_root
     = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+

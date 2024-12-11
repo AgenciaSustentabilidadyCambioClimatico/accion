@@ -409,7 +409,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :email_institucional,
         :telefono_institucional
       ]
-      data = ExcelParser.new(mapa_de_actores_archivo, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
+      data = ExcelParser.new(mapa_de_actores_archivo.url, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
     end
     data
   end
