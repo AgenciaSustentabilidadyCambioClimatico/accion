@@ -348,7 +348,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         <% end %>
 
         <% if @costos_seguimiento[1].present? %>
-          <% if @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido']).to_f * Gasto::PORCENTAJE_APORTE_POSTULANTE)/100)) && @costos_seguimiento[1]['aporte_propio_valorado'].present? %>
+          <% if @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[1]['aporte_propio_valorado'].to_f + @costos_seguimiento[1]['aporte_propio_liquido']).to_f * @confinanciamiento_empresa[1])/100)) && @costos_seguimiento[1]['aporte_propio_valorado'].present? %>
             document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'SI';
           <% else %>
             document.getElementById('apoyo_general_empresa_aporte_postulante_cumple').innerText = 'NO';

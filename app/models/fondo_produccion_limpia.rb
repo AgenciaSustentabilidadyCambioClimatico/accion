@@ -144,6 +144,21 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, rut_beneficiario)
       self.pdf_separador(pdf, 20)
 
+      self.pdf_titulo_formato(pdf, I18n.t(:observaciones))
+      self.pdf_sub_titulo_formato(pdf, "Observaciones y comentarios anteriores")
+      self.pdf_tabla_observaciones(pdf, comentarios)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:admiisibilidad_financiera))
+      self.pdf_sub_titulo_formato(pdf, "Formulario Admisibilidad Financiera")
+      self.pdf_tabla_cuestionario_financiero(pdf, self.flujo_id)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:admiisibilidad_tecnica))
+      self.pdf_sub_titulo_formato(pdf, "Formulario Admisibilidad Técnica")
+      self.pdf_tabla_cuestionario_tecnico(pdf, self.flujo_id)
+      self.pdf_separador(pdf, 20)
+
       self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica))
       self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
       self.pdf_tabla_objetivos(pdf, objetivo_especificos)
@@ -187,7 +202,6 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_contenido_formato(pdf, self.fortalezas_consultores)
       self.pdf_separador(pdf, 20)
 
-
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO   
         self.pdf_tabla_plan_actividades(pdf, planes)
@@ -210,11 +224,6 @@ class FondoProduccionLimpia < ApplicationRecord
       else
         self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
       end
-      self.pdf_separador(pdf, 20)
-
-      self.pdf_titulo_formato(pdf, I18n.t(:observaciones))
-      self.pdf_sub_titulo_formato(pdf, "Observaciones y comentarios anteriores")
-      self.pdf_tabla_observaciones(pdf, comentarios)
       self.pdf_separador(pdf, 20)
     end
 
@@ -1134,6 +1143,84 @@ class FondoProduccionLimpia < ApplicationRecord
 
   def obtiene_contribuyente(id)
     Contribuyente.find(id)
+  end
+
+  # Método para crear una tabla con cuatro campos en el PDF
+  def pdf_tabla_cuestionario_tecnico(pdf, flujo_id)
+    #obtiene custionarios 
+    #cuestionario = CuestionarioFpl.obtener_cuestionarios(flujo_id, tipo_contribuyentes_id, tipo_descargable)
+    preguntas = CuestionarioFpl.preguntas_tecnicas
+    cuestionario = CuestionarioFpl.where(flujo_id: flujo_id, tipo_cuestionario_id: 2).order(:criterio_id)
+
+    begin
+      # Encabezados de la tabla
+      headers = ["Subcriterios", "Cumple?", "Justificación"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      preguntas.each do |preg|
+        cuestionario.each do |resp|
+          if preg[:id] == resp[:criterio_id]
+            fila = [
+              preg[:pregunta].to_s,
+              resp[:nota].to_s,
+              resp[:justificacion].to_s,
+            ]
+            data << fila
+          end
+        end
+      end
+
+      pdf.table(data, header: true, column_widths: [170, 170, 170], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+   # Método para crear una tabla con cuatro campos en el PDF
+   def pdf_tabla_cuestionario_financiero(pdf, flujo_id)
+    #obtiene custionarios 
+    #cuestionario = CuestionarioFpl.obtener_cuestionarios(flujo_id, tipo_contribuyentes_id, tipo_descargable)
+    preguntas = CuestionarioFpl.preguntas_financiamiento
+    cuestionario = CuestionarioFpl.where(flujo_id: flujo_id, tipo_cuestionario_id: 1).order(:criterio_id)
+
+    begin
+      # Encabezados de la tabla
+      headers = ["Subcriterios", "Cumple?", "Justificación"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      preguntas.each do |preg|
+        cuestionario.each do |resp|
+          if preg[:id] == resp[:criterio_id]
+            fila = [
+              preg[:pregunta].to_s,
+              resp[:nota].to_s,
+              resp[:justificacion].to_s,
+            ]
+            data << fila
+          end
+        end
+      end
+
+      pdf.table(data, header: true, column_widths: [170, 170, 170], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
   end
 
 end
