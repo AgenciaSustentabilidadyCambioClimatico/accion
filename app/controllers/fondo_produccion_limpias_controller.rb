@@ -4607,6 +4607,17 @@ class FondoProduccionLimpiasController < ApplicationController
             end
           end  
         elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3
+          
+          @confinanciamiento_empresa = nil
+          @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id)
+          if @fondo_produccion_limpia.present?
+            if @fondo_produccion_limpia.cantidad_micro_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
+              @fondo_produccion_limpia.cantidad_mediana_empresa != 0
+                @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
+            end
+          end
+          
           if @costos.present? && @costos_seguimiento[0].present? && @costos_seguimiento[1].present?
             if @costos.costo_total_de_la_propuesta.present? && (
                 @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo'].to_f + @costos_seguimiento[0]['aporte_propio_valorado'].to_f + @costos_seguimiento[0]['aporte_propio_liquido'].to_f) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && 
