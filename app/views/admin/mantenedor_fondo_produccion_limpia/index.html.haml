@@ -101,6 +101,6 @@
 						.col-lg-6.col-12#columna_linea_1_2_2
 							= f.input :tipo_instrumento_3_id, collection: (@lineas_fpl_1_2_2.present? ? @lineas_fpl_1_2_2.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Seguimiento y Control Fase 2', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_2_2', onchange: 'ocultarCombos(3);'}, selected: @instrumento_seleccionado_1_2_2
 						.col-lg-6.col-12#columna_linea_1_3
-							= f.input :tipo_instrumento_4_id, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Evaluación', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_3', onchange: 'ocultarCombos(4);'}, selected: @instrumento_seleccionado_1_3								
+							= f.input :tipo_instrumento_4_id, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Evaluación de Conformidad', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_3', onchange: 'ocultarCombos(4);'}, selected: @instrumento_seleccionado_1_3								
 	.float-right
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", id: 'guardarFlujo', disabled: :disabled, onclick: 'guardarFlujo(); return false;'
