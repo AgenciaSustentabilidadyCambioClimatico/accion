@@ -145,8 +145,8 @@ class Adhesion < ApplicationRecord
 	end
 
 	def parsear_adhesiones
-		header = Adhesion.columnas_excel.map{|k,v| k}
-		ExcelParser.new(self.archivo_elementos,header).tabulated
+	  header = Adhesion.columnas_excel.map { |k, v| k }
+		ExcelParser.new(self.archivo_elementos.url, header).tabulated
 	end
 
 	def desparseas_adhesiones_rechazadas
