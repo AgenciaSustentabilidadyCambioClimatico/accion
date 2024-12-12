@@ -5293,8 +5293,8 @@
                       = t(:observaciones_y_comentarios)
                     %br
                     = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pertinencia_general', style: 'width: 100%; font-size: 14px;'                            
-        %br
-        = render 'fondo_produccion_limpias/table_comentarios_anteriores'  
+        -#%br
+        -#= render 'fondo_produccion_limpias/table_comentarios_anteriores'  
         %br 
           .col-12
             .float-right
@@ -5614,6 +5614,7 @@
                                     %td.sub-contenido-popup-form HH
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
+                                    %td.sub-contenido-popup-form Acción
                                 %tbody
                               - if !solo_lectura
                                 %table
@@ -5633,6 +5634,7 @@
                                     %td.sub-contenido-popup-form HH
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
+                                    %td.sub-contenido-popup-form Acción
                                 %tbody
                               - if !solo_lectura  
                                 %table

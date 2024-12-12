@@ -2761,7 +2761,8 @@ class FondoProduccionLimpiasController < ApplicationController
         manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
         nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
-        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)
         
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
                                                    costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
@@ -3363,7 +3364,6 @@ class FondoProduccionLimpiasController < ApplicationController
       set_plan_actividades
       set_costos 
       set_descargables
-      set_comentarios
     end
 
     def enviar_evaluacion_general
@@ -3378,9 +3378,23 @@ class FondoProduccionLimpiasController < ApplicationController
         }
       }
 
-      if params[:obs_input_pertinencia] != ""
-        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
-        comentario.save
+      #GUARDA Resultado de la revision de pertinencia y factibilidad y Observaciones y comentarios
+      custom_params = {
+        cuestionario_obs_fpl: {
+          flujo_id: params['flujo_id'],
+          criterio_id: nil,
+          nota: params[:nota_input_pertinencia],
+          justificacion: normalize_string(params[:obs_input_pertinencia]),
+          tipo_cuestionario_id: 4
+        }
+      }
+
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
+      if @cuestionario_obs_fpl.present?
+        @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
+      else
+        @cuestionario_obs_fpl = CuestionarioFpl.new(custom_params[:cuestionario_obs_fpl])
+        @cuestionario_obs_fpl.save
       end 
 
       if params[:nota_input_pertinencia] == '1'
@@ -4659,7 +4673,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_comentarios
-        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)   
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)   
       end
 
 
