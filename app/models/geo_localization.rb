@@ -2,12 +2,12 @@ class GeoLocalization
 
 	#El formato es "Moneda 1541, Santiago Región Metropolitana, Chile"
 	def self.get_coordinates(direccion, ciudad_comuna_region, pais=:Chile)
+
 		location = { latitude: nil, longitude: nil }
 		geocoder	=	self.execute("#{direccion}, #{ciudad_comuna_region} #{pais}").first
 		unless geocoder.nil?
-			geometry = geocoder.data["geometry"]
-			location[:latitude] = geometry["location"]["lat"]
-			location[:longitude] = geometry["location"]["lng"]
+			location[:latitude] = geocoder.data["lat"]
+			location[:longitude] = geocoder.data["lon"]
 		end
 		location
 	end
@@ -28,6 +28,7 @@ class GeoLocalization
 	def self.geometry(string)
 		data = self.data(string)
 		data.has_key?(:geometry) ? { query: string }.merge( data[:geometry] ) : { query: string }
+
 	end
 
 end
