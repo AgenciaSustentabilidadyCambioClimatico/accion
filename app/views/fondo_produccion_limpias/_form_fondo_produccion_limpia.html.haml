@@ -5614,7 +5614,8 @@
                                     %td.sub-contenido-popup-form HH
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
-                                    %td.sub-contenido-popup-form Acción
+                                    - if !solo_lectura
+                                      %td.sub-contenido-popup-form Acción
                                 %tbody
                               - if !solo_lectura
                                 %table
@@ -5634,7 +5635,8 @@
                                     %td.sub-contenido-popup-form HH
                                     %td.sub-contenido-popup-form Valor HH
                                     %td.sub-contenido-popup-form Costo
-                                    %td.sub-contenido-popup-form Acción
+                                    - if !solo_lectura
+                                      %td.sub-contenido-popup-form Acción
                                 %tbody
                               - if !solo_lectura  
                                 %table

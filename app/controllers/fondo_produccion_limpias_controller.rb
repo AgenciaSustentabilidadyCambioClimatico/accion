@@ -14,7 +14,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -1028,6 +1028,32 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def eliminar_recursos_humanos
+      eliminar = RecursoHumano.find_by(id: params[:rr_hh_id])
+
+      if eliminar.destroy  
+        respond_to do |format|
+          set_costos
+           
+          ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm, gastos ope por id y se renderiza al dashboard principal
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(@tarea_pendiente.flujo_id, params[:plan_id])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(@tarea_pendiente.flujo_id, params[:plan_id])
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(@tarea_pendiente.flujo_id, params[:plan_id])
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(@tarea_pendiente.flujo_id, params[:plan_id])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(@tarea_pendiente.flujo_id)
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(@tarea_pendiente.flujo_id)
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(@tarea_pendiente.flujo_id)
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(@tarea_pendiente.flujo_id)
+
+          format.js { render 'eliminar_recursos_humanos', locals: { rr_hh_id: params[:rr_hh_id] } }
+        end
+      else
+        flash[:error] = 'El recurso propio no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
+      end
+    end
+
     def obtiene_contribuyente(id)
       Contribuyente.find(id)
     end
@@ -1243,7 +1269,7 @@ class FondoProduccionLimpiasController < ApplicationController
      
       @plan = params['plan_id']
 
-      @solo_lectura = params['solo_lectura'] == "true" ? true : false
+      @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
 
       respond_to do |format|
         format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
