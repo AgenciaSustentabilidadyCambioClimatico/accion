@@ -37,14 +37,14 @@ class Adhesion < ApplicationRecord
 
 	attr_accessor :aceptado, :observacion, :tipo, :is_ppf
 	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
-	attr_accessor :documento_justificacion, :elemento_retirado_id, :validar_retirar
+	attr_accessor :elemento_retirado_id, :validar_retirar
 	attr_accessor :contribuyente_id #para tarea 25.3
 
 	#para tareas 25
 	attr_accessor :current_user, :tarea_id
   attr_accessor :remote_archivos_adhesion_y_documentacion
 
-	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
+
 
 
 	default_scope { where(externa: false) }
@@ -520,6 +520,7 @@ class Adhesion < ApplicationRecord
 	end
 
 	def adhesiones_retiradas
+
 		if self.persisted?
 			self.adhesion_elemento_retirados.map{|a| 
 				fila = a.fila
