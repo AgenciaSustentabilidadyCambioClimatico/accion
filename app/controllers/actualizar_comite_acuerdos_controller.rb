@@ -74,7 +74,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
         @informe.archivos_anexos_posteriores_firmas.each do |archivo|
           
           unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.file.filename))
-            archivos_previos << Pathname.new(archivo.path).open
+            archivos_previos << Pathname.new(archivo.url).open
           end
         end
         if !informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank?

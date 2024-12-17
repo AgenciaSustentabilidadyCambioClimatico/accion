@@ -386,7 +386,7 @@ class Adhesion < ApplicationRecord
 							end
 						end
 					else
-						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.file.identifier}.include? fila[:nombre_archivo]
+						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}.include? fila[:nombre_archivo]
 							errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
 						else
 							instituciones_con_archivo << rut_institucion
