@@ -40,7 +40,7 @@ Rails.application.configure do
   end
 
   email=YAML.load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result)
-  config.action_mailer.default_url_options = { host: email['default_url_options_host'], port: email['default_url_options_port'] }
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :letter_opener
