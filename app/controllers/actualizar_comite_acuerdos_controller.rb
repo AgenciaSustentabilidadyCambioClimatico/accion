@@ -59,6 +59,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
   end
 
   def guardar_archivos_anexos_posteriores_firmas
+    require 'open-uri'
     @informe.accion = action_name # DZC 2018-11-15 14:43:27 se agrega para evitar validaciones
     respond_to do |format|
 
@@ -74,7 +75,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
         @informe.archivos_anexos_posteriores_firmas.each do |archivo|
           
           unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.file.filename))
-            archivos_previos << Pathname.new(archivo.url).open
+            archivos_previos << URI.open(archivo.url)
           end
         end
         if !informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank?
