@@ -1336,7 +1336,18 @@ class FondoProduccionLimpiasController < ApplicationController
       if gasto.destroy
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
           @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(gasto['flujo_id'], params['plan_id'])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(gasto['flujo_id'], params['plan_id'])
+ 
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(gasto['flujo_id'])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(gasto['flujo_id'])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(gasto['flujo_id'])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(gasto['flujo_id'])
+ 
+          #Actualiza costos
           set_costos 
           format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1, plan_id: params['plan_id'] } }
         end 
@@ -1391,8 +1402,20 @@ class FondoProduccionLimpiasController < ApplicationController
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
           @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
-          set_costos
-          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2, plan_id: params['plan_id'] } }
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(gasto['flujo_id'], params['plan_id'])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(gasto['flujo_id'], params['plan_id'])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(gasto['flujo_id'])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(gasto['flujo_id'])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(gasto['flujo_id'])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(gasto['flujo_id'])
+
+          #Actualiza costos
+          set_costos 
+
+          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, plan_id: params['plan_id']} }
         end 
       else
         flash[:error] = 'Hubo un problema al eliminar el gasto.'
