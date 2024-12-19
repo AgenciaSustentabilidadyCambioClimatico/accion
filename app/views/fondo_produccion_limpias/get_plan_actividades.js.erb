@@ -125,6 +125,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
     var valor_unitario = '<%=number_to_currency gastos_operacion.valor_unitario %>';
     var cantidad = '<%= gastos_operacion.cantidad %>';
     var unidad_medida = '<%= gastos_operacion.unidad_medida %>';
+    var tipo_aporte = '<%= gastos_operacion.tipo_aporte %>';
     var total = '<%=number_to_currency gastos_operacion.cantidad.to_i * gastos_operacion.valor_unitario.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
@@ -133,6 +134,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + valor_unitario + "</td>" +
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + total + "</td>";
       <% if !solo_lectura %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
@@ -152,6 +154,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
     var valor_unitario = '<%=number_to_currency gastos_administracion.valor_unitario %>';
     var cantidad = '<%= gastos_administracion.cantidad %>';
     var unidad_medida = '<%= gastos_administracion.unidad_medida %>';
+    var tipo_aporte = '<%= gastos_administracion.tipo_aporte %>';
     var total = '<%=number_to_currency gastos_administracion.cantidad.to_i * gastos_administracion.valor_unitario.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
@@ -160,6 +163,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + valor_unitario + "</td>" +
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + total + "</td>";
       <% if !solo_lectura %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +

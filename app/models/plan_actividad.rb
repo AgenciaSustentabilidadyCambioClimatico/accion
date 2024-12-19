@@ -290,7 +290,13 @@ class PlanActividad < ApplicationRecord
               WHEN 1 THEN \'Unidad\' 
               WHEN 2 THEN \'Global\' 
               ELSE \'Otro\' 
-            END AS unidad_medida')
+            END AS unidad_medida,
+            CASE gastos.tipo_aporte_id 
+              WHEN 1 THEN \'Aporte propio valorado\' 
+              WHEN 2 THEN \'Aporte propio liquido\' 
+              WHEN 3 THEN \'Solicitado al fondo\' 
+              ELSE \'Otro\' 
+          END AS tipo_aporte')
     .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
     .where(gastos: { flujo_id: flujo_id })
     .where(plan_actividades: { actividad_id: actividad_id })
@@ -303,7 +309,13 @@ class PlanActividad < ApplicationRecord
                 WHEN 1 THEN \'Unidad\' 
                 WHEN 2 THEN \'Global\' 
                 ELSE \'Otro\' 
-              END AS unidad_medida')
+              END AS unidad_medida,
+              CASE gastos.tipo_aporte_id 
+                WHEN 1 THEN \'Aporte propio valorado\' 
+                WHEN 2 THEN \'Aporte propio liquido\' 
+                WHEN 3 THEN \'Solicitado al fondo\' 
+                ELSE \'Otro\' 
+            END AS tipo_aporte')
       .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
       .where(gastos: { flujo_id: flujo_id })
       .where(plan_actividades: { actividad_id: actividad_id })
