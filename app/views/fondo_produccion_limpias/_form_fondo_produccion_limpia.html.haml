@@ -752,14 +752,14 @@
   }
 
   function guardarRrhhExternoshh(plan_id){
-    var data = [];// Arreglo para almacenar los datos
+    var data = [];
     // Recorre cada fila de la tabla
     var alertaMostrada = false;
     $('#div_consultor_faltantes_externos table tbody tr').each(function() {
-      var rrhhExternoId = $(this).find('td:nth-child(1)').text(); // Cambiar el selector según la estructura de tu tabla
-      var rrhhEquipoId = $(this).find('td:nth-child(2)').text(); // Cambiar el selector según la estructura de tu tabla
-      var nombreUsuario = $(this).find('td:nth-child(3)').text(); // Cambiar el selector según la estructura de tu tabla
-      var hh = $(this).find('input[type="text"]').val(); // Obtener el valor del input de texto
+      var rrhhExternoId = $(this).find('td:nth-child(1)').text();
+      var rrhhEquipoId = $(this).find('td:nth-child(2)').text();
+      var nombreUsuario = $(this).find('td:nth-child(3)').text();
+      var hh = $(this).find('input[type="text"]').val();
       
       if (nombreUsuario !== "Fuente de financiamiento*") {
 
@@ -784,14 +784,13 @@
               nombreUsuario: nombreUsuario,
               hh: hh
           });
-          var alertaMostrada = true;
+          alertaMostrada = true;
         }else{ 
-          ///REVISAR ALERT
           if (!alertaMostrada) {
-            var alertaMostrada = true;
+            alertaMostrada = true;
             alert('Por favor, seleccione alguna Fuente de financiamiento');
             event.preventDefault();
-            //return;
+            return false;
           }
         }
       }
@@ -1865,6 +1864,10 @@
     }
 
     if(confirm("¿Está seguro que desea enviar?")){
+      $('.loading-data').show();
+      const button = document.getElementById('enviar_observaciones_admisibilidad_financiera_button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button.disabled = true;
       $.ajax({
         url: "#{enviar_observaciones_admisibilidad_fondo_produccion_limpia_path}",
         data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
@@ -1992,6 +1995,9 @@
     
     if(confirm("¿Está seguro que desea enviar?")){
       $('.loading-data').show();
+      const button = document.getElementById('enviar_observaciones_admisibilidad_tecnica_button');
+      button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+      button.disabled = true;
       $.ajax({
         url: "#{enviar_observaciones_admisibilidad_tecnica_fondo_produccion_limpia_path}",
         data: JSON.stringify({ flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
@@ -2302,23 +2308,23 @@
 
   
   function enviarEvaluacionGeneral(){
-    var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_id_1').value;
-    var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_id_2').value;
-    var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_id_3').value;
-    var nota_input_id_4 = document.getElementById('nota_input_pert_tecnica_id_4').value;
-    var nota_input_id_5 = document.getElementById('nota_input_pert_tecnica_id_5').value;
-    var nota_input_id_6 = document.getElementById('nota_input_pert_tecnica_id_6').value;
-    var nota_input_id_7 = document.getElementById('nota_input_pert_tecnica_id_7').value;
-    var nota_input_id_8 = document.getElementById('nota_input_pert_tecnica_id_8').value;
+    var nota_input_id_1 = document.getElementById('nota_input_pert_tecnica_general_id_1').value;
+    var nota_input_id_2 = document.getElementById('nota_input_pert_tecnica_general_id_2').value;
+    var nota_input_id_3 = document.getElementById('nota_input_pert_tecnica_general_id_3').value;
+    var nota_input_id_4 = document.getElementById('nota_input_pert_tecnica_general_id_4').value;
+    var nota_input_id_5 = document.getElementById('nota_input_pert_tecnica_general_id_5').value;
+    var nota_input_id_6 = document.getElementById('nota_input_pert_tecnica_general_id_6').value;
+    var nota_input_id_7 = document.getElementById('nota_input_pert_tecnica_general_id_7').value;
+    var nota_input_id_8 = document.getElementById('nota_input_pert_tecnica_general_id_8').value;
 
-    var obs_input_id_1 = document.getElementById('obs_input_pert_tecnica_id_1').value;
-    var obs_input_id_2 = document.getElementById('obs_input_pert_tecnica_id_2').value;
-    var obs_input_id_3 = document.getElementById('obs_input_pert_tecnica_id_3').value;
-    var obs_input_id_4 = document.getElementById('obs_input_pert_tecnica_id_4').value;
-    var obs_input_id_5 = document.getElementById('obs_input_pert_tecnica_id_5').value;
-    var obs_input_id_6 = document.getElementById('obs_input_pert_tecnica_id_6').value;
-    var obs_input_id_7 = document.getElementById('obs_input_pert_tecnica_id_7').value;
-    var obs_input_id_8 = document.getElementById('obs_input_pert_tecnica_id_8').value;
+    var obs_input_id_1 = document.getElementById('obs_input_pert_tecnica_general_id_1').value;
+    var obs_input_id_2 = document.getElementById('obs_input_pert_tecnica_general_id_2').value;
+    var obs_input_id_3 = document.getElementById('obs_input_pert_tecnica_general_id_3').value;
+    var obs_input_id_4 = document.getElementById('obs_input_pert_tecnica_general_id_4').value;
+    var obs_input_id_5 = document.getElementById('obs_input_pert_tecnica_general_id_5').value;
+    var obs_input_id_6 = document.getElementById('obs_input_pert_tecnica_general_id_6').value;
+    var obs_input_id_7 = document.getElementById('obs_input_pert_tecnica_general_id_7').value;
+    var obs_input_id_8 = document.getElementById('obs_input_pert_tecnica_general_id_8').value;
 
     var jsonDataTecnico = {
       1: {
@@ -2402,82 +2408,60 @@
           justificacion: obs_input_finanaciera_id_5
       }
     };
+   
+    var nota_input_pertinencia = document.getElementById('nota_input_pertinencia_general').value;
+    var obs_input_pertinencia = document.getElementById('obs_input_pertinencia_general').value;
 
-    var nota_input_jur_id_1 = document.getElementById('nota_input_juridica_general_id_1').value;
-    var nota_input_jur_id_2 = document.getElementById('nota_input_juridica_general_id_2').value;
-    var nota_input_jur_id_3 = document.getElementById('nota_input_juridica_general_id_3').value;
-    var nota_input_jur_id_4 = document.getElementById('nota_input_juridica_general_id_4').value;
-    var nota_input_jur_id_5 = document.getElementById('nota_input_juridica_general_id_5').value;
-    var nota_input_jur_id_6 = document.getElementById('nota_input_juridica_general_id_6').value;
-    var nota_input_jur_id_7 = document.getElementById('nota_input_juridica_general_id_7').value;
-    var nota_input_jur_id_8 = document.getElementById('nota_input_juridica_general_id_8').value;
 
-    var obs_input_jur_id_1 = document.getElementById('obs_input_juridica_general_id_1').value;
-    var obs_input_jur_id_2 = document.getElementById('obs_input_juridica_general_id_2').value;
-    var obs_input_jur_id_3 = document.getElementById('obs_input_juridica_general_id_3').value;
-    var obs_input_jur_id_4 = document.getElementById('obs_input_juridica_general_id_4').value;
-    var obs_input_jur_id_5 = document.getElementById('obs_input_juridica_general_id_5').value;
-    var obs_input_jur_id_6 = document.getElementById('obs_input_juridica_general_id_6').value;
-    var obs_input_jur_id_7 = document.getElementById('obs_input_juridica_general_id_7').value;
-    var obs_input_jur_id_8 = document.getElementById('obs_input_juridica_general_id_8').value;
+    // Creamos un objeto con la información de `@descargables_postulante`, `@descargables_receptor`, `@descargables_ejecutor`
+    var descargablesPostulante = #{ @descargables_postulante.to_json.html_safe };
+    var descargablesReceptor = #{ @descargables_receptor.to_json.html_safe };
+    var descargablesEjecutor = #{ @descargables_ejecutor.to_json.html_safe };
 
-    var jsonDataJuridica = {
-      1: {
-          criterio_id: 1,
-          nota: nota_input_jur_id_1,
-          justificacion: obs_input_jur_id_1
-      },
-      2: {
-          criterio_id: 2,
-          nota: nota_input_jur_id_2,
-          justificacion: obs_input_jur_id_2
-      },
-      3: {
-          criterio_id: 3,
-          nota: nota_input_jur_id_3,
-          justificacion: obs_input_jur_id_3
-      },
-      4: {
-          criterio_id: 4,
-          nota: nota_input_jur_id_4,
-          justificacion: obs_input_jur_id_4
-      },
-      5: {
-          criterio_id: 5,
-          nota: nota_input_jur_id_5,
-          justificacion: obs_input_jur_id_5
-      },
-      6: {
-          criterio_id: 6,
-          nota: nota_input_jur_id_6,
-          justificacion: obs_input_jur_id_6
-      },
-      7: {
-          criterio_id: 7,
-          nota: nota_input_jur_id_7,
-          justificacion: obs_input_jur_id_7
-      },
-      8: {
-          criterio_id: 8,
-          nota: nota_input_jur_id_8,
-          justificacion: obs_input_jur_id_8
+    // Creamos un objeto JSON para guardar los datos
+    var jsonDataJuridica = {};
+
+    // Combinamos todos los arrays para iterar sobre ellos
+    var allDescargables = descargablesPostulante.concat(descargablesReceptor, descargablesEjecutor);
+
+    // Variable para evitar mostrar varias alertas
+    var alertaMostrada = false;
+
+    // Iteramos sobre el array de todos los objetos descargables
+    allDescargables.forEach(function(descargable) {
+      var notaInput = document.getElementById("nota_input_juridica_general_id_" + descargable.id);
+      var obsInput = document.getElementById("obs_input_juridica_general_id_" + descargable.id);
+
+      // Si los elementos existen, procesamos los valores
+      if (notaInput && obsInput) {
+        // Añadimos los valores al objeto jsonDataJuridica
+        jsonDataJuridica[descargable.id] = {
+          criterio_id: descargable.id,
+          nota: notaInput.value,
+          justificacion: obsInput.value
+        };
+
+        // Verificamos si la respuesta (nota) está vacía
+        if (notaInput.value === "") {
+          if (!alertaMostrada) {
+            alert('Por favor, selecciona una respuesta para la pregunta: ' + descargable.nombre);
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
+
+        // Si la respuesta es "No Cumple" (nota == 2), verificamos si la observación está vacía
+        if (notaInput.value === "2" && obsInput.value === "") {
+          if (!alertaMostrada) {
+            alert('Por favor, ingresa una observación para la pregunta: ' + descargable.nombre);
+            alertaMostrada = true;
+          }
+          event.preventDefault();
+          return;
+        }
       }
-    };
-
-    var nota_input_pertinencia = document.getElementById('nota_input_pertinencia').value;
-    var obs_input_pertinencia = document.getElementById('obs_input_pertinencia').value;
-
-     var alertaMostrada = false;
-
-    // Si el campo está vacío, muestra una alerta y evita el envío del formulario
-    if (obs_input_pertinencia == "") {
-      if (!alertaMostrada) {
-        alert('Por favor, ingresar una observación.');
-        alertaMostrada = true;
-      }
-      event.preventDefault();
-      return;
-    }
+    });
 
     $('.loading-data').show();
 
@@ -3621,7 +3605,7 @@
                   %th.encabezado2-form=t(:valor_hh)
                   %th.encabezado2-form=t(:copia_ci)
                   %th.encabezado2-form=t(:curriculum_vitae)
-                  - if @acceso == :admin || current_user.session[:cargos].include?(Rol::JEFE_DE_LINEA)
+                  - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
                 - if @user_equipo.present?
@@ -4364,12 +4348,11 @@
         .card-body
           .row
             .col-12.col-lg-6
-              -#= f.input :codigo_proyecto, as: :text, label: t(:codigo_proyecto), input_html: {class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 0.5;'}, required: true, id: 'codigo_proyecto'
               %label.label-estilo{ for: 'codigo_proyecto' }
                 %abbr{ title: "Campo requerido" } *
                 = t(:codigo_proyecto)
               %br
-              = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem;', required: true, id: 'codigo_proyecto'
+              = f.text_field :codigo_proyecto, class: "required-field", maxlength: 12, size: 12, style: 'width: 20%; line-height: 2; border: 1px solid #ced4da; border-radius: 0.25rem; padding-left: 8px;', required: true, id: 'codigo_proyecto'
             .col-12.col-lg-6
               %label.label-estilo{ for: 'revisor_tecnico_id' }
                 %abbr{ title: "Campo requerido" } *
@@ -4393,7 +4376,8 @@
                 %abbr{ title: "Campo requerido" } *
                 = t(:comentario)
               %br
-              = f.text_area :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 50%; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem; font-size: 12px; border-bottom: 2px solid #dee2e6; border-right: 2px solid #dee2e6; border-left: 2px solid #dee2e6;'
+              = f.text_area :comentario_asignar_revisor, class: "required-field", id: 'comentario_asignar_revisor_fpl', required: true, style: 'width: 100%; height: 100px; line-height: 1; border: 1px solid #ced4da; border-radius: 0.25rem; font-size: 12px; border-bottom: 2px solid #dee2e6; border-right: 2px solid #dee2e6; border-left: 2px solid #dee2e6;'
+          %br
           .col-12
             .float-right
               = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
@@ -4402,64 +4386,7 @@
   - if @admisibilidad  
     #admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad"])}
       .card
-        .card-header
-          .card-body
-            = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
-              %div.table-responsive
-                %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                  %thead
-                    %tr
-                      %th.encabezado-form{colspan: 3}Criterio 4: COSTOS </br> Consistencia de los costos de las actividades con los aspectos técnicos abordados, cantidad y tamaño de empresas y cobertura geográfica. </br>  Se evaluará positivamente el aporte liquido del postulante, cantidad de empresas no socias y el (%) de empresas Mipymes participantes
-                    %tr
-                      %th.encabezado2-form Subcriterios
-                      %th.encabezado2-form Nota
-                      %th.encabezado2-form Justificación
-                    %tr
-                      %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
-                      %th.contenido2-form
-                        = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera', id: 'nota_input_id_1', onchange: "habilitaObservacionesFinanciera('nota_input_id_1','obs_input_id_1')", style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
-                    %tr
-                      %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
-                      %th.contenido2-form
-                        = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera', id: 'nota_input_id_2', onchange: "habilitaObservacionesFinanciera('nota_input_id_2','obs_input_id_2')", style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
-                    %tr
-                      %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
-                      %th.contenido2-form
-                        = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera', id: 'nota_input_id_3', onchange: "habilitaObservacionesFinanciera('nota_input_id_3','obs_input_id_3')", style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
-                    %tr
-                      %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
-                      %th.contenido2-form
-                        = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera', id: 'nota_input_id_4', onchange: "habilitaObservacionesFinanciera('nota_input_id_4','obs_input_id_4')", style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
-                    %tr
-                      %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
-                      %th.contenido2-form
-                        = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera', id: 'nota_input_id_5', onchange: "habilitaObservacionesFinanciera('nota_input_id_5','obs_input_id_5')", style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
-                    %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-financiera
-                    %th.contenido3-form    
-          %br                                
-          .col-12
-            .float-right
-              = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadFinanciera(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_financiera_button", onclick: 'enviarAdmisibilidadFinanciera(); return false;' do
-                %i.fa.fa-arrow-circle-right
-                =t(:enviar) 
-  #observaciones-admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad"])}
-    .card
-      .card-header
-        .card-body
+        .card-body{style: 'border: none;'}
           = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
             %div.table-responsive
               %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -4471,25 +4398,35 @@
                     %th.encabezado2-form Nota
                     %th.encabezado2-form Justificación
                   %tr
-                    %th.contenido1-det-form Solicitud de cofinanciamiento
-                    %th.contenido2-det-form#nota_input_obs_id_1 
-                    %th.contenido3-det-form#obs_input_obs_id_1
+                    %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
+                    %th.contenido2-form
+                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera border-text', id: 'nota_input_id_1', onchange: "habilitaObservacionesFinanciera('nota_input_id_1','obs_input_id_1')", style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
                   %tr
                     %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
-                    %th.contenido2-det-form#nota_input_obs_id_2 
-                    %th.contenido3-det-form#obs_input_obs_id_2
+                    %th.contenido2-form
+                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera border-text', id: 'nota_input_id_2', onchange: "habilitaObservacionesFinanciera('nota_input_id_2','obs_input_id_2')", style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
                   %tr
                     %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
-                    %th.contenido2-det-form#nota_input_obs_id_3 
-                    %th.contenido3-det-form#obs_input_obs_id_3
+                    %th.contenido2-form
+                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera border-text', id: 'nota_input_id_3', onchange: "habilitaObservacionesFinanciera('nota_input_id_3','obs_input_id_3')", style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
                   %tr
                     %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
-                    %th.contenido2-det-form#nota_input_obs_id_4
-                    %th.contenido3-det-form#obs_input_obs_id_4 
+                    %th.contenido2-form
+                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera border-text', id: 'nota_input_id_4', onchange: "habilitaObservacionesFinanciera('nota_input_id_4','obs_input_id_4')", style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
                   %tr
                     %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
-                    %th.contenido2-det-form#nota_input_obs_id_5
-                    %th.contenido3-det-form#obs_input_obs_id_5
+                    %th.contenido2-form
+                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-financiera border-text', id: 'nota_input_id_5', onchange: "habilitaObservacionesFinanciera('nota_input_id_5','obs_input_id_5')", style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
                   %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-financiera
@@ -4498,348 +4435,389 @@
         .col-12
           .float-right
             = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-            -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadFinanciera(); return false;'
-            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
+            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadFinanciera(); return false;'
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_financiera_button", onclick: 'enviarAdmisibilidadFinanciera(); return false;' do
               %i.fa.fa-arrow-circle-right
-              =t(:enviar)                 
+              =t(:enviar) 
+  #observaciones-admisibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad"])}
+    .card
+      .card-body
+        = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 3}Criterio 4: COSTOS </br> Consistencia de los costos de las actividades con los aspectos técnicos abordados, cantidad y tamaño de empresas y cobertura geográfica. </br>  Se evaluará positivamente el aporte liquido del postulante, cantidad de empresas no socias y el (%) de empresas Mipymes participantes
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-det-form Solicitud de cofinanciamiento
+                  %th.contenido2-det-form#nota_input_obs_id_1 
+                  %th.contenido3-det-form#obs_input_obs_id_1
+                %tr
+                  %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
+                  %th.contenido2-det-form#nota_input_obs_id_2 
+                  %th.contenido3-det-form#obs_input_obs_id_2
+                %tr
+                  %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
+                  %th.contenido2-det-form#nota_input_obs_id_3 
+                  %th.contenido3-det-form#obs_input_obs_id_3
+                %tr
+                  %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
+                  %th.contenido2-det-form#nota_input_obs_id_4
+                  %th.contenido3-det-form#obs_input_obs_id_4 
+                %tr
+                  %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
+                  %th.contenido2-det-form#nota_input_obs_id_5
+                  %th.contenido3-det-form#obs_input_obs_id_5
+                %tr
+                %th.contenido1-form Puntaje Otorgado
+                %th.contenido2-form#promedio-notas-financiera
+                %th.contenido3-form    
+      %br                                
+      .col-12
+        .float-right
+          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+          -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadFinanciera(); return false;'
+          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
+            %i.fa.fa-arrow-circle-right
+            =t(:enviar)                 
   #admisibilidad-tecnica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-tecnica"])}
     .card
-      .card-header
-        .card-body
-          = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica', id: 'nota_input_tecnica_id_1', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_1','obs_input_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form                             
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica', id: 'nota_input_tecnica_id_2', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_2','obs_input_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form  
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica', id: 'nota_input_tecnica_id_3', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_3','obs_input_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form         
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica', id: 'nota_input_tecnica_id_4', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_4','obs_input_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form     
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica 
-                    %th.contenido3-form   
-                %thead
-                  %tr
-                    %th{colspan: 3, style: 'background-color: #fff;'}
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-2', id: 'nota_input_tecnica_id_5', onchange: "habilitaObservacionesTecnica2('nota_input_tecnica_id_5','obs_input_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form 
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica-2
-                    %th.contenido3-form   
-                %thead
-                  %tr
-                    %th{colspan: 3, style: 'background-color: #fff;'}
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3', id: 'nota_input_tecnica_id_6', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_6','obs_input_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
-                    %th.contenido3-form 
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3', id: 'nota_input_tecnica_id_7', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_7','obs_input_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form  
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
-                    %th.contenido2-form 
-                      = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3', id: 'nota_input_tecnica_id_8', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_8','obs_input_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
-                    %th.contenido3-form    
-                      = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica-3
-                    %th.contenido3-form
-          %br             
-          .col-12
-            .float-right
-              = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
-                %i.fa.fa-arrow-circle-right
-                =t(:enviar)            
+      .card-body
+        = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_1', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_1','obs_input_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form                             
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_2', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_2','obs_input_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form  
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_3', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_3','obs_input_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form         
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_4', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_4','obs_input_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form     
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica 
+                  %th.contenido3-form   
+              %thead
+                %tr
+                  %th{colspan: 3, style: 'background-color: #fff;'}
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-2 border-text', id: 'nota_input_tecnica_id_5', onchange: "habilitaObservacionesTecnica2('nota_input_tecnica_id_5','obs_input_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form 
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica-2
+                  %th.contenido3-form   
+              %thead
+                %tr
+                  %th{colspan: 3, style: 'background-color: #fff;'}
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_6', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_6','obs_input_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
+                  %th.contenido3-form 
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_7', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_7','obs_input_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form  
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
+                  %th.contenido2-form 
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_8', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_8','obs_input_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
+                  %th.contenido3-form    
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica-3
+                  %th.contenido3-form
+        %br             
+        .col-12
+          .float-right
+            = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
+              %i.fa.fa-arrow-circle-right
+              =t(:enviar)            
   #admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-juridica"])}
     .card
-      .card-header
-        .card-body
-          = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
-            <h1>A) Postulante </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_postulante.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-form
-                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
-                          { required: true, label: false, 
-                            class: 'required-field nota_input_juridica', 
-                            id: "nota_input_juridica_id_#{descargable.id}",
-                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
-                            style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, 
-                            class: 'required-field-text', 
-                            id: "obs_input_juridica_id_#{descargable.id}", 
-                            style: 'visibility: hidden; width: 100%; text-align: center;'
-            %br
-            <h1>B) Receptor cofinanciamiento </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_receptor.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-form
-                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
-                          { required: true, label: false, 
-                            class: 'required-field nota_input_juridica', 
-                            id: "nota_input_juridica_id_#{descargable.id}",
-                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
-                            style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, 
-                            class: 'required-field-text', 
-                            id: "obs_input_juridica_id_#{descargable.id}", 
-                            style: 'visibility: hidden; width: 100%; text-align: center;'
-            %br
-            <h1>C) Ejecutor </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_ejecutor.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-form
-                        = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
-                          { required: true, label: false, 
-                            class: 'required-field nota_input_juridica', 
-                            id: "nota_input_juridica_id_#{descargable.id}",
-                            onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
-                            style: 'width: 100%; text-align: center;' }
-                      %th.contenido3-form
-                        = f.text_area :justificacion, required: true, label: false, 
-                            class: 'required-field-text', 
-                            id: "obs_input_juridica_id_#{descargable.id}", 
-                            style: 'visibility: hidden; width: 100%; text-align: center;'
-          %br 
-          .col-12
-            .float-right
-              = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_juridica", onclick: 'guardarAdmisibilidadJuridica(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarAdmisibilidadJuridica(); return false;' do
-                %i.fa.fa-arrow-circle-right
-                =t(:enviar) 
+      .card-body
+        = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          <h1>A) Postulante </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_postulante.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, label: false, 
+                          class: 'required-field nota_input_juridica border-text', 
+                          id: "nota_input_juridica_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+          %br
+          <h1>B) Receptor cofinanciamiento </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_receptor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, label: false, 
+                          class: 'required-field nota_input_juridica border-text', 
+                          id: "nota_input_juridica_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+          %br
+          <h1>C) Ejecutor </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_ejecutor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, label: false, 
+                          class: 'required-field nota_input_juridica border-text', 
+                          id: "nota_input_juridica_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+        %br 
+        .col-12
+          .float-right
+            = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_juridica", onclick: 'guardarAdmisibilidadJuridica(); return false;'
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarAdmisibilidadJuridica(); return false;' do
+              %i.fa.fa-arrow-circle-right
+              =t(:enviar) 
   #observaciones-admisibilidad-tecnica.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad-tecnica"])}
     .card
-      .card-header
-        .card-body
-          = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
-                    %th.contenido2-form#nota_input_tecnica_obs_id_1
-                    %th.contenido3-form#obs_input_tecnica_obs_id_1
-                  %tr
-                    %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
-                    %th.contenido2-form#nota_input_tecnica_obs_id_2
-                    %th.contenido3-form#obs_input_tecnica_obs_id_2
-                  %tr
-                    %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
-                    %th.contenido2-form#nota_input_tecnica_obs_id_3
-                    %th.contenido3-form#obs_input_tecnica_obs_id_3
-                  %tr
-                    %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
-                    %th.contenido2-form#nota_input_tecnica_obs_id_4
-                    %th.contenido3-form#obs_input_tecnica_obs_id_4
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica 
-                    %th.contenido3-form   
-                %thead
-                  %tr
-                    %th{colspan: 3, style: 'background-color: #fff;'}
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
-                    %th.contenido2-form#nota_input_tecnica_obs_id_5
-                    %th.contenido3-form#obs_input_tecnica_obs_id_5
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica-2
-                    %th.contenido3-form   
-                %thead
-                  %tr
-                    %th{colspan: 3, style: 'background-color: #fff;'}
-                  %tr
-                    %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
-                  %tr
-                    %th.encabezado2-form Subcriterios
-                    %th.encabezado2-form Nota
-                    %th.encabezado2-form Justificación
-                  %tr
-                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
-                    %th.contenido2-form#nota_input_tecnica_obs_id_6
-                    %th.contenido3-form#obs_input_tecnica_obs_id_6
-                  %tr
-                    %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
-                    %th.contenido2-form#nota_input_tecnica_obs_id_7
-                    %th.contenido3-form#obs_input_tecnica_obs_id_7
-                  %tr
-                    %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
-                    %th.contenido2-form#nota_input_tecnica_obs_id_8
-                    %th.contenido3-form#obs_input_tecnica_obs_id_8
-                  %tr
-                    %th.contenido1-form Puntaje Otorgado
-                    %th.contenido2-form#promedio-notas-tecnica-3
-                    %th.contenido3-form
-          %br             
-          .col-12
-            .float-right
-              = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadTecnica(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarObservacionesAdmisibilidadTecnica(); return false;' do
-                %i.fa.fa-arrow-circle-right
-                =t(:enviar) 
+      .card-body
+        = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
+                  %th.contenido2-form#nota_input_tecnica_obs_id_1
+                  %th.contenido3-form#obs_input_tecnica_obs_id_1
+                %tr
+                  %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
+                  %th.contenido2-form#nota_input_tecnica_obs_id_2
+                  %th.contenido3-form#obs_input_tecnica_obs_id_2
+                %tr
+                  %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
+                  %th.contenido2-form#nota_input_tecnica_obs_id_3
+                  %th.contenido3-form#obs_input_tecnica_obs_id_3
+                %tr
+                  %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
+                  %th.contenido2-form#nota_input_tecnica_obs_id_4
+                  %th.contenido3-form#obs_input_tecnica_obs_id_4
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica 
+                  %th.contenido3-form   
+              %thead
+                %tr
+                  %th{colspan: 3, style: 'background-color: #fff;'}
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
+                  %th.contenido2-form#nota_input_tecnica_obs_id_5
+                  %th.contenido3-form#obs_input_tecnica_obs_id_5
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica-2
+                  %th.contenido3-form   
+              %thead
+                %tr
+                  %th{colspan: 3, style: 'background-color: #fff;'}
+                %tr
+                  %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
+                %tr
+                  %th.encabezado2-form Subcriterios
+                  %th.encabezado2-form Nota
+                  %th.encabezado2-form Justificación
+                %tr
+                  %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
+                  %th.contenido2-form#nota_input_tecnica_obs_id_6
+                  %th.contenido3-form#obs_input_tecnica_obs_id_6
+                %tr
+                  %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
+                  %th.contenido2-form#nota_input_tecnica_obs_id_7
+                  %th.contenido3-form#obs_input_tecnica_obs_id_7
+                %tr
+                  %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
+                  %th.contenido2-form#nota_input_tecnica_obs_id_8
+                  %th.contenido3-form#obs_input_tecnica_obs_id_8
+                %tr
+                  %th.contenido1-form Puntaje Otorgado
+                  %th.contenido2-form#promedio-notas-tecnica-3
+                  %th.contenido3-form
+        %br             
+        .col-12
+          .float-right
+            = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+            -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarAdmisibilidadTecnica(); return false;'
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_tecnica_button", onclick: 'enviarObservacionesAdmisibilidadTecnica(); return false;' do
+              %i.fa.fa-arrow-circle-right
+              =t(:enviar) 
 
   #observaciones-admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad-juridica"])}
     .card
-      .card-header
-        .card-body
-          = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
-            <h1>A) Postulante </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_postulante.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
-                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
-            %br
-            <h1>B) Receptor cofinanciamiento </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_receptor.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
-                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
-            %br
-            <h1>C) Ejecutor </h1>  
-            %div.table-responsive
-              %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-                %thead
-                  %tr
-                    %th.encabezado2-form Criterios
-                    %th.encabezado2-form ¿Cumple?
-                    %th.encabezado2-form Observación
-                  - @descargables_ejecutor.each do |descargable|
-                    %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
-                      %th.contenido1-det-form{style: 'vertical-align: middle;'}
-                        %abbr{ title: "Campo requerido" } *
-                        = descargable.nombre
-                      %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
-                      %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
-          %br 
-          .col-12
-            .float-right
-              = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-              -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarObservacionesAdmisibilidadJuridica(); return false;'
-              = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarObservacionesAdmisibilidadJuridica(); return false;' do
-                %i.fa.fa-arrow-circle-right
-                =t(:enviar)   
+      .card-body
+        = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+          <h1>A) Postulante </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_postulante.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                    %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+          %br
+          <h1>B) Receptor cofinanciamiento </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_receptor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                    %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+          %br
+          <h1>C) Ejecutor </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_ejecutor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-det-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                    %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+        %br 
+        .col-12
+          .float-right
+            = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+            -#= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button", onclick: 'guardarObservacionesAdmisibilidadJuridica(); return false;'
+            = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarObservacionesAdmisibilidadJuridica(); return false;' do
+              %i.fa.fa-arrow-circle-right
+              =t(:enviar)   
   #pertinencia-factibilidad.tab-pane.fade{"aria-expanded" => (tabs[:"pertinencia-factibilidad"] ? 'true' : 'false'), "aria-labelledby" => "pertinencia-factibilidad-tab", :role => "tabpanel", class: ("show active" if tabs[:"pertinencia-factibilidad"])}
     .card
-      .card-body
+      .card-body{style: 'border: none;'}
         = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f| 
           <h1>1.- Evaluación del proyecto</h1>
           %div.table-responsive
@@ -4854,27 +4832,27 @@
                 %tr
                   %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica', id: 'nota_input_pert_tecnica_id_1', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_1','obs_input_pert_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica border-text', id: 'nota_input_pert_tecnica_id_1', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_1','obs_input_pert_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form                             
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica', id: 'nota_input_pert_tecnica_id_2', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_2','obs_input_pert_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica border-text', id: 'nota_input_pert_tecnica_id_2', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_2','obs_input_pert_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form  
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica', id: 'nota_input_pert_tecnica_id_3', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_3','obs_input_pert_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica border-text', id: 'nota_input_pert_tecnica_id_3', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_3','obs_input_pert_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form         
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica', id: 'nota_input_pert_tecnica_id_4', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_4','obs_input_pert_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica border-text', id: 'nota_input_pert_tecnica_id_4', onchange: "habilitaObservacionesPertinenciaTecnica('nota_input_pert_tecnica_id_4','obs_input_pert_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form     
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica
@@ -4891,9 +4869,9 @@
                 %tr
                   %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-2', id: 'nota_input_pert_tecnica_id_5', onchange: "habilitaObservacionesPertinenciaTecnica2('nota_input_pert_tecnica_id_5','obs_input_pert_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-2 border-text', id: 'nota_input_pert_tecnica_id_5', onchange: "habilitaObservacionesPertinenciaTecnica2('nota_input_pert_tecnica_id_5','obs_input_pert_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form 
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica-2
@@ -4910,26 +4888,25 @@
                 %tr
                   %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3', id: 'nota_input_pert_tecnica_id_6', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_6','obs_input_pert_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3 border-text', id: 'nota_input_pert_tecnica_id_6', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_6','obs_input_pert_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
                   %th.contenido3-form 
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3', id: 'nota_input_pert_tecnica_id_7', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_7','obs_input_pert_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3 border-text', id: 'nota_input_pert_tecnica_id_7', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_7','obs_input_pert_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form  
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3', id: 'nota_input_pert_tecnica_id_8', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_8','obs_input_pert_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-3 border-text', id: 'nota_input_pert_tecnica_id_8', onchange: "habilitaObservacionesPertinenciaTecnica3('nota_input_pert_tecnica_id_8','obs_input_pert_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form    
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica-3
                   %th.contenido3-form 
-
           %br
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
@@ -4943,33 +4920,33 @@
                 %tr
                   %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera', id: 'nota_input_pert_id_1', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_1','obs_input_pert_id_1')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera border-text', id: 'nota_input_pert_id_1', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_1','obs_input_pert_id_1')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera', id: 'nota_input_pert_id_2', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_2','obs_input_pert_id_2')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera border-text', id: 'nota_input_pert_id_2', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_2','obs_input_pert_id_2')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera', id: 'nota_input_pert_id_3', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_3','obs_input_pert_id_3')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera border-text', id: 'nota_input_pert_id_3', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_3','obs_input_pert_id_3')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera', id: 'nota_input_pert_id_4', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_4','obs_input_pert_id_4')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera border-text', id: 'nota_input_pert_id_4', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_4','obs_input_pert_id_4')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
                 %tr
                   %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera', id: 'nota_input_pert_id_5', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_5','obs_input_pert_id_5')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera border-text', id: 'nota_input_pert_id_5', onchange: "habilitaObservacionesPertinenciaFinanciera('nota_input_pert_id_5','obs_input_pert_id_5')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                 %th.contenido1-form Puntaje Otorgado
                 %th.contenido2-form#promedio-notas-pert-financiera
@@ -5013,23 +4990,25 @@
           %br
           <h1>3.- Estado de la evaluación</h1>
           %br
-          %div.table-responsive
-            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-              %tr
-                %th
-                  %label.label-estilo{ for: 'resultado_de_la_pertinencia' }
-                    %abbr{ title: "Campo requerido" } *
-                    = t(:resultado_de_la_pertinencia)
-                  %br
-
-                  = f.select :nota, options_for_select([['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']],@nota), {}, { required: true, label: false, class: 'required-field nota_input_pertinencia', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
-              %tr
-                %th
-                  %label.label-estilo{ for: 'observaciones_y_comentarios' }
-                    %abbr{ title: "Campo requerido" } *
-                    = t(:observaciones_y_comentarios)
-                  %br
-                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pertinencia', style: 'width: 100%; font-size: 14px;'
+          %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
+            %table.table
+              %thead
+                %tr
+                  %th
+                    %label.label-estilo{ for: 'resultado_de_la_pertinencia' }
+                      %abbr{ title: "Campo requerido" } *
+                      = t(:resultado_de_la_pertinencia)
+                    %br
+                    = f.select :nota, options_for_select([['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']],@nota), {}, { required: true, label: false, class: 'required-field nota_input_pertinencia border-text', id: 'nota_input_pertinencia', style: 'font-size: 14px;' }
+                %tr
+                  %th
+                    %label.label-estilo{ for: 'observaciones_y_comentarios' }
+                      %abbr{ title: "Campo requerido" } *
+                      = t(:observaciones_y_comentarios)
+                    %br
+                    = f.text_area :justificacion, class: "form-control text required tooltip-block border-text", required: 'required', type: 'text', id: 'obs_input_pertinencia', style: 'width: 100%;'
+        %br
+        = render 'fondo_produccion_limpias/table_comentarios_anteriores'  
         %br 
           .col-12
             .float-right
@@ -5040,7 +5019,7 @@
                 =t(:enviar)
   #evaluacion-general.tab-pane.fade{"aria-expanded" => (tabs[:"evaluacion-general"] ? 'true' : 'false'), "aria-labelledby" => "evaluacion-general-tab", :role => "tabpanel", class: ("show active" if tabs[:"evaluacion-general"])}
     .card
-      .card-body
+      .card-body{style: 'border: none;'}
         = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f| 
           <h1>1.- Evaluación del proyecto</h1>
           %div.table-responsive
@@ -5055,27 +5034,27 @@
                 %tr
                   %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general', id: 'nota_input_pert_tecnica_general_id_1', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_1','obs_input_pert_tecnica_general_id_1')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general border-text', id: 'nota_input_pert_tecnica_general_id_1', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_1','obs_input_pert_tecnica_general_id_1')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form                             
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general', id: 'nota_input_pert_tecnica_general_id_2', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_2','obs_input_pert_tecnica_general_id_2')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general border-text', id: 'nota_input_pert_tecnica_general_id_2', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_2','obs_input_pert_tecnica_general_id_2')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form  
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general', id: 'nota_input_pert_tecnica_general_id_3', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_3','obs_input_pert_tecnica_general_id_3')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general border-text', id: 'nota_input_pert_tecnica_general_id_3', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_3','obs_input_pert_tecnica_general_id_3')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form         
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general', id: 'nota_input_pert_tecnica_general_id_4', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_4','obs_input_pert_tecnica_general_id_4')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general border-text', id: 'nota_input_pert_tecnica_general_id_4', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral('nota_input_pert_tecnica_general_id_4','obs_input_pert_tecnica_general_id_4')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form     
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica-general 
@@ -5092,9 +5071,9 @@
                 %tr
                   %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-2', id: 'nota_input_pert_tecnica_general_id_5', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral2('nota_input_pert_tecnica_general_id_5','obs_input_pert_tecnica_general_id_5')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-2 border-text', id: 'nota_input_pert_tecnica_general_id_5', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral2('nota_input_pert_tecnica_general_id_5','obs_input_pert_tecnica_general_id_5')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form 
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica-general-2
@@ -5111,21 +5090,21 @@
                 %tr
                   %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3', id: 'nota_input_pert_tecnica_general_id_6', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_6','obs_input_pert_tecnica_general_id_6')", style: 'width: 100%; text-align: center;'}
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3 border-text', id: 'nota_input_pert_tecnica_general_id_6', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_6','obs_input_pert_tecnica_general_id_6')", style: 'width: 100%; text-align: center;'}
                   %th.contenido3-form 
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3', id: 'nota_input_pert_tecnica_general_id_7', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_7','obs_input_pert_tecnica_general_id_7')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3 border-text', id: 'nota_input_pert_tecnica_general_id_7', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_7','obs_input_pert_tecnica_general_id_7')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form  
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
                   %th.contenido2-form 
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3', id: 'nota_input_pert_tecnica_general_id_8', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_8','obs_input_pert_tecnica_general_id_8')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-tecnica-general-3 border-text', id: 'nota_input_pert_tecnica_general_id_8', onchange: "habilitaObservacionesPertinenciaTecnicaGeneral3('nota_input_pert_tecnica_general_id_8','obs_input_pert_tecnica_general_id_8')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form    
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_tecnica_general_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_tecnica_general_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Puntaje Otorgado
                   %th.contenido2-form#promedio-notas-pert-tecnica-general-3
@@ -5144,94 +5123,119 @@
                 %tr
                   %th.contenido1-form Los ítems que componen los gastos de operación y de administración son financiables de acuerdo a las bases del Fondo PL y corresponden a productos específicos e identificables
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general', id: 'nota_input_pert_general_id_1', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_1','obs_input_pert_general_id_1')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general border-text', id: 'nota_input_pert_general_id_1', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_1','obs_input_pert_general_id_1')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_general_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_general_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El valor de las HH de los profesionales es cercano al valor de mercado
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general', id: 'nota_input_pert_general_id_2', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_2','obs_input_pert_general_id_2')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general border-text', id: 'nota_input_pert_general_id_2', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_2','obs_input_pert_general_id_2')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_general_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_general_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form Los costos por actividades son consistentes con los aspectos técnicos abordados, la cantidad y tamaño de las instalaciones, y su cobertura geográfica
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general', id: 'nota_input_pert_general_id_3', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_3','obs_input_pert_general_id_3')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general border-text', id: 'nota_input_pert_general_id_3', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_3','obs_input_pert_general_id_3')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_general_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_general_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                   %th.contenido1-form El proyecto cuenta con participación de empresas no socias y con un alto porcentaje de empresas de menor tamaño (Se evalúa positivamente en caso de cumplimiento)
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general', id: 'nota_input_pert_general_id_4', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_4','obs_input_pert_general_id_4')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general border-text', id: 'nota_input_pert_general_id_4', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_4','obs_input_pert_general_id_4')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_general_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_general_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'   
                 %tr
                   %th.contenido1-form Las actividades están correctamente formuladas en relación a las bases del Fondo PL y permiten realizar un análisis de costos
                   %th.contenido2-form
-                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general', id: 'nota_input_pert_general_id_5', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_5','obs_input_pert_general_id_5')", style: 'width: 100%; text-align: center;' }
+                    = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-pert-financiera-general border-text', id: 'nota_input_pert_general_id_5', onchange: "habilitaObservacionesPertinenciaFinancieraGeneral('nota_input_pert_general_id_5','obs_input_pert_general_id_5')", style: 'width: 100%; text-align: center;' }
                   %th.contenido3-form
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pert_general_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pert_general_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
                 %tr
                 %th.contenido1-form Puntaje Otorgado
                 %th.contenido2-form#promedio-notas-pert-financiera-general
                 %th.contenido3-form          
           %br
+          <h1>A) Postulante </h1>  
           %div.table-responsive
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
                 %tr
-                  %th.encabezado-form{colspan: 3} Admisibilidad Jurídica
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_postulante.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, 
+                          label: false, 
+                          class: 'required-field nota_input_juridica_general_id_#{descargable.id} border-text', 
+                          id: "nota_input_juridica_general_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_#{descargable.id}', 'obs_input_juridica_general_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_general_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+          %br
+          <h1>B) Receptor cofinanciamiento </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
                 %tr
                   %th.encabezado2-form Criterios
                   %th.encabezado2-form ¿Cumple?
                   %th.encabezado2-form Observación
+                - @descargables_receptor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, 
+                          label: false, 
+                          class: 'required-field nota_input_juridica_general_id_#{descargable.id} border-text', 
+                          id: "nota_input_juridica_general_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_#{descargable.id}', 'obs_input_juridica_general_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_general_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+          %br
+          <h1>C) Ejecutor </h1>  
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
                 %tr
-                  %th.contenido1-form Solicitud de cofinanciamiento
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_1', id: 'nota_input_juridica_general_id_1', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_1','obs_input_juridica_general_id_1')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form 
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Certificado de vigencia otorgado por la Entidad que lo tutela con fecha no anterior a 60 días de la fecha de postulación
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_2', id: 'nota_input_juridica_general_id_2', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_2','obs_input_juridica_general_id_2')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form                           
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Copia simple del Rol Único Tributario de la organización postulante
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_3', id: 'nota_input_juridica_general_id_3', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_3','obs_input_juridica_general_id_3')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form   
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Copia simple de la cédula de identidad del o los representantes legales
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_4', id: 'nota_input_juridica_general_id_4', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_4','obs_input_juridica_general_id_4')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form         
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Declaración jurada firmada por el representante legal de la fundación que acredite que se encuentra al día en el pago de las cotizaciones previsionales, se encuentra al día en el pago de las cotizaciones del seguro de desempleo y su propuesta no presenta duplicidad de financiamiento con otras iniciativas equivalentes financiables, ya sea por la Corporación de Fomento de la Producción u otras fuentes de financiamiento públicas
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_5', id: 'nota_input_juridica_general_id_5', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_5','obs_input_juridica_general_id_5')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form      
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Declaración jurada suscrita por el representante legal de la organización postulante que acredite que la entidad no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador, dentro de los 2 años anteriores; y b) Tratarse de una entidad de la que formen parte de modo alguno, funcionarios directivos del Consejo Nacional de Producción Limpia, o personas que tengan la calidad de cónyuge, hijo, adoptado, o pariente hasta el tercer grado de consanguinidad y segundo de afinidad, inclusive, respecto de un directivo del Consejo Nacional de Producción Limpia
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_6', id: 'nota_input_juridica_general_id_6', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_6','obs_input_juridica_general_id_6')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form    
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Empresas consultoras: Copia de la escritura en la que consta su constitución legal, personería o representación legal vigente, y modificaciones posteriores, si las hubiere; copia de las publicaciones en extracto en el Diario Oficial y de las inscripciones en los Registros correspondientes, de las escrituras señaladas; y certificado de vigencia del Registro de Comercio, con fecha no anterior a tres meses contados desde la fecha de su presentación
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_7', id: 'nota_input_juridica_general_id_7', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_7','obs_input_juridica_general_id_7')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form    
-                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_juridica_general_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
-                %tr
-                  %th.contenido1-form Empresas consultoras: declaración jurada suscrita por el representante legal que acredite que la empresa no incurre en ninguna de las siguientes prohibiciones: a) Haber sido condenada por prácticas antisindicales o infracción a los derechos fundamentales del trabajador; b) Tratarse de una sociedad de personas de la que formen parte funcionarios directivos del Consejo Nacional de Producción Limpia; c) Tratarse de una sociedad comandita por acciones o anónima cerrada en que sean accionistas funcionarios directivos del Consejo Nacional de Producción Limpia; y d) Tratarse de una sociedad anónima abierta en que un funcionario directivo del Consejo Nacional de Producción Limpia sea dueño de acciones que representen el 10% o más del capital
-                  %th.contenido2-form 
-                    = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, { required: true, label: false, class: 'required-field nota_input_juridica_general_id_8', id: 'nota_input_juridica_general_id_8', onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_8','obs_input_juridica_general_id_8')", style: 'width: 100%; text-align: center;' }
-                  %th.contenido3-form 
+                  %th.encabezado2-form Criterios
+                  %th.encabezado2-form ¿Cumple?
+                  %th.encabezado2-form Observación
+                - @descargables_ejecutor.each do |descargable|
+                  %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                    %th.contenido1-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      = descargable.nombre
+                    %th.contenido2-form
+                      = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                        { required: true, 
+                          label: false, 
+                          class: 'required-field nota_input_juridica_general_id_#{descargable.id} border-text', 
+                          id: "nota_input_juridica_general_id_#{descargable.id}",
+                          onchange: "habilitaObservacionesJuridica('nota_input_juridica_general_id_#{descargable.id}', 'obs_input_juridica_general_id_#{descargable.id}')", 
+                          style: 'width: 100%; text-align: center;' }
+                    %th.contenido3-form
+                      = f.text_area :justificacion, required: true, label: false, 
+                          class: 'required-field-text border-text', 
+                          id: "obs_input_juridica_general_id_#{descargable.id}", 
+                          style: 'visibility: hidden; width: 100%; text-align: center;'
+
           %br
           <h1>2.Tabla resumen de puntuación otorgada al proyecto</h1>
           %br
@@ -5271,23 +5275,26 @@
           %br
           <h1>3.- Estado de la evaluación</h1>
           %br
-          %div.table-responsive
-            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-              %tr
-                %th
-                  %label.label-estilo{ for: 'resultado_de_la_pertinencia' }
-                    %abbr{ title: "Campo requerido" } *
-                    = t(:resultado_de_la_pertinencia)
-                  %br
-
-                  = f.select :nota, [['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']], {}, { required: true, label: false, class: 'required-field nota_input_pertinencia_general', id: 'nota_input_pertinencia_general', style: 'font-size: 14px;' }
-              %tr
-                %th
-                  %label.label-estilo{ for: 'observaciones_y_comentarios' }
-                    %abbr{ title: "Campo requerido" } *
-                    = t(:observaciones_y_comentarios)
-                  %br
-                  = f.text_area :justificacion, required: true, label: false, class: 'required-field-text', id: 'obs_input_pertinencia_general', style: 'width: 100%; font-size: 14px;'
+          %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
+            %table.table
+              %thead
+                %tr
+                  %th
+                    %label.label-estilo{ for: 'resultado_de_la_pertinencia' }
+                      %abbr{ title: "Campo requerido" } *
+                      = t(:resultado_de_la_pertinencia)
+                    %br
+                    -#= f.select :nota, options_for_select([['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']],@nota), {}, { required: true, label: false, class: 'required-field nota_input_pertinencia_general border-text', id: 'nota_input_pertinencia_general', style: 'font-size: 14px;' }
+                    = f.select :nota, [['Aceptada', '1'],['Con Observaciones', '2'],['Rechazada', '3']], {}, { required: true, label: false, class: 'required-field nota_input_pertinencia_general border-text', id: 'nota_input_pertinencia_general', style: 'font-size: 14px;' }
+                %tr
+                  %th
+                    %label.label-estilo{ for: 'observaciones_y_comentarios' }
+                      %abbr{ title: "Campo requerido" } *
+                      = t(:observaciones_y_comentarios)
+                    %br
+                    = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_pertinencia_general', style: 'width: 100%; font-size: 14px;'                            
+        %br
+        = render 'fondo_produccion_limpias/table_comentarios_anteriores'  
         %br 
           .col-12
             .float-right

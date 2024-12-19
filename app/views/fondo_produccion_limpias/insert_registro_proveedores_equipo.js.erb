@@ -1,5 +1,5 @@
 var nombre = '<%= @auditor.nombre %>' + ' ' + '<%= @auditor.apellido%>';
-var rut = '<%= @auditor.rut %>';
+var rut = '<%= format_rut(@auditor.rut) %>';
 var telefono = '<%= @auditor.telefono %>';
 var email = '<%= @auditor.email %>';
 var profesion = '<%= @auditor.profesion %>';
