@@ -24,7 +24,7 @@
                   %i.fa.fa-external-link
               - else
                 = '--'
-            %td= record.user_id.blank? ? '--' : record.user.nombre_completo
+            %td= record.user_id.blank? ? '--' : record&.user&.nombre_completo
             %td.text-center= render 'layouts/modal_archivos', item: record, adjuntos: record.comentario_archivos
             %td.dos.iconos-acciones
               - if record.leido

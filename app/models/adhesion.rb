@@ -37,14 +37,14 @@ class Adhesion < ApplicationRecord
 
 	attr_accessor :aceptado, :observacion, :tipo, :is_ppf
 	attr_accessor :estado_elementos, :justificacion_elementos, :elementos_seleccionados, :validar_clasificar
-	attr_accessor :documento_justificacion, :elemento_retirado_id, :validar_retirar
+	attr_accessor :elemento_retirado_id, :validar_retirar
 	attr_accessor :contribuyente_id #para tarea 25.3
 
 	#para tareas 25
 	attr_accessor :current_user, :tarea_id
   attr_accessor :remote_archivos_adhesion_y_documentacion
 
-	mount_uploader :documento_justificacion, ArchivoAdhesionYDocumentacionAdhesionesUploader
+
 
 
 	default_scope { where(externa: false) }
@@ -386,7 +386,7 @@ class Adhesion < ApplicationRecord
 							end
 						end
 					else
-						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.file.identifier}.include? fila[:nombre_archivo]
+						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}.include? fila[:nombre_archivo]
 							errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
 						else
 							instituciones_con_archivo << rut_institucion
@@ -520,6 +520,7 @@ class Adhesion < ApplicationRecord
 	end
 
 	def adhesiones_retiradas
+
 		if self.persisted?
 			self.adhesion_elemento_retirados.map{|a| 
 				fila = a.fila
