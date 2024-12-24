@@ -1269,7 +1269,11 @@ class FondoProduccionLimpiasController < ApplicationController
      
       @plan = params['plan_id']
 
-      @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
+      if @tarea_pendiente.tarea.codigo == 'FPL-01' ||  @tarea_pendiente.tarea.codigo == 'FPL-07' ||  @tarea_pendiente.tarea.codigo == 'FPL-08'
+        @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
+      else
+        @solo_lectura = true
+      end  
 
       respond_to do |format|
         format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
