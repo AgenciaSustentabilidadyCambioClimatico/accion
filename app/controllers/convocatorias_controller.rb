@@ -111,7 +111,7 @@ class ConvocatoriasController < ApplicationController
 					fecha_hora: @convocatoria.fecha_hora,
 					tipo_reunion: @convocatoria.tipo_reunion,
 					direccion: @convocatoria.direccion,
-					lat: @convocatoria.lat,	
+					lat: @convocatoria.lat,
 					lng: @convocatoria.lng
 				})
 		  	params[:seleccionados].uniq.each do |dest|
