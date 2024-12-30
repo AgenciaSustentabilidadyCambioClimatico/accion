@@ -14,7 +14,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -1028,6 +1028,32 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def eliminar_recursos_humanos
+      eliminar = RecursoHumano.find_by(id: params[:rr_hh_id])
+
+      if eliminar.destroy  
+        respond_to do |format|
+          set_costos
+           
+          ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm, gastos ope por id y se renderiza al dashboard principal
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(@tarea_pendiente.flujo_id, params[:plan_id])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(@tarea_pendiente.flujo_id, params[:plan_id])
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(@tarea_pendiente.flujo_id, params[:plan_id])
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(@tarea_pendiente.flujo_id, params[:plan_id])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(@tarea_pendiente.flujo_id)
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(@tarea_pendiente.flujo_id)
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(@tarea_pendiente.flujo_id)
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(@tarea_pendiente.flujo_id)
+
+          format.js { render 'eliminar_recursos_humanos', locals: { rr_hh_id: params[:rr_hh_id] } }
+        end
+      else
+        flash[:error] = 'El recurso propio no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
+      end
+    end
+
     def obtiene_contribuyente(id)
       Contribuyente.find(id)
     end
@@ -1210,26 +1236,41 @@ class FondoProduccionLimpiasController < ApplicationController
           arreglo << numero
         end
   
-        @duracion = @plan_actividades.duracion if @plan_actividades.duracion.present? #"1,2,4"
+        # Asegúrate de que @duracion tenga un formato adecuado
+        @duracion = @plan_actividades.duracion.present? ? @plan_actividades.duracion.to_s : ""
+     
+        # Crear un Set con los códigos FPL
+        fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
+
+        # Comenzar con una cadena vacía para el resultado
         newRowDuracion = ""
-        arreglo.each do |mes|  
-          if @duracion.present?
-            if @duracion.split(",").map(&:to_i).include?(mes)
-              newRowDuracion += "<td class='sub-contenido-form'>" +
-                                "<input type='checkbox' name='descripcion' checked='checked' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                                "</td>"
-            else
-              newRowDuracion += "<td class='sub-contenido-form'>" +
-                                "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                                "</td>"
-            end
-          else
-            newRowDuracion += "<td class='sub-contenido-form'>" +
-                              "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                              "</td>"
+        
+        # Iterar sobre cada mes en arreglo
+        arreglo.each do |mes|
+          # Verificar si la tarea es FPL
+          is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
+    
+          # Verificar si @duracion está presente y si el mes está dentro de la duración
+          # Convertir @duracion a un arreglo de números si es necesario
+          duracion_array = @duracion.split(",").map(&:to_i)
+          is_checked = duracion_array.include?(mes)
+          is_disabled = !is_fpl_task || @duracion.blank?
+
+          checked = ''
+          if is_checked
+            checked = "checked='checked'"
           end
+
+          # Construir el HTML del checkbox
+          checkbox_html = "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;' #{checked} #{'disabled' if is_disabled}>"
+
+          # Añadir la celda con el checkbox al HTML final
+          newRowDuracion += "<td class='sub-contenido-form'>#{checkbox_html}</td>"
         end
+
+        # Asignar el resultado generado a @duracion
         @duracion = newRowDuracion
+
       end   
 
       ###OBTIENE RECURSOS Y GASTOS
@@ -1243,7 +1284,11 @@ class FondoProduccionLimpiasController < ApplicationController
      
       @plan = params['plan_id']
 
-      @solo_lectura = params['solo_lectura'] == "true" ? true : false
+      if @tarea_pendiente.tarea.codigo == 'FPL-01' ||  @tarea_pendiente.tarea.codigo == 'FPL-07' ||  @tarea_pendiente.tarea.codigo == 'FPL-08'
+        @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
+      else
+        @solo_lectura = true
+      end  
 
       respond_to do |format|
         format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
@@ -1310,7 +1355,18 @@ class FondoProduccionLimpiasController < ApplicationController
       if gasto.destroy
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
           @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(gasto['flujo_id'], params['plan_id'])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(gasto['flujo_id'], params['plan_id'])
+ 
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(gasto['flujo_id'])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(gasto['flujo_id'])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(gasto['flujo_id'])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(gasto['flujo_id'])
+ 
+          #Actualiza costos
           set_costos 
           format.js { render 'eliminar_gasto_operacion', locals: { gasto: gasto.id, total_gastos_tipo_1: @total_gastos_tipo_1, plan_id: params['plan_id'] } }
         end 
@@ -1365,8 +1421,20 @@ class FondoProduccionLimpiasController < ApplicationController
         respond_to do |format|
           # se obtiene el valor de la suma de los recursos internos por id y se renderiza al dashboard principal
           @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2(gasto['flujo_id'], gasto['plan_actividad_id'])
-          set_costos
-          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, total_gastos_tipo_2: @total_gastos_tipo_2, plan_id: params['plan_id'] } }
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1(gasto['flujo_id'], gasto['plan_actividad_id'])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(gasto['flujo_id'], params['plan_id'])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(gasto['flujo_id'], params['plan_id'])
+
+          #Totales generales
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(gasto['flujo_id'])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(gasto['flujo_id'])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(gasto['flujo_id'])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(gasto['flujo_id'])
+
+          #Actualiza costos
+          set_costos 
+
+          format.js { render 'eliminar_gasto_administracion', locals: { gasto: gasto.id, plan_id: params['plan_id']} }
         end 
       else
         flash[:error] = 'Hubo un problema al eliminar el gasto.'
@@ -2761,7 +2829,8 @@ class FondoProduccionLimpiasController < ApplicationController
         manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
         nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
-        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)
         
         pdf = @fondo_produccion_limpia.generar_pdf(cuestionario_observacion.revision, objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
                                                    costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
@@ -3363,7 +3432,6 @@ class FondoProduccionLimpiasController < ApplicationController
       set_plan_actividades
       set_costos 
       set_descargables
-      set_comentarios
     end
 
     def enviar_evaluacion_general
@@ -3378,9 +3446,23 @@ class FondoProduccionLimpiasController < ApplicationController
         }
       }
 
-      if params[:obs_input_pertinencia] != ""
-        comentario = ComentarioFlujo.new(custom_params_comentarios[:cuestionario_flujos])
-        comentario.save
+      #GUARDA Resultado de la revision de pertinencia y factibilidad y Observaciones y comentarios
+      custom_params = {
+        cuestionario_obs_fpl: {
+          flujo_id: params['flujo_id'],
+          criterio_id: nil,
+          nota: params[:nota_input_pertinencia],
+          justificacion: normalize_string(params[:obs_input_pertinencia]),
+          tipo_cuestionario_id: 4
+        }
+      }
+
+      @cuestionario_obs_fpl = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).order(:criterio_id)
+      if @cuestionario_obs_fpl.present?
+        @cuestionario_obs_fpl.update(custom_params[:cuestionario_obs_fpl])
+      else
+        @cuestionario_obs_fpl = CuestionarioFpl.new(custom_params[:cuestionario_obs_fpl])
+        @cuestionario_obs_fpl.save
       end 
 
       if params[:nota_input_pertinencia] == '1'
@@ -4659,7 +4741,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def set_comentarios
-        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id)   
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+        @comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @tarea_pendiente.flujo_id, tarea_id: tarea_fondo.id)   
       end
 
 

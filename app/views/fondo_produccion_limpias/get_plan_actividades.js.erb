@@ -32,17 +32,26 @@ var td_plan_gastos_administracion = document.getElementById('td_plan_gastos_admi
 $('#div_plan_recursos_propios table tbody').empty();
 <% if @recursos_internos.present? %>
   <% recursos_internos.each do |recursos_interno| %>
-    var plan_id = '<%= recursos_interno.id %>';
+    var rr_pp_id = '<%= recursos_interno.id %>';
     var user_name = '<%= recursos_interno.user_name %>';
     var hh = '<%= recursos_interno.hh %>';
     var valor_hh = '<%=number_to_currency recursos_interno.valor_hh %>';
     var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
+    var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var plan_id = '<%= @plan %>';
+    var tipo_aporte = '<%= recursos_interno.tipo_aporte %>';
     var newRow = "<tr>" +
       "<td class='contenido-form'>" + user_name + "</td>" +
       "<td class='contenido-form'>" + hh + "</td>" +
       "<td class='contenido-form'>" + valor_hh + "</td>" +
-      "<td class='contenido-form'>" + costo + "</td>" +
-      "</tr>";
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
+      "<td class='contenido-form'>" + costo + "</td>";
+      <% if !solo_lectura %>
+        newRow += "<td class='contenido-form dos iconos-acciones'>" +
+        "<a data-rr-pp-id=" + rr_pp_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_pp_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_pp_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos propios'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "</td>";
+      <% end %> 
+      newRow += "</tr>";
     $('#div_plan_recursos_propios table tbody').append(newRow);
   <% end %>
 <% end %>
@@ -50,26 +59,40 @@ $('#div_plan_recursos_propios table tbody').empty();
 $('#div_plan_recursos_externos table tbody').empty();
 <% if @recursos_externos.present? %>
   <% recursos_externos.each do |recursos_externos| %>
-    var plan_id = '<%= recursos_externos.id %>';
+    var rr_ex_id = '<%= recursos_externos.id %>';
     var user_name = '<%= recursos_externos.user_name %>';
     var nombre_proveedor = '<%= recursos_externos.nombre_proveedor %> (Auditor)';
     var hh = '<%= recursos_externos.hh %>';
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
     var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
+    var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var tipo_aporte = '<%= recursos_externos.tipo_aporte %>';
     <% if recursos_externos.tipo_equipo == 4 %>
       var newRow = "<tr>" +
         "<td class='contenido-form'>" + nombre_proveedor + "</td>" +
         "<td class='contenido-form'>" + hh + "</td>" +
         "<td class='contenido-form'>" + valor_hh + "</td>" +
-        "<td class='contenido-form'>" + costo + "</td>" +
-        "</tr>";
+        "<td class='contenido-form'>" + tipo_aporte + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>";
+        <% if !solo_lectura %>
+          newRow += "<td class='contenido-form dos iconos-acciones'>" +
+          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+          "</td>";
+        <% end %> 
+        newRow += "</tr>";
     <% else %>
       var newRow = "<tr>" +
         "<td class='contenido-form'>" + user_name + "</td>" +
         "<td class='contenido-form'>" + hh + "</td>" +
         "<td class='contenido-form'>" + valor_hh + "</td>" +
-        "<td class='contenido-form'>" + costo + "</td>" +
-        "</tr>";
+        "<td class='contenido-form'>" + tipo_aporte + "</td>" +
+        "<td class='contenido-form'>" + costo + "</td>";
+        <% if !solo_lectura %>
+          newRow += "<td class='contenido-form dos iconos-acciones'>" +
+          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+          "</td>";
+        <% end %> 
+        newRow += "</tr>";
     <% end %>
     $('#div_plan_recursos_externos table tbody').append(newRow);
   <% end %>
@@ -107,6 +130,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
     var valor_unitario = '<%=number_to_currency gastos_operacion.valor_unitario %>';
     var cantidad = '<%= gastos_operacion.cantidad %>';
     var unidad_medida = '<%= gastos_operacion.unidad_medida %>';
+    var tipo_aporte = '<%= gastos_operacion.tipo_aporte %>';
     var total = '<%=number_to_currency gastos_operacion.cantidad.to_i * gastos_operacion.valor_unitario.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
@@ -115,13 +139,14 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + valor_unitario + "</td>" +
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
-      "<td class='contenido-form'>" + total + "</td>" +
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
+      "<td class='contenido-form'>" + total + "</td>";
       <% if !solo_lectura %>
-        "<td class='contenido-form dos iconos-acciones'>" +
+        newRow += "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
-        "</td>" +
+        "</td>";
       <% end %> 
-      "</tr>";
+      newRow += "</tr>";
     $('#div_plan_gastos_operacion table tbody').append(newRow);
   <% end %>
 <% end %>
@@ -134,6 +159,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
     var valor_unitario = '<%=number_to_currency gastos_administracion.valor_unitario %>';
     var cantidad = '<%= gastos_administracion.cantidad %>';
     var unidad_medida = '<%= gastos_administracion.unidad_medida %>';
+    var tipo_aporte = '<%= gastos_administracion.tipo_aporte %>';
     var total = '<%=number_to_currency gastos_administracion.cantidad.to_i * gastos_administracion.valor_unitario.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
@@ -142,13 +168,14 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + valor_unitario + "</td>" +
       "<td class='contenido-form'>" + cantidad + "</td>" +
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
-      "<td class='contenido-form'>" + total + "</td>" +
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
+      "<td class='contenido-form'>" + total + "</td>";
       <% if !solo_lectura %>
-        "<td class='contenido-form dos iconos-acciones'>" +
+        newRow += "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
-        "</td>" +
+        "</td>";
       <% end %> 
-      "</tr>";
+      newRow += "</tr>";
     $('#div_plan_gastos_administracion table tbody').append(newRow);
   <% end %>
 <% end %>

@@ -260,6 +260,8 @@ Rails.application.routes.draw do
   post 'subir_documento', to: 'fondo_produccion_limpias#subir_documento', as: :subir_documento
   post 'subir_documento_equipo', to: 'fondo_produccion_limpias#subir_documento_equipo', as: :subir_documento_equipo
 
+  delete 'eliminar_recursos_humanos/:id', to: "fondo_produccion_limpias#eliminar_recursos_humanos", as: 'eliminar_recursos_humanos'
+ 
   #Cuestionario FPL
   post 'new_cuestionario_fpl', to: "fondo_produccion_limpias#new_cuestionario_fpl", as: :new_cuestionario_fpl_fondo_produccion_limpia
 
