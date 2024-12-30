@@ -244,31 +244,26 @@ class PlanActividad < ApplicationRecord
   end
 
   def self.recursos_internos(flujo_id, actividad_id)
-    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
+    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name, tipo_aportes.nombre AS tipo_aporte')
       .joins(recurso_humanos: { equipo_trabajo: :user })
+      .joins('JOIN tipo_aportes ON recurso_humanos.tipo_aporte_id = tipo_aportes.id')
       .where(recurso_humanos: { flujo_id: flujo_id })
       .where(equipo_trabajos: { tipo_equipo: 3 })
       .where(plan_actividades: { actividad_id: actividad_id })
   end
 
-  def self.recursos_externos_old(flujo_id, actividad_id)
-    select('recurso_humanos.id, recurso_humanos.hh AS hh, equipo_trabajos.valor_hh AS valor_hh, users.nombre_completo AS user_name')
-      .joins(recurso_humanos: { equipo_trabajo: :user })
-      .where(recurso_humanos: { flujo_id: flujo_id })
-      .where(equipo_trabajos: { tipo_equipo: [1, 2, 4] })
-      .where(plan_actividades: { actividad_id: actividad_id })
-  end  
-  
   def self.recursos_externos(flujo_id, actividad_id)
     select('recurso_humanos.id, recurso_humanos.hh AS hh, 
             equipo_trabajos.valor_hh AS valor_hh, 
             equipo_trabajos.tipo_equipo,
             users.nombre_completo AS user_name,
-            registro_proveedores.nombre || \' \' || registro_proveedores.apellido AS nombre_proveedor')
+            registro_proveedores.nombre || \' \' || registro_proveedores.apellido AS nombre_proveedor,
+            tipo_aportes.nombre AS tipo_aporte')
       .joins('LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id')
       .joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
       .joins('LEFT JOIN users ON equipo_trabajos.user_id = users.id')
       .joins('LEFT JOIN registro_proveedores ON registro_proveedores.id = equipo_trabajos.registro_proveedores_id')
+      .joins('LEFT JOIN tipo_aportes ON recurso_humanos.tipo_aporte_id = tipo_aportes.id')
       .where('recurso_humanos.flujo_id = ?', flujo_id)
       .where('equipo_trabajos.tipo_equipo IN (?)', [1, 2, 4])
       .where('plan_actividades.actividad_id = ?', actividad_id)
@@ -291,13 +286,9 @@ class PlanActividad < ApplicationRecord
               WHEN 2 THEN \'Global\' 
               ELSE \'Otro\' 
             END AS unidad_medida,
-            CASE gastos.tipo_aporte_id 
-              WHEN 1 THEN \'Aporte propio valorado\' 
-              WHEN 2 THEN \'Aporte propio liquido\' 
-              WHEN 3 THEN \'Solicitado al fondo\' 
-              ELSE \'Otro\' 
-          END AS tipo_aporte')
+            tipo_aportes.nombre AS tipo_aporte')
     .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+    .joins('LEFT JOIN tipo_aportes ON gastos.tipo_aporte_id = tipo_aportes.id')
     .where(gastos: { flujo_id: flujo_id })
     .where(plan_actividades: { actividad_id: actividad_id })
     .where(gastos: { tipo_gasto: 1 })
@@ -310,13 +301,9 @@ class PlanActividad < ApplicationRecord
                 WHEN 2 THEN \'Global\' 
                 ELSE \'Otro\' 
               END AS unidad_medida,
-              CASE gastos.tipo_aporte_id 
-                WHEN 1 THEN \'Aporte propio valorado\' 
-                WHEN 2 THEN \'Aporte propio liquido\' 
-                WHEN 3 THEN \'Solicitado al fondo\' 
-                ELSE \'Otro\' 
-            END AS tipo_aporte')
+              tipo_aportes.nombre AS tipo_aporte')
       .joins("INNER JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+      .joins('LEFT JOIN tipo_aportes ON gastos.tipo_aporte_id = tipo_aportes.id')
       .where(gastos: { flujo_id: flujo_id })
       .where(plan_actividades: { actividad_id: actividad_id })
       .where(gastos: { tipo_gasto: 2 })

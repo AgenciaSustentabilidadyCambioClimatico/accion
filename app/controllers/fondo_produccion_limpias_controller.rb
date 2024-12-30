@@ -1236,26 +1236,41 @@ class FondoProduccionLimpiasController < ApplicationController
           arreglo << numero
         end
   
-        @duracion = @plan_actividades.duracion if @plan_actividades.duracion.present? #"1,2,4"
+        # Asegúrate de que @duracion tenga un formato adecuado
+        @duracion = @plan_actividades.duracion.present? ? @plan_actividades.duracion.to_s : ""
+     
+        # Crear un Set con los códigos FPL
+        fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
+
+        # Comenzar con una cadena vacía para el resultado
         newRowDuracion = ""
-        arreglo.each do |mes|  
-          if @duracion.present?
-            if @duracion.split(",").map(&:to_i).include?(mes)
-              newRowDuracion += "<td class='sub-contenido-form'>" +
-                                "<input type='checkbox' name='descripcion' checked='checked' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                                "</td>"
-            else
-              newRowDuracion += "<td class='sub-contenido-form'>" +
-                                "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                                "</td>"
-            end
-          else
-            newRowDuracion += "<td class='sub-contenido-form'>" +
-                              "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;'>" +
-                              "</td>"
+        
+        # Iterar sobre cada mes en arreglo
+        arreglo.each do |mes|
+          # Verificar si la tarea es FPL
+          is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
+    
+          # Verificar si @duracion está presente y si el mes está dentro de la duración
+          # Convertir @duracion a un arreglo de números si es necesario
+          duracion_array = @duracion.split(",").map(&:to_i)
+          is_checked = duracion_array.include?(mes)
+          is_disabled = !is_fpl_task || @duracion.blank?
+
+          checked = ''
+          if is_checked
+            checked = "checked='checked'"
           end
+
+          # Construir el HTML del checkbox
+          checkbox_html = "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;' #{checked} #{'disabled' if is_disabled}>"
+
+          # Añadir la celda con el checkbox al HTML final
+          newRowDuracion += "<td class='sub-contenido-form'>#{checkbox_html}</td>"
         end
+
+        # Asignar el resultado generado a @duracion
         @duracion = newRowDuracion
+
       end   
 
       ###OBTIENE RECURSOS Y GASTOS

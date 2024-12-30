@@ -39,10 +39,12 @@ $('#div_plan_recursos_propios table tbody').empty();
     var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
+    var tipo_aporte = '<%= recursos_interno.tipo_aporte %>';
     var newRow = "<tr>" +
       "<td class='contenido-form'>" + user_name + "</td>" +
       "<td class='contenido-form'>" + hh + "</td>" +
       "<td class='contenido-form'>" + valor_hh + "</td>" +
+      "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + costo + "</td>";
       <% if !solo_lectura %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
@@ -64,11 +66,13 @@ $('#div_plan_recursos_externos table tbody').empty();
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
     var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var tipo_aporte = '<%= recursos_externos.tipo_aporte %>';
     <% if recursos_externos.tipo_equipo == 4 %>
       var newRow = "<tr>" +
         "<td class='contenido-form'>" + nombre_proveedor + "</td>" +
         "<td class='contenido-form'>" + hh + "</td>" +
         "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + tipo_aporte + "</td>" +
         "<td class='contenido-form'>" + costo + "</td>";
         <% if !solo_lectura %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
@@ -81,6 +85,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         "<td class='contenido-form'>" + user_name + "</td>" +
         "<td class='contenido-form'>" + hh + "</td>" +
         "<td class='contenido-form'>" + valor_hh + "</td>" +
+        "<td class='contenido-form'>" + tipo_aporte + "</td>" +
         "<td class='contenido-form'>" + costo + "</td>";
         <% if !solo_lectura %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
