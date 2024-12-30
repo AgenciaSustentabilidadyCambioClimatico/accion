@@ -44,6 +44,10 @@ class AuditoriaElemento < ApplicationRecord
     end
   end
 
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
+  end
+
 	def valid_extensions
 		ext_audit = ["xlsx","xls"]
 		ext_extra = ["zip", "rar", "pdf", "jpg", "jpeg", "png"]
@@ -269,7 +273,7 @@ class AuditoriaElemento < ApplicationRecord
 		end
 
 		aud_elem_archivos = AuditoriaElementoArchivo.where(auditoria_id: auditoria.id)
-    archivos_auditoria = aud_elem_archivos.count > 0 ? aud_elem_archivos.map{|aea| {aea.id => aea.archivo.file.original_filename}}.inject(:merge) : {}
+    archivos_auditoria = aud_elem_archivos.count > 0 ? aud_elem_archivos.map{|aea| {aea.id => aea.archivo.identifier}}.inject(:merge) : {}
 
 		auditorias = AuditoriaElemento.where(adhesion_elemento_id: elems_id)
 																	.where(auditoria_id: auditoria.id)

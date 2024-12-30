@@ -14,14 +14,16 @@ module Ascc
     config.i18n.default_locale = :es
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
     config.active_job.queue_adapter = :delayed_job
-
+    config.active_record.use_yaml_unsafe_load = true
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do
     #   config.web_console.whitelisted_ips = '0.0.0.0/0'
     #   # config.web_console.whitelisted_ips = '192.168.0.0/24'
     # end
-
+    if Rails.env.production?
+      config.hosts << /.*\.ascc\.cl/
+    end
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
@@ -38,6 +40,8 @@ module Ascc
       # g.test_unit false # con este queda test_unit/system... con -> system_tests false desaparece
     end
     #config.action_mailer.asset_host = '190.215.33.11:3999'
-    
+    def updating_record?
+      persisted? # This checks if the record already exists (i.e., it's an update)
+    end
   end
 end

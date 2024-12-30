@@ -135,7 +135,7 @@ class AdhesionesController < ApplicationController
           
           data[adh.id][idx][:revisado] = true
           data[adh.id][idx][:observaciones] = observaciones[k]
-          @adhesion.poblar_data(datos, @flujo, adh.archivos_adhesion_y_documentacion, adh)
+          @adhesion.poblar_data(datos, @flujo, adh.archivos_adhesion_y_documentacion.first.url, adh)
 
           procesar_tareas_25 << adh if adh.externa && nueva_adhesion
         elsif v == "false"
@@ -234,23 +234,27 @@ class AdhesionesController < ApplicationController
 
   def descargar_compilado
     require 'zip'
+    require 'open-uri'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       if params[:aid].blank?
         @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
         @adhesiones_todas.each do |adhesion|
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            if File.exists?(archivo.path)
+            if !archivo.url.nil?
               #nombre = archivo.file.identifier
-              if adhesion.externa
-                nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-              else
-                c = adhesion.flujo.manifestacion_de_interes.contribuyente
-                nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
-              end
+              url = archivo.url
+              nombre = File.basename(URI.parse(url).path)
+              # if adhesion.externa
+              #   nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+              # else
+              #   c = adhesion.flujo.manifestacion_de_interes.contribuyente
+              #   nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+              # end
               # rename the file
-              stream.put_next_entry(nombre)
-              # add file to zip
-              stream.write IO.read((archivo.path rescue archivo.path))
+              URI.open(url) do |file_data|
+                stream.put_next_entry(nombre)
+                stream.write file_data.read
+              end
             end
           end
         end
@@ -258,19 +262,22 @@ class AdhesionesController < ApplicationController
         @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
         @adhesiones_todas.each do |adhesion|
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            if File.exists?(archivo.path)
-              if params[:nombre_archivo] == archivo.file.identifier
+            unless archivo.url.nil?
+              if params[:nombre_archivo] == archivo.file.path.split('/').last
                 #nombre = archivo.file.identifier
-                if adhesion.externa
-                  nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-                else
-                  c = adhesion.flujo.manifestacion_de_interes.contribuyente
-                  nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+                url = archivo.url
+                nombre = File.basename(URI.parse(url).path)
+                # if adhesion.externa
+                #   nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
+                # else
+                #   c = adhesion.flujo.manifestacion_de_interes.contribuyente
+                #   nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
+                # end
+                # rename the file
+                URI.open(url) do |file_data|
+                  stream.put_next_entry(nombre)
+                  stream.write file_data.read
                 end
-                  # rename the file
-                stream.put_next_entry(nombre)
-                  # add file to zip
-                stream.write IO.read((archivo.path rescue archivo.path))
               end
             end
           end
@@ -278,6 +285,7 @@ class AdhesionesController < ApplicationController
       end
     end
     archivo_zip.rewind
+    # archivo_zip.read
     #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end

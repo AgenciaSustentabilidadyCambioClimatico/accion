@@ -31,9 +31,9 @@
                         &times;
                   .modal-body
                     - if img
-                      = image_tag(o.archivo, style: 'width:100%')
+                      = image_tag(o.archivo.url, style: 'width:100%')
                     - elsif doc
-                      %embed{src: o.archivo, width: "100%", height: "720px", type: 'application/pdf'}
+                      %embed{src: o.archivo.url, width: "100%", height: "720px", type: 'application/pdf'}
                   .modal-footer
                     %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
                       Cerrar

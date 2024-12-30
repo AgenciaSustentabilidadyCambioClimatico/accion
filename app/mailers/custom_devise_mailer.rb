@@ -1,5 +1,6 @@
-class ApplicationMailer < ActionMailer::Base
-  default from: 'mailing@binarybag.com'
+class CustomDeviseMailer < Devise::Mailer
+  # Inherit from ApplicationMailer to include the interceptor
+  default from: 'guillo@mailing.com'
   layout 'mailer'
 
   after_action :interceptor

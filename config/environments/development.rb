@@ -16,7 +16,7 @@ Rails.application.configure do
   # end
   # config.web_console.whitelisted_ips = ['190.215.33.10']
   # # config.web_console.whitelisted_ips += ['190.215.33.11']
-  config.web_console.whitelisted_ips = ['0.0.0.0/0']
+  config.web_console.allowed_ips = ['0.0.0.0/0']
   # config.web_console.whitelisted_ips += ['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16']
 
   # Do not eager load code on boot.
@@ -39,9 +39,8 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
-
   email=YAML.load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result)
-  config.action_mailer.default_url_options = { host: email['default_url_options_host'], port: email['default_url_options_port'] }
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :letter_opener
@@ -58,6 +57,7 @@ Rails.application.configure do
   }
 
   config.action_mailer.perform_caching = false
+
 
   # Print deprecation notices to the Rails logger.
   config.active_support.deprecation = :log

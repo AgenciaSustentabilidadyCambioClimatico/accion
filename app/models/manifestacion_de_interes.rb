@@ -119,143 +119,143 @@ class ManifestacionDeInteres < ApplicationRecord
   before_validation :set_data_actecos
   before_validation :set_data_territorios
 
-  #validates :sectores_economicos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :territorios_regiones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :tipo_instrumento_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :proponente, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :contribuyente_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :descripcion_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :carta_de_interes_institucion_gestora_firmada, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :proponente_institucion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :caracterizacion_sector_territorio, presence: true, on: :update, unless: -> { temporal.to_s == "true" }numero_trabajadores
-  #validates :principales_actores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :mapa_de_actores_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :sectores_economicos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :territorios_regiones, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :caracterizacion_sector_territorio, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :tipo_instrumento_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :proponente, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :contribuyente_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :descripcion_acuerdo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :carta_de_interes_institucion_gestora_firmada, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :proponente_institucion_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :caracterizacion_sector_territorio, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }numero_trabajadores
+  #validates :principales_actores, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :mapa_de_actores_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   # DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
-  validates :numero_de_socios_institucion_gestora, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> {self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true"}
+  validates :numero_de_socios_institucion_gestora, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { (self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true") && :updating_record? }
 
   # DZC 2019-06-25 16:26:07 se agrega para manejar monto máximo a ingresar
-  validates :numero_empresas, presence: true, on: :update, if: -> { self.numero_empresas.present? && temporal.to_s != "true" }
+  validates :numero_empresas, presence: true, if: -> { (self.numero_empresas.present? && temporal.to_s != "true") && :updating_record? }
 
-  #validates :porcentaje_mipymes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :produccion, presence: true, on: :update, if: -> { self.produccion.present? && temporal.to_s != "true" }
+  #validates :porcentaje_mipymes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :produccion, presence: true, if: -> { (self.produccion.present? && temporal.to_s != "true") && :updating_record? }
 
   # DZC 2019-06-25 16:20:54 se agrega para manejar monto máximo a ingresar
-  validates :ventas, presence: true, on: :update, if: -> { self.ventas.present? && temporal.to_s != "true" }
+  validates :ventas, presence: true, if: -> { (self.ventas.present? && temporal.to_s != "true") && :updating_record? }
 
-  #validates :porcentaje_exportaciones, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :principales_mercados, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :cadena_de_valor, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :porcentaje_exportaciones, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :principales_mercados, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :cadena_de_valor, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DZC 2019-06-25 16:20:35 se agrega para manejar monto máximo a ingresar
-  validates :numero_trabajadores, presence: true, on: :update, if: -> { self.numero_trabajadores.present? && temporal.to_s != "true" }
+  validates :numero_trabajadores, presence: true, if: -> { (self.numero_trabajadores.present? && temporal.to_s != "true") && :updating_record? }
 
-  validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :principales_impactos_socioambientales_del_sector, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :principales_problemas_y_desafios, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  validates :principales_conflictos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  validates :vulnerabilidad_al_cambio_climatico_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :principales_impactos_socioambientales_del_sector, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :principales_problemas_y_desafios, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :principales_conflictos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #Validaciones datos del proyecto
 
-  #validates :nombre_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :descripcion_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :justificacion_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :nombre_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :descripcion_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :justificacion_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
 
   #ya no usaran archivos kml
-  # validates :area_influencia_proyecto_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :alternativas_instalacion_archivo, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :monto_inversion, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :tecnologia, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :estado_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :estudio_de_mercado, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :anteproyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :gantt_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :otros_estudios, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :operador, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :otros_proyectos_en_territorios_cercanos, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  #validates :otro_datos_proyecto, presence: true, on: :update, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
-  # validates :equipo_de_trabajo_comprometido, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :patrocinadores, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  # validates :area_influencia_proyecto_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :alternativas_instalacion_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :monto_inversion, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :tecnologia, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :estado_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :estudio_de_mercado, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :anteproyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :gantt_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :otros_estudios, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :operador, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :otros_proyectos_en_territorios_cercanos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  #validates :otro_datos_proyecto, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" || tipo_instrumento_id != 6}
+  # validates :equipo_de_trabajo_comprometido, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :patrocinadores, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DZC 2019-06-25 16:25:09 se agrega para manejar monto máximo a ingresar
   # DOSSA 2019-10-10 12:03 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
-  # validates :monto_total_comprometido, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, on: :update, if: -> { self.monto_total_comprometido.present? || temporal.to_s != "true" }
-  # validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  # validates :monto_total_comprometido, presence: true, numericality: {only_integer: true, less_than_or_equal_to: 2147483647}, if: :updating_record?, if: -> { self.monto_total_comprometido.present? || temporal.to_s != "true" }
+  # validates :organigrama, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  #validates :organigrama, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :otros_recursos_comprometidos, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  # validates :carta_de_apoyo_y_compromiso, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :organigrama, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :otros_recursos_comprometidos, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  # validates :carta_de_apoyo_y_compromiso, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DOSSA 2019-10-10 12:02 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
-  # validates :numero_participantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  # validates :lista_participantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  # validates :priorizacion, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  # validates :numero_participantes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  # validates :lista_participantes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  # validates :priorizacion, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  #validates :diagnostico_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  #validates :estandar_de_certificacion_id, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :diagnostico_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  #validates :estandar_de_certificacion_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   # DOSSA 2019-10-10 12:04 Se eliminan según documento "Campos finales: Manifestación de interés (Interno)"
-  # validates :otros_estudios_relevantes, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
-  # validates :otros_objetivos_acuerdo, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  # validates :otros_estudios_relevantes, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  # validates :otros_objetivos_acuerdo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  validates :revisor_tecnico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
-  validates :revisor_juridico_id, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
-  validates :comentario_jefe_de_linea, presence: true, on: :update, if: -> {update_asignar_revisor.present?}
+  validates :revisor_tecnico_id, presence: true, if: -> { :updating_record? && update_asignar_revisor.present? }
+  validates :revisor_juridico_id, presence: true, if: -> { :updating_record? && update_asignar_revisor.present? }
+  validates :comentario_jefe_de_linea, presence: true, if: -> { :updating_record? && update_asignar_revisor.present?}
 
-  #validates :respuesta_resultado_pertinencia, presence: true, on: :update, if: -> { update_respuesta_pertinencia.present? } El campo ya no corresponde al apl-006
+  #validates :respuesta_resultado_pertinencia, presence: true, if: :updating_record?, if: -> { update_respuesta_pertinencia.present? } El campo ya no corresponde al apl-006
 
-  validates :institucion_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
-  validates :institucion_entregables_name, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
-  validates :usuario_entregables_id, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
-  validates :usuario_entregable_name, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
-  #validates :usuario_entregables_comentario, presence: true, on: :update, if: -> { update_usuario_entregables.present? }
+  validates :institucion_entregables_id, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :institucion_entregables_name, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :usuario_entregables_id, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  validates :usuario_entregable_name, presence: true, if: -> { :updating_record? && update_usuario_entregables.present? }
+  #validates :usuario_entregables_comentario, presence: true, if: :updating_record? &&  update_usuario_entregables.present? }
 
   validates :comentarios_y_observaciones_actualizacion_mapa_de_actores, presence: true, if: -> { temporal.to_s == "true" && mapa_de_actores_correctamente_construido.present? && mapa_de_actores_correctamente_construido == 'false' }
   validates :comentarios_y_observaciones_documento_diagnosticos, presence: true, if: -> { temporal.to_s == "true" && aprueba_documentos_diagnostico.present? && aprueba_documentos_diagnostico == 'false' }
   validates :comentarios_y_observaciones_set_metas_acciones, presence: true, if: -> { temporal.to_s == "true" && aprueba_set_metas_accion.present? && aprueba_set_metas_accion == 'false' }
   validates :observaciones_propuesta_acuerdo, presence: true, if: -> { temporal.to_s == "true" && envia_termino_proceso === true }
 
-  validate :data_mapa_de_actores, on: :update, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
+  validate :data_mapa_de_actores, if: -> { :updating_record? && self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   #apl-003.1
-  validates :resultado_admisibilidad, presence: true, on: :update, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
-  validates :tipo_instrumento_id, presence: true, on: :update, if: -> {update_admisibilidad.present? && temp_siguientes.to_s != "true"}
-  validates :observaciones_admisibilidad,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
-  validate :secciones_observadas_admisibilidad_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
+  validates :resultado_admisibilidad, presence: true, if: -> { :updating_record? && update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_instrumento_id, presence: true, if: -> { :updating_record? && update_admisibilidad.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad,presence: true, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_requerido, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad) && temp_siguientes.to_s != "true"}
   #apl-003.2
-  validates :resultado_admisibilidad_juridica, presence: true, on: :update, if: -> {update_admisibilidad_juridica.present? && temp_siguientes.to_s != "true"}
-  validates :observaciones_admisibilidad_juridica,presence: true, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
-  validate :secciones_observadas_admisibilidad_juridica_requerido, on: :update, if: -> {["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  validates :resultado_admisibilidad_juridica, presence: true, if: -> { :updating_record? && update_admisibilidad_juridica.present? && temp_siguientes.to_s != "true"}
+  validates :observaciones_admisibilidad_juridica,presence: true, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
+  validate :secciones_observadas_admisibilidad_juridica_requerido, if: -> { :updating_record? && ["rechazado","en_observación"].include?(resultado_admisibilidad_juridica) && temp_siguientes.to_s != "true"}
   #apl-004.1
-  validates :respuesta_observaciones_admisibilidad, presence: true, on: :update, if: -> {update_obs_admisibilidad == "true" && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_admisibilidad, presence: true, if: -> { :updating_record? && update_obs_admisibilidad == "true" && temp_siguientes.to_s != "true"}
   #apl-004.2
-  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, on: :update, if: -> {update_obs_admisibilidad_juridica == "true" && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_admisibilidad_juridica, presence: true, if: -> { :updating_record? && update_obs_admisibilidad_juridica == "true" && temp_siguientes.to_s != "true"}
   #apl-005
-  validate :is_observaciones_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validate :is_compromiso_pertinencia_factibilidad, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validate :pertinencia_secciones_observadas, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validates :coordinador_subtipo_instrumento_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :encargado_hitos_prensa_id, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :resultado_pertinencia, presence: true, on: :update, if: -> { update_pertinencia.present? && temp_siguientes.to_s != "true" }
-  validates :fondo_produccion_limpia, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :tipo_linea_seleccionada, presence: true, on: :update, if: -> { resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validate :is_observaciones_pertinencia_factibilidad, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :is_compromiso_pertinencia_factibilidad, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validate :pertinencia_secciones_observadas, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :coordinador_subtipo_instrumento_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :encargado_hitos_prensa_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :resultado_pertinencia, presence: true, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
+  validates :fondo_produccion_limpia, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  validates :tipo_linea_seleccionada, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
 
   #apl-006
-  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
-  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, on: :update, if: -> { update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  validates :respuesta_observaciones_pertinencia_factibilidad, presence: true, if: -> { :updating_record? &&  update_respuesta_pertinencia == "true" && (resultado_pertinencia == "realiza_observaciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
+  validates :acepta_condiciones_pertinencia, inclusion: { in: [ true, false ] }, if: -> { :updating_record? && update_respuesta_pertinencia == "true" && (resultado_pertinencia == "solicita_condiciones" || resultado_pertinencia == "solicita_condiciones_y_contiene_observaciones") && temp_siguientes.to_s != "true"}
 
 
 
   # DOSSA 2019-11-28 12:53 se añade ya que campo no se encuentra en mantenedor, sin embargo, es obligatorio
-  #validates :unidad_de_medida_volumen, presence: true, on: :update, unless: -> { temporal.to_s == "true" }
+  #validates :unidad_de_medida_volumen, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
   before_save :procesar_archivos_google_maps
 
   after_save :data_mapa_de_actores, if: -> { self.mapa_de_actores_archivo.present? && self.revisar_y_actualizar_mapa_de_actores }
 
   # DZC 2019-07-09 16:39:51 prueba de validación genérica de tamaños minimos y maximos contenido de campos
-  validate :valida_largo_campos, on: :update, unless: -> { temporal.to_s == "true" }
+  validate :valida_largo_campos, if: :updating_record?, unless: -> { temporal.to_s == "true" }
 
-  #validate :tree_selectors, on: :update, if: -> { temporal.to_s != "true"}
+  #validate :tree_selectors, if: :updating_record?, if: -> { temporal.to_s != "true"}
 
   #DZC se indisponibiliza por necesidad de pasar @tarea_codigo al método, para la realización de validaciones de actores indispensables
   # after_save :parsear_mapa_de_actores
@@ -317,6 +317,10 @@ class ManifestacionDeInteres < ApplicationRecord
       estado_inicial = "Evaluación Final de Acuerdo"
     end
     estado_inicial
+  end
+
+  def updating_record?
+    persisted? # This checks if the record already exists (i.e., it's an update)
   end
 
   def tree_selectors
@@ -405,7 +409,7 @@ class ManifestacionDeInteres < ApplicationRecord
         :email_institucional,
         :telefono_institucional
       ]
-      data = ExcelParser.new(mapa_de_actores_archivo, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
+      data = ExcelParser.new(mapa_de_actores_archivo.url, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
     end
     data
   end

@@ -6,10 +6,11 @@
 -else
   .row
     -@clasificaciones_padre.datos.each do |data|
+      - image_url = Clasificacion.find(data[:id]).imagen.url
       .col-12.col-lg-4.py-2.px-lg-2
         .flip-card
           .flip-card-inner
-            .flip-card-front{style: "background-image:url('#{data[:imagen]}');background-repeat:no-repeat;background-size:cover;"}
+            .flip-card-front{style: "background-image:url('#{image_url}');background-repeat:no-repeat;background-size:cover;"}
               .d-flex.flex-column.h-100
                 .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
                   %img{src: data[:icono]}

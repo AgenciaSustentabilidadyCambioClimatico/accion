@@ -15,8 +15,8 @@
               &times;
         .modal-body
           - adjuntos.each do |o|
-            - a = o.archivo
-            - e = a.file.extension.downcase
+            - a = o.archivo.url
+            - e = o.archivo.file.extension.downcase
             - if %w{jpg png jpg jpeg}.include?(e)
               = image_tag(a, style: 'width:100%', class: 'margin-bottom-10')
             - elsif %w{pdf doc docx odt}.include?(e)
