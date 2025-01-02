@@ -1002,7 +1002,7 @@ end
     capture_haml do
       haml_tag :div, class: 'form-group' do
         if field.present?
-          file_name = field.file.basename
+          file_name = field.identifier
           haml_tag :a, href: field.url, class: 'btn-tabla tooltip-block px-3', style: "text-overflow: ellipsis;overflow: hidden;white-space: nowrap;max-width: 100%;", download: '', title: file_name, "data-original-title" => file_name do
             haml_tag :i, class: 'fa fa-download'
             haml_concat file_name

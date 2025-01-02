@@ -70,12 +70,18 @@ gem 'ruby-graphviz'
 gem "carrierwave", "~> 2.0"
 gem 'carrierwave-aws'
 gem 'aws-sdk', '~> 3'
+gem "rack-attack"
+gem "ffi", "< 1.17.0"
+gem 'psych', '< 4'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
   # gem 'selenium-webdriver' ## DZC 2019-08-26 14:47:15 comentado por incompatibilidad con axslx -> rubyzip 
 end
 
+group :production do
+  gem "newrelic_rpm"
+end
 
 group :development do
   gem 'awesome_print'

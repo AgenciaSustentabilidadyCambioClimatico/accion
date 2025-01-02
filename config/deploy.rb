@@ -1,4 +1,4 @@
-deploy=YAML.load(ERB.new(File.read("#{Dir.pwd}/config/deploy.yml")).result)["production"]
+deploy=YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/deploy.yml")).result)["production"]
 lock "~> 3.10.1"
 
 # Default value for default_env is {}
