@@ -65,7 +65,7 @@ class AgregaTimeStamps < ActiveRecord::Migration[5.1]
 		Cargo.update_all(created_at: ahora, updated_at: ahora)
 		CentroDeCosto.update_all(created_at: ahora, updated_at: ahora)
 		Clasificacion.update_all(created_at: ahora, updated_at: ahora)
-		Contribuyente.update_all(created_at: ahora, updated_at: ahora)
+		# Contribuyente.update_all(created_at: ahora, updated_at: ahora)
 		DatoAnualContribuyente.update_all(created_at: ahora, updated_at: ahora)			
 		DescargableTarea.update_all(created_at: ahora, updated_at: ahora)		
 		DocumentoDiagnostico.update_all(created_at: ahora, updated_at: ahora)					

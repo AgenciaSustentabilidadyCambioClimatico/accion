@@ -7,15 +7,15 @@
       re.push(e.id)
     })
     var unique_array = [...new Set(re)];
-    console.log(unique_array);
     unique_array.forEach((e, index) => {
       document.querySelectorAll("#" + `${e}`).forEach((e, index) => {
-        if ( index != 0 ) { e.classList.add("d-none"); };
+        if ( index != 0 ) { e.classList.add("d-none"); 
+        e.classList.add("child-row");};
       })
     })
   }
   $(document).ready(function() {
-    $('table.acuerdos-pendientes').DataTable({
+   const table=  $('table.acuerdos-pendientes').DataTable({
       order: [[0, 'asc']],
       responsive: true,
       lengthMenu: [[30], [30]],
@@ -25,25 +25,66 @@
       },
       "defaultContent": "",
     });
+    function childFormat(data){
+
+
+  return `
+    <div style="padding: 10px; margin: 0;" class="entrada-cambio-unfold">
+      <table style="width: 100%; border-collapse: collapse; margin: 0;">
+        <tbody>
+          ${data}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+
+
+  }
+    $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
+
+  // Función principal para unfold
+  function unfoldTareas(event) {
+    const tr = $(this).closest('tr'); // Encuentra la fila más cercana
+    const row = table.row(tr); // Obtiene la fila en DataTables
+    const icon = $(this).find('i'); // Obtiene el icono dentro del botón
+    const gui = document.querySelectorAll('#' + `${event.target.closest('td').parentElement.id}`)
+
+  // Extraer la información de gui para usarla en childFormat
+  let guiData = '';
+  gui.forEach(e => {
+    const aTag = e.querySelector('a');
+    splitted = e.textContent.split('\n').filter(item => item !== "i")
+    splitted.splice(1, 5); // Elimina el elemento en el índice 5
+    console.log (splitted);
+    guiData += `<tr>`;
+    splitted.forEach(i => {
+      guiData += `<td>${i}</td>`
+    })  // Esto dependerá de lo que desees mostrar
+    guiData += `<td>${aTag.outerHTML}</td>`
+    guiData += `</tr>`
+  });
+
+    // Toggle para mostrar u ocultar el contenido hijo
+    if (row.child.isShown()) {
+      row.child.hide();
+      tr.removeClass('shown');
+      icon.removeClass('fa-rotate-180');
+    } else {
+      row.child(childFormat(guiData)).show();
+      tr.addClass('shown');
+      icon.addClass('fa-rotate-180');
+    }
+
+    const g = document.querySelectorAll('.' + `${event.target.closest('td').parentElement.id}`)
+
+  }
 
 
     hideTareas();
 
   })
-
-  function unfoldTareas(evento) {
-    const gui = document.querySelectorAll('#' + `${event.target.closest('td').parentElement.id}`)
-    const g = document.querySelectorAll('.' + `${event.target.closest('td').parentElement.id}`)
-
-    gui.forEach((e, index) => {
-      console.log(e.classList)
-      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold"); };
-    })
-    g.forEach((e, index) => {
-        if ( index != 0 ) { e.classList.toggle("d-none"); };
-        e.classList.toggle("fa-rotate-180");
-      })
-  }
+  
 
 - tiene_proyectos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.proyecto_id}.compact.size == 0) ? false : true ) )
 - tiene_acuerdos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.manifestacion_de_interes_id.blank?}.compact.size == 0) ? false : true ) )
@@ -77,7 +118,7 @@
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             - registro_proveedores = flujo.registro_proveedor
             %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas"}
-              %td{:onClick => "unfoldTareas()", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
+              %td{:onClick => "", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
               - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)

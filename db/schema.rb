@@ -163,10 +163,6 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.text "email_representante_legal"
     t.boolean "externa", default: false
     t.bigint "rol_id"
-    t.date "fecha_adhesion"
-    t.string "tamano_empresa"
-    t.string "sector_productivo"
-    t.boolean "archivo_documento_excel", default: false
     t.index ["flujo_id"], name: "index_adhesiones_on_flujo_id"
     t.index ["matriz_comuna_id"], name: "index_adhesiones_on_matriz_comuna_id"
     t.index ["matriz_region_id"], name: "index_adhesiones_on_matriz_region_id"
@@ -578,21 +574,6 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.datetime "updated_at", null: false
   end
 
-  create_table "dato_de_elementos", force: :cascade do |t|
-    t.bigint "adhesion_id"
-    t.string "region"
-    t.string "comuna"
-    t.string "alcance"
-    t.string "nombre_elemento"
-    t.string "direccion_elemento"
-    t.string "tipo_elemento"
-    t.string "archivo_de_adhesion"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.boolean "validacion_dato", default: true
-    t.index ["adhesion_id"], name: "index_dato_de_elementos_on_adhesion_id"
-  end
-
   create_table "dato_levantado_mensuals", force: :cascade do |t|
     t.bigint "dato_productivo_elemento_adherido_id"
     t.string "nombre_archivo_evidencia"
@@ -952,21 +933,6 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.bigint "sub_linea_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "flujo_apl_id"
-    t.integer "institucion_receptor_cof_fpl_id"
-    t.integer "cantidad_micro_empresa"
-    t.integer "cantidad_pequeña_empresa"
-    t.integer "cantidad_mediana_empresa"
-    t.integer "cantidad_grande_empresa"
-    t.integer "empresas_asociadas_ag"
-    t.integer "empresas_no_asociadas_ag"
-    t.integer "duracion"
-    t.string "fortalezas_consultores"
-    t.string "codigo_proyecto"
-    t.integer "revisor_tecnico_id"
-    t.integer "revisor_financiero_id"
-    t.integer "revisor_juridico_id"
-    t.string "comentario_asignar_revisor"
     t.integer "institucion_entregables_id"
     t.integer "usuario_entregables_id"
     t.string "instrumento_constitucion_estatutos_postulante"
@@ -1000,6 +966,21 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.integer "elementos_grande_empresa"
     t.string "archivo_resolucion"
     t.string "archivo_contrato"
+    t.integer "flujo_apl_id"
+    t.integer "institucion_receptor_cof_fpl_id"
+    t.integer "cantidad_micro_empresa"
+    t.integer "cantidad_pequeña_empresa"
+    t.integer "cantidad_mediana_empresa"
+    t.integer "cantidad_grande_empresa"
+    t.integer "empresas_asociadas_ag"
+    t.integer "empresas_no_asociadas_ag"
+    t.integer "duracion"
+    t.string "fortalezas_consultores"
+    t.string "codigo_proyecto"
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.integer "revisor_juridico_id"
+    t.string "comentario_asignar_revisor"
     t.string "empresas_adheridas"
     t.string "solicitud_cofinanciamiento"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
@@ -1430,10 +1411,9 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
   create_table "nota_registro_proveedores", force: :cascade do |t|
     t.bigint "registro_proveedor_id"
     t.bigint "manifestacion_de_interes_id"
+    t.integer "nota", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.boolean "calificado", default: false
-    t.float "nota", default: 0.0
     t.index ["manifestacion_de_interes_id"], name: "index_nota_registro_proveedores_on_manifestacion_de_interes_id"
     t.index ["registro_proveedor_id"], name: "index_nota_registro_proveedores_on_registro_proveedor_id"
   end
@@ -1797,13 +1777,6 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.index ["user_id"], name: "index_registro_apertura_correos_on_user_id"
   end
 
-  create_table "registro_proveedor_documentos", force: :cascade do |t|
-    t.integer "tipo_proveedor"
-    t.json "file"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "registro_proveedor_mensajes", force: :cascade do |t|
     t.text "body"
     t.string "asunto"
@@ -1852,9 +1825,9 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
     t.date "fecha_aprobado"
     t.date "fecha_revalidacion"
     t.string "archivo_aprobado_directiva"
+    t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
@@ -2221,7 +2194,6 @@ ActiveRecord::Schema.define(version: 2024_11_21_165849) do
   add_foreign_key "dato_anual_contribuyentes", "contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "rango_venta_contribuyentes"
   add_foreign_key "dato_anual_contribuyentes", "tipo_contribuyentes"
-  add_foreign_key "dato_de_elementos", "adhesiones"
   add_foreign_key "dato_productivo_elemento_adheridos", "set_metas_acciones"
   add_foreign_key "descargable_tareas", "tareas"
   add_foreign_key "documento_diagnosticos", "manifestacion_de_intereses"

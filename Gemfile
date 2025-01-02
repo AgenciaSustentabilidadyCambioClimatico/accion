@@ -91,9 +91,11 @@ group :development do
   gem 'listen', '>= 3.1.5', '< 3.7.1'
   gem 'pry'
   gem 'rails-erd'
-  gem 'scout_apm'
+  # gem 'scout_apm'
   gem 'spring'
   gem 'spring-watcher-listen', '~> 2.0.0'
   gem 'web-console', '>= 3.3.0'
   gem 'hirb'
+  gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw]
+  gem 'dotenv-rails'
 end

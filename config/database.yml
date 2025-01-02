@@ -4,7 +4,8 @@ default: &default
   timeout: 5000
   pool: 5
   host: localhost
-  username: guillo10
+  username: postgres
+  password: 2802Tete99
   template: template0
   schema_search_path: "public, admin"
 
