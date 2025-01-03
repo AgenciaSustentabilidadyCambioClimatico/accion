@@ -59,6 +59,7 @@ class ActualizarComiteAcuerdosController < ApplicationController
   end
 
   def guardar_archivos_anexos_posteriores_firmas
+    require 'open-uri'
     @informe.accion = action_name # DZC 2018-11-15 14:43:27 se agrega para evitar validaciones
     respond_to do |format|
 
@@ -73,21 +74,21 @@ class ActualizarComiteAcuerdosController < ApplicationController
         archivos_nuevos =[]
         @informe.archivos_anexos_posteriores_firmas.each do |archivo|
           
-          unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.file.filename))
-            archivos_previos << Pathname.new(archivo.path).open
+          unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.identifier))
+            archivos_previos << URI.open(archivo.url)
           end
         end
         if !informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank?
           informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].each do |archivo|
             
-            unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.original_filename)) 
-              archivos_nuevos <<  archivo
+            unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.identifier))
+              archivos_nuevos << archivo
             end
           end
         end
 
         if !informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria].blank?
-          archivos_nuevos << Pathname.new(Convocatoria.find(informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria]).minuta.acta.path).open
+          archivos_nuevos << URI.open(Convocatoria.find(informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria]).minuta.acta.url)
         end
 
         @informe.assign_attributes(archivos_anexos_posteriores_firmas: archivos_previos+archivos_nuevos)

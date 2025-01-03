@@ -1,1 +1,1 @@
-Rails.application.config.session_store :cookie_store, key: 'c8f985fe9365b722e38c45d00b8cea0076f788d3976d0cdbde13ee5e1401d804e4db0e87cf483b7dd7e106bcf61af4c10b6fdb0c357bce907cb0f1138203ba56', domain: :all
+Rails.application.config.session_store :cookie_store, key: ENV['SECRET_KEY_BASE'], domain: :all

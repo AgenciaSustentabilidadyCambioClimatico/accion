@@ -178,7 +178,7 @@ class InformeAcuerdo < ApplicationRecord
 
     datos = self.attributes
     datos.each{ |k,v| datos[k] = "" if v.nil? }
-    datos["archivos_anexos"] = datos["archivos_anexos"].join(",")
+    datos["archivos_anexos"] = Array(datos["archivos_anexos"]).join(",")
     datos["auditorias"] = auditorias.map{|aud| {"nombre" => (aud.nombre rescue aud[:nombre])}}
     datos
   end

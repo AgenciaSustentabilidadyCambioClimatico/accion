@@ -135,7 +135,7 @@ class AdhesionesController < ApplicationController
           
           data[adh.id][idx][:revisado] = true
           data[adh.id][idx][:observaciones] = observaciones[k]
-          @adhesion.poblar_data(datos, @flujo, adh.archivos_adhesion_y_documentacion, adh)
+          @adhesion.poblar_data(datos, @flujo, adh.archivos_adhesion_y_documentacion.first.url, adh)
 
           procesar_tareas_25 << adh if adh.externa && nueva_adhesion
         elsif v == "false"
