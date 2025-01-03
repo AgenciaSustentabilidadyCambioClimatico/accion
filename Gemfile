@@ -46,6 +46,7 @@ gem 'quilljs-rails'
 gem 'roo'
 gem 'roo-xls'
 gem 'ruby-units', '~> 2.3'
+gem "slack-notifier", require: false
 # gem 'rubyzip', '~> 1.2.0'
 gem 'rubyzip'
 gem 'rut_validation'
