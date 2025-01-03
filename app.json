@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "dokku": {
+      "predeploy": "bundle exec rake predeploy",
+      "postdeploy": "bundle exec rake db:migrate"
+    }
+  }
+}
