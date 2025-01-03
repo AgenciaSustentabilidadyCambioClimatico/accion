@@ -23,17 +23,14 @@
       let guiData = ""
       let row = null;
       document.querySelectorAll(`[data-flujo="${e}"]`).forEach((e, index) => {
-        //console.log("e: ", e)
         if ( index != 0 ) {
             const aTag = e.querySelector('a');
-            //e.classList.add("d-none"); 
-            // e.classList.add("child-row");
             splitted = e.textContent.split('\n').filter(item => item !== "i")
-            splitted.splice(1, 5); // Elimina el elemento en el índice 5
+            splitted.splice(1, 5); 
             guiData += `<tr>`;
             splitted.forEach(i => {
               guiData += `<td>${i}</td>`
-            })  // Esto dependerá de lo que desees mostrar
+            })  
             guiData += `<td>${aTag.outerHTML}</td>`
             guiData += `</tr>`
             if (row){
@@ -51,7 +48,7 @@
    const table=  $('table.acuerdos-pendientes').DataTable({
       order: [[0, 'asc']],
       responsive: true,
-      lengthMenu: [[15],[15]],
+      lengthMenu: [[10],[10]],
       columnDefs: [ { targets: [-1], orderable: false } ],
       language: {
         url: "#{asset_path('spanish.json')}"
@@ -66,25 +63,6 @@
     const tr = $(this).closest('tr'); // Encuentra la fila más cercana
     const row = table.row(tr); // Obtiene la fila en DataTables
     const icon = $(this).find('i'); // Obtiene el icono dentro del botón
-
-  // Extraer la información de gui para usarla en childFormat
-  //let guiData = '';
-  //gui.forEach((e, index) => {
-
-    //if (index === 0) return;
-
-    //const aTag = e.querySelector('a');
-    //splitted = e.textContent.split('\n').filter(item => item !== "i")
-    //splitted.splice(1, 5); // Elimina el elemento en el índice 5
-    //console.log (splitted);
-    //guiData += `<tr>`;
-    //splitted.forEach(i => {
-      //guiData += `<td>${i}</td>`
-    //})  // Esto dependerá de lo que desees mostrar
-    //guiData += `<td>${aTag.outerHTML}</td>`
-    //guiData += `</tr>`
-  //});
-
     // Toggle para mostrar u ocultar el contenido hijo
     if (row.child.isShown()) {
       row.child.hide();
