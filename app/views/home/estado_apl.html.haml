@@ -23,21 +23,35 @@
           - coordinadores.each { |f| user_id << f.user_id}
           - usuarios_coordinadores = []
           - user_id.uniq.each { |f| usuarios_coordinadores << User.where(id: f)}
+          // Manifestación
           - t_manif = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
           - vacio_manif =  m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
           - des_manif = vacio_manif ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
           - red_manif = descargar_manifestacion_pdf_admin_historial_instrumentos_path(m)
+          // Diagnostico
           - t_diag = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
           - red_diag = descargar_compilado_manif_manifestacion_de_interes_path(m, 66)
+          // Propuesta
           - t_prop = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
           - convocatoria_prop = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
           - red_prop = t_prop.empty? ? "": descargar_compilado_adjuntos_path(t_prop&.first&.id, codigo: "016")
+          // Firma
           - conv_firma = Convocatoria.where(flujo_id: m.id)
+          - c_firma = conv_firma.first
+          - minuta_id = conv_firma.first&.minuta&.id
           - t_firma = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
-          %tr{"row-name" => "manifestacion", "data-manifestacion" => m.to_json, "data-t_manif" => t_manif.to_json, "data-des_manif" => des_manif, 
+          - red_firma_acuerdo = (!t_firma.blank? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
+          - if !c_firma&.minuta&.archivo_resolucion&.file.nil?  
+            - red_firma_resolucion = t_firma.empty? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
+          - t_adh = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
+          - unless t_adh.blank?
+            - red_adh = descargar_compilado_adhesion_path(t_adh)
+
+          %tr.parent-row{"row-name" => "manifestacion", "data-manifestacion" => m.to_json, "data-t_manif" => t_manif.to_json, "data-des_manif" => des_manif, 
           "data-red_manif" => red_manif, "data-t_diag" => t_diag.to_json, "data-t_prop" => t_prop.to_json,
            "data-convocatoria_prop" => convocatoria_prop.to_json, "data-red_prop" => red_prop, "data-conv_firma" => conv_firma.to_json,
-           "data-t_firma" => t_firma.to_json }
+           "data-t_firma" => t_firma.to_json, "data-red_firma_acuerdo" => red_firma_acuerdo, "data-red_firma_resolucion" => red_firma_resolucion,
+           "data-red_adh" => red_adh }
             %td= m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
@@ -49,8 +63,8 @@
    
 :javascript
 
-  function childFormat(m, t_manif, tm_date, des_manif, red_manif, tdiag_date, red_diag,tprop_date, red_prop){
-    console.log("[2]")
+  function childFormat(m, t_manif, tm_date, des_manif, red_manif, tdiag_date, red_diag,tprop_date,
+   red_prop, red_firma_ac, red_firma_res, mfirma_date, red_adh ){
     return `
       <div style="padding: 10px; margin: 0;" class="entrada-cambio-unfold">
         <table style="width: 100%; border-collapse: collapse; margin: 0;">
@@ -78,12 +92,12 @@
               : ''
             }</td>
             </tr>
-             <tr>
-              <td style="font-weight: bold;" id="propuesta${m.id}">Propuesta Acuerdo (+)</td>
+             <tr id="propuesta${m.id}">
+              <td style="font-weight: bold;">Propuesta Acuerdo (+)</td>
               <td>${tprop_date}</td>
               <td></td>
             </tr>
-            <tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
               <td>Negociación</td>
               <td id="neg-conv-${m.id}"></td>
               <td>${red_prop ? `<a href="${red_prop}" class="btn-tabla-instrumentos">
@@ -91,25 +105,69 @@
                  </a>` 
               : ''}</td>
             </tr>
-            <tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
               <td> Firma de Acuerdos </td>
-              <td></td>
-              <td></td>
+              <td>${mfirma_date}</td>
+              <td>${red_firma_ac ? `<a href="${red_firma_ac}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Texto Acuerdo Firmado
+                 </a>`:''}
+                 ${red_firma_res ? `<a href="${red_firma_res}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Resolución Aprueba APL
+                 </a>` 
+              : ''}</td>
             </tr>
-            <tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
               <td> Adhesión </td>
               <td></td>
-              <td></td>
+              <td>${red_adh ? `<a href="${red_adh}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Documentos Adhesiones
+                 </a>` 
+              : ''}</td>
             </tr>
-             <tr>
+             <tr id="implementacion${m.id}">
               <td style="font-weight: bold;">Implementación (+)</td>
               <td> fecha de t </td>
               <td> link y redireccion</td>
             </tr>
-             <tr>
+             <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Coordinación</td>
+              <td></td>
+              <td></td>
+            </tr>
+             <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría I</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría II</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría III</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr id="evaluacion${m.id}">
               <td style="font-weight: bold;">Evaluación Final de Cumplimiento (+)</td>
               <td> fecha de t </td>
               <td> link y redireccion</td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Auditoría Final</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Certificación</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Mantención</td>
+              <td></td>
+              <td></td>
             </tr>
           </tbody>
         </table>
@@ -132,14 +190,14 @@
     }
     });
     
-      $('table.acuerdos-pendientes tbody').on('click', 'tr', function () {
+      $('table.acuerdos-pendientes tbody').on('click', 'tr.parent-row', function () {
       const row = table.row(this); // Obtener la fila seleccionada
       let m = $(this).data('manifestacion');
       // Manifestación
       let t_manif =  $(this).data('t_manif');
       let des =  $(this).data('des_manif');
       let red =  $(this).data('red_manif');
-      let tm_date = new Date(t_manif[0].created_at).toLocaleDateString('es-ES');
+      let tm_date = (t_manif && t_manif[0]) ? new Date(t_manif[0].created_at).toLocaleDateString('es-ES') : "";
       // Diagnóstico
       let t_diag = $(this).data('t_diag');
       let red_diag = ""
@@ -151,22 +209,28 @@
       // Propuesta Acuerdo
       let t_prop = $(this).data('t_prop');
       let conv_prop = $(this).data('convocatoria_prop');
-      console.log("conv_prop: ", conv_prop)
       let tprop_date = "";
       let red_prop = "";
-      let fecha_firma = m.fecha_firma_was      
       if (t_prop){
         red_prop = $(this).data('red_prop')
       }
+      if (conv_prop && conv_prop.length > 0){
+         tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
+        }
       $(this).find('td:last').text(tm_date);
-      console.log('Celda actualizada:', $(this).find('td:last').text());
 
       // Firma
       let t_firma = $(this).data('t_firma');
+      let mfirma_date = (m && m.firma_fecha) ? new Date(m.firma_fecha).toLocaleDateString('es-ES') : "";
       let conv_firma = $(this).data('conv_firma');
-      if (conv_firma?.[0]?.minuta?.acta?.file.nil? && t_firma.blank? ){
-        let minuta_id
-      }
+      let red_firma_ac = $(this).data('red_firma_acuerdo')
+      let red_firma_res = $(this).data('red_firma_resolucion')
+
+      // Adhesión
+
+      let red_adh = $(this).data('red_adh')
+
+      
 
 
       if (row.child.isShown()) {
@@ -175,13 +239,13 @@
         $(this).removeClass('shown');
       } else {
         // Mostrar el Row Child
-        row.child(childFormat(m, t_manif,tm_date, des, red, tdiag_date, red_diag, tprop_date)).show();
+        row.child(childFormat(m, t_manif,tm_date, des, red, tdiag_date, red_diag, tprop_date, 
+        red_prop,red_firma_ac, red_firma_res, mfirma_date, red_adh)).show();
         $(this).addClass('shown');
 
       }
       // Posterior a que los hijos se insertan en el DOM
       if (conv_prop && conv_prop.length > 0){
-        tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
         let td = row.child().find('#neg-conv-' + m.id);
         conv_prop.forEach(item => {
             let conv_date = new Date(item.fecha).toLocaleDateString('es-ES');
@@ -189,44 +253,12 @@
         })
       }
     });
-
+    // Hijos propuesta, implementación y evaluación
+    $(document).on('click', '[id^="propuesta"], [id^="implementacion"], [id^="evaluacion"]', function () {
+      const id = $(this).attr('id');
+      let hijos = document.querySelectorAll('#child-'+`${id}`)
+      hijos.forEach((e, index) => {
+        e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold");
+      })
+    });
   })
-
-  function unfoldTareasManifestacion(evento) {
-    const guillo = document.querySelectorAll('#flujo' + `${event.target.id}`)
-
-    $('#' + `${event.target.id}`).toggleClass("fa-minus")
-
-    guillo.forEach((e, index) => {
-      e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold");
-    })
-  }
-
-
-  function unfoldTareasPropuesta(evento) {
-    const guillo = document.querySelectorAll('#propuesta' + `${event.target.id}`)
-    console.log(guillo)
-
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
-
-  function unfoldTareasImplementacion(evento) {
-    const guillo = document.querySelectorAll('#implementacion' + `${event.target.id}`)
-    console.log(guillo)
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
-
-  function unfoldTareasEvaluacion(evento) {
-    const guillo = document.querySelectorAll('#evaluacion' + `${event.target.id}`)
-    console.log(guillo)
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
