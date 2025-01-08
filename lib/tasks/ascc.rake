@@ -81,8 +81,15 @@ namespace :ascc do
                 begin
                   mdi = pendiente.flujo.manifestacion_de_interes
                 rescue
-                  mdi = nil
+                  fpl = pendiente.flujo.fondo_produccion_limpia
+                  if fpl && fpl.flujo_apl_id
+                    flujo_apl = Flujo.find(fpl.flujo_apl_id)
+                    mdi = flujo_apl.manifestacion_de_interes
+                  else
+                   mdi = nil   
+                  end
                 end
+
                 metodos = tarea.metodos(user, mdi)
                 ##
                 # DZC 2019-08-16 19:54:56
