@@ -43,15 +43,43 @@
           - red_firma_acuerdo = (!t_firma.blank? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
           - if !c_firma&.minuta&.archivo_resolucion&.file.nil?  
             - red_firma_resolucion = t_firma.empty? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
+          // Adhesion
           - t_adh = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
           - unless t_adh.blank?
             - red_adh = descargar_compilado_adhesion_path(t_adh)
+          // Coordinación
+          - t_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+          - data = t_coord.blank? ? '' : t_coord&.first&.data[:convocatoria_id]
+          - conv_coord = data.blank? ? '' : Convocatoria.where(id: data)
+          - fecha_coord = conv_coord.blank? ? '' : conv_coord.first.fecha.strftime("%d/%m/%Y")
+          - t2_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+          - unless t2_coord.blank?
+            - red_coord = descargar_compilado_adjuntos_path(t2_coord&.first&.id, codigo: "030")
+          // Auditoría I
+          - t4_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+          - unless t4_coord.nil?
+            - red_aud1 = descargar_auditorias_manifestacion_de_interes_path(t4_coord, m)
+          // Auditoría II
+          - t5_aud = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+          - unless t5_aud.nil?
+            - red_aud2 = descargar_auditorias_manifestacion_de_interes_path(t5_aud, m)
+          // Auditoría III
+          - t6_aud3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).last
+          - unless t6_aud3.nil?
+            - red_aud3 = descargar_auditorias_manifestacion_de_interes_path(t6_aud3, m) 
+          // Certificación
+          - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
+          - fecha_certif = t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
+
+
+            
 
           %tr.parent-row{"row-name" => "manifestacion", "data-manifestacion" => m.to_json, "data-t_manif" => t_manif.to_json, "data-des_manif" => des_manif, 
           "data-red_manif" => red_manif, "data-t_diag" => t_diag.to_json, "data-t_prop" => t_prop.to_json,
            "data-convocatoria_prop" => convocatoria_prop.to_json, "data-red_prop" => red_prop, "data-conv_firma" => conv_firma.to_json,
            "data-t_firma" => t_firma.to_json, "data-red_firma_acuerdo" => red_firma_acuerdo, "data-red_firma_resolucion" => red_firma_resolucion,
-           "data-red_adh" => red_adh }
+           "data-red_adh" => red_adh, "data-fecha_coord" => fecha_coord, "data-red_coord" => red_coord, "data-red_aud1"=> red_aud1, "data-red_aud2" => red_aud2,
+            "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
             %td= m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
@@ -64,7 +92,7 @@
 :javascript
 
   function childFormat(m, t_manif, tm_date, des_manif, red_manif, tdiag_date, red_diag,tprop_date,
-   red_prop, red_firma_ac, red_firma_res, mfirma_date, red_adh ){
+   red_prop, red_firma_ac, red_firma_res, mfirma_date, red_adh, coord_date, red_coord, red_aud1, red_aud2, red_aud3, fecha_cert ){
     return `
       <div style="padding: 10px; margin: 0;" class="entrada-cambio-unfold">
         <table style="width: 100%; border-collapse: collapse; margin: 0;">
@@ -126,33 +154,45 @@
             </tr>
              <tr id="implementacion${m.id}">
               <td style="font-weight: bold;">Implementación (+)</td>
-              <td> fecha de t </td>
-              <td> link y redireccion</td>
+              <td></td>
+              <td></td>
             </tr>
              <tr class="d-none" id="child-implementacion${m.id}">
               <td>Coordinación</td>
-              <td></td>
-              <td></td>
+              <td>${coord_date}</td>
+              <td>${red_coord ? `<a href="${red_coord}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Reuniones de Comité de Negociación
+                 </a>` 
+              : ''}</td>
             </tr>
              <tr class="d-none" id="child-implementacion${m.id}">
               <td>Auditoría I</td>
               <td></td>
-              <td></td>
+              <td>${red_aud1 ? `<a href="${red_aud1}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>` 
+              : ''}</td>
             </tr>
             <tr class="d-none" id="child-implementacion${m.id}">
               <td>Auditoría II</td>
               <td></td>
-              <td></td>
+               <td>${red_aud2 ? `<a href="${red_aud2}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>` 
+              : ''}</td>
             </tr>
             <tr class="d-none" id="child-implementacion${m.id}">
               <td>Auditoría III</td>
               <td></td>
-              <td></td>
+              <td>${red_aud3 ? `<a href="${red_aud3}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>` 
+              : ''}</td>
             </tr>
             <tr id="evaluacion${m.id}">
               <td style="font-weight: bold;">Evaluación Final de Cumplimiento (+)</td>
-              <td> fecha de t </td>
-              <td> link y redireccion</td>
+              <td></td>
+              <td></td>
             </tr>
             <tr class="d-none" id="child-evaluacion${m.id}">
               <td>Auditoría Final</td>
@@ -161,7 +201,7 @@
             </tr>
             <tr class="d-none" id="child-evaluacion${m.id}">
               <td>Certificación</td>
-              <td></td>
+              <td>${fecha_cert}</td>
               <td></td>
             </tr>
             <tr class="d-none" id="child-evaluacion${m.id}">
@@ -227,11 +267,18 @@
       let red_firma_res = $(this).data('red_firma_resolucion')
 
       // Adhesión
-
       let red_adh = $(this).data('red_adh')
-
-      
-
+      // Coordinación
+      let coord_date = $(this).data('fecha_coord')
+      let red_coord = $(this).data('red_coord')
+      // Auditoría I
+      let red_aud1 = $(this).data('red_aud1')
+      // Auditoría II
+      let red_aud2 = $(this).data('red_aud2')
+      // Auditoría III
+      let red_aud3 = $(this).data('red_aud3')
+      // Certificación
+      let fecha_cert = $(this).data('fecha_certif')
 
       if (row.child.isShown()) {
         // Si ya está abierto, cerrarlo
@@ -240,7 +287,8 @@
       } else {
         // Mostrar el Row Child
         row.child(childFormat(m, t_manif,tm_date, des, red, tdiag_date, red_diag, tprop_date, 
-        red_prop,red_firma_ac, red_firma_res, mfirma_date, red_adh)).show();
+        red_prop,red_firma_ac, red_firma_res, mfirma_date, red_adh, coord_date, red_coord, red_aud1,
+        red_aud2, red_aud3, fecha_cert)).show();
         $(this).addClass('shown');
 
       }
