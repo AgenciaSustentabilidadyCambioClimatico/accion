@@ -71,9 +71,6 @@
           - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
           - fecha_certif = t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
 
-
-            
-
           %tr.parent-row{"row-name" => "manifestacion", "data-manifestacion" => m.to_json, "data-t_manif" => t_manif.to_json, "data-des_manif" => des_manif, 
           "data-red_manif" => red_manif, "data-t_diag" => t_diag.to_json, "data-t_prop" => t_prop.to_json,
            "data-convocatoria_prop" => convocatoria_prop.to_json, "data-red_prop" => red_prop, "data-conv_firma" => conv_firma.to_json,
