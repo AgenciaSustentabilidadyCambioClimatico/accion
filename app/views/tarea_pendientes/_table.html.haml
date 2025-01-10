@@ -1,24 +1,54 @@
 - todos = todos.nil? ? false : todos
 :javascript
-  function hideTareas(){
+  function childFormat(data){
+    return `
+      <div style="padding: 10px; margin: 0;" class="entrada-cambio-unfold">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+          <tbody>
+            ${data}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function hideTareas(table){
     const r = document.querySelectorAll('.flujo_tareas');
     const re = []
     r.forEach((e, index) => {
       re.push(e.id)
     })
     var unique_array = [...new Set(re)];
-    console.log(unique_array);
     unique_array.forEach((e, index) => {
-      document.querySelectorAll("#" + `${e}`).forEach((e, index) => {
-        if ( index != 0 ) { e.classList.add("d-none"); };
+      let guiData = ""
+      let row = null;
+      document.querySelectorAll(`[data-flujo="${e}"]`).forEach((e, index) => {
+        if ( index != 0 ) {
+            const aTag = e.querySelector('a');
+            splitted = e.textContent.split('\n').filter(item => item !== "i")
+            splitted.splice(1, 5);
+            guiData += `<tr>`;
+            splitted.forEach(i => {
+              guiData += `<td>${i}</td>`
+            })
+            guiData += `<td>${aTag.outerHTML}</td>`
+            guiData += `</tr>`
+            if (row){
+              row.child(childFormat(guiData)).hide()
+              table.row(e).remove();
+
+            }
+        }else{
+          row = table.row(e)
+        };
       })
     })
   }
   $(document).ready(function() {
-    $('table.acuerdos-pendientes').DataTable({
+   const table=  $('table.acuerdos-pendientes').DataTable({
       order: [[0, 'asc']],
       responsive: true,
-      lengthMenu: [[30], [30]],
+      lengthMenu: [[10],[10]],
       columnDefs: [ { targets: [-1], orderable: false } ],
       language: {
         url: "#{asset_path('spanish.json')}"
@@ -26,24 +56,32 @@
       "defaultContent": "",
     });
 
+    $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
 
-    hideTareas();
+  // Función principal para unfold
+  function unfoldTareas(event) {
+    const tr = $(this).closest('tr'); // Encuentra la fila más cercana
+    const row = table.row(tr); // Obtiene la fila en DataTables
+    const icon = $(this).find('i'); // Obtiene el icono dentro del botón
+    // Toggle para mostrar u ocultar el contenido hijo
+    if (row.child.isShown()) {
+      row.child.hide();
+      tr.removeClass('shown');
+      icon.removeClass('fa-rotate-180');
+    } else {
+      row.child.show();
+      tr.addClass('shown');
+      icon.addClass('fa-rotate-180');
+    }
+
+
+  }
+
+
+    hideTareas(table);
 
   })
 
-  function unfoldTareas(evento) {
-    const gui = document.querySelectorAll('#' + `${event.target.closest('td').parentElement.id}`)
-    const g = document.querySelectorAll('.' + `${event.target.closest('td').parentElement.id}`)
-
-    gui.forEach((e, index) => {
-      console.log(e.classList)
-      if ( index != 0 ) { e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold"); };
-    })
-    g.forEach((e, index) => {
-        if ( index != 0 ) { e.classList.toggle("d-none"); };
-        e.classList.toggle("fa-rotate-180");
-      })
-  }
 
 - tiene_proyectos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.proyecto_id}.compact.size == 0) ? false : true ) )
 - tiene_acuerdos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.manifestacion_de_interes_id.blank?}.compact.size == 0) ? false : true ) )
@@ -76,8 +114,8 @@
             - subtipo_instrumento = flujo.subtipo_de_instrumento
             - manifestacion_de_interes = flujo.manifestacion_de_interes
             - registro_proveedores = flujo.registro_proveedor
-            %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas"}
-              %td{:onClick => "unfoldTareas()", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
+            %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas",  "data-flujo" => "flujo#{flujo.id}"}
+              %td{:onClick => "", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
                 %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
                 =flujo.id
               - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)
@@ -149,20 +187,19 @@
                   - unless pendiente.determina_convocatoria.blank?
                     -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
                 -elsif pendiente.es_auditoria?
-                  - unless pendiente.determina_auditoria.blank? 
+                  - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_021
                   - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'                 
+                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_037
                   - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank? #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_039
-                  - unless pendiente.determina_auditoria.blank? 
+                  - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
               %td.dos.iconos-acciones
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
-
