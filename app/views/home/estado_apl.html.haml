@@ -14,7 +14,7 @@
           %th Última Actualización
           %th Última Tarea en curso
           %th Coordinador
-          %th{style:"d-none"} Contenido Hijo
+          %th{class:"d-none"} Contenido Hijo
       %tbody
         - @acuerdos.each do |m|
           - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.flujo.id).last
@@ -77,14 +77,16 @@
            "data-t_firma" => t_firma.to_json, "data-red_firma_acuerdo" => red_firma_acuerdo, "data-red_firma_resolucion" => red_firma_resolucion,
            "data-red_adh" => red_adh, "data-fecha_coord" => fecha_coord, "data-red_coord" => red_coord, "data-red_aud1"=> red_aud1, "data-red_aud2" => red_aud2,
             "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
-            %td= m.id
+            %td
+              %i{ :class => "fa fa-caret-down manifestacion#{m.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
+              = m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
-            %td{style:"d-none"}
+            %td
               - usuarios_coordinadores.flatten.each do |coordinador|
                 %p= coordinador&.nombre_completo
-            %td
+            %td{class:"d-none"}
    
 :javascript
 
@@ -222,25 +224,26 @@
         url: "#{asset_path('spanish.json')}"
       },
       "defaultContent": "",
-        search: {
-        smart: false
-    }
     });
     
       $('table.acuerdos-pendientes tbody').on('click', 'tr.parent-row', function () {
       const row = table.row(this); // Obtener la fila seleccionada
+      const icon = $(this).find('i'); // Obtiene el icono dentro del botón
       let m = $(this).data('manifestacion');
+      let hidden = ""
       // Manifestación
       let t_manif =  $(this).data('t_manif');
       let des =  $(this).data('des_manif');
       let red =  $(this).data('red_manif');
       let tm_date = (t_manif && t_manif[0]) ? new Date(t_manif[0].created_at).toLocaleDateString('es-ES') : "";
+      hidden += "-" + tm_date
       // Diagnóstico
       let t_diag = $(this).data('t_diag');
       let red_diag = ""
       let tdiag_date = ""
       if (t_diag && t_diag.length > 0) {
         tdiag_date = new Date(t_diag[0].created_at).toLocaleDateString('es-ES');
+        hidden += "-" + tdiag_date
         red_diag =  $(this).data('red_diag')
       }
       // Propuesta Acuerdo
@@ -252,13 +255,14 @@
         red_prop = $(this).data('red_prop')
       }
       if (conv_prop && conv_prop.length > 0){
-         tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
+        tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
+        hidden += "-" + tprop_date
         }
-      $(this).find('td:last').text(tm_date);
 
       // Firma
       let t_firma = $(this).data('t_firma');
       let mfirma_date = (m && m.firma_fecha) ? new Date(m.firma_fecha).toLocaleDateString('es-ES') : "";
+      hidden += "-" + mfirma_date
       let conv_firma = $(this).data('conv_firma');
       let red_firma_ac = $(this).data('red_firma_acuerdo')
       let red_firma_res = $(this).data('red_firma_resolucion')
@@ -280,23 +284,32 @@
       if (row.child.isShown()) {
         // Si ya está abierto, cerrarlo
         row.child.hide();
+        icon.removeClass('fa-rotate-180');
         $(this).removeClass('shown');
       } else {
         // Mostrar el Row Child
         row.child(childFormat(m, t_manif,tm_date, des, red, tdiag_date, red_diag, tprop_date, 
         red_prop,red_firma_ac, red_firma_res, mfirma_date, red_adh, coord_date, red_coord, red_aud1,
         red_aud2, red_aud3, fecha_cert)).show();
+         
+        icon.addClass('fa-rotate-180');
         $(this).addClass('shown');
-
       }
       // Posterior a que los hijos se insertan en el DOM
       if (conv_prop && conv_prop.length > 0){
         let td = row.child().find('#neg-conv-' + m.id);
         conv_prop.forEach(item => {
             let conv_date = new Date(item.fecha).toLocaleDateString('es-ES');
+            hidden += "-" + conv_date
             td.append(`<p>${conv_date}</p>`);
         })
       }
+        $(this).find('td:last').text(hidden);
+      // Notifica a DataTables que la fila ha sido modificada
+        row.invalidate();
+
+        // Redibuja la tabla para asegurarte de que los cambios se reflejen
+        table.draw();
     });
     // Hijos propuesta, implementación y evaluación
     $(document).on('click', '[id^="propuesta"], [id^="implementacion"], [id^="evaluacion"]', function () {
