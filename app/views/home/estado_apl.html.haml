@@ -6,9 +6,6 @@
     %div{class: 'd-flex justify-content-between pb-3'}
       %div
       %div
-        = form_tag estado_apl_path, method: :get, enforce_utf8: false, class: "d-flex"  do
-          = text_field_tag :query, '',class: 'form-control'
-          = button_tag "Buscar", name: "", class: "btn btn-primary"
     %table.table.acuerdos-pendientes{id: 'guillo-diez'}
       %thead
         %tr
@@ -17,7 +14,7 @@
           %th Última Actualización
           %th Última Tarea en curso
           %th Coordinador
-          %th Más Info
+          %th{class:"d-none"} Contenido Hijo
       %tbody
         - @acuerdos.each do |m|
           - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.flujo.id).last
@@ -26,211 +23,300 @@
           - coordinadores.each { |f| user_id << f.user_id}
           - usuarios_coordinadores = []
           - user_id.uniq.each { |f| usuarios_coordinadores << User.where(id: f)}
-          %tr
-            %td= m.id
+          // Manifestación
+          - t_manif = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
+          - vacio_manif =  m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
+          - des_manif = vacio_manif ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
+          - red_manif = descargar_manifestacion_pdf_admin_historial_instrumentos_path(m)
+          // Diagnostico
+          - t_diag = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
+          - red_diag = descargar_compilado_manif_manifestacion_de_interes_path(m, 66)
+          // Propuesta
+          - t_prop = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
+          - convocatoria_prop = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
+          - red_prop = t_prop.empty? ? "": descargar_compilado_adjuntos_path(t_prop&.first&.id, codigo: "016")
+          // Firma
+          - conv_firma = Convocatoria.where(flujo_id: m.id)
+          - c_firma = conv_firma.first
+          - minuta_id = conv_firma.first&.minuta&.id
+          - t_firma = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
+          - red_firma_acuerdo = (!t_firma.blank? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
+          - if !c_firma&.minuta&.archivo_resolucion&.file.nil?
+            - red_firma_resolucion = t_firma.empty? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
+          // Adhesion
+          - t_adh = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
+          - unless t_adh.blank?
+            - red_adh = descargar_compilado_adhesion_path(t_adh)
+          // Coordinación
+          - t_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+          - data = t_coord.blank? ? '' : t_coord&.first&.data[:convocatoria_id]
+          - conv_coord = data.blank? ? '' : Convocatoria.where(id: data)
+          - fecha_coord = conv_coord.blank? ? '' : conv_coord.first.fecha.strftime("%d/%m/%Y")
+          - t2_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+          - unless t2_coord.blank?
+            - red_coord = descargar_compilado_adjuntos_path(t2_coord&.first&.id, codigo: "030")
+          // Auditoría I
+          - t4_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+          - unless t4_coord.nil?
+            - red_aud1 = descargar_auditorias_manifestacion_de_interes_path(t4_coord, m)
+          // Auditoría II
+          - t5_aud = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
+          - unless t5_aud.nil?
+            - red_aud2 = descargar_auditorias_manifestacion_de_interes_path(t5_aud, m)
+          // Auditoría III
+          - t6_aud3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).last
+          - unless t6_aud3.nil?
+            - red_aud3 = descargar_auditorias_manifestacion_de_interes_path(t6_aud3, m)
+          // Certificación
+          - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
+          - fecha_certif = t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
+
+          %tr.parent-row{"row-name" => "manifestacion", "data-manifestacion" => m.to_json, "data-t_manif" => t_manif.to_json, "data-des_manif" => des_manif,
+          "data-red_manif" => red_manif, "data-t_diag" => t_diag.to_json, "data-t_prop" => t_prop.to_json,
+           "data-convocatoria_prop" => convocatoria_prop.to_json, "data-red_prop" => red_prop, "data-conv_firma" => conv_firma.to_json,
+           "data-t_firma" => t_firma.to_json, "data-red_firma_acuerdo" => red_firma_acuerdo, "data-red_firma_resolucion" => red_firma_resolucion,
+           "data-red_adh" => red_adh, "data-fecha_coord" => fecha_coord, "data-red_coord" => red_coord, "data-red_aud1"=> red_aud1, "data-red_aud2" => red_aud2,
+            "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
+            %td
+              %i{ :class => "fa fa-caret-down manifestacion#{m.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
+              = m.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
             %td
               - usuarios_coordinadores.flatten.each do |coordinador|
                 %p= coordinador&.nombre_completo
-            %td{:onClick => "unfoldTareasManifestacion()", :id => "#{m.id}", class: 'btn btn-success btn-sm mt-2 ml-2 fa fa-plus', style:"cursor: pointer;"}
-          %thead{class: 'd-none', :id => "flujo#{m.id}"}
-            %tr
-              %th
-              %th Etapa
-              %th Fecha Ingreso/Carga
-              %th Documento Asociados Descargable
-          %tbody{class: 'd-none', :id => "flujo#{m.id}"}
-            %tr
-              %td
-              %td{style: 'font-weight: bold;'} Manifestación de interés
-              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
-              %td= t.first.created_at.strftime("%d/%m/%Y")
-              - vacio = m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
-              %td
-                = vacio ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
-                =link_to descargar_manifestacion_pdf_admin_historial_instrumentos_path(m), class: "btn-tabla-instrumentos" do
-                  =fa_icon 'download'
-                  ='Manifestación de Interés'
-            %tr
-              %td
-              %td{style: 'font-weight: bold;'} Diagnostico General
-              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
-              %td= t&.first&.created_at&.strftime("%d/%m/%Y")
-              %td
-                -unless t.empty?
-                  = link_to descargar_compilado_manif_manifestacion_de_interes_path(m, 66), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Documentación Diagnóstico'
-            %tr
-              %td
-              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasPropuesta()", :id => "#{m.id}" } Propuesta Acuerdo (+)
-              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
-              - convocatoria = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
-              %td= convocatoria.first.blank? ? '' : convocatoria.first.fecha.strftime("%d/%m/%Y")
-              %td
-            %tr{class: 'd-none', id: "propuesta#{m.id}"}
-              %td
-              %td Negociación
-              - c = Convocatoria.where(flujo_id: m.id).order(created_at: :asc)
-              %td
-                - c.each do |convocatoria|
-                  %p= convocatoria&.fecha&.strftime("%d/%m/%Y")
-              %td
-                - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
-                - unless t.blank?
-                  = link_to descargar_compilado_adjuntos_path(t&.first&.id, codigo: "016"), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Reuniones de Comité de Negociación'
-            %tr{class: 'd-none', id: "propuesta#{m.id}"}
-              %td
-              %td Firma de Acuerdo
-              %td= m&.firma_fecha_was&.strftime("%d/%m/%Y")
-              - c = Convocatoria.where(flujo_id: m.id)
-              - convocatoria = c.first
-              - t = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
-              %td
-                - if !convocatoria&.minuta&.acta&.file.nil? and !t.blank?
-                  - minuta_id = convocatoria&.minuta&.id
-                  = link_to descargar_acta_path(tarea_pendiente_id: t.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "acta"), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Texto Acuerdo Firmado'
-                - if !convocatoria&.minuta&.archivo_resolucion&.file.nil?
-                  - minuta_id = convocatoria&.minuta&.id
-                  = link_to descargar_archivo_resolucion_path(tarea_pendiente_id: t.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "resolucion"), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Resolución Aprueba APL'
-            %tr{class: 'd-none', id: "propuesta#{m.id}"}
-              %td
-              %td Adhesión
-              %td
-              - tarea_pendiente = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
-              %td
-                - unless tarea_pendiente.blank?
-                  = link_to descargar_compilado_adhesion_path(tarea_pendiente), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Documentos Adhesiones'
-            %tr
-              %td
-              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasImplementacion()", :id => "#{m.id}" } Implementación (+)
-              %td
-              %td
-            %tr{class: 'd-none', id: "implementacion#{m.id}"}
-              %td
-              %td Coordinación
-              - t1 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
-              - data = t1.blank? ? '' : t1&.first&.data[:convocatoria_id]
-              - c1 = data.blank? ? '' : Convocatoria.where(id: data)
-              %td= c1.blank? ? '' : c1.first.fecha.strftime("%d/%m/%Y")
-              %td
-                - t2 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
-                - unless t2.blank?
-                  = link_to descargar_compilado_adjuntos_path(t2&.first&.id, codigo: "030"), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Reuniones de Comité de Negociación'
-            %tr{class: 'd-none', id: "implementacion#{m.id}"}
-              %td
-              %td Auditoría I
-              %td
-              %td
-                - t4 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
-                - unless t4.nil?
-                  = link_to descargar_auditorias_manifestacion_de_interes_path(t4, m), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Informe Consolidado'
-            %tr{class: 'd-none', id: "implementacion#{m.id}"}
-              %td
-              %td Auditoría II
-              %td
-              %td
-                - t5 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
-                - unless t5.nil?
-                  = link_to descargar_auditorias_manifestacion_de_interes_path(t5, m), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Informe Consolidado'
-            %tr{class: 'd-none', id: "implementacion#{m.id}"}
-              %td
-              %td Auditoría III
-              %td
-              %td
-                - t6 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).last
-                - unless t6.nil?
-                  = link_to descargar_auditorias_manifestacion_de_interes_path(t6, m), class: "btn-tabla-instrumentos" do
-                    =fa_icon 'download'
-                    ='Informe Consolidado'
-            %tr
-              %td
-              %td{style: 'font-weight: bold;', :onClick => "unfoldTareasEvaluacion()", :id => "#{m.id}"} Evaluación Final de Cumplimiento (+)
-              %td
-              %td
-            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
-              %td
-              %td Auditoría final
-              %td
-              %td
-            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
-              %td
-              %td Certificación
-              - t3 = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 45).first
-              %td= t3.nil? ? '' : t3.created_at.strftime("%d/%m/%Y")
-              %td
-            %tr{class: 'd-none', id: "evaluacion#{m.id}"}
-              %td
-              %td Mantención
-              %td
-              %td
-    %div{class: 'd-flex justify-content-center'}
-      = will_paginate @acuerdos
+            %td{class:"d-none"}
 
 :javascript
 
+  function childFormat(m, t_manif, tm_date, des_manif, red_manif, tdiag_date, red_diag,tprop_date,
+   red_prop, red_firma_ac, red_firma_res, mfirma_date, red_adh, coord_date, red_coord, red_aud1, red_aud2, red_aud3, fecha_cert ){
+    return `
+      <div style="padding: 10px; margin: 0;" class="entrada-cambio-unfold">
+        <table style="width: 100%; border-collapse: collapse; margin: 0;">
+        <thead>
+          <tr>
+            <th>Etapa</th>
+            <th>Fecha Ingreso/Carga</th>
+            <th>Documento Asociados Descargable</th>
+          </tr>
+        </thead>
+          <tbody>
+            <tr>
+              <td style="font-weight: bold;">Manifestación de Interés</td>
+              <td>${tm_date}</td>
+              <td> <a href=\"${red_manif}\" class="btn-tabla-instrumentos"> <i class="fa fa-download"></i> Archivo de Manifestación</a></td>
+            </tr>
+             <tr>
+              <td style="font-weight: bold;">Diagnóstico General</td>
+              <td>${tdiag_date}</td>
+              <td> ${
+              red_diag
+              ? `<a href="${red_diag}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Archivo de Diagnóstico
+                 </a>`
+              : ''
+            }</td>
+            </tr>
+             <tr id="propuesta${m.id}">
+              <td style="font-weight: bold;">Propuesta Acuerdo (+)</td>
+              <td>${tprop_date}</td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
+              <td>Negociación</td>
+              <td id="neg-conv-${m.id}"></td>
+              <td>${red_prop ? `<a href="${red_prop}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Reuniones de Comité de Organización
+                 </a>`
+              : ''}</td>
+            </tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
+              <td> Firma de Acuerdos </td>
+              <td>${mfirma_date}</td>
+              <td>${red_firma_ac ? `<a href="${red_firma_ac}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Texto Acuerdo Firmado
+                 </a>`:''}
+                 ${red_firma_res ? `<a href="${red_firma_res}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Resolución Aprueba APL
+                 </a>`
+              : ''}</td>
+            </tr>
+            <tr class="d-none" id="child-propuesta${m.id}">
+              <td> Adhesión </td>
+              <td></td>
+              <td>${red_adh ? `<a href="${red_adh}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Documentos Adhesiones
+                 </a>`
+              : ''}</td>
+            </tr>
+             <tr id="implementacion${m.id}">
+              <td style="font-weight: bold;">Implementación (+)</td>
+              <td></td>
+              <td></td>
+            </tr>
+             <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Coordinación</td>
+              <td>${coord_date}</td>
+              <td>${red_coord ? `<a href="${red_coord}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Reuniones de Comité de Negociación
+                 </a>`
+              : ''}</td>
+            </tr>
+             <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría I</td>
+              <td></td>
+              <td>${red_aud1 ? `<a href="${red_aud1}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>`
+              : ''}</td>
+            </tr>
+            <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría II</td>
+              <td></td>
+               <td>${red_aud2 ? `<a href="${red_aud2}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>`
+              : ''}</td>
+            </tr>
+            <tr class="d-none" id="child-implementacion${m.id}">
+              <td>Auditoría III</td>
+              <td></td>
+              <td>${red_aud3 ? `<a href="${red_aud3}" class="btn-tabla-instrumentos">
+                   <i class="fa fa-download"></i> Informe Consolidado
+                 </a>`
+              : ''}</td>
+            </tr>
+            <tr id="evaluacion${m.id}">
+              <td style="font-weight: bold;">Evaluación Final de Cumplimiento (+)</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Auditoría Final</td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Certificación</td>
+              <td>${fecha_cert}</td>
+              <td></td>
+            </tr>
+            <tr class="d-none" id="child-evaluacion${m.id}">
+              <td>Mantención</td>
+              <td></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
   $(document).ready(function() {
-    //   $('#guillo-diez').DataTable({
-    //     paging: true,
-    //     searching: true,
-    //     ordering: true,
-    //     responsive: true,
-    //     orderable: true,
-    //     "pageLength": 10,       // Set the number of records per page
-    // });
+       const table = $('table.acuerdos-pendientes').DataTable({
+      order: [[0, 'asc']],
+      responsive: true,
+      lengthMenu: [[10],[10]],
+      columnDefs: [ { targets: [-1], orderable: false, searchable: true } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      "defaultContent": "",
+    });
+
+      $('table.acuerdos-pendientes tbody').on('click', 'tr.parent-row', function () {
+      const row = table.row(this); // Obtener la fila seleccionada
+      const icon = $(this).find('i'); // Obtiene el icono dentro del botón
+      let m = $(this).data('manifestacion');
+      let hidden = ""
+      // Manifestación
+      let t_manif =  $(this).data('t_manif');
+      let des =  $(this).data('des_manif');
+      let red =  $(this).data('red_manif');
+      let tm_date = (t_manif && t_manif[0]) ? new Date(t_manif[0].created_at).toLocaleDateString('es-ES') : "";
+      hidden += "-" + tm_date
+      // Diagnóstico
+      let t_diag = $(this).data('t_diag');
+      let red_diag = ""
+      let tdiag_date = ""
+      if (t_diag && t_diag.length > 0) {
+        tdiag_date = new Date(t_diag[0].created_at).toLocaleDateString('es-ES');
+        hidden += "-" + tdiag_date
+        red_diag =  $(this).data('red_diag')
+      }
+      // Propuesta Acuerdo
+      let t_prop = $(this).data('t_prop');
+      let conv_prop = $(this).data('convocatoria_prop');
+      let tprop_date = "";
+      let red_prop = "";
+      if (t_prop){
+        red_prop = $(this).data('red_prop')
+      }
+      if (conv_prop && conv_prop.length > 0){
+        tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
+        hidden += "-" + tprop_date
+        }
+
+      // Firma
+      let t_firma = $(this).data('t_firma');
+      let mfirma_date = (m && m.firma_fecha) ? new Date(m.firma_fecha).toLocaleDateString('es-ES') : "";
+      hidden += "-" + mfirma_date
+      let conv_firma = $(this).data('conv_firma');
+      let red_firma_ac = $(this).data('red_firma_acuerdo')
+      let red_firma_res = $(this).data('red_firma_resolucion')
+
+      // Adhesión
+      let red_adh = $(this).data('red_adh')
+      // Coordinación
+      let coord_date = $(this).data('fecha_coord')
+      let red_coord = $(this).data('red_coord')
+      // Auditoría I
+      let red_aud1 = $(this).data('red_aud1')
+      // Auditoría II
+      let red_aud2 = $(this).data('red_aud2')
+      // Auditoría III
+      let red_aud3 = $(this).data('red_aud3')
+      // Certificación
+      let fecha_cert = $(this).data('fecha_certif')
+
+      if (row.child.isShown()) {
+        // Si ya está abierto, cerrarlo
+        row.child.hide();
+        icon.removeClass('fa-rotate-180');
+        $(this).removeClass('shown');
+      } else {
+        // Mostrar el Row Child
+        row.child(childFormat(m, t_manif,tm_date, des, red, tdiag_date, red_diag, tprop_date,
+        red_prop,red_firma_ac, red_firma_res, mfirma_date, red_adh, coord_date, red_coord, red_aud1,
+        red_aud2, red_aud3, fecha_cert)).show();
+
+        icon.addClass('fa-rotate-180');
+        $(this).addClass('shown');
+      }
+      // Posterior a que los hijos se insertan en el DOM
+      if (conv_prop && conv_prop.length > 0){
+        let td = row.child().find('#neg-conv-' + m.id);
+        conv_prop.forEach(item => {
+            let conv_date = new Date(item.fecha).toLocaleDateString('es-ES');
+            hidden += "-" + conv_date
+            td.append(`<p>${conv_date}</p>`);
+        })
+      }
+        $(this).find('td:last').text(hidden);
+      // Notifica a DataTables que la fila ha sido modificada
+        row.invalidate();
+
+        // Redibuja la tabla para asegurarte de que los cambios se reflejen
+        table.draw();
+    });
+    // Hijos propuesta, implementación y evaluación
+    $(document).on('click', '[id^="propuesta"], [id^="implementacion"], [id^="evaluacion"]', function () {
+      const id = $(this).attr('id');
+      let hijos = document.querySelectorAll('#child-'+`${id}`)
+      hijos.forEach((e, index) => {
+        e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold");
+      })
+    });
   })
-
-  function unfoldTareasManifestacion(evento) {
-    const guillo = document.querySelectorAll('#flujo' + `${event.target.id}`)
-
-    $('#' + `${event.target.id}`).toggleClass("fa-minus")
-
-    guillo.forEach((e, index) => {
-      e.classList.toggle("d-none"); e.classList.add("entrada-cambio-unfold");
-    })
-  }
-
-
-  function unfoldTareasPropuesta(evento) {
-    const guillo = document.querySelectorAll('#propuesta' + `${event.target.id}`)
-    console.log(guillo)
-
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
-
-  function unfoldTareasImplementacion(evento) {
-    const guillo = document.querySelectorAll('#implementacion' + `${event.target.id}`)
-    console.log(guillo)
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
-
-  function unfoldTareasEvaluacion(evento) {
-    const guillo = document.querySelectorAll('#evaluacion' + `${event.target.id}`)
-    console.log(guillo)
-    guillo.forEach((e, index) => {
-      console.log(e.classList)
-      e.classList.toggle("d-none");
-    })
-  }
