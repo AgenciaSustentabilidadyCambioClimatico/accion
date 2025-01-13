@@ -79,7 +79,7 @@
             "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
             %td
               %i{ :class => "fa fa-caret-down manifestacion#{m.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
-              = m.id
+              = m&.flujo&.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
