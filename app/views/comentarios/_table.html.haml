@@ -2,6 +2,7 @@
   %table.table.comentarios.table-striped.no-margin
     %thead
       %tr{class: ((tipo==Comentario::ERRORES) ? 'alert-danger' : 'alert-info')}
+        %th.fecha-ingreso Fecha Ingreso
         %th.comentario=t(:comentario)
         %th.email-contacto=t(:email_del_contacto)
         %th.url-referencia=t(:url_ref)
@@ -13,6 +14,7 @@
       - @comentarios.each do |record|
         - if record.tipo_comentario_id == tipo
           %tr
+            %td=record[:created_at].strftime('%Y-%m-%d')
             %td.comentario-comentario
               %div
                 = strip_tags record.comentario

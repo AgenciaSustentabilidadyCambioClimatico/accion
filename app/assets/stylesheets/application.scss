@@ -213,8 +213,9 @@ textarea#comentario_comentario { height: 115px; resize: none; }
 tr.alert-danger { th, td { color: #721c24!important; } }
 tr.alert-info { th, td { color: #0c5460!important; } }
 table.comentarios tr {
+  .fecha-ingreso { width: 85px!important; }
   .comentario { width: 250px!important; }
-  .email-contacto { width: 200px!important; }
+  .email-contacto { width: 190px!important; }
   .usuario { width: 226px!important; }
   .adjuntos { width: 45px!important; }
   .editar { }
