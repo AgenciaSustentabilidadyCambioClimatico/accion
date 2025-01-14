@@ -73,7 +73,6 @@ gem 'carrierwave-aws'
 gem 'aws-sdk', '~> 3'
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
-gem 'psych', '~> 3.3.4'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
@@ -94,7 +93,6 @@ group :development do
   gem 'capistrano3-nginx'
   gem 'capistrano3-puma'
   gem 'colorize'
-  gem 'faker', :git => 'https://github.com/stympy/faker.git', :branch => 'main'
   gem 'listen', '>= 3.1.5', '< 3.7.1'
   gem 'pry'
   gem 'rails-erd'
