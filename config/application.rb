@@ -2,6 +2,7 @@ require_relative 'boot'
 
 require 'rails/all'
 require 'will_paginate/array'
+
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(*Rails.groups)
@@ -15,6 +16,7 @@ module Ascc
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
     config.active_job.queue_adapter = :delayed_job
     config.active_record.use_yaml_unsafe_load = true
+
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do

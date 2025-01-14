@@ -1,6 +1,7 @@
 #DZC Necesario para la habilitación de config.web_console.whitelisted_ips desde cualquier ip
 require 'socket'
 require 'ipaddr'
+require 'psych'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -39,7 +40,7 @@ Rails.application.configure do
     config.cache_store = :null_store
   end
 
-  email = YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result, aliases: true)
+  email = YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result)
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true

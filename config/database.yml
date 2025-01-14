@@ -1,4 +1,4 @@
-default: &default
+default: &defaults
   adapter: postgresql
   encoding: unicode
   timeout: 5000
@@ -9,23 +9,23 @@ default: &default
   schema_search_path: "public, admin"
 
 development:
-  <<: *default
+  <<: *defaults
   database: bd_accion
 
 test:
-  <<: *default
+  <<: *defaults
   database: ascc_test
 
 staging:
-  <<: *default
+  <<: *defaults
   database: bd_dev_accion
 
 production:
-  <<: *default
+  <<: *defaults
   database: bd_accion
 
 external_fpl_db:
-  <<: *default
+  <<: *defaults
   host: localhost
   username: postgres
   password: postgres
