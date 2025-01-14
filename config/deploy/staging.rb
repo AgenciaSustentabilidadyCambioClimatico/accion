@@ -1,4 +1,4 @@
-deploy=YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/deploy.yml")).result)["staging"]
+deploy=YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/deploy.yml")).result, [], [], true)["staging"]
 login="#{deploy["server"]["user"]}@#{deploy["server"]["host"]}"
 # set :user, deploy["gateway"]["user"]
 # set :gateway, deploy["gateway"]["host"]
