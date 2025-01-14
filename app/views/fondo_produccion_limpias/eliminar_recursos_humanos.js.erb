@@ -1,25 +1,26 @@
 $('.loading-data').hide();
-$("#eliminar-gasto-operacion-<%= gasto %>").closest('tr').remove();
+$("#eliminar-recursos-humanos-<%= rr_hh_id %>").closest('tr').remove();
 
-var mensajeCosto = document.getElementById('mensaje-costo');
-<% if @mensaje.present? %>
-  var contenido = '<%= j @mensaje %>';
-  mensajeCosto.innerHTML = contenido;
+<% if @valor_hh_tipo_3.valor_hh_tipo_3 != 0 %>
+  document.getElementById('valor_hh_tipo_3_<%= @valor_hh_tipo_3.actividad_id %>').innerText = '<%= number_to_currency @valor_hh_tipo_3.valor_hh_tipo_3 %>';
+<% else %>
+  document.getElementById('valor_hh_tipo_3_<%= @valor_hh_tipo_3.actividad_id %>').innerText = '$0';
 <% end %>
 
-<% if @total_gastos_tipo_1.present? %>
-  document.getElementById('total_gastos_tipo_1_<%= @total_gastos_tipo_1.actividad_id %>').innerText = '<%= number_to_currency @total_gastos_tipo_1.total_gastos_tipo_1 %>';
+<% if @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ != 0 %>
+  document.getElementById('valor_hh_tipos_1_2_<%= @valor_hh_tipos_1_2_.actividad_id %>').innerText = '<%= number_to_currency @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ %>';
 <% else %>
-  document.getElementById('total_gastos_tipo_1_<%= plan_id %>').innerText = '$0';
+  document.getElementById('valor_hh_tipos_1_2_<%= @valor_hh_tipos_1_2_.actividad_id %>').innerText = '$0';
 <% end %>
 
 //Actualiza total por fila
 document.getElementById('total_suma_<%= @valor_hh_tipo_3.actividad_id %>').innerText = '<%= number_to_currency  @valor_hh_tipo_3.valor_hh_tipo_3 + @valor_hh_tipos_1_2_.valor_hh_tipos_1_2_ + @total_gastos_tipo_1.total_gastos_tipo_1 + @total_gastos_tipo_2.total_gastos_tipo_2%>';
- 
+  
 //Actualiza totales generales
-document.getElementById('total_total_gastos_tipo_1').innerText = '<%= number_to_currency  @total_total_gastos_tipo_1 %>';
+document.getElementById('total_valor_hh_tipos_1_2').innerText = '<%= number_to_currency  @total_valor_hh_tipos_1_2 %>';
+document.getElementById('total_valor_hh_tipo_3').innerText = '<%= number_to_currency  @total_valor_hh_tipo_3 %>';
 document.getElementById('total_total_suma').innerText = '<%= number_to_currency  @total_valor_hh_tipo_3 + @total_valor_hh_tipos_1_2 + @total_total_gastos_tipo_1 + @total_total_gastos_tipo_2%>';
-
+  
 
 //Actualiza campos de la tabla costo
 //ESTRUCTURA DE COSTOS
