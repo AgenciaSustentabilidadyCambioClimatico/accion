@@ -1,4 +1,4 @@
-default: &default
+development:
   adapter: postgresql
   encoding: unicode
   timeout: 5000
@@ -8,25 +8,49 @@ default: &default
   password: <%= ENV.fetch("LOCALHOST_PSQL_PASSWORD") %>
   template: template0
   schema_search_path: "public, admin"
-
-development:
-  <<: *default
   database: bd_dev_accion
 
 test:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("LOCALHOST_PSQL_SERVER") %>
+  username: <%= ENV.fetch("LOCALHOST_PSQL_USERNAME") %>
+  password: <%= ENV.fetch("LOCALHOST_PSQL_PASSWORD") %>
+  template: template0
+  schema_search_path: "public, admin"
   database: ascc_test
 
 staging:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("LOCALHOST_PSQL_SERVER") %>
+  username: <%= ENV.fetch("LOCALHOST_PSQL_USERNAME") %>
+  password: <%= ENV.fetch("LOCALHOST_PSQL_PASSWORD") %>
+  template: template0
+  schema_search_path: "public, admin"
   database: bd_dev_accion
 
 production:
-  <<: *default
-  database: bd_accion  
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: <%= ENV.fetch("LOCALHOST_PSQL_SERVER") %>
+  username: <%= ENV.fetch("LOCALHOST_PSQL_USERNAME") %>
+  password: <%= ENV.fetch("LOCALHOST_PSQL_PASSWORD") %>
+  template: template0
+  schema_search_path: "public, admin"
+  database: bd_accion
 
 external_fpl_db:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
   host: <%= ENV.fetch("LOCALHOST_PSQL_SERVER") %>
   username: <%= ENV.fetch("LOCALHOST_PSQL_USERNAME") %>
   password: <%= ENV.fetch("LOCALHOST_PSQL_PASSWORD") %>
