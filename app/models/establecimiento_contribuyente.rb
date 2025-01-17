@@ -18,7 +18,10 @@ class EstablecimientoContribuyente < ApplicationRecord
 	validates :region, presence: true
 	validates :comuna, presence: true
   validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> {! self.email.blank? && !contribuyente.temporal}
-  validates :telefono, format: { with: /\A[+]\d{2}[-, ]\d{9}\z/ }, if: -> { !self.telefono.blank? && !contribuyente.temporal}
+  
+  attr_accessor :skip_telefono_validation # Esta es una variable temporal para habilitar o deshabilitar la validación
+  validates :telefono, format: { with: /\A\d{8,11}\z/ }, if: -> { !self.skip_telefono_validation && !self.telefono.blank? }
+
 
   serialize :fields_visibility
 
