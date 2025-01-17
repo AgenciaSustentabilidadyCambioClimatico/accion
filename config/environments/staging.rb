@@ -14,7 +14,7 @@ Rails.application.configure do
   config.consider_all_requests_local       = false
   config.action_controller.perform_caching = true
 
-  email = YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result, [], [], true)
+  email = YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result, aliases: true)
   config.action_mailer.default_url_options = { host: email['default_url_options_host'] }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true
