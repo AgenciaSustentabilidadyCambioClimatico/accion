@@ -3541,7 +3541,7 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
+      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
       if File.exist?(pdf_file_path)
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
       else
@@ -3560,7 +3560,7 @@ class FondoProduccionLimpiasController < ApplicationController
       # Extraer el nombre del archivo
       archivo_contrato = File.basename(archivo_contrato_ruta)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'archivo_contrato', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_contrato}")
+      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_contrato', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_contrato}")
       if File.exist?(pdf_file_path)
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_contrato}"
       else
@@ -3579,7 +3579,7 @@ class FondoProduccionLimpiasController < ApplicationController
       # Extraer el nombre del archivo
       archivo_resolucion = File.basename(archivo_resolucion_ruta)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'archivo_resolucion', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_resolucion}")
+      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_resolucion', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_resolucion}")
       if File.exist?(pdf_file_path)
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_resolucion}"
       else
@@ -3592,7 +3592,7 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
+      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
       if File.exist?(pdf_file_path)
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
       else
