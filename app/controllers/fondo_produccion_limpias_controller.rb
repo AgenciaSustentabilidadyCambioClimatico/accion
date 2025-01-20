@@ -3540,24 +3540,8 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-
-      # Call the model method to generate or fetch the PDF and upload it to S3
-      pdf_file_url = @fondo_produccion_limpia.generar_admisibilidad_juridica_pdf(
-        revision: params[:revision],
-        flujo_id: flujo.id,
-        tipo_contribuyentes_id: nil, # Pass appropriate values if needed
-        fondo_produccion_limpia: @fondo_produccion_limpia,
-        manifestacion_de_interes: flujo.manifestacion_de_interes, # Assuming `manifestacion_de_interes` is associated with `flujo`
-        tipo_instrumento: flujo.tipo_instrumento # Assuming `tipo_instrumento` is associated with `flujo`
-      )
-
-      if pdf_file_url.present?
-        # Redirect the user to download the PDF from S3
-        redirect_to pdf_file_url
-      else
-        flash[:alert] = "El archivo solicitado no se encuentra disponible."
-        redirect_to request.referer || root_path
-      end
+      pdf = @fondo_produccion_limpia.generar_pdf(params[:revision])
+      send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "fondo_produccion_limpia.pdf"
     end
 
     def descargar_contrato_pdf
@@ -3581,6 +3565,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
       # Retrieve the URL of the file from CarrierWave
       archivo_resolucion_url = @fondo_produccion_limpia.archivo_resolucion.url
+
       if archivo_resolucion_url.present?
         # Redirect to the S3 URL to initiate the download
         redirect_to archivo_resolucion_url
