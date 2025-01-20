@@ -3553,16 +3553,13 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_contrato_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-     
-      # Obtener la ruta completa del archivo
-      archivo_contrato_ruta = @fondo_produccion_limpia.archivo_contrato.file.path
 
-      # Extraer el nombre del archivo
-      archivo_contrato = File.basename(archivo_contrato_ruta)
+      # Retrieve the URL of the file from CarrierWave
+      archivo_contrato_url = @fondo_produccion_limpia.archivo_contrato.url
 
-      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_contrato', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_contrato}")
-      if pdf_file_path.present?
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_contrato}"
+      if archivo_contrato_url.present?
+        # Redirect to the S3 URL to initiate the download
+        redirect_to archivo_contrato_url
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path
@@ -3572,16 +3569,13 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_resolucion_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
- 
-      # Obtener la ruta completa del archivo
-      archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
 
-      # Extraer el nombre del archivo
-      archivo_resolucion = File.basename(archivo_resolucion_ruta)
+      # Retrieve the URL of the file from CarrierWave
+      archivo_resolucion_url = @fondo_produccion_limpia.archivo_resolucion.url
 
-      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_resolucion', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_resolucion}")
-      if pdf_file_path.present?
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_resolucion}"
+      if archivo_resolucion_url.present?
+        # Redirect to the S3 URL to initiate the download
+        redirect_to archivo_resolucion_url
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path
