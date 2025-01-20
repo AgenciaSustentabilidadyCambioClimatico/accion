@@ -3541,9 +3541,19 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if pdf_file_path.present?
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      # Call the model method to generate or fetch the PDF and upload it to S3
+      pdf_file_url = @fondo_produccion_limpia.generar_admisibilidad_juridica_pdf(
+        revision: params[:revision],
+        flujo_id: flujo.id,
+        tipo_contribuyentes_id: nil, # Pass appropriate values if needed
+        fondo_produccion_limpia: @fondo_produccion_limpia,
+        manifestacion_de_interes: flujo.manifestacion_de_interes, # Assuming `manifestacion_de_interes` is associated with `flujo`
+        tipo_instrumento: flujo.tipo_instrumento # Assuming `tipo_instrumento` is associated with `flujo`
+      )
+
+      if pdf_file_url.present?
+        # Redirect the user to download the PDF from S3
+        redirect_to pdf_file_url
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path
