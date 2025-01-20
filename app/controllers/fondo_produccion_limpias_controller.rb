@@ -3569,10 +3569,8 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_resolucion_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-
       # Retrieve the URL of the file from CarrierWave
       archivo_resolucion_url = @fondo_produccion_limpia.archivo_resolucion.url
-
       if archivo_resolucion_url.present?
         # Redirect to the S3 URL to initiate the download
         redirect_to archivo_resolucion_url
