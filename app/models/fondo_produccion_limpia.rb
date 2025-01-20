@@ -228,7 +228,7 @@ class FondoProduccionLimpia < ApplicationRecord
     end
 
     # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
+    pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
 
     # Asegúrate de que el directorio existe
     FileUtils.mkdir_p(File.dirname(pdf_file_path))
@@ -303,7 +303,7 @@ class FondoProduccionLimpia < ApplicationRecord
     end
 
     # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
+    pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
 
     # Asegúrate de que el directorio existe
     FileUtils.mkdir_p(File.dirname(pdf_file_path))

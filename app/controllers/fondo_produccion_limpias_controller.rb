@@ -3542,7 +3542,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
       pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if File.exist?(pdf_file_path)
+      if pdf_file_path.present?
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
@@ -3561,7 +3561,7 @@ class FondoProduccionLimpiasController < ApplicationController
       archivo_contrato = File.basename(archivo_contrato_ruta)
 
       pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_contrato', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_contrato}")
-      if File.exist?(pdf_file_path)
+      if pdf_file_path.present?
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_contrato}"
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
@@ -3580,7 +3580,7 @@ class FondoProduccionLimpiasController < ApplicationController
       archivo_resolucion = File.basename(archivo_resolucion_ruta)
 
       pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'archivo_resolucion', "#{flujo.fondo_produccion_limpia_id}", "#{archivo_resolucion}")
-      if File.exist?(pdf_file_path)
+      if pdf_file_path.present?
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "#{archivo_resolucion}"
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
@@ -3593,7 +3593,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
       pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if File.exist?(pdf_file_path)
+      if pdf_file_path.present?
         send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
