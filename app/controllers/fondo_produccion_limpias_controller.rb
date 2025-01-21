@@ -391,7 +391,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, postulante)
+        #send_message(tarea_fondo, postulante)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+       
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         tarea_fondo_FPL_00 = Tarea.find_by_codigo(Tarea::COD_FPL_00)
@@ -1193,7 +1195,12 @@ class FondoProduccionLimpiasController < ApplicationController
       arreglo = []
       @existe_plan = nil
       @tipo_permiso = 0
-      
+
+      # Crear un Set con los códigos FPL
+      fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
+      # Verificar si la tarea es FPL
+      is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
+    
       if @plan_actividades.nil?
         @actividad = Actividad.find_by(id: params['plan_id'])
         @nombre_actividad = @actividad.nombre if @actividad&.present?  
@@ -1239,17 +1246,11 @@ class FondoProduccionLimpiasController < ApplicationController
         # Asegúrate de que @duracion tenga un formato adecuado
         @duracion = @plan_actividades.duracion.present? ? @plan_actividades.duracion.to_s : ""
      
-        # Crear un Set con los códigos FPL
-        fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
-
         # Comenzar con una cadena vacía para el resultado
         newRowDuracion = ""
         
         # Iterar sobre cada mes en arreglo
-        arreglo.each do |mes|
-          # Verificar si la tarea es FPL
-          is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
-    
+        arreglo.each do |mes|      
           # Verificar si @duracion está presente y si el mes está dentro de la duración
           # Convertir @duracion a un arreglo de números si es necesario
           duracion_array = @duracion.split(",").map(&:to_i)
@@ -1284,7 +1285,7 @@ class FondoProduccionLimpiasController < ApplicationController
      
       @plan = params['plan_id']
 
-      if @tarea_pendiente.tarea.codigo == 'FPL-01' ||  @tarea_pendiente.tarea.codigo == 'FPL-07' ||  @tarea_pendiente.tarea.codigo == 'FPL-08'
+      if is_fpl_task #@tarea_pendiente.tarea.codigo == 'FPL-01' ||  @tarea_pendiente.tarea.codigo == 'FPL-07' ||  @tarea_pendiente.tarea.codigo == 'FPL-08'
         @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
       else
         @solo_lectura = true
