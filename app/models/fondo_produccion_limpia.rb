@@ -227,21 +227,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
-
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
-
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
-
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
-
-  rescue StandardError => e
-    Rails.logger.error "Error generando PDF: #{e.message}"
-    nil
+    pdf
   end
 
   def generar_admisibilidad_juridica_pdf(revision = nil, flujo_id = nil, tipo_contribuyentes_id = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, tipo_instrumento = nil)
@@ -302,21 +288,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
-
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
-
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
-
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
-
-  rescue StandardError => e
-    Rails.logger.error "Error generando PDF: #{e.message}"
-    nil
+    pdf
   end
 
   # Método para crear una tabla con cuatro campos en el PDF
