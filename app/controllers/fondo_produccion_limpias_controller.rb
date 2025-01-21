@@ -3540,7 +3540,24 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-      pdf = @fondo_produccion_limpia.generar_pdf(params[:revision])
+      objetivo_especificos = ObjetivosEspecifico.where(flujo_id: flujo.id).all
+      postulantes = EquipoTrabajo.where(flujo_id: flujo.id, tipo_equipo: 3)
+      consultores = EquipoTrabajo.where(flujo_id: flujo.id, tipo_equipo: [1, 2])
+      empresas = EquipoEmpresa.where(flujo_id: flujo.id)
+      actividades = PlanActividad.actividad_detalle(flujo.id)
+      costos = PlanActividad.costos(flujo.id)
+      tipo_instrumento = flujo.tipo_instrumento_id
+      costos_seguimiento = PlanActividad.costos_seguimiento(flujo.id, flujo.tipo_instrumento_id)
+
+      manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
+      manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
+      nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(flujo.tipo_instrumento_id)
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      comentarios = ComentarioFlujo.includes(:user).where(flujo_id: flujo.id, tarea_id: tarea_fondo.id)
+
+      pdf = @fondo_produccion_limpia.generar_pdf(params[:revision], objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento,
+                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+
       send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "fondo_produccion_limpia.pdf"
     end
 
