@@ -3625,14 +3625,14 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_admisibilidad_juridica_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
+      manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
+      manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
+      tipo_contribuyente_id = TipoContribuyente.tipo_contribuyente_id_postulante(flujo.id)
+      tipo_instrumento = obtiene_nombre_tipo_instrumento(flujo.tipo_instrumento_id)
 
-      pdf_file_path = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if pdf_file_path.present?
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      else
-        flash[:alert] = "El archivo solicitado no se encuentra disponible."
-        redirect_to request.referer || root_path
-      end
+      pdf = @fondo_produccion_limpia.generar_admisibilidad_juridica_pdf(params[:revision], flujo.id, tipo_contribuyente_id, @fondo_produccion_limpia, manifestacion_de_interes, tipo_instrumento)
+
+      send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "fondo_produccion_limpia.pdf"
     end
     
 
