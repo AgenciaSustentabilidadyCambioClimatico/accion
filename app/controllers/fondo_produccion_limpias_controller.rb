@@ -3549,6 +3549,36 @@ class FondoProduccionLimpiasController < ApplicationController
       tipo_instrumento = flujo.tipo_instrumento_id
       costos_seguimiento = PlanActividad.costos_seguimiento(flujo.id, flujo.tipo_instrumento_id)
 
+
+      if flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1
+
+        if flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
+          tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+        else
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
+
+          if flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+          elsif flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+          end
+        end
+
+        if @fondo_produccion_limpia.present?
+          if @fondo_produccion_limpia.cantidad_micro_empresa != 0 ||
+            @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 ||
+            @fondo_produccion_limpia.cantidad_mediana_empresa != 0
+            confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(flujo.id, aporte_micro, aporte_pequena, aporte_mediana, tope_maximo)
+          end
+        end
+
+      end
+
       manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
       manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
       nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(flujo.tipo_instrumento_id)
