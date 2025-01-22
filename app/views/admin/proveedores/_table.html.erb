@@ -11,6 +11,14 @@
       // Show all rows if no filters are selected
       if (tipoProveedor === '' && region === '') {
         $('table.proveedores tbody tr').show();
+        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
+        $('td.correlativo-td').addClass('d-none');
+        $('#fecha-registro-th').addClass('d-none');
+        $('#fecha-actualizacion-th').addClass('d-none');
+        $('#promedio-th').addClass('d-none');
+        $('td.fecha-registro-td').addClass('d-none');
+        $('td.fecha-actualizacion-td').addClass('d-none');
+        $('td.promedio-td').addClass('d-none'); // Hide all mat
         return;
       }
 
@@ -20,10 +28,39 @@
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
     } else if (tipoProveedor === '' && region !== '') {
         $('tr[data-region="' + region + '"]').show();
+        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
+        $('td.correlativo-td').addClass('d-none');
+        $('#fecha-registro-th').addClass('d-none');
+        $('#fecha-actualizacion-th').addClass('d-none');
+        $('#promedio-th').addClass('d-none');
+        $('td.fecha-registro-td').addClass('d-none');
+        $('td.fecha-actualizacion-td').addClass('d-none');
+        $('td.promedio-td').addClass('d-none'); // Hide all mat
     } else {
       // If both filters are selected, show the rows that match both filters
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
     }
+
+    if (tipoProveedor === 'Auditor APL') {
+        $('#correlativo-th').removeClass('d-none');
+        $('#fecha-registro-th').removeClass('d-none');
+        $('#fecha-actualizacion-th').removeClass('d-none');
+        $('#promedio-th').removeClass('d-none');
+        $('td.correlativo-td').removeClass('d-none'); // Show all matching <td> elements
+        $('td.fecha-registro-td').removeClass('d-none');
+        $('td.fecha-actualizacion-td').removeClass('d-none');
+        $('td.promedio-td').removeClass('d-none');
+
+      } else {
+        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
+        $('td.correlativo-td').addClass('d-none');
+        $('#fecha-registro-th').addClass('d-none');
+        $('#fecha-actualizacion-th').addClass('d-none');
+        $('#promedio-th').addClass('d-none');
+        $('td.fecha-registro-td').addClass('d-none');
+        $('td.fecha-actualizacion-td').addClass('d-none');
+        $('td.promedio-td').addClass('d-none'); // Hide all matching <td> elements
+      }
 });
     
   });
@@ -58,6 +95,7 @@
       
         <thead>
           <tr class = "headers" data-target="#proveedor-detalles">
+            <th id='correlativo-th' class="d-none"><%= t(:correlativo) %></th>
             <th><%= t(:tipo_proveedor) %></th>
             <th><%= t(:nombre) %></th>
             <% if !local_assigns[:retirados]%>
@@ -67,10 +105,15 @@
             <th><%= t(:region) %></th>
             <th><%= t(:telefono) %></th>
             <th><%= t(:correo_electronico) %></th>
+            <% if !current_user %>
+              <th id='fecha-registro-th' class="d-none">Fecha Resgistro</th>
+              <th id='fecha-actualizacion-th' class="d-none">Fecha última actualización de registro</th>
+              <th id='promedio-th' class="d-none">Promedio Evaluación</th>
+            <% end %>
             <% if current_user && current_user.is_admin? %>
               <th><%= t(:evaluacion) %> </th> 
               <th><%= t(:fecha_ingreso_registro) %></th>
-              <th><%= t(:fecha_ultima_revalidacion) %> </th>
+              <th>Fecha última actualización de registro </th>
               <% if local_assigns[:retirados]%>
                 <th> <%= t(:fecha_retiro) %> </th>
               <% end %>
@@ -85,6 +128,7 @@
           <% registro = (local_assigns[:retirados] ? @registro_vencido : @registro_proveedores)%>
 
           <% registro.each do |record| %>
+            <% correlativo = record.correlativo %>
             <% tipo = record.tipo_proveedor.nombre %>
             <% empresa = record.nombre_institucion %>
             <% nombre = record.nombre + ' '+ record.apellido %>
@@ -93,9 +137,10 @@
             <% telefono = record.telefono %>
             <% email = record.email %>
             <% fecha_ingreso = record.fecha_aprobado%>
-            <% fecha_revalidacion = record.fecha_revalidacion%>
+            <% fecha_revalidacion = record.fecha_revalidacion %>
             <% fecha_retiro = record.updated_at.strftime('%F') %>
             <tr data-region="<%= region %>" data-tipo-proveedor="<%= tipo %>" >
+              <td class="correlativo-td d-none"><%= correlativo.blank? ? '--' : correlativo %></td>
               <td><%= tipo.blank? ? '--' : tipo %></td>
               <td><%= nombre.blank? ? '--' : nombre %></td>
               <% if !local_assigns[:retirados]%>
@@ -105,6 +150,11 @@
               <td><%= region.blank? ? '--' : region %></td>
               <td><%= telefono.blank? ? '--' : telefono %></td>
               <td><%= email.blank? ? '--' : email %></td>
+              <% if !current_user %>
+                <td class="fecha-registro-td d-none"><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <td class="fecha-actualizacion-td d-none"><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                <td class="promedio-td d-none">5.0</td>
+              <% end %>
               <% if current_user && current_user.is_admin? %>
                   <td>5.0</td>
                   <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
@@ -118,7 +168,7 @@
                 <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
 
                   <i class="fa fa-info-circle"></i>
-                   
+
                <% end %>
               </div>
 
