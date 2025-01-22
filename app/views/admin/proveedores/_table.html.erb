@@ -225,13 +225,13 @@
                   <% end %>
               <% end %>
               <td class="dos iconos-acciones">
-              <div>
-                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+                <div>
+                  <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
 
-                  <i class="fa fa-info-circle"></i>
+                    <i class="fa fa-info-circle"></i>
 
-               <% end %>
-              </div>
+                 <% end %>
+                </div>
 
               </td> 
               <% if current_user && current_user.is_admin?%>
