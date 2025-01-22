@@ -153,7 +153,6 @@
     <div class="table-responsive">
   
       <table class="table proveedores table-striped">
-      
         <thead>
           <tr class = "headers" data-target="#proveedor-detalles">
             <th id='correlativo-th' class="d-none"><%= t(:correlativo) %></th>
@@ -174,12 +173,12 @@
             <% if current_user && current_user.is_admin? %>
               <th><%= t(:evaluacion) %> </th> 
               <th><%= t(:fecha_ingreso_registro) %></th>
-              <th>Fecha última actualización de registro </th>
+              <th>Fecha última actualización de registro</th>
               <% if local_assigns[:retirados]%>
                 <th> <%= t(:fecha_retiro) %> </th>
               <% end %>
             <% end %>
-            <th><%= t(:detalles) %></th>
+            <th>Detalles</th>
             <% if current_user && current_user.is_admin?%>
               <th class="dos iconos-acciones"><%= t(:acciones) %></th>
             <% end %>
@@ -217,22 +216,19 @@
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
               <% if current_user && current_user.is_admin? %>
-                  <td>5.0</td>
-                  <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
-                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
-                  <% if local_assigns[:retirados] %>
-                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
-                  <% end %>
+                <td>5.0</td>
+                <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                <% if local_assigns[:retirados] %>
+                  <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
+                <% end %>
               <% end %>
               <td class="dos iconos-acciones">
                 <div>
                   <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
-
                     <i class="fa fa-info-circle"></i>
-
                  <% end %>
                 </div>
-
               </td> 
               <% if current_user && current_user.is_admin?%>
                 <td class="dos iconos-acciones">
@@ -243,7 +239,6 @@
                   </div>
                 </td>
               <% end %>
-                 
             </tr>
           <% end %>
         </tbody>
