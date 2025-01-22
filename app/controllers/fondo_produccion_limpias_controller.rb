@@ -3541,55 +3541,14 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-      objetivo_especificos = ObjetivosEspecifico.where(flujo_id: flujo.id).all
-      postulantes = EquipoTrabajo.where(flujo_id: flujo.id, tipo_equipo: 3)
-      consultores = EquipoTrabajo.where(flujo_id: flujo.id, tipo_equipo: [1, 2])
-      empresas = EquipoEmpresa.where(flujo_id: flujo.id)
-      actividades = PlanActividad.actividad_detalle(flujo.id)
-      costos = PlanActividad.costos(flujo.id)
-      tipo_instrumento = flujo.tipo_instrumento_id
-      costos_seguimiento = PlanActividad.costos_seguimiento(flujo.id, flujo.tipo_instrumento_id)
 
-
-      if flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1
-
-        if flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
-          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
-          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
-          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
-          tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
-        else
-          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
-          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
-          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
-
-          if flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
-            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
-          elsif flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
-            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
-          end
-        end
-
-        if @fondo_produccion_limpia.present?
-          if @fondo_produccion_limpia.cantidad_micro_empresa != 0 ||
-            @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 ||
-            @fondo_produccion_limpia.cantidad_mediana_empresa != 0
-            confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(flujo.id, aporte_micro, aporte_pequena, aporte_mediana, tope_maximo)
-          end
-        end
-
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
       end
-
-      manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
-      manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
-      nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(flujo.tipo_instrumento_id)
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
-      comentarios = ComentarioFlujo.includes(:user).where(flujo_id: flujo.id, tarea_id: tarea_fondo.id)
-
-      pdf = @fondo_produccion_limpia.generar_pdf(params[:revision], objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento,
-                                                   costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
-
-      send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "fondo_produccion_limpia.pdf"
     end
 
     def descargar_contrato_pdf
@@ -3626,16 +3585,16 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_admisibilidad_juridica_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-      manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
-      manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
-      tipo_contribuyente_id = TipoContribuyente.tipo_contribuyente_id_postulante(flujo.id)
-      tipo_instrumento = obtiene_nombre_tipo_instrumento(flujo.tipo_instrumento_id)
 
-      pdf = @fondo_produccion_limpia.generar_admisibilidad_juridica_pdf(params[:revision], flujo.id, tipo_contribuyente_id, @fondo_produccion_limpia, manifestacion_de_interes, tipo_instrumento)
-
-      send_data pdf.render, type: "application/pdf", disposition: "inline", filename: "fondo_produccion_limpia.pdf"
+      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
+      if File.exist?(pdf_file_path)
+        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      else
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to request.referer || root_path
+      end
     end
-    
+
 
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes

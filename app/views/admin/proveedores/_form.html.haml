@@ -75,7 +75,8 @@
                       .col-12.col-lg-4
                         =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
                       .col-12.col-lg-4
-                        =f.input :fecha_aprobado, required: true, input_html: { class: 'required-field' }
+                        = f.input :fecha_aprobado, as: :select, collection: I18n.t('date.month_names').compact, required: true, input_html: { class: 'required-field' }
+
                       .col-12.col-lg-4
                         =f.input :archivo_aprobado_directiva, input_html: {class: "validado form-control"}
                         = f.input :archivo_aprobado_directiva_cache, as: :hidden
