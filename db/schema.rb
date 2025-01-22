@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2024_12_30_143715) do
+ActiveRecord::Schema.define(version: 2025_01_21_155638) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1855,6 +1855,7 @@ ActiveRecord::Schema.define(version: 2024_12_30_143715) do
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
     t.string "carta_compromiso"
+    t.integer "correlativo"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
