@@ -11,6 +11,7 @@
       // Show all rows if no filters are selected
       if (tipoProveedor === '' && region === '') {
         $('table.proveedores tbody tr').show();
+        $('th.detalles').removeClass('d-none');
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
@@ -28,6 +29,7 @@
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
     } else if (tipoProveedor === '' && region !== '') {
         $('tr[data-region="' + region + '"]').show();
+        $('th.detalles').removeClass('d-none');
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
@@ -43,6 +45,7 @@
 
     if (tipoProveedor === 'Auditor APL') {
         $('#correlativo-th').removeClass('d-none');
+        $('th.detalles').removeClass('d-none');
         $('#fecha-registro-th').removeClass('d-none');
         $('#fecha-actualizacion-th').removeClass('d-none');
         $('#promedio-th').removeClass('d-none');
@@ -52,6 +55,7 @@
         $('td.promedio-td').removeClass('d-none');
 
       } else {
+        $('th.detalles').removeClass('d-none');
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
@@ -71,6 +75,7 @@
       // Show all rows if no filters are selected
       if (tipoProveedor === '' && region === '') {
         $('table.proveedores tbody tr').show();
+        $('th.detalles').removeClass('d-none');
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
@@ -88,6 +93,7 @@
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
     } else if (tipoProveedor === '' && region !== '') {
         $('tr[data-region="' + region + '"]').show();
+        $('th.detalles').removeClass('d-none');
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
@@ -99,10 +105,12 @@
     } else {
       // If both filters are selected, show the rows that match both filters
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
+        $('th.detalles').removeClass('d-none');
     }
 
     if (tipoProveedor === 'Auditor APL') {
         $('#correlativo-th').removeClass('d-none');
+        $('th.detalles').removeClass('d-none');
         $('#fecha-registro-th').removeClass('d-none');
         $('#fecha-actualizacion-th').removeClass('d-none');
         $('#promedio-th').removeClass('d-none');
@@ -114,6 +122,7 @@
       } else {
         $('#correlativo-th').addClass('d-none'); // Hide the <th> element
         $('td.correlativo-td').addClass('d-none');
+        $('th.detalles').removeClass('d-none');
         $('#fecha-registro-th').addClass('d-none');
         $('#fecha-actualizacion-th').addClass('d-none');
         $('#promedio-th').addClass('d-none');
@@ -178,7 +187,7 @@
                 <th> <%= t(:fecha_retiro) %> </th>
               <% end %>
             <% end %>
-            <th>Detalles</th>
+            <th class="detalles">Detalles</th>
             <% if current_user && current_user.is_admin?%>
               <th class="dos iconos-acciones"><%= t(:acciones) %></th>
             <% end %>
@@ -224,19 +233,15 @@
                 <% end %>
               <% end %>
               <td class="dos iconos-acciones">
-                <div>
-                  <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
-                    <i class="fa fa-info-circle"></i>
-                 <% end %>
-                </div>
+                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+                  <i class="fa fa-info-circle"></i>
+                <% end %>
               </td> 
               <% if current_user && current_user.is_admin?%>
                 <td class="dos iconos-acciones">
-                  <div>
-                    <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
-                      <i class='fa fa-edit'></i>
-                    <% end %>
-                  </div>
+                  <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
+                    <i class='fa fa-edit'></i>
+                  <% end %>
                 </td>
               <% end %>
             </tr>
