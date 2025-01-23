@@ -162,7 +162,9 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 104)
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    unless @registro_proveedor.comuna.nil?
+      @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    end
 
     # if current_user.rut == @registro_proveedor.rut
     #   @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
