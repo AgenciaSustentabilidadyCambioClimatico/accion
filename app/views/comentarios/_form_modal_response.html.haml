@@ -1,0 +1,36 @@
+- comentario = (@comentario.blank? ? Comentario.new : @comentario)
+= simple_form_for comentario, remote: true, url: modal_response_comentarios_path, html: { autocomplete: :off, multipart: true } do |f|
+  = f.input :url_referencia, as: :hidden, input_html: { value: session[:original_url] }
+  
+  = simple_nested_form_for comentario do |snf|
+    .modal-header
+      %h5.modal-title#siteCommentsLabel
+        =t(:respuesta_enviar_comentarios)
+    .modal-body
+      .row
+        .col-12
+          #comentario-messages-remote-block
+        .col-12
+          .alert.alert-info
+            .row
+              .col-lg-4
+                .row
+                  .col-12
+                    = f.input :email_contacto, input_html: { class: 'required-field', id: 'email_contacto', readonly: true }, label: t(:correo_contacto), require: true
+
+              .col-lg-8
+                .row
+                  .col-12
+                    = f.input :comentario, input_html: { class: 'required-field', rows: 4 }, label: t(:comentario), require: true, placeholder: "Cuéntanos cual fue el problema o qué te gustaría cambiar ó agregar a este sistema."
+    .modal-footer
+      %button.btn.btn-sm.btn-secondary.descartar-button{type: :button, "data-dismiss"=>:modal}
+        Descartar
+      = button_tag "Enviar", "data-dismiss"=> false, 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-comentario-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+
+:javascript
+  // Escuchar el evento de apertura del modal y pasar el valor del email
+  $(document).on('click', '[data-toggle="modal"]', function () {
+    var emailContacto = $(this).data('email');
+    // Asignar este valor al campo de entrada del formulario dentro del modal
+    $('#email_contacto').val(emailContacto);  // Asegúrate de que el ID del campo de email sea correcto
+  });

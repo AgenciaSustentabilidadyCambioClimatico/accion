@@ -37,5 +37,7 @@
               - if record.resuelto
                 %i.fa.fa-check.text-success
               - else
-                = link_to solved_comentario_path(record), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_resuelto?, item: t(:comentario).downcase), remote: false } do
+                -#= link_to solved_comentario_path(record), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_resuelto?, item: t(:comentario).downcase), remote: false } do
+                -#  %i.fa.fa-fire-extinguisher.text-danger
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto } do
                   %i.fa.fa-fire-extinguisher.text-danger

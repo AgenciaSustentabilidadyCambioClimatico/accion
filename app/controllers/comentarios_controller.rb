@@ -31,6 +31,11 @@ class ComentariosController < ApplicationController
     __create_or_send("Comentario enviado correctamente")
   end
 
+  def modal_response
+    binding.pry
+    __response_or_send("Comentario enviado correctamente", params[:email_contacto])
+  end
+
   def create
     __create_or_send(t(:m_successfully_created, m: t(:comentario)))
   end
@@ -58,6 +63,19 @@ class ComentariosController < ApplicationController
     @comentario.leido = true
     @comentario.save
     redirect_to comentarios_url, notice: "Comentario fue marcado como resuelto"
+  end
+
+  def enviar_respuesta
+    binding.pry
+    comentario = Comentario.find(params[:id])
+    email = params[:respuesta][:email]
+    mensaje = params[:respuesta][:mensaje]
+
+    # Lógica para enviar el correo
+    UserMailer.responder_comentario(email, mensaje).deliver_now
+
+    # Redirigir o hacer algo después de enviar el correo
+    redirect_to comentarios_path, notice: 'Respuesta enviada con éxito.'
   end
 
   private
@@ -101,6 +119,18 @@ class ComentariosController < ApplicationController
           format.html { render :new }
           format.js
         end
+      end
+    end
+
+    def __response_or_send(success_message, email)
+      @comentario = Comentario.new(comentario_params)
+      binding.pry
+      respond_to do |format|
+        ComentarioMailer.respuesta(@comentario).deliver_later
+        format.js { 
+          flash.now[:success] = success_message
+          format.html { redirect_to @comentario, notice: success_message }
+        }
       end
     end
 end
