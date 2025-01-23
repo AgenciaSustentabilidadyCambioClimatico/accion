@@ -8,7 +8,7 @@
 		$('table.proveedores').DataTable({
 		responsive: true,
 		lengthMenu: [[30], [30]],
-		columnDefs: [ { targets: [0], orderable: false } ],
+		columnDefs: [ { targets: [-1], orderable: false } ],
 		language: {
 		url: "#{asset_path('spanish.json')}"
 		}
