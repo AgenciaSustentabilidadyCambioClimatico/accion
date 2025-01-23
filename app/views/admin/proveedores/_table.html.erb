@@ -1,25 +1,16 @@
 <script>
   $(document).ready(function() {
 
-  
     // filtro proveedores
     $('#tipo-proveedor-select, #region-select').change(function() {
       var tipoProveedor = $('#tipo-proveedor-select').val();
       var region = $('#region-select').val()
     
-
       // Show all rows if no filters are selected
       if (tipoProveedor === '' && region === '') {
         $('table.proveedores tbody tr').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
+        $('th.correlativo').addClass('d-none');
+        $('td.correlativo-index').addClass('d-none');
         return;
       }
 
@@ -27,113 +18,28 @@
       $('tr:not(.headers)').hide();
       if (tipoProveedor !== '' && region === '') {
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
+        $('th.correlativo').removeClass('d-none');
+        $('td.correlativo-index').removeClass('d-none');
     } else if (tipoProveedor === '' && region !== '') {
         $('tr[data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
+        $('th.correlativo').addClass('d-none');
+        $('td.correlativo-index').addClass('d-none');
     } else {
       // If both filters are selected, show the rows that match both filters
         $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
+
     }
 
-    if (tipoProveedor === 'Auditor APL') {
-        $('#correlativo-th').removeClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').removeClass('d-none');
-        $('#fecha-actualizacion-th').removeClass('d-none');
-        $('#promedio-th').removeClass('d-none');
-        $('td.correlativo-td').removeClass('d-none'); // Show all matching <td> elements
-        $('td.fecha-registro-td').removeClass('d-none');
-        $('td.fecha-actualizacion-td').removeClass('d-none');
-        $('td.promedio-td').removeClass('d-none');
-
-      } else {
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all matching <td> elements
-      }
-    });
-
-    $(document).on('click', '.page-item', function () {
-      var tipoProveedor = $('#tipo-proveedor-select').val();
-      var region = $('#region-select').val()
-
-
-      // Show all rows if no filters are selected
-      if (tipoProveedor === '' && region === '') {
-        $('table.proveedores tbody tr').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
-        return;
-      }
-
-     // Filter the rows based on the selected values
-      $('tr:not(.headers)').hide();
-      if (tipoProveedor !== '' && region === '') {
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
-    } else if (tipoProveedor === '' && region !== '') {
-        $('tr[data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
+    if (tipoProveedor === 'Auditor APL' ) {
+      $('th.correlativo').removeClass('d-none');
+      $('td.correlativo-index').removeClass('d-none');
     } else {
-      // If both filters are selected, show the rows that match both filters
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
+      $('th.correlativo').addClass('d-none');
+      $('td.correlativo-index').addClass('d-none');
     }
-
-    if (tipoProveedor === 'Auditor APL') {
-        $('#correlativo-th').removeClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').removeClass('d-none');
-        $('#fecha-actualizacion-th').removeClass('d-none');
-        $('#promedio-th').removeClass('d-none');
-        $('td.correlativo-td').removeClass('d-none'); // Show all matching <td> elements
-        $('td.fecha-registro-td').removeClass('d-none');
-        $('td.fecha-actualizacion-td').removeClass('d-none');
-        $('td.promedio-td').removeClass('d-none');
-
-      } else {
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all matching <td> elements
-      }
-    });
 });
 
-
+  });
 </script>
 <div class="card">
   <div class="card-header">
@@ -145,7 +51,7 @@
     <% end %>
     </h5>
   </div>
- 
+
   <div class="card-body pb-0">
     <div class="row justify-content-left">
      <% if !local_assigns[:retirados] %>
@@ -160,11 +66,12 @@
 </div>
   <div class="card-body">
     <div class="table-responsive">
-  
+
       <table class="table proveedores table-striped">
+
         <thead>
           <tr class = "headers" data-target="#proveedor-detalles">
-            <th id='correlativo-th' class="d-none"><%= t(:correlativo) %></th>
+            <th class="correlativo d-none">Correlativo</th>
             <th><%= t(:tipo_proveedor) %></th>
             <th><%= t(:nombre) %></th>
             <% if !local_assigns[:retirados]%>
@@ -174,20 +81,15 @@
             <th><%= t(:region) %></th>
             <th><%= t(:telefono) %></th>
             <th><%= t(:correo_electronico) %></th>
-            <% if !current_user %>
-              <th id='fecha-registro-th' class="d-none">Fecha Registro</th>
-              <th id='fecha-actualizacion-th' class="d-none">Fecha última actualización de registro</th>
-              <th id='promedio-th' class="d-none">Promedio Evaluación</th>
-            <% end %>
             <% if current_user && current_user.is_admin? %>
-              <th><%= t(:evaluacion) %> </th> 
+              <th><%= t(:evaluacion) %> </th>
               <th><%= t(:fecha_ingreso_registro) %></th>
               <th>Fecha última actualización de registro</th>
               <% if local_assigns[:retirados]%>
                 <th> <%= t(:fecha_retiro) %> </th>
               <% end %>
             <% end %>
-            <th class="detalles">Detalles</th>
+            <th><%= t(:detalles) %></th>
             <% if current_user && current_user.is_admin?%>
               <th class="dos iconos-acciones"><%= t(:acciones) %></th>
             <% end %>
@@ -206,10 +108,10 @@
             <% telefono = record.telefono %>
             <% email = record.email %>
             <% fecha_ingreso = record.fecha_aprobado%>
-            <% fecha_revalidacion = record.fecha_revalidacion %>
+            <% fecha_revalidacion = record.fecha_revalidacion%>
             <% fecha_retiro = record.updated_at.strftime('%F') %>
             <tr data-region="<%= region %>" data-tipo-proveedor="<%= tipo %>" >
-              <td class="correlativo-td d-none"><%= correlativo.blank? ? '--' : correlativo %></td>
+              <td class='correlativo-index d-none'><%= correlativo.blank? ? '--' : correlativo %></td>
               <td><%= tipo.blank? ? '--' : tipo %></td>
               <td><%= nombre.blank? ? '--' : nombre %></td>
               <% if !local_assigns[:retirados]%>
@@ -219,31 +121,34 @@
               <td><%= region.blank? ? '--' : region %></td>
               <td><%= telefono.blank? ? '--' : telefono %></td>
               <td><%= email.blank? ? '--' : email %></td>
-              <% if !current_user %>
-                <td class="fecha-registro-td d-none"><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
-                <td class="fecha-actualizacion-td d-none"><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
-                <td class="promedio-td d-none">5.0</td>
-              <% end %>
               <% if current_user && current_user.is_admin? %>
-                <td>5.0</td>
-                <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
-                <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
-                <% if local_assigns[:retirados] %>
-                  <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
-                <% end %>
+                  <td>5.0</td>
+                  <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                  <% if local_assigns[:retirados] %>
+                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
+                  <% end %>
               <% end %>
               <td class="dos iconos-acciones">
+              <div>
                 <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+
                   <i class="fa fa-info-circle"></i>
-                <% end %>
-              </td> 
+
+               <% end %>
+              </div>
+
+              </td>
               <% if current_user && current_user.is_admin?%>
                 <td class="dos iconos-acciones">
-                  <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
-                    <i class='fa fa-edit'></i>
-                  <% end %>
-                </td>
+                <div>
+                <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
+                  <i class='fa fa-edit'></i>
+                  </td>
+                <% end %>
+              </div>
               <% end %>
+
             </tr>
           <% end %>
         </tbody>
