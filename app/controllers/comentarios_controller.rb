@@ -32,8 +32,7 @@ class ComentariosController < ApplicationController
   end
 
   def modal_response
-    binding.pry
-    __response_or_send("Comentario enviado correctamente", params[:email_contacto])
+    __response_or_send("Comentario enviado correctamente")
   end
 
   def create
@@ -63,19 +62,6 @@ class ComentariosController < ApplicationController
     @comentario.leido = true
     @comentario.save
     redirect_to comentarios_url, notice: "Comentario fue marcado como resuelto"
-  end
-
-  def enviar_respuesta
-    binding.pry
-    comentario = Comentario.find(params[:id])
-    email = params[:respuesta][:email]
-    mensaje = params[:respuesta][:mensaje]
-
-    # Lógica para enviar el correo
-    UserMailer.responder_comentario(email, mensaje).deliver_now
-
-    # Redirigir o hacer algo después de enviar el correo
-    redirect_to comentarios_path, notice: 'Respuesta enviada con éxito.'
   end
 
   private
@@ -122,15 +108,24 @@ class ComentariosController < ApplicationController
       end
     end
 
-    def __response_or_send(success_message, email)
-      @comentario = Comentario.new(comentario_params)
-      binding.pry
-      respond_to do |format|
+    def __response_or_send(success_message)
+      #binding.pry
+      @comentario = Comentario.find(params[:comentario][:id])
+        
+      if params[:comentario][:requiere_envio_correo] == 'true'
+        #binding.pry
+      
+        @comentario.comentario = params[:comentario][:comentario]
         ComentarioMailer.respuesta(@comentario).deliver_later
-        format.js { 
-          flash.now[:success] = success_message
-          format.html { redirect_to @comentario, notice: success_message }
-        }
+      end
+      #Actualiza estados
+      @comentario_response = Comentario.find(params[:comentario][:id])
+      @comentario_response.resuelto = true
+      @comentario_response.leido = true
+      @comentario_response.save
+      #binding.pry
+      respond_to do |format|
+        format.js { render 'comentarios/modal_response' }
       end
     end
 end
