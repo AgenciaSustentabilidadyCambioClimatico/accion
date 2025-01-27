@@ -555,6 +555,7 @@ es:
   descripción_ciiu_v4: Descripción CIIU V4
   medio_verificación: Medio verificación
   enviar_comentarios: Enviar comentarios
+  respuesta_enviar_comentarios: Respuesta comentario
   usuarios: Usuarios
   campos_disponibles: Campos disponibles
   tipos_contribuyentes: Tipos de contribuyentes
@@ -801,6 +802,7 @@ es:
   cargar_archivo: Cargar archivo
   documentos_ingresados: Documentos ingresados
   fecha_ingreso: Fecha ingreso
+  fecha_resolucion: Fecha resolución
   enlace: Enlace
   monto_garantizado_hoy: Monto garantizado hoy
   vencimiento_ultima_garantia: Vencimiento última garantía
@@ -1518,6 +1520,7 @@ es:
   nuevo_flujo_fpl: Nuevo Flujo FPL
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
+  respuesta_comentario: Respuesta comentario
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:

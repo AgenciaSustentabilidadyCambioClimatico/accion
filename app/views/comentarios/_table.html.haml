@@ -2,18 +2,19 @@
   %table.table.comentarios.table-striped.no-margin
     %thead
       %tr{class: ((tipo==Comentario::ERRORES) ? 'alert-danger' : 'alert-info')}
-        %th.fecha-ingreso Fecha Ingreso
+        %th.fecha-ingreso=t(:fecha_ingreso)
         %th.comentario=t(:comentario)
         %th.email-contacto=t(:email_del_contacto)
         %th.url-referencia=t(:url_ref)
         %th.usuario=t(:usuario)
         %th.adjuntos=t(:adjuntos)
+        %th.fecha-resolucion=t(:fecha_resolucion)   
         %th.dos.iconos-acciones=t(:acciones)
 
     %tbody
       - @comentarios.each do |record|
         - if record.tipo_comentario_id == tipo
-          %tr
+          %tr{id: "comentarios_#{record.id}"}
             %td=record[:created_at].strftime('%Y-%m-%d')
             %td.comentario-comentario
               %div
@@ -28,7 +29,12 @@
                 = '--'
             %td= record.user_id.blank? ? '--' : record&.user&.nombre_completo
             %td.text-center= render 'layouts/modal_archivos', item: record, adjuntos: record.comentario_archivos
-            %td.dos.iconos-acciones
+            %td{id: "comentarios_fechas_updated_#{record.id}"}
+              - if record.resuelto
+                =record[:updated_at].strftime('%Y-%m-%d')
+              - else
+                = 'No Resuelto'
+            %td.dos.iconos-acciones{id: "comentarios_acciones_#{record.id}"}
               - if record.leido
                 %i.fa.fa-envelope-open.pr-1
               - else
@@ -37,5 +43,7 @@
               - if record.resuelto
                 %i.fa.fa-check.text-success
               - else
-                = link_to solved_comentario_path(record), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_resuelto?, item: t(:comentario).downcase), remote: false } do
+                -#= link_to solved_comentario_path(record), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_resuelto?, item: t(:comentario).downcase), remote: false } do
+                -#  %i.fa.fa-fire-extinguisher.text-danger
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id  } do
                   %i.fa.fa-fire-extinguisher.text-danger

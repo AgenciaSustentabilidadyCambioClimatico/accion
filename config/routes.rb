@@ -811,6 +811,7 @@ Rails.application.routes.draw do
   resources :comentarios, except: [:edit,:destroy,:update] do
     collection do
       post :modal_create
+      post :modal_response
       get :reset
     end
     member do

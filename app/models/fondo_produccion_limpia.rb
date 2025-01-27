@@ -227,17 +227,22 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
+    # Ruta temporal en el sistema local para el PDF
+    pdf_temp = StringIO.new(pdf.render)
+    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
+    # Nombre del archivo en S3
+    pdf_file_name = "fondo_produccion_limpia_#{self.id}_#{revision}.pdf"
 
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
+    # Subir a S3 utilizando aws-sdk versión 3
+    s3 = Aws::S3::Resource.new
 
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
+    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/pdf/#{pdf_file_name}")
+    obj.put(body: pdf_temp)
+
+    # Retorna la URL pública del archivo en S3
+    s3_url = obj.public_url
+    s3_url
 
     rescue StandardError => e
       Rails.logger.error "Error generando PDF: #{e.message}"
@@ -301,18 +306,24 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_cuestionario_ejecutor(pdf, flujo_id)
       self.pdf_separador(pdf, 20)
     end
+    
+    # Ruta temporal en el sistema local para el PDF
+    pdf_temp = StringIO.new(pdf.render)
+    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
+    # Nombre del archivo en S3
+    pdf_file_name = "admisibilidad_juridica_#{self.id}_#{revision}.pdf"
 
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
+    # Subir a S3 utilizando aws-sdk versión 3
+    s3 = Aws::S3::Resource.new
 
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
+    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{pdf_file_name}")
+    obj.put(body: pdf_temp)
 
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
+    # Retorna la URL pública del archivo en S3
+    s3_url = obj.public_url
+
+    s3_url
 
     rescue StandardError => e
       Rails.logger.error "Error generando PDF: #{e.message}"

@@ -31,3 +31,10 @@
     .card
       .card-body
         = render 'table', tipo: Comentario::SUGERENCIAS
+
+- email = email.nil? ? nil : email   
+- id = id.nil? ? nil : id  
+.modal.fade{id: :"site-comments-response", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content#modal-response-comentario-remote-form
+      = render 'comentarios/form_modal_response', email: email, id: id

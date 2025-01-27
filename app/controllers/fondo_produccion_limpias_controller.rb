@@ -3542,11 +3542,19 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if File.exist?(pdf_file_path)
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      else
-        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+      # Nombre del archivo en S3
+      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/pdf/fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+   
+      # Crear el recurso S3
+      s3 = Aws::S3::Client.new
+   
+      begin
+        # Descargar el archivo desde S3
+        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
+        # Enviar el archivo como una descarga
+        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      rescue Aws::S3::Errors::NoSuchKey
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
         redirect_to request.referer || root_path
       end
     end
@@ -3583,18 +3591,26 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def descargar_admisibilidad_juridica_pdf
+
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-      if File.exist?(pdf_file_path)
-        send_file pdf_file_path, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      else
-        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+      # Nombre del archivo en S3
+      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+  
+      # Crear el recurso S3
+      s3 = Aws::S3::Client.new
+
+      begin
+        # Descargar el archivo desde S3
+        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
+        # Enviar el archivo como una descarga
+        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      rescue Aws::S3::Errors::NoSuchKey
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
         redirect_to request.referer || root_path
       end
     end
-
 
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes

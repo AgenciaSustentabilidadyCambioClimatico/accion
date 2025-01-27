@@ -1,0 +1,15 @@
+$('#site-comments-response').modal("hide");
+// Inserta el HTML con las clases y elementos que mencionas en un elemento con un id específico
+$('#comentarios_acciones_<%= @comentario.id %>').html(`
+    <i class="fa fa-envelope-open pr-1"></i>
+    <i class="fa fa-check text-success"></i>
+`);
+
+// Evita declarar la variable 'fecha' de nuevo si ya está declarada
+if (typeof fecha === 'undefined') {
+  let fecha = new Date('<%= @comentario.updated_at %>');  // Convierte la cadena de fecha en un objeto Date
+  let fechaFormateada = fecha.toISOString().split('T')[0]; // Esto te da 'YYYY-MM-DD'
+  
+  // Actualiza el contenido de tu elemento HTML
+  $('#comentarios_fechas_updated_<%= @comentario.id %>').html(fechaFormateada);
+}
