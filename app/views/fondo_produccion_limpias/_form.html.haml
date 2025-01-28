@@ -240,8 +240,8 @@
         = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
   -if !solo_lectura
     .float-left
-      = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
-      = link_to t(:descargar_postulacion), descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
+      -#= button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
+      = link_to t(:descargar_postulacion), descargar_formulario_fpl_fondo_produccion_limpia_path(@tarea_pendiente.flujo_id), class: "btn btn-success btn-sm"
     .float-right
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
