@@ -124,7 +124,7 @@ class ConvocatoriasController < ApplicationController
 				@convocatoria.convocatoria_destinatarios.each do |rd|
 					rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
 					# DZC 2018-10-04 19:44:58 se corrige error en el nombre de la variable rgc
-					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id)
+					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id).deliver_now
 				end
 				continua_flujo_segun_tipo_tarea
 		  	format.html { redirect_to root_path, notice: "Convocatoria creada" }
@@ -167,7 +167,7 @@ class ConvocatoriasController < ApplicationController
 				@convocatoria.convocatoria_destinatarios.each do |rd|
 					rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
 					# DZC 2018-10-04 19:44:58 se corrige error en el nombre de la variable rgc
-					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id)
+					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id).deliver_now
 				end
 				continua_flujo_segun_tipo_tarea
 				format.html { redirect_to tarea_pendiente_convocatorias_path(@tarea_pendiente), notice: "Convocatoria modificada" }

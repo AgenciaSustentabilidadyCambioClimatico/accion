@@ -118,7 +118,7 @@ class FlujoTarea < ApplicationRecord
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
 											actor.persona.email_institucional, 
-											rgc.id)
+											rgc.id).deliver_now
 									end
 								end
 								 
@@ -168,7 +168,7 @@ class FlujoTarea < ApplicationRecord
 										self.asunto_format(ut.user,mdi), 
 										self.cuerpo_format(ut.user,mdi), 
 										ut.email_institucional,
-										rgc.id) #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
+										rgc.id).deliver_now #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
 								end
 							end   
 							if !auditorias.blank? #DZC elimina el último elemento del array

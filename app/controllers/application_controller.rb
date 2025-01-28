@@ -102,7 +102,7 @@ class ApplicationController < ActionController::Base
         
         rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: nil, 
           fecha_envio_correo: DateTime.now, flujo_id: flujo.id)
-        RevisarReportesMailer.enviar(flujo, actor.persona, url, rgc.id)
+        RevisarReportesMailer.enviar(flujo, actor.persona, url, rgc.id).deliver_now
       end
     end
     #def devise_parameter_sanitizer

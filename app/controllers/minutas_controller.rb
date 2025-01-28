@@ -50,7 +50,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
             # 
             @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
               rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
-               ConvocatoriaMailer.delay.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
+               ConvocatoriaMailer.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
             end
 
             data = @tarea_pendiente.data
@@ -116,7 +116,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
           # 
           @convocatoria.convocatoria_destinatarios.each do |rd| #probar funcionamiento, manda correos con attachments!
             rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
-             ConvocatoriaMailer.delay.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id)
+             ConvocatoriaMailer.enviar(rd, @minuta.mensaje_encabezado, @minuta.mensaje_cuerpo, [@minuta.acta, @minuta.lista_asistencia], rgc.id).deliver_now
           end
           continua_flujo_segun_tipo_tarea
         end
