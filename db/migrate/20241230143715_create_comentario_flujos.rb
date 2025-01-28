@@ -1,6 +1,6 @@
 class CreateComentarioFlujos < ActiveRecord::Migration[5.1]
   def change
-    unless table_exists?(:comentarios_flujos)
+    unless table_exists?(:comentario_flujos)
       create_table :comentario_flujos do |t|
         t.string :comentario
         t.references :flujo, foreign_key: true
