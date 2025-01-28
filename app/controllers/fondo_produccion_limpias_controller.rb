@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -3558,6 +3558,79 @@ class FondoProduccionLimpiasController < ApplicationController
         redirect_to request.referer || root_path
       end
     end
+
+    def descargar_formulario_fpl
+      @flujo = Flujo.find(params[:id])
+      @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.fondo_produccion_limpia_id)
+      manifestacion_de_interes_id = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
+      manifestacion_de_interes = ManifestacionDeInteres.find(manifestacion_de_interes_id.manifestacion_de_interes_id)
+      nombre_tipo_instrumento = obtiene_nombre_tipo_instrumento(@flujo.tipo_instrumento_id)
+      
+      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_06)
+      comentarios = ComentarioFlujo.includes(:user).where(flujo_id: @flujo.id, tarea_id: tarea_fondo.id)
+
+      objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @flujo.id).all
+      postulantes = EquipoTrabajo.where(flujo_id: @flujo.id, tipo_equipo: 3)
+      consultores = EquipoTrabajo.where(flujo_id: @flujo.id, tipo_equipo:[1,2])
+      empresas = EquipoEmpresa.where(flujo_id: @flujo.id)
+      actividades = PlanActividad.actividad_detalle(@flujo.id)
+      costos = PlanActividad.costos(@flujo.id)
+      tipo_instrumento = @flujo.tipo_instrumento_id
+      costos_seguimiento = PlanActividad.costos_seguimiento(@flujo.id, @flujo.tipo_instrumento_id)
+
+      aporte_micro = 0
+      aporte_pequena = 0
+      aporte_mediana = 0
+      tope_maximo = 0
+      confinanciamiento_empresa = nil
+
+      if @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id != TipoInstrumento::FPL_LINEA_5_1 
+
+        if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA_L13
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
+          tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+        else
+          aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
+          aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
+          aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA
+
+          if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
+          elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+            tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+          end
+        end
+
+        if @fondo_produccion_limpia.present?
+          if @fondo_produccion_limpia.cantidad_micro_empresa != 0 || 
+            @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
+            @fondo_produccion_limpia.cantidad_mediana_empresa != 0
+              confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@flujo.id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
+          end
+        end
+
+      end
+
+      pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
+                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+        
+      # Nombre del archivo en S3
+      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
+      # Crear el recurso S3
+      s3 = Aws::S3::Client.new
+
+      begin
+        # Descargar el archivo desde S3
+        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
+        # Enviar el archivo como una descarga
+        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
+      rescue Aws::S3::Errors::NoSuchKey
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
+        redirect_to request.referer || root_path
+      end
+    end    
 
     def descargar_contrato_pdf
       flujo = Flujo.find(params[:id])
