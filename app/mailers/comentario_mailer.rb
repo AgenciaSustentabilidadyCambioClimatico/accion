@@ -16,6 +16,6 @@ class ComentarioMailer < ApplicationMailer
 
   def respuesta(comentario)
     @comentario = comentario
-    mail(to: comentario.email_contacto, subject: 'RE: Nuevo comentario del sitio ASCC ID:' + @comentario.id)
+    mail(to: comentario.email_contacto, subject: 'RE: Nuevo comentario del sitio ASCC ID:' + @comentario.id.to_s)
   end
 end
