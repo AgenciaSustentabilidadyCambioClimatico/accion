@@ -13,8 +13,10 @@ class RegistroProveedoresController < ApplicationController
     # if habilitado.present?
     if current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.where(user_encargado: nil)
+
       @users = Responsable.responsables_por_rol(Rol::REVISOR_PROVEEDORES)
     else
+
       redirect_to root_path
       flash.now[:success] = "Registro enviado correctamente"
     end
