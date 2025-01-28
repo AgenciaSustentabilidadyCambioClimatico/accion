@@ -268,6 +268,9 @@ Rails.application.routes.draw do
   #Enviar postulación
   get 'enviar_postulacion/:id', to: "fondo_produccion_limpias#enviar_postulacion", as: :enviar_postulacion_fondo_produccion_limpia
 
+  #Descargar postulación
+  get ':id/descargar_formulario_fpl', to: "fondo_produccion_limpias#descargar_formulario_fpl", as: :descargar_formulario_fpl_fondo_produccion_limpia
+
 
   #Tarea FPL-02
   get ':id/revisor', to: "fondo_produccion_limpias#revisor", as: :revisor_fondo_produccion_limpia
@@ -811,6 +814,7 @@ Rails.application.routes.draw do
   resources :comentarios, except: [:edit,:destroy,:update] do
     collection do
       post :modal_create
+      post :modal_response
       get :reset
     end
     member do

@@ -17,6 +17,7 @@ es:
   estándar_seleccionado: Estándar seleccionado
   formato_carta_apoyo_y_compromiso: Formato carta apoyo y compromiso
   otro_datos_proyecto: Otro datos proyecto
+  correlativo: Correlativo
   evaluación: Evaluación
   mis_elementos_certificados: Mis elementos certificados
   elementos_certificados: Elementos certificados
@@ -70,7 +71,6 @@ es:
   rendición: Rendición
   items: Items
   orden: Orden
-#DZC Agregado por nosotros
   auditorías: Auditorías
   auditorías_rechazadas: Auditorías rechazadas
   campos_acción: Campo acción
@@ -80,25 +80,19 @@ es:
   evidencial: Evidencial
   auditorías: Auditorías
   adhesiones: Adhesiones
-#DZC
   obligatorio: Obligatorio
   debe_responder_este_campo: Debe responder este campo
   actores: Actores
   convocar_ceremonia_certificacion: Convocar ceremonia de certificacion
   rol_en_acuerdo: Rol en Acuerdo
   rut_persona: Rut persona
-#DZC Agregado por nosotros
-# nombre_persona: Nombre persona
+  nombre_persona: Nombre persona
   nombre_completo_persona: Nombre completo persona
-#DZC
   cargo_en_institución: Cargo institución
   sector_productivo: Sector productivo
   tipo_institución: Tipo institución
   sí: Sí
-#DZC Agregado por nosotros
   período: Período
-#DZC
-#DZC Gino
   ejecución_presupuestarias: Ejecución presupuestarias
   año: Año
   fecha_transferencia: Fecha transferencia
@@ -162,7 +156,6 @@ es:
   documento_proyecto: Documento proyecto
   subir_carta_de_apoyo: Subir carta de apoyo
   carta_de_apoyo: Carta de apoyo
-#DZC
   adjuntar_acta_minuta_reunión: Adjuntar acta minuta reunión
   documento_adjunto: Documento adjunto
   resolver_observaciones: Resolver observaciones
@@ -197,10 +190,8 @@ es:
   rut_representante_institucion_para_solicitud: RUT representante institución para solicitud
   email_representante_institucion_para_solicitud: Email representante institución para solicitud
   teléfono_representante_institucion_para_solicitud: Teléfono representante institución para solicitud
-#DZC Agregado por nosotros
   en_proceso_de_pago: En proceso de pago
   monto_en_proceso_de_pago: Monto en proceso de pago
-#DZC
   nombre_propuesta: Nombre propuesta
   instituciones_participantes_propuesta: Instituciones participantes de propuesta programa / proyecto y en qué calidad lo hacen
   monto_aproximado_a_solicitar: Monto aproximado a solicitar
@@ -222,14 +213,12 @@ es:
   materia: Materia
   materia_sustancia: Materia / Sustancia
   plazo: Plazo
-#DZC Agregado por nosotros
   adhesiones_rechazadas: Adhesiones rechazadas
   nombre_institución: Nombre institución
   nombre_representante_legal: Nombre Encargado APL
   rut_representante_legal: Rut Encargado APL
   fono_representante_legal: Fono Encargado APL
   email_representante_legal: Mail Encargado APL
-#DZC
   entregables: Entregables
   set_metas_accion: Set de metas y acciones
   months: Mes(es)
@@ -566,6 +555,7 @@ es:
   descripción_ciiu_v4: Descripción CIIU V4
   medio_verificación: Medio verificación
   enviar_comentarios: Enviar comentarios
+  respuesta_enviar_comentarios: Respuesta comentario
   usuarios: Usuarios
   campos_disponibles: Campos disponibles
   tipos_contribuyentes: Tipos de contribuyentes
@@ -696,11 +686,6 @@ es:
   web_o_red_social_2: Web o red social 2
   telefono: Teléfono
   nombre_completo: Nombre completo
-#DZC antes
-#  apellido_paterno: Apellido paterno
-#  apellido_materno: Apellido materno
-#  nombres: Nombres
-#DZC
   current_password: Actual contraseña
   editar_mi_cuenta: Editar mi cuenta
   password: Contraseña
@@ -817,6 +802,7 @@ es:
   cargar_archivo: Cargar archivo
   documentos_ingresados: Documentos ingresados
   fecha_ingreso: Fecha ingreso
+  fecha_resolucion: Fecha resolución
   enlace: Enlace
   monto_garantizado_hoy: Monto garantizado hoy
   vencimiento_ultima_garantia: Vencimiento última garantía
@@ -837,8 +823,6 @@ es:
   agendar_reunion: Agendar reunión
   fijar_calendario: Fijar calendario
   solicitar_pago: Solicitar pago
-
-  # DZC, para uso en vistas de convocatorias y anexas a ellas
   flujo_id: ID Flujo
   tarea_pendiente_id: Tarea pendiente
   nombre_convocatoria_asociada: Nombre de la convocatoria asociada
@@ -995,10 +979,6 @@ es:
   plazo_apertura_meses: Plazo Apertura (meses)
   plazo_cierre_meses: Plazo Cierre (meses)
   estándares_de_certificación_asociados_a_auditoría: Estándares de certificación asociados a auditoría
-
-
-
-  #RicarDO
   subir_imagen: Subir imágenes
   otros_elementos_certificables: Otros elementos certificables
   propiedades: Propiedades
@@ -1093,9 +1073,6 @@ es:
   objetivos_especificos: Objetivos específicos
   mecanismo_de_implementacion: Mecanismo de implementación
   actualización_de_acuerdo: Actualización de Acuerdo
-
-
-  #  ADAN
   responder_comentarios: Responder comentarios
   comentarios_enviados: Comentarios enviados
   ver_comentarios: Ver comentarios
@@ -1240,7 +1217,6 @@ es:
   documentos: Documentos
   asunto_del_mensaje: Asunto del mensaje
   relation_cargo_establecimiento: Relación Cargo - Establecimiento
-  #DOSSA 12-07-2019
   tooltips_tamanos: Tooltips, tamanos y validaciones
   tarea_id: ID tarea
   pestana: Pestaña de tarea
@@ -1252,13 +1228,10 @@ es:
   tiene_validaciones: ¿Tiene validaciones?
   mantenedor_de_campos: Mantenedor de campos
   nombre_tarea: Nombre tarea
-  #DOSSA 15-07-2019
   visible: ¿Visible?
   obligatorio: ¿Obligatorio?
   validacion_activa: ¿Activas?
-  #DOSSA 17-07-2019
   validacion_vacio_mensaje: Mensaje de campo obligatorio vacío
-  # DOSSA 18-07-2019
   ayuda: Texto de ayuda del campo
   validacion_min_activa_int: ¿Exigir valor mínimo? (Indique el valor en el recuadro de abajo)
   validacion_max_activa_int: ¿Exigir valor máximo? (Indique el valor en el recuadro de abajo)
@@ -1266,14 +1239,10 @@ es:
   validacion_max_activa_text: ¿Exigir máximo de caracteres? (Indique la cantidad en el recuadro de abajo)
   validaciones_activas_text: ¿Validaciones de caracteres activas?
   validaciones_activas_int: ¿Validaciones de valores activas?
-  # DOSSA 22-07-2019
   nombre_obligatorio: Nombre de campo (Es un campo obligatorio)
   tooltip: Tooltip
-  # DOSSA 23-07-2019
   campos: Campos
   lista_de_campos: Listado de campos en la tarea
-
-  # DOSSA 2019-10-09 11:19 Cuencas
   cuenca: Cuenca
   cuencas_subcuencas: Cuencas o subcuencas
   cuenca_subcuenca: Cuenca o subcuenca
@@ -1282,28 +1251,21 @@ es:
   editar_cuenca_: Cuenca
   codigo_cuenca: Código cuenca
   nombre_cuenca: Nombre_cuenca
-
-  # DZC 2019-07-25 17:32:19 se agregan para claridad en la vista
   lista_de_campos_en_tarea_: Lista de campos de la tarea '%{tarea}'
   actualizar_campo_: Campo '%{campo}' de la tarea '%{tarea}'
-
-  # DOSSA 2019-07-29
   ver_campos: Ver listado de campos
   editar_campo: Editar campo
-
   nueva_institución: Nueva Institución
   deshacer: Deshacer
   volver_a_lista: Volver a lista
   nuevo_usuario: Nuevo usuario
   nuevo_representante: Nuevo representante
-
   tipo_instrumento_propuesto: Tipo de instrumento propuesto
   selección_de_encargado_de_hitos_de_prensa: Seleccion de encargado de hitos de prensa
   comentarios_sobre_condiciones_y_compromisos: Comentarios sobre condiciones y compromisos
   tarea_documentos_asociados: Documentos asociados
   respuesta_observaciones_admisibilidad: Respuesta observaciones
   respuesta_observaciones_admisibilidad_juridica: Respuesta observaciones
-
   cumplimientos_por_meta: Cumplimientos por meta
   traspaso_de_instrumentos: Traspaso de instrumentos
   new_traspaso_instrumento: Configurar nuevo traspaso de instrumentos
@@ -1453,23 +1415,15 @@ es:
   archivos_de_auditoria_y_documentacion: Archivos de auditoría y documentación
   metas: Metas
   meta: Meta
-
-  #  ADAN
   fecha_fin_debe_ser_mayor_a_inicio: Fecha fin debe ser mayor a inicio
-
-  # ALONSO 15-09-2020
   elegir_institucion_entregables: Elegir Institución encargada entregables
   elegir_encargado_entregables: Elegir encargado entregables
   comentarios_encargado: Comentarios a encargado de entregable
-
-  #ALONSO 09-11-2020
   asignar_usuario_carga_entregables_y_carga_datos_empresa: Asignar Usuario para Cargar Entregables y Cargar Datos Empresas
   asignar_usuarios_carga_de_datos: Asignar usuario que cargará datos
   elegir_institucion_carga_datos: Elegir Institución que cargará datos
   elegir_encargado_carga_datos: Elegir cargador de datos
   comentarios_encargado_carga_datos: Comentarios para cargador de datos
-
-  #Postulación Fondo Producción Limpia
   postulacion_fondo_produccion_limpia: Postulación a Fondo de Producción Limpia
   tipo_acuerdo: Tipo de Acuerdo
   propuesta_tecnica: Propuesta Técnica
@@ -1566,8 +1520,7 @@ es:
   nuevo_flujo_fpl: Nuevo Flujo FPL
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
-
-
+  respuesta_comentario: Respuesta comentario
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:
@@ -1605,7 +1558,6 @@ es:
           has_one: No se puede eliminar el registro porque existe un %{record} dependiente
           has_many: No se puede eliminar el registro porque existen %{record} dependientes
       models:
-        #ricardo: mensaje de error maquinaria
         maquinaria:
           attributes:
             patente:
@@ -1622,7 +1574,6 @@ es:
               blank: Indique observaciones del documento
         programa_proyecto_propuesta:
           attributes:
-#DZC Gino
             proyecto_con_atencion_directa_a_beneficiarios:
               blank: Indique si el proyecto es con atención directa a beneficiarios
             sectores_economicos:
@@ -1703,7 +1654,6 @@ es:
               blank: Indique la fecha de finalización
             carta_de_apoyo_coordinador:
               blank: Indique un archivo antes de enviar el formulario
-#DZC
             actual_respuesta_proponente_revision:
               blank: Indique una respuesta antes de enviar nuevamente la propuesta
             resultado_de_la_revision:
@@ -1782,7 +1732,6 @@ es:
               blank: Indique la propuesta programa / proyecto base
             actual_comentarios_observaciones_tecnicas:
               blank: Por favor indique un comentario
-#DZC Gino
         ejecucion_presupuestaria:
           attributes:
             programa_proyecto_propuesta_id:
@@ -1797,7 +1746,6 @@ es:
               blank: Indique los montos transferidos
             montos_ejecutados:
               blank: Indique los montos ejecutados
-#DZC
         documento_diagnostico:
           attributes:
             manifestacion_de_interes_id:
@@ -1964,7 +1912,6 @@ es:
             attributes:
               archivo:
                 blank: Indique un archivo, de lo contrario elimine esta fila
-#DZC
         informe_acuerdo:
           attributes:
             plazo_maximo_adhesion:
@@ -2084,14 +2031,6 @@ es:
               blank: Indique el RUT
             nombre_completo:
               blank: Indique el nombre completo
-#DZC Antes
-#            nombres:
-#              blank: Indique los nombres
-#            apellido_materno:
-#              blank: Indique el apellido materno
-#            apellido_paterno:
-#              blank: Indique el apellido paterno
-#DZC
             telefono:
               blank: Indique un teléfono
             email:
@@ -2408,7 +2347,6 @@ es:
     - vie
     - sáb
     abbr_month_names:
-    -
     - ene
     - feb
     - mar
@@ -2436,7 +2374,6 @@ es:
       short_year: "%d %b de %Y"
       datepicker: '%d-%m-%Y'
     month_names:
-    -
     - enero
     - febrero
     - marzo

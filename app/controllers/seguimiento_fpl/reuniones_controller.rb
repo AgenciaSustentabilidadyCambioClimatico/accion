@@ -22,7 +22,7 @@ class SeguimientoFpl::ReunionesController < ApplicationController
 				end
 
 				@reunion.reunion_destinatarios.each do |rd|
-					ReunionMailer.delay.enviar(rd)
+					ReunionMailer.enviar(rd).deliver_now
 				end
 
 		  	@reunion.reunion_success @tarea_pendiente

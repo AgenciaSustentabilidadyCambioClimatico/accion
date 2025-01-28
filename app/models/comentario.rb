@@ -11,4 +11,7 @@ class Comentario < ApplicationRecord
 	validates :email_contacto, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }
 
 	accepts_nested_attributes_for :comentario_archivos, :allow_destroy => true#, limit: 3
+
+	attribute :requiere_envio_correo, :boolean, default: true
+	attr_accessor :requiere_envio_correo
 end

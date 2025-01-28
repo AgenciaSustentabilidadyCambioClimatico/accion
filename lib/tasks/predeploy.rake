@@ -7,7 +7,7 @@ task :predeploy => :environment do
                username: "AppDeploy"
     end
     notifier.ping "Finalizando deploy ASCC - Accion #{ENV["AMBIENTE"]}..."
-    Sidekiq::ProcessSet.new.each(&:quiet!)
+    #Sidekiq::ProcessSet.new.each(&:quiet!)
 
     #notifier.ping "Todas las colas ASCC en #{ENV["AMBIENTE"]} en estado quiet..."
 

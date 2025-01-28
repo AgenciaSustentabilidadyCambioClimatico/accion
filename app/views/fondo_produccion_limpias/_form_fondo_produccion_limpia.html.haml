@@ -4232,7 +4232,7 @@
                   %th.encabezado-form{style: 'text-align: center; vertical-align: middle;  width: 10%;'} Cumple?
               %tbody
                 %tr
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo general al postulante
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Tipo A - De apoyo general al postulante
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
                   - if @costos_seguimiento[0].present?
                     %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'])
@@ -4267,7 +4267,7 @@
                     %td#apoyo_general_postulante_cofinanciamiento_cpl_cumple.contenido-form-center  
                       %span{ class: 'text-danger' } NO    
                 %tr
-                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} De apoyo directo a las empresas de menor tamaño
+                  %td.contenido-form{style: 'text-align: left; vertical-align: middle;', rowspan: 2} Tipo B - De apoyo directo a las empresas de menor tamaño
                   %td.contenido-form{style: 'text-align: left; vertical-align: middle;'} Aporte del postulante
                   - if @costos_seguimiento[1].present? && @confinanciamiento_empresa.present?
                     %td#apoyo_general_empresa_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[1]['aporte_propio_valorado']+@costos_seguimiento[1]['aporte_propio_liquido'])

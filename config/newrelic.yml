@@ -10,40 +10,67 @@
 # For full documentation of agent configuration options, please refer to
 # https://docs.newrelic.com/docs/agents/ruby-agent/installation-configuration/ruby-agent-configuration
 
-common: &default_settings
+development:
   # Required license key associated with your New Relic account.
   license_key: ENV['NEW_RELIC_LICENSE_KEY']
 
-  # Your application name. Renaming here affects where data displays in New
-  # Relic.  For more details, see https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/renaming-applications
-  app_name: ASCC - Accion - prod
+  # Your application name. Renaming here affects where data displays in New Relic.
+  app_name: ASCC - Accion (Development)
 
-  agent_enabled: <%= ENV['ENABLE_NEW_RELIC']%>
+  agent_enabled: <%= ENV['ENABLE_NEW_RELIC'] %>
+
   distributed_tracing:
     enabled: true
 
-  # To disable the agent regardless of other settings, uncomment the following:
-  # agent_enabled: false
+  # Logging level for log/newrelic_agent.log
+  log_level: info
+
+test:
+  # Required license key associated with your New Relic account.
+  license_key: ENV['NEW_RELIC_LICENSE_KEY']
+
+  # Your application name.
+  app_name: ASCC - Accion (Test)
+
+  # It doesn't make sense to report to New Relic from automated test runs.
+  monitor_mode: false
+
+  agent_enabled: <%= ENV['ENABLE_NEW_RELIC'] %>
+
+  distributed_tracing:
+    enabled: true
+
+  # Logging level for log/newrelic_agent.log
+  log_level: info
+
+staging:
+  # Required license key associated with your New Relic account.
+  license_key: ENV['NEW_RELIC_LICENSE_KEY']
+
+  # Your application name.
+  app_name: ASCC - Accion (Staging)
+
+  agent_enabled: <%= ENV['ENABLE_NEW_RELIC'] %>
+
+  distributed_tracing:
+    enabled: true
+
+  # Logging level for log/newrelic_agent.log
+  log_level: info
+
+production:
+  # Required license key associated with your New Relic account.
+  license_key: ENV['NEW_RELIC_LICENSE_KEY']
+
+  # Your application name.
+  app_name: ASCC - Accion - prod
+
+  agent_enabled: <%= ENV['ENABLE_NEW_RELIC'] %>
+
+  distributed_tracing:
+    enabled: true
 
   # Logging level for log/newrelic_agent.log
   log_level: info
 
 
-# Environment-specific settings are in this section.
-# RAILS_ENV or RACK_ENV (as appropriate) is used to determine the environment.
-# If your application has other named environments, configure them here.
-development:
-  <<: *default_settings
-  app_name: ASCC - Accion (Development)
-
-test:
-  <<: *default_settings
-  # It doesn't make sense to report to New Relic from automated test runs.
-  monitor_mode: false
-
-staging:
-  <<: *default_settings
-  app_name: ASCC - Accion (Staging)
-
-production:
-  <<: *default_settings

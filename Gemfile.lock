@@ -7,14 +7,6 @@ GIT
       orm_adapter (~> 0.5.0)
       terrapin
 
-GIT
-  remote: https://github.com/stympy/faker.git
-  revision: 6ba06393f47d4018b5fdbdaaa04eb9891ae5fb55
-  branch: main
-  specs:
-    faker (3.4.2)
-      i18n (>= 1.8.11, < 2)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -2117,7 +2109,6 @@ DEPENDENCIES
   devise (~> 4.7.3)
   devise_invitable (~> 2.0.6)
   dotenv-rails
-  faker!
   ffi (< 1.17.0)
   font-awesome-rails
   geocoder
@@ -2143,7 +2134,7 @@ DEPENDENCIES
   prawn (~> 2.4.0)
   prawn-table (~> 0.2.2)
   pry
-  psych (~> 3.3.4)
+  psych (= 3.3.4)
   puma (~> 4.0)
   pundit
   puredocx (~> 0.0.2)
