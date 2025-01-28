@@ -73,7 +73,7 @@ class HomeController < ApplicationController
         rac = RegistroAperturaCorreo.create(user_id: nil, flujo_tarea_id: 169, fecha_envio_correo: DateTime.now, flujo_id: @flujo.id)
         asunto = "Solicitud de adhesión a #{@manifestacion_de_interes.nombre_acuerdo} recibida"
         cuerpo = "Solicitud de adhesión de empresa #{@adhesion.nombre_institucion_adherente} para #{@manifestacion_de_interes.nombre_acuerdo} recibida con fecha #{DateTime.now.strftime("%F %T")}. <br> ID de solicitud #{@adhesion.id}"
-        FlujoMailer.delay.enviar(
+        FlujoMailer.enviar(
                       asunto, 
                       cuerpo, 
                       @adhesion.email_representante_legal, 

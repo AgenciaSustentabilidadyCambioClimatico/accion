@@ -51,7 +51,7 @@ class CeremoniaCertificacionesController < ApplicationController
             asistio: false)
           @convocatoria.convocatoria_destinatarios.each do |rd|
             rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
-            ConvocatoriaMailer.delay.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:08:19 se corrige error en nombre de variable rgc.id
+            ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:08:19 se corrige error en nombre de variable rgc.id
           end
           # @convocatoria = Convocatoria.new #DZC esto vacia la convocatoria sin crear
           continua_flujo_segun_tipo_tarea 
@@ -89,7 +89,7 @@ class CeremoniaCertificacionesController < ApplicationController
             asistio: false)
           @convocatoria.convocatoria_destinatarios.each do |rd|
             rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
-          ConvocatoriaMailer.delay.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:08:19 se corrige error en nombre de variable rgc.id
+          ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id) # DZC 2018-10-11 12:08:19 se corrige error en nombre de variable rgc.id
           end
           continua_flujo_segun_tipo_tarea
           flash.now[:success] = "Convocatoria modificada"

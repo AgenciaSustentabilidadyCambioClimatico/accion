@@ -114,7 +114,7 @@ class FlujoTarea < ApplicationRecord
 										rescue
 											mdi = nil
 										end
-										FlujoMailer.delay.enviar(
+										FlujoMailer.enviar(
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
 											actor.persona.email_institucional, 
@@ -164,7 +164,7 @@ class FlujoTarea < ApplicationRecord
 									rescue
 										mdi = nil
 									end
-									FlujoMailer.delay.enviar(
+									FlujoMailer.enviar(
 										self.asunto_format(ut.user,mdi), 
 										self.cuerpo_format(ut.user,mdi), 
 										ut.email_institucional,

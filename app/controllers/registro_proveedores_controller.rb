@@ -55,7 +55,7 @@ class RegistroProveedoresController < ApplicationController
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
         }
-        RegistroProveedorMailer.enviar(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.enviar(@registro_proveedor).deliver_now
       else
         format.html { render :new }
         format.js
@@ -129,9 +129,9 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
         if @registro_proveedor.estado == 'rechazado'
-          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
+          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_now
         elsif @registro_proveedor.estado == 'con_observaciones'
-          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_later
+          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_now
         end
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(codigo: 'PRO-004').first
@@ -144,7 +144,7 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.rechazo > 1
         @registro_proveedor.update!(estado: 6)
-        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_now
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_previa = Tarea.where(codigo: 'PRO-003').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
@@ -265,7 +265,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.update!(comentario_directiva: value)
 
       if @registro_proveedor.estado == 'rechazado_directiva'
-        RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.primer_rechazo_directiva(@registro_proveedor).deliver_now
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(codigo: 'PRO-006').first
         user = User.where(rut: @registro_proveedor.rut).first
@@ -277,7 +277,7 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.rechazo_directiva > 1
         @registro_proveedor.update!(estado: 6)
-        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_now
         tarea_previa = Tarea.where(codigo: 'PRO-005').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
         tarea_pendiente.first.delete
@@ -294,7 +294,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.update!(fecha_aprobado: value)
 
       if @registro_proveedor.estado == 'aprobado'
-        RegistroProveedorMailer.aprobado_directiva(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.aprobado_directiva(@registro_proveedor).deliver_now
       end
     end
 
@@ -429,7 +429,7 @@ class RegistroProveedoresController < ApplicationController
 
       if value == 2
         @registro_proveedor.update!(estado: 8)
-        RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.revision_negativa(@registro_proveedor).deliver_now
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_pendiente = TareaPendiente.where(flujo_id: 1000).first
         tarea_pendiente.destroy
@@ -480,7 +480,7 @@ class RegistroProveedoresController < ApplicationController
       @registro_proveedor.update!(calificado: false)
       if value == 2
         @registro_proveedor.update!(estado: 6)
-        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_later
+        RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_now
       elsif value == 3
         @registro_proveedor.update!(estado: 10)
       end
@@ -592,7 +592,7 @@ class RegistroProveedoresController < ApplicationController
     u = User.find(user)
     mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
     mensajes.each do |mensaje|
-      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
+      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_now
     end
   end
 

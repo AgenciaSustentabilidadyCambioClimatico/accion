@@ -65,7 +65,7 @@ namespace :ascc do
               FlujoTarea.where(tarea_entrada_id: tarea.id).where(condicion_de_salida: condiciones).each do |ft|
                 ft.responsables.each do |persona|
                   rgc = RegistroAperturaCorreo.create(user_id: persona.user.id, flujo_tarea_id: ft.id, fecha_envio_correo: DateTime.now, flujo_id: pendiente.flujo.id)
-                  FlujoMailer.delay.enviar(
+                  FlujoMailer.enviar(
                     ft.asunto_format(persona.user),
                     ft.cuerpo_format(persona.user),
                     persona.email_institucional,
@@ -99,13 +99,13 @@ namespace :ascc do
                 asunto = Tarea.replace_values(metodos,tarea.recordatorio_tarea_asunto)
                 cuerpo = Tarea.replace_values(metodos,tarea.recordatorio_tarea_cuerpo)                    
                 rgc = RegistroAperturaCorreo.create(user_id: user.id, flujo_tarea_id: nil, fecha_envio_correo: DateTime.now, flujo_id: pendiente.flujo.id)
-                FlujoMailer.delay.enviar(
+                FlujoMailer.enviar(
                   asunto,
                   cuerpo,
                   email,
                   rgc.id
                 )     
-                # RecordatorioMailer.delay.enviar(email,asunto,cuerpo)  
+                # RecordatorioMailer.enviar(email,asunto,cuerpo)
               end
             end
           end
@@ -253,7 +253,7 @@ namespace :ascc do
       if ((fecha_comparativa + anios_a_cierre.years) - hoy).to_i == 60
         manifestacion_de_interes = informe_acuerdo.manifestacion_de_interes
         destinatarios = MapaDeActor.where(flujo_id: manifestacion_de_interes.flujo.id).map{|ma| ma.persona.user.email}.uniq!
-        AvisosMailer.cierre_proceso(destinatarios, manifestacion_de_interes).deliver_later!
+        AvisosMailer.cierre_proceso(destinatarios, manifestacion_de_interes).deliver_now
       end
     end
 
@@ -281,11 +281,11 @@ namespace :ascc do
 
         #vence en 1 mes
         if ((minuta_ceremonia.fecha_acta + auditoria.plazo.years) - hoy).to_i == 30
-          AvisosMailer.certificacion_vencimiento_inminente(destinatarios, auditoria).deliver_later!
+          AvisosMailer.certificacion_vencimiento_inminente(destinatarios, auditoria).deliver_now
         end
         #venció
         if (minuta_ceremonia.fecha_acta + auditoria.plazo.years + 1.day) == hoy
-          AvisosMailer.certificacion_vencida(destinatarios, auditoria).deliver_later!
+          AvisosMailer.certificacion_vencida(destinatarios, auditoria).deliver_now
         end
       end
     end
@@ -302,10 +302,10 @@ namespace :ascc do
       aviso = 3.years + 11.months
       if fecha + aviso == hoy
         registro_proveedor.update!(estado: 'actualizar')
-        RegistroProveedorMailer.aviso_venciminento_proveedor(registro_proveedor).deliver_later!
+        RegistroProveedorMailer.aviso_venciminento_proveedor(registro_proveedor).deliver_now
       elsif fecha + plazo <= hoy
         registro_proveedor.update!(estado: 'vencido')
-        RegistroProveedorMailer.aviso_vencido_proveedor(registro_proveedor).deliver_later!
+        RegistroProveedorMailer.aviso_vencido_proveedor(registro_proveedor).deliver_now
       end
     end
   end

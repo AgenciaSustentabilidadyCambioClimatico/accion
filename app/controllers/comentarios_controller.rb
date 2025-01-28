@@ -89,10 +89,10 @@ class ComentariosController < ApplicationController
       @comentario.user_id = current_user.id unless current_user.nil?
       respond_to do |format|
         if @comentario.save
-          ComentarioMailer.nuevo(@comentario).deliver_later
+          ComentarioMailer.nuevo(@comentario).deliver_now
           @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
           @users.each do |user|
-            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_later
+            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_now
           end
           format.js { 
             flash.now[:success] = success_message
@@ -113,7 +113,7 @@ class ComentariosController < ApplicationController
         
       if params[:comentario][:requiere_envio_correo] == 'true'      
         @comentario.comentario = params[:comentario][:comentario]
-        ComentarioMailer.respuesta(@comentario).deliver_later
+        ComentarioMailer.respuesta(@comentario).deliver_now
       end
       #Actualiza estados
       @comentario_response = Comentario.find(params[:comentario][:id])
