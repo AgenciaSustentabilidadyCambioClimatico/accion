@@ -154,19 +154,22 @@
     polygon.setMap(map);
   }
 
-  function addMarker(map,location) {
-    const pinIcon = {
-      url: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", // Marker image URL
-      scaledSize: new google.maps.Size(14, 20) // Resize the marker icon
-    };
 
+
+  function addMarker(map, location) {
     const marker = new google.maps.Marker({
       position: location,
       map: map,
-      icon: pinIcon
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE, // Use a circle instead of a pin
+        scale: 8, // Adjust size
+        fillColor: "#FFFF00", // Yellow color
+        fillOpacity: 1,
+        strokeWeight: 1
+      }
     });
 
-    markers.push(marker); //
+    markers.push(marker);
   }
 
 
