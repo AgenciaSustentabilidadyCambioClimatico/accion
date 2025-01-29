@@ -7,14 +7,6 @@ GIT
       orm_adapter (~> 0.5.0)
       terrapin
 
-GIT
-  remote: https://github.com/stympy/faker.git
-  revision: b9ef4e9117e917cce9a171349981ad63a39a9e4d
-  branch: main
-  specs:
-    faker (3.5.1)
-      i18n (>= 1.8.11, < 2)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -1831,7 +1823,6 @@ GEM
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
     fastimage (2.3.1)
-    ffi (1.16.3)
     ffi (1.16.3-x64-mingw32)
     font-awesome-rails (4.7.0.9)
       railties (>= 3.2, < 9.0)
@@ -1957,13 +1948,10 @@ GEM
     nio4r (2.7.4)
     nokogiri (1.17.2-x64-mingw32)
       racc (~> 1.4)
-    nokogiri (1.17.2-x86_64-linux)
-      racc (~> 1.4)
     orm_adapter (0.5.0)
     os (1.1.4)
     ostruct (0.6.1)
     pdf-core (0.9.0)
-    pg (1.5.9)
     pg (1.5.9-x64-mingw32)
     popper_js (1.16.1)
     prawn (2.4.0)
@@ -2078,6 +2066,7 @@ GEM
     simple_form (5.3.1)
       actionpack (>= 5.2)
       activemodel (>= 5.2)
+    slack-notifier (2.4.0)
     spreadsheet (1.3.3)
       bigdecimal
       ruby-ole
@@ -2180,7 +2169,6 @@ DEPENDENCIES
   devise (~> 4.7.3)
   devise_invitable (~> 2.0.6)
   dotenv-rails
-  faker!
   ffi (< 1.17.0)
   font-awesome-rails
   geocoder
@@ -2206,7 +2194,7 @@ DEPENDENCIES
   prawn (~> 2.4.0)
   prawn-table (~> 0.2.2)
   pry
-  psych (< 4)
+  psych (= 3.3.4)
   puma (~> 4.0)
   pundit
   puredocx (~> 0.0.2)
@@ -2224,6 +2212,7 @@ DEPENDENCIES
   sass-rails (~> 5.0)
   select2-rails
   simple_form
+  slack-notifier
   spring
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data

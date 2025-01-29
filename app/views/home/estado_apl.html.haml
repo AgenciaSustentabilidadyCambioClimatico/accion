@@ -33,16 +33,16 @@
           - red_diag = descargar_compilado_manif_manifestacion_de_interes_path(m, 66)
           // Propuesta
           - t_prop = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
-          - convocatoria_prop = Convocatoria.where(flujo_id: m.id).order(fecha: :asc)
+          - convocatoria_prop = Convocatoria.where(flujo_id: m.id, tarea_codigo:"APL-016").order(fecha: :asc)
           - red_prop = t_prop.empty? ? "": descargar_compilado_adjuntos_path(t_prop&.first&.id, codigo: "016")
           // Firma
-          - conv_firma = Convocatoria.where(flujo_id: m.id)
+          - conv_firma = Convocatoria.where(flujo_id: m.id, tarea_codigo:"APL-021")
           - c_firma = conv_firma.first
           - minuta_id = conv_firma.first&.minuta&.id
           - t_firma = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
           - red_firma_acuerdo = (!t_firma.blank? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
           - if !c_firma&.minuta&.archivo_resolucion&.file.nil?  
-            - red_firma_resolucion = t_firma.empty? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
+            - red_firma_resolucion = t_firma.blank? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
           // Adhesion
           - t_adh = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
           - unless t_adh.blank?
@@ -76,7 +76,7 @@
            "data-convocatoria_prop" => convocatoria_prop.to_json, "data-red_prop" => red_prop, "data-conv_firma" => conv_firma.to_json,
            "data-t_firma" => t_firma.to_json, "data-red_firma_acuerdo" => red_firma_acuerdo, "data-red_firma_resolucion" => red_firma_resolucion,
            "data-red_adh" => red_adh, "data-fecha_coord" => fecha_coord, "data-red_coord" => red_coord, "data-red_aud1"=> red_aud1, "data-red_aud2" => red_aud2,
-            "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
+            "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif, "data-m_flujo" => m.flujo.id }
             %td
               %i{ :class => "fa fa-caret-down manifestacion#{m.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
               = m&.flujo&.id
@@ -224,23 +224,34 @@
       },
       "defaultContent": "",
     });
+
+      let calc_date = (date) => {
+        let [year, month, day] = date.split('-');
+        let fechaLocal = new Date(year, month - 1, day);
+        let fecha = fechaLocal.toLocaleDateString('es-ES');
+        return fecha;
+      }
       $('table.acuerdos-pendientes tbody').on('click', 'tr.parent-row', function () {
       const row = table.row(this); // Obtener la fila seleccionada
       const icon = $(this).find('i'); // Obtiene el icono dentro del botón
       let m = $(this).data('manifestacion');
+      let fluj = $(this).data('m_flujo');
+      console.log("m: ",m)
       let hidden = ""
       // Manifestación
       let t_manif =  $(this).data('t_manif');
       let des =  $(this).data('des_manif');
       let red =  $(this).data('red_manif');
-      let tm_date = (t_manif && t_manif[0]) ? new Date(t_manif[0].created_at).toLocaleDateString('es-ES') : "";
+      console.log("[1]: ",t_manif[0].created_at)
+      let tm_date = (t_manif && t_manif[0]) ? calc_date(t_manif[0].created_at.split('T')[0]) : "";
       hidden += "-" + tm_date
       // Diagnóstico
       let t_diag = $(this).data('t_diag');
       let red_diag = ""
       let tdiag_date = ""
       if (t_diag && t_diag.length > 0) {
-        tdiag_date = new Date(t_diag[0].created_at).toLocaleDateString('es-ES');
+        console.log("[2]:",t_diag[0].created_at)
+        tdiag_date = calc_date(t_diag[0].created_at.split('T')[0]);
         hidden += "-" + tdiag_date
         red_diag =  $(this).data('red_diag')
       }
@@ -253,13 +264,13 @@
         red_prop = $(this).data('red_prop')
       }
       if (conv_prop && conv_prop.length > 0){
-        tprop_date = new Date(conv_prop[0].fecha).toLocaleDateString('es-ES');
+        tprop_date = calc_date(conv_prop[0].fecha)
         hidden += "-" + tprop_date
         }
 
       // Firma
       let t_firma = $(this).data('t_firma');
-      let mfirma_date = (m && m.firma_fecha) ? new Date(m.firma_fecha).toLocaleDateString('es-ES') : "";
+      let mfirma_date = (m && m.firma_fecha) ? calc_date(m.firma_fecha) : "";
       hidden += "-" + mfirma_date
       let conv_firma = $(this).data('conv_firma');
       let red_firma_ac = $(this).data('red_firma_acuerdo')
@@ -297,7 +308,7 @@
       if (conv_prop && conv_prop.length > 0){
         let td = row.child().find('#neg-conv-' + m.id);
         conv_prop.forEach(item => {
-            let conv_date = new Date(item.fecha).toLocaleDateString('es-ES');
+            let conv_date = calc_date(item.fecha)
             hidden += "-" + conv_date
             td.append(`<p>${conv_date}</p>`);
         })

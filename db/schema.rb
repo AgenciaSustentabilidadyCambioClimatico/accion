@@ -1828,7 +1828,6 @@ ActiveRecord::Schema.define(version: 2025_01_21_155638) do
     t.string "carta_compromiso"
     t.string "comentario_negativo"
     t.boolean "calificado", default: false
-    t.string "carta_compromiso"
     t.integer "correlativo"
     t.index ["contribuyente_id"], name: "index_registro_proveedores_on_contribuyente_id"
     t.index ["tipo_contribuyente_id"], name: "index_registro_proveedores_on_tipo_contribuyente_id"
