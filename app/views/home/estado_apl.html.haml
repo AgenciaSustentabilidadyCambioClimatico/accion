@@ -128,7 +128,7 @@
               <td>Negociación</td>
               <td id="neg-conv-${m.id}"></td>
               <td>${red_prop ? `<a href="${red_prop}" class="btn-tabla-instrumentos">
-                   <i class="fa fa-download"></i> Reuniones de Comité de Organización
+                   <i class="fa fa-download"></i> Reuniones de Comité de Negociación
                  </a>` 
               : ''}</td>
             </tr>
@@ -160,7 +160,7 @@
               <td>Coordinación</td>
               <td>${coord_date}</td>
               <td>${red_coord ? `<a href="${red_coord}" class="btn-tabla-instrumentos">
-                   <i class="fa fa-download"></i> Reuniones de Comité de Negociación
+                   <i class="fa fa-download"></i> Reuniones de Comité de Coordinación
                  </a>` 
               : ''}</td>
             </tr>
@@ -309,7 +309,7 @@
         row.invalidate();
 
         // Redibuja la tabla para asegurarte de que los cambios se reflejen
-        table.draw();
+       // table.draw();
     });
     // Hijos propuesta, implementación y evaluación
     $(document).on('click', '[id^="propuesta"], [id^="implementacion"], [id^="evaluacion"]', function () {
