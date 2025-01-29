@@ -160,7 +160,7 @@
     const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
 
     marker = new AdvancedMarkerElement({
-      map,
+      map: map,
       position: location,
     });
 
