@@ -322,20 +322,23 @@ class FondoProduccionLimpiasController < ApplicationController
     
     def usuario_entregables #FPL-00
       tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
-
-      #postulante
-      rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
-      responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
-      contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-      @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
-
-      #entregables
-      rol_tarea2 = Tarea::find_by(codigo: Tarea::COD_FPL_015).rol_id
-      responsables2 = Responsable.__personas_responsables(rol_tarea2, tipo_instrumento)
-      contribuyentes_ids_2 = responsables2.map{|p| p.contribuyente_id }.uniq
-      @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_2)
+    
+      # Obtener el rol de la tarea
+      rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
+      rol_tarea_entregables = Tarea.find_by(codigo: Tarea::COD_FPL_015).rol_id
+    
+      # Obtener responsables para postulante
+      responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
+      contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
+      @contribuyentes = Contribuyente.where(id: contribuyentes_ids_postulante)
+    
+      # Obtener responsables para entregables
+      responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
+      contribuyentes_ids_entregables = responsables_entregables.pluck(:contribuyente_id).uniq
+      @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_entregables)
+      
     end
-
+    
     def lista_usuarios_entregables
       tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA 
       rol_tarea = Tarea::find_by(codigo: Tarea::COD_FPL_00).rol_id
