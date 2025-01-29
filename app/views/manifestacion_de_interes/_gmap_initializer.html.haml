@@ -3,7 +3,7 @@
   //carga la data desde el mapa, con el poligono
 
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
-= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry", async: true;
+= javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry&callback=mapLoaded", async: true;
 
 :javascript
   var ubicacionEntidadCogestoraMap;
@@ -16,10 +16,6 @@
   var coords = [];
   var places = [];
   var markers = [];
-
-  window.onload = function() {
-    mapLoaded();
-  };
 
   function mapLoaded(){
     if(document_ready){
