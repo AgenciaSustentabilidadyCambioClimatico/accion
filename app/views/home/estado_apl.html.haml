@@ -79,7 +79,7 @@
             "data-red_aud3" => red_aud3, "data-fecha_certif" => fecha_certif }
             %td
               %i{ :class => "fa fa-caret-down manifestacion#{m.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
-              = m.id
+              = m&.flujo&.id
             %td= m.nombre_acuerdo
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
@@ -87,7 +87,6 @@
               - usuarios_coordinadores.flatten.each do |coordinador|
                 %p= coordinador&.nombre_completo
             %td{class:"d-none"}
-   
 :javascript
 
   function childFormat(m, t_manif, tm_date, des_manif, red_manif, tdiag_date, red_diag,tprop_date,
@@ -99,7 +98,7 @@
           <tr>
             <th>Etapa</th>
             <th>Fecha Ingreso/Carga</th>
-            <th>Documento Asociados Descargable</th>        
+            <th>Documento Asociados Descargable</th>
           </tr>
         </thead>
           <tbody>
@@ -225,7 +224,6 @@
       },
       "defaultContent": "",
     });
-    
       $('table.acuerdos-pendientes tbody').on('click', 'tr.parent-row', function () {
       const row = table.row(this); // Obtener la fila seleccionada
       const icon = $(this).find('i'); // Obtiene el icono dentro del botón

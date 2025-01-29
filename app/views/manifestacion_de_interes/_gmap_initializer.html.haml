@@ -155,14 +155,21 @@
   }
 
   function addMarker(map,location) {
-    pinIcon = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00",null,null,null,new google.maps.Size(14,20));
-    marker = new google.maps.marker.AdvancedMarkerElement({
+    const pinIcon = {
+      url: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", // Marker image URL
+      scaledSize: new google.maps.Size(14, 20) // Resize the marker icon
+    };
+
+    const marker = new google.maps.Marker({
       position: location,
       map: map,
       icon: pinIcon
     });
-    markers.push(marker);
+
+    markers.push(marker); //
   }
+
+
 
   function removeAllMarkers() {
     for (var i = 0; i < markers.length; i++) {

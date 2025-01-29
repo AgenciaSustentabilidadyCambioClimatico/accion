@@ -58,18 +58,8 @@ class HomeController < ApplicationController
   end
 
   def estado_apl
-    if params[:query].present?
-      if params[:query].to_i == 0
-        manifestacion_de_intereses = ManifestacionDeInteres.where("nombre_acuerdo ILIKE ?", "%#{params[:query]}%")
-        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
-      else
-        manifestacion_de_intereses = ManifestacionDeInteres.where(id: params[:query].to_i)
-        @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
-      end
-    else
-      manifestacion_de_intereses = ManifestacionDeInteres.all
-      @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }.paginate(page: params[:page], per_page: 15)
-    end
+    manifestacion_de_intereses = ManifestacionDeInteres.all
+    @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }
   end
 
   def solicitar_adhesion_guardar
@@ -83,7 +73,7 @@ class HomeController < ApplicationController
         rac = RegistroAperturaCorreo.create(user_id: nil, flujo_tarea_id: 169, fecha_envio_correo: DateTime.now, flujo_id: @flujo.id)
         asunto = "Solicitud de adhesión a #{@manifestacion_de_interes.nombre_acuerdo} recibida"
         cuerpo = "Solicitud de adhesión de empresa #{@adhesion.nombre_institucion_adherente} para #{@manifestacion_de_interes.nombre_acuerdo} recibida con fecha #{DateTime.now.strftime("%F %T")}. <br> ID de solicitud #{@adhesion.id}"
-        FlujoMailer.delay.enviar(
+        FlujoMailer.enviar(
                       asunto, 
                       cuerpo, 
                       @adhesion.email_representante_legal, 

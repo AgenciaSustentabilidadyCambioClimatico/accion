@@ -227,20 +227,25 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'pdf', "fondo_produccion_limpia_#{self.id}_#{revision}.pdf")
+    # Ruta temporal en el sistema local para el PDF
+    pdf_temp = StringIO.new(pdf.render)
+    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
+    # Nombre del archivo en S3
+    pdf_file_name = "fondo_produccion_limpia_#{self.id}_#{revision}.pdf"
 
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
+    # Subir a S3 utilizando aws-sdk versión 3
+    s3 = Aws::S3::Resource.new
 
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
+    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/pdf/#{pdf_file_name}")
+    obj.put(body: pdf_temp)
 
-  rescue StandardError => e
-    Rails.logger.error "Error generando PDF: #{e.message}"
+    # Retorna la URL pública del archivo en S3
+    s3_url = obj.public_url
+    s3_url
+
+    rescue StandardError => e
+      Rails.logger.error "Error generando PDF: #{e.message}"
     nil
   end
 
@@ -301,21 +306,158 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_cuestionario_ejecutor(pdf, flujo_id)
       self.pdf_separador(pdf, 20)
     end
+    
+    # Ruta temporal en el sistema local para el PDF
+    pdf_temp = StringIO.new(pdf.render)
+    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Ruta donde se guardará el archivo PDF
-    pdf_file_path = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{self.id}_#{revision}.pdf")
+    # Nombre del archivo en S3
+    pdf_file_name = "admisibilidad_juridica_#{self.id}_#{revision}.pdf"
 
-    # Asegúrate de que el directorio existe
-    FileUtils.mkdir_p(File.dirname(pdf_file_path))
+    # Subir a S3 utilizando aws-sdk versión 3
+    s3 = Aws::S3::Resource.new
 
-    # Guardar el PDF en la ruta especificada
-    pdf.render_file(pdf_file_path)
+    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{pdf_file_name}")
+    obj.put(body: pdf_temp)
 
-    # Retorna la ruta del archivo guardado o el objeto PDF si prefieres manipularlo luego
-    pdf_file_path.to_s
+    # Retorna la URL pública del archivo en S3
+    s3_url = obj.public_url
 
-  rescue StandardError => e
-    Rails.logger.error "Error generando PDF: #{e.message}"
+    s3_url
+
+    rescue StandardError => e
+      Rails.logger.error "Error generando PDF: #{e.message}"
+      nil
+  end
+
+  def generar_formulario_fpl(objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
+                  costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
+                  comentarios = nil)
+    require 'stringio'
+
+    pdf = Prawn::Document.new
+    pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+
+    # HEADER
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
+          pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
+            pdf.text "FORMULARIO DE DIAGNÓSTICO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
+          end
+        end
+        pdf.move_down 8
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 3
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    # CONTENIDO
+    validaciones = self.get_campos_validaciones
+
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
+      # Aquí se agregan los elementos del PDF, según el contenido necesario.
+      proyecto_fpl = "Proyecto: #{fondo_produccion_limpia.codigo_proyecto}"
+      proyecto_apl = "APL: #{manifestacion_de_interes.flujo.nombre_instrumento}"
+      beneficiario = "Beneficiario: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).razon_social}"
+      rut_beneficiario = "Rut: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).dv}"
+      
+      self.pdf_titulo_formato(pdf, TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA)
+
+      self.pdf_sub_titulo_formato(pdf, nombre_tipo_instrumento)
+      self.pdf_sub_titulo_formato(pdf, proyecto_fpl)
+      self.pdf_sub_titulo_formato(pdf, proyecto_apl)
+      self.pdf_sub_titulo_formato(pdf, beneficiario)
+      self.pdf_sub_titulo_formato(pdf, rut_beneficiario)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:propuesta_tecnica))
+      self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
+      self.pdf_tabla_objetivos(pdf, objetivo_especificos)
+      self.pdf_separador(pdf, 20)
+      self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
+      
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
+        self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
+        self.pdf_separador(pdf, 20)  
+        self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
+        self.pdf_tabla_empresas_A_G(pdf, self.empresas_asociadas_ag, self.empresas_no_asociadas_ag)
+        self.pdf_separador(pdf, 20)
+      else
+        #implementar tabla elementos 
+        self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
+        self.pdf_separador(pdf, 20)
+      end
+      self.pdf_sub_titulo_formato(pdf, "Duración del proyecto")
+
+      duracion_formateado = if self.duracion.blank?
+        'No se ingresa respuesta'
+      elsif self.duracion.is_a?(Numeric)
+        "#{self.duracion} meses"
+      else
+        self.duracion.to_s
+      end
+
+      self.pdf_contenido_formato(pdf, duracion_formateado)
+      self.pdf_separador(pdf, 20)
+      # Añade más contenido según sea necesario
+      self.pdf_titulo_formato(pdf, I18n.t(:equipo_tabajo))
+      self.pdf_sub_titulo_formato(pdf, "Equipo de Institución Receptora del Cofinanciamiento")
+      self.pdf_tabla_equipo_trabajo(pdf, postulantes)
+      self.pdf_separador(pdf, 20)
+      self.pdf_sub_titulo_formato(pdf, "Equipo de Institución Ejecutora")
+      self.pdf_tabla_empresa(pdf, empresa)
+      self.pdf_separador(pdf, 20)
+      self.pdf_tabla_equipo_trabajo(pdf, consultores)
+      self.pdf_separador(pdf, 20)
+      self.pdf_sub_titulo_formato(pdf, "Indicar fortalezas del o los consultores")
+      self.pdf_contenido_formato(pdf, self.fortalezas_consultores)
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO   
+        self.pdf_tabla_plan_actividades(pdf, planes)
+      else
+        self.pdf_tabla_plan_actividades_tipos(pdf, planes)
+      end  
+      self.pdf_separador(pdf, 20)
+
+      self.pdf_titulo_formato(pdf, I18n.t(:costos))
+      self.pdf_sub_titulo_formato(pdf, "Resumen")
+      self.pdf_tabla_costos(pdf, costos)
+      self.pdf_separador(pdf, 20)
+      self.pdf_sub_titulo_formato(pdf, "Validación")
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+        self.pdf_tabla_validacion(pdf, costos)
+      else
+        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+      end
+      self.pdf_separador(pdf, 20)
+    end
+
+    # Ruta temporal en el sistema local para el PDF
+    pdf_temp = StringIO.new(pdf.render)
+    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
+
+    # Nombre del archivo en S3
+    pdf_file_name = "formulario_fpl_#{self.id}.pdf"
+
+    # Subir a S3 utilizando aws-sdk versión 3
+    s3 = Aws::S3::Resource.new
+
+    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{pdf_file_name}")
+    obj.put(body: pdf_temp)
+
+    # Retorna la URL pública del archivo en S3
+    s3_url = obj.public_url
+    s3_url
+    
+    rescue StandardError => e
+      Rails.logger.error "Error generando PDF: #{e.message}"
     nil
   end
 
@@ -815,7 +957,7 @@ class FondoProduccionLimpia < ApplicationRecord
       else
         nil
       end
-
+    
       valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
       if costos_seguimiento[0].aporte_propio_valorado.to_f + costos_seguimiento[0].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0].aporte_propio_valorado.present?
         cumple1 = 'SI'
@@ -823,27 +965,49 @@ class FondoProduccionLimpia < ApplicationRecord
         cumple1 = 'NO'
       end
 
+
       if costos_seguimiento[0].aporte_solicitado_al_fondo <= monto && costos_seguimiento[0].aporte_solicitado_al_fondo.present?
         cumple2 = 'SI'
       else
         cumple2 = 'NO'
       end
     
-      # Redondear el valor a dos decimales
-      confinanciamiento = confinanciamiento_empresa[1].round(2)
-      # Formatear el valor como porcentaje con coma como separador decimal
-      confinanciamiento_formateado = sprintf("%.2f", confinanciamiento).gsub('.', ',') + " %"
+      if costos_seguimiento[1] != nil
+        # Redondear el valor a dos decimales
+        confinanciamiento = confinanciamiento_empresa[1].round(2)
+        # Formatear el valor como porcentaje con coma como separador decimal
+        confinanciamiento_formateado = sprintf("%.2f", confinanciamiento).gsub('.', ',') + " %"
 
-      valida_pregunta__aporte_del_empresa = ((costos_seguimiento[1].aporte_solicitado_al_fondo + costos_seguimiento[1].aporte_propio_valorado + costos_seguimiento[1].aporte_propio_liquido) * confinanciamiento_empresa[1]) / 100
-      if costos_seguimiento[1].aporte_propio_valorado.to_f + costos_seguimiento[1].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_empresa && costos_seguimiento[1].aporte_propio_valorado.present?
-        cumple3 = 'SI'
+        valida_pregunta__aporte_del_empresa = ((costos_seguimiento[1].aporte_solicitado_al_fondo + costos_seguimiento[1].aporte_propio_valorado + costos_seguimiento[1].aporte_propio_liquido) * confinanciamiento_empresa[1]) / 100
+        if costos_seguimiento[1].aporte_propio_valorado.to_f + costos_seguimiento[1].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_empresa && costos_seguimiento[1].aporte_propio_valorado.present?
+          cumple3 = 'SI'
+        else
+          cumple3 = 'NO'
+        end
+
+        costos_seguimiento_1_aporte_propio_liquido = costos_seguimiento[1].aporte_propio_liquido
+        costos_seguimiento_1_aporte_propio_valorado = costos_seguimiento[1].aporte_propio_valorado
+        costos_seguimiento_1_aporte_solicitado_al_fondo = costos_seguimiento[1].aporte_solicitado_al_fondo
+
       else
         cumple3 = 'NO'
+        confinanciamiento_formateado = "0"
+        valida_pregunta__aporte_del_empresa = "0"
+
+        costos_seguimiento_1_aporte_propio_liquido = "0"
+        costos_seguimiento_1_aporte_propio_valorado = "0"
+        costos_seguimiento_1_aporte_solicitado_al_fondo = "0"
+
       end
 
       monto_cofinanciamiento = confinanciamiento_empresa[0]
-      if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
-        cumple4 = 'SI'
+
+      if costos_seguimiento[1] != nil
+        if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
+          cumple4 = 'SI'
+        else
+          cumple4 = 'NO'
+        end
       else
         cumple4 = 'NO'
       end
@@ -867,8 +1031,8 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Tipo de Actividades", "Glosa", "Monto", "Criterio", "Límite", "Cumple?"],
         ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_propio_liquido + costos_seguimiento[0].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_postulante).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
         ["De apoyo general al postulante", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple2],
-        ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_propio_liquido + costos_seguimiento[1].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al " + confinanciamiento_formateado + " del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_empresa).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
-        ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento[1].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
+        ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento_1_aporte_propio_liquido + costos_seguimiento_1_aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al " + confinanciamiento_formateado + " del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_empresa).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
+        ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento_1_aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
         ["Total Proyecto", "Aporte líquido del postulante", sprintf("$%<costo>.0f", costo: costos.aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple5],
         ["Total Proyecto", "Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual al #{Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple6]
       ]

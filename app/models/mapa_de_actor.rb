@@ -271,7 +271,9 @@ class MapaDeActor < ApplicationRecord
 			dv_institucion = rut_vs_split.last
 			#DZC (1) Verifica la existencia del contribuyente y en caso de ausencia lo crea.
 			contribuyente = Contribuyente.find_by(rut: rut_institucion)
+			casa_matriz = false
 			if contribuyente.blank?
+				casa_matriz = true #Se setea en true cuando no existe la institución
 				contribuyente = Contribuyente.new(
 					rut: rut_institucion,
 					dv: dv_institucion,
@@ -313,7 +315,7 @@ class MapaDeActor < ApplicationRecord
 			if establecimiento_contribuyente.blank?
 				establecimiento_contribuyente = EstablecimientoContribuyente.new(
 					contribuyente_id: contribuyente.id,
-					casa_matriz: true, # DZC 2018-10-23 15:34:05 se asocia la dirección a la casa matríz del establecimiento
+					casa_matriz: casa_matriz, # DZC 2018-10-23 15:34:05 se asocia la dirección a la casa matríz del establecimiento
 					direccion: fila[:direccion_institucion],
 					pais_id: comuna.provincia.region.pais.id,
 					region_id: comuna.provincia.region.id,

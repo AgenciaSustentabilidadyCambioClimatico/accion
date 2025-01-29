@@ -74,6 +74,7 @@
       icon.addClass('fa-rotate-180');
     }
 
+    $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
 
   }
 
@@ -187,20 +188,19 @@
                   - unless pendiente.determina_convocatoria.blank?
                     -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
                 -elsif pendiente.es_auditoria?
-                  - unless pendiente.determina_auditoria.blank? 
+                  - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_021
                   - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'                 
+                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_037
                   - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank? #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
                 -elsif tarea.codigo == Tarea::COD_APL_039
-                  - unless pendiente.determina_auditoria.blank? 
+                  - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
               %td.dos.iconos-acciones
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
                 =link_to data_url[:icon].html_safe, data_url[:url]
-

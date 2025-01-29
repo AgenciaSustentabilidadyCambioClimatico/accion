@@ -1,4 +1,4 @@
-default: &default
+development:
   adapter: postgresql
   encoding: unicode
   timeout: 5000
@@ -8,25 +8,46 @@ default: &default
   password: 2802Tete99
   template: template0
   schema_search_path: "public, admin"
-
-development:
-  <<: *default
   database: bd_accion
 
 test:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: 5
+  host: localhost
+  username: guillo10
+  template: template0
+  schema_search_path: "public, admin"
   database: ascc_test
 
 staging:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: 5
+  host: localhost
+  username: guillo10
+  template: template0
+  schema_search_path: "public, admin"
   database: bd_dev_accion
 
 production:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: 5
+  host: localhost
+  username: guillo10
+  template: template0
+  schema_search_path: "public, admin"
   database: bd_accion
 
 external_fpl_db:
-  <<: *default
+  adapter: postgresql
+  encoding: unicode
+  timeout: 5000
+  pool: 5
   host: localhost
   username: postgres
   password: postgres

@@ -31,6 +31,10 @@ class ComentariosController < ApplicationController
     __create_or_send("Comentario enviado correctamente")
   end
 
+  def modal_response
+    __response_or_send("Comentario enviado correctamente")
+  end
+
   def create
     __create_or_send(t(:m_successfully_created, m: t(:comentario)))
   end
@@ -85,10 +89,10 @@ class ComentariosController < ApplicationController
       @comentario.user_id = current_user.id unless current_user.nil?
       respond_to do |format|
         if @comentario.save
-          ComentarioMailer.nuevo(@comentario).deliver_later
+          ComentarioMailer.nuevo(@comentario).deliver_now
           @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
           @users.each do |user|
-            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_later
+            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_now
           end
           format.js { 
             flash.now[:success] = success_message
@@ -101,6 +105,24 @@ class ComentariosController < ApplicationController
           format.html { render :new }
           format.js
         end
+      end
+    end
+
+    def __response_or_send(success_message)
+      @comentario = Comentario.find(params[:comentario][:id])
+        
+      if params[:comentario][:requiere_envio_correo] == 'true'      
+        @comentario.comentario = params[:comentario][:comentario]
+        ComentarioMailer.respuesta(@comentario).deliver_now
+      end
+      #Actualiza estados
+      @comentario_response = Comentario.find(params[:comentario][:id])
+      @comentario_response.resuelto = true
+      @comentario_response.leido = true
+      @comentario_response.save
+  
+      respond_to do |format|
+        format.js { render 'comentarios/modal_response' }
       end
     end
 end

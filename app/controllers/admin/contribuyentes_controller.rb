@@ -138,6 +138,11 @@ class Admin::ContribuyentesController < ApplicationController
       @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
     end
 
+    # Habilita la validación de teléfono durante el create
+    @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
+      establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
+    end
+
     errores = false
     errores = true unless @error_extra.nil? 
     errores = true unless @contribuyente.valid?
@@ -191,6 +196,12 @@ class Admin::ContribuyentesController < ApplicationController
     elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1" && v["_destroy"] == "false"}.size > 1
       @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
     end
+   
+    # Omitir la validación de teléfono durante el update
+    @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
+      establecimiento.skip_telefono_validation = true # Deshabilitar validación del teléfono
+    end
+
     @contribuyente.attributes = contribuyente_params
     # Agrupo por id de actividad economica
     grouped_contribuyentes = @contribuyente.actividad_economica_contribuyentes.group_by { |ae| ae.actividad_economica_id }
@@ -206,13 +217,13 @@ class Admin::ContribuyentesController < ApplicationController
 
     errores = false
     errores = true unless @error_extra.nil? 
-    errores = true unless @contribuyente.valid?
 
-    @contribuyente.establecimiento_contribuyentes.each{|ec| errores = true unless ec.valid?}
-    @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
+    if @contribuyente.errors.full_messages.count >= 1
+      errores = true
+    end
 
     respond_to do |format|
-      unless errores
+      if !errores 
         if @contribuyente.temporal
           @manifestacion_de_interes = @contribuyente.flujo.manifestacion_de_interes
           if !@contribuyente.contribuyente_id.nil? && @contribuyente.contribuyente_id == @contribuyente.id
