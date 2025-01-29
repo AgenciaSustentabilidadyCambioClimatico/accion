@@ -158,15 +158,9 @@
 
   function addMarker(map, location) {
     const marker = new google.maps.Marker({
-      position: location,
+      position: { lat: 40.7128, lng: -74.0060 },
       map: map,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE, // Use a circle instead of a pin
-        scale: 8, // Adjust size
-        fillColor: "#FFFF00", // Yellow color
-        fillOpacity: 1,
-        strokeWeight: 1
-      }
+      title: "Marker",
     });
 
     markers.push(marker);
