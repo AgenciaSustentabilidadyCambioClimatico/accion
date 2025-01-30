@@ -1,6 +1,6 @@
 class ComentariosController < ApplicationController
   before_action :authenticate_user!, except: [:modal_create,:reset]
-  before_action :set_comentario, only: [:show,:read,:solved]
+  before_action :set_comentario, only: [:show,:read,:solved,:leido]
 
   def index
     if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
@@ -55,6 +55,14 @@ class ComentariosController < ApplicationController
     @comentario.leido = true
     @comentario.save
     redirect_to comentarios_url, notice: "Comentario fue marcado como leído"
+  end
+
+  def leido
+    @comentario.update(leido: true)  # Marks the comment as read
+    
+    respond_to do |format|
+      format.js { render 'comentarios/leido' }
+    end
   end
 
   def solved
