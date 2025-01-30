@@ -4,6 +4,7 @@
 
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry&callback=mapLoaded", async: true;
+
 :javascript
   var ubicacionEntidadCogestoraMap;
   var representacionSeleccionTerritorioMap;
@@ -154,22 +155,19 @@
     polygon.setMap(map);
   }
 
-  function addMarker(map,location) {
-    const pinIcon = {
-      url: "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00", // Marker image URL
-      scaledSize: new google.maps.Size(14, 20) // Resize the marker icon
-    };
+
+
+  function addMarker(map, location) {
+    if (!location || !map) return;
 
     const marker = new google.maps.Marker({
       position: location,
       map: map,
-      icon: pinIcon
+      title: "Location Marker",
     });
 
-    markers.push(marker); //
+    markers.push(marker);
   }
-
-
 
   function removeAllMarkers() {
     for (var i = 0; i < markers.length; i++) {

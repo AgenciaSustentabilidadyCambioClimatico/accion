@@ -18,9 +18,9 @@ class Rack::Attack
     request.path.start_with?("/HNAP1")
   end
 
-  Rack::Attack.blocklist("bad-robots-documents") do |req|
-    req.ip if /\S+\/document/.match?(req.path)
-  end
+  # Rack::Attack.blocklist("bad-robots-documents") do |req|
+  #   req.ip if /\S+\/document/.match?(req.path)
+  # end
 
   Rack::Attack.blocklist('block bots by user-agent') do |req|
     req.user_agent =~ /\b(bot|crawler|spider|scanner)\b/i

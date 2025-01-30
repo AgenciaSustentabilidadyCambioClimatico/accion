@@ -958,18 +958,34 @@ class FondoProduccionLimpia < ApplicationRecord
         nil
       end
     
-      valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
-      if costos_seguimiento[0].aporte_propio_valorado.to_f + costos_seguimiento[0].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0].aporte_propio_valorado.present?
-        cumple1 = 'SI'
+      if costos_seguimiento[0] != nil
+        valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
+        if costos_seguimiento[0].aporte_propio_valorado.to_f + costos_seguimiento[0].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0].aporte_propio_valorado.present?
+          cumple1 = 'SI'
+        else
+          cumple1 = 'NO'
+        end
+
+
+        if costos_seguimiento[0].aporte_solicitado_al_fondo <= monto && costos_seguimiento[0].aporte_solicitado_al_fondo.present?
+          cumple2 = 'SI'
+        else
+          cumple2 = 'NO'
+        end
+
+        costos_seguimiento_0_aporte_propio_liquido = costos_seguimiento[0].aporte_propio_liquido
+        costos_seguimiento_0_aporte_propio_valorado = costos_seguimiento[0].aporte_propio_valorado
+        costos_seguimiento_0_aporte_solicitado_al_fondo = costos_seguimiento[0].aporte_solicitado_al_fondo
+
       else
+        valida_pregunta__aporte_del_postulante = 0
         cumple1 = 'NO'
-      end
-
-
-      if costos_seguimiento[0].aporte_solicitado_al_fondo <= monto && costos_seguimiento[0].aporte_solicitado_al_fondo.present?
-        cumple2 = 'SI'
-      else
         cumple2 = 'NO'
+
+        costos_seguimiento_0_aporte_propio_liquido = "0"
+        costos_seguimiento_0_aporte_propio_valorado = "0"
+        costos_seguimiento_0_aporte_solicitado_al_fondo = "0"
+
       end
     
       if costos_seguimiento[1] != nil
@@ -1000,9 +1016,9 @@ class FondoProduccionLimpia < ApplicationRecord
 
       end
 
-      monto_cofinanciamiento = confinanciamiento_empresa[0]
-
       if costos_seguimiento[1] != nil
+        monto_cofinanciamiento = confinanciamiento_empresa[0]
+
         if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
           cumple4 = 'SI'
         else
@@ -1010,31 +1026,46 @@ class FondoProduccionLimpia < ApplicationRecord
         end
       else
         cumple4 = 'NO'
+        monto_cofinanciamiento = "0"
       end
 
-      valida_pregunta_aporte_propio_liquido = ((costos.costo_total_de_la_propuesta)* Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100
-      if costos.aporte_propio_liquido >= valida_pregunta_aporte_propio_liquido && costos.costo_total_de_la_propuesta != ''
-        cumple5 = 'SI'
+      if costos != nil
+        valida_pregunta_aporte_propio_liquido = ((costos.costo_total_de_la_propuesta)* Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO) / 100
+        if costos.aporte_propio_liquido >= valida_pregunta_aporte_propio_liquido && costos.costo_total_de_la_propuesta != ''
+          cumple5 = 'SI'
+        else
+          cumple5 = 'NO'
+        end
+
+        valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
+        if costos.aporte_solicitado_al_fondo <= monto && costos.costo_total_de_la_propuesta != ''
+          cumple6 = 'SI'
+        else
+          cumple6 = 'NO'
+        end
+
+        costos_aporte_propio_liquido = costos.aporte_propio_liquido
+        costos_gastos_administrativos = costos.gastos_administrativos
+
       else
+        valida_pregunta_aporte_propio_liquido = "0"
+        valida_pregunta_gastos_administrativos = "0"
         cumple5 = 'NO'
-      end
-
-      valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
-      if costos.aporte_solicitado_al_fondo <= monto && costos.costo_total_de_la_propuesta != ''
-        cumple6 = 'SI'
-      else
         cumple6 = 'NO'
+
+        costos_aporte_propio_liquido = "0"
+        costos_gastos_administrativos = "0"
       end
   
       # Datos de la tabla validación
       data_validacion = [
         ["Tipo de Actividades", "Glosa", "Monto", "Criterio", "Límite", "Cumple?"],
-        ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_propio_liquido + costos_seguimiento[0].aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_postulante).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
-        ["De apoyo general al postulante", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento[0].aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple2],
+        ["De apoyo general al postulante", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento_0_aporte_propio_liquido + costos_seguimiento_0_aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO}% del total de actividades de Tipo A", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_postulante).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple1],
+        ["De apoyo general al postulante", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento_0_aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple2],
         ["De apoyo directo a las empresas de menor tamaño", "Aporte del postulante", sprintf("$%<costo>.0f", costo: costos_seguimiento_1_aporte_propio_liquido + costos_seguimiento_1_aporte_propio_valorado).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al " + confinanciamiento_formateado + " del total Actividades Tipo B", sprintf("$%<valida>.0f", valida: valida_pregunta__aporte_del_empresa).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple3],
         ["De apoyo directo a las empresas de menor tamaño", "Cofinanciamiento ASCC", sprintf("$%<costo>.0f", costo: costos_seguimiento_1_aporte_solicitado_al_fondo).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual a " + sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), sprintf("$%<costo>.0f", costo: monto_cofinanciamiento).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple4],
-        ["Total Proyecto", "Aporte líquido del postulante", sprintf("$%<costo>.0f", costo: costos.aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple5],
-        ["Total Proyecto", "Gastos de Administración", sprintf("$%<costo>.0f", costo: costos.gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual al #{Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple6]
+        ["Total Proyecto", "Aporte líquido del postulante", sprintf("$%<costo>.0f", costo: costos_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Mayor o igual al #{Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_aporte_propio_liquido).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple5],
+        ["Total Proyecto", "Gastos de Administración", sprintf("$%<costo>.0f", costo: costos_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), "Menor o igual al #{Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO}% del total del proyecto", sprintf("$%<valida>.0f", valida: valida_pregunta_gastos_administrativos).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."), cumple6]
       ]
       pdf.table(data_validacion, header: true, column_widths: [100, 100, 75, 75, 75, 75], cell_style: { size: 9, padding: [4, 8] }) do |table|
 
