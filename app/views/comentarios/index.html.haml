@@ -4,6 +4,7 @@
     $('table.comentarios').DataTable({
       responsive: true,
       lengthMenu: [[30], [30]],
+      order: [[0, 'desc']],
       //columnDefs: [ { targets: [3,4,5,6], orderable: false } ],
       language: {
         url: "#{asset_path('spanish.json')}"
