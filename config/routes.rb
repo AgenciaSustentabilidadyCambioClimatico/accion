@@ -820,6 +820,7 @@ Rails.application.routes.draw do
     member do
       put :read
       put :solved
+      put :leido
     end
   end
 
