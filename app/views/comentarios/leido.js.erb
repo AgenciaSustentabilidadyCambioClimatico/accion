@@ -1,5 +1,7 @@
 $('#comentarios_acciones_<%= @comentario.id %>').html(`
-    <i class="fa fa-envelope-open pr-1"></i>
+  <i class="fa fa-envelope-open pr-1"></i>
+  <a data-remote="false" data-toggle="modal" data-target="#site-comments-response" data-email="<%= @comentario.email_contacto %>" data-id="<%= @comentario.id %>" href="#">
     <i class="fa fa-fire-extinguisher text-danger"></i>
+  </a>
 `);
 $('.loading-data').hide();
