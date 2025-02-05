@@ -298,7 +298,7 @@ class ConvocatoriasController < ApplicationController
 	private
 
 	  def convocatoria_params
-			parametros=params.require(:convocatoria).permit(
+			parametros = params.require(:convocatoria).permit(
 				:nombre,
         :fecha_hora,
         :tipo_reunion,
@@ -308,8 +308,9 @@ class ConvocatoriasController < ApplicationController
         :mensaje_encabezado,
         :mensaje_cuerpo,
         :caracterizacion,
+        :archivo_adjunto_cache,
         archivo_adjunto: [], #permite agregar un hash de archivos
-        archivo_adjunto_cache: []
+
     	)
       parametros
 	  end
