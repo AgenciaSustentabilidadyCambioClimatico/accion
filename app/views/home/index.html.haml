@@ -7,13 +7,14 @@
   .row
     -@clasificaciones_padre.datos.each do |data|
       - image_url = Clasificacion.find(data[:id]).imagen.url
+      - icono_url = Clasificacion.find(data[:id]).icono.url
       .col-12.col-lg-4.py-2.px-lg-2
         .flip-card
           .flip-card-inner
             .flip-card-front{style: "background-image:url('#{image_url}');background-repeat:no-repeat;background-size:cover;"}
               .d-flex.flex-column.h-100
                 .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
-                  %img{src: data[:icono]}
+                  %img{src: icono_url}
                 .flip-card-name-container{style: "background-color: #{data[:color]};"}
                   =data[:nombre]
             .flip-card-back
@@ -21,7 +22,7 @@
                 .d-flex.mb-2
                   .flip-card-name=data[:nombre]
                   .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
-                    %img{src: data[:icono]}
+                    %img{src: icono_url}
                 .flip-card-description.mb-2=data[:descripcion]
                 .d-flex.w-100.justify-content-between
                   .flip-number
