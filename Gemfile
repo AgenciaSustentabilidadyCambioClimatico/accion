@@ -103,3 +103,5 @@ group :development do
   gem 'web-console', '>= 3.3.0'
   gem 'hirb'
 end
+
+gem "health_check", "~> 3.1"
