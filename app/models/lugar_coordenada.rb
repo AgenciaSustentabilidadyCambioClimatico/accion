@@ -8,10 +8,11 @@ class LugarCoordenada < ApplicationRecord
 			(lugares - encontrados.map{|e|e.lugar}).each do |l|
 				geometria = GeoLocalization.geometry(l)
 				if ! geometria.blank? && geometria.include?(:location)
-					resultado << { latitud: geometria[:location][:lat], longitud: geometria[:location][:lng] }
+					resultado << { latitud: geometria[:location][:lat].to_f, longitud: geometria[:location][:lng].to_f }
 				end
 			end
 		end
+
 		resultado
 	end
 end
