@@ -79,22 +79,24 @@
 	});
 
 	async function initMap(){const {AdvancedMarkerElement} = await google.maps.importLibrary("marker");
+
 		map = new google.maps.Map(document.getElementById('map'), {
 			zoom: 5, mapId: "DEMO_MAP_ID",
 			center: uluru
 		});
 
 
-		marker = new google.maps.marker.AdvancedMarkerElement({
+		marker = new google.maps.Marker({
 			position: uluru,
 			map: null
-		});
+		}); console.log(marker);console.log(marker instanceof google.maps.Marker)
 
 		map.addListener('click', function(e) {
 			marker.setPosition(e.latLng);
 			marker.setMap(map);
 			mapaADireccion(e.latLng);
 		});
+
 
 		geocoder = new google.maps.Geocoder();
 
