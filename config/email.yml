@@ -1,4 +1,4 @@
-default_url_options_host: 'example.com'
+default_url_options_host: ENV["MAILER_DEFAULT_URL_OPTIONS_HOST"]
 default_url_options_port: <%= ENV["MAILER_DEFAULT_URL_OPTIONS_PORT"] %>
 default_options_from: <%= ENV["MAILER_DEFAULT_OPTIONS_FROM"] %>
 asset_host: <%= ENV["MAILER_ASSET_HOST"] %>
