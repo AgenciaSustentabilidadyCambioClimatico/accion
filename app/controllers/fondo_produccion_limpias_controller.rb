@@ -14,7 +14,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -31,7 +31,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :revisar_entregable_diagnostico,
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
                                         :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
-                                        :guardar_fondo_temporal]
+                                        :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
                                         :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
@@ -56,7 +56,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                         :usuario_entregables, :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
-                                        :carga_auditoria, :enviar_carga_auditoria]
+                                        :carga_auditoria, :enviar_carga_auditoria, :carga_responsable_postulante]
     before_action :set_tipo_instrumentos, only: [:edit,:update,
                                         :revisor, :asignar_revisor,
                                         :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
@@ -68,7 +68,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                         :usuario_entregables, :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
-                                        :carga_auditoria, :enviar_carga_auditoria]
+                                        :carga_auditoria, :enviar_carga_auditoria, :carga_responsable_postulante]
 
     before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
     before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
@@ -324,19 +324,29 @@ class FondoProduccionLimpiasController < ApplicationController
       tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
     
       # Obtener el rol de la tarea
-      rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
       rol_tarea_entregables = Tarea.find_by(codigo: Tarea::COD_FPL_015).rol_id
-    
-      # Obtener responsables para postulante
-      responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
-      contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
-      @contribuyentes = Contribuyente.where(id: contribuyentes_ids_postulante)
-    
+  
+      @contribuyentes = []
+      
       # Obtener responsables para entregables
       responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
       contribuyentes_ids_entregables = responsables_entregables.pluck(:contribuyente_id).uniq
       @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_entregables)
-      
+    end
+
+    def carga_responsable_postulante #FPL-00
+      @manifestaciones = []
+      @custom_id = ''
+
+      tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
+  
+      # Obtener el rol de la tarea
+      rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
+
+      # Obtener responsables para postulante
+      responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
+      contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
+      @contribuyentes = Contribuyente.where(id: contribuyentes_ids_postulante)
     end
     
     def lista_usuarios_entregables

@@ -178,50 +178,70 @@ class Responsable < ApplicationRecord
     personas.uniq
   end
 
-  def self.__personas_responsables_v3(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil)
-    # Inicialización
-    personas = Set.new  # Usamos un Set para eliminar duplicados automáticamente
+  def self.__personas_responsables_v3(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil)
+    # Usamos un Set para evitar duplicados
+    personas = Set.new
+    
+    # Obtenemos el instrumento y sus instrumentos relacionados
+    instrumento = TipoInstrumento.find_by(id: instrumento_id)
     instrumentos_id = [instrumento_id]
     
-    # Obtenemos tipo_instrumento_id solo una vez y agregamos el padre si es necesario
-    instrumento = TipoInstrumento.find_by(id: instrumento_id)
     if instrumento && instrumento.tipo_instrumento_id.present?
       instrumentos_id << instrumento.tipo_instrumento_id
     end
     
-    # Eliminamos duplicados
-    instrumentos_id.uniq!
+    instrumentos_id.uniq!  # Eliminamos duplicados
     
     # Realizamos la consulta inicial para obtener los responsables
     responsables = self.where(rol_id: rol_id, tipo_instrumento_id: instrumentos_id)
-    
+   
     responsables.find_each do |r|  # Usamos find_each para evitar cargar todo en memoria
       ctid = r.contribuyente_id
       aeid = r.actividad_economica_id.present? ? [r.actividad_economica_id] + r.actividad_economica.get_children.pluck(:id) : []
       tcid = r.tipo_contribuyente_id.present? ? [r.tipo_contribuyente_id] + r.tipo_contribuyente.get_children_id : []
-  
-      # Si tiene cargo_id, buscamos las personas asociadas
+    
+      # Obtener cargos asociados
       if r.cargo_id.present?
+        # Usamos `find_each` para cargar los registros de personas por cargo de manera más eficiente
         PersonaCargo.includes(:persona).where(cargo_id: r.cargo_id).find_each do |pc|
-          if __info_contribuyente(pc.persona.contribuyente, ctid, aeid, tcid, contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
-            personas.add(pc.persona)  # Usamos `add` para asegurarnos de no agregar duplicados
+          if __info_contribuyente_v2(pc.persona.contribuyente, ctid, aeid, tcid)
+            personas.add(pc.persona)  # Añadimos a personas sin duplicados
           end
         end
       else
         # Si no tiene cargo_id, buscamos todas las personas asociadas a todos los cargos
         PersonaCargo.includes(:persona).find_each do |pc|
-          if __info_contribuyente(pc.persona.contribuyente, ctid, aeid, tcid, contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
+          if __info_contribuyente_v2(pc.persona.contribuyente, ctid, aeid, tcid)
             personas.add(pc.persona)
           end
         end
-      end
+      end 
     end
-    
-    # Convertimos a un array antes de devolverlo
+    # Devolvemos los resultados como un array
     personas.to_a
   end
+    
+  def self.__info_contribuyente_v2(cpo, ctid, aeid, tcid)
+    coincide = true
   
-
+    # Optimizar validaciones solo si es necesario
+    coincide &= ctid.blank? || ctid.to_i == cpo.id.to_i
+  
+    # Obtener actividad económica ids solo si aeid está presente
+    if aeid.present?
+      ae_ids = cpo.actividad_economica_contribuyentes.pluck(:actividad_economica_id)
+      coincide &= (ae_ids & aeid).any?
+    end
+  
+    # Obtener tipo contribuyente ids solo si tcid está presente
+    if tcid.present?
+      tc_ids = cpo.dato_anual_contribuyentes.pluck(:tipo_contribuyente_id)
+      coincide &= (tc_ids & tcid).any?
+    end
+  
+    coincide
+  end
+   
   def self.__info_contribuyente(cpo,ctid,aeid,tcid,c_extra=nil,ae_extra=nil,tc_extra=nil)
     coincide = true
     unless ctid.blank?

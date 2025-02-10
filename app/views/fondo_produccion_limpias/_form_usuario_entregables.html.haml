@@ -2,6 +2,28 @@
   $(document).ready(function() {
 
     cargarListaUsuariosEntregables();
+    
+    $('#buscar-contribuyente-fpl').on('click', function(e) {
+      e.preventDefault();  // Evita que el modal se abra de forma predeterminada
+      
+      // Realiza la solicitud AJAX para obtener el contenido
+      $.ajax({
+        url: "#{carga_responsable_postulante_fondo_produccion_limpias_path}",  // Reemplaza con la ruta que maneja la carga del contenido
+        type: "GET",
+        data: { tarea_pendiente_id: #{@tarea_pendiente.id} },  // Asegúrate de pasar los parámetros necesarios
+        success: function(data) {
+          // Inserta el contenido dentro del modal
+          $('#modal-content').html(data);
+          
+          // Ahora que el contenido está cargado, abre el modal
+          $('#buscar-contribuyente').modal('show');
+          $('.loading-data').hide();
+        },
+        error: function(xhr, status, error) {
+          alert("Ocurrió un error al cargar el contenido: " + error);
+        }
+      });
+    });
 
     $('.chosen-control').chosen({
       allow_single_deselect: true,
@@ -11,7 +33,6 @@
     htmlErrorToTooltip('top');
 
     $('body').on('change','.contribuyente-radio',function() {
-      console.log('entro aca')
       $('.seleccionar-contribuyente-button').removeAttr('disabled');
     });
 
@@ -181,7 +202,7 @@
                       = t(:elegir_institucion_postulante)
                     .row
                       .col-12.col-lg-2.pr-1
-                        = link_to '#', "data-toggle" => :modal, "data-target" => "#buscar-contribuyente", class: 'form-control btn btn-primary btn-sm', id: 'buscar-contribuyente-fpl' do
+                        = link_to '#', class: 'form-control btn btn-primary btn-sm', id: 'buscar-contribuyente-fpl' do
                           %i.fa.fa-search-plus
                           Buscar
                       .col-12.col-lg-10.pl-1

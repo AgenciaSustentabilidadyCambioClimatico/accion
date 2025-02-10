@@ -191,7 +191,8 @@ Rails.application.routes.draw do
   get ':id/usuario-entregables', to: "fondo_produccion_limpias#usuario_entregables", as: :usuario_entregables_fondo_produccion_limpias
   patch ':id/usuario-entregables', to: "fondo_produccion_limpias#guardar_usuario_entregables", as: :guardar_usuario_entregables_fondo_produccion_limpias
 
-
+  get ':id/carga_responsable_postulante', to: "fondo_produccion_limpias#carga_responsable_postulante", as: :carga_responsable_postulante_fondo_produccion_limpias
+ 
   #Tarea FPL-01
   get 'lista_usuarios_entregables', to: 'fondo_produccion_limpias#lista_usuarios_entregables', as: :lista_usuarios_entregables_fondo_produccion_limpia
   match 'fondo-produccion-limpias/create/:id', to: 'fondo_produccion_limpias#create', via: [:get, :patch], as: 'iniciar_flujo'
