@@ -1805,6 +1805,8 @@ GEM
       activerecord (>= 4.0)
       hashids (~> 1.0)
     hashids (1.0.6)
+    health_check (3.1.0)
+      railties (>= 5.0)
     hirb (0.7.3)
     html2haml (2.3.0)
       erubis (~> 2.7.0)
@@ -2118,6 +2120,7 @@ DEPENDENCIES
   haml
   haml-rails (~> 1.0)
   hashid-rails (~> 1.0)
+  health_check (~> 3.1)
   hirb
   htmltoword
   httparty

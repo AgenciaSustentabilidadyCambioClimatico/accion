@@ -1,4 +1,5 @@
 Rails.application.routes.draw do     
+  health_check_routes
 # path_names = { sign_in: 'login', sign_out: 'logout' }
 # if Rails.env.production?
 #   devise_for :users, path: '', path_names: path_names, :skip => [:registrations]
