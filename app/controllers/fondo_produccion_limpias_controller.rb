@@ -324,9 +324,12 @@ class FondoProduccionLimpiasController < ApplicationController
       tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
     
       # Obtener el rol de la tarea
+      rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
       rol_tarea_entregables = Tarea.find_by(codigo: Tarea::COD_FPL_015).rol_id
   
-      @contribuyentes = []
+      responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
+      contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
+      @contribuyentes_postulantes = Contribuyente.where(id: contribuyentes_ids_postulante)
       
       # Obtener responsables para entregables
       responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
