@@ -148,7 +148,7 @@
     try {
       data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
       $("#manifestacion_de_interes_usuario_entregables_id").val(data.id);
-      $("#manifestacion_de_interes_usuario_entregable_name").val(data.nombre);
+      $("#manifestacion_de_interes_usuario_entregable_name").val($.formatRut(data.rut) + " - " + data.nombre);
     } catch(e) {
       alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
     }
