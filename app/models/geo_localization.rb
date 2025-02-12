@@ -25,10 +25,14 @@ class GeoLocalization
 		data_as_hash
 	end
 
-	def self.geometry(string)
-		data = self.data(string)
-		data.has_key?(:geometry) ? { query: string }.merge( data[:geometry] ) : { query: string }
-
-	end
-
+  def self.geometry(string)
+    data = self.data(string)
+    if data[:lat] && data[:lon]
+      result = { query: string, location: { lat: data[:lat], lng: data[:lon] } }
+      result
+    else
+      puts "No coordinates found for '#{string}'"
+      { query: string }
+    end
+  end
 end

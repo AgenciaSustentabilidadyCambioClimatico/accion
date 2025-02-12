@@ -1,10 +1,8 @@
-
 :javascript
   //carga la data desde el mapa, con el poligono
 
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 = javascript_include_tag "https://maps.googleapis.com/maps/api/js?key=#{Rails.application.secrets.google_api_key}&language=es&libraries=drawing,geometry&callback=mapLoaded", async: true;
-
 :javascript
   var ubicacionEntidadCogestoraMap;
   var representacionSeleccionTerritorioMap;
@@ -34,7 +32,8 @@
       center: new google.maps.LatLng(lat,lng),
       mapTypeId: google.maps.MapTypeId.ROADMAP
     });
-    marker = new google.maps.marker.AdvancedMarkerElement({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
+
+    marker = new google.maps.Marker({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
   }
 
   function initializeRepresentacionSeleccionTerritorioMap(lat,lng) {
@@ -46,6 +45,7 @@
   }
 
   function initializeAreaInfluenciaProyectoMap(lat,lng) {
+
     areaInfluenciaProyectoMap = new google.maps.Map(document.getElementById('area-influencia-proyecto-mapa'), {
       zoom: 4,
       center: new google.maps.LatLng(lat,lng),
@@ -114,6 +114,7 @@
   }
 
   function loadSavedData(map,data) {
+
     try{
       //var data = JSON.parse(localStorage.getItem(item));
       map.data.forEach(function (f) {
@@ -153,20 +154,16 @@
       fillOpacity: 0.35
     });
     polygon.setMap(map);
+
   }
 
-
-
-  function addMarker(map, location) {
-    if (!location || !map) return;
-
-    const marker = new google.maps.Marker({
+  function addMarker(map,location) {
+    marker = new google.maps.Marker({
       position: location,
-      map: map,
-      title: "Location Marker",
+      map: map
     });
-
     markers.push(marker);
+
   }
 
   function removeAllMarkers() {
@@ -177,9 +174,11 @@
   }
 
   function setAllMarkers(coords,map) {
+
     for (var i = 0; i < coords.length; i++) {
       addMarker(map,coords[i]);
     }
+
   }
 
   // ##
@@ -189,8 +188,10 @@
   // # En versiones anteriores, las funciones 'removeAllMarkers()' y 'addMarker()' se encontraban comentadas.
 
   function setCoordinates(lugares) {
+
     removeAllMarkers();
     if ( lugares.length > 0 ) {
+
       $.post("#{geo_localization_coordinates_path}", { geo_localization: { place: JSON.stringify(lugares) }}, function(data){
         coords = [];
         $.each(data.response,function(k,v){

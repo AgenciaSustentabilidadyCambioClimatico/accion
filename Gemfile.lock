@@ -1904,7 +1904,6 @@ GEM
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    psych (3.3.4)
     public_suffix (6.0.1)
     puma (4.3.12)
       nio4r (~> 2.0)
@@ -2137,7 +2136,6 @@ DEPENDENCIES
   prawn (~> 2.4.0)
   prawn-table (~> 0.2.2)
   pry
-  psych (= 3.3.4)
   puma (~> 4.0)
   pundit
   puredocx (~> 0.0.2)
