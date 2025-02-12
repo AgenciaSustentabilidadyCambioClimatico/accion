@@ -8,7 +8,7 @@ class ClaveUnica
 	LOGOUT 						= self::CLAVE_UNICA_URL+'/api/v1/accounts/app/logout'
 
 	def self.variables
-		YAML.unsafe_load(ERB.new(File.read("#{Dir.pwd}/config/clave_unica.yml")).result)
+		YAML.safe_load(ERB.new(File.read("#{Dir.pwd}/config/clave_unica.yml")).result, aliases: false)
 	end
 
 	def self.client_id
