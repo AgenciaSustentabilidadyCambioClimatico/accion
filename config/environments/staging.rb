@@ -15,7 +15,7 @@ Rails.application.configure do
   config.action_controller.perform_caching = true
 
   email = YAML.load_file(ERB.new(File.read("#{Dir.pwd}/config/email.yml")).result)
-  config.action_mailer.default_url_options = { host: email['default_url_options_host'] }
+  config.action_mailer.default_url_options = { host: ENV['MAILER_DEFAULT_URL_OPTIONS_HOST'] }
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.perform_deliveries = true
   config.action_mailer.delivery_method = :smtp
