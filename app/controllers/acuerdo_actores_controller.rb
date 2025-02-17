@@ -5,6 +5,7 @@ class AcuerdoActoresController < ApplicationController
   before_action :set_flujo
   before_action :set_manifestacion_de_interes
   before_action :set_obtiene_mapa_actual_y_actores
+  before_action :set_registro_proveedor
 
 
   def index
@@ -166,6 +167,11 @@ class AcuerdoActoresController < ApplicationController
     autorizado? @tarea_pendiente
     @descargables = @tarea_pendiente.get_descargables
   end
+
+  def set_registro_proveedor
+    @registro_proveedor = RegistroProveedor.new
+  end
+
 
   #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
   def set_flujo

@@ -50,6 +50,7 @@ class MapaDeActor < ApplicationRecord
 	end
 
 	def self.construye_data_para_apl (flujo)
+		binding.pry
 		data = []
 		actores = MapaDeActor.where(flujo_id: flujo.id).each do |actor|
 			
@@ -123,6 +124,7 @@ class MapaDeActor < ApplicationRecord
 			if !fila.has_key?(:sector_productivo) then fila[:sector_productivo] = sector_productivo end
 			if !fila.has_key?(:razon_social) then fila[:razon_social] = razon_social end
 		end
+		binding.pry
 		actores
 	end
 
@@ -237,6 +239,7 @@ class MapaDeActor < ApplicationRecord
 	end
 
 	def self.actualiza_tablas_mapa_actores (data, flujo=nil, tarea_pendiente=nil, historico = false) #DZC SOLO LLAMAR DESDE USO DE REST POR EDITOR
+	binding.pry	
     pem_lista = {}
 		usuarios_vacios_procesados = []
 		if !flujo.nil?

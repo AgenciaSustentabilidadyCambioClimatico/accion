@@ -1,0 +1,131 @@
+:javascript
+  $(document).ready(function() {
+    var instrumentoSeleccionado =  #{@instrumento_seleccionado};
+    var instrumentoSeleccionado1_3 = #{@instrumento_seleccionado_1_3}; 
+
+    if (instrumentoSeleccionado.length === 1 && instrumentoSeleccionado1_3.length === 0) {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+    } else if (instrumentoSeleccionado.length === 1 && instrumentoSeleccionado1_3.length === 1) {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = true;
+    } else {
+        document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+    }
+  });
+
+  function habilitaOpciones(radio) {
+    var valorSeleccionado = radio.value === 'true';
+    var botonGuardar = document.getElementById('grabar-postulacion-fpl-button');
+    document.getElementById('tipo_linea_seleccionada').disabled = !valorSeleccionado;
+    botonGuardar.disabled = !valorSeleccionado;
+  }
+
+  function habilitaOpcionesL13(radio) {
+      var valorSeleccionado = radio.value === 'true';
+      var botonGuardar = document.getElementById('grabar-postulacion-fpl-button');
+      document.getElementById('tipo_linea_seleccionada_l13').disabled = !valorSeleccionado;
+      botonGuardar.disabled = !valorSeleccionado;
+  }
+
+  function confirmarGuardar(event) {
+    var instrumentoSeleccionado =  #{@instrumento_seleccionado};
+    var fondo_produccion_limpia = document.getElementById('fondo_produccion_limpia');
+    var fondo_produccion_limpia_l13 = document.getElementById('fondo_produccion_limpia_l13');
+
+    if (document.getElementById('grabar-postulacion-fpl-button').disabled) {
+        event.preventDefault();
+        return;
+    }
+
+    if (instrumentoSeleccionado.length === 1) {
+      if (confirm('Se recomienda que, al iniciar la etapa de Certificación de APL, la etapa de Implementación del APL esté cerrada.')) {
+        $.ajax({
+          url: "#{grabar_postulacion_fondo_produccion_limpia_path}",
+          data: {
+            flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+            tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+            fondo_produccion_limpia: fondo_produccion_limpia,
+            fondo_produccion_limpia_l13: fondo_produccion_limpia_l13
+          },
+          method: "GET",
+          success: function(response) {
+
+          },
+          error: function(error) {
+ 
+          }
+        });
+      }
+    }
+  }
+
+.card.m-0
+  .card-header
+    %h5.no-margin
+  .card-body
+    = simple_form_for @registro_proveedor, url: grabar_postulacion_fondo_produccion_limpia_path(@tarea_pendiente), remote: true, method: :patch do |f|
+      
+      .row
+        .col-12.mt-3
+          %h1.titulo='Ingreso Mapa de Actores'
+          .col-12
+            .card
+              .card-body
+                .row
+                  .col-12.col-lg-3
+                    = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }
+                  .col-12.col-lg-4
+                    =f.input :nombre
+                  .col-12.col-lg-4
+                    =f.input :apellido, required: true, input_html: {class: "validado check-boton-llenado"}
+                  .col-12.col-lg-6
+                    =f.input :email, error: true, input_html: {class: "form-control help-block email_validator"}
+                  .col-12.col-lg-6
+                    =f.input :telefono, as: :integer, label: 'Teléfono'
+                  .col-12.col-lg-4
+                    =f.input :profesion, label: 'Profesión'
+                  .col-12
+                    =f.input :direccion, label: 'Dirección'
+                  .col-12.col-lg-4
+                    = f.label 'Región'
+                    = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region.presence, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%'
+                    / = select_tag :region, options_from_collection_for_select(Region.all, "id", "nombre"), { class: 'form-control select2 validado', required: true, prompt: 'Selecciona uno' }
+                  .col-12.col-lg-4
+                    = f.label 'Comuna'
+                    / = f.input_field :comuna, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna.presence, wrapper: false, class: "form-control select2", label: false
+                    / / = select_tag :comuna, options_from_collection_for_select(Comuna.all, "id", "nombre"), { class: 'form-control select2', prompt: 'Selecciona uno'}
+                    =f.input :comuna, collection: {},label: false, input_html: {class: 'validado select2', style: "width: 100%"}
+                  .col-12.col-lg-4
+                    =f.label 'Ciudad'
+                    =f.input :ciudad, label: false, class: 'form-control'
+                  / .col-12
+                  /   =f.input :asociar_institucion,as: :boolean, input_html: {onclick: "HideOrShowFields()"}, label: 'Asociar institución'
+                  .col-12
+                    .contribuyente_fields{style: "display: none"}
+                      .col-12
+                        #contribuyente_rut_fields
+                          = f.label 'Contribuyente'
+                          = f.select :contribuyente_id, [], {}, {class: "select2", style: "width: 75%"}
+                      .contribuyente_footer_fields
+                        = f.label 'Si esta no aparece, complete los siguientes campos:', style: 'color: black; padding: 16px 0px;'
+                        .row
+                          .col-12.col-lg-4
+                            = f.input :rut_institucion, required: true, label: 'RUT institucion', placeholder: "Ingresar RUT", input_html: { class: 'identificacion required-field' }, label: 'RUT institución'
+                          .col-12.col-lg-4
+                            =f.input :nombre_institucion, required: true, input_html: { class: 'required-field' }, label: 'Nombre institución'
+                          .col-12.col-lg-4
+                            / =f.input :tipo_contribuyente, collection: TipoContribuyente.all.map{|c| [c.nombre, c.id]}, wrapper: false
+                          .col-12
+                            =f.input :direccion_casa_matriz, required: true, input_html: { class: 'required-field' }, label: 'Dirección casa matriz'
+                          .col-12.col-lg-4
+                            = f.label 'Región casa matriz'
+                            = f.input_field :region_casa_matriz, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.region_casa_matriz.presence, wrapper: false, class: "select2", label: false, style: "width: 100%"
+                          .col-12.col-lg-4
+                            = f.label 'Comuna casa matriz'
+                            =f.input :comuna_casa_matriz, collection: {},label: false, input_html: {class: 'select2', style: "width: 100%"}
+                            / = f.input_field :comuna_casa_matriz, collection: Comuna.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, selected: @registro_proveedor.comuna_casa_matriz.presence, wrapper: false, class: "form-control select2", label: false, style: "width: 100%"
+                          .col-12.col-lg-4
+                            =f.input :ciudad_casa_matriz, required: true, input_html: { class: 'required-field' }
+                        
+      .float-right
+        = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning '
+        =f.submit 'Enviar', class: 'btn btn-primary'

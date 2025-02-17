@@ -349,6 +349,8 @@
           .card-body.p-0
             #actores-remote-table
               = render 'actores/table', externo: true
+            #mapa_actores-form
+              = render 'actores/form_mapa_de_actores', externo: true 
             #revisar-remote-form
               = render 'actores/form', externo: true
       #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
