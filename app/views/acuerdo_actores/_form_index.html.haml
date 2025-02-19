@@ -313,8 +313,39 @@
     });
     
   }
+
+  verificarModal();
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    //alert('entro aca');
+    try {
+      // Obtener el input seleccionado
+      var selectedRadio = $('table.contribuyentes').DataTable().$('.contribuyente-radio:checked');
+      var radioValue = selectedRadio.val();  // Obtener el valor
+      console.log('Valor del radio seleccionado:', radioValue);  // Mostrar en la consola
+
+      // Intentar parsear el valor si es un JSON
+      data = JSON.parse(radioValue); 
+      console.log('Datos parsed:', data);  // Ver los datos que has parseado
+
+      // Luego puedes acceder a los atributos que necesitas
+      //alert(data.id);  // Mostrar el id
+      //alert(data.razon_social);  // Mostrar la razón social
+  
+      // Si deseas setear los valores en otros campos de tu formulario:
+      $("#mapa_actores_contribuyente_id").val(data.id);
+      $("#mapa_actores_rut_contribuyente").val(data.rut);
+      $("#mapa_actores_nombre_contribuyente").val(data.razon_social);
+      
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  });
+  
 - titulo t(:actualización_de_acuerdo)
 = render 'manifestacion_de_interes/modal_advertencia_set_metas'
+= render 'admin/users/buscador'
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
 .card
   .card-header.p-0
     .p-3

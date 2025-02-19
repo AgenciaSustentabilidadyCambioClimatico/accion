@@ -5,7 +5,8 @@ class AcuerdoActoresController < ApplicationController
   before_action :set_flujo
   before_action :set_manifestacion_de_interes
   before_action :set_obtiene_mapa_actual_y_actores
-  before_action :set_registro_proveedor
+  before_action :set_mapa_actores
+  before_action :set_contribuyentes
 
 
   def index
@@ -168,10 +169,25 @@ class AcuerdoActoresController < ApplicationController
     @descargables = @tarea_pendiente.get_descargables
   end
 
-  def set_registro_proveedor
-    @registro_proveedor = RegistroProveedor.new
+  def set_mapa_actores
+    @mapa_actor = MapaDeActor.new
   end
 
+  def set_contribuyentes
+    @contribuyente = Contribuyente.new
+    personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
+
+    if @tarea.codigo == Tarea::COD_APL_001
+      @contribuyentes_del_proponente = Contribuyente.where(id: personas_proponentes.pluck(:contribuyente_id))
+    else
+      @contribuyentes_del_proponente = [@manifestacion_de_interes.proponente_institucion]
+    end
+
+    #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
+    @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+
+    @usuario_actor = User.new
+  end
 
   #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
   def set_flujo

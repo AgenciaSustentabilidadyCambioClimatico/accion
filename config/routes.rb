@@ -413,6 +413,7 @@ Rails.application.routes.draw do
         put :privacidad
         get :buscador
         get :edit_modal
+        get :edit_actor_modal
       end
     end
     

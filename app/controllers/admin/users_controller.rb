@@ -148,6 +148,18 @@ class Admin::UsersController < ApplicationController
     render layout: false
   end
 
+  def edit_actor_modal
+    if params[:id].blank?
+      @usuario_actor = User.new
+    else
+      @usuario_actor = User.unscoped.find_by(user_id: params[:id], flujo_id: params[:flujo_id]) || User.unscoped.find(params[:id])
+    end
+    @usuario_actor.temporal = true
+    @usuario_actor.flujo_id = params[:flujo_id]
+    @usuario_actor.user_id = params[:user_id] unless params[:user_id].blank?
+    render layout: false
+  end
+
 	######################################################################################################################################################################################
 	private
 		def set_user

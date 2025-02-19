@@ -1,0 +1,96 @@
+= simple_form_for [:admin,usuario_actor], remote: true, html: { autocomplete: :off } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :user_id, as: :hidden, wrapper: false
+  .row
+    .col-12
+      .card
+        .card-header
+          %h5.no-margin
+            =t(:agregar_nuevo_actor)
+        .card-body
+          .row
+            .col-12.col-lg-4
+              = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT actor", input_html: { class: 'identificacion form-actor-boton-guardar-usuario', readonly: !usuario_actor.user_id.nil? }
+              -# Solo mostrar el checkbox si el user_id es nil
+              - if usuario_actor.user_id.nil?
+                = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_rut_checkbox"
+                %label{ for: "sin_rut_checkbox" } Sin Rut
+            .col-12.col-lg-8
+              = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-actor-boton-guardar-usuario' }
+            .col-12.col-lg-6
+              = f.input :email, error: true, required: true, label: t(:email), placeholder: "Ingresar email", input_html: {class: "form-actor-boton-guardar-usuario help-block email_validator"}
+              -# Solo mostrar el checkbox si el user_id es nil
+              - if usuario_actor.user_id.nil?
+                = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_email_checkbox"
+                %label{ for: "sin_email_checkbox" } Sin Email
+            .col-12.col-lg-6
+              = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-actor-boton-guardar-usuario' }
+            .col-12.col-lg-6     
+              = f.input :rol, collection: Rol.__select, placeholder: "Seleccione un rol", input_html: { class: 'form-actor-boton-guardar-usuario'}  
+            .col-12.col-lg-6
+              = f.input :cargo, collection: Cargo.__select, placeholder: "Seleccione un cargo", input_html: { class: 'form-actor-boton-guardar-usuario' }
+
+    .col-12.mt-2.text-right
+      %button.btn.btn-primary#deshacer-usuario-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
+        =t(:volver_a_lista)
+      %button.btn.btn-primary.guarda-usuario-actor-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
+        Agregar
+
+:javascript
+  $(document).ready(function(){
+    iniciarAutoNumeric();
+    nuevo_usuario_temporal_validaciones();
+    htmlErrorToTooltip('top');
+
+    // Manejador para el checkbox de "Sin Rut"
+    $('#sin_rut_checkbox').on('change', function() {
+      var rutInput = $('#user_rut'); // Seleccionar el campo RUT usando jQuery
+      if ($(this).prop('checked')) {
+        rutInput.prop('disabled', true);  // Deshabilitar el campo RUT
+      } else {
+        rutInput.prop('disabled', false); // Habilitar el campo RUT
+      }
+    });
+
+     // Manejador para el checkbox de "Sin Email"
+    $('#sin_email_checkbox').on('change', function() {
+      var emailInput = $('#user_email'); // Seleccionar el campo RUT usando jQuery
+      if ($(this).prop('checked')) {
+        emailInput.prop('disabled', true);  // Deshabilitar el campo RUT
+      } else {
+        emailInput.prop('disabled', false); // Habilitar el campo RUT
+      }
+    });
+
+    // Manejador para el botón "Guardar Usuario"
+    $(document).on('click', '.guarda-usuario-actor-button', function(e) {
+      e.preventDefault();  // Evitar el envío del formulario por defecto
+
+      var rut = $('#user_rut').val();
+      var nombreCompleto = $('#user_nombre_completo').val();
+      var email = $('#user_email').val();
+      var telefono = $('#user_telefono').val();
+      var rol = $('#user_rol').val();
+      var cargo = $('#user_cargo').val();
+
+      if ($('#sin_rut_checkbox').prop('checked')) {
+        rut = "--";
+      }
+
+      if ($('#sin_email_checkbox').prop('checked')) {
+        email = "--";
+      }
+
+      $("#rut_usuario_mapa_actores").val(rut);
+      $("#nombre_usuario_mapa_actores").val(nombreCompleto);   
+      $("#email_usuario_mapa_actores").val(email);   
+      $("#telefono_usuario_mapa_actores").val(telefono); 
+      $("#rol_id_usuario_mapa_actores").val(rol);    
+      $("#rol_usuario_mapa_actores").val($('#user_rol option:selected').text());   
+      $("#cargo_id_usuario_mapa_actores").val(cargo);   
+      $("#cargo_usuario_mapa_actores").val($('#user_cargo option:selected').text());   
+
+      $('#buscar-usuario').modal("hide");
+    });
+  });

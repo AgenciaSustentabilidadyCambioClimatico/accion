@@ -1521,6 +1521,12 @@ es:
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
   respuesta_comentario: Respuesta comentario
+  agregar_actores: Agregar Actores
+  agregar_actores_via_excel: Agregar Actores vía excel (Opcional)
+  nuevo_actor: Nuevo actor
+  agregar_nuevo_actor: Agregar nuevo actor
+  actor: actor
+  actores: actores
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   helpers:
     submit:
