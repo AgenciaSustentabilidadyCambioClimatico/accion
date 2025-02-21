@@ -1,0 +1,23 @@
+
+%div#div_mapa_actores.table-responsive  
+  %table.table.table-striped
+    %thead
+      %tr
+        %th=t(:rol_en_acuerdo)
+        %th=t(:nombre_actor)
+        %th=t(:rut_actor)
+        %th=t(:cargo_institucion)
+        %th=t(:email_institucional)
+        %th=t(:telefono_institucional)
+        %th=t(:razon_social_institucion)
+        %th=t(:rut_institucion)
+        %th=t(:tipo_institucion)
+        %th=t(:comuna_institucion)
+        %th=t(:accion)
+    %tbody
+
+.float-right.mr-3.mb-3
+  -#-if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+  = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+  -#-if !solo_lectura
+  = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled

@@ -14,6 +14,10 @@
       .col-12.mt-2.text-right
         %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
           =t(:nueva_institución)
+    -unless @contribuyente_actor.nil?
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#nuevo-contribuyente-actor-button{type: :button}
+          =t(:nueva_institución)
   .col-12.mt-2
     .card.no-margin
       .card-header
@@ -23,9 +27,13 @@
         %div{id: "contribuyentes-remote-table#{custom_id}"}
           = render 'admin/contribuyentes/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento, lista_contribuyentes: lista_contribuyentes, custom_id: custom_id
   .col-12.mt-2.text-right
-    -unless @contribuyente_temporal.nil?
-      %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-button{type: :button, disabled: :disabled }
+    -unless @contribuyente_actor.nil?
+      %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-actor-button{type: :button, disabled: :disabled }
         Seleccionar
     -else
-      %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled }
-        Seleccionar
+      -unless @contribuyente_temporal.nil?
+        %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-button{type: :button, disabled: :disabled }
+          Seleccionar
+      -else
+        %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled }
+          Seleccionar

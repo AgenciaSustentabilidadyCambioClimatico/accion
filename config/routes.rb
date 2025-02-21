@@ -427,6 +427,7 @@ Rails.application.routes.draw do
         get :mis_instituciones
         get :region_comunas 
         get :edit_modal
+        get :edit_actor_modal
       end
     end
 
@@ -780,6 +781,9 @@ Rails.application.routes.draw do
       post ':id/reload-informe', to: "acuerdo_actores#reload_informe", as: :reload_informe
       post ':id/mostrar-informe', to: "acuerdo_actores#mostrar_informe", as: :mostrar_informe
       patch ':id/guardar-informe', to: "acuerdo_actores#guardar_informe", as: :guardar_informe
+      patch ':id/crear_actor', to: "acuerdo_actores#crear_actor", as: :crear_actor
+      get ':id/listado-actores-temporal', to: "acuerdo_actores#listado_actores_temporal", as: :listado_actores_temporal
+      delete '/:actor_id/eliminar-actor', to: 'acuerdo_actores#eliminar_actor', as: 'eliminar_actor'
     end
 
   end

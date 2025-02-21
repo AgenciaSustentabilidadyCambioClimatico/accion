@@ -1,0 +1,34 @@
+<% @listado_actores_temporal.each do |actor| %>
+  var actor_id = '<%= actor.id %>';
+  var rol_en_acuerdo = '<%= actor.rol_en_acuerdo %>';
+  var nombre_actor = '<%= actor.nombre_actor %>';
+  var rut_actor = '<%= format_rut(actor.rut_actor) %>';
+  var cargo_institucion = '<%= actor.cargo_institucion %>';
+  var email_institucional = '<%= actor.email_institucional %>';
+  var telefono_institucional = '<%= actor.telefono_institucional %>';
+  var razon_social_institucion = '<%= actor.razon_social_institucion %>';
+  var rut_institucion = '<%= actor.rut_institucion %>';
+  var tipo_institucion = '<%= actor.tipo_institucion %>';
+  var comuna_institucion = '<%= actor.comuna_institucion %>';
+  var tarea_pendiente_id = '<%= tarea_pendiente_id %>';
+
+  var newRow = "<tr>" + 
+    "<td class='contenido-form'>" + rol_en_acuerdo + "</td>" +
+    "<td class='contenido-form'>" + nombre_actor + "</td>" +
+    "<td class='contenido-form'>" + rut_actor + "</td>" +
+    "<td class='contenido-form'>" + cargo_institucion + "</td>" +
+    "<td class='contenido-form'>" + email_institucional + "</td>" +
+    "<td class='contenido-form'>" + telefono_institucional + "</td>" +
+    "<td class='contenido-form'>" + razon_social_institucion + "</td>" +
+    "<td class='contenido-form'>" + rut_institucion + "</td>" +
+    "<td class='contenido-form'>" + tipo_institucion + "</td>" +
+    "<td class='contenido-form'>" + comuna_institucion + "</td>" +
+    "<td class='contenido-form dos iconos-acciones'>" +
+    "<a data-actor-id='" + actor_id + "' data-confirm='¿Está seguro que desea borrar a este Actor?' class='eliminar-actor' id='eliminar-actor-" + actor_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/manifestacion-de-interes/" + tarea_pendiente_id + "/" + actor_id + "/eliminar-actor' data-original-title='Eliminar Actor'>" + 
+      "<i class='fa fa-trash' title='Eliminar'></i>" +
+    "</a>" +
+    "</td>" +
+  "</tr>";    
+
+  $('#div_mapa_actores table tbody').append(newRow); 
+<% end %>

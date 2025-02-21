@@ -184,7 +184,7 @@ class ActoresController < ApplicationController
       @manifestacion_de_interes.mapa_de_actores_data = nil
       @manifestacion_de_interes.temporal = true
       @manifestacion_de_interes.save(validate: false)
-      binding.pry
+      #binding.pry
       #DZC el término de la tarea depdende de otros controladores
     end
   end
@@ -192,7 +192,7 @@ class ActoresController < ApplicationController
   def descargar
 
     send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "mapa_de_actores_base.xlsx"
-    binding.pry
+    #binding.pry
   end
 
   def descargar_revisor
@@ -233,7 +233,7 @@ class ActoresController < ApplicationController
     else
       @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     end
-    binding.pry
+    #binding.pry
   end
 
   def set_mapa_de_actores_data

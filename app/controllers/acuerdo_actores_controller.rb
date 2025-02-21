@@ -7,6 +7,7 @@ class AcuerdoActoresController < ApplicationController
   before_action :set_obtiene_mapa_actual_y_actores
   before_action :set_mapa_actores
   before_action :set_contribuyentes
+  before_action :set_usuario_actor
 
 
   def index
@@ -161,6 +162,34 @@ class AcuerdoActoresController < ApplicationController
     end
   end
 
+  def crear_actor
+    @mapa_actor.assign_attributes(listado_actores_temporal_params)
+    @mapa_actor.estado = 0
+    @mapa_actor.manifestacion_de_interes_id = params[:id]
+
+    @mapa_actor.save
+
+    listado_actores_temporal
+  end
+
+  def listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0)
+    respond_to do |format|
+      format.js { render 'actores/listado_actores_temporal', locals: { tarea_pendiente_id: params[:id] } }
+    end
+  end
+
+  def eliminar_actor
+    actor = ListadoActoresTemporal.find(params[:actor_id])
+    if actor.destroy
+      respond_to do |format|
+        format.js { render 'actores/eliminar_actor', locals: { actor: actor.id, tarea_pendiente_id: params[:tarea_pendiente_id] } }
+      end
+    else
+      flash[:error] = 'Hubo un problema al eliminar al actor.'
+    end
+  end
+  
   private
 
   def set_tarea_pendiente
@@ -170,24 +199,19 @@ class AcuerdoActoresController < ApplicationController
   end
 
   def set_mapa_actores
-    @mapa_actor = MapaDeActor.new
+    @mapa_actor =ListadoActoresTemporal.new
   end
 
   def set_contribuyentes
     @contribuyente = Contribuyente.new
-    personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
-
-    if @tarea.codigo == Tarea::COD_APL_001
-      @contribuyentes_del_proponente = Contribuyente.where(id: personas_proponentes.pluck(:contribuyente_id))
-    else
-      @contribuyentes_del_proponente = [@manifestacion_de_interes.proponente_institucion]
-    end
-
-    #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
     @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    @contribuyente_actor = Contribuyente.new
+  end
 
+  def set_usuario_actor
     @usuario_actor = User.new
   end
+
 
   #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
   def set_flujo
@@ -274,6 +298,15 @@ class AcuerdoActoresController < ApplicationController
       :vigencia_certificacion, :vigencia_certificacion_final,
       :derechos, :obligaciones, :difusion, :promocion, :incentivos, :sanciones, :personerias, :ejemplares, :firmas,
       :archivos_anexos_cache, archivos_anexos: []
+    )
+  end
+
+  def listado_actores_temporal_params
+    params.require(:listado_actores_temporal).permit(
+      :actor_id, :rol_en_acuerdo_id, :cargo_institucion_id, :contribuyente_id, :tipo_institucion_id, :rol_en_acuerdo, 
+      :nombre_actor, :rut_actor, :cargo_institucion, :email_institucional, :telefono_institucional, 
+      :razon_social_institucion, :rut_institucion, :tipo_institucion, :comuna_institucion, :estado,
+      :manifestacion_de_interes
     )
   end
 

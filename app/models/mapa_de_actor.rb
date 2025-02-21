@@ -19,8 +19,6 @@ class MapaDeActor < ApplicationRecord
 	attr_accessor :tipo, :validar_apl_024, :validar_apl_040
 	attr_accessor :institucion_entregables, :usuario_entregables, :observacion_entregables, :institucion_entregables_name, :usuario_entregables_name
 	attr_accessor :institucion_carga_datos, :usuario_carga_datos, :observacion_carga_datos, :institucion_carga_datos_name, :usuario_carga_datos_name
-	attr_accessor :id_usuario, :rut_usuario, :nombre_usuario, :id_contribuyente, :rut_contribuyente, :nombre_contribuyente
-	attr_accessor :cargo_id, :cargo, :rol_id, :codigo_ciiuv4, :tipo_institucion, :direccion_institucion, :comuna_institucion, :email_institucion, :telefono_institucion
 
 	def self.columnas_excel
 		["ROL EN ACUERDO", "RUT PERSONA", "NOMBRE COMPLETO PERSONA", "CARGO EN INSTITUCION", 

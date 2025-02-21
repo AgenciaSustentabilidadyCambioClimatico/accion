@@ -33,6 +33,9 @@ class Contribuyente < ApplicationRecord
 
 	default_scope { where(temporal: false) }
 
+	#validates :tipo_institucion ,presence: true
+	attr_accessor :tipo_institucion, :tipo_institucion_id
+
 	def rut_unico
 		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first
 		if !busqueda_identico.blank? && busqueda_identico.id != self.id

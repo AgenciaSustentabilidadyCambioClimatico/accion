@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_01_21_155638) do
+ActiveRecord::Schema.define(version: 2025_02_20_174307) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1143,6 +1143,29 @@ ActiveRecord::Schema.define(version: 2025_01_21_155638) do
     t.string "descripcion"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "listado_actores_temporals", force: :cascade do |t|
+    t.integer "actor_id"
+    t.integer "rol_en_acuerdo_id"
+    t.integer "cargo_institucion_id"
+    t.integer "contribuyente_id"
+    t.integer "tipo_institucion_id"
+    t.string "rol_en_acuerdo"
+    t.string "nombre_actor"
+    t.string "rut_actor"
+    t.string "cargo_institucion"
+    t.string "email_institucional"
+    t.string "telefono_institucional"
+    t.string "razon_social_institucion"
+    t.string "rut_institucion"
+    t.string "tipo_institucion"
+    t.string "comuna_institucion"
+    t.integer "estado"
+    t.bigint "manifestacion_de_interes_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["manifestacion_de_interes_id"], name: "index_listado_actores_temporals_on_manifestacion_de_interes_id"
   end
 
   create_table "lugar_coordenadas", force: :cascade do |t|
@@ -2289,6 +2312,7 @@ ActiveRecord::Schema.define(version: 2025_01_21_155638) do
   add_foreign_key "informe_acuerdos", "manifestacion_de_intereses"
   add_foreign_key "informe_impactos", "manifestacion_de_intereses"
   add_foreign_key "instrumentos", "tipo_instrumentos"
+  add_foreign_key "listado_actores_temporals", "manifestacion_de_intereses"
   add_foreign_key "mapa_de_actores", "flujos"
   add_foreign_key "mapa_de_actores", "persona_cargos"
   add_foreign_key "mapa_de_actores", "personas"
