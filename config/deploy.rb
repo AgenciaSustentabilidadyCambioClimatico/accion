@@ -17,7 +17,7 @@ set :branch, deploy["repo"]["branch"] # master
 set :git_http_username, deploy["git_http_username"]
 set :git_http_password, deploy["git_http_password"]
 
-set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml', 'config/email.yml', 'config/puma.rb', 'config/clave_unica.yml') 
+set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml', 'config/email.yml', 'config/puma.rb', 'config/clave_unica.yml')
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'vendor/bundle', 'public/system', 'public/uploads')
 set :keep_releases, 7
 set :ssl_header_forwarded, true
@@ -28,7 +28,7 @@ namespace :deploy do
   # after 'nginx:restart', 'puma:stop' #
   # after 'nginx:restart', 'puma:start' #REVISAR
 
-  # DZC 2019-12-13 17:07:52 
+  # DZC 2019-12-13 17:07:52
   task :ejecuta_seed do
     on roles(:app) do
       within release_path do
@@ -39,7 +39,7 @@ namespace :deploy do
       end
     end
   end
-  #after 'deploy:migrate', 'deploy:ejecuta_seed'    
+  #after 'deploy:migrate', 'deploy:ejecuta_seed'
 end
 after 'deploy:publishing', 'deploy:restart'
 
@@ -56,5 +56,3 @@ namespace :deploy do
     invoke 'delayed_job:restart'
   end
 end
-
-
