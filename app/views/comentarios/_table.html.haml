@@ -9,6 +9,7 @@
         %th.url-referencia=t(:url_ref)
         %th.usuario=t(:usuario)
         %th.adjuntos=t(:adjuntos)
+        %th.fecha-lectura=t(:fecha_lectura)   
         %th.fecha-resolucion=t(:fecha_resolucion)   
         %th.dos.iconos-acciones=t(:acciones)
 
@@ -31,6 +32,14 @@
                 = '--'
             %td= record.user_id.blank? ? '--' : record&.user&.nombre_completo
             %td.text-center= render 'layouts/modal_archivos', item: record, adjuntos: record.comentario_archivos
+            %td{id: "comentarios_fechas_lectura_#{record.id}"}
+              - if record.leido
+                - if record.fecha_lectura.present?
+                  = record.fecha_lectura.strftime('%Y-%m-%d')
+                - else
+                  = 'Fecha no disponible'
+              - else
+                = 'No Leído'
             %td{id: "comentarios_fechas_updated_#{record.id}"}
               - if record.resuelto
                 =record[:updated_at].strftime('%Y-%m-%d')
