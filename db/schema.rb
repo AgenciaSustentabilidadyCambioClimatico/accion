@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_01_21_155638) do
+ActiveRecord::Schema.define(version: 2025_02_21_172725) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -419,6 +419,7 @@ ActiveRecord::Schema.define(version: 2025_01_21_155638) do
     t.boolean "resuelto"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "fecha_lectura"
   end
 
   create_table "comentarios_informe_acuerdos", force: :cascade do |t|

@@ -58,7 +58,7 @@ class ComentariosController < ApplicationController
   end
 
   def leido
-    @comentario.update(leido: true)  # Marks the comment as read
+    @comentario.update(leido: true, fecha_lectura: Time.current)  # Marks the comment as read
     
     respond_to do |format|
       format.js { render 'comentarios/leido' }

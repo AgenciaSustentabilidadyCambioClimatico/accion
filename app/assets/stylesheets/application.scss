@@ -219,7 +219,8 @@ table.comentarios tr {
   .email-contacto { width: 190px!important; }
   .usuario { width: 226px!important; }
   .adjuntos { width: 45px!important; }
-  .fecha-resolucion { width: 85px!important; }
+  .fecha-lectura { width: 50px!important; }
+  .fecha-resolucion { width: 50px!important; }
   .editar { }
   .borrar { }
 }
@@ -249,6 +250,10 @@ table.comentarios tr {
  .page-item.active a { background: #f8d7da; border-color: #f5c6cb;color: #721c24; }
 }
 .tab-pane#sugerencias .dataTables_wrapper {
+ .dataTables_length, .dataTables_filter label, .dataTables_info { color: #0c5460!important; }
+ .page-item.active a { background: #d1ecf1; border-color: #bee5eb;color: #0c5460; }
+}
+.tab-pane#solicitudes .dataTables_wrapper {
  .dataTables_length, .dataTables_filter label, .dataTables_info { color: #0c5460!important; }
  .page-item.active a { background: #d1ecf1; border-color: #bee5eb;color: #0c5460; }
 }

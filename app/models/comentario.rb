@@ -1,6 +1,7 @@
 class Comentario < ApplicationRecord
 	ERRORES = 1
 	SUGERENCIAS = 2
+	SOLICITUDES = 3
 
 	has_many :comentario_archivos, foreign_key: :comentario_id
 	belongs_to :tipo_comentario
