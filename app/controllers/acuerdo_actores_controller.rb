@@ -175,15 +175,16 @@ class AcuerdoActoresController < ApplicationController
   def listado_actores_temporal
     @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0)
     respond_to do |format|
-      format.js { render 'actores/listado_actores_temporal', locals: { tarea_pendiente_id: params[:id] } }
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: params[:id] } }
     end
   end
 
   def eliminar_actor
     actor = ListadoActoresTemporal.find(params[:actor_id])
     if actor.destroy
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:tarea_pendiente_id], estado: 0)
       respond_to do |format|
-        format.js { render 'actores/eliminar_actor', locals: { actor: actor.id, tarea_pendiente_id: params[:tarea_pendiente_id] } }
+        format.js { render 'actores/eliminar_actor', locals: { actor: actor.id } }
       end
     else
       flash[:error] = 'Hubo un problema al eliminar al actor.'
@@ -306,7 +307,7 @@ class AcuerdoActoresController < ApplicationController
       :actor_id, :rol_en_acuerdo_id, :cargo_institucion_id, :contribuyente_id, :tipo_institucion_id, :rol_en_acuerdo, 
       :nombre_actor, :rut_actor, :cargo_institucion, :email_institucional, :telefono_institucional, 
       :razon_social_institucion, :rut_institucion, :tipo_institucion, :comuna_institucion, :estado,
-      :manifestacion_de_interes
+      :manifestacion_de_interes, :direccion
     )
   end
 

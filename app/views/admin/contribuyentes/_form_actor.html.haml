@@ -32,92 +32,38 @@
                           = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar numero', readonly: !contribuyente_actor.contribuyente_id.nil?}
                         .col-lg-4.desactivado
                           = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar dv', readonly: !contribuyente_actor.contribuyente_id.nil? }
-                    .col-lg-9.col-md-6.desactivado
+                    .col-lg-9.col-md-8.desactivado
                       = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar'}
-                      .row
-                        .col-lg-8.desactivado  
-                          = f.input :tipo_institucion, collection: TipoContribuyente.__select, placeholder: "Seleccione tipo institución", input_html: { class: 'form-temporal-boton-guardar'} 
-            .col-12.mt-2
-              .card
-                .card-header
-                  %h5.no-margin
-                    .row
-                      .col-12.col-lg-10
-                        =t(:actividad_económica)
-                      .col-12-col-lg-2
-                        = snf.link_to_add :actividad_economica_contribuyentes, class: 'ml-3', data: { target: "#contribuyente-actecos" } do
-                          %i.fa.fa-plus-circle
-                          = t(:agregar)
-                .card-body.table
                   .row
-                    .col-lg-12.col-md-6
-                      %table#contribuyente-actecos.table.table-striped.m-0
-                        %thead
-                          %tr.fields
-                            %th.codigo-acteco=t(:código_descripción)
-                            %th
-                        %tbody
-                          = snf.fields_for :actividad_economica_contribuyentes, snf.object.actividad_economica_contribuyentes.select('DISTINCT actividad_economica_id'), :wrapper => false  do |actecos|
-                            -style = '';
-                            -style = "display: none;" if actecos.object.marked_for_destruction?
-                            %tr.fields{style: style}
-                              %td.no-padding
-                                %div{class: actecos.object.errors[:actividad_economica].blank? ? '' : 'has-error'}
-                                  =actecos.input :actividad_economica_id, collection: ActividadEconomica.__select, input_html:{ class: "form-control contribuyente-acteco form-temporal-boton-guardar required chosen-control  #{actecos.object.errors[:actividad_economica] == ["No puede estar en blanco"] ? 'border-error' : ''}", "data-placeholder"=>"Seleccione una actividad económica"}, label: false
-                                  -unless actecos.object.errors[:actividad_economica].blank?
-                                    %span.help-block
-                                      =actecos.object.errors[:actividad_economica].first
-                              %td.accion.no-padding.remove-row.desactivado
-                                = actecos.link_to_remove do
-                                  %i.fa.fa-times-circle.left.link-to-remove-row 
-            .col-12.mt-2
-              .card
-                .card-header
-                  %h5.no-margin
-                    .row
-                      .col-12.col-lg-10
-                        =t(:establecimientos)
-                      .col-12-col-lg-2
-                        = snf.link_to_add :establecimiento_contribuyentes, class: 'ml-3', data: { target: "#establecimiento-actecos" } do
-                          %i.fa.fa-plus-circle
-                          =t(:agregar)
-                .card-body.table
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Tipo institución
+                      = f.input :tipo_institucion, collection: TipoContribuyente.__select, placeholder: "Seleccione tipo institución", input_html: { class: 'form-temporal-boton-guardar'}, label: false
+                    .col-12.col-lg-6.mt-2
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Dirección
+                      - contribuyente_id = contribuyente_actor.contribuyente_id
+                      - if contribuyente_id.nil?
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", input_html: { class: 'form-temporal-boton-guardar', readonly: false, id: "direccion_input" }, label: false
+                      - else
+                        = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), placeholder: "Seleccione dirección", input_html: { class: 'form-temporal-boton-guardar', id: "direccion_select" }, label: false
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", input_html: { class: 'form-temporal-boton-guardar', readonly: false, id: "direccion_input", style: 'display: none;' }, label: false
+                        = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
+                        %label{ for: "sin_direccion_checkbox" } Nueva Dirección
                   .row
-                    .col-lg-12.col-md-6
-                      %table#establecimiento-actecos.table.table-striped.m-0.table-responsive
-                        %thead
-                          %tr.fields
-                            %th.casa-matriz=t(:c_matriz)
-                            %th.direccion=t(:dirección)
-                            %th.ciudad=t(:ciudad)
-                            %th.region=t(:región)
-                            %th.comuna=t(:comuna)
-                            %th.accion
-                        %tbody
-                          = snf.fields_for :establecimiento_contribuyentes, :wrapper => false  do |establ|
-                            -style = '';
-                            -style = "display: none;" if establ.object.marked_for_destruction?
-                            %tr.fields.desactivado{style: style}
-                              %td.no-padding.casa-matriz=establ.input :casa_matriz, as: :boolean, label: false, input_html: { class: 'checkbox-casa-matriz'}
-                              %td.no-padding.direccion=establ.input :direccion, input_html: { class: 'form-control establ-direccion form-temporal-boton-guardar'}, label: false
-                              %td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras establ-ciudad required form-temporal-boton-guardar'}, label: false
-                              -regiones = Region.__select
-                              -region_selec = establ.object.region_id.nil? ? regiones.first.last : establ.object.region_id
-                              %td.no-padding.region
-                                %div{class: establ.object.errors[:region].blank? ? '' : 'has-error'}
-                                  =establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region contribuyente-acteco form-temporal-boton-guardar required chosen-control', "data-placeholder"=>"Seleccione una región"}
-                                  -unless establ.object.errors[:region].blank?
-                                    %span.help-block
-                                      =establ.object.errors[:region].first
-                              %td.no-padding.comuna
-                                %div{class: establ.object.errors[:comuna].blank? ? '' : 'has-error'}
-                                  =establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna contribuyente-acteco form-temporal-boton-guardar required chosen-control', "data-placeholder"=>"Seleccione una comuna" }
-                                  -unless establ.object.errors[:comuna].blank?
-                                    %span.help-block
-                                      =establ.object.errors[:comuna].first
-                              %td.accion.no-padding.remove-row
-                                = establ.link_to_remove do
-                                  %i.fa.fa-times-circle.left.link-to-remove-row
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Región
+                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%', id: 'region_select', label: false
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Comuna
+                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2", label: false, id: 'registro_proveedor_comuna', label: false
+
       .col-12.mt-2.text-right
         %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
           =t(:volver_a_lista)
@@ -132,17 +78,22 @@
     htmlErrorToTooltip('top');
     nuevo_contribuyente_temporal_validaciones();
 
-    
-
     // Manejador para el botón "Guardar Usuario"
     $(document).on('click', '.guarda-contribuyente-actor-button', function(e) {
       e.preventDefault();  // Evitar el envío del formulario por defecto
 
       var contribuyente_id = $('#contribuyente_id').val();
-      var rut = $('#contribuyente_rut').val();
+      var rut = $('#contribuyente_rut').val() + '-' + $('#contribuyente_dv').val();
       var razon_social = $('#contribuyente_razon_social').val();
       var tipo_institucion = $('#contribuyente_tipo_institucion').val();
-      var comuna = 'Talca';
+      var comuna = $('#registro_proveedor_comuna option:selected').text();
+      var direccion = '';
+
+      if ($('#direccion_input').val()) {
+        direccion = $('#direccion_input').val();
+      }else{
+        direccion = $('#direccion_select option:selected').text();
+      }
 
       // Si deseas setear los valores en otros campos de tu formulario:
       $("#contribuyente_id_mapa_actores").val(contribuyente_id);
@@ -151,9 +102,53 @@
       $("#tipo_institucion_id_mapa_actores").val(tipo_institucion);
       $("#comuna_institucion_mapa_actores").val(comuna);
       $("#tipo_institucion_mapa_actores").val($('#contribuyente_tipo_institucion option:selected').text());   
-      
 
+      $("#direccion_usuario_mapa_actores").val(direccion);
+      
       $('#buscar-contribuyente').modal("hide");
+      agregar_usuario_actor_validaciones();
     });
+
+    // Escuchar el cambio de selección en el select de región
+    $('#region_select').on('change', function() {
+      var regionId = $(this).val(); // Obtener el valor de la región seleccionada
+
+      // Aquí puedes ejecutar una función adicional, por ejemplo, mostrar una alerta
+      //alert('Seleccionaste la región con ID: ' + regionId);
+      
+      // Realizar la solicitud AJAX para obtener las comunas asociadas a la región seleccionada
+      $.ajax({
+        url: "#{registro_get_comunas_path}",  // Reemplaza con la ruta correcta
+        method: 'get',
+        data: { id: regionId },
+        success: function(response) {
+          // Aquí procesas la respuesta de las comunas y actualizas los campos correspondientes
+          //console.log(response);
+          // Aquí puedes agregar lógica para actualizar la lista de comunas, si es necesario
+        },
+        error: function() {
+          alert('Hubo un error al obtener las comunas');
+        }
+      });
+    });
+
+    toggleDireccion();
+
+    // Detecta el cambio en el checkbox y actualiza la visibilidad de los campos
+    $('#sin_direccion_checkbox').on('change', function() {
+      toggleDireccion();
+    });
+
+    function toggleDireccion() {
+      if ($('#sin_direccion_checkbox').is(':checked')) {
+        // Si "Nueva Dirección" está seleccionado, muestra la caja de texto y oculta el combo box
+        $('#direccion_input').show(); // Mostrar el campo de texto
+        $('#direccion_select').hide(); // Ocultar el select
+      } else {
+        // Si no está seleccionado, muestra el combo box y oculta la caja de texto
+        $('#direccion_input').hide(); // Ocultar el campo de texto
+        $('#direccion_select').show(); // Mostrar el select
+      }
+    }
 
   });

@@ -96,4 +96,8 @@ class EstablecimientoContribuyente < ApplicationRecord
 	  	self.save
 	  end
   end
+
+  def self.__select(contribuyente_id)
+	EstablecimientoContribuyente.where(contribuyente_id: contribuyente_id).map { |e| [e.direccion, e.id] }
+  end
 end

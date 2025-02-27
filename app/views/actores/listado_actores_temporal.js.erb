@@ -1,3 +1,5 @@
+
+$('#div_mapa_actores table tbody').empty();
 <% @listado_actores_temporal.each do |actor| %>
   var actor_id = '<%= actor.id %>';
   var rol_en_acuerdo = '<%= actor.rol_en_acuerdo %>';
@@ -10,7 +12,7 @@
   var rut_institucion = '<%= actor.rut_institucion %>';
   var tipo_institucion = '<%= actor.tipo_institucion %>';
   var comuna_institucion = '<%= actor.comuna_institucion %>';
-  var tarea_pendiente_id = '<%= tarea_pendiente_id %>';
+  var manifestacion_de_interes_id = '<%= manifestacion_de_interes_id %>';
 
   var newRow = "<tr>" + 
     "<td class='contenido-form'>" + rol_en_acuerdo + "</td>" +
@@ -24,11 +26,22 @@
     "<td class='contenido-form'>" + tipo_institucion + "</td>" +
     "<td class='contenido-form'>" + comuna_institucion + "</td>" +
     "<td class='contenido-form dos iconos-acciones'>" +
-    "<a data-actor-id='" + actor_id + "' data-confirm='¿Está seguro que desea borrar a este Actor?' class='eliminar-actor' id='eliminar-actor-" + actor_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/manifestacion-de-interes/" + tarea_pendiente_id + "/" + actor_id + "/eliminar-actor' data-original-title='Eliminar Actor'>" + 
+    "<a data-actor-id='" + actor_id + "' data-confirm='¿Está seguro que desea borrar a este Actor?' class='eliminar-actor' id='eliminar-actor-" + actor_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/manifestacion-de-interes/" + manifestacion_de_interes_id + "/" + actor_id + "/eliminar-actor' data-original-title='Eliminar Actor'>" + 
       "<i class='fa fa-trash' title='Eliminar'></i>" +
     "</a>" +
     "</td>" +
   "</tr>";    
 
   $('#div_mapa_actores table tbody').append(newRow); 
+  
 <% end %>
+
+// Deshabilitar el botón después de agregar los actores
+$('.agregar-usuario-actor-button').prop('disabled', true);  // Esto deshabilita el botón
+
+<% if @listado_actores_temporal.count == 0 %>
+  $('.actualizar-mapa-de-actores-2-button').prop('disabled', true); 
+<% else %>
+  $('.actualizar-mapa-de-actores-2-button').prop('disabled', false); 
+<% end %>
+

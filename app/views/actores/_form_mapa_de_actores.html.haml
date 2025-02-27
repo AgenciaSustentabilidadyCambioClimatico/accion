@@ -1,6 +1,24 @@
 :javascript
   $(document).ready(function() {
     listadoActoresTemporal();
+    $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+
+    $('#formulario-agregar-actor').on('ajax:beforeSend', function() {
+      // Deshabilitar el botón antes de enviar el formulario
+      $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+    });
+
+    $('#formulario-agregar-actor').on('ajax:success', function(event, data, status, xhr) {
+      limpiarFormulario();
+      listadoActoresTemporal(); // Llamar a listadoActoresTemporal después de la llamada AJAX exitosa
+    });
+
+    $('#formulario-agregar-actor').on('ajax:error', function(event, xhr, status, error) {
+      // Habilitar el botón si hay un error
+      $('.agregar-usuario-actor-button').removeAttr("disabled");
+      console.error("Error al agregar actor:", error);
+      alert("Error al agregar actor. Por favor, inténtelo de nuevo.");
+    });
   });
 
   function listadoActoresTemporal() {
@@ -11,6 +29,7 @@
       },
       method: "GET",
       success: function(response) {
+        $('.agregar-usuario-actor-button').attr("disabled", "disabled");
       },
       error: function(error) {
         console.error("Error al llamar al método del controlador", error);
@@ -18,11 +37,50 @@
     });
   }
 
+  // Función para limpiar el formulario
+  function limpiarFormulario() {
+    // Limpiar todos los campos del formulario
+    $('#formulario-agregar-actor')[0].reset();
+
+    // Limpiar los valores de los campos
+    $('#rol_usuario_mapa_actores').val('');
+    $('#nombre_usuario_mapa_actores').val('');
+    $('#rut_usuario_mapa_actores').val('');
+    $('#cargo_usuario_mapa_actores').val('');
+    $('#email_usuario_mapa_actores').val('');
+    $('#telefono_usuario_mapa_actores').val('');
+    $('#razon_social_contribuyente_mapa_actores').val('');
+    $('#rut_contribuyente_mapa_actores').val('');
+    $('#tipo_institucion_mapa_actores').val('');
+    $('#comuna_institucion_mapa_actores').val('');
+  }
+
+  // Función de validación para habilitar o deshabilitar el botón
+  function agregar_usuario_actor_validaciones() {
+    var rol_en_acuerdo = $('#rol_usuario_mapa_actores').val().trim() != "";
+    var nombre_actor = $('#nombre_usuario_mapa_actores').val().trim() != "";
+    var rut_actor = $('#rut_usuario_mapa_actores').val().trim() != "";
+    var cargo_institucion = $('#cargo_usuario_mapa_actores').val().trim() != "";
+    var email_institucional = $('#email_usuario_mapa_actores').val().trim() != "";
+    var telefono_institucional = $('#telefono_usuario_mapa_actores').val().trim() != "";
+    var razon_social_institucion = $('#razon_social_contribuyente_mapa_actores').val().trim() != "";
+    var rut_institucion = $('#rut_contribuyente_mapa_actores').val().trim() != "";
+    var tipo_institucion = $('#tipo_institucion_mapa_actores').val().trim() != "";
+    var comuna_institucion = $('#comuna_institucion_mapa_actores').val().trim() != "";
+
+    // Si todos los campos tienen valor (si no están vacíos), habilitar el botón, si no deshabilitarlo
+    if (rol_en_acuerdo && nombre_actor && rut_actor && cargo_institucion && email_institucional && telefono_institucional && razon_social_institucion && rut_institucion && tipo_institucion && comuna_institucion) {
+      $('.agregar-usuario-actor-button').removeAttr("disabled"); // Habilitar el botón
+    } else {
+      $('.agregar-usuario-actor-button').attr("disabled", "disabled"); // Deshabilitar el botón
+    }
+  }
+
 .card.m-0
   .card-header
     %h5.no-margin= t(:agregar_actores)
   .card-body
-    = simple_form_for @mapa_actor, url: crear_actor_manifestacion_de_interes_path(@tarea_pendiente), remote: true, method: :patch do |f|
+    = simple_form_for @mapa_actor, url: crear_actor_manifestacion_de_interes_path(@tarea_pendiente), remote: true, method: :patch, html: { id: 'formulario-agregar-actor' }  do |f|
       .row
         .col-12.mt-3
           .col-12
@@ -37,8 +95,8 @@
                   = f.input :actor_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'usuario_id_mapa_actores', class: 'form-control' } 
                   = f.input :rol_en_acuerdo_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'rol_id_usuario_mapa_actores', class: 'form-control' } 
                   = f.input :cargo_institucion_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'cargo_id_usuario_mapa_actores', class: 'form-control' } 
+                  = f.input :direccion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_usuario_mapa_actores', class: 'form-control' } 
                   
-
                   .col-12.col-lg-2.mt-2  
                     = f.input :rol_en_acuerdo, input_html: { id: 'rol_usuario_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-2.mt-2
@@ -46,9 +104,9 @@
                   .col-12.col-lg-2.mt-2
                     = f.input :rut_actor, input_html: { id: 'rut_usuario_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-2.mt-2
-                    = f.input :cargo_institucion, input_html: { id: 'cargo_usuario_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :cargo_institucion, label: 'Cargo institución', input_html: { id: 'cargo_usuario_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-2.mt-2
-                    = f.input :email_institucional, input_html: { id: 'email_usuario_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :email_institucional, input_html: { id: 'email_usuario_mapa_actores', class: 'form-contro', readonly: true }
                   .col-12.col-lg-2.mt-2   
                     = f.input :telefono_institucional, input_html: { id: 'telefono_usuario_mapa_actores', class: 'form-control', readonly: true }               
                 .row
@@ -60,13 +118,12 @@
                   = f.input :contribuyente_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'contribuyente_id_mapa_actores', class: 'form-control' }
                   = f.input :tipo_institucion_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_institucion_id_mapa_actores', class: 'form-control' }
                   .col-12.col-lg-3.mt-2
-                    = f.input :razon_social_institucion, input_html: { id: 'razon_social_contribuyente_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :razon_social_institucion, label: 'Razón social institución', input_html: { id: 'razon_social_contribuyente_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :rut_institucion, input_html: { id: 'rut_contribuyente_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :rut_institucion, label: 'Rut institución', input_html: { id: 'rut_contribuyente_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :tipo_institucion, input_html: { id: 'tipo_institucion_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :tipo_institucion, label: 'Tipo institución', input_html: { id: 'tipo_institucion_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :comuna_institucion, input_html: { id: 'comuna_institucion_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :comuna_institucion, label: 'Comuna institución', input_html: { id: 'comuna_institucion_mapa_actores', class: 'form-control', readonly: true }
       .float-right.mr-3.mb-3
-        =f.submit 'Agregar', class: 'btn btn-sm btn-primary'
-      = render 'actores/table_mapa_de_actores', externo: true 
+        = f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-actor-button', id: 'agregar-usuario-actor-button'

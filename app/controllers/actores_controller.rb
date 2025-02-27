@@ -184,15 +184,12 @@ class ActoresController < ApplicationController
       @manifestacion_de_interes.mapa_de_actores_data = nil
       @manifestacion_de_interes.temporal = true
       @manifestacion_de_interes.save(validate: false)
-      #binding.pry
       #DZC el término de la tarea depdende de otros controladores
     end
   end
 
   def descargar
-
     send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "mapa_de_actores_base.xlsx"
-    #binding.pry
   end
 
   def descargar_revisor
@@ -224,16 +221,22 @@ class ActoresController < ApplicationController
   #DZC leo las tablas y campo de la manifestación
   def set_obtiene_mapa_actual_y_actores
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
-    
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+
+    if @actores_desde_campo != nil
+      @actores_desde_campo.concat(@actores_desde_lista)
+    end
+    if @actores_desde_tablas != nil
+      @actores_desde_tablas.concat(@actores_desde_lista)
+    end
     
     if @tarea_pendiente.data == {primera_ejecucion: true} || @tarea.codigo =='APL-001'
       @actores = MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas)
     else
       @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     end
-    #binding.pry
   end
 
   def set_mapa_de_actores_data
