@@ -49,10 +49,10 @@
               - if record.leido
                 %i.fa.fa-envelope-open.pr-1
               - else
-                = link_to leido_comentario_path(record.id), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_leído?, item: t(:comentario).downcase), remote: true } do
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id, leido: true  } do
                   %i.fa.fa-envelope.pr-1
               - if record.resuelto
                 %i.fa.fa-check.text-success
               - else
-                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id  } do
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id, leido: false  } do
                   %i.fa.fa-fire-extinguisher.text-danger

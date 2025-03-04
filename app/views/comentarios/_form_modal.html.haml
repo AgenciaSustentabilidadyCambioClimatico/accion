@@ -15,13 +15,14 @@
               .col-lg-4
                 .row
                   .col-12
-                    = f.input :tipo_comentario_id, collection: TipoComentario.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field' }, require: true
+                    = f.input :tipo_comentario_id, collection: TipoComentario.all.map{|m|[m.nombre,m.id]}, input_html: { class: 'required-field' }, require: true, onclick: 'actualizarPlaceholderComentario();'
                   .col-12
                     = f.input :email_contacto, input_html: { class: 'required-field', value: (current_user.nil? ? nil : current_user.email) }, label: t(:correo_contacto), require: true
               .col-lg-8
                 .row
                   .col-12
-                    = f.input :comentario, input_html: { class: 'required-field', rows: 4 }, label: t(:comentario), require: true, placeholder: "Cuéntanos cual fue el problema o qué te gustaría cambiar ó agregar a este sistema."
+                    .col-12
+                      = f.input :comentario, input_html: { class: 'required-field', rows: 4, id: 'comentario_contacto' }, label: t(:comentario), require: true, placeholder: "Escribe la respuesta al problema reportado."
       .row
         .col-12
           .alert.alert-info.center-text
@@ -37,3 +38,23 @@
       %button.btn.btn-sm.btn-secondary.descartar-button{type: :button, "data-dismiss"=>:modal}
         Descartar
       = button_tag "Enviar", "data-dismiss"=> false, 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-comentario-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
+
+:javascript
+  $(document).ready(function() {
+    function actualizarPlaceholderComentario() {
+      var tipoComentarioId = $('#comentario_tipo_comentario_id').val(); // Obtener el valor correcto
+      //alert(tipoComentarioId);
+      // Definir los placeholders según el tipo de comentario seleccionado
+      if (tipoComentarioId == "3") {
+        $('#comentario_contacto').attr('placeholder', 'Si deseas registrarte en la plataforma, debes incluir los siguientes datos: nombre, RUT, nombre de la institución, RUT de la institución, cargo, correo electrónico y teléfono.');
+      } else {
+        $('#comentario_contacto').attr('placeholder', 'Por favor, coméntanos cuál fue el problema o en qué podríamos mejorar. En caso de problemas, incluye una captura del error y detalla el paso a paso cuando ocurrió el problema.');
+      }
+    }
+
+    // Asignar evento change al select correcto
+    $('#comentario_tipo_comentario_id').change(actualizarPlaceholderComentario);
+
+    // Ejecutar al cargar la página (por si hay un valor precargado)
+    actualizarPlaceholderComentario();
+  });
