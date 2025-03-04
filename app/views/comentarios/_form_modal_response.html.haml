@@ -17,12 +17,12 @@
               .col-lg-4
                 .row
                   .col-12
-                    = f.input :email_contacto, input_html: { class: 'required-field', id: 'email_contacto', readonly: true }, label: t(:correo_contacto), require: true
+                    = f.input :email_contacto, input_html: { class: 'required-field', id: 'email_contacto_respuesta', readonly: true }, label: t(:correo_contacto), require: true
 
               .col-lg-8
                 .row
                   .col-12
-                    = f.input :comentario, input_html: { class: 'required-field', rows: 4, id: 'comentario_contacto' }, label: t(:respuesta_comentario), require: true, placeholder: "Escribe la respuesta al problema reportado."
+                    = f.input :comentario, input_html: { class: 'required-field', rows: 4, id: 'comentario_contacto_respuesta' }, label: t(:respuesta_comentario), require: true, placeholder: "Escribe la respuesta al problema reportado."
                   .col-12
                     %label.control-label.string  Requiere envio de correo
                     = f.collection_radio_buttons :requiere_envio_correo, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia', checked: true, id: 'fondo_produccion_limpia' do |b|
@@ -39,13 +39,13 @@
   function habilitaOpciones(radio) {
     if ($(radio).val() == "false") {
       // Si "requiere_envio_correo" es falso, ocultamos los campos de email y comentario
-      $('#email_contacto').closest('.col-12').hide();
-      $('#comentario_contacto').closest('.col-12').hide();
+      $('#email_contacto_respuesta').closest('.col-12').hide();
+      $('#comentario_contacto_respuesta').closest('.col-12').hide();
       $('#enviar-respuesta-button').prop('disabled', false).removeClass('btn-disabled').addClass('btn-primary');
     } else {
       // Si "requiere_envio_correo" es verdadero, mostramos los campos
-      $('#email_contacto').closest('.col-12').show();
-      $('#comentario_contacto').closest('.col-12').show();
+      $('#email_contacto_respuesta').closest('.col-12').show();
+      $('#comentario_contacto_respuesta').closest('.col-12').show();
     }
     // No habilitamos el botón aquí. Solo cambiamos la visibilidad de los campos.
   }
@@ -53,7 +53,7 @@
   // Función para habilitar/deshabilitar el botón Enviar
   function checkEnviarButton() {
     // Verifica si el comentario tiene contenido y si el radio button "Sí" está seleccionado
-    var comentario = $('#comentario_contacto').val().trim();
+    var comentario = $('#comentario_contacto_respuesta').val().trim();
     var requiereEnvioCorreo = $('#comentario_requiere_envio_correo_true').prop('checked');
 
     // Si el comentario no está vacío y el radio button "Sí" está seleccionado
@@ -75,10 +75,10 @@
     var requiereEnvioCorreo = button.data('requiere-envio-correo');  // Obtener si requiere el envío de correo
 
     // Insertamos el ID y el correo en los campos del formulario
-    $('#email_contacto').val(email);  
+    $('#email_contacto_respuesta').val(email);  
     $('#leido').val(leido);
     $('#comentario_id').val(id);        
-    $('#comentario_contacto').val('');
+    $('#comentario_contacto_respuesta').val('');
 
     // Establecer el estado de los radio buttons según el valor de 'requiere_envio_correo'
     if (requiereEnvioCorreo === "true") {
@@ -95,7 +95,7 @@
   });
 
   // Verificar al cargar el modal si el comentario tiene contenido y si el radio button está marcado
-  $('#comentario_contacto').on('input', function() {
+  $('#comentario_contacto_respuesta').on('input', function() {
     checkEnviarButton();
   });
 
