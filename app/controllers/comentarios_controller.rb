@@ -32,11 +32,7 @@ class ComentariosController < ApplicationController
   end
 
   def modal_response
-    #if params[:comentario][:leido] == 'true' 
-    #  __read_or_send("Comentario enviado correctamente")
-    #else
     __response_or_send("Comentario enviado correctamente")
-    #end
   end
 
   def create
@@ -53,27 +49,6 @@ class ComentariosController < ApplicationController
         format.js
       end
     end
-  end
-
-  def read
-    #@comentario.leido = true
-    #@comentario.save
-    redirect_to comentarios_url, notice: "Comentario fue marcado como leído"
-  end
-
-  def leido
-    #@comentario.update(leido: true, fecha_lectura: Time.current)  # Marks the comment as read
-    
-    #respond_to do |format|
-    #  format.js { render 'comentarios/leido' }
-    #end
-  end
-
-  def solved
-    #@comentario.resuelto = true
-    #@comentario.leido = true
-    #@comentario.save
-    redirect_to comentarios_url, notice: "Comentario fue marcado como resuelto"
   end
 
   private
@@ -141,26 +116,6 @@ class ComentariosController < ApplicationController
       @comentario_response.leido = true
       @comentario_response.save
 
-      respond_to do |format|
-        format.js { render 'comentarios/modal_response' }
-      end
-    end
-
-    def __read_or_send(success_message)
-      @comentario = Comentario.find(params[:comentario][:id])
-      @leido = true
-        
-      if params[:comentario][:requiere_envio_correo] == 'true'      
-        @comentario.comentario = params[:comentario][:comentario]
-        ComentarioMailer.respuesta(@comentario).deliver_later
-      end
-      #Actualiza estados
-      @comentario_response = Comentario.find(params[:comentario][:id])
-      #@comentario_response.resuelto = true
-      @comentario_response.leido = true
-      @comentario_response.fecha_lectura = Time.current
-      @comentario_response.save
-  
       respond_to do |format|
         format.js { render 'comentarios/modal_response' }
       end
