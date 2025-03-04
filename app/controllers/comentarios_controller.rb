@@ -11,10 +11,10 @@ class ComentariosController < ApplicationController
   end
 
   def show
-    unless @comentario.leido
-      @comentario.leido = true
-      @comentario.save
-    end
+    #unless @comentario.leido
+    #  @comentario.leido = true
+    #  @comentario.save
+    #end
   end
 
   def new
@@ -32,11 +32,11 @@ class ComentariosController < ApplicationController
   end
 
   def modal_response
-    if params[:comentario][:leido] == 'true' 
-      __read_or_send("Comentario enviado correctamente")
-    else
-      __response_or_send("Comentario enviado correctamente")
-    end
+    #if params[:comentario][:leido] == 'true' 
+    #  __read_or_send("Comentario enviado correctamente")
+    #else
+    __response_or_send("Comentario enviado correctamente")
+    #end
   end
 
   def create
@@ -56,23 +56,23 @@ class ComentariosController < ApplicationController
   end
 
   def read
-    @comentario.leido = true
-    @comentario.save
+    #@comentario.leido = true
+    #@comentario.save
     redirect_to comentarios_url, notice: "Comentario fue marcado como leído"
   end
 
   def leido
-    @comentario.update(leido: true, fecha_lectura: Time.current)  # Marks the comment as read
+    #@comentario.update(leido: true, fecha_lectura: Time.current)  # Marks the comment as read
     
-    respond_to do |format|
-      format.js { render 'comentarios/leido' }
-    end
+    #respond_to do |format|
+    #  format.js { render 'comentarios/leido' }
+    #end
   end
 
   def solved
-    @comentario.resuelto = true
-    @comentario.leido = true
-    @comentario.save
+    #@comentario.resuelto = true
+    #@comentario.leido = true
+    #@comentario.save
     redirect_to comentarios_url, notice: "Comentario fue marcado como resuelto"
   end
 
@@ -130,10 +130,17 @@ class ComentariosController < ApplicationController
       end
       #Actualiza estados
       @comentario_response = Comentario.find(params[:comentario][:id])
-      @comentario_response.resuelto = true
+
+      if params[:comentario][:leido] == 'true' 
+        @comentario_response.fecha_lectura = Time.current
+        @leido = true
+      else
+        @comentario_response.resuelto = true
+      end
+        
       @comentario_response.leido = true
       @comentario_response.save
-  
+
       respond_to do |format|
         format.js { render 'comentarios/modal_response' }
       end
