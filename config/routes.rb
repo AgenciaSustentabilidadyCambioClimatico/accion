@@ -818,11 +818,6 @@ Rails.application.routes.draw do
       post :modal_response
       get :reset
     end
-    member do
-      put :read
-      put :solved
-      put :leido
-    end
   end
 
   namespace :seguimiento_fpl do
