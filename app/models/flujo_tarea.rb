@@ -106,7 +106,7 @@ class FlujoTarea < ApplicationRecord
 										data: extra,
 										persona_id: actor.persona.id
 									})
-									if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
+									if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032))
 										rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
 										
 										begin
@@ -114,6 +114,7 @@ class FlujoTarea < ApplicationRecord
 										rescue
 											mdi = nil
 										end
+                    puts 'enviado mail segunda vez'
 										FlujoMailer.enviar(
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
@@ -157,13 +158,14 @@ class FlujoTarea < ApplicationRecord
 								# 	rol_id: sig_tarea.rol_id, 
 								# 	persona_id: ut.id
 								# })
-								if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
+								if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032))
 									rgc = RegistroAperturaCorreo.create(user_id: ut.user_id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
 									begin
 										mdi = flujo.manifestacion_de_interes
 									rescue
 										mdi = nil
 									end
+                  puts 'Enviando mails 1 ves'
 									FlujoMailer.enviar(
 										self.asunto_format(ut.user,mdi), 
 										self.cuerpo_format(ut.user,mdi), 
