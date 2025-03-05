@@ -99,8 +99,11 @@ class ActoresController < ApplicationController
 
       @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_mapa_de_actores_ordenados
     else
-              
-      @manifestacion_de_interes.assign_attributes(enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params)
+      #Si es distinto de lsita ejecutala asignacion de documentos
+      if params[:from] != 'lista'
+        @manifestacion_de_interes.assign_attributes(enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params)  
+      end 
+
       @manifestacion_de_interes.tarea_codigo=@tarea.codigo
       @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
       if @manifestacion_de_interes.valid?
@@ -119,7 +122,7 @@ class ActoresController < ApplicationController
     # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
     # @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = nil   
     respond_to do |format|
-      format.html { redirect_to current_path, notice: success }
+      #format.html { redirect_to current_path, notice: success }
       format.js { 
         flash[:success] = success if success.present?
         flash.now[:error] = error if error.present?
@@ -128,6 +131,10 @@ class ActoresController < ApplicationController
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
+
+        if params[:from] == 'lista'
+          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
+        end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_010].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
       }
@@ -223,13 +230,15 @@ class ActoresController < ApplicationController
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
-    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+    if params[:from] == 'lista'
+      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
 
-    if @actores_desde_campo != nil
-      @actores_desde_campo.concat(@actores_desde_lista)
-    end
-    if @actores_desde_tablas != nil
-      @actores_desde_tablas.concat(@actores_desde_lista)
+      if @actores_desde_campo != nil
+        @actores_desde_campo.concat(@actores_desde_lista)
+      end
+      if @actores_desde_tablas != nil
+        @actores_desde_tablas.concat(@actores_desde_lista)
+      end
     end
     
     if @tarea_pendiente.data == {primera_ejecucion: true} || @tarea.codigo =='APL-001'

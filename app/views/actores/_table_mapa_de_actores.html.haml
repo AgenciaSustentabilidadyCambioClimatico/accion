@@ -25,12 +25,20 @@
           = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-2-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
 
 :javascript
-
   $(document).ready(function(){
-
     $(document).on('click', '.actualizar-mapa-de-actores-2-button', function(e) {
-      alert('actualizar-mapa-de-actores-2-button ');
- 
+      $.ajax({
+        url: "#{enviar_revision_mapa_de_actores_manifestacion_de_interes_path(manifestacion_de_interes_id: @manifestacion_de_interes.id)}",
+        data: JSON.stringify({ from: "lista" }),
+        contentType: "application/json",
+        headers: { "Content-Type": "application/json" }, 
+        method: "PATCH",
+        success: function(response) {
+          $('#div_mapa_actores table tbody').empty();
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+        }
+      });
     });
-
   });
