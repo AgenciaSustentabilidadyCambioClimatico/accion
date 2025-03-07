@@ -86,6 +86,30 @@
 
       }
     });
+
+    var button = $("#toggle-actores-form");
+
+    // Establecer el texto inicial basado en la visibilidad
+    if ($("#revisar-remote-form").hasClass("d-none")) {
+      button.text("Agregar Actores vía Excel");
+    } else {
+      button.text("Agregar Actores Formulario");
+    }
+
+    $("#toggle-actores-form").click(function() {
+      $("#revisar-remote-form").toggleClass("d-none");
+      $("#mapa_actores-form").toggleClass("d-none");
+
+      // Cambia el texto del botón según la visibilidad
+      if ($("#revisar-remote-form").hasClass("d-none")) {
+        
+        button.text("Agregar Actores vía Excel");
+      } else {
+        $('#revisar-remote-form').removeClass('d-none');
+        button.text("Agregar Actores Formulario");
+      }
+    });
+
   });
 
   function show_modal_tipo(tipo){
@@ -383,8 +407,9 @@
             #mapa_actores-form
               = render 'actores/form_mapa_de_actores', externo: true 
               = render 'actores/table_mapa_de_actores', externo: true 
-            #revisar-remote-form
+            #revisar-remote-form.d-none
               = render 'actores/form', externo: true
+            %button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
       #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
         .card.m-0
           .card-body.p-0

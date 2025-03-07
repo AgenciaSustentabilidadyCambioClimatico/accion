@@ -98,6 +98,6 @@ class EstablecimientoContribuyente < ApplicationRecord
   end
 
   def self.__select(contribuyente_id)
-	EstablecimientoContribuyente.where(contribuyente_id: contribuyente_id).map { |e| [e.direccion, e.id] }
+	EstablecimientoContribuyente.where(contribuyente_id: contribuyente_id).map { |e| ["#{e.direccion} - #{e.comuna.nombre}", e.id] }
   end
 end

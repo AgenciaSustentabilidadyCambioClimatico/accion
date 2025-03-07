@@ -359,6 +359,7 @@ class MapaDeActor < ApplicationRecord
 					pais_id: comuna.provincia.region.pais.id,
 					region_id: comuna.provincia.region.id,
 					comuna_id: comuna.id,
+					ciudad: comuna.nombre,
 					telefono: fila[:telefono_institucional],
 					email: fila[:email_institucional]
 					)
@@ -500,7 +501,8 @@ class MapaDeActor < ApplicationRecord
 				 	).first
 				 if persona_cargo_institucion.blank?
 				 	persona_cargo_institucion = PersonaCargo.new(persona_id: persona.id,
-				 	 cargo_id: cargo_planilla.id
+				 	 cargo_id: cargo_planilla.id,
+					 establecimiento_contribuyente_id: contribuyente.id
 				 	 )
 				 	persona_cargo_institucion.save(validate: false)
 				 end

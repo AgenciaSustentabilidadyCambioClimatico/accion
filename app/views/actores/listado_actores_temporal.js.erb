@@ -9,7 +9,7 @@ $('#div_mapa_actores table tbody').empty();
   var email_institucional = '<%= actor.email_institucional %>';
   var telefono_institucional = '<%= actor.telefono_institucional %>';
   var razon_social_institucion = '<%= actor.razon_social_institucion %>';
-  var rut_institucion = '<%= actor.rut_institucion %>';
+  var rut_institucion = '<%= format_rut(actor.rut_institucion) %>';
   var tipo_institucion = '<%= actor.tipo_institucion %>';
   var comuna_institucion = '<%= actor.comuna_institucion %>';
   var manifestacion_de_interes_id = '<%= manifestacion_de_interes_id %>';
@@ -40,8 +40,8 @@ $('#div_mapa_actores table tbody').empty();
 $('.agregar-usuario-actor-button').prop('disabled', true);  // Esto deshabilita el botón
 
 <% if @listado_actores_temporal.count == 0 %>
-  $('.actualizar-mapa-de-actores-2-button').prop('disabled', true); 
+  $('.actualizar-mapa-de-actores-listado-button').prop('disabled', true); 
 <% else %>
-  $('.actualizar-mapa-de-actores-2-button').prop('disabled', false); 
+  $('.actualizar-mapa-de-actores-listado-button').prop('disabled', false); 
 <% end %>
 

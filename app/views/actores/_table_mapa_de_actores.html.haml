@@ -1,32 +1,39 @@
-.card.mb-0
-  .card-body
-    .table-responsive
-      %div#div_mapa_actores.table-responsive  
-        %table.table.table-striped
-          %thead
-            %tr
-              %th=t(:rol_en_acuerdo)
-              %th=t(:nombre_actor)
-              %th=t(:rut_actor)
-              %th=t(:cargo_institucion)
-              %th=t(:email_institucional)
-              %th=t(:telefono_institucional)
-              %th=t(:razon_social_institucion)
-              %th=t(:rut_institucion)
-              %th=t(:tipo_institucion)
-              %th=t(:comuna_institucion)
-              %th=t(:accion)
-          %tbody
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin= t(:agregar_actores_formulario)
+      .card-body
+        .table-responsive
+          %div#div_mapa_actores.table-responsive  
+            %table.table.table-striped
+              %thead
+                %tr
+                  %th=t(:rol_en_acuerdo)
+                  %th=t(:nombre_actor)
+                  %th=t(:rut_actor)
+                  %th=t(:cargo_institucion)
+                  %th=t(:email_institucional)
+                  %th=t(:telefono_institucional)
+                  %th=t(:razon_social_institucion)
+                  %th=t(:rut_institucion)
+                  %th=t(:tipo_institucion)
+                  %th=t(:comuna_institucion)
+                  %th=t(:accion)
+              %tbody
 
-        .float-right.mr-3.mb-3
-          -#-if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-          = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
-          -#-if !solo_lectura
-          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-2-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
+.float-right.mr-3.mb-3
+  -#-if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
+  = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+  -#-if !solo_lectura
+  = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
 
 :javascript
   $(document).ready(function(){
-    $(document).on('click', '.actualizar-mapa-de-actores-2-button', function(e) {
+    $(document).on('click', '.actualizar-mapa-de-actores-listado-button', function(e) {
+      var button = $(this);
+      button.prop("disabled", true);
+      button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
       $.ajax({
         url: "#{enviar_revision_mapa_de_actores_manifestacion_de_interes_path(manifestacion_de_interes_id: @manifestacion_de_interes.id)}",
         data: JSON.stringify({ from: "lista" }),
@@ -35,9 +42,13 @@
         method: "PATCH",
         success: function(response) {
           $('#div_mapa_actores table tbody').empty();
+          button.prop("disabled", true);
+          button.html("Guardar");
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);
+          button.prop("disabled", false);
+          button.html("Guardar");
         }
       });
     });

@@ -17,7 +17,7 @@
                 = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_rut_checkbox"
                 %label{ for: "sin_rut_checkbox" } Sin Rut
             .col-12.col-lg-8
-              = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-actor-boton-guardar-usuario' }
+              = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-actor-boton-guardar-usuario', readonly: !usuario_actor.user_id.nil? }
             .col-12.col-lg-6
               = f.input :email, error: true, required: true, label: t(:email), placeholder: "Ingresar email", input_html: {class: "form-actor-boton-guardar-usuario help-block email_validator"}
               -# Solo mostrar el checkbox si el user_id es nil

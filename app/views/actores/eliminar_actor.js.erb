@@ -2,8 +2,8 @@ $('.loading-data').hide();
 $("#eliminar-actor-<%= actor %>").closest('tr').remove();
 
 <% if @listado_actores_temporal.count == 0 %>
-  $('.actualizar-mapa-de-actores-2-button').prop('disabled', true); 
+  $('.actualizar-mapa-de-actores-listado-button').prop('disabled', true); 
 <% else %>
-  $('.actualizar-mapa-de-actores-2-button').prop('disabled', false); 
+  $('.actualizar-mapa-de-actores-listado-button').prop('disabled', false); 
 <% end %>
 

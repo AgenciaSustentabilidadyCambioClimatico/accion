@@ -1522,7 +1522,8 @@ es:
   admiisibilidad_tecnica : Admisibilidad Técnica
   respuesta_comentario: Respuesta comentario
   agregar_actores: Agregar Actores
-  agregar_actores_via_excel: Agregar Actores vía excel (Opcional)
+  agregar_actores_via_excel: Agregar Actores vía excel
+  agregar_actores_formulario: Agregar Actores Formulario
   nuevo_actor: Nuevo actor
   agregar_nuevo_actor: Agregar nuevo actor
   agregar_nueva_institucion: Agregar nueva institución
