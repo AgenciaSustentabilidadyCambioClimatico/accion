@@ -105,7 +105,14 @@ class ActoresController < ApplicationController
       end 
 
       @manifestacion_de_interes.tarea_codigo=@tarea.codigo
+
+      #valida si viene de listado de mapa de actores
+      @manifestacion_de_interes.listado_mapa_actores = false
+      if params[:from] == 'lista'
+        @manifestacion_de_interes.listado_mapa_actores = true
+      end
       @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
+
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save
         success = "Mapa de actores correctamente actualizado"
@@ -131,8 +138,7 @@ class ActoresController < ApplicationController
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
-
-        if params[:from] == 'lista'
+        if params[:from] == 'lista' && success.present?
           ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010

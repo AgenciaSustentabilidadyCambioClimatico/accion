@@ -30,7 +30,7 @@ class ManifestacionDeInteres < ApplicationRecord
   #titulos, como no se necesita registrar un texto del usuario solo lo usamos para mostrar
   attr_accessor :titulo_cifras_sectores_economicos, :titulo_caracterizacion_actividades_economicas
 
-  attr_accessor :revisar_y_actualizar_mapa_de_actores
+  attr_accessor :revisar_y_actualizar_mapa_de_actores, :listado_mapa_actores
   attr_accessor :anulado
 
   attr_accessor :envia_termino_proceso
@@ -415,6 +415,13 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def data_mapa_de_actores
+    
+    #concatena a la lista los registros creados a traves del mantenedor de mapa de actores
+    if self.listado_mapa_actores == true
+      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(self.id)
+      parsear_mapa_de_actores.concat(@actores_desde_lista)
+    end
+    
     data = parsear_mapa_de_actores
     archivo_correcto = true
     if data.size <= 0
