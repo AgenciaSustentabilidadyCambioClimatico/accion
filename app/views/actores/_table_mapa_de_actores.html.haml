@@ -41,7 +41,20 @@
         headers: { "Content-Type": "application/json" }, 
         method: "PATCH",
         success: function(response) {
-          $('#div_mapa_actores table tbody').empty();
+          //$('#div_mapa_actores table tbody').empty();
+          $.ajax({
+            url: "#{listado_actores_temporal_manifestacion_de_interes_path(@tarea_pendiente)}",
+            data: {
+              id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.id}"
+            },
+            method: "GET",
+            success: function(response) {
+              $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+            }
+          });
           button.prop("disabled", true);
           button.html("Guardar");
         },

@@ -411,18 +411,18 @@ class ManifestacionDeInteres < ApplicationRecord
       ]
       data = ExcelParser.new(mapa_de_actores_archivo.url, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
     end
+
+    #concatena a la lista los registros creados a traves del mantenedor de mapa de actores
+    if self.listado_mapa_actores
+      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(self.id)
+      data.concat(@actores_desde_lista)
+    end
     data
   end
 
   def data_mapa_de_actores
-    
-    #concatena a la lista los registros creados a traves del mantenedor de mapa de actores
-    if self.listado_mapa_actores == true
-      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(self.id)
-      parsear_mapa_de_actores.concat(@actores_desde_lista)
-    end
-    
     data = parsear_mapa_de_actores
+
     archivo_correcto = true
     if data.size <= 0
       errors.add(:mapa_de_actores_archivo, "Se debe indicar al menos un actor en el archivo")
