@@ -1,5 +1,8 @@
 
 $('#div_mapa_actores table tbody').empty();
+
+<% correlativo = 1 %> 
+
 <% @listado_actores_temporal.each do |actor| %>
   var actor_id = '<%= actor.id %>';
   var rol_en_acuerdo = '<%= actor.rol_en_acuerdo %>';
@@ -13,8 +16,10 @@ $('#div_mapa_actores table tbody').empty();
   var tipo_institucion = '<%= actor.tipo_institucion %>';
   var comuna_institucion = '<%= actor.comuna_institucion %>';
   var manifestacion_de_interes_id = '<%= manifestacion_de_interes_id %>';
-
+  var correlativo = '<%= correlativo %>';
+  
   var newRow = "<tr>" + 
+    "<td class='contenido-form'>" + correlativo + "</td>" +
     "<td class='contenido-form'>" + rol_en_acuerdo + "</td>" +
     "<td class='contenido-form'>" + nombre_actor + "</td>" +
     "<td class='contenido-form'>" + rut_actor + "</td>" +
@@ -33,7 +38,9 @@ $('#div_mapa_actores table tbody').empty();
   "</tr>";    
 
   $('#div_mapa_actores table tbody').append(newRow); 
-  
+
+  <% correlativo += 1 %> 
+
 <% end %>
 
 // Deshabilitar el botón después de agregar los actores

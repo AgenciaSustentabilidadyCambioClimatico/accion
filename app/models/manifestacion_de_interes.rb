@@ -414,7 +414,7 @@ class ManifestacionDeInteres < ApplicationRecord
 
     #concatena a la lista los registros creados a traves del mantenedor de mapa de actores
     if self.listado_mapa_actores
-      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(self.id)
+      @actores_desde_lista = MapaDeActor.valida_data_para_apl_desde_listado(self.id)
       data.concat(@actores_desde_lista)
     end
     data
@@ -424,6 +424,7 @@ class ManifestacionDeInteres < ApplicationRecord
     data = parsear_mapa_de_actores
 
     archivo_correcto = true
+    correlativo ||= 1
     if data.size <= 0
       errors.add(:mapa_de_actores_archivo, "Se debe indicar al menos un actor en el archivo")
       self.mapa_de_actores_archivo = nil
@@ -442,7 +443,9 @@ class ManifestacionDeInteres < ApplicationRecord
           ##
           # DZC 2019-08-16 20:26:20
           # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "Fila #{(posicion+2)} contiene celdas sin completar"
+          if !self.listado_mapa_actores
+            errores << "Fila #{(posicion+2)} contiene celdas sin completar"
+          end
           # errors.add(:mapa_de_actores_archivo, "El archivo contiene celdas sin completar")
           archivo_correcto = false
         else
@@ -467,7 +470,17 @@ class ManifestacionDeInteres < ApplicationRecord
             ##
             # DZC 2019-08-16 20:26:20
             # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-            errores << "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios"
+            
+            if data[posicion][:id] == nil
+              if !self.listado_mapa_actores
+                errores << "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios"
+              end
+            else
+              errores << "Error en la registro #{correlativo}. No se debe ingresar el mismo email a distintos usuarios"
+              correlativo = correlativo + 1
+              puts correlativo
+            end
+
             # errors.add(:mapa_de_actores_archivo, "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios")
             archivo_correcto = false
           end

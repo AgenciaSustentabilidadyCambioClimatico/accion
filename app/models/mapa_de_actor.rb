@@ -143,6 +143,45 @@ class MapaDeActor < ApplicationRecord
 		data
 	end
 
+	def self.valida_data_para_apl_desde_listado (manifestacion_de_interes_id)
+		data = []
+		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0)
+		listado.each do |l|
+			institucion = Contribuyente.find(l[:contribuyente_id])
+			acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			
+			id = l[:id]
+			rol_en_acuerdo = l[:rol_en_acuerdo]
+			rut_persona = l[:rut_actor]
+			nombre_completo_persona = l[:nombre_actor]
+			cargo_en_institucion = l[:cargo_institucion]
+			rut_institucion = l[:rut_institucion]
+			razon_social = l[:razon_social_institucion]
+			codigo_ciiuv4 = acteco.present? ? "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}" : ""
+			tipo_de_institucion = l[:tipo_institucion]
+			direccion_institucion = l[:direccion]
+			comuna_institucion = l[:comuna_institucion]
+			email_institucional = l[:email_institucional]
+			telefono_institucional = l[:telefono_institucional]
+			data << {
+				id: id,
+				rol_en_acuerdo: rol_en_acuerdo, 
+				rut_persona: rut_persona,
+				nombre_completo_persona: nombre_completo_persona,  
+				cargo_en_institucion: cargo_en_institucion,
+				rut_institucion: rut_institucion,
+				razon_social: razon_social,
+				codigo_ciiuv4: codigo_ciiuv4,
+				tipo_de_institucion: tipo_de_institucion,
+				direccion_institucion: direccion_institucion,
+				comuna_institucion: comuna_institucion,
+				email_institucional: email_institucional,
+				telefono_institucional: telefono_institucional					
+			}
+		end
+		data
+	end
+
 	def self.construye_datos_actores_para_excel (data)
 		para_excel = data # extrañamente al trabajar directamente sobre 'data' se altera el contenido de @actores
 		para_excel = para_excel.map {|i| i.map {|k,v| (k == :rut_persona || k == :email_institucional) && v.blank? ? 'no' : (v unless (k==:sector_productivo))}.compact}
