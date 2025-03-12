@@ -8,7 +8,7 @@ class AcuerdoActoresController < ApplicationController
   before_action :set_mapa_actores
   before_action :set_contribuyentes
   before_action :set_usuario_actor
-
+  before_action :set_listado_actores_temporal
 
   def index
   end
@@ -281,6 +281,10 @@ class AcuerdoActoresController < ApplicationController
     end
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
 
+  end
+
+  def set_listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
   end
 
   def actualizar_mapa_de_actores_manifestacion_de_interes_params

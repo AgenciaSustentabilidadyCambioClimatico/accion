@@ -22,11 +22,50 @@
                   %th=t(:comuna_institucion)
                   %th=t(:accion)
               %tbody
+                - if @listado_actores_temporal.present?
+                  - correlativo = 1
+                  - @listado_actores_temporal.each do |listado|
+                    %tr{"data-id" => listado['id']} 
+                      %td= correlativo
+                      %td=listado[:rol_en_acuerdo]
+                      %td=listado[:nombre_actor]
+                      %td=listado[:rut_actor]
+                      %td=listado[:cargo_institucion]
+                      %td=listado[:email_institucional]
+                      %td=listado[:telefono_institucional]
+                      %td=listado[:razon_social_institucion]
+                      %td=listado[:rut_institucion]
+                      %td=listado[:tipo_institucion]
+                      %td=listado[:comuna_institucion]
+                      %td.contenido-form.dos.iconos-acciones
+                        %a{
+                          "data-actor-id" => listado['id'],
+                          "data-confirm" => "¿Está seguro que desea borrar a este Actor?",
+                          "class" => "eliminar-actor",
+                          "id" => "eliminar-actor-#{listado['id']}",
+                          "data-remote" => "true",
+                          "rel" => "nofollow",
+                          "data-method" => "delete",
+                          "href" => "/manifestacion-de-interes/#{@manifestacion_de_interes.id}/#{listado['id']}/eliminar-actor",
+                          "data-original-title" => "Eliminar Actor"
+                        }
+                          %i.fa.fa-trash{title: "Eliminar"}
+                    - correlativo += 1
+                - else
+                  %tr
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles
+                    
+- disabled_button = @listado_actores_temporal.empty? ? 'btn-disabled' : ''
+- button_disabled = @listado_actores_temporal.empty? ? :disabled : nil
+
 .float-right.mr-3.mb-3
-  -#-if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
   = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
-  -#-if !solo_lectura
-  = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
+  = button_tag t(:save),
+    id: 'actualizar-mapa-de-actores-listado-button',
+    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+    class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled",
+    disabled: @listado_actores_temporal.blank?
+
 
 :javascript
   $(document).ready(function(){
@@ -41,7 +80,6 @@
         headers: { "Content-Type": "application/json" }, 
         method: "PATCH",
         success: function(response) {
-          //$('#div_mapa_actores table tbody').empty();
           $.ajax({
             url: "#{listado_actores_temporal_manifestacion_de_interes_path(@tarea_pendiente)}",
             data: {
@@ -49,14 +87,12 @@
             },
             method: "GET",
             success: function(response) {
-              $('.agregar-usuario-actor-button').attr("disabled", "disabled");
             },
             error: function(error) {
               console.error("Error al llamar al método del controlador", error);
             }
           });
-          button.prop("disabled", true);
-          button.html("Guardar");
+          
         },
         error: function(error) {
           console.error("Error al llamar al método del controlador", error);

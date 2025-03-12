@@ -145,12 +145,13 @@ class MapaDeActor < ApplicationRecord
 
 	def self.valida_data_para_apl_desde_listado (manifestacion_de_interes_id)
 		data = []
-		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0)
+		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+		correlativo ||= 1
 		listado.each do |l|
 			institucion = Contribuyente.find(l[:contribuyente_id])
 			acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
 			
-			id = l[:id]
+			id = correlativo
 			rol_en_acuerdo = l[:rol_en_acuerdo]
 			rut_persona = l[:rut_actor]
 			nombre_completo_persona = l[:nombre_actor]
@@ -178,6 +179,9 @@ class MapaDeActor < ApplicationRecord
 				email_institucional: email_institucional,
 				telefono_institucional: telefono_institucional					
 			}
+
+			correlativo = correlativo + 1
+			puts correlativo
 		end
 		data
 	end

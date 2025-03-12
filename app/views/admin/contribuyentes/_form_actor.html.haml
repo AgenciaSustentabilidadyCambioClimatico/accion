@@ -30,11 +30,11 @@
                         =t(:rut)
                       .row
                         .col-lg-8.desactivado
-                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar numero', readonly: !contribuyente_actor.contribuyente_id.nil?}
+                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar-actor-institucion numero', readonly: !contribuyente_actor.contribuyente_id.nil?}
                         .col-lg-4.desactivado
-                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar dv', readonly: !contribuyente_actor.contribuyente_id.nil? }
+                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar-actor-institucion dv', readonly: !contribuyente_actor.contribuyente_id.nil? }
                     .col-lg-9.col-md-8.desactivado
-                      = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar', readonly: !contribuyente_actor.contribuyente_id.nil?}
+                      = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: !contribuyente_actor.contribuyente_id.nil?}
                   .row
                     .col-12.col-lg-6.mt-2 
                       %label.string.control-label
@@ -42,41 +42,41 @@
                         Tipo institución
                       - if contribuyente_id.nil?
                         = f.input :tipo_institucion, collection: TipoContribuyente.__select, placeholder: "Seleccione tipo institución",
-                          input_html: { class: 'form-temporal-boton-guardar'}, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion'}, 
                           label: false
                       - else
                         - dato_anual = contribuyente_actor.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
                         - tipo_institucion = dato_anual.tipo_contribuyente.nombre
-                        = f.input :tipo_institucion, as: :string, input_html: { class: 'form-temporal-boton-guardar', readonly: !contribuyente_actor.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, label: false
+                        = f.input :tipo_institucion, as: :string, input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: !contribuyente_actor.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, label: false
                     .col-12.col-lg-6.mt-2
                       %label.string.control-label
                         %abbr{title: :required}*
                         Dirección
                       - if contribuyente_id.nil?
                         = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
-                          input_html: { class: 'form-temporal-boton-guardar', readonly: false, id: "direccion_input" }, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input" }, 
                           label: false
                       - else
                         = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
                           placeholder: "Seleccione dirección", 
-                          input_html: { class: 'form-temporal-boton-guardar', id: "direccion_select", style: "display: block;" }, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', id: "direccion_select", style: "display: block;" }, 
                           label: false
                         = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
-                          input_html: { class: 'form-temporal-boton-guardar', readonly: false, id: "direccion_input", style: 'display: none;' }, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
                           label: false
-                        = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
+                        = check_box_tag :seleccionar, '1', false, class: "form-temporal-boton-guardar-actor-institucion not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
                         %label{ for: "sin_direccion_checkbox" } Nueva Dirección
                   .row
                     .col-12.col-lg-6.mt-2 
                       %label.string.control-label
                         %abbr{title: :required}*
                         Región
-                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2", label: false, style: 'width: 100%', id: 'region_select', label: false
+                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2", label: false, style: 'width: 100%', id: 'region_select', label: false
                     .col-12.col-lg-6.mt-2 
                       %label.string.control-label
                         %abbr{title: :required}*
                         Comuna
-                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-control select2", label: false, id: 'registro_proveedor_comuna', label: false
+                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2", label: false, id: 'registro_proveedor_comuna', label: false
 
       .col-12.mt-2.text-right
         %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
@@ -206,6 +206,44 @@
     // Detectar cambios en el campo contribuyente_id
     $('#contribuyente_id').on('change', function() {
       toggleRegionComuna();
+    });
+
+    function nuevo_institucion_actor_validaciones(){
+      // Verificar si el checkbox "Nueva Dirección" está marcado
+      var sinDireccion = $('#sin_direccion_checkbox').prop('checked');
+
+      // Validar los campos de entrada
+      var rut = $('#contribuyente_rut').val() != "";
+      var dv = $('#contribuyente_dv').val() != "";
+      var nombre_completo = $('#contribuyente_razon_social').val() != "";
+      var tipo_institucion = $('#tipo_institucion_input').val() != "";
+      var direccion_select = $('#direccion_select').val() != "";
+      var direccion_input = $('#direccion_input').val() != "";
+      var region = $('#region_select').val() != "";
+      var comuna = $('#registro_proveedor_comuna').val() != "";
+
+
+      // Si todas las condiciones se cumplen (y el RUT solo se verifica si no está marcado "Sin Rut")
+      if (sinDireccion) {
+        if (rut && dv && nombre_completo && tipo_institucion && direccion_input && region && comuna) {
+            $('.guarda-contribuyente-actor-button').removeAttr("disabled"); // Habilitar el botón
+        } else {
+            $('.guarda-contribuyente-actor-button').attr("disabled", true); // Deshabilitar el botón
+        }
+      } else {
+        if (rut && dv && nombre_completo && tipo_institucion && direccion_select) {
+            $('.guarda-contribuyente-actor-button').removeAttr("disabled"); // Habilitar el botón
+        } else {
+            $('.guarda-contribuyente-actor-button').attr("disabled", true); // Deshabilitar el botón
+        }
+      }
+    }
+
+    // Deshabilita el botón inicialmente
+    $('.guarda-contribuyente-actor-button').attr("disabled", true);
+
+    $(document).on('change keyup', '.form-temporal-boton-guardar-actor-institucion', function(){
+        nuevo_institucion_actor_validaciones();
     });
 
   });

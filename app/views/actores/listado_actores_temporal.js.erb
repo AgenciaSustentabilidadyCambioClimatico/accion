@@ -48,7 +48,13 @@ $('.agregar-usuario-actor-button').prop('disabled', true);  // Esto deshabilita 
 
 <% if @listado_actores_temporal.count == 0 %>
   $('.actualizar-mapa-de-actores-listado-button').prop('disabled', true); 
+  $('.actualizar-mapa-de-actores-listado-button').text('Guardar'); 
+  
+  var newRow = "<tr><td colspan='12' class='text-center'> No hay actores disponibles </td></tr>";    
+  $('#div_mapa_actores table tbody').append(newRow); 
+
 <% else %>
   $('.actualizar-mapa-de-actores-listado-button').prop('disabled', false); 
+  $('.actualizar-mapa-de-actores-listado-button').text('Guardar');
 <% end %>
 

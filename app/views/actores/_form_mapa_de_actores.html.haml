@@ -1,6 +1,5 @@
 :javascript
   $(document).ready(function() {
-    listadoActoresTemporal();
     $('.agregar-usuario-actor-button').attr("disabled", "disabled");
 
     $('#formulario-agregar-actor').on('ajax:beforeSend', function() {
@@ -10,7 +9,6 @@
 
     $('#formulario-agregar-actor').on('ajax:success', function(event, data, status, xhr) {
       limpiarFormulario();
-      listadoActoresTemporal(); // Llamar a listadoActoresTemporal después de la llamada AJAX exitosa
     });
 
     $('#formulario-agregar-actor').on('ajax:error', function(event, xhr, status, error) {
@@ -20,22 +18,6 @@
       alert("Error al agregar actor. Por favor, inténtelo de nuevo.");
     });
   });
-
-  function listadoActoresTemporal() {
-    $.ajax({
-      url: "#{listado_actores_temporal_manifestacion_de_interes_path(@tarea_pendiente)}",
-      data: {
-        id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.id}"
-      },
-      method: "GET",
-      success: function(response) {
-        $('.agregar-usuario-actor-button').attr("disabled", "disabled");
-      },
-      error: function(error) {
-        console.error("Error al llamar al método del controlador", error);
-      }
-    });
-  }
 
   // Función para limpiar el formulario
   function limpiarFormulario() {
