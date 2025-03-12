@@ -4,4 +4,14 @@ $('#comentarios_acciones_<%= @comentario.id %>').html(`
     <i class="fa fa-fire-extinguisher text-danger"></i>
   </a>
 `);
+
+// Evita declarar la variable 'fecha' de nuevo si ya está declarada
+if (typeof fecha === 'undefined') {
+  let fecha = new Date('<%= @comentario.fecha_lectura %>');  // Convierte la cadena de fecha en un objeto Date
+  let fechaFormateada = fecha.toISOString().split('T')[0]; // Esto te da 'YYYY-MM-DD'
+  
+  // Actualiza el contenido de tu elemento HTML
+  $('#comentarios_fechas_lectura_<%= @comentario.id %>').html(fechaFormateada);
+}
+
 $('.loading-data').hide();

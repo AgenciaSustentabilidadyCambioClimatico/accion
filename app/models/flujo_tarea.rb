@@ -114,6 +114,7 @@ class FlujoTarea < ApplicationRecord
 										rescue
 											mdi = nil
 										end
+                    puts 'enviado mail segunda vez'
 										FlujoMailer.enviar(
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
@@ -164,6 +165,7 @@ class FlujoTarea < ApplicationRecord
 									rescue
 										mdi = nil
 									end
+                  puts 'Enviando mails 1 ves'
 									FlujoMailer.enviar(
 										self.asunto_format(ut.user,mdi), 
 										self.cuerpo_format(ut.user,mdi), 

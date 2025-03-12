@@ -22,7 +22,9 @@
     %li.nav-item
       %a#sugerencias-tab.nav-link{"aria-controls": :sugerencias, "aria-expanded": false, "data-toggle": :tab, href: "#sugerencias", role: :tab}
         Sugerencias
-
+    %li.nav-item
+      %a#solicitudes-tab.nav-link{"aria-controls": :solicitudes, "aria-expanded": false, "data-toggle": :tab, href: "#solicitudes", role: :tab}
+        Solicitudes
 #comentario-content.tab-content
   #errores.tab-pane.fade.active.show{"aria-expanded": true, "aria-labelledby": "errores-tab", role: :tabpanel}
     .card
@@ -32,10 +34,14 @@
     .card
       .card-body
         = render 'table', tipo: Comentario::SUGERENCIAS
+  #solicitudes.tab-pane.fade{"aria-expanded": false, "aria-labelledby": "solicitudes-tab", role: :tabpanel}
+    .card
+      .card-body
+        = render 'table', tipo: Comentario::SOLICITUDES
 
 - email = email.nil? ? nil : email   
 - id = id.nil? ? nil : id  
-.modal.fade{id: :"site-comments-response", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsLabel, "aria-hidden": true}
+.modal.fade{id: :"site-comments-response", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsResponseLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
     .modal-content#modal-response-comentario-remote-form
       = render 'comentarios/form_modal_response', email: email, id: id
