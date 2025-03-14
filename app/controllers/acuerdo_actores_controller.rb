@@ -1,14 +1,14 @@
 class AcuerdoActoresController < ApplicationController
   before_action :authenticate_user!
   skip_before_action :verify_authenticity_token, only: [:mostrar_informe, :reload_informe]
-  before_action :set_tarea_pendiente
-  before_action :set_flujo
-  before_action :set_manifestacion_de_interes
-  before_action :set_obtiene_mapa_actual_y_actores
-  before_action :set_mapa_actores
-  before_action :set_contribuyentes
-  before_action :set_usuario_actor
-  before_action :set_listado_actores_temporal
+  before_action :set_tarea_pendiente, except: [:eliminar_actor]
+  before_action :set_flujo, except: [:eliminar_actor]
+  before_action :set_manifestacion_de_interes, except: [:eliminar_actor]
+  before_action :set_obtiene_mapa_actual_y_actores, except: [:eliminar_actor]
+  before_action :set_mapa_actores, except: [:eliminar_actor]
+  before_action :set_contribuyentes, except: [:eliminar_actor, :crear_actor]
+  before_action :set_usuario_actor, except: [:eliminar_actor]
+  before_action :set_listado_actores_temporal, except: [:eliminar_actor]
 
   def index
   end

@@ -27,10 +27,15 @@
             .col-12.col-lg-6
               = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-actor-boton-guardar-usuario' }
             .col-12.col-lg-6     
-              = f.input :rol, collection: Rol.__select, placeholder: "Seleccione un rol", input_html: { class: 'form-actor-boton-guardar-usuario'}  
+              %label.string.control-label
+                %abbr{title: :required}*
+                Rol
+              = f.input :rol, collection: Rol.__select, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un rol" }, label: false, wrapper_html: { class: 'mb-0'}
             .col-12.col-lg-6
-              = f.input :cargo, collection: Cargo.__select, placeholder: "Seleccione un cargo", input_html: { class: 'form-actor-boton-guardar-usuario' }
-
+              %label.string.control-label
+                %abbr{title: :required}*
+                Cargo
+              = f.input :cargo, collection: Cargo.__select, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un cargo" }, label: false, wrapper_html: { class: 'mb-0'}
     .col-12.mt-2.text-right
       %button.btn.btn-primary#deshacer-usuario-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
         =t(:volver_a_lista)
@@ -39,10 +44,11 @@
 
 :javascript
   $(document).ready(function(){
+     __chosen_users();
     iniciarAutoNumeric();
     nuevo_usuario_temporal_validaciones();
     htmlErrorToTooltip('top');
-
+    
     // Manejador para el checkbox de "Sin Rut"
     $('#sin_rut_checkbox').on('change', function() {
       var rutInput = $('#user_rut'); // Seleccionar el campo RUT usando jQuery
@@ -95,4 +101,13 @@
       agregar_usuario_actor_validaciones();
 
     });
+
+    function __chosen_users() {
+      $('.users_select').chosen({
+        allow_single_deselect: true,
+        no_results_text: 'No se encontraron resultados',
+        width: '100%',
+        search_contains: true
+      });
+    }
   });

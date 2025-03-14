@@ -41,7 +41,7 @@
                         %abbr{title: :required}*
                         Actividad Económica
                       - if contribuyente_id.nil?  
-                        = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyente-acteco', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
+                        = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
                       - else
                         - acteco = contribuyente_actor.actividad_economica_contribuyentes.first.actividad_economica
                         - codigo_ciiuv4 = "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}"
@@ -54,7 +54,7 @@
                         %abbr{title: :required}*
                         Tipo institución
                       - if contribuyente_id.nil?
-                        = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyente-acteco', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                        = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
                       - else
                         - dato_anual = contribuyente_actor.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
                         - tipo_institucion = dato_anual.tipo_contribuyente.nombre
@@ -71,7 +71,7 @@
                           label: false
                       - else
                         = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
-                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyente-acteco', type: :string, "data-placeholder"=>"Seleccione dirección" }, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione dirección" }, 
                           label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
                         = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
                           input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
@@ -83,12 +83,12 @@
                       %label.string.control-label
                         %abbr{title: :required}*
                         Región
-                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyente-acteco", label: false, style: 'width: 100%', id: 'region_select', label: false, "data-placeholder"=>"Seleccione una región"
+                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyentes_select", label: false, style: 'width: 100%', id: 'region_select', label: false, "data-placeholder"=>"Seleccione una región"
                     .col-12.col-lg-6.mt-2 
                       %label.string.control-label
                         %abbr{title: :required}*
                         Comuna
-                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyente-acteco", label: false, id: 'registro_proveedor_comuna', label: false, "data-placeholder"=>"Seleccione una comuna"
+                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyentes_select", label: false, id: 'registro_proveedor_comuna', label: false, "data-placeholder"=>"Seleccione una comuna"
       .col-12.mt-2.text-right
         %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
           =t(:volver_a_lista)
@@ -97,7 +97,8 @@
 :javascript
 
   $(document).ready(function(){
-    __chosen_actecos();
+    //__chosen_actecos();
+    __chosen_contribuyentes();
     iniciarAutoNumeric();
     iniciarDigitoVerificador();
     htmlErrorToTooltip('top');
@@ -263,5 +264,14 @@
     $(document).on('change keyup', '.form-temporal-boton-guardar-actor-institucion', function(){
         nuevo_institucion_actor_validaciones();
     });
+
+    function __chosen_contribuyentes() {
+      $('.contribuyentes_select').chosen({
+        allow_single_deselect: true,
+        no_results_text: 'No se encontraron resultados',
+        width: '100%',
+        search_contains: true
+      });
+    }
 
   });
