@@ -311,7 +311,7 @@ class AcuerdoActoresController < ApplicationController
       :actor_id, :rol_en_acuerdo_id, :cargo_institucion_id, :contribuyente_id, :tipo_institucion_id, :rol_en_acuerdo, 
       :nombre_actor, :rut_actor, :cargo_institucion, :email_institucional, :telefono_institucional, 
       :razon_social_institucion, :rut_institucion, :tipo_institucion, :comuna_institucion, :estado,
-      :manifestacion_de_interes, :direccion
+      :manifestacion_de_interes, :direccion, :codigo_ciiuv4
     )
   end
 

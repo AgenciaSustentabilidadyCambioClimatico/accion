@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_02_27_185624) do
+ActiveRecord::Schema.define(version: 2025_03_14_112041) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1167,6 +1167,7 @@ ActiveRecord::Schema.define(version: 2025_02_27_185624) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.string "direccion"
+    t.string "codigo_ciiuv4"
     t.index ["manifestacion_de_interes_id"], name: "index_listado_actores_temporals_on_manifestacion_de_interes_id"
   end
 

@@ -108,9 +108,14 @@ class MapaDeActor < ApplicationRecord
 		data = []
 		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0)
 		listado.each do |l|
-			institucion = Contribuyente.find(l[:contribuyente_id])
-			acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
-			
+			if l[:contribuyente_id] != nil
+				institucion = Contribuyente.find(l[:contribuyente_id])
+				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			else
+				institucion = nil
+				acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+			end
+		
 			rol_en_acuerdo = l[:rol_en_acuerdo]
 			rut_persona = l[:rut_actor]
 			nombre_completo_persona = l[:nombre_actor]
@@ -148,8 +153,13 @@ class MapaDeActor < ApplicationRecord
 		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0).order(id: :asc).all
 		correlativo ||= 1
 		listado.each do |l|
-			institucion = Contribuyente.find(l[:contribuyente_id])
-			acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			if l[:contribuyente_id] != nil
+				institucion = Contribuyente.find(l[:contribuyente_id])
+				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			else
+				institucion = nil
+				acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+			end
 			
 			id = correlativo
 			rol_en_acuerdo = l[:rol_en_acuerdo]

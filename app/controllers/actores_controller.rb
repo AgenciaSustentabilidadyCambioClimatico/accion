@@ -236,12 +236,9 @@ class ActoresController < ApplicationController
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+ 
     if params[:from] == 'lista'
       @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
-
-      if @actores_desde_campo != nil
-        @actores_desde_campo.concat(@actores_desde_lista)
-      end
       if @actores_desde_tablas != nil
         @actores_desde_tablas.concat(@actores_desde_lista)
       end

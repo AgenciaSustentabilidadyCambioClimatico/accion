@@ -99,6 +99,8 @@
                 .row
                   = f.input :contribuyente_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'contribuyente_id_mapa_actores', class: 'form-control' }
                   = f.input :tipo_institucion_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_institucion_id_mapa_actores', class: 'form-control' }
+                  = f.input :codigo_ciiuv4, as: :hidden, wrapper: false, label: false, input_html: { id: 'codigo_ciiuv4_contribuyente_mapa_actores', class: 'form-control' } 
+
                   .col-12.col-lg-3.mt-2
                     = f.input :razon_social_institucion, label: 'Razón social institución', input_html: { id: 'razon_social_contribuyente_mapa_actores', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
