@@ -14,7 +14,7 @@ module Ascc
     config.time_zone = 'Santiago'
     config.i18n.default_locale = :es
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
-    config.active_job.queue_adapter = :delayed_job
+    config.active_job.queue_adapter = :sidekiq
     config.active_record.use_yaml_unsafe_load = true
 
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)

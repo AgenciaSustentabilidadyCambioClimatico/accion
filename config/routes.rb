@@ -32,6 +32,7 @@ Rails.application.routes.draw do
     patch 'users' => 'admin/registrations#update', :as => 'user_registration'
     authenticated :user do
       root :to => "home#index", :as => "authenticated_user_home"
+      mount Sidekiq::Web => "/sidekiq"
     end
     #root to: 'devise/sessions#new'
     root :to => "home#index"
