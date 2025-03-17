@@ -104,7 +104,7 @@ namespace :ascc do
                   cuerpo,
                   email,
                   rgc.id
-                )     
+                )
                 RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_now
               end
             end
