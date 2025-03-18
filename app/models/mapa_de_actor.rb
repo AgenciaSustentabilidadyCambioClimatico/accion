@@ -207,6 +207,7 @@ class MapaDeActor < ApplicationRecord
 		actores = data
 		actores.each do |fila|
 			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].to_s.split(" - ").first.to_s)
+
 			sector_productivo = ae.first.descripcion_ciiuv4 if ae.present?
 			# DZC 2018-10-10 16:09:11 se prevee el caso de que el contribuyente se este creando mediante el archivo excel
 			fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
@@ -555,7 +556,7 @@ class MapaDeActor < ApplicationRecord
 				 if persona_cargo_institucion.blank?
 				 	persona_cargo_institucion = PersonaCargo.new(persona_id: persona.id,
 				 	 cargo_id: cargo_planilla.id,
-					 establecimiento_contribuyente_id: contribuyente.id
+					 establecimiento_contribuyente_id: establecimiento_contribuyente.id
 				 	 )
 				 	persona_cargo_institucion.save(validate: false)
 				 end

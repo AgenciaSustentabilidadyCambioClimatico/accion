@@ -241,6 +241,8 @@ class ActoresController < ApplicationController
       @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
       if @actores_desde_tablas != nil
         @actores_desde_tablas.concat(@actores_desde_lista)
+        #se igualan los arreglos para la insercion a través de el listado
+        @actores_desde_campo = @actores_desde_tablas
       end
     end
     

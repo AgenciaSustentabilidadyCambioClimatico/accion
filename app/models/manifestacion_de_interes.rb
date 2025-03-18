@@ -424,7 +424,6 @@ class ManifestacionDeInteres < ApplicationRecord
     data = parsear_mapa_de_actores
 
     archivo_correcto = true
-    correlativo ||= 1
     if data.size <= 0
       errors.add(:mapa_de_actores_archivo, "Se debe indicar al menos un actor en el archivo")
       self.mapa_de_actores_archivo = nil
@@ -476,9 +475,7 @@ class ManifestacionDeInteres < ApplicationRecord
                 errores << "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios"
               end
             else
-              errores << "Error en la registro #{correlativo}. No se debe ingresar el mismo email a distintos usuarios"
-              correlativo = correlativo + 1
-              puts correlativo
+              errores << "Error en la registro #{data[posicion][:id]}. No se debe ingresar el mismo email a distintos usuarios"
             end
 
             # errors.add(:mapa_de_actores_archivo, "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios")
