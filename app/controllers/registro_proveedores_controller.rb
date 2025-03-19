@@ -523,24 +523,29 @@ class RegistroProveedoresController < ApplicationController
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
-        unless documento.archivo.path.nil?
+        unless documento.archivo.url.nil?
           #nombre = documento.archivo.file.identifier
-          nombre = "#{registro_proveedor.rut} - #{registro_proveedor.nombre} - #{documento.archivo.file.identifier}"
-          # rename the file
-          stream.put_next_entry(nombre)
-          # add file to zip
-          stream.write IO.read((documento.archivo.current_path rescue documento.archivo.path))
+          url = documento.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+
         end
       end
       certificados = registro_proveedor.certificado_proveedores
       certificados.each do |certificado|
-        unless certificado.archivo_certificado.path.nil?
-          nombre = certificado.archivo_certificado.file.identifier
+        unless certificado.archivo_certificado.url.nil?
+          url = certificado.archivo_certificado.url
+          nombre = File.basename(URI.parse(url).path)
           # nombre = "certificado"
           # rename the file
-          stream.put_next_entry(nombre)
-          # add file to zip
-          stream.write IO.read((certificado.archivo_certificado.current_path rescue certificado.archivo_certificado.path))
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
         end
       end
     end
@@ -549,6 +554,7 @@ class RegistroProveedoresController < ApplicationController
     #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
+
 
   def descargar_registro_proveedor_pdf_archivo
     @registro_proveedor = RegistroProveedor.find(params[:id])
