@@ -7,20 +7,23 @@ class NotificadorDeTareasPendientesWorker
     Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
   end
 
-  def perform(tarea_id)
-    tarea = Tarea.find_by(id: tarea_id)
-    return unless tarea&.necesita_notificacion?
+  def perform
+    Tarea.find_each do |tarea|
+      unless tarea.recordatorio_tarea_frecuencia.blank?
+        tarea = Tarea.find_by(id: tarea.id)
+        return unless tarea&.necesita_notificacion?
 
-    pendientes = tarea.pendientes.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
-    return if pendientes.empty?
+          pendientes = tarea.pendientes.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
+          return if pendientes.empty?
 
-    if tarea.codigo == Tarea::COD_FPL_004
-      procesar_tarea_fpl_004(tarea, pendientes)
-    else
-      procesar_otras_tareas(tarea, pendientes)
+          if tarea.codigo == Tarea::COD_FPL_004
+            procesar_tarea_fpl_004(tarea, pendientes)
+          else
+            binding.pry
+            procesar_otras_tareas(tarea, pendientes)
+          end
+      end
     end
-  rescue ActiveRecord::RecordNotFound => e
-    Rails.logger.error "Tarea no encontrada: #{e.message}"
   end
 
   private
