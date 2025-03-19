@@ -1726,6 +1726,7 @@
           .col-lg-6.col-12
             .row
               .col-12
+                %label.control-label.string= @validaciones[:manifestacion_de_interes][:descarga_formato_cartas_de_patrocinio][:nombre]
                 = __mostrar_descargable(@descargables,'APL-001-DES-003', tarea_pendiente: @tarea_pendiente, carta_interes: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas_de_patrocinio][:atributo], nombre: @validaciones[:manifestacion_de_interes][:descarga_formato_cartas_de_patrocinio][:nombre])
               -if !solo_lectura
                 .col-lg-6.col-12
