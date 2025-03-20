@@ -1,0 +1,10 @@
+notificador_de_tareas_pendientes:
+  cron: "0 * * * * America/Santiago"  # Run daily at 8 AM
+  class: "NotificadorDeTareasPendientesWorker"
+  args: []
+  queue: default
+notificador_de_tareas_pendientes:
+  cron: "0 20 * * * America/Santiago"  # Run daily at 8 AM
+  class: "GenerarVistaReporteriaWorkerr"
+  args: []
+  queue: default
