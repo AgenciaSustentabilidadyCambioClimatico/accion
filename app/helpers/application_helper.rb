@@ -315,7 +315,7 @@ module ApplicationHelper
     "#{titulo}<small>#{con_nombre_proyecto.downcase.gsub(/(apl|acuerdo de producción limpia|acuerdo de produccion limpia)/,'APL').capitalize.gsub(/Apl|apl/,'APL')}</small>".html_safe
   end
 
-  def __mostrar_descargable(descargables, codigo, titulo = nil, tarea_pendiente = nil, carta_interes = nil, nombre = nil, nombre_boton ='')
+  def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil, nombre_boton:'')
     capture_haml do
       if carta_interes.blank?
         id_descarga = 'mostrar_descargable_id'

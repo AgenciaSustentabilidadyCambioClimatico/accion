@@ -519,6 +519,7 @@ class RegistroProveedoresController < ApplicationController
 
   def descargar_documentos_proveedores
     require 'zip'
+    require 'open-uri'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
