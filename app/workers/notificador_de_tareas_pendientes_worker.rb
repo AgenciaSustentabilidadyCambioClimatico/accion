@@ -19,7 +19,6 @@ class NotificadorDeTareasPendientesWorker
           if tarea.codigo == Tarea::COD_FPL_004
             procesar_tarea_fpl_004(tarea, pendientes)
           else
-            binding.pry
             procesar_otras_tareas(tarea, pendientes)
           end
       end
