@@ -73,6 +73,7 @@
     $(document).on('click', '.guarda-usuario-actor-button', function(e) {
       e.preventDefault();  // Evitar el envío del formulario por defecto
 
+      var user_id = $('input[name="user[user_id]"]').val();
       var rut = $('#user_rut').val();
       var nombreCompleto = $('#user_nombre_completo').val();
       var email = $('#user_email').val();
@@ -99,8 +100,29 @@
 
       $('#buscar-usuario').modal("hide");
       agregar_usuario_actor_validaciones();
+      recargarContribuyentes(user_id);
 
     });
+
+    function recargarContribuyentes(user_id) {
+      $.ajax({
+        url: "#{recarga_contribuyente_admin_users_path}",
+        type: "GET",
+        data: { user_id: user_id },
+        dataType: "html",
+        beforeSend: function () {
+          $('.loading-data').show();
+        },
+        success: function (data) {
+          $('.loading-data').hide();
+          $("#body-contribuyente-buscador").html(data);
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          $('.loading-data').hide();
+          console.error("Error al recargar los contribuyentes:", textStatus, errorThrown);
+        }
+      });
+    }
 
     function __chosen_users() {
       $('.users_select').chosen({

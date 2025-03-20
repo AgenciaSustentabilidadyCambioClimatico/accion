@@ -414,6 +414,7 @@ Rails.application.routes.draw do
         get :buscador
         get :edit_modal
         get :edit_actor_modal
+        get :recarga_contribuyente
       end
     end
     

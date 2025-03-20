@@ -488,7 +488,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{ruts_invalidos.size} RUTs inválidos. Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir"
+        errores << " #{ruts_invalidos.size} RUTs inválidos. Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir"
         # errors.add(:mapa_de_actores_archivo, "El archivo contiene #{ruts_invalidos.size} Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir")
         archivo_correcto = false
       else
@@ -516,7 +516,7 @@ class ManifestacionDeInteres < ApplicationRecord
           ##
           # DZC 2019-08-16 20:26:20
           # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "No es posible procesar el archivo, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir."
+          errores << "No es posible procesar, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir."
           # errors.add(:mapa_de_actores_archivo, "No es posible procesar el archivo, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir.")
           archivo_correcto = false
         end
@@ -527,7 +527,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{emails_invalidos.size} emails inválidos. Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir"
+        errores << " #{emails_invalidos.size} emails inválidos. Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir"
         # errors.add(:mapa_de_actores_archivo, "El archivo contiene #{emails_invalidos.size} Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir")
         archivo_correcto = false
       else
@@ -546,7 +546,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{telefonos_invalidos.size} teléfonos inválidos. Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir"
+        errores << " #{telefonos_invalidos.size} teléfonos inválidos. Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir"
         #errors.add(:mapa_de_actores_archivo, "El archivo contiene #{telefonos_invalidos.size} Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir")
         archivo_correcto = false
       end
@@ -570,8 +570,7 @@ class ManifestacionDeInteres < ApplicationRecord
             ##
             # DZC 2019-08-16 20:26:20
             # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-            errores << "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea"
-            # errors.add(:mapa_de_actores_archivo, "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea")
+            errores << "No existe la cantidad mínima de actores con roles específicos exigidos para esta tarea"
             archivo_correcto = false
           end
         end

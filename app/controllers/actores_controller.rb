@@ -120,10 +120,17 @@ class ActoresController < ApplicationController
       else
         #@manifestacion_de_interes.mapa_de_actores_archivo = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo]
         #@manifestacion_de_interes.mapa_de_actores_archivo_cache = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo_cache]
-        error = "Errores en el archivo:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
-        error = error.gsub(',',';')
-        error = error.gsub('.',',')
-        error = error.gsub(';','.')
+        if params[:from] != 'lista'
+          error = "Errores en el archivo:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
+          error = error.gsub(',',';')
+          error = error.gsub('.',',')
+          error = error.gsub(';','.')
+        else
+          error = "Atención:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
+          error = error.gsub(',',';')
+          error = error.gsub('.',',')
+          error = error.gsub(';','.')
+        end
       end
     end
     # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario

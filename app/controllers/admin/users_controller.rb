@@ -160,6 +160,16 @@ class Admin::UsersController < ApplicationController
     render layout: false
   end
 
+  def recarga_contribuyente
+	@personas = ::Persona.where(user_id: params[:user_id])
+	@contribuyente = Contribuyente.new
+	@contribuyente_actor = Contribuyente.new
+    @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+	@es_para_seleccion = "true"
+
+	render partial: 'admin/contribuyentes/buscador', locals: { es_para_seleccion: @es_para_seleccion }
+  end
+
 	######################################################################################################################################################################################
 	private
 		def set_user
