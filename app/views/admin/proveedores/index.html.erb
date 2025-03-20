@@ -1,0 +1,64 @@
+<h1><%= t(:proveedores) %></h1>
+
+<% if current_user && current_user.is_admin? %>
+  <%= link_to t(:agregar_, item: t(:proveedor).downcase), new_admin_proveedor_path, class: 'btn btn-sm btn-primary margin-bottom-20 btn-sm' %>
+<% end %>
+
+<div id="proveedor-remote-table">
+  <%= render 'table' %>
+</div>
+
+<script>
+  $(document).ready(function () {
+    var table = $('table.proveedores').DataTable({
+      responsive: true,
+      lengthMenu: [[30], [30]],
+      columnDefs: [{ targets: [-1], orderable: false }],
+      language: { url: "<%= asset_path('spanish.json') %>" }
+    });
+
+    function toggleFields(tipoProveedor) {
+      if (tipoProveedor === 'auditor apl') {
+        $('#correlativo-th, #fecha-registro-th, #fecha-actualizacion-th, #promedio-th').removeClass('d-none');
+        $('td.correlativo-td, td.fecha-registro-td, td.fecha-actualizacion-td, td.promedio-td').removeClass('d-none');
+      } else {
+        $('#correlativo-th, #fecha-registro-th, #fecha-actualizacion-th, #promedio-th').addClass('d-none');
+        $('td.correlativo-td, td.fecha-registro-td, td.fecha-actualizacion-td, td.promedio-td').addClass('d-none');
+      }
+    }
+
+    function filterTable() {
+      var tipoProveedor = $('#tipo-proveedor-select').val().toLowerCase();
+      var region = $('#region-select').val().toLowerCase();
+
+      // Apply DataTables filtering
+      table.column(1).search(tipoProveedor ? '^' + tipoProveedor + '$' : '', true, false);
+      table.column(5).search(region ? '^' + region + '$' : '', true, false);
+
+      // Update table without infinite loop
+      table.draw(false);
+
+      // Toggle fields after filtering
+      toggleFields(tipoProveedor);
+    }
+
+    // Apply filtering when dropdowns change
+    $('#tipo-proveedor-select, #region-select').change(filterTable);
+
+    // Apply filtering when pagination is clicked
+    table.on('draw', function () {
+      toggleFields($('#tipo-proveedor-select').val().toLowerCase());
+    });
+  });
+
+</script>
+
+<% if current_user && current_user.is_admin? %>
+  <div id="proveedor-remote-table">
+    <%= render 'table', retirados: true %>
+  </div>
+<% end %>
+
+
+
+	
