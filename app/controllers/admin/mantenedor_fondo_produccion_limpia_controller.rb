@@ -73,8 +73,7 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
   end
 
   def create
-    tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
-    postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: params[:apl])
+    postulante = Persona.where(user_id: params[:user_id]).first
     msj = ''
 
     if postulante != nil
