@@ -130,3 +130,6 @@ $("#tipo_linea_seleccionada_1_3").empty();  // Limpiar el combo actual
     $("#tipo_linea_seleccionada_1_3").append("<option value=''>Tarea APL-023 no está disponible");
     $("#tipo_linea_seleccionada_1_3").prop("disabled", true); 
 <% end %>
+
+$("#flujo_user_id").val("<%= @flujo.user_id %>");
+$("#flujo_nombre_completo").val("<%= @flujo.nombre_completo %>");
