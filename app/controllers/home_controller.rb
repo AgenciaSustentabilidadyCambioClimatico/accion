@@ -77,7 +77,7 @@ class HomeController < ApplicationController
                       asunto, 
                       cuerpo, 
                       @adhesion.email_representante_legal, 
-                      rac.id)
+                      rac.id).deliver_later
         #abro tarea 28 si esque no esta abierta
         @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
         @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
