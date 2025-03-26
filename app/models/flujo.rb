@@ -31,6 +31,9 @@ class Flujo < ApplicationRecord
   accepts_nested_attributes_for :ppp
   accepts_nested_attributes_for :proyecto
 
+  attr_accessor :user_id, :nombre_completo
+
+
   APL = 'Acuerdo de Producción Limpia'
   FPL = 'Fondo de Producción Limpia'
   PPF = 'Programas y Proyectos de Financiamiento'
