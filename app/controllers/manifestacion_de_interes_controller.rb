@@ -38,7 +38,7 @@ class ManifestacionDeInteresController < ApplicationController
                                       :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                       :usuario_entregables, :guardar_usuario_entregables,
                                       :firma, :actualizar_firma,
-                                      :carga_auditoria, :enviar_carga_auditoria]
+                                      :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico]
   before_action :set_tipo_instrumentos, only: [:edit,:update,
                                       :revisor, :asignar_revisor,
                                       :admisibilidad, :revisar_admisibilidad,
@@ -53,6 +53,10 @@ class ManifestacionDeInteresController < ApplicationController
   before_action :set_archivo_mapa_actores, only: [:edit]
   before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
   before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
+
+  before_action :set_mapa_actores, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_listado_actores_temporal, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_usuario_actor, only: [:cargar_actualizar_entregable_diagnostico]
 
   def index
     if params[:query].present?
@@ -2431,6 +2435,13 @@ class ManifestacionDeInteresController < ApplicationController
     end
   end
 
+  def listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: params[:id] } }
+    end
+  end
+
   private
 
     def set_tarea_pendiente
@@ -2503,6 +2514,8 @@ class ManifestacionDeInteresController < ApplicationController
 
       #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
     	@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+
+      @contribuyente_actor = Contribuyente.new
     end
 
     def set_tipo_instrumentos
@@ -2513,6 +2526,17 @@ class ManifestacionDeInteresController < ApplicationController
 
     end
 
+    def set_mapa_actores
+      @mapa_actor = ListadoActoresTemporal.new
+    end
+
+    def set_listado_actores_temporal
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+    end
+
+    def set_usuario_actor
+      @usuario_actor = User.new
+    end  
 
     def manifestacion_params
       parameters = params.require(:manifestacion_de_interes).permit(

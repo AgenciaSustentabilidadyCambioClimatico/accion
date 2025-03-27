@@ -79,7 +79,7 @@
         method: "PATCH",
         success: function(response) {
           $.ajax({
-            url: "#{listado_actores_temporal_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente)}",
+            url: "#{listado_actores_temporal_manifestacion_de_interes_path(@tarea_pendiente)}",
             data: {
               id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.id}"
             },
