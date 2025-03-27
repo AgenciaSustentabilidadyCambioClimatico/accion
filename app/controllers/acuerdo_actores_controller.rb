@@ -165,7 +165,7 @@ class AcuerdoActoresController < ApplicationController
   def crear_actor
     @mapa_actor.assign_attributes(listado_actores_temporal_params)
     @mapa_actor.estado = 0
-    @mapa_actor.manifestacion_de_interes_id = params[:id]
+    @mapa_actor.manifestacion_de_interes_id = @flujo.manifestacion_de_interes.id
 
     @mapa_actor.save
 

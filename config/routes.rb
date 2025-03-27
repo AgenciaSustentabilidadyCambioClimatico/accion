@@ -702,6 +702,8 @@ Rails.application.routes.draw do
       get ':manifestacion_de_interes_id/actores/descargar-revisor', to: "actores#descargar_revisor", as: :descargar_revisor_mapa_de_actores
       get ':manifestacion_de_interes_id/actores/revision', to: "actores#revision", as: :revision_mapa_de_actores #DZC APL-010
       patch ':manifestacion_de_interes_id/actores/enviar-revision', to: "actores#enviar_revision", as: :enviar_revision_mapa_de_actores #DZC APL-010
+      patch ':manifestacion_de_interes_id/actores/actualizacion_actor', to: "actores#actualizacion_actor", as: :actualizacion_actor_mapa_de_actores
+      get ':manifestacion_de_interes_id/actores/listado-actores-temporal', to: "actores#listado_actores_temporal", as: :listado_actores_temporal_mapa_de_actores
                  
       get ':manifestacion_de_interes_id/documentos-diagnosticos/actualizacion', to: "documento_diagnosticos#actualizacion", as: :actualizacion_documento_diagnosticos
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/actualizar', to: "documento_diagnosticos#actualizar", as: :actualizar_documento_diagnosticos
