@@ -129,9 +129,9 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
         if @registro_proveedor.estado == 'rechazado'
-          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_now
+          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
         elsif @registro_proveedor.estado == 'con_observaciones'
-          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_now
+          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_later
         end
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(codigo: 'PRO-004').first
