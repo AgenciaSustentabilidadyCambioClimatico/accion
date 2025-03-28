@@ -599,8 +599,7 @@ class RegistroProveedoresController < ApplicationController
     u = User.find(user)
     mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
     mensajes.each do |mensaje|
-      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_now
-    end
+      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
   end
 
   def set_registro_proveedor

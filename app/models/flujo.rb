@@ -23,7 +23,7 @@ class Flujo < ApplicationRecord
 
   has_many :cuencas_flujo
   has_many :cuencas, through: :cuencas_flujo
-
+  has_many :convocatorias
   has_many :contribuyente_temporal, class_name: 'Contribuyente'
   has_many :usuario_temporal, class_name: 'User'
 
