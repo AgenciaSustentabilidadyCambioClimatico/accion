@@ -58,8 +58,12 @@ class HomeController < ApplicationController
   end
 
   def estado_apl
-    @acuerdos = ManifestacionDeInteres.includes(flujo: [:tarea_pendientes])
-                                     .where.not(resultado_admisibilidad: nil)
+    @acuerdos = ManifestacionDeInteres.includes(
+      flujo: [
+        { tarea_pendientes: [:tarea] }, # Preload contribuyente
+        :convocatorias # Preload convocatorias
+      ]
+    ).where.not(resultado_admisibilidad: nil).order("id DESC")
   end
 
   def solicitar_adhesion_guardar
