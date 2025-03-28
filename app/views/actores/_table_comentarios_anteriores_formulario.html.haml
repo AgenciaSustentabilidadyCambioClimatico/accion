@@ -1,0 +1,23 @@
+- comentarios = @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores.blank? ? [] : @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores
+-if comentarios.blank?
+  - comentarios = !@comentarios_mapa_de_actores.blank? ? @comentarios_mapa_de_actores : []
+- unless comentarios.blank?
+  .row
+    .col-12
+      .card
+        .card-header
+          - text_tabla = @manifestacion_de_interes.accion_en_mapa_de_actores == :revision ? :observaciones_comentarios_anteriores : :observaciones_del_revisor
+          %h5.no-margin= t(text_tabla)
+        .card-body      
+          %table.table.table-striped
+            %thead
+              %tr
+                %th=t(:fecha_y_hora)
+                %th=t(:usuario)
+                %th=t(:texto)
+            %tbody
+              - comentarios.each do |c|
+                %tr
+                  %td=l c[:datetime], format: '%d-%m-%Y %H:%M:%S'
+                  %td=c[:user]
+                  %td=c[:texto]

@@ -53,8 +53,8 @@
                     - correlativo += 1
                 - else
                   %tr
-                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles
-                    
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles              
+= render 'actores/table_comentarios_anteriores_formulario'            
 - disabled_button = @listado_actores_temporal.empty? ? 'btn-disabled' : ''
 - button_disabled = @listado_actores_temporal.empty? ? :disabled : nil
 

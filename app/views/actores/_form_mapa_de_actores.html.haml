@@ -58,7 +58,7 @@
     }
   }
 
-- if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
+- if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion || @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
   - url = actualizacion_actor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
 - else
   - url = crear_actor_manifestacion_de_interes_path(@tarea_pendiente)
