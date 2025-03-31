@@ -56,8 +56,9 @@
 = render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
 #actores-remote-table.mb-3
 	= render 'table'
-#comentarios-coordinador-acuerdo.mb-3
+#comentarios-coordinador-acuerdo
 	= render 'comentarios_coordinador'
+	= render 'actores/table_comentarios_anteriores_formulario'        
 #mapa_actores-form
 	= render 'actores/form_mapa_de_actores', externo: true 
 	%br 
