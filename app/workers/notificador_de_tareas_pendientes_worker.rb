@@ -7,7 +7,7 @@ class NotificadorDeTareasPendientesWorker
     Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
   end
 
-  def perform
+  def perform(*args)
     Tarea.find_each do |tarea|
       unless tarea.recordatorio_tarea_frecuencia.blank?
         tarea = Tarea.find_by(id: tarea.id)

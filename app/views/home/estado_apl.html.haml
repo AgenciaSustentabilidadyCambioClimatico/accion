@@ -270,8 +270,8 @@
       let des =  $(this).data('des_manif');
 
       let red =  $(this).data('red_manif');
-      console.log("[1]: ",t_manif[0].created_at)
-      let tm_date = (t_manif && t_manif[0]) ? calc_date(t_manif[0].created_at.split('T')[0]) : "";
+      console.log("[1]: ",t_manif.created_at)
+      let tm_date = (t_manif) ? calc_date(t_manif.created_at.split('T')[0]) : "";
       hidden += "-" + tm_date
       // Diagnóstico
       let t_diag = $(this).data('t_diag');
