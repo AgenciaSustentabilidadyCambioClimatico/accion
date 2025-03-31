@@ -100,8 +100,8 @@ class HomeController < ApplicationController
     else
       @vista = params[:vista]
       @vista = "clasificaciones" if @vista.blank?
-
-      if user_signed_in?
+      
+      if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
         @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
         personas_ids = current_user.personas.pluck(:id)
         adhesiones_ids = Adhesion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id)
