@@ -1,5 +1,5 @@
 notificador_de_tareas_pendientes:
-  cron: "0 * * * * America/Santiago"  # Run daily at 8 AM
+  cron: "0 9 * * * America/Santiago"  # Run daily at 8 AM
   class: "NotificadorDeTareasPendientesWorker"
   args: []
   queue: default
