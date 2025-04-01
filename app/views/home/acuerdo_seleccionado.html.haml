@@ -3,7 +3,7 @@
     .container{class: (user_signed_in? ? 'fix-width' : '')}
       .d-flex.flex-column.my-3
         .title=@acuerdo_seleccionado.datos[:nombre_acuerdo]
-        -if user_signed_in?
+        -if user_signed_in? &&  current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
           .empresa="#{@acuerdo_seleccionado.datos[:contribuyente_razon_social]} - RUT: #{@acuerdo_seleccionado.datos[:contribuyente_rut]}"
         -if !@acuerdo_seleccionado.datos[:firma_fecha].nil? || !@acuerdo_seleccionado.datos[:firma_fecha_hora].nil?
           -_firma_fecha = @acuerdo_seleccionado.datos[:firma_fecha_hora].blank? ? @acuerdo_seleccionado.datos[:firma_fecha] : @acuerdo_seleccionado.datos[:firma_fecha_hora]
@@ -29,7 +29,7 @@
             .btn-group.ml-lg-auto.mt-1.mt-lg-0
               =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
               =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
-        -if user_signed_in?
+        -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
           .d-flex.flex-column.flex-lg-row.justify-content-between.mt-2
             .d-flex
               .btn-group
