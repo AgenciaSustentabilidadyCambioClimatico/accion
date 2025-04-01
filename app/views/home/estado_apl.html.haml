@@ -278,9 +278,9 @@
 
       let red_diag = ""
       let tdiag_date = ""
-      if (t_diag && t_diag.length > 0) {
-        console.log("[2]:",t_diag[0].created_at)
-        tdiag_date = calc_date(t_diag[0].created_at.split('T')[0]);
+      if (t_diag) {
+        console.log("[2]:",t_diag.created_at)
+        tdiag_date = calc_date(t_diag.created_at.split('T')[0]);
         hidden += "-" + tdiag_date
         red_diag =  $(this).data('red_diag')
       }
