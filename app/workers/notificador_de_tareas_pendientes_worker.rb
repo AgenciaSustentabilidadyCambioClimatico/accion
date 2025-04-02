@@ -16,11 +16,7 @@ class NotificadorDeTareasPendientesWorker
           pendientes = tarea.pendientes.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
           return if pendientes.empty?
 
-          if tarea.codigo == Tarea::COD_FPL_004
-            procesar_tarea_fpl_004(tarea, pendientes)
-          else
-            procesar_otras_tareas(tarea, pendientes)
-          end
+
       end
     end
   end
