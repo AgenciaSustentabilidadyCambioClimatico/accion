@@ -57,6 +57,7 @@ class ManifestacionDeInteresController < ApplicationController
   before_action :set_mapa_actores, only: [:cargar_actualizar_entregable_diagnostico]
   before_action :set_listado_actores_temporal, only: [:cargar_actualizar_entregable_diagnostico]
   before_action :set_usuario_actor, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_contribuyentes_actor, only: [:cargar_actualizar_entregable_diagnostico]
 
   def index
     if params[:query].present?
@@ -2514,7 +2515,9 @@ class ManifestacionDeInteresController < ApplicationController
 
       #DZC 2018-10-10 16:44:00 TODO: revisar impacto y eliminar si corresponde
     	@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    end
 
+    def set_contribuyentes_actor
       @contribuyente_actor = Contribuyente.new
     end
 

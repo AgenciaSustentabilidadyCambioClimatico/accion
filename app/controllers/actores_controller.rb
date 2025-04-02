@@ -52,6 +52,12 @@ class ActoresController < ApplicationController
       @tarea_pendiente.update(data: {primera_ejecucion: false})
       continua_flujo_segun_tipo_tarea
     end
+  
+    if params[:from] == 'lista'
+      @manifestacion_de_interes.data_mapa_de_actores
+      @actores = @manifestacion_de_interes.mapa_de_actores_data
+    end
+
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     respond_to do |format|
       #format.html { redirect_to current_path, notice: success }
@@ -61,7 +67,7 @@ class ActoresController < ApplicationController
         flash[:error] = @manifestacion_de_interes.errors.messages if @manifestacion_de_interes.errors.messages.present?
         flash[:warning] = warning if warning.present?
 
-        if params[:from] == 'lista' && success.present?
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009
           ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-009
@@ -164,7 +170,7 @@ class ActoresController < ApplicationController
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
-        if params[:from] == 'lista' && success.present?
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009
           ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
@@ -198,6 +204,10 @@ class ActoresController < ApplicationController
         end
       else
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+      end
+      #Habilita actores del listado del mapa de actores
+      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'false'
+        ListadoActoresTemporal.habilita_listado_mapa_actores(params[:manifestacion_de_interes_id])      
       end
     when Tarea::COD_APL_013 #DZC Actualiza con posible revisión
       @tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
@@ -296,8 +306,8 @@ class ActoresController < ApplicationController
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
- 
-    if params[:from] == 'lista'
+
+    if params[:from] == 'lista' || @tarea.codigo == Tarea::COD_APL_010 || @tarea.requiere_revision?
       @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
       if @actores_desde_tablas != nil
         @actores_desde_tablas.concat(@actores_desde_lista)
