@@ -1,4 +1,5 @@
 $('.loading-data').hide();
+document.activeElement.blur();
 $("#eliminar-empresa-<%= user %>").closest('tr').remove();
 $('#div_empresa_consultora').css('display', 'block');
 $('#open-modal-button_buscar_contribuyente').prop('disabled', false);

@@ -79,7 +79,9 @@
     });
 
     $('#open-modal-button_buscar_contribuyente').click(function(){
-        $("#buscar-contribuyente-fpl").modal('show');
+        const modal = $("#buscar-contribuyente-fpl");
+        modal.attr('aria-hidden', 'false'); 
+        modal.modal('show');
     });
 
     $('#open-modal-button_buscar_usuario_consultora').click(function(){
@@ -6051,6 +6053,9 @@
   });
 
   $('.seleccionar-contribuyente-fpl-button').click(function() {
+    const $button = $(this);
+    $button.blur();
+
     data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
     $.ajax({
       url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
