@@ -54,8 +54,12 @@ class ActoresController < ApplicationController
     end
   
     if params[:from] == 'lista'
-      @manifestacion_de_interes.data_mapa_de_actores
-      @actores = @manifestacion_de_interes.mapa_de_actores_data
+      if @tarea.codigo != Tarea::COD_APL_013
+        @manifestacion_de_interes.data_mapa_de_actores
+        @actores = @manifestacion_de_interes.mapa_de_actores_data
+      else
+        @actores = @actores_desde_campo
+      end
     end
 
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
@@ -67,7 +71,7 @@ class ActoresController < ApplicationController
         flash[:error] = @manifestacion_de_interes.errors.messages if @manifestacion_de_interes.errors.messages.present?
         flash[:warning] = warning if warning.present?
 
-        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
           ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-009
@@ -170,7 +174,7 @@ class ActoresController < ApplicationController
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
-        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
           ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
@@ -205,9 +209,9 @@ class ActoresController < ApplicationController
       else
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
       end
-      #Habilita actores del listado del mapa de actores
-      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'false'
-        ListadoActoresTemporal.habilita_listado_mapa_actores(params[:manifestacion_de_interes_id])      
+      #cambia de estado actores del listado del mapa de actores
+      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(params[:manifestacion_de_interes_id])        
       end
     when Tarea::COD_APL_013 #DZC Actualiza con posible revisión
       @tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
@@ -222,7 +226,17 @@ class ActoresController < ApplicationController
           @manifestacion_de_interes.mapa_de_actores_data = nil
           @manifestacion_de_interes.save(validate: false)
         end
+        #se actualiza mapa de actores con informacion obtenida de el listado de mapa de actores
+        @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+        if @actores_desde_campo != nil
+          @actores_desde_campo.concat(@actores_desde_lista)
+          MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
+        end
         #DZC el término de la tarea depende del ḿetodo termina_etapa_diagnostico en el controlador manifestacion_de_interes_controller
+      end
+      #cambia de estado actores del listado del mapa de actores
+      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(params[:manifestacion_de_interes_id])        
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
       # DZC 2018-11-02 13:14:12 se corrige error en actualización de variable @actores_desde_campo

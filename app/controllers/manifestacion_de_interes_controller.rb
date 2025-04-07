@@ -1868,6 +1868,13 @@ class ManifestacionDeInteresController < ApplicationController
     # DZC 2018-10-26 16:11:53 se modifica lectura de datos
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+
+    #obtiene actores en estado cero agregados en el APL-013 a traves del mantenedor y se concatenan al @actores_desde_tablas
+    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+    if @actores_desde_tablas != nil
+      @actores_desde_tablas.concat(@actores_desde_lista)
+    end
+
     if @tarea_pendiente.data == {primera_ejecucion: true} || @tarea.codigo =='APL-001'
       @actores = MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas)
     else
@@ -1922,6 +1929,12 @@ class ManifestacionDeInteresController < ApplicationController
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+
+    #obtiene actores en estado cero agregados en el APL-013 a traves del mantenedor y se concatenan al @actores_desde_tablas
+    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+    if @actores_desde_tablas != nil
+      @actores_desde_tablas.concat(@actores_desde_lista)
+    end
     @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     # if @manifestacion_de_interes.mapa_de_actores_data.blank?
