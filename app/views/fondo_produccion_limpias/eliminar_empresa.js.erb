@@ -1,7 +1,8 @@
 $('.loading-data').hide();
+document.activeElement.blur();
 $("#eliminar-empresa-<%= user %>").closest('tr').remove();
 $('#div_empresa_consultora').css('display', 'block');
-$('#open-modal-button_buscar_contribuyente').prop('disabled', false);
+$('#intitucion_cogestora').prop('disabled', false);
 $('#open-modal-button_buscar_usuario_consultora').prop('disabled', true);
 $('#div_equipo_consultora_empresa').css('display', 'none');
 $('#opcion_2').prop('disabled', false);
