@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -596,6 +596,8 @@ class FondoProduccionLimpiasController < ApplicationController
       @usuario_editado.temporal = true
       @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
       @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
+      @contribuyente_temporal = nil
+      @contribuyente_temporal_fpl = Contribuyente.new
       carga_de_representantes
     end
 
@@ -1009,6 +1011,92 @@ class FondoProduccionLimpiasController < ApplicationController
         else
           flash[:error] = 'Hubo un problema al crear al Consultor.'
           render 'edit'
+        end
+      end
+    end
+
+    def edit_modal_contribuyente
+      @contribuyente_temporal = Contribuyente.new
+      @contribuyente_temporal.temporal = true
+      @contribuyente_temporal.flujo_id = params[:flujo_id]
+      @contribuyente_temporal.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
+      render layout: false
+    end
+
+    def create_contribuyente
+      @tarea_pendiente = TareaPendiente.find(params[:id]) 
+      parameters = contribuyente_params
+      @contribuyente = Contribuyente.new(parameters)
+      
+      if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+        @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
+      end
+      if contribuyente_params[:establecimiento_contribuyentes_attributes].nil? || contribuyente_params[:establecimiento_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+        @error_extra = "Debe ingresar al menos un establecimiento" if @error_extra.nil?
+      end
+      if parameters.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : parameters.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size == 0
+        @error_extra = "Debe seleccionar una casa matriz" if @error_extra.nil?
+      elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 1
+        @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
+      end
+
+      # Habilita la validación de teléfono durante el create
+      @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
+        establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
+      end
+
+      errores = false
+      errores = true unless @error_extra.nil? 
+      errores = true unless @contribuyente.valid?
+
+      @contribuyente.establecimiento_contribuyentes.each{|ec| errores = true unless ec.valid?}
+      @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
+
+      respond_to do |format|
+        if @contribuyente.contribuyente_id.nil?
+          unless errores
+            @contribuyente.save
+            if(parameters[:temporal] == "true") 
+              @contribuyente_temporal = @contribuyente
+              #creo equipo empresa
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente][:flujo_id],
+                  contribuyente_id: @contribuyente_temporal.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
+              format.js {}
+            else
+              format.js { 
+                flash.now[:success] = 'Institución correctamente creada.'
+                @contribuyente = Contribuyente.new
+              }
+              format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente creada.' }
+            end
+          else
+            if(parameters[:temporal] != "true")
+              flash[:error] = @error_extra unless @error_extra.nil?
+              format.html { render :new }
+            else
+              @contribuyente_temporal = @contribuyente
+            end
+            format.js
+          end
+        else
+          @contribuyente.save(validate: false)
+          @contribuyente_temporal = @contribuyente
+          #creo equipo empresa
+          custom_params_empresa = {
+          equipo_empresa: {
+            flujo_id: params[:contribuyente][:flujo_id],
+            contribuyente_id: @contribuyente.id
+            }
+          }
+          @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+          @empresa.save
+          format.js {}
         end
       end
     end
@@ -5044,4 +5132,19 @@ class FondoProduccionLimpiasController < ApplicationController
       def obtiene_nombre_tipo_instrumento(tipo_instrumento_id)
         TipoInstrumento.find(tipo_instrumento_id).nombre
       end  
+
+      def contribuyente_params
+        params.require(:contribuyente).permit(
+          :rut,
+          :dv,
+          :razon_social,
+          :temporal,
+          :flujo_id,
+          :contribuyente_id,
+          fields_visibility: {},
+          actividad_economica_contribuyentes_attributes: [ :id, :actividad_economica_id, :_destroy ],
+          establecimiento_contribuyentes_attributes: [ :id, :casa_matriz, :direccion, :ciudad, :region_id, :comuna_id, :_destroy ],
+          dato_anual_contribuyentes_attributes: [ :id, :tipo_contribuyente_id, :rango_venta_contribuyente_id, :periodo, :numero_trabajadores, :f22c_645, :f22c_646, :_destroy ]
+        )
+      end
 end

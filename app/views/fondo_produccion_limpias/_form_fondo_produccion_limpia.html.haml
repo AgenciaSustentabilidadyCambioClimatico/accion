@@ -51,10 +51,6 @@
       ]
     });
    
-    //$("#intitucion_cogestora").click(function(){
-    //  $('#buscador-contribuyente').html("#{j render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: 28, resultado_mostrados: 10}");
-    //});
-
     $('#open-modal-button').click(function(){
       $('#modal_objetivos-form').modal('show');
     });
@@ -78,11 +74,11 @@
       $('#buscar-usuario').modal("show");
     });
 
-    $('#open-modal-button_buscar_contribuyente').click(function(){
+    /*$('#open-modal-button_buscar_contribuyente').click(function(){
         const modal = $("#buscar-contribuyente-fpl");
         modal.attr('aria-hidden', 'false'); 
         modal.modal('show');
-    });
+    });*/
 
     $('#open-modal-button_buscar_usuario_consultora').click(function(){
       $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-consultor', tipo_equipo: '2')}");
@@ -851,7 +847,7 @@
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
       divEquipoConsultoraEmpresa.style.display = 'block';
-      $('#open-modal-button_buscar_contribuyente').prop('disabled', true);
+      $('#intitucion_cogestora').prop('disabled', true);
     } else if (tipo == 1){
       divEquipoConsultora.style.display = 'block';
       divEmpresaConsultora.style.display = 'none';
@@ -860,7 +856,7 @@
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
       divEquipoConsultoraEmpresa.style.display = 'none';
-      $('#open-modal-button_buscar_contribuyente').prop('disabled', false);
+      $('#intitucion_cogestora').prop('disabled', false);
     }
    
   }
@@ -3526,7 +3522,12 @@
         %div#div_empresa_consultora.table-responsive  
           - if !solo_lectura
             - button_class = @total_de_errores_por_tab.present? ? (@empresa_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
-            = button_tag 'Agregar Empresa', id: 'open-modal-button_buscar_contribuyente', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
+            = button_tag 'Agregar Empresa', id: 'intitucion_cogestora', class: "btn btn-sm #{button_class} margin-bottom-20 btn-sm", type: 'button'
+
+            -#= link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', id: "intitucion_cogestora" do
+            -#  %i.fa.fa-search-plus
+            -#  Buscar institución
+
           %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
@@ -5872,27 +5873,7 @@
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
             - if !solo_lectura
               = button_to 'Guardar', '#', id: 'button_auditor_id', class: 'btn btn-primary', onclick: "guardarAuditor(); return false;" 
-          
--# POPUP BUSCAR CONTRIBUYENTE
-- custom_id = custom_id.blank? ? nil : custom_id
-- data_table = data_table.nil? ? true : data_table
-- es_maquinaria = es_maquinaria.blank? ? false : es_maquinaria
-- es_para_seleccion = es_para_seleccion.blank? ? false : es_para_seleccion
-- seleccion_basica = seleccion_basica.nil? ? false : seleccion_basica
-- buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
-- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
-- tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
-- solo_tabla = solo_tabla.nil? ? false : solo_tabla
-- lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
-.modal.fade{id: :"buscar-contribuyente-fpl", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
-  .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
-    .modal-content
-      .modal-body
-        .container-fluid{id: "body-contribuyente-fpl-buscador"}
-          =render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
-      .modal-footer
-        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
-          Cerrar
+        
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript  
@@ -6048,28 +6029,27 @@
     }
   }
 
-  $('body').on('change','.contribuyente-radio',function() {
-    $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
+  verificarModal();
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+    try {
+      data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+      $.ajax({
+        url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
+        type: "PATCH",
+        data: {
+          id: data.id,
+          flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+        }
+      }).fail(function(a, b, c) {
+        alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+        $('.loading-data').hide();
+      }).success(function(data){
+        $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+        $('#buscar-contribuyente-fpl').modal('hide');
+        $('.loading-data').hide();
+      });
+      
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
   });
-
-  $('.seleccionar-contribuyente-fpl-button').click(function() {
-    const $button = $(this);
-    $button.blur();
-
-    data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-    $.ajax({
-      url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
-      type: "PATCH",
-      data: {
-        id: data.id,
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      }
-    }).fail(function(a, b, c) {
-      alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
-      $('.loading-data').hide();
-    }).success(function(data){
-      $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
-      $('#buscar-contribuyente-fpl').modal('hide');
-      $('.loading-data').hide();
-    });
-  }); 

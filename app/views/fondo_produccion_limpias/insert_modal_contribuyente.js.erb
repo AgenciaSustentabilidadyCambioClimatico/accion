@@ -15,12 +15,12 @@
     "</tr>";    
     $('#div_empresa_consultora table tbody').append(newRow); 
 
-    var $empresa = $('#open-modal-button_buscar_contribuyente');
+    var $empresa = $('#intitucion_cogestora');
     $empresa.removeClass('btn-danger').addClass('btn-primary');
     $empresa.attr('data-tooltip', 'true');
     $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
     
-    $('#open-modal-button_buscar_contribuyente').prop('disabled', true);
+    $('#intitucion_cogestora').prop('disabled', true);
     $('#open-modal-button_buscar_usuario_consultora').prop('disabled', false);
     $('#div_equipo_consultora_empresa').css('display', 'block');
     $('#opcion_2').prop('disabled', true);
