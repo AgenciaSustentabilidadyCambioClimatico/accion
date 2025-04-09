@@ -275,7 +275,7 @@ class MapaDeActor < ApplicationRecord
 	def self.dominios
 		{
 			roles: Rol.where(mostrar_en_excel: true).order(nombre: :asc).map {|r| r.nombre}.compact,
-			cargos: Cargo.all.order(nombre: :asc).map {|c| c.nombre}.compact,
+			cargos: Cargo.where(mostrar_en_excel: true).order(nombre: :asc).map {|c| c.nombre}.compact,
 			sectores: ActividadEconomica.where.not(codigo_ciiuv4: nil).order(codigo_ciiuv4: :asc).all.map {|ac| "#{ac.codigo_ciiuv4} - #{ac.descripcion_ciiuv4}"}.compact,
 			comunas: Comuna.order(nombre: :asc).all.map {|c| c.nombre}.compact,
 			# comunas: Comuna.order(nombre: :asc).vigente?.all.map {|c| c.nombre}.compact, #REEMPLAZAR CUANDO SE HAGA MERGE CON RAMA DE RICARDO

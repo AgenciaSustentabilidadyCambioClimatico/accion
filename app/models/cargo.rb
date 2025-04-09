@@ -49,4 +49,10 @@ class Cargo < ApplicationRecord
 		end
 		normalizados
 	end
+
+	def self.__select_marcados_excel
+		Cargo.where('id NOT IN (?)', [Cargo::ROOT, Cargo::USER])
+     	.where(mostrar_en_excel: true)
+     	.map { |m| [m.nombre, m.id] }
+	end
 end

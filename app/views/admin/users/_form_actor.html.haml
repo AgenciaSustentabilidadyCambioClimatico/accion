@@ -35,7 +35,7 @@
               %label.string.control-label
                 %abbr{title: :required}*
                 Cargo
-              = f.input :cargo, collection: Cargo.__select, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un cargo" }, label: false, wrapper_html: { class: 'mb-0'}
+              = f.input :cargo, collection: Cargo.__select_marcados_excel, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un cargo" }, label: false, wrapper_html: { class: 'mb-0'}
     .col-12.mt-2.text-right
       %button.btn.btn-primary#deshacer-usuario-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
         =t(:volver_a_lista)

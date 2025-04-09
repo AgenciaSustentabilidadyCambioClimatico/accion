@@ -64,6 +64,6 @@ class Admin::CargosController < ApplicationController
       @cargo = Cargo.find(params[:id])
     end
     def cargo_params
-      params.require(:cargo).permit(:nombre, :descripcion)
+      params.require(:cargo).permit(:nombre, :descripcion, :mostrar_en_excel)
     end
 end
