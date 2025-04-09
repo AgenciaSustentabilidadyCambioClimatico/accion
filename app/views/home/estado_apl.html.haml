@@ -17,48 +17,46 @@
           %th{class:"d-none"} Contenido Hijo
       %tbody
         - @acuerdos.each do |m|
-          - tarea_en_curso = TareaPendiente.where(estado_tarea_pendiente_id: 2, flujo_id: m.flujo.id).last
-          - coordinadores = TareaPendiente.where(flujo_id: m.flujo.id).select { |f| f.tarea.codigo == 'APL-003.1' || f.tarea.codigo == 'APL-018' || f.tarea.codigo == 'APL-023' }
-          - user_id = []
-          - coordinadores.each { |f| user_id << f.user_id}
-          - usuarios_coordinadores = []
-          - user_id.uniq.each { |f| usuarios_coordinadores << User.where(id: f)}
+          - tarea_en_curso = m.flujo.tarea_pendientes.select { |t| t.estado_tarea_pendiente_id == 2 }.last
+          - coordinadores = m.flujo.tarea_pendientes.select { |t| ['APL-003.1', 'APL-018', 'APL-023'].include?(t.tarea.codigo) }
+          - user_ids = coordinadores.map(&:user_id).uniq
+          - usuarios_coordinadores = User.where(id: user_ids)
           // Manifestación
-          - t_manif = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 30)
+          - t_manif = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 30 }
           - vacio_manif =  m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
           - des_manif = vacio_manif ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
           - red_manif = descargar_manifestacion_pdf_admin_historial_instrumentos_path(m)
           // Diagnostico
-          - t_diag = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 66)
-          - if t_diag.blank?
+          - t_diag = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 66 }
+          - if t_diag.nil?
             -red_diag = ''
           - else
-            - red_diag = descargar_compilado_manif_manifestacion_de_interes_path(t_diag&.first&.id, m)
+            - red_diag = descargar_compilado_manif_manifestacion_de_interes_path(t_diag&.id, m)
           // Propuesta
-          - t_prop = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 69)
-          - convocatoria_prop = Convocatoria.where(flujo_id: m.id, tarea_codigo:"APL-016").order(fecha: :asc)
-          - red_prop = t_prop.empty? ? "": descargar_compilado_adjuntos_path(t_prop&.first&.id, codigo: "016")
+          - t_prop = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 69 }
+          - convocatoria_prop = m.flujo.convocatorias.select { |c| c.tarea_codigo == "APL-016" }.sort_by(&:fecha)
+          - red_prop = t_prop.nil? ? "": descargar_compilado_adjuntos_path(t_prop&.id, codigo: "016")
           // Firma
           - conv_firma = Convocatoria.where(flujo_id: m.id, tarea_codigo:"APL-021")
           - c_firma = conv_firma.first
           - minuta_id = conv_firma.first&.minuta&.id
-          - t_firma = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 62).first
-          - red_firma_acuerdo = (!t_firma.blank? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
+          - t_firma = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 62 }
+          - red_firma_acuerdo = (!t_firma.nil? and !c_firma&.minuta&.acta&.file.nil?) ? descargar_acta_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "acta") : ""
           - if !c_firma&.minuta&.archivo_resolucion&.file.nil?
-            - red_firma_resolucion = t_firma.blank? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
+            - red_firma_resolucion = t_firma.nil? ? "": descargar_archivo_resolucion_path(tarea_pendiente_id: t_firma.id, convocatoria_id: c_firma.id, id: minuta_id, tipo: "resolucion")
           // Adhesion
-          - t_adh = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 54).first
-          - unless t_adh.blank?
+          - t_adh = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 54 }
+          - unless t_adh.nil?
             - red_adh = descargar_compilado_adhesion_path(t_adh)
             - red_form_adhesion = "#{t_adh.id}"
           // Coordinación
-          - t_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
-          - data = t_coord.blank? ? '' : t_coord&.first&.data[:convocatoria_id]
+          - t_coord = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 51 }
+          - data = t_coord.nil? ? '' : t_coord&.data[:convocatoria_id]
           - conv_coord = data.blank? ? '' : Convocatoria.where(id: data)
           - fecha_coord = conv_coord.blank? ? '' : conv_coord.first.fecha.strftime("%d/%m/%Y")
-          - t2_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 51)
+          - t2_coord = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 51 }
           - unless t2_coord.blank?
-            - red_coord = descargar_compilado_adjuntos_path(t2_coord&.first&.id, codigo: "030")
+            - red_coord = descargar_compilado_adjuntos_path(t2_coord&.id, codigo: "030")
           // Auditoría I
           - t4_coord = TareaPendiente.where(flujo_id: m.flujo.id, tarea_id: 47).first
           - unless t4_coord.nil?
@@ -91,7 +89,7 @@
             %td= m.updated_at.strftime("%d/%m/%Y")
             %td= tarea_en_curso&.tarea&.nombre
             %td
-              - usuarios_coordinadores.flatten.each do |coordinador|
+              - usuarios_coordinadores.each do |coordinador|
                 %p= coordinador&.nombre_completo
             %td{class:"d-none"}
 :javascript
@@ -272,17 +270,17 @@
       let des =  $(this).data('des_manif');
 
       let red =  $(this).data('red_manif');
-      console.log("[1]: ",t_manif[0].created_at)
-      let tm_date = (t_manif && t_manif[0]) ? calc_date(t_manif[0].created_at.split('T')[0]) : "";
+      console.log("[1]: ",t_manif.created_at)
+      let tm_date = (t_manif) ? calc_date(t_manif.created_at.split('T')[0]) : "";
       hidden += "-" + tm_date
       // Diagnóstico
       let t_diag = $(this).data('t_diag');
 
       let red_diag = ""
       let tdiag_date = ""
-      if (t_diag && t_diag.length > 0) {
-        console.log("[2]:",t_diag[0].created_at)
-        tdiag_date = calc_date(t_diag[0].created_at.split('T')[0]);
+      if (t_diag) {
+        console.log("[2]:",t_diag.created_at)
+        tdiag_date = calc_date(t_diag.created_at.split('T')[0]);
         hidden += "-" + tdiag_date
         red_diag =  $(this).data('red_diag')
       }

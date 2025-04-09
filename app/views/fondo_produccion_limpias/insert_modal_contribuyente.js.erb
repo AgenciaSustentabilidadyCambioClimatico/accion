@@ -1,5 +1,6 @@
 
 <% @contribuyente.each do |contribuyente| %>
+    document.activeElement.blur();
     var razonSocial = '<%= contribuyente.razon_social %>';
     var rut = '<%= format_rut("#{contribuyente.rut || ''}#{contribuyente.dv || ''}") %>';
     var contribuyente_id = '<%= @empresa_temporal.id%>';
@@ -14,12 +15,12 @@
     "</tr>";    
     $('#div_empresa_consultora table tbody').append(newRow); 
 
-    var $empresa = $('#open-modal-button_buscar_contribuyente');
+    var $empresa = $('#intitucion_cogestora');
     $empresa.removeClass('btn-danger').addClass('btn-primary');
     $empresa.attr('data-tooltip', 'true');
     $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
     
-    $('#open-modal-button_buscar_contribuyente').prop('disabled', true);
+    $('#intitucion_cogestora').prop('disabled', true);
     $('#open-modal-button_buscar_usuario_consultora').prop('disabled', false);
     $('#div_equipo_consultora_empresa').css('display', 'block');
     $('#opcion_2').prop('disabled', true);
@@ -28,6 +29,7 @@
 
   $('#div_ejecutor table tbody').empty();
   <% @descargables_ejecutor.each do |descargable| %>
+    document.activeElement.blur();
     var newRow = "<tr data-original-title='' data-title='' id='fila_<%= descargable.id %>'>" +
       "<td class='contenido-form' style='vertical-align: middle;'><%= descargable.nombre %></td>" +
       "<td class='contenido-form' data-original-title='' title=''>" +

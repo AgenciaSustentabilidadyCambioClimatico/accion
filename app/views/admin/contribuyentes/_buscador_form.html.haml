@@ -14,6 +14,10 @@
       .col-12.mt-2.text-right
         %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
           =t(:nueva_institución)
+    -unless @contribuyente_temporal_fpl.nil?
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#nuevo-contribuyente-fpl-button{type: :button}
+          =t(:nueva_institución)
   .col-12.mt-2
     .card.no-margin
       .card-header

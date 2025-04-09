@@ -7,7 +7,7 @@ class NotificadorDeTareasPendientesWorker
     Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
   end
 
-  def perform
+  def perform(*args)
     Tarea.find_each do |tarea|
       unless tarea.recordatorio_tarea_frecuencia.blank?
         tarea = Tarea.find_by(id: tarea.id)
@@ -16,11 +16,7 @@ class NotificadorDeTareasPendientesWorker
           pendientes = tarea.pendientes.where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA)
           return if pendientes.empty?
 
-          if tarea.codigo == Tarea::COD_FPL_004
-            procesar_tarea_fpl_004(tarea, pendientes)
-          else
-            procesar_otras_tareas(tarea, pendientes)
-          end
+
       end
     end
   end

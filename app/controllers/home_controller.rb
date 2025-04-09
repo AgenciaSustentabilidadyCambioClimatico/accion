@@ -58,8 +58,12 @@ class HomeController < ApplicationController
   end
 
   def estado_apl
-    manifestacion_de_intereses = ManifestacionDeInteres.all
-    @acuerdos = manifestacion_de_intereses.select { |f| f.resultado_admisibilidad? }
+    @acuerdos = ManifestacionDeInteres.includes(
+      flujo: [
+        { tarea_pendientes: [:tarea] }, # Preload contribuyente
+        :convocatorias # Preload convocatorias
+      ]
+    ).where.not(resultado_admisibilidad: nil).order("id DESC")
   end
 
   def solicitar_adhesion_guardar
@@ -77,7 +81,7 @@ class HomeController < ApplicationController
                       asunto, 
                       cuerpo, 
                       @adhesion.email_representante_legal, 
-                      rac.id)
+                      rac.id).deliver_later
         #abro tarea 28 si esque no esta abierta
         @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
         @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
@@ -100,8 +104,8 @@ class HomeController < ApplicationController
     else
       @vista = params[:vista]
       @vista = "clasificaciones" if @vista.blank?
-
-      if user_signed_in?
+      
+      if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
         @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
         personas_ids = current_user.personas.pluck(:id)
         adhesiones_ids = Adhesion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id)
