@@ -119,6 +119,10 @@ class ActoresConvocatoriasController < ApplicationController
 			@contribuyente_actor = Contribuyente.new
 		end
 
+		def set_mapa_actores
+			@mapa_actor =ListadoActoresTemporal.new
+		end
+
 		def set_listado_actores_temporal
 			@listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
 		end

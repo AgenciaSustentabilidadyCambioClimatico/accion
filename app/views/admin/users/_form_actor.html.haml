@@ -30,7 +30,7 @@
               %label.string.control-label
                 %abbr{title: :required}*
                 Rol
-              = f.input :rol, collection: Rol.__select, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un rol" }, label: false, wrapper_html: { class: 'mb-0'}
+              = f.input :rol, collection: Rol.__select_marcados_excel, input_html: { class: 'form-actor-boton-guardar-usuario users_select', type: :string, "data-placeholder"=>"Seleccione un rol" }, label: false, wrapper_html: { class: 'mb-0'}
             .col-12.col-lg-6
               %label.string.control-label
                 %abbr{title: :required}*

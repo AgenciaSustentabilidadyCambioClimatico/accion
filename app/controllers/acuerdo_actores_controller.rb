@@ -163,10 +163,10 @@ class AcuerdoActoresController < ApplicationController
   end
 
   def crear_actor
-    @mapa_actor.assign_attributes(listado_actores_temporal_params)
+    datos = sanitize_rut(listado_actores_temporal_params.to_h)
+    @mapa_actor.assign_attributes(datos)
     @mapa_actor.estado = 0
     @mapa_actor.manifestacion_de_interes_id = @flujo.manifestacion_de_interes.id
-
     @mapa_actor.save
 
     listado_actores_temporal
@@ -313,6 +313,12 @@ class AcuerdoActoresController < ApplicationController
       :razon_social_institucion, :rut_institucion, :tipo_institucion, :comuna_institucion, :estado,
       :manifestacion_de_interes, :direccion, :codigo_ciiuv4
     )
+  end
+
+  def sanitize_rut(params)
+    params["rut_actor"]&.gsub!('.', '')
+    params["rut_institucion"]&.gsub!('.', '')
+    params
   end
 
 end
