@@ -24,33 +24,34 @@
       = f.input :tipo_equipo, as: :hidden, wrapper: false
       .row
         .col-12
-          .card
-            .card-header
-              %h5.no-margin Agregar datos de miembro de equipo
-            .card-body
-              .row
-                .col-12.col-lg-4
-                  = f.input :profesion, required: true, label: t(:profesion), placeholder: "Ingresar profesión", input_html: { class: 'form-temporal-boton-equipo-trabajo-fpl-usuario' }
-                .col-12.col-lg-4
-                  = f.input :funciones_proyecto, required: true, label: t(:funciones_proyecto), placeholder: "Ingresar funciones proyecto", input_html: { class: 'form-temporal-boton-equipo-trabajo-fpl-usuario' }
-                .col-12.col-lg-4
-                  = f.input :valor_hh, required: true, label: t(:valor_hh), placeholder: "Ingresar valor hh", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
-                .col-12.col-lg-4
-                  %label.label-estilo{ for: 'copia_ci' }
-                    %abbr{ title: "Campo requerido" } * 
-                    Copia CI 
-                  = f.file_field :copia_ci, required: true, label: t(:copia_ci), id: "copia_ci", name: "archivos_copia_ci", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
-                .col-12.col-lg-4
-                  %label.label-estilo{ for: 'curriculum' }
-                    %abbr{ title: "Campo requerido" } * 
-                    Curriculum Vitae 
-                  = f.file_field :curriculum, required: true, label: t(:curriculum), id: "curriculum", name: "archivos_curriculum", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
-        .col-12.mt-2.text-right
-          %button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
-            =t(:volver_a_lista)
-          -confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
-          %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
-            Guardar
+          .col-12
+            .card
+              .card-header
+                %h5.no-margin Agregar datos de miembro de equipo
+              .card-body
+                .row
+                  .col-12.col-lg-4
+                    = f.input :profesion, required: true, label: t(:profesion), placeholder: "Ingresar profesión", input_html: { class: 'form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                  .col-12.col-lg-4
+                    = f.input :funciones_proyecto, required: true, label: t(:funciones_proyecto), placeholder: "Ingresar funciones proyecto", input_html: { class: 'form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                  .col-12.col-lg-4
+                    = f.input :valor_hh, required: true, label: t(:valor_hh), placeholder: "Ingresar valor hh", input_html: { class: 'numero form-temporal-boton-equipo-trabajo-fpl-usuario' }
+                  .col-12.col-lg-4
+                    %label.label-estilo{ for: 'copia_ci' }
+                      %abbr{ title: "Campo requerido" } * 
+                      Copia CI 
+                    = f.file_field :copia_ci, required: true, label: t(:copia_ci), id: "copia_ci", name: "archivos_copia_ci", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
+                  .col-12.col-lg-4
+                    %label.label-estilo{ for: 'curriculum' }
+                      %abbr{ title: "Campo requerido" } * 
+                      Curriculum Vitae 
+                    = f.file_field :curriculum, required: true, label: t(:curriculum), id: "curriculum", name: "archivos_curriculum", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
+          .col-12.mt-2.text-right
+            %button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
+              =t(:volver_a_lista)
+            -confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
+            %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, id: 'oculta_modal', disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+              Guardar
 
 :javascript
   $(document).ready(function(){
@@ -58,4 +59,9 @@
     nuevo_usuario_temporal_fpl_validaciones();
     nuevo_equipo_trabajo_fpl_validaciones();
     htmlErrorToTooltip('top'); 
+  });
+
+  $('#oculta_modal').click(function(){
+    $('#buscar-usuario').modal('hide');
+    $('.loading-data').show();
   });
