@@ -58,23 +58,7 @@
     });
   });
 
-  $(document).on('click','#nuevo-contribuyente-fpl-button', function(e){
-    e.preventDefault();
-    $.ajax({
-      url: "#{edit_modal_contribuyente_fondo_produccion_limpia_path}",
-      type: "GET",
-      data: {
-        id: "",
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      }
-    }).fail(function(a, b, c) {
-      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
-      $('.loading-data').hide();
-    }).success(function(data){
-      $('#body-contribuyente-buscador#{custom_id}').html(data);
-      $('.loading-data').hide();
-    });
-  });
+ 
 
   $(document).on('click','#deshacer-contribuyente-button', function(e){
     e.preventDefault();    
