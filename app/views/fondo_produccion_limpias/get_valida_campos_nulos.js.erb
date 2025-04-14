@@ -43,7 +43,7 @@ $('#contador_campos_nulos').val(<%= campos_nulos.count %>);
 
 <% if tipo === 0 %>
   <% if equipo_empresa === 0 %>
-    var $empresa = $('#intitucion_cogestora');
+    var $empresa = $('#open-modal-button_buscar_contribuyente');
     $empresa.removeClass('btn-primary').addClass('btn-danger');
     $empresa.attr('data-tooltip', 'true');
     $empresa.attr('data-original-title', 'Debe tener a lo menos un registro');
