@@ -858,6 +858,7 @@ es:
   actualizar_actores_resolver_comentarios_set_metas_acciones: Actualizar mapa de actores y resolver comentarios en set de metas y acciones
   terminar_carga_actualizacion_actores_en_acuerdo: Terminar actualizacion de mapa de actores y resolucíon de comentarios en propuestas de Acuerdo
   confirma_terminar_actualizacion_actores_resolucion_observaciones_propuestas: ¿Confirma que desea terminar tanto con la actualización del mapa de actores, como con la resolución de las observaciones a las propuestas de Acuerdo?
+  actualizar_mapa_actores_convocatoria_certificacion: Actualizar listado de actores y convocar a Ceremonia de Certificación
   actualizar_mapa_actores_convocatoria_firma: Actualizar listado de actores y convocar a Ceremonia de Firma
   configuracion_datos_productivos: Configuración de datos productivos
   auditoria_plazos: Auditoría y plazos

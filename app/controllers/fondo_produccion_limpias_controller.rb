@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -555,50 +555,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
 
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_temporal = nil
-      @contribuyente_temporal_fpl = Contribuyente.new
-      carga_de_representantes
     end
 
     def insert_objetivo_especifico
@@ -4366,6 +4322,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_contribuyentes
         #se agrega contribuyente del proponente
         @contribuyente = Contribuyente.new
+        #@contribuyente_temporal = Contribuyente.new
         personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
   
         #se modifica para que no hayan contribuyentes precargados

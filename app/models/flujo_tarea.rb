@@ -77,7 +77,7 @@ class FlujoTarea < ApplicationRecord
 					#DZC en realidad si este booleano es true, se deberia enviar la tarea solo a los usuarios contenidos en el mapa de actores que posean el rol escogido por el administrador en el mantenedor de tareas
 					
 					#si tarea es encuesta, utiliza los roles adiocionales de ejecución
-					roles_ids = [sig_tarea.rol_id]
+					roles_ids = self.rol_destinatarios
 					if sig_tarea.es_una_encuesta
 						roles_ids += sig_tarea.encuesta_ejecucion_roles.pluck(:rol_id)
 					end
