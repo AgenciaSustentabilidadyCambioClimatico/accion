@@ -7,7 +7,7 @@ class Admin::ProveedoresController < ApplicationController
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update]
 
   def index
-    @proveedores = Proveedor.includes([:proveedor_tipo_proveedores]).order(id: :desc).all
+    @proveedores = Proveedor.includes([:proveedor_tipo_proveedores]).order(nombre: :desc).all
     # DZC calcula la evaluación promedio del proveedor
     @proveedores.each do |p|
       p.calcula_evaluacion
