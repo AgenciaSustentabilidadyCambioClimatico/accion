@@ -5868,27 +5868,6 @@
             - if !solo_lectura
               = button_to 'Guardar', '#', id: 'button_auditor_id', class: 'btn btn-primary', onclick: "guardarAuditor(); return false;" 
 
--# POPUP BUSCAR CONTRIBUYENTE
-- custom_id = custom_id.blank? ? nil : custom_id
-- data_table = data_table.nil? ? true : data_table
-- es_maquinaria = es_maquinaria.blank? ? false : es_maquinaria
-- es_para_seleccion = es_para_seleccion.blank? ? false : es_para_seleccion
-- seleccion_basica = seleccion_basica.nil? ? false : seleccion_basica
-- buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
-- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
-- tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
-- solo_tabla = solo_tabla.nil? ? false : solo_tabla
-- lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
-.modal.fade{id: :"buscar-contribuyente-fpl", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
-  .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
-    .modal-content
-      .modal-body
-        .container-fluid{id: "body-contribuyente-fpl-buscador"}
-          =render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
-      .modal-footer
-        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
-          Cerrar 
-
   =yield
 - ue =  @manifestacion_de_interes.ubicacion_exacta.blank? ? [] : @manifestacion_de_interes.ubicacion_exacta.split(",")
 :javascript  
@@ -6044,31 +6023,5 @@
     }
   }
 
-  verificarModal();
-  $('body').on('change','.contribuyente-radio',function() {
-    $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
-  });
-
-  $('.seleccionar-contribuyente-fpl-button').click(function() {
-    data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
-    $.ajax({
-      url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
-      type: "PATCH",
-      data: {
-        id: data.id,
-        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
-      }
-    }).fail(function(a, b, c) {
-      alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
-      $('.loading-data').hide();
-    }).success(function(data){
-      $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
-      $('#buscar-contribuyente-fpl').modal('hide');
-      $('.loading-data').hide();
-    });
-  }); 
-
-  $(document).on('click','#nuevo-contribuyente-button', function(e){
-    e.preventDefault();
-    alert('Para agregar una nueva empresa, por favor debe enviar un nuevo comentario seleccionando el tipo de comentario Solicitud de Registro y enviar los datos de la empresa');
-  });
+  
+  

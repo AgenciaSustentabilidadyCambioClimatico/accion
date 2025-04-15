@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -983,7 +983,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @tarea_pendiente = TareaPendiente.find(params[:id]) 
       parameters = contribuyente_params
       @contribuyente = Contribuyente.new(parameters)
-      
+
       if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
         @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
       end
@@ -1025,6 +1025,15 @@ class FondoProduccionLimpiasController < ApplicationController
               @empresa.save
               format.js {}
             else
+              #creo equipo empresa
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente][:flujo_id],
+                  contribuyente_id: @contribuyente_temporal.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
               format.js { 
                 flash.now[:success] = 'Institución correctamente creada.'
                 @contribuyente = Contribuyente.new
@@ -4322,7 +4331,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_contribuyentes
         #se agrega contribuyente del proponente
         @contribuyente = Contribuyente.new
-        #@contribuyente_temporal = Contribuyente.new
+        @contribuyente_temporal = Contribuyente.new
         personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
   
         #se modifica para que no hayan contribuyentes precargados
