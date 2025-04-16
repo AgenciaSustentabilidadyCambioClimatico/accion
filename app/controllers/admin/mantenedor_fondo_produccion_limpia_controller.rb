@@ -121,11 +121,12 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
   end
 
   private
+
     def send_message(tarea, user)
       u = User.find(user)
       mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
       mensajes.each do |mensaje|
-        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
+        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_later
       end
     end
 
