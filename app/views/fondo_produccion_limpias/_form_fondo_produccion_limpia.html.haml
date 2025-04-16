@@ -3274,7 +3274,7 @@
                         .col-lg-4.pr-lg-0.p-0.beauty-tree-content{class: (solo_lectura ? 'd-none' : 'col-lg-4 col-12')}
                           =beauty_tree_selector(f.object.comunas_beauty_tree_selector ,"manifestacion_de_interes[comunas_ids][]", "comunas")
                         .col-12{class: (solo_lectura ? '' : 'col-lg-8 pl-lg-0')}
-                          = f.input :proponente, as: :hidden, wrapper: false, input_html: {class: ""}
+                          = f.input :coordernadas_territorios, as: :hidden, wrapper: false, input_html: {class: ""}
                           #representacion-seleccion-territorio-mapa{style: (solo_lectura ? 'height: 400px;' : '')}
                       - if f.object.errors.messages.has_key?(:comunas_ids)
                         %span.help-block
