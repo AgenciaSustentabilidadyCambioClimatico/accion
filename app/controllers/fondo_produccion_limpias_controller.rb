@@ -732,69 +732,70 @@ class FondoProduccionLimpiasController < ApplicationController
     end 
 
     def insert_modal
-      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
-      @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
-      @user = User.new(create_user_params)
+      respond_to do |format|
+        tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+        @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+        @user = User.new(create_user_params)
 
-      @usuarios = User
-      if @user.rut.present?
-        rut = @user.rut.upcase
-        @usuarios = @usuarios.where("rut = ?", rut)
-      end
+        @usuarios = User
+        if @user.rut.present?
+          rut = @user.rut.upcase
+          @usuarios = @usuarios.where("rut = ?", rut)
+        end
 
-      if @usuarios.count > 0
-         # Usuario ya existe
-        format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
-        format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
-      else
-        # Verificación de archivos
-        unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
-          respond_to do |format|
-            format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
-            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+        if @usuarios.count > 0
+          # Usuario ya existe
+          format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
+          format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
+        else
+          # Verificación de archivos
+          unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+            respond_to do |format|
+              format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+            end
+            return
           end
-          return
-        end
 
-        #SETEO PARAMETROS EQUIPO
-        custom_params_equipo = {
-          equipo_trabajo: {
-            profesion: params[:equipo_trabajo][:profesion],
-            funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
-            valor_hh: params[:equipo_trabajo][:valor_hh],
-            copia_ci: params[:archivos_copia_ci],
-            curriculum: params[:archivos_curriculum],
-            tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
-            flujo_id: params[:user][:flujo_id],
-            user_id: params[:user][:user_id]
+          #SETEO PARAMETROS EQUIPO
+          custom_params_equipo = {
+            equipo_trabajo: {
+              profesion: params[:equipo_trabajo][:profesion],
+              funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+              valor_hh: params[:equipo_trabajo][:valor_hh],
+              copia_ci: params[:archivos_copia_ci],
+              curriculum: params[:archivos_curriculum],
+              tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+              flujo_id: params[:user][:flujo_id],
+              user_id: params[:user][:user_id]
+            }
           }
-        }
-        tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
+          tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
 
-        #SETEO PARAMETROS PROVEEDOR
-        @registro_proveedor = RegistroProveedor.new()
-        @registro_proveedor.rut = @user.rut
-        @registro_proveedor.nombre = @user.nombre_completo
-        @registro_proveedor.email = @user.email
-        @registro_proveedor.telefono = @user.telefono
-        @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-        @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
-        @registro_proveedor.calificado = false
-        @registro_proveedor.apellido = '.'
-        @registro_proveedor.direccion = '.'
-        @registro_proveedor.region = '.'
-        @registro_proveedor.comuna = '.'
-        @registro_proveedor.ciudad = '.'
-        @registro_proveedor.terminos_y_servicion = true
+          #SETEO PARAMETROS PROVEEDOR
+          @registro_proveedor = RegistroProveedor.new()
+          @registro_proveedor.rut = @user.rut
+          @registro_proveedor.nombre = @user.nombre_completo
+          @registro_proveedor.email = @user.email
+          @registro_proveedor.telefono = @user.telefono
+          @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
+          @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
+          @registro_proveedor.calificado = false
+          @registro_proveedor.apellido = '.'
+          @registro_proveedor.direccion = '.'
+          @registro_proveedor.region = '.'
+          @registro_proveedor.comuna = '.'
+          @registro_proveedor.ciudad = '.'
+          @registro_proveedor.terminos_y_servicion = true
 
-        # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-        empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+          # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
+          empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
 
-        if params[:equipo_trabajo][:tipo_equipo].to_i == 2
-          custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
-          @registro_proveedor.contribuyente_id = empresa.contribuyente_id
-        end
-        respond_to do |format|
+          if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+            custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
+            @registro_proveedor.contribuyente_id = empresa.contribuyente_id
+          end
+        
           if @user.user_id.nil?
             if @user.save
               usuario_temporal = User.unscoped.find(@user.id)
