@@ -1,5 +1,5 @@
 -# Variable para verificar si es una edicion desde mis instituciones
-= simple_form_for [:admin, cont_temporal], url: create_contribuyente_fondo_produccion_limpia_path, method: :post, remote: true, html: { autocomplete: :off } do |f|
+= simple_form_for [:admin, cont_temporal], url: create_contribuyente_fondo_produccion_limpia_path, method: :patch, remote: true, html: { autocomplete: :off, id: "form-contribuyente-fpl" } do |f|
   = f.input :temporal, as: :hidden, wrapper: false
   = f.input :flujo_id, as: :hidden, wrapper: false
   = f.input :contribuyente_id, as: :hidden, wrapper: false
@@ -115,10 +115,15 @@
                                 = establ.link_to_remove do
                                   %i.fa.fa-times-circle.left.link-to-remove-row
       .col-12.mt-2.text-right
-        %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
+        %button.btn.btn-primary#deshacer-contribuyente-fpl-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
           =t(:volver_a_lista)
         -confirmar = Contribuyente.unscoped.where(flujo_id: cont_temporal.flujo_id).size > 0 && cont_temporal.contribuyente_id.nil? ? {confirm: 'Al crear una institución nueva, se descartará la anterior. ¿Desea continuar? '} : {}
-        %button.btn.btn-primary.guarda-contribuyente-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+        %button.btn.btn-primary.guarda-contribuyente-fpl-button{
+          type: :button, 
+          disabled: :disabled, 
+          'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, 
+          data: confirmar
+        }
           Guardar
 :javascript
 
@@ -127,6 +132,24 @@
     iniciarAutoNumeric();
     iniciarDigitoVerificador();
     htmlErrorToTooltip('top');
-    nuevo_contribuyente_temporal_validaciones();
-
+    //nuevo_contribuyente_temporal_validaciones();
   });
+
+  $(document).on('click', '.guarda-contribuyente-fpl-button', function() {
+    // Validaciones previas o confirmaciones
+    if (confirm("¿Está seguro que desea guardar este contribuyente?")) {
+      let formData = $('#form-contribuyente-fpl').serialize();
+      $.ajax({
+        url: "#{create_contribuyente_fondo_produccion_limpia_path}",
+        type: "PATCH",
+        data: formData,
+      }).fail(function(a, b, c) {
+        alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+        $('.loading-data').hide();
+      }).success(function(data){
+        $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+        $('#buscar-contribuyente-fpl').modal('hide');
+        $('.loading-data').hide();
+      });
+    }
+  });    

@@ -1,0 +1,134 @@
+- custom_id = custom_id.blank? ? nil : custom_id
+- data_table = data_table.nil? ? true : data_table
+- es_maquinaria = es_maquinaria.blank? ? false : es_maquinaria
+- es_para_seleccion = es_para_seleccion.blank? ? false : es_para_seleccion
+- seleccion_basica = seleccion_basica.nil? ? false : seleccion_basica
+- buscar_por_actividad_economica = buscar_por_actividad_economica.blank? ? false : buscar_por_actividad_economica
+- resultado_mostrados = resultado_mostrados.nil? ? 30 : resultado_mostrados
+- tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
+- solo_tabla = solo_tabla.nil? ? false : solo_tabla
+- lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
+
+.modal.fade{id: :"buscar-contribuyente-fpl#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
+    .modal-content
+      .modal-body
+        .container-fluid{id: "body-contribuyente-fpl-buscador#{custom_id}"}
+          =render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
+      .modal-footer
+        %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
+          Cerrar
+:javascript
+
+  $(document).on('nested:fieldAdded:actividad_economica_contribuyentes', function(event){
+    __chosen_actecos();
+    nuevo_contribuyente_temporal_validaciones();
+  })
+
+  $(document).on('nested:fieldAdded:establecimiento_contribuyentes', function(){
+    __chosen_actecos();
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('nested:fieldRemoved:actividad_economica_contribuyentes', function(event){
+    nuevo_contribuyente_temporal_validaciones();
+  })
+
+  $(document).on('nested:fieldRemoved:establecimiento_contribuyentes', function(){
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('click','#deshacer-contribuyente-fpl-button', function(e){
+    e.preventDefault();    
+    $('#body-contribuyente-fpl-buscador#{custom_id}').html("#{j render 'fondo_produccion_limpias/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento}");
+  });
+  //solo es para modal nuevo contribuyente
+  $(document).on('change keyup', '.form-temporal-boton-guardar', function(){
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('change', '.checkbox-casa-matriz', function(){
+    if($(this).prop("checked") == false){
+      $(".checkbox-casa-matriz").prop("checked", false);
+    }else{
+      $(".checkbox-casa-matriz").prop("checked", false);
+      $(this).prop("checked", true);
+    }
+    nuevo_contribuyente_temporal_validaciones();
+  });
+
+  function __chosen_actecos() {
+    
+    $('.contribuyente-acteco').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true
+    });
+  }
+
+  function nuevo_contribuyente_temporal_validaciones(){
+    $('.guarda-contribuyente-fpl-button').removeAttr("disabled");
+  }
+
+  verificarModal();
+  $('body').on('change','.contribuyente-radio',function() {
+    $('.seleccionar-contribuyente-fpl-button').removeAttr('disabled'); 
+  });
+
+  $('.seleccionar-contribuyente-fpl-button').click(function() {
+    data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+    $.ajax({
+      url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
+      type: "PATCH",
+      data: {
+        id: data.id,
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+      $('#buscar-contribuyente-fpl').modal('hide');
+      $('.loading-data').hide();
+    });
+  }); 
+
+  $(document).on('click','#nuevo-contribuyente-fpl-button', function(e){
+    e.preventDefault();
+    $.ajax({
+      url: "#{edit_modal_contribuyente_fondo_produccion_limpia_path}",
+      type: "GET",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-fpl-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).on('change', '.contribuyente-establecimiento-region', function(){
+    var codigo = this.id.replace(/\D/g, "");
+    $.ajax({
+      url: "#{region_comunas_admin_contribuyentes_path}",
+      type: "GET",
+      dataType: "script",
+      data: { codigo: codigo, region_id: this.value },
+      beforeSend: function(){
+        loadingParent = $(".loading-data").parent().parent()[0]
+        $('.loading-data').height(loadingParent.scrollHeight).show();
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(){
+      $('.loading-data').hide();
+    });
+  });
+
+  

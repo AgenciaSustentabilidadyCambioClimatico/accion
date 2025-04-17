@@ -246,4 +246,61 @@
                               %span.badge.badge-danger.badge-pill
                                 %i.fa.fa-exclamation
             = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
-              #observaciones-admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad-juridica"])} 
+              #observaciones-admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"observaciones-admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "observaciones-admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"observaciones-admisibilidad-juridica"])}
+                .card
+                  .card-body
+                    = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                      <h1>A) Postulante </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_postulante.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                                %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+                      %br
+                      <h1>B) Receptor cofinanciamiento </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_receptor.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                                %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+                      %br
+                      <h1>C) Ejecutor </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_ejecutor.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido1-det-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-det-form{id: "nota_input_juridica_obs_id_#{descargable.id}"}
+                                %th.contenido3-det-form{id: "obs_input_juridica_obs_id_#{descargable.id}"}
+                    %br 
+                    .col-12
+                      .float-right
+                        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+                        = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarObservacionesAdmisibilidadJuridica(); return false;' do
+                          %i.fa.fa-arrow-circle-right
+                          =t(:enviar)   

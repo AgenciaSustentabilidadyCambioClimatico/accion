@@ -235,3 +235,91 @@
             = f.input :update_admisibilidad_juridica, as: :hidden, wrapper: false, input_html: { value: true }
             = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
               #admisibilidad-juridica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-juridica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-juridica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-juridica"])}
+                .card
+                  .card-body
+                    = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                      <h1>A) Postulante </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_postulante.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido1-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-form
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                                    { required: true, label: false, 
+                                      class: 'required-field nota_input_juridica border-text', 
+                                      id: "nota_input_juridica_id_#{descargable.id}",
+                                      onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                                      style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form
+                                  = f.text_area :justificacion, required: true, label: false, 
+                                      class: 'required-field-text border-text', 
+                                      id: "obs_input_juridica_id_#{descargable.id}", 
+                                      style: 'visibility: hidden; width: 100%; text-align: center;'
+                      %br
+                      <h1>B) Receptor cofinanciamiento </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_receptor.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido1-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-form
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                                    { required: true, label: false, 
+                                      class: 'required-field nota_input_juridica border-text', 
+                                      id: "nota_input_juridica_id_#{descargable.id}",
+                                      onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                                      style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form
+                                  = f.text_area :justificacion, required: true, label: false, 
+                                      class: 'required-field-text border-text', 
+                                      id: "obs_input_juridica_id_#{descargable.id}", 
+                                      style: 'visibility: hidden; width: 100%; text-align: center;'
+                      %br
+                      <h1>C) Ejecutor </h1>  
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado2-form Criterios
+                              %th.encabezado2-form ¿Cumple?
+                              %th.encabezado2-form Observación
+                            - @descargables_ejecutor.each do |descargable|
+                              %tr{id: "fila_#{descargable.id}", data: { original_title: "", title: "" }}
+                                %th.contenido1-form{style: 'vertical-align: middle;'}
+                                  %abbr{ title: "Campo requerido" } *
+                                  = descargable.nombre
+                                %th.contenido2-form
+                                  = f.select :nota, [['Cumple', '1'],['No Cumple', '2']], {}, 
+                                    { required: true, label: false, 
+                                      class: 'required-field nota_input_juridica border-text', 
+                                      id: "nota_input_juridica_id_#{descargable.id}",
+                                      onchange: "habilitaObservacionesJuridica('nota_input_juridica_id_#{descargable.id}', 'obs_input_juridica_id_#{descargable.id}')", 
+                                      style: 'width: 100%; text-align: center;' }
+                                %th.contenido3-form
+                                  = f.text_area :justificacion, required: true, label: false, 
+                                      class: 'required-field-text border-text', 
+                                      id: "obs_input_juridica_id_#{descargable.id}", 
+                                      style: 'visibility: hidden; width: 100%; text-align: center;'
+                    %br 
+                    .col-12
+                      .float-right
+                        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+                        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_juridica", onclick: 'guardarAdmisibilidadJuridica(); return false;'
+                        = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_juridica_button" , onclick: 'enviarAdmisibilidadJuridica(); return false;' do
+                          %i.fa.fa-arrow-circle-right
+                          =t(:enviar) 

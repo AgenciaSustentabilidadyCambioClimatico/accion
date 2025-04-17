@@ -4,6 +4,8 @@ class FondoProduccionLimpia < ApplicationRecord
   belongs_to :sublinea, optional: true
   #has_many :flujo
 
+  attr_accessor :coordernadas_territorios
+
   MINUTOS_MENSAJE_GUARDAR = 20
   DURACION_FPL_LINEA_1_1 = 4
   DURACION_FPL_LINEA_1_2 = 12

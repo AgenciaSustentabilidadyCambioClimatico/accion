@@ -237,8 +237,8 @@ Rails.application.routes.draw do
   delete '/eliminar_equipo/:id', to: 'fondo_produccion_limpias#eliminar_equipo', as: 'eliminar_equipo'
 
   #Modal Contribuyentes
-  #get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia
-  #post 'create_contribuyente/:id', to: "fondo_produccion_limpias#create_contribuyente", as: :create_contribuyente_fondo_produccion_limpia
+  get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia
+  patch 'create_contribuyente/:id', to: "fondo_produccion_limpias#create_contribuyente", as: :create_contribuyente_fondo_produccion_limpia
   put 'search/:id', to: "fondo_produccion_limpias#search", as: :search_fondo_produccion_limpia
   patch  'insert_modal_contribuyente', to: "fondo_produccion_limpias#insert_modal_contribuyente", as: :insert_modal_contribuyente_fondo_produccion_limpia
   get 'eliminar_empresa/:id', to: "fondo_produccion_limpias#eliminar_empresa", as: :eliminar_empresa_fondo_produccion_limpia
