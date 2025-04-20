@@ -12,7 +12,7 @@
             = render 'fondo_produccion_limpias/contribuyentes/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, custom_id: custom_id, data_table: data_table, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
     -unless @contribuyente_temporal.nil?
       .col-12.mt-2.text-right
-        %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
+        %button.btn.btn-primary#nuevo-contribuyente-fpl-button{type: :button}
           =t(:nueva_institución)
   .col-12.mt-2
     .card.no-margin
@@ -23,11 +23,5 @@
         %div{id: "contribuyentes-fpl-remote-table#{custom_id}"}
           = render 'fondo_produccion_limpias/contribuyentes/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento, lista_contribuyentes: lista_contribuyentes, custom_id: custom_id
   .col-12.mt-2.text-right
-    -#-unless @contribuyente_temporal.nil?
-    -#  %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-button{type: :button, disabled: :disabled }
-    -#    Seleccionar
-    -#-else
-    -#  %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled }
-    -#    Seleccionar
     %button.btn.btn-primary.seleccionar-contribuyente-fpl-button{type: :button, disabled: :disabled }
       Seleccionar
