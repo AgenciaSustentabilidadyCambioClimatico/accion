@@ -1,1 +1,5 @@
-
+generar_vista_reporteria:
+  cron: "0 20 * * * America/Santiago"  # Run daily at 8 AM
+  class: "GenerarVistaReporteriaWorkerr"
+  args: []
+  queue: default

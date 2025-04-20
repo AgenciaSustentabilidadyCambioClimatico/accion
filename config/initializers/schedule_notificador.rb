@@ -1,21 +1,25 @@
 require 'sidekiq-cron'
 
-# Clear old scheduled jobs
-Sidekiq::Cron::Job.destroy_all!
+class ScheduleNotificador
+  def self.load
+    Sidekiq::Cron::Job.all.each do |job|
+      job.destroy if job.name.start_with?("Notificador de tareas pendientes")
+    end
 
-# Get the environment
-ambiente = Rails.env || "development"
+    Tarea.find_each do |tarea|
+      next if tarea.recordatorio_tarea_frecuencia.blank?
+      next unless Sidekiq::Cron::Job.valid_cron?(tarea.recordatorio_tarea_frecuencia)
 
-# Schedule jobs dynamically
-Tarea.find_each do |tarea|
-  next if tarea.recordatorio_tarea_frecuencia.blank?
+      job_name = "Notificador de tareas pendientes - #{tarea.id}"
 
-  Sidekiq::Cron::Job.create(
-    name: "Notificador de tareas pendientes - #{tarea.id}",
-    cron: tarea.recordatorio_tarea_frecuencia, # Assuming it's a valid cron expression
-    class: "NotificadorDeTareasPendientesWorker",
-    args: [tarea.id],
-    description: "Ejecuta recordatorio de tareas pendientes para Tarea ID #{tarea.id}",
-    queue: "default"
-  )
+      Sidekiq::Cron::Job.create(
+        name: job_name,
+        cron: tarea.recordatorio_tarea_frecuencia,
+        class: "NotificadorDeTareasPendientesWorker",
+        args: [tarea.id],
+        description: "Ejecuta recordatorio de tareas pendientes para Tarea ID #{tarea.id}",
+        queue: "default"
+      )
+    end
+  end
 end
