@@ -555,50 +555,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
 
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_temporal = nil
-      @contribuyente_temporal_fpl = Contribuyente.new
-      carga_de_representantes
     end
 
     def insert_objetivo_especifico
@@ -776,69 +732,70 @@ class FondoProduccionLimpiasController < ApplicationController
     end 
 
     def insert_modal
-      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
-      @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
-      @user = User.new(create_user_params)
+      respond_to do |format|
+        tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+        @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+        @user = User.new(create_user_params)
 
-      @usuarios = User
-      if @user.rut.present?
-        rut = @user.rut.upcase
-        @usuarios = @usuarios.where("rut = ?", rut)
-      end
+        @usuarios = User
+        if @user.rut.present?
+          rut = @user.rut.upcase
+          @usuarios = @usuarios.where("rut = ?", rut)
+        end
 
-      if @usuarios.count > 0
-         # Usuario ya existe
-        format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
-        format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
-      else
-        # Verificación de archivos
-        unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
-          respond_to do |format|
-            format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
-            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+        if @usuarios.count > 0
+          # Usuario ya existe
+          format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
+          format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
+        else
+          # Verificación de archivos
+          unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+            respond_to do |format|
+              format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+            end
+            return
           end
-          return
-        end
 
-        #SETEO PARAMETROS EQUIPO
-        custom_params_equipo = {
-          equipo_trabajo: {
-            profesion: params[:equipo_trabajo][:profesion],
-            funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
-            valor_hh: params[:equipo_trabajo][:valor_hh],
-            copia_ci: params[:archivos_copia_ci],
-            curriculum: params[:archivos_curriculum],
-            tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
-            flujo_id: params[:user][:flujo_id],
-            user_id: params[:user][:user_id]
+          #SETEO PARAMETROS EQUIPO
+          custom_params_equipo = {
+            equipo_trabajo: {
+              profesion: params[:equipo_trabajo][:profesion],
+              funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+              valor_hh: params[:equipo_trabajo][:valor_hh],
+              copia_ci: params[:archivos_copia_ci],
+              curriculum: params[:archivos_curriculum],
+              tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+              flujo_id: params[:user][:flujo_id],
+              user_id: params[:user][:user_id]
+            }
           }
-        }
-        tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
+          tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
 
-        #SETEO PARAMETROS PROVEEDOR
-        @registro_proveedor = RegistroProveedor.new()
-        @registro_proveedor.rut = @user.rut
-        @registro_proveedor.nombre = @user.nombre_completo
-        @registro_proveedor.email = @user.email
-        @registro_proveedor.telefono = @user.telefono
-        @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-        @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
-        @registro_proveedor.calificado = false
-        @registro_proveedor.apellido = '.'
-        @registro_proveedor.direccion = '.'
-        @registro_proveedor.region = '.'
-        @registro_proveedor.comuna = '.'
-        @registro_proveedor.ciudad = '.'
-        @registro_proveedor.terminos_y_servicion = true
+          #SETEO PARAMETROS PROVEEDOR
+          @registro_proveedor = RegistroProveedor.new()
+          @registro_proveedor.rut = @user.rut
+          @registro_proveedor.nombre = @user.nombre_completo
+          @registro_proveedor.email = @user.email
+          @registro_proveedor.telefono = @user.telefono
+          @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
+          @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
+          @registro_proveedor.calificado = false
+          @registro_proveedor.apellido = '.'
+          @registro_proveedor.direccion = '.'
+          @registro_proveedor.region = '.'
+          @registro_proveedor.comuna = '.'
+          @registro_proveedor.ciudad = '.'
+          @registro_proveedor.terminos_y_servicion = true
 
-        # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-        empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+          # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
+          empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
 
-        if params[:equipo_trabajo][:tipo_equipo].to_i == 2
-          custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
-          @registro_proveedor.contribuyente_id = empresa.contribuyente_id
-        end
-        respond_to do |format|
+          if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+            custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
+            @registro_proveedor.contribuyente_id = empresa.contribuyente_id
+          end
+        
           if @user.user_id.nil?
             if @user.save
               usuario_temporal = User.unscoped.find(@user.id)
@@ -1027,7 +984,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @tarea_pendiente = TareaPendiente.find(params[:id]) 
       parameters = contribuyente_params
       @contribuyente = Contribuyente.new(parameters)
-      
+
       if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
         @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
       end
@@ -1069,6 +1026,15 @@ class FondoProduccionLimpiasController < ApplicationController
               @empresa.save
               format.js {}
             else
+              #creo equipo empresa
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente][:flujo_id],
+                  contribuyente_id: @contribuyente_temporal.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
               format.js { 
                 flash.now[:success] = 'Institución correctamente creada.'
                 @contribuyente = Contribuyente.new
@@ -4366,6 +4332,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_contribuyentes
         #se agrega contribuyente del proponente
         @contribuyente = Contribuyente.new
+        @contribuyente_temporal = Contribuyente.new
         personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
   
         #se modifica para que no hayan contribuyentes precargados
