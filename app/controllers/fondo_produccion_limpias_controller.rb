@@ -127,9 +127,7 @@ class FondoProduccionLimpiasController < ApplicationController
             user_id: postulante.user_id,
             data: {}
           )
-
-          send_message(tarea_fondo, postulante.user_id)
-
+          
           codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
 
           fpl = FondoProduccionLimpia.create(
@@ -139,6 +137,7 @@ class FondoProduccionLimpiasController < ApplicationController
           )
 
           flujo.update(fondo_produccion_limpia_id: fpl.id)
+          send_message(tarea_fondo, postulante.user_id)
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
           respond_to do |format|
@@ -4630,8 +4629,8 @@ class FondoProduccionLimpiasController < ApplicationController
       def send_message(tarea, user)
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
-        fpl = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
-
+        fpl = FondoProduccionLimpia.where(flujo_apl_id: @tarea_pendiente.flujo_id).first
+        binding.pry
         flujo_apl = Flujo.find(fpl.flujo_apl_id)
         mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
