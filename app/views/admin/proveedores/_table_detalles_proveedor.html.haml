@@ -1,11 +1,10 @@
 %div.d-flex
   %div.flex{style: "width: 300px;"}
     %div.flex{style: "width: 250px;"}
-      -if @cv
-        =__descargar_archivo(@cv.archivo, @cv, true, false, "Descargar CV")
-      -else
-        %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "No se subió CV"}
-          %i.fa.fa-ban
+      - if @cv
+        = __descargar_archivo(@cv.archivo, @cv, true, false, "Descargar CV")
+      - else
+        = link_to 'Descargar Documentación', descargar_documentos_proveedores_filtrados_path(@registro_proveedor), class: 'btn btn-primary mb-3 w-100'
       .card
         .card-header
           %h5.no-margin APL en donde ha participado

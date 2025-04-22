@@ -165,6 +165,7 @@ Rails.application.routes.draw do
   get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
   patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
   get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
+  get 'registro-proveedor/:id/descargar_documentos_proveedores_filtrados', to: "registro_proveedores#descargar_documentos_proveedores_filtrados", as: :descargar_documentos_proveedores_filtrados
   patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
   post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
   get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
@@ -237,8 +238,8 @@ Rails.application.routes.draw do
   delete '/eliminar_equipo/:id', to: 'fondo_produccion_limpias#eliminar_equipo', as: 'eliminar_equipo'
 
   #Modal Contribuyentes
-  #get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia
-  #post 'create_contribuyente/:id', to: "fondo_produccion_limpias#create_contribuyente", as: :create_contribuyente_fondo_produccion_limpia
+  get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia
+  patch 'create_contribuyente/:id', to: "fondo_produccion_limpias#create_contribuyente", as: :create_contribuyente_fondo_produccion_limpia
   put 'search/:id', to: "fondo_produccion_limpias#search", as: :search_fondo_produccion_limpia
   patch  'insert_modal_contribuyente', to: "fondo_produccion_limpias#insert_modal_contribuyente", as: :insert_modal_contribuyente_fondo_produccion_limpia
   get 'eliminar_empresa/:id', to: "fondo_produccion_limpias#eliminar_empresa", as: :eliminar_empresa_fondo_produccion_limpia

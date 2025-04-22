@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut, :descargar_documentos_proveedores_filtrados]
   before_action :get_apl, only: [:get_apl]
 
   # PRO-002
@@ -30,7 +30,7 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
-    @registro_proveedor.documento_registro_proveedores.build
+    2.times { @registro_proveedor.documento_registro_proveedores.build }
   end
 
   # PRO-001
@@ -525,6 +525,46 @@ class RegistroProveedoresController < ApplicationController
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
         unless documento.archivo.url.nil?
+          #nombre = documento.archivo.file.identifier
+          url = documento.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+
+        end
+      end
+      certificados = registro_proveedor.certificado_proveedores
+      certificados.each do |certificado|
+        unless certificado.archivo_certificado.url.nil?
+          url = certificado.archivo_certificado.url
+          nombre = File.basename(URI.parse(url).path)
+          # nombre = "certificado"
+          # rename the file
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+        end
+      end
+    end
+
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+  end
+
+
+  def descargar_documentos_proveedores_filtrados
+    require 'zip'
+    require 'open-uri'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
+      documentos = registro_proveedor.documento_registro_proveedores
+      documentos.each do |documento|
+        unless documento.archivo.url.nil? && documento.description == 'Curriculum Vitae'
           #nombre = documento.archivo.file.identifier
           url = documento.archivo.url
           nombre = File.basename(URI.parse(url).path)

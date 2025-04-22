@@ -173,7 +173,7 @@
           .card-body
             .row
               .col-12
-                = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", t(:documento_de_adhesión), {tarea_pendiente: @tarea_pendiente})
+                = __mostrar_descargable_adhesion(@descargables, "#{@tarea_pendiente.tarea.codigo}-DES-002", t(:documento_de_adhesión), tarea_pendiente: @tarea_pendiente)
               .col-12    
                 .form-group
                   %label.string.control-label
@@ -190,7 +190,7 @@
             .card-body
               .row
                 .col-12
-                  = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-003", t(:instrucciones_de_llenado_excel_elementos_a_adherir), {tarea_pendiente: @tarea_pendiente})
+                  = __mostrar_descargable_adhesion(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-003", t(:instrucciones_de_llenado_excel_elementos_a_adherir), tarea_pendiente: @tarea_pendiente)
 
     .float-right
       = volver_root

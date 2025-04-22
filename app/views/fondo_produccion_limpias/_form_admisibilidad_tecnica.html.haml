@@ -333,3 +333,101 @@
             = f.input :update_admisibilidad_tecnica, as: :hidden, wrapper: false, input_html: { value: true }
             = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: true do
               #admisibilidad-tecnica.tab-pane.fade{"aria-expanded" => (tabs[:"admisibilidad-tecnica"] ? 'true' : 'false'), "aria-labelledby" => "admisibilidad-tecnica-tab", :role => "tabpanel", class: ("show active" if tabs[:"admisibilidad-tecnica"])}
+                .card
+                  .card-body
+                    = form_with(model: @cuestionario_fpl, url: new_cuestionario_fpl_fondo_produccion_limpia_path(@tarea_pendiente), method: :post, remote: true, html: { class: 'ajax-form' }) do |f|
+                      %div.table-responsive
+                        %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+                          %thead
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 1: FORMULACION TECNICA DEL PROYECTO </br> Mérito y calidad técnica del proyecto en cuanto a su formulación, consistencia con los objetivos, metodología, plan de trabajo y resultados esperados
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los objetivos están correctamente planteados y su cumplimiento es verificable al finalizar el proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_1', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_1','obs_input_tecnica_id_1')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form                             
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_1', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La metodología es consistente con el cumplimiento de los objetivos. ( Incluye la definición del tamaño muestral)
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_2', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_2','obs_input_tecnica_id_2')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form  
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_2', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Las actividades propuestas son adecuadas y pertinentes para conseguir los productos y objetivos del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_3', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_3','obs_input_tecnica_id_3')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form         
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_3', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La organización del equipo de trabajo y las horas destinadas están acorde con las actividades del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica border-text', id: 'nota_input_tecnica_id_4', onchange: "habilitaObservacionesTecnica('nota_input_tecnica_id_4','obs_input_tecnica_id_4')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form     
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_4', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica 
+                              %th.contenido3-form   
+                          %thead
+                            %tr
+                              %th{colspan: 3, style: 'background-color: #fff;'}
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 2: INDICADORES Y RESULTADOS </br> Se evaluaran los indicadores de impacto y resultados en cuanto cumplan con los objetivos planteados y el valor agregado en términos ambientales, </br> productivos y económicos y sobre los trabajadores
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form Los indicadores de resultado están correcta y claramente planteados
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-2 border-text', id: 'nota_input_tecnica_id_5', onchange: "habilitaObservacionesTecnica2('nota_input_tecnica_id_5','obs_input_tecnica_id_5')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form 
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_5', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica-2
+                              %th.contenido3-form   
+                          %thead
+                            %tr
+                              %th{colspan: 3, style: 'background-color: #fff;'}
+                            %tr
+                              %th.encabezado-form{colspan: 3} Criterio 3: IDONEIDAD Y COMPETENCIA DE CONSULTORIA Y/O AUDITORIAS </br> Evaluar si la consultora o auditores contratados por el beneficiario son idóneos y correspondientes a las labores del proyecto
+                            %tr
+                              %th.encabezado2-form Subcriterios
+                              %th.encabezado2-form Nota
+                              %th.encabezado2-form Justificación
+                            %tr
+                              %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la formación y especialización necesaria para abordar las temáticas del proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_6', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_6','obs_input_tecnica_id_6')", style: 'width: 100%; text-align: center;'}
+                              %th.contenido3-form 
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_6', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form La empresa consultora y el equipo de trabajo reúnen la experiencia en el desarrollo de proyectos en ámbitos productivos, ambientales y en el sector productivo abordado
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_7', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_7','obs_input_tecnica_id_7')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form  
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_7', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form El equipo de trabajo resulta suficiente para abordar el proyecto
+                              %th.contenido2-form 
+                                = f.select :nota, (1..7), {}, { required: true, label: false, class: 'required-field nota-input-tecnica-3 border-text', id: 'nota_input_tecnica_id_8', onchange: "habilitaObservacionesTecnica3('nota_input_tecnica_id_8','obs_input_tecnica_id_8')", style: 'width: 100%; text-align: center;' }
+                              %th.contenido3-form    
+                                = f.text_area :justificacion, required: true, label: false, class: 'required-field-text border-text', id: 'obs_input_tecnica_id_8', style: 'visibility: hidden; width: 100%; text-align: center;'
+                            %tr
+                              %th.contenido1-form Puntaje Otorgado
+                              %th.contenido2-form#promedio-notas-tecnica-3
+                              %th.contenido3-form
+                    %br             
+                    .col-12
+                      .float-right
+                        = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+                        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
+                        = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
+                          %i.fa.fa-arrow-circle-right
+                          =t(:enviar) 

@@ -10,11 +10,22 @@
 
 <script>
   $(document).ready(function () {
-    var table = $('table.proveedores').DataTable({
+    var $table = $('table.proveedores');
+
+    // Find column index for "nombre" header before initializing DataTable
+    var nombreIndex = $table.find('thead th').filter(function () {
+      return $(this).text().trim().toLowerCase() === 'nombre';
+    }).index();
+
+    console.log("Nombre column index:", nombreIndex);
+
+    // Now safely initialize DataTable using the index
+    var table = $table.DataTable({
       responsive: true,
       lengthMenu: [[30], [30]],
       columnDefs: [{ targets: [-1], orderable: false }],
-      language: { url: "<%= asset_path('spanish.json') %>" }
+      language: { url: "<%= asset_path('spanish.json') %>" },
+      order: nombreIndex !== -1 ? [[nombreIndex, 'asc']] : []
     });
 
     function toggleFields(tipoProveedor) {
@@ -31,14 +42,10 @@
       var tipoProveedor = $('#tipo-proveedor-select').val().toLowerCase();
       var region = $('#region-select').val().toLowerCase();
 
-      // Apply DataTables filtering
       table.column(1).search(tipoProveedor ? '^' + tipoProveedor + '$' : '', true, false);
       table.column(5).search(region ? '^' + region + '$' : '', true, false);
-
-      // Update table without infinite loop
       table.draw(false);
 
-      // Toggle fields after filtering
       toggleFields(tipoProveedor);
     }
 
@@ -49,6 +56,8 @@
     table.on('draw', function () {
       toggleFields($('#tipo-proveedor-select').val().toLowerCase());
     });
+
+
   });
 
 </script>
