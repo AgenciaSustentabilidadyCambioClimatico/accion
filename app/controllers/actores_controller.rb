@@ -54,7 +54,7 @@ class ActoresController < ApplicationController
     end
   
     if params[:from] == 'lista'
-      if @tarea.codigo != Tarea::COD_APL_013
+      if @tarea.codigo != Tarea::COD_APL_013 && @tarea.codigo != Tarea::COD_APL_037 
         @manifestacion_de_interes.data_mapa_de_actores
         @actores = @manifestacion_de_interes.mapa_de_actores_data
       else

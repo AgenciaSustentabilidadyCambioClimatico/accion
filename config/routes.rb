@@ -951,6 +951,7 @@ Rails.application.routes.draw do
   patch ":tarea_pendiente_id/ceremonia-certificaciones/update(.:format)", to: "ceremonia_certificaciones#update_convocatoria", as: :update_convocatoria_ceremonia_certificaciones
   post ':tarea_pendiente_id/ceremonia-certificaciones/reset_convocatoria', to: "ceremonia_certificaciones#reset_convocatoria", as: :reset_convocatoria_ceremonia_certificaciones
   post ':tarea_pendiente_id/ceremonia-certificaciones/convocatoria', to: "ceremonia_certificaciones#nueva_convocatoria", as: :nueva_convocatoria_ceremonia_certificaciones
+  get ':tarea_pendiente_id/ceremonia-certificaciones/listado-actores-temporal', to: "ceremonia_certificaciones#listado_actores_temporal", as: :listado_actores_temporal_ceremonia_certificaciones
 
   #DZC TAREA-APL-007 ruta para hitos de prensa como tarea pendiente
   get ":tarea_pendiente_id/hitos_de_prensa", to: "admin/hitos_de_prensa#index", as: :tarea_pendiente_hitos_de_prensa #DZC TAREA APL-007
