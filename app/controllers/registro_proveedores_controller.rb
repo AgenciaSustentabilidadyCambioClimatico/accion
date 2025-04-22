@@ -30,7 +30,7 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
-    @registro_proveedor.documento_registro_proveedores.build
+    2.times { @registro_proveedor.documento_registro_proveedores.build }
   end
 
   # PRO-001

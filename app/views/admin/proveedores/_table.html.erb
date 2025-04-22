@@ -32,7 +32,7 @@
           <tr class = "headers" data-target="#proveedor-detalles">
             <th id='correlativo-th' class="d-none"><%= t(:correlativo) %></th>
             <th><%= t(:tipo_proveedor) %></th>
-            <th><%= t(:nombre) %></th>
+            <th data-order-col="nombre"><%= t(:nombre) %></th>
             <% if !local_assigns[:retirados]%>
               <th><%= t(:empresa) %></th>
             <% end %>
@@ -97,7 +97,14 @@
                 <% end %>
               <% end %>
               <td class="dos iconos-acciones">
-                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+                <%= link_to get_apls_registro_admin_proveedores_path(record.id),
+                            method: :get,
+                            remote: true,
+                            data: {
+                              toggle: 'modal',
+                              target: '#proveedor-detalles',
+                              tipo_proveedor: record.tipo_proveedor&.nombre&.downcase
+                            } do %>
                   <i class="fa fa-info-circle"></i>
                 <% end %>
               </td>
