@@ -7,14 +7,14 @@ class Admin::ProveedoresController < ApplicationController
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update]
 
   def index
-    @proveedores = Proveedor.includes([:proveedor_tipo_proveedores]).order(nombre: :desc).all
+    @proveedores = Proveedor.includes([:proveedor_tipo_proveedores]).all
     # DZC calcula la evaluación promedio del proveedor
     @proveedores.each do |p|
       p.calcula_evaluacion
     end
     @proveedor = Proveedor.new
-    @registro_proveedores = RegistroProveedor.where(estado: 4)
-    @registro_vencido = RegistroProveedor.where(estado: 8)
+    @registro_proveedores = RegistroProveedor.where(estado: 4).order("nombre DESC")
+    @registro_vencido = RegistroProveedor.where(estado: 8).order("nombre DESC")
   end
 
   def new
@@ -99,7 +99,11 @@ class Admin::ProveedoresController < ApplicationController
   def get_apls_registro
     respond_to do |format|
       registro = RegistroProveedor.find(params[:id])
-      @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first
+      if registro.tipo_proveedor_id == 1
+         @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first if current_user
+      else
+        @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first
+      end
       @experiencias = CertificadoProveedor.where(registro_proveedor_id: registro.id)
       @resolucion = registro.archivo_aprobado_directiva
       @apls = registro.get_apl
