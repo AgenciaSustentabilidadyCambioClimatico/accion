@@ -104,6 +104,98 @@ class MapaDeActor < ApplicationRecord
 		data
 	end
 
+	def self.construye_data_para_apl_desde_listado (manifestacion_de_interes_id)
+		data = []
+		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0)
+		listado.each do |l|
+			if l[:contribuyente_id] != nil
+				institucion = Contribuyente.find(l[:contribuyente_id])
+				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			else
+				institucion = nil
+				acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+			end
+		
+			rol_en_acuerdo = l[:rol_en_acuerdo]
+			rut_persona = l[:rut_actor]
+			nombre_completo_persona = l[:nombre_actor]
+			cargo_en_institucion = l[:cargo_institucion]
+			rut_institucion = l[:rut_institucion]
+			razon_social = l[:razon_social_institucion]
+			codigo_ciiuv4 = acteco.present? ? "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}" : ""
+			tipo_de_institucion = l[:tipo_institucion]
+			direccion_institucion = l[:direccion]
+			comuna_institucion = l[:comuna_institucion]
+			email_institucional = l[:email_institucional]
+			telefono_institucional = l[:telefono_institucional]
+			sector_productivo = acteco.present? ? acteco.descripcion : ""
+			data << {
+				rol_en_acuerdo: rol_en_acuerdo, 
+				rut_persona: rut_persona,
+				nombre_completo_persona: nombre_completo_persona,  
+				cargo_en_institucion: cargo_en_institucion,
+				rut_institucion: rut_institucion,
+				razon_social: razon_social,
+				codigo_ciiuv4: codigo_ciiuv4,
+				tipo_de_institucion: tipo_de_institucion,
+				direccion_institucion: direccion_institucion,
+				comuna_institucion: comuna_institucion,
+				email_institucional: email_institucional,
+				telefono_institucional: telefono_institucional,
+				sector_productivo: sector_productivo					
+			}
+		end
+		data
+	end
+
+	def self.valida_data_para_apl_desde_listado (manifestacion_de_interes_id)
+		data = []
+		listado = ListadoActoresTemporal.where(manifestacion_de_interes_id: manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+		correlativo ||= 1
+		listado.each do |l|
+			if l[:contribuyente_id] != nil
+				institucion = Contribuyente.find(l[:contribuyente_id])
+				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
+			else
+				institucion = nil
+				acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+			end
+			
+			id = correlativo
+			rol_en_acuerdo = l[:rol_en_acuerdo]
+			rut_persona = l[:rut_actor]
+			nombre_completo_persona = l[:nombre_actor]
+			cargo_en_institucion = l[:cargo_institucion]
+			rut_institucion = l[:rut_institucion]
+			razon_social = l[:razon_social_institucion]
+			codigo_ciiuv4 = acteco.present? ? "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}" : ""
+			tipo_de_institucion = l[:tipo_institucion]
+			direccion_institucion = l[:direccion]
+			comuna_institucion = l[:comuna_institucion]
+			email_institucional = l[:email_institucional]
+			telefono_institucional = l[:telefono_institucional]
+			data << {
+				id: id,
+				rol_en_acuerdo: rol_en_acuerdo, 
+				rut_persona: rut_persona,
+				nombre_completo_persona: nombre_completo_persona,  
+				cargo_en_institucion: cargo_en_institucion,
+				rut_institucion: rut_institucion,
+				razon_social: razon_social,
+				codigo_ciiuv4: codigo_ciiuv4,
+				tipo_de_institucion: tipo_de_institucion,
+				direccion_institucion: direccion_institucion,
+				comuna_institucion: comuna_institucion,
+				email_institucional: email_institucional,
+				telefono_institucional: telefono_institucional					
+			}
+
+			correlativo = correlativo + 1
+			puts correlativo
+		end
+		data
+	end
+
 	def self.construye_datos_actores_para_excel (data)
 		para_excel = data # extrañamente al trabajar directamente sobre 'data' se altera el contenido de @actores
 		para_excel = para_excel.map {|i| i.map {|k,v| (k == :rut_persona || k == :email_institucional) && v.blank? ? 'no' : (v unless (k==:sector_productivo))}.compact}
@@ -115,6 +207,7 @@ class MapaDeActor < ApplicationRecord
 		actores = data
 		actores.each do |fila|
 			ae = ActividadEconomica.where(codigo_ciiuv4: fila[:codigo_ciiuv4].to_s.split(" - ").first.to_s)
+
 			sector_productivo = ae.first.descripcion_ciiuv4 if ae.present?
 			# DZC 2018-10-10 16:09:11 se prevee el caso de que el contribuyente se este creando mediante el archivo excel
 			fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
@@ -182,7 +275,7 @@ class MapaDeActor < ApplicationRecord
 	def self.dominios
 		{
 			roles: Rol.where(mostrar_en_excel: true).order(nombre: :asc).map {|r| r.nombre}.compact,
-			cargos: Cargo.all.order(nombre: :asc).map {|c| c.nombre}.compact,
+			cargos: Cargo.where(mostrar_en_excel: true).order(nombre: :asc).map {|c| c.nombre}.compact,
 			sectores: ActividadEconomica.where.not(codigo_ciiuv4: nil).order(codigo_ciiuv4: :asc).all.map {|ac| "#{ac.codigo_ciiuv4} - #{ac.descripcion_ciiuv4}"}.compact,
 			comunas: Comuna.order(nombre: :asc).all.map {|c| c.nombre}.compact,
 			# comunas: Comuna.order(nombre: :asc).vigente?.all.map {|c| c.nombre}.compact, #REEMPLAZAR CUANDO SE HAGA MERGE CON RAMA DE RICARDO
@@ -320,6 +413,7 @@ class MapaDeActor < ApplicationRecord
 					pais_id: comuna.provincia.region.pais.id,
 					region_id: comuna.provincia.region.id,
 					comuna_id: comuna.id,
+					ciudad: comuna.nombre,
 					telefono: fila[:telefono_institucional],
 					email: fila[:email_institucional]
 					)
@@ -461,7 +555,8 @@ class MapaDeActor < ApplicationRecord
 				 	).first
 				 if persona_cargo_institucion.blank?
 				 	persona_cargo_institucion = PersonaCargo.new(persona_id: persona.id,
-				 	 cargo_id: cargo_planilla.id
+				 	 cargo_id: cargo_planilla.id,
+					 establecimiento_contribuyente_id: establecimiento_contribuyente.id
 				 	 )
 				 	persona_cargo_institucion.save(validate: false)
 				 end

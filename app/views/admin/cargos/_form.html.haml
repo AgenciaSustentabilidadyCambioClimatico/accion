@@ -12,6 +12,10 @@
 							= f.input :nombre, label: t(:name), placeholder: "Ingrese nombre del cargo", input_html: { class: 'required-field' }, required: true
 						.col-12
 							= f.input :descripcion, label: t(:description), input_html: { class: 'required-field', rows: 6 }, placeholder: "Ingrese una descripción para este cargo", required: true
+						.col-12
+							.d-flex.mt-3
+								=f.input :mostrar_en_excel, label: false
+								=f.label t(:mostrar_en_excel), class: 'ml-3'
 	.float-right
 		= link_to t(:back), admin_cargos_path, class: 'btn btn-sm btn-warning'
 		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled

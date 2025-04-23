@@ -30,7 +30,7 @@ class ManifestacionDeInteres < ApplicationRecord
   #titulos, como no se necesita registrar un texto del usuario solo lo usamos para mostrar
   attr_accessor :titulo_cifras_sectores_economicos, :titulo_caracterizacion_actividades_economicas
 
-  attr_accessor :revisar_y_actualizar_mapa_de_actores
+  attr_accessor :revisar_y_actualizar_mapa_de_actores, :listado_mapa_actores
   attr_accessor :anulado
 
   attr_accessor :envia_termino_proceso
@@ -411,11 +411,18 @@ class ManifestacionDeInteres < ApplicationRecord
       ]
       data = ExcelParser.new(mapa_de_actores_archivo.url, header).tabulated #revisar necesidad de ingresar nombre mapa de archivo
     end
+
+    #concatena a la lista los registros creados a traves del mantenedor de mapa de actores
+    if self.listado_mapa_actores
+      @actores_desde_lista = MapaDeActor.valida_data_para_apl_desde_listado(self.id)
+      data.concat(@actores_desde_lista)
+    end
     data
   end
 
   def data_mapa_de_actores
     data = parsear_mapa_de_actores
+
     archivo_correcto = true
     if data.size <= 0
       errors.add(:mapa_de_actores_archivo, "Se debe indicar al menos un actor en el archivo")
@@ -435,7 +442,9 @@ class ManifestacionDeInteres < ApplicationRecord
           ##
           # DZC 2019-08-16 20:26:20
           # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "Fila #{(posicion+2)} contiene celdas sin completar"
+          if !self.listado_mapa_actores
+            errores << "Fila #{(posicion+2)} contiene celdas sin completar"
+          end
           # errors.add(:mapa_de_actores_archivo, "El archivo contiene celdas sin completar")
           archivo_correcto = false
         else
@@ -460,7 +469,15 @@ class ManifestacionDeInteres < ApplicationRecord
             ##
             # DZC 2019-08-16 20:26:20
             # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-            errores << "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios"
+            
+            if data[posicion][:id] == nil
+              if !self.listado_mapa_actores
+                errores << "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios"
+              end
+            else
+              errores << "Error en la registro #{data[posicion][:id]}. No se debe ingresar el mismo email a distintos usuarios"
+            end
+
             # errors.add(:mapa_de_actores_archivo, "Error en la línea #{(posicion+2)}. No se debe ingresar el mismo email a distintos usuarios")
             archivo_correcto = false
           end
@@ -471,7 +488,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{ruts_invalidos.size} RUTs inválidos. Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir"
+        errores << " #{ruts_invalidos.size} RUTs inválidos. Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir"
         # errors.add(:mapa_de_actores_archivo, "El archivo contiene #{ruts_invalidos.size} Los primeros cinco (o menos) RUT(s) con errores: '#{ruts_invalidos[0..4].to_sentence}', por favor corregir")
         archivo_correcto = false
       else
@@ -499,7 +516,7 @@ class ManifestacionDeInteres < ApplicationRecord
           ##
           # DZC 2019-08-16 20:26:20
           # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-          errores << "No es posible procesar el archivo, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir."
+          errores << "No es posible procesar, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir."
           # errors.add(:mapa_de_actores_archivo, "No es posible procesar el archivo, pues no contiene al o los usuarios: #{User.nombre_por_rut(ruts_eliminados)} ; que mantiene(n) tarea(s) pendiente(s) sin terminar. Por favor corregir.")
           archivo_correcto = false
         end
@@ -510,7 +527,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{emails_invalidos.size} emails inválidos. Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir"
+        errores << " #{emails_invalidos.size} emails inválidos. Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir"
         # errors.add(:mapa_de_actores_archivo, "El archivo contiene #{emails_invalidos.size} Los primeros cinco (o menos) Email(s) con errores: '#{emails_invalidos[0..4].to_sentence}', por favor corregir")
         archivo_correcto = false
       else
@@ -529,7 +546,7 @@ class ManifestacionDeInteres < ApplicationRecord
         ##
         # DZC 2019-08-16 20:26:20
         # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-        errores << "El archivo contiene #{telefonos_invalidos.size} teléfonos inválidos. Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir"
+        errores << " #{telefonos_invalidos.size} teléfonos inválidos. Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir"
         #errors.add(:mapa_de_actores_archivo, "El archivo contiene #{telefonos_invalidos.size} Los primeros cinco (o menos) Teléfono(s) con errores: '#{telefonos_invalidos[0..4].to_sentence}'; Por favor corregir")
         archivo_correcto = false
       end
@@ -553,8 +570,7 @@ class ManifestacionDeInteres < ApplicationRecord
             ##
             # DZC 2019-08-16 20:26:20
             # para el ajuste de la cantidad de errores de acuerdo a lo solicitado por el cliente
-            errores << "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea"
-            # errors.add(:mapa_de_actores_archivo, "El archivo no contiene la cantidad mínima de actores con roles específicos exigidos para esta tarea")
+            errores << "No existe la cantidad mínima de actores con roles específicos exigidos para esta tarea"
             archivo_correcto = false
           end
         end

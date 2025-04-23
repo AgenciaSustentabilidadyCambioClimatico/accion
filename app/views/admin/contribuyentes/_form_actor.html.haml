@@ -1,0 +1,277 @@
+-# Variable para verificar si es una edicion desde mis instituciones
+= simple_form_for [:admin,contribuyente_actor], remote: true, html: { autocomplete: :off } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { id: 'contribuyente_id' }
+
+  = simple_nested_form_for [:admin,contribuyente_actor] do |snf|
+    .row
+      -unless @error_extra.blank?
+        .col-12.mt-2
+          .alert.alert-danger
+            =@error_extra
+      .col-12.mt-2
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:agregar_nueva_institucion)
+          .card-body{style: 'background-color: #e9ecef; padding: 0.25rem 9px 0.5rem'}
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    = t(:institucion) 
+                .card-body
+                  - contribuyente_id = contribuyente_actor.contribuyente_id
+                  .row
+                    .col-l-6.col-xl-3
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        =t(:rut)
+                      .row
+                        .col-lg-8.desactivado
+                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar-actor-institucion numero', readonly: !contribuyente_actor.contribuyente_id.nil?}
+                        .col-lg-4.desactivado
+                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar-actor-institucion dv', readonly: !contribuyente_actor.contribuyente_id.nil? }
+                    .col-lg-9.col-md-8.desactivado
+                      = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: !contribuyente_actor.contribuyente_id.nil?}
+                  .row
+                    .col-12.col-lg-12.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Actividad Económica
+                      - if contribuyente_id.nil?  
+                        = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
+                      - else
+                        - acteco = contribuyente_actor.actividad_economica_contribuyentes.first.actividad_economica
+                        - codigo_ciiuv4 = "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}"
+                        = f.input :codigo_ciiuv4, as: :string, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: !contribuyente_actor.contribuyente_id.nil?, id: "codigo_ciiuv4_input", value: codigo_ciiuv4 }, 
+                          label: false
+                  .row
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Tipo institución
+                      - if contribuyente_id.nil?
+                        = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                      - else
+                        - dato_anual = contribuyente_actor.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
+                        - tipo_institucion = dato_anual.tipo_contribuyente.nombre
+                        = f.input :tipo_institucion, as: :string, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: !contribuyente_actor.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, 
+                          label: false
+                    .col-12.col-lg-6.mt-2
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Dirección
+                      - if contribuyente_id.nil?
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input" }, 
+                          label: false
+                      - else
+                        = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione dirección" }, 
+                          label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
+                          label: false
+                        = check_box_tag :seleccionar, '1', false, class: "form-temporal-boton-guardar-actor-institucion not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
+                        %label{ for: "sin_direccion_checkbox" } Nueva Dirección
+                  .row
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Región
+                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyentes_select", label: false, style: 'width: 100%', id: 'region_select', label: false, "data-placeholder"=>"Seleccione una región"
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Comuna
+                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-actor-institucion form-control select2 contribuyentes_select", label: false, id: 'registro_proveedor_comuna', label: false, "data-placeholder"=>"Seleccione una comuna"
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
+          =t(:volver_a_lista)
+        %button.btn.btn-primary.guarda-contribuyente-actor-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
+          Agregar
+:javascript
+
+  $(document).ready(function(){
+    //__chosen_actecos();
+    __chosen_contribuyentes();
+    iniciarAutoNumeric();
+    iniciarDigitoVerificador();
+    htmlErrorToTooltip('top');
+    nuevo_contribuyente_temporal_validaciones();
+
+    // Manejador para el botón "Guardar Usuario"
+    $(document).on('click', '.guarda-contribuyente-actor-button', function(e) {
+      e.preventDefault();  // Evitar el envío del formulario por defecto
+
+      var contribuyente_id = $('#contribuyente_id').val();
+      var rut = $('#contribuyente_rut').val() + '-' + $('#contribuyente_dv').val();
+      var razon_social = $('#contribuyente_razon_social').val();
+      var codigo_ciiuv4 = $('#contribuyente_codigo_ciiuv4 option:selected').text();
+      var tipo_institucion = $('#contribuyente_tipo_institucion option:selected').text();
+      var comuna = $('#registro_proveedor_comuna option:selected').text();
+      var direccion = $('#direccion_select option:selected').text();
+      var partes = direccion.split("-");
+      
+      if ($('#direccion_input').val()) {
+        direccion = $('#direccion_input').val();
+      }else{
+        direccion = partes[0].trim(); 
+        comuna = partes[1].trim(); 
+      }
+
+      if ($('#tipo_institucion_input').val()) {
+        tipo_institucion = $('#tipo_institucion_input').val();
+      }
+
+      if ($('#codigo_ciiuv4_input').val()) {
+        codigo_ciiuv4 = $('#codigo_ciiuv4_input').val();
+      }
+
+      // Si deseas setear los valores en otros campos de tu formulario:
+      $("#contribuyente_id_mapa_actores").val(contribuyente_id);
+      $("#rut_contribuyente_mapa_actores").val(rut);
+      $("#razon_social_contribuyente_mapa_actores").val(razon_social);
+      $("#tipo_institucion_id_mapa_actores").val(tipo_institucion);
+      $("#comuna_institucion_mapa_actores").val(comuna);
+      $("#tipo_institucion_mapa_actores").val(tipo_institucion);   
+      $("#direccion_usuario_mapa_actores").val(direccion);
+      $("#codigo_ciiuv4_contribuyente_mapa_actores").val(codigo_ciiuv4);
+      
+      $('#buscar-contribuyente').modal("hide");
+      agregar_usuario_actor_validaciones();
+    });
+
+    // Escuchar el cambio de selección en el select de región
+    $('#region_select').on('change', function() {
+      var regionId = $(this).val(); // Obtener el valor de la región seleccionada
+
+      // Aquí puedes ejecutar una función adicional, por ejemplo, mostrar una alerta
+      //alert('Seleccionaste la región con ID: ' + regionId);
+      
+      // Realizar la solicitud AJAX para obtener las comunas asociadas a la región seleccionada
+      $.ajax({
+        url: "#{registro_get_comunas_path}",  // Reemplaza con la ruta correcta
+        method: 'get',
+        data: { id: regionId },
+        success: function(response) {
+          // Aquí procesas la respuesta de las comunas y actualizas los campos correspondientes
+          //console.log(response);
+          // Aquí puedes agregar lógica para actualizar la lista de comunas, si es necesario
+        },
+        error: function() {
+          alert('Hubo un error al obtener las comunas');
+        }
+      });
+    });
+
+    function toggleDireccionFields() {
+      let contribuyenteId = $('#contribuyente_id').val(); // Obtener el contribuyente_id
+      let sinDireccionChecked = $('#sin_direccion_checkbox').is(':checked');
+
+      if (sinDireccionChecked || contribuyenteId === '' || contribuyenteId === null) {
+        // Si no hay contribuyente_id o el checkbox está marcado, mostrar el input de dirección
+        $('#direccion_input').show().prop('readonly', false);
+        $('#direccion_select').hide();
+      } else {
+        // Si hay contribuyente_id válido, mostrar el select y ocultar el input de dirección
+        $('#direccion_input').hide();
+        $('#direccion_select').show();
+      }
+    }
+
+    // Ejecutar la función al cargar la página
+    toggleDireccionFields();
+
+    // Detectar cambios en el select de contribuyente_id y actualizar los campos de dirección
+    $('#contribuyente_id').on('change', function() {
+      toggleDireccionFields();
+    });
+
+    // Detectar cambios en el checkbox "Nueva Dirección"
+    $('#sin_direccion_checkbox').on('change', function() {
+      toggleDireccionFields();
+    });
+
+    function toggleRegionComuna() {
+      let contribuyenteId = $('#contribuyente_id').val(); // Obtener el valor del contribuyente_id
+      let sinDireccionChecked = $('#sin_direccion_checkbox').is(':checked');
+
+      if (sinDireccionChecked || contribuyenteId === '' || contribuyenteId === null) {
+        // Si el checkbox está marcado o no hay contribuyente_id, mostrar Región y Comuna
+        $('#region_select').closest('.col-12.col-lg-6.mt-2').show();
+        $('#registro_proveedor_comuna').closest('.col-12.col-lg-6.mt-2').show();
+      } else {
+        // Si hay un contribuyente_id válido y no se marcó el checkbox, ocultarlos
+        $('#region_select').closest('.col-12.col-lg-6.mt-2').hide();
+        $('#registro_proveedor_comuna').closest('.col-12.col-lg-6.mt-2').hide();
+      }
+    }
+
+    // Ejecutar la función al cargar la página
+    toggleRegionComuna();
+
+    // Detectar cambios en el checkbox y actualizar los campos de Región y Comuna
+    $('#sin_direccion_checkbox').on('change', function() {
+      toggleRegionComuna();
+    });
+
+    // Detectar cambios en el campo contribuyente_id
+    $('#contribuyente_id').on('change', function() {
+      toggleRegionComuna();
+    });
+
+    function nuevo_institucion_actor_validaciones(){
+      // Verificar si el checkbox "Nueva Dirección" está marcado
+      var sinDireccion = $('#sin_direccion_checkbox').prop('checked');
+      var contribuyenteId = $('#contribuyente_id').val();
+
+      // Validar los campos de entrada
+      var rut = $('#contribuyente_rut').val() != "";
+      var dv = $('#contribuyente_dv').val() != "";
+      var nombre_completo = $('#contribuyente_razon_social').val() != "";
+      var tipo_institucion = $('#tipo_institucion_input').val() != "";
+      var direccion_select = $('#contribuyente_direccion').val() != "";
+      var direccion_input = $('#direccion_input').val() != "";
+      var region = $('#region_select').val() != "";
+      var comuna = $('#registro_proveedor_comuna').val() != "";
+      var codigo_ciiuv4_select = $('#contribuyente_codigo_ciiuv4').val() != "";
+      var codigo_ciiuv4_input = $('#codigo_ciiuv4_input').val() != "";
+
+      // Si todas las condiciones se cumplen (y el RUT solo se verifica si no está marcado "Sin Rut")
+      if (sinDireccion || contribuyenteId === '') {
+        if (rut && dv && nombre_completo && codigo_ciiuv4_select && tipo_institucion && direccion_input && region && comuna) {
+            $('.guarda-contribuyente-actor-button').removeAttr("disabled"); // Habilitar el botón
+        } else {
+            $('.guarda-contribuyente-actor-button').attr("disabled", true); // Deshabilitar el botón
+        }
+      } else {
+        if (rut && dv && nombre_completo && codigo_ciiuv4_input && tipo_institucion && direccion_select) {
+            $('.guarda-contribuyente-actor-button').removeAttr("disabled"); // Habilitar el botón
+        } else {
+            $('.guarda-contribuyente-actor-button').attr("disabled", true); // Deshabilitar el botón
+        }
+      }
+    }
+
+    // Deshabilita el botón inicialmente
+    $('.guarda-contribuyente-actor-button').attr("disabled", true);
+
+    $(document).on('change keyup', '.form-temporal-boton-guardar-actor-institucion', function(){
+        nuevo_institucion_actor_validaciones();
+    });
+
+    function __chosen_contribuyentes() {
+      $('.contribuyentes_select').chosen({
+        allow_single_deselect: true,
+        no_results_text: 'No se encontraron resultados',
+        width: '100%',
+        search_contains: true
+      });
+    }
+
+  });

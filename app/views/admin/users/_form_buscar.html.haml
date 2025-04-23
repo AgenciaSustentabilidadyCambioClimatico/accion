@@ -6,7 +6,10 @@
 .card
   .card-header
     %h5.no-margin
-      = t(:buscar_, item: t(:usuario).downcase)
+      -unless @usuario_actor.nil?
+        = t(:buscar_, item: t(:actor).downcase)
+      -else
+        = t(:buscar_, item: t(:usuario).downcase)
   .card-body
     %div{id: "usuarios-remote-filter"}
       = simple_form_for :buscador, url: buscador_admin_users_path, method: :get, class: 'filter', autocomplete: :off, remote: true do |f|

@@ -64,7 +64,7 @@
     .col-12
       .card
         .card-header
-          %h5.no-margin
+          %h5.no-margin= t(:agregar_actores_via_excel)
         .card-body
           .row
             -if @tarea.requiere_revision?
@@ -92,8 +92,7 @@
                       = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object)
                       -#
                         = __upload_status(f.object,:mapa_de_actores_archivo)
-                    .col-12.mt-2
-                      = render 'actores/table_comentarios_anteriores'
+
               - elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
                 .col-12.col-md-3
                   .form-group
@@ -121,9 +120,7 @@
                   - if @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
                     = f.input :comentarios_y_observaciones_actualizacion_mapa_de_actores, readonly: readonly, label: t(:comentarios_y_observaciones_actualización_mapa_de_actores), required: required, input_html: {value: nil, class: "required-field"}
                   -# elsif @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion
-                .col-12
-                  = render 'actores/table_comentarios_anteriores'
-                  
+     
             - else
               .col-lg-12.col-12
                 .row

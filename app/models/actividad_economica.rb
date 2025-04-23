@@ -66,6 +66,19 @@ class ActividadEconomica < ApplicationRecord
   	"<label>#{self.codigo_ciiuv4}</label> - #{self.descripcion_ciiuv4}".html_safe
   end
 
+  	def self.__select2(lowest_only=true)
+		acteco = ActividadEconomica
+			if lowest_only
+				acteco = acteco.where("length(codigo_ciiuv4) = 6").order(codigo_ciiuv4: :asc)
+			end
+			list = [["",""]]
+		list += acteco.all.map {|acteco| [acteco.as_label2, acteco.id]}
+		list
+	end  
+	def as_label2
+		"<label>#{self.codigo_ciiuv4} - #{self.descripcion_ciiuv4}</label>"
+	end
+
   #DZC Listado de sectores económicos para el helper de vista TAREA PPF-012
   def self.agrupadas
   	actecos = {}

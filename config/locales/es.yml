@@ -1522,7 +1522,26 @@ es:
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
   respuesta_comentario: Respuesta comentario
+  agregar_actores: Agregar Actores
+  agregar_actores_via_excel: Agregar Actores vía excel
+  agregar_actores_formulario: Agregar Actores Formulario
+  nuevo_actor: Nuevo actor
+  agregar_nuevo_actor: Agregar nuevo actor
+  agregar_nueva_institucion: Agregar nueva institución
+  rol_en_acuerdo: Rol en Acuerdo
+  nombre_actor: Nombre Actor
+  rut_actor: Rut Actor
+  cargo_institucion: Cargo Institución
+  email_institucional: Email Institucional
+  telefono_institucional: Telefono Institucional
+  razon_social_institucion: Razón social Institución
+  rut_institucion: Rut Institución
+  tipo_institucion: Tipo Institución
+  comuna_institucion: Comuna Institución
+  actor: actor
+  actores: actores
   fecha_lectura: Fecha lectura
+  
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   crea_nuevo_flujo_fpl: Crea nuevo flujo FPL
   helpers:

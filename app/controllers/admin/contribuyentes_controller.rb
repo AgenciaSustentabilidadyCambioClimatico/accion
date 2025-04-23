@@ -279,6 +279,18 @@ class Admin::ContribuyentesController < ApplicationController
     render layout: false
   end
 
+  def edit_actor_modal
+    if params[:id].blank?
+      @contribuyente_actor = Contribuyente.new
+    else
+      @contribuyente_actor = Contribuyente.unscoped.find_by(contribuyente_id: params[:id], flujo_id: params[:flujo_id]) || Contribuyente.unscoped.find(params[:id])
+    end
+    @contribuyente_actor.temporal = true
+    @contribuyente_actor.flujo_id = params[:flujo_id]
+    @contribuyente_actor.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
+    render layout: false
+  end
+  
   private
     def set_contribuyente
       @contribuyente = Contribuyente.unscoped.find(params[:id])

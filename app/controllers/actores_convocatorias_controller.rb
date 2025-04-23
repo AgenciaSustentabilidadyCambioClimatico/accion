@@ -7,6 +7,10 @@ class ActoresConvocatoriasController < ApplicationController
 	before_action	:set_descargable_tareas
 	before_action :set_manifestacion_de_interes
 	before_action :set_convocatoria, only: [:reset_convocatoria, :nueva_convocatoria, :edit_convocatoria, :update_convocatoria, :destroy]
+	before_action :set_mapa_actores
+	before_action :set_contribuyentes
+	before_action :set_listado_actores_temporal
+	before_action :set_usuario_actor
 
 	#DZC TAREA APL-021
 	def index
@@ -109,11 +113,29 @@ class ActoresConvocatoriasController < ApplicationController
 
 	private
 
+		def set_contribuyentes
+			@contribuyente = Contribuyente.new
+			@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+			@contribuyente_actor = Contribuyente.new
+		end
+
+		def set_mapa_actores
+			@mapa_actor =ListadoActoresTemporal.new
+		end
+
+		def set_listado_actores_temporal
+			@listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+		end
+
 		def set_tarea_pendiente
 			@tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
 			autorizado? @tarea_pendiente
 			@tarea = @tarea_pendiente.tarea
 	    @descargables = @tarea_pendiente.get_descargables
+		end
+
+		def set_usuario_actor
+			@usuario_actor = User.new
 		end
 
 		#DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.

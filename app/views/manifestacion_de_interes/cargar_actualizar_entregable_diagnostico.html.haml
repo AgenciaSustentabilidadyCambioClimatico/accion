@@ -65,6 +65,30 @@
         }
       }
     });
+
+    var button = $("#toggle-actores-form");
+
+    // Establecer el texto inicial basado en la visibilidad
+    if ($("#actualizar-remote-form").hasClass("d-none")) {
+      button.text("Agregar Actores vía Excel");
+    } else {
+      button.text("Agregar Actores Formulario");
+    }
+
+    $("#toggle-actores-form").click(function() {
+    $("#actualizar-remote-form").toggleClass("d-none");
+    $("#mapa_actores-form").toggleClass("d-none");
+
+    // Cambia el texto del botón según la visibilidad
+    if ($("#actualizar-remote-form").hasClass("d-none")) {
+      
+      button.text("Agregar Actores vía Excel");
+    } else {
+      $('#actualizar-remote-form').removeClass('d-none');
+      button.text("Agregar Actores Formulario");
+    }
+    });
+
   });
 
   function show_modal_tipo(tipo){
@@ -85,8 +109,14 @@
       $('#advertencia-cambio form').find('.btn-disabled').attr('disabled', 'disabled');
     }
   }
+
+  verificarModal();
+  
 - titulo t(:cargar_actualizar_entregable_diagnóstico)
 = render 'modal_advertencia_set_metas'
+= render 'admin/users/buscador'
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
 .card
   .card-header.p-0
     .p-3
@@ -130,8 +160,12 @@
           .card-body.p-0
             #actores-remote-table
               = render 'actores/table', externo: true
-            #actualizar-remote-form
+            #mapa_actores-form
+              = render 'actores/form_mapa_de_actores', externo: true 
+              = render 'actores/table_carga_actualiza_mapa_de_actores', externo: true 
+            #actualizar-remote-form.d-none
               = render 'actores/form', externo: true
+            %button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
       #cargar-documentos-diagnostico.tab-pane.fade{"aria-expanded" => tabs[:"cargar-documentos-diagnostico"], "aria-labelledby" => "cargar-documentos-diagnostico-tab", :role => "tabpanel", class: ("show active" if tabs[:"cargar-documentos-diagnostico"])}
         .card.m-0
           .card-body.p-0
