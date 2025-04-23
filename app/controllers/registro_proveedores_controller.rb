@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut, :descargar_documentos_proveedores_filtrados]
   before_action :get_apl, only: [:get_apl]
 
   # PRO-002
@@ -30,7 +30,7 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
-    @registro_proveedor.documento_registro_proveedores.build
+    2.times { @registro_proveedor.documento_registro_proveedores.build }
   end
 
   # PRO-001
@@ -129,9 +129,9 @@ class RegistroProveedoresController < ApplicationController
 
       if @registro_proveedor.estado == 'rechazado' && @registro_proveedor.rechazo <= 1 || @registro_proveedor.estado == 'con_observaciones'
         if @registro_proveedor.estado == 'rechazado'
-          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_now
+          RegistroProveedorMailer.primer_rechazo(@registro_proveedor).deliver_later
         elsif @registro_proveedor.estado == 'con_observaciones'
-          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_now
+          RegistroProveedorMailer.con_observaciones(@registro_proveedor).deliver_later
         end
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea = Tarea.where(codigo: 'PRO-004').first
@@ -519,28 +519,34 @@ class RegistroProveedoresController < ApplicationController
 
   def descargar_documentos_proveedores
     require 'zip'
+    require 'open-uri'
     archivo_zip = Zip::OutputStream.write_buffer do |stream|
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
-        unless documento.archivo.path.nil?
+        unless documento.archivo.url.nil?
           #nombre = documento.archivo.file.identifier
-          nombre = "#{registro_proveedor.rut} - #{registro_proveedor.nombre} - #{documento.archivo.file.identifier}"
-          # rename the file
-          stream.put_next_entry(nombre)
-          # add file to zip
-          stream.write IO.read((documento.archivo.current_path rescue documento.archivo.path))
+          url = documento.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+
         end
       end
       certificados = registro_proveedor.certificado_proveedores
       certificados.each do |certificado|
-        unless certificado.archivo_certificado.path.nil?
-          nombre = certificado.archivo_certificado.file.identifier
+        unless certificado.archivo_certificado.url.nil?
+          url = certificado.archivo_certificado.url
+          nombre = File.basename(URI.parse(url).path)
           # nombre = "certificado"
           # rename the file
-          stream.put_next_entry(nombre)
-          # add file to zip
-          stream.write IO.read((certificado.archivo_certificado.current_path rescue certificado.archivo_certificado.path))
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
         end
       end
     end
@@ -549,6 +555,47 @@ class RegistroProveedoresController < ApplicationController
     #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
+
+
+  def descargar_documentos_proveedores_filtrados
+    require 'zip'
+    require 'open-uri'
+    archivo_zip = Zip::OutputStream.write_buffer do |stream|
+      registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
+      documentos = registro_proveedor.documento_registro_proveedores
+      documentos.each do |documento|
+        unless documento.archivo.url.nil? && documento.description == 'Curriculum Vitae'
+          #nombre = documento.archivo.file.identifier
+          url = documento.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+
+        end
+      end
+      certificados = registro_proveedor.certificado_proveedores
+      certificados.each do |certificado|
+        unless certificado.archivo_certificado.url.nil?
+          url = certificado.archivo_certificado.url
+          nombre = File.basename(URI.parse(url).path)
+          # nombre = "certificado"
+          # rename the file
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+        end
+      end
+    end
+
+    archivo_zip.rewind
+    #enviamos el archivo para ser descargado
+    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
+  end
+
 
   def descargar_registro_proveedor_pdf_archivo
     @registro_proveedor = RegistroProveedor.find(params[:id])
@@ -592,7 +639,7 @@ class RegistroProveedoresController < ApplicationController
     u = User.find(user)
     mensajes = RegistroProveedorMensaje.where(tarea_id: tarea.id)
     mensajes.each do |mensaje|
-      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_now
+      RegistroProveedorMensajeMailer.paso_de_tarea(@registro_proveedor, mensaje.asunto, mensaje.body, u).deliver_later
     end
   end
 

@@ -315,7 +315,7 @@ module ApplicationHelper
     "#{titulo}<small>#{con_nombre_proyecto.downcase.gsub(/(apl|acuerdo de producción limpia|acuerdo de produccion limpia)/,'APL').capitalize.gsub(/Apl|apl/,'APL')}</small>".html_safe
   end
 
-  def __mostrar_descargable(descargables, codigo, titulo = nil, tarea_pendiente = nil, carta_interes = nil, nombre = nil, nombre_boton ='')
+  def __mostrar_descargable(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre:nil, nombre_boton:'')
     capture_haml do
       if carta_interes.blank?
         id_descarga = 'mostrar_descargable_id'
@@ -347,6 +347,75 @@ module ApplicationHelper
       end
     end
   end
+
+  def __mostrar_descargable_adhesion(descargables,codigo,titulo=nil, tarea_pendiente:nil, carta_interes: nil, nombre:nil, nombre_boton:nil)
+    capture_haml do
+      if carta_interes.blank?
+        id_descarga = 'mostrar_descargable_id'
+        boton_label = nombre_boton.blank? ? I18n.t(:descargar) : nombre_boton
+      else
+        id_descarga = 'manifestacion_de_interes_' + carta_interes
+        boton_label = nombre.blank? ? carta_interes : nombre
+      end
+
+      if descargables.blank? || !descargables.key?(codigo)
+        haml_tag :label, nombre, class: 'control-label string pt-06' if carta_interes.blank?
+        haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado), id: id_descarga do
+          haml_tag :i, class: 'fa fa-ban'
+        end
+        # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
+        # haml_tag :div, codigo, class: 'form-control'
+      else
+
+        if tarea_pendiente.present?
+          url = ext_descargable_tarea_url(*[tarea_pendiente]+descargables[codigo][:args])
+        else
+          url = ext_descargable_tarea_url(*descargables[codigo][:args])
+        end
+        haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if carta_interes.blank?
+        haml_tag :a, href: url, class: 'btn btn-sm btn-descargar btn-block', id: id_descarga do
+          haml_tag :i, class: 'fa fa-download'
+          haml_concat boton_label
+        end
+      end
+    end
+  end
+
+  def __mostrar_descargable_auditoria(descargables,codigo,titulo=nil,tarea_pendiente:nil, carta_interes: nil, nombre_boton: nil, nombre: nil)
+    capture_haml do
+      if carta_interes.blank?
+        id_descarga = 'mostrar_descargable_id'
+        boton_label = nombre_boton.blank? ? I18n.t(:descargar) : nombre_boton
+      else
+        id_descarga = 'manifestacion_de_interes_' + carta_interes
+        boton_label = nombre.blank? ? carta_interes : nombre
+      end
+
+      if descargables.blank? || !descargables.key?(codigo)
+        haml_tag :label, nombre, class: 'control-label string pt-06' if carta_interes.blank?
+        haml_tag :a, href: '#', class: 'btn btn-sm btn-descargar btn-block tooltip-block ', "data-original-title" => I18n.t(:descargable_no_encontrado), id: id_descarga do
+          haml_tag :i, class: 'fa fa-ban'
+        end
+        # haml_tag :label, I18n.t(:descargable_no_encontrado), class: 'control-label string text-danger'
+        # haml_tag :div, codigo, class: 'form-control'
+      else
+
+        if tarea_pendiente.present?
+          url = ext_descargable_tarea_url(*[tarea_pendiente]+descargables[codigo][:args])
+        else
+          url = ext_descargable_tarea_url(*descargables[codigo][:args])
+        end
+        haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if carta_interes.blank?
+        haml_tag :a, href: url, class: 'btn btn-sm btn-descargar btn-block', id: id_descarga do
+          haml_tag :i, class: 'fa fa-download'
+          haml_concat boton_label
+        end
+      end
+    end
+  end
+
+
+
   def __mostrar_descargable_simple(tarea,codigo,titulo, boton=I18n.t(:descargar))
     descargable = tarea.descargable_tareas.find_by(codigo: codigo)
     capture_haml do

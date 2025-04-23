@@ -1,0 +1,155 @@
+-# Variable para verificar si es una edicion desde mis instituciones
+= simple_form_for [:admin, cont_temporal], url: create_contribuyente_fondo_produccion_limpia_path, method: :patch, remote: true, html: { autocomplete: :off, id: "form-contribuyente-fpl" } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :contribuyente_id, as: :hidden, wrapper: false
+  = simple_nested_form_for [:admin,cont_temporal] do |snf|
+    .row
+      -unless @error_extra.blank?
+        .col-12.mt-2
+          .alert.alert-danger
+            =@error_extra
+      .col-12.mt-2
+        .card
+          .card-header
+            %h5.no-margin
+              = action_label_of_(cont_temporal)
+          .card-body{style: 'background-color: #e9ecef; padding: 0.25rem 9px 0.5rem'}
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    = "Institución"
+                .card-body
+                  .row
+                    .col-l-6.col-xl-3
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        =t(:rut)
+                      .row
+                        .col-lg-8.desactivado
+                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar numero', readonly: !cont_temporal.contribuyente_id.nil?}
+                        .col-lg-4.desactivado
+                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar dv', readonly: !cont_temporal.contribuyente_id.nil? }
+                    .col-lg-9.col-md-6.desactivado
+                      = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar'}
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    .row
+                      .col-12.col-lg-10
+                        =t(:actividad_económica)
+                      .col-12-col-lg-2
+                        = snf.link_to_add :actividad_economica_contribuyentes, class: 'ml-3', data: { target: "#contribuyente-actecos" } do
+                          %i.fa.fa-plus-circle
+                          = t(:agregar)
+                .card-body.table
+                  .row
+                    .col-lg-12.col-md-6
+                      %table#contribuyente-actecos.table.table-striped.m-0
+                        %thead
+                          %tr.fields
+                            %th.codigo-acteco=t(:código_descripción)
+                            %th
+                        %tbody
+                          = snf.fields_for :actividad_economica_contribuyentes, snf.object.actividad_economica_contribuyentes.select('DISTINCT actividad_economica_id'), :wrapper => false  do |actecos|
+                            -style = '';
+                            -style = "display: none;" if actecos.object.marked_for_destruction?
+                            %tr.fields{style: style}
+                              %td.no-padding
+                                %div{class: actecos.object.errors[:actividad_economica].blank? ? '' : 'has-error'}
+                                  =actecos.input :actividad_economica_id, collection: ActividadEconomica.__select, input_html:{ class: "form-control contribuyente-acteco form-temporal-boton-guardar required chosen-control  #{actecos.object.errors[:actividad_economica] == ["No puede estar en blanco"] ? 'border-error' : ''}", "data-placeholder"=>"Seleccione una actividad económica"}, label: false
+                                  -unless actecos.object.errors[:actividad_economica].blank?
+                                    %span.help-block
+                                      =actecos.object.errors[:actividad_economica].first
+                              %td.accion.no-padding.remove-row.desactivado
+                                = actecos.link_to_remove do
+                                  %i.fa.fa-times-circle.left.link-to-remove-row 
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    .row
+                      .col-12.col-lg-10
+                        =t(:establecimientos)
+                      .col-12-col-lg-2
+                        = snf.link_to_add :establecimiento_contribuyentes, class: 'ml-3', data: { target: "#establecimiento-actecos" } do
+                          %i.fa.fa-plus-circle
+                          =t(:agregar)
+                .card-body.table
+                  .row
+                    .col-lg-12.col-md-6
+                      %table#establecimiento-actecos.table.table-striped.m-0.table-responsive
+                        %thead
+                          %tr.fields
+                            %th.casa-matriz=t(:c_matriz)
+                            %th.direccion=t(:dirección)
+                            %th.ciudad=t(:ciudad)
+                            %th.region=t(:región)
+                            %th.comuna=t(:comuna)
+                            %th.accion
+                        %tbody
+                          = snf.fields_for :establecimiento_contribuyentes, :wrapper => false  do |establ|
+                            -style = '';
+                            -style = "display: none;" if establ.object.marked_for_destruction?
+                            %tr.fields.desactivado{style: style}
+                              %td.no-padding.casa-matriz=establ.input :casa_matriz, as: :boolean, label: false, input_html: { class: 'checkbox-casa-matriz'}
+                              %td.no-padding.direccion=establ.input :direccion, input_html: { class: 'form-control establ-direccion form-temporal-boton-guardar'}, label: false
+                              %td.no-padding.ciudad=establ.input :ciudad, input_html: { class: 'form-control letras establ-ciudad required form-temporal-boton-guardar'}, label: false
+                              -regiones = Region.__select
+                              -region_selec = establ.object.region_id.nil? ? regiones.first.last : establ.object.region_id
+                              %td.no-padding.region
+                                %div{class: establ.object.errors[:region].blank? ? '' : 'has-error'}
+                                  =establ.select :region_id, regiones, {}, { class: 'form-control contribuyente-establecimiento-region contribuyente-acteco form-temporal-boton-guardar required chosen-control', "data-placeholder"=>"Seleccione una región"}
+                                  -unless establ.object.errors[:region].blank?
+                                    %span.help-block
+                                      =establ.object.errors[:region].first
+                              %td.no-padding.comuna
+                                %div{class: establ.object.errors[:comuna].blank? ? '' : 'has-error'}
+                                  =establ.select :comuna_id, Comuna.__select(nil,region_selec), {}, { class: 'form-control contribuyente-establecimiento-comuna contribuyente-acteco form-temporal-boton-guardar required chosen-control', "data-placeholder"=>"Seleccione una comuna" }
+                                  -unless establ.object.errors[:comuna].blank?
+                                    %span.help-block
+                                      =establ.object.errors[:comuna].first
+                              %td.accion.no-padding.remove-row
+                                = establ.link_to_remove do
+                                  %i.fa.fa-times-circle.left.link-to-remove-row
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#deshacer-contribuyente-fpl-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
+          =t(:volver_a_lista)
+        -confirmar = Contribuyente.unscoped.where(flujo_id: cont_temporal.flujo_id).size > 0 && cont_temporal.contribuyente_id.nil? ? {confirm: 'Al crear una institución nueva, se descartará la anterior. ¿Desea continuar? '} : {}
+        %button.btn.btn-primary.guarda-contribuyente-fpl-button{
+          type: :button, 
+          disabled: :disabled, 
+          'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, 
+          data: confirmar
+        }
+          Guardar
+:javascript
+
+  $(document).ready(function(){
+    __chosen_actecos();
+    iniciarAutoNumeric();
+    iniciarDigitoVerificador();
+    htmlErrorToTooltip('top');
+    //nuevo_contribuyente_temporal_validaciones();
+  });
+
+  $(document).on('click', '.guarda-contribuyente-fpl-button', function() {
+    // Validaciones previas o confirmaciones
+    if (confirm("¿Está seguro que desea guardar este contribuyente?")) {
+      let formData = $('#form-contribuyente-fpl').serialize();
+      $.ajax({
+        url: "#{create_contribuyente_fondo_produccion_limpia_path}",
+        type: "PATCH",
+        data: formData,
+      }).fail(function(a, b, c) {
+        alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+        $('.loading-data').hide();
+      }).success(function(data){
+        $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+        $('#buscar-contribuyente-fpl').modal('hide');
+        $('.loading-data').hide();
+      });
+    }
+  });    

@@ -19,6 +19,18 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
   end
 
   def cargar_lineas
+
+    @flujo = Flujo.new
+    @flujos = Flujo.find_by(id: params[:apl_id].to_i)
+
+    if @flujos != nil
+      @flujo.user_id = @flujos.manifestacion_de_interes.representante_institucion_para_solicitud_id
+      @flujo.nombre_completo = @flujos.manifestacion_de_interes.proponente
+    else
+      @flujo.user_id = ''
+      @flujo.nombre_completo = ''
+    end 
+
     # Configuración de líneas y sus respectivos tipo_instrumento_id
     lineas_config = [
       { linea: '1_1', tipos: [TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO] },
@@ -61,50 +73,60 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
   end
 
   def create
-    #obtengo el user_id del postulante de la manifestacion de interes
-    tarea_fondo = Tarea.find_by_codigo(Tarea::COD_APL_001)
-    postulante = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: params[:apl])
+    postulante = Persona.where(user_id: params[:user_id]).first
+    msj = ''
 
-    contribuyente_id = Flujo.find_by(id: params[:apl]).contribuyente_id
-
-    tipo_instrumento_id =  params[:flujo][:tipo_instrumento_id] # params[:tipo_instrumento_id]
-    flujo = Flujo.new(contribuyente_id: contribuyente_id, tipo_instrumento_id: tipo_instrumento_id)
-
-    if flujo.save
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
-      flujo.tarea_pendientes.create(
-        tarea_id: tarea_fondo.id,
-        estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-        user_id: postulante.user_id,
-        data: {}
-      )
-
-      send_message(tarea_fondo, postulante.user_id)
-
-      codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
-
-      fpl = FondoProduccionLimpia.create(
-        flujo_id: flujo.id,
-        flujo_apl_id: params[:apl],
-        codigo_proyecto: codigo_proyecto
-      )
-
-      flujo.update(fondo_produccion_limpia_id: fpl.id)
-
-      msj = 'Flujo fondo de producción limpia creado correctamente.'
-      respond_to do |format|
-        format.js { flash.now[:success] = msj; render js: "window.location='#{root_path}'" }
-        format.html { redirect_to root_path, flash: { notice: msj } }
+    if postulante != nil
+      contribuyente_id = Flujo.find_by(id: params[:apl]).contribuyente_id
+      tipo_instrumento_id = params[:tipo_instrumento_id]
+  
+      flujo = Flujo.new(contribuyente_id: contribuyente_id, tipo_instrumento_id: tipo_instrumento_id)
+  
+      if flujo.save
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
+        flujo.tarea_pendientes.create(
+          tarea_id: tarea_fondo.id,
+          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
+          user_id: postulante.user_id,
+          data: {}
+        )
+  
+        send_message(tarea_fondo, postulante.user_id)
+  
+        codigo_proyecto = determine_codigo_proyecto(flujo.tipo_instrumento_id)
+  
+        fpl = FondoProduccionLimpia.create(
+          flujo_id: flujo.id,
+          flujo_apl_id: params[:apl],
+          codigo_proyecto: codigo_proyecto
+        )
+  
+        flujo.update(fondo_produccion_limpia_id: fpl.id)
+  
+        msj = 'Flujo fondo de producción limpia creado correctamente.'
+        flash[:success] = msj
+      else
+        msj = 'No se pudo guardar el flujo.'
+        flash[:error] = msj
       end
+    else
+      msj = 'Hubo un error al obtener el usuario.'
+      flash[:error] = msj
+    end
+  
+    respond_to do |format|
+      format.js { }
+      format.html { redirect_to admin_mantenedor_fondo_produccion_limpia_path, flash: { notice: msj } }
     end
   end
 
   private
+
     def send_message(tarea, user)
       u = User.find(user)
       mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
       mensajes.each do |mensaje|
-        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
+        FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_later
       end
     end
 

@@ -23,13 +23,16 @@ class Flujo < ApplicationRecord
 
   has_many :cuencas_flujo
   has_many :cuencas, through: :cuencas_flujo
-
+  has_many :convocatorias
   has_many :contribuyente_temporal, class_name: 'Contribuyente'
   has_many :usuario_temporal, class_name: 'User'
 
   accepts_nested_attributes_for :manifestacion_de_interes
   accepts_nested_attributes_for :ppp
   accepts_nested_attributes_for :proyecto
+
+  attr_accessor :user_id, :nombre_completo
+
 
   APL = 'Acuerdo de Producción Limpia'
   FPL = 'Fondo de Producción Limpia'

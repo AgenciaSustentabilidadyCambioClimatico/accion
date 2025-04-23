@@ -4,17 +4,17 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -31,7 +31,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :revisar_entregable_diagnostico,
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
                                         :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
-                                        :guardar_fondo_temporal]
+                                        :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
                                         :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
@@ -56,7 +56,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                         :usuario_entregables, :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
-                                        :carga_auditoria, :enviar_carga_auditoria]
+                                        :carga_auditoria, :enviar_carga_auditoria, :carga_responsable_postulante]
     before_action :set_tipo_instrumentos, only: [:edit,:update,
                                         :revisor, :asignar_revisor,
                                         :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
@@ -68,7 +68,7 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                         :usuario_entregables, :guardar_usuario_entregables,
                                         :firma, :actualizar_firma,
-                                        :carga_auditoria, :enviar_carga_auditoria]
+                                        :carga_auditoria, :enviar_carga_auditoria, :carga_responsable_postulante]
 
     before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
     before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
@@ -325,17 +325,30 @@ class FondoProduccionLimpiasController < ApplicationController
       # Obtener el rol de la tarea
       rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
       rol_tarea_entregables = Tarea.find_by(codigo: Tarea::COD_FPL_015).rol_id
-    
-      # Obtener responsables para postulante
+  
       responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
       contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
-      @contribuyentes = Contribuyente.where(id: contribuyentes_ids_postulante)
-    
+      @contribuyentes_postulantes = Contribuyente.where(id: contribuyentes_ids_postulante)
+      
       # Obtener responsables para entregables
       responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
       contribuyentes_ids_entregables = responsables_entregables.pluck(:contribuyente_id).uniq
       @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_entregables)
-      
+    end
+
+    def carga_responsable_postulante #FPL-00
+      @manifestaciones = []
+      @custom_id = ''
+
+      tipo_instrumento = TipoInstrumento::FONDO_DE_PRODUCCION_LIMPIA
+  
+      # Obtener el rol de la tarea
+      rol_tarea_postulante = Tarea.find_by(codigo: Tarea::COD_FPL_00).rol_id
+
+      # Obtener responsables para postulante
+      responsables_postulante = Responsable.__personas_responsables_v3(rol_tarea_postulante, tipo_instrumento)
+      contribuyentes_ids_postulante = responsables_postulante.pluck(:contribuyente_id).uniq
+      @contribuyentes = Contribuyente.where(id: contribuyentes_ids_postulante)
     end
     
     def lista_usuarios_entregables
@@ -541,48 +554,6 @@ class FondoProduccionLimpiasController < ApplicationController
       @flujo = @tarea_pendiente.flujo
       set_equipo_trabajo
 
-      unless @manifestacion_de_interes.contribuyente_id.nil?
-        #Elimino todos los que no sean el id guardado
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
-        #Ahora segun si tiene contribuyente_id lo paso a variable
-        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-  
-      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
-        #Elimino todos los que no sean el id guardado
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
-        #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-      carga_de_representantes
     end
 
     def insert_objetivo_especifico
@@ -760,69 +731,70 @@ class FondoProduccionLimpiasController < ApplicationController
     end 
 
     def insert_modal
-      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
-      @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
-      @user = User.new(create_user_params)
+      respond_to do |format|
+        tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+        @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+        @user = User.new(create_user_params)
 
-      @usuarios = User
-      if @user.rut.present?
-        rut = @user.rut.upcase
-        @usuarios = @usuarios.where("rut = ?", rut)
-      end
+        @usuarios = User
+        if @user.rut.present?
+          rut = @user.rut.upcase
+          @usuarios = @usuarios.where("rut = ?", rut)
+        end
 
-      if @usuarios.count > 0
-         # Usuario ya existe
-        format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
-        format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
-      else
-        # Verificación de archivos
-        unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
-          respond_to do |format|
-            format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
-            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+        if @usuarios.count > 0
+          # Usuario ya existe
+          format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
+          format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
+        else
+          # Verificación de archivos
+          unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+            respond_to do |format|
+              format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
+            end
+            return
           end
-          return
-        end
 
-        #SETEO PARAMETROS EQUIPO
-        custom_params_equipo = {
-          equipo_trabajo: {
-            profesion: params[:equipo_trabajo][:profesion],
-            funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
-            valor_hh: params[:equipo_trabajo][:valor_hh],
-            copia_ci: params[:archivos_copia_ci],
-            curriculum: params[:archivos_curriculum],
-            tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
-            flujo_id: params[:user][:flujo_id],
-            user_id: params[:user][:user_id]
+          #SETEO PARAMETROS EQUIPO
+          custom_params_equipo = {
+            equipo_trabajo: {
+              profesion: params[:equipo_trabajo][:profesion],
+              funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+              valor_hh: params[:equipo_trabajo][:valor_hh],
+              copia_ci: params[:archivos_copia_ci],
+              curriculum: params[:archivos_curriculum],
+              tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+              flujo_id: params[:user][:flujo_id],
+              user_id: params[:user][:user_id]
+            }
           }
-        }
-        tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
+          tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
 
-        #SETEO PARAMETROS PROVEEDOR
-        @registro_proveedor = RegistroProveedor.new()
-        @registro_proveedor.rut = @user.rut
-        @registro_proveedor.nombre = @user.nombre_completo
-        @registro_proveedor.email = @user.email
-        @registro_proveedor.telefono = @user.telefono
-        @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-        @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
-        @registro_proveedor.calificado = false
-        @registro_proveedor.apellido = '.'
-        @registro_proveedor.direccion = '.'
-        @registro_proveedor.region = '.'
-        @registro_proveedor.comuna = '.'
-        @registro_proveedor.ciudad = '.'
-        @registro_proveedor.terminos_y_servicion = true
+          #SETEO PARAMETROS PROVEEDOR
+          @registro_proveedor = RegistroProveedor.new()
+          @registro_proveedor.rut = @user.rut
+          @registro_proveedor.nombre = @user.nombre_completo
+          @registro_proveedor.email = @user.email
+          @registro_proveedor.telefono = @user.telefono
+          @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
+          @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
+          @registro_proveedor.calificado = false
+          @registro_proveedor.apellido = '.'
+          @registro_proveedor.direccion = '.'
+          @registro_proveedor.region = '.'
+          @registro_proveedor.comuna = '.'
+          @registro_proveedor.ciudad = '.'
+          @registro_proveedor.terminos_y_servicion = true
 
-        # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-        empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+          # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
+          empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
 
-        if params[:equipo_trabajo][:tipo_equipo].to_i == 2
-          custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
-          @registro_proveedor.contribuyente_id = empresa.contribuyente_id
-        end
-        respond_to do |format|
+          if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+            custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
+            @registro_proveedor.contribuyente_id = empresa.contribuyente_id
+          end
+        
           if @user.user_id.nil?
             if @user.save
               usuario_temporal = User.unscoped.find(@user.id)
@@ -995,6 +967,101 @@ class FondoProduccionLimpiasController < ApplicationController
         else
           flash[:error] = 'Hubo un problema al crear al Consultor.'
           render 'edit'
+        end
+      end
+    end
+
+    def edit_modal_contribuyente
+      @contribuyente_temporal = Contribuyente.new
+      @contribuyente_temporal.temporal = true
+      @contribuyente_temporal.flujo_id = params[:flujo_id]
+      @contribuyente_temporal.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
+      render layout: false
+    end
+
+    def create_contribuyente
+      @tarea_pendiente = TareaPendiente.find(params[:id]) 
+      parameters = contribuyente_params
+      @contribuyente = Contribuyente.new(parameters)
+
+      if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+        @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
+      end
+      if contribuyente_params[:establecimiento_contribuyentes_attributes].nil? || contribuyente_params[:establecimiento_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
+        @error_extra = "Debe ingresar al menos un establecimiento" if @error_extra.nil?
+      end
+      if parameters.to_h["establecimiento_contribuyentes_attributes"].nil? ? true : parameters.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size == 0
+        @error_extra = "Debe seleccionar una casa matriz" if @error_extra.nil?
+      elsif contribuyente_params.to_h["establecimiento_contribuyentes_attributes"].select{|k,v| v["casa_matriz"] == "1"}.size > 1
+        @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
+      end
+
+      # Habilita la validación de teléfono durante el create
+      @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
+        establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
+      end
+
+      errores = false
+      errores = true unless @error_extra.nil? 
+      errores = true unless @contribuyente.valid?
+
+      @contribuyente.establecimiento_contribuyentes.each{|ec| errores = true unless ec.valid?}
+      @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
+
+      respond_to do |format|
+        if @contribuyente.contribuyente_id.nil?
+          unless errores
+            @contribuyente.save
+            if(parameters[:temporal] == "true") 
+              @contribuyente_temporal = @contribuyente
+              #creo equipo empresa
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente][:flujo_id],
+                  contribuyente_id: @contribuyente_temporal.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
+              format.js {}
+            else
+              #creo equipo empresa
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente][:flujo_id],
+                  contribuyente_id: @contribuyente_temporal.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
+              format.js { 
+                flash.now[:success] = 'Institución correctamente creada.'
+                @contribuyente = Contribuyente.new
+              }
+              format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente creada.' }
+            end
+          else
+            if(parameters[:temporal] != "true")
+              flash[:error] = @error_extra unless @error_extra.nil?
+              format.html { render :new }
+            else
+              @contribuyente_temporal = @contribuyente
+            end
+            format.js
+          end
+        else
+          @contribuyente.save(validate: false)
+          @contribuyente_temporal = @contribuyente
+          #creo equipo empresa
+          custom_params_empresa = {
+          equipo_empresa: {
+            flujo_id: params[:contribuyente][:flujo_id],
+            contribuyente_id: @contribuyente.id
+            }
+          }
+          @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+          @empresa.save
+          format.js {}
         end
       end
     end
@@ -4264,6 +4331,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_contribuyentes
         #se agrega contribuyente del proponente
         @contribuyente = Contribuyente.new
+        @contribuyente_temporal = Contribuyente.new
         personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
   
         #se modifica para que no hayan contribuyentes precargados
@@ -5030,4 +5098,19 @@ class FondoProduccionLimpiasController < ApplicationController
       def obtiene_nombre_tipo_instrumento(tipo_instrumento_id)
         TipoInstrumento.find(tipo_instrumento_id).nombre
       end  
+
+      def contribuyente_params
+        params.require(:contribuyente).permit(
+          :rut,
+          :dv,
+          :razon_social,
+          :temporal,
+          :flujo_id,
+          :contribuyente_id,
+          fields_visibility: {},
+          actividad_economica_contribuyentes_attributes: [ :id, :actividad_economica_id, :_destroy ],
+          establecimiento_contribuyentes_attributes: [ :id, :casa_matriz, :direccion, :ciudad, :region_id, :comuna_id, :_destroy ],
+          dato_anual_contribuyentes_attributes: [ :id, :tipo_contribuyente_id, :rango_venta_contribuyente_id, :periodo, :numero_trabajadores, :f22c_645, :f22c_646, :_destroy ]
+        )
+      end
 end

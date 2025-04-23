@@ -12,6 +12,6 @@ class RegistroAperturaCorreosController < ApplicationController
   	r = RegistroAperturaCorreo.create(user_id: 18)
   	FlujoMailer.enviar( "test", 
 										"correo test", 
-										"rdiaz@binarybag.com", r.id).deliver_now
+										"rdiaz@binarybag.com", r.id).deliver_later
   end
 end

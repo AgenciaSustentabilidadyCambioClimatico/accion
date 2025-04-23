@@ -1,6 +1,8 @@
 :javascript	
 	$(document).ready(function(){
-		$("#guardarFlujo").prop("disabled", true);
+		$(document).on('click', '#guardarFlujo', function () {
+			guardarFlujo();
+		});
 	})
 
 	function actualizarTipoInstrumento(selectId) {
@@ -55,16 +57,16 @@
 		$("#guardarFlujo").prop("disabled", false);
 	}
 
-	function guardarFlujo(){
+	/*function guardarFlujo(){
 		if(confirm("¿Está seguro que desea crar la postulación del fondo de producción limpia?")){
 			$('.loading-data').show();
 			var apl = document.getElementById('apl').value;
 			var tipo_instrumento_id = document.getElementById('tipo_instrumento_id').value;
-
+			var user_id = document.getElementById('user_id').value;
 
 			$.ajax({
 			url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
-			data: { tipo_instrumento_id : tipo_instrumento_id, apl: apl },
+			data: { tipo_instrumento_id : tipo_instrumento_id, apl: apl, user_id: user_id },
 			method: "POST",
 			success: function(response) {
 				$('.loading-data').hide();
@@ -75,7 +77,110 @@
 			}
 			});
 		}
+	}*/
+
+	/*function guardarFlujo() {
+		if (confirm("¿Está seguro que desea crear la postulación del fondo de producción limpia?")) {
+			$('.loading-data').show();
+			var apl = document.getElementById('apl').value;
+			var tipo_instrumento_id = document.getElementById('tipo_instrumento_id').value;
+			var user_id = document.getElementById('user_id').value;
+
+			$.ajax({
+			url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
+			data: { tipo_instrumento_id: tipo_instrumento_id, apl: apl, user_id: user_id },
+			method: "POST",
+			success: function (response) {
+				$('.loading-data').hide();
+			},
+			error: function (error) {
+				console.error("Error al llamar al método del controlador", error);
+				$('.loading-data').hide();
+			}
+			});
+		}
+	}*/
+
+	function guardarFlujo() {
+		// Obtener los elementos del DOM
+		const apl = document.getElementById('apl').value;
+		const tipoInstrumentoId = document.getElementById('tipo_instrumento_id').value;
+		const userId = document.getElementById('flujo_user_id').value;
+
+		// Validar si los elementos existen
+		if (!apl) {
+			alert("El elemento Instrumento no está disponible. Por favor, seleccione un Acuerdo de Producción Limpia.");
+			event.preventDefault();
+			return;
+		}
+
+		if (!tipoInstrumentoId) {
+			alert("El elemento Tipo instrumento no está disponible. Por favor, asegúrese de seleccionar un tipo de instrumento.");
+			event.preventDefault();
+			return;
+		}
+	
+		if (!userId) {
+			alert("El elemento Usuario no está disponible. Por favor, seleccione un usuario.");
+			event.preventDefault();
+			return;
+		}
+
+		// Confirmación del usuario
+		if (confirm("¿Está seguro que desea crear la postulación del fondo de producción limpia?")) {
+			$('.loading-data').show();
+
+			const button_guardar = document.getElementById('guardarFlujo');
+			button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+			button_guardar.disabled = true;
+
+			// Llamada AJAX
+			$.ajax({
+				url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
+				data: { 
+					tipo_instrumento_id: tipoInstrumentoId, 
+					apl: apl, 
+					user_id: userId 
+				},
+				method: "POST",
+				success: function(response) {
+					$('.loading-data').hide();
+					button_guardar.innerHTML = 'Guardar';
+					button_guardar.disabled = false;
+
+					// Resetear el combo APL
+					$('#apl').val('').trigger('change'); // Restablece el valor del combo
+				
+					// Resetear y deshabilitar columnas relacionadas
+					$('#columna_linea_1_1, #columna_linea_1_2_1, #columna_linea_1_2_2, #columna_linea_1_3').find('select').empty().prop('disabled', false);
+
+					// Deshabilitar el botón Guardar
+					$("#guardarFlujo").prop("disabled", true);
+					
+				},
+				error: function(error) {
+					console.error("Error al llamar al método del controlador", error);
+					$('.loading-data').hide();
+				}
+			});
+		}else{
+			event.preventDefault();
+			return;
+		}
 	}
+
+
+	$(document).on('click', '.seleccionar-usuario-button', function(){
+		modal_id = $(this).data('modal-id');
+		usuario = modal_id.split("_")[2];
+		try {
+			data=JSON.parse($('#tabla_usuarios_'+modal_id).DataTable().$('.usuario-radio:checked').val());
+			$("#flujo_user_id").val(data.id);
+			$("#flujo_nombre_completo").val(data.nombre);
+		} catch(e) {
+		alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+		}
+	});
 
 - titulo t(:nuevo_flujo_fpl)
 - url = (@flujo.nil? or @flujo.id.nil?) ? admin_mantenedor_fondo_produccion_limpia_path : admin_mantenedor_fondo_produccion_limpia_path
@@ -85,15 +190,29 @@
 			.card
 				.card-header
 					%h5.no-margin
-						-#= action_label_of_(@actividad_por_linea)
-						Crea nuevo flujo FPL
+						=t(:crea_nuevo_flujo_fpl)
 				.card-body
 					.row
+						.col-12.col-md-6
+							%label.string.control-label.required
+								%abbr{title: "Requerido"} *
+								Instrumento
+								= select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", selected: @apl), { class: 'form-control select-container', prompt: 'Seleccione un Acuerdo de Producción Limpia', onchange: 'cargarLineas(this.value);' }
+						.col-12.col-md-6
+							%label.string.control-label.required
+								%abbr{title: "Requerido"} *
+								Usuario
+							.row
+								.col-12.col-lg-3.pr-lg-1
+									= link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar_usuario_fpl", class: 'form-control btn btn-primary btn-sm btn-block' do
+										%i.fa.fa-search-plus
+										Buscar
+								.col-12.col-lg-9.pl-lg-1.pt-2.pt-lg-0
+									= f.input :user_id, as: :hidden, wrapper: false
+									= f.input :nombre_completo, input_html: {class: "form-control required-field"}, readonly: true, label: false, wrapper: false
+					
 						= f.hidden_field :tipo_instrumento_id, id: 'tipo_instrumento_id'
-
-						.col-lg-12
-							= select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia', onchange: 'cargarLineas(this.value);' }
-							%br
+					.row
 						.col-lg-6.col-12#columna_linea_1_1
 							= f.input :tipo_instrumento_1_id, collection: (@lineas_fpl_1_1.present? ? @lineas_fpl_1_1.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Diagnostico', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_1', onchange: 'ocultarCombos(1);'}, selected: @instrumento_seleccionado_1_1
 						.col-lg-6.col-12#columna_linea_1_2_1
@@ -103,4 +222,7 @@
 						.col-lg-6.col-12#columna_linea_1_3
 							= f.input :tipo_instrumento_4_id, collection: (@lineas_fpl_1_3.present? ? @lineas_fpl_1_3.map{|p| [p.nombre, p.id]} : []), label: 'Postulación Evaluación de Conformidad', input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada_1_3', onchange: 'ocultarCombos(4);'}, selected: @instrumento_seleccionado_1_3								
 	.float-right
-		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", id: 'guardarFlujo', disabled: :disabled, onclick: 'guardarFlujo(); return false;'
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardarFlujo', class: "btn btn-sm btn-primary", disabled: :disabled
+
+= render 'admin/users/buscador', modal_id: "buscar_usuario_fpl"

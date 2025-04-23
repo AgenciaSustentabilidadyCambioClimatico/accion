@@ -23,7 +23,6 @@ gem 'daemons'
 gem 'data-confirm-modal'
 gem 'datejs-rails'
 gem 'delayed_job'
-gem 'delayed_job_active_record'
 gem 'font-awesome-rails'
 gem 'geocoder'
 gem 'geoxml-rails'
@@ -31,6 +30,8 @@ gem 'google-api-client'
 gem 'googleauth', '~> 1.5.2'
 gem 'haml'
 gem 'haml-rails', '~> 1.0'
+gem "sidekiq", "~> 7.3.8"
+gem 'sidekiq-cron'
 gem 'htmltoword'
 gem 'httparty'
 gem 'jquery-datatables'
@@ -73,7 +74,6 @@ gem 'carrierwave-aws'
 gem 'aws-sdk', '~> 3'
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
-gem 'psych', '3.3.4'
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
   gem 'capybara', '~> 2.13'
@@ -82,6 +82,7 @@ end
 
 group :production do
   gem "newrelic_rpm"
+  gem "sidekiq-failures"
 end
 
 group :development do

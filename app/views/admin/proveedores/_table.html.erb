@@ -1,138 +1,4 @@
 <script>
-  $(document).ready(function() {
-
-
-    // filtro proveedores
-    $('#tipo-proveedor-select, #region-select').change(function() {
-      var tipoProveedor = $('#tipo-proveedor-select').val();
-      var region = $('#region-select').val()
-
-
-      // Show all rows if no filters are selected
-      if (tipoProveedor === '' && region === '') {
-        $('table.proveedores tbody tr').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
-        return;
-      }
-
-     // Filter the rows based on the selected values
-      $('tr:not(.headers)').hide();
-      if (tipoProveedor !== '' && region === '') {
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
-    } else if (tipoProveedor === '' && region !== '') {
-        $('tr[data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
-    } else {
-      // If both filters are selected, show the rows that match both filters
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
-    }
-
-    if (tipoProveedor === 'Auditor APL') {
-        $('#correlativo-th').removeClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').removeClass('d-none');
-        $('#fecha-actualizacion-th').removeClass('d-none');
-        $('#promedio-th').removeClass('d-none');
-        $('td.correlativo-td').removeClass('d-none'); // Show all matching <td> elements
-        $('td.fecha-registro-td').removeClass('d-none');
-        $('td.fecha-actualizacion-td').removeClass('d-none');
-        $('td.promedio-td').removeClass('d-none');
-
-      } else {
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all matching <td> elements
-      }
-    });
-
-    $(document).on('click', '.page-item', function () {
-      var tipoProveedor = $('#tipo-proveedor-select').val();
-      var region = $('#region-select').val()
-
-
-      // Show all rows if no filters are selected
-      if (tipoProveedor === '' && region === '') {
-        $('table.proveedores tbody tr').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
-        return;
-      }
-
-     // Filter the rows based on the selected values
-      $('tr:not(.headers)').hide();
-      if (tipoProveedor !== '' && region === '') {
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"]').show();
-    } else if (tipoProveedor === '' && region !== '') {
-        $('tr[data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all mat
-    } else {
-      // If both filters are selected, show the rows that match both filters
-        $('tr[data-tipo-proveedor="' + tipoProveedor + '"][data-region="' + region + '"]').show();
-        $('th.detalles').removeClass('d-none');
-    }
-
-    if (tipoProveedor === 'Auditor APL') {
-        $('#correlativo-th').removeClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').removeClass('d-none');
-        $('#fecha-actualizacion-th').removeClass('d-none');
-        $('#promedio-th').removeClass('d-none');
-        $('td.correlativo-td').removeClass('d-none'); // Show all matching <td> elements
-        $('td.fecha-registro-td').removeClass('d-none');
-        $('td.fecha-actualizacion-td').removeClass('d-none');
-        $('td.promedio-td').removeClass('d-none');
-
-      } else {
-        $('#correlativo-th').addClass('d-none'); // Hide the <th> element
-        $('td.correlativo-td').addClass('d-none');
-        $('th.detalles').removeClass('d-none');
-        $('#fecha-registro-th').addClass('d-none');
-        $('#fecha-actualizacion-th').addClass('d-none');
-        $('#promedio-th').addClass('d-none');
-        $('td.fecha-registro-td').addClass('d-none');
-        $('td.fecha-actualizacion-td').addClass('d-none');
-        $('td.promedio-td').addClass('d-none'); // Hide all matching <td> elements
-      }
-    });
-});
-
 
 </script>
 <div class="card">
@@ -166,7 +32,7 @@
           <tr class = "headers" data-target="#proveedor-detalles">
             <th id='correlativo-th' class="d-none"><%= t(:correlativo) %></th>
             <th><%= t(:tipo_proveedor) %></th>
-            <th><%= t(:nombre) %></th>
+            <th data-order-col="nombre"><%= t(:nombre) %></th>
             <% if !local_assigns[:retirados]%>
               <th><%= t(:empresa) %></th>
             <% end %>
@@ -231,7 +97,14 @@
                 <% end %>
               <% end %>
               <td class="dos iconos-acciones">
-                <%= link_to get_apls_registro_admin_proveedores_path(record.id), "data-toggle"=>:modal, "data-target"=>"#proveedor-detalles", data: {remote: true, method: :get} do %>
+                <%= link_to get_apls_registro_admin_proveedores_path(record.id),
+                            method: :get,
+                            remote: true,
+                            data: {
+                              toggle: 'modal',
+                              target: '#proveedor-detalles',
+                              tipo_proveedor: record.tipo_proveedor&.nombre&.downcase
+                            } do %>
                   <i class="fa fa-info-circle"></i>
                 <% end %>
               </td>

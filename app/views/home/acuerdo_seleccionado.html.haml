@@ -3,7 +3,7 @@
     .container{class: (user_signed_in? ? 'fix-width' : '')}
       .d-flex.flex-column.my-3
         .title=@acuerdo_seleccionado.datos[:nombre_acuerdo]
-        -if user_signed_in?
+        -if user_signed_in? &&  current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
           .empresa="#{@acuerdo_seleccionado.datos[:contribuyente_razon_social]} - RUT: #{@acuerdo_seleccionado.datos[:contribuyente_rut]}"
         -if !@acuerdo_seleccionado.datos[:firma_fecha].nil? || !@acuerdo_seleccionado.datos[:firma_fecha_hora].nil?
           -_firma_fecha = @acuerdo_seleccionado.datos[:firma_fecha_hora].blank? ? @acuerdo_seleccionado.datos[:firma_fecha] : @acuerdo_seleccionado.datos[:firma_fecha_hora]
@@ -29,7 +29,7 @@
             .btn-group.ml-lg-auto.mt-1.mt-lg-0
               =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
               =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
-        -if user_signed_in?
+        -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
           .d-flex.flex-column.flex-lg-row.justify-content-between.mt-2
             .d-flex
               .btn-group
@@ -62,13 +62,15 @@
     -@acuerdo_seleccionado.datos[:clasificaciones].each_slice(3) do |sub_grupo|
       .row
         -sub_grupo.each do |clasificacion|
+        - image_url = Clasificacion.find(clasificacion[:id]).imagen.url
+        - icono_url = Clasificacion.find(clasificacion[:id]).icono.url
           .col-12.col-lg-4.py-2.px-lg-2
             .flip-card
               .flip-card-inner
-                .flip-card-front{style: "background-image:url('#{clasificacion[:imagen]}');background-repeat:no-repeat;background-size:cover;"}
+                .flip-card-front{style: "background-image:url('#{image_url}');background-repeat:no-repeat;background-size:cover;"}
                   .d-flex.flex-column.h-100
                     .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion[:color]};"}
-                      %img{src: clasificacion[:icono]}
+                      %img{src: icono_url}
                     .flip-card-name-container{style: "background-color: #{clasificacion[:color]};"}
                       =clasificacion[:nombre]
                 .flip-card-back
@@ -76,7 +78,7 @@
                     .d-flex.mb-2
                       .flip-card-name=clasificacion[:nombre]
                       .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{clasificacion[:color]};"}
-                        %img{src: clasificacion[:icono]}
+                        %img{src: icono_url}
                     .flip-card-description.mb-2=clasificacion[:descripcion]
                     .d-flex.w-100.justify-content-between
                       .flip-number.w-25

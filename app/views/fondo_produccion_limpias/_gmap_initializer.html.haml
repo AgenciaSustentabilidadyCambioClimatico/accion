@@ -1,4 +1,3 @@
-
 :javascript
   //carga la data desde el mapa, con el poligono
 
@@ -7,9 +6,6 @@
 :javascript
   var ubicacionEntidadCogestoraMap;
   var representacionSeleccionTerritorioMap;
-  var areaInfluenciaProyectoMap;
-  var alternativasInstalacionMap;
-  var representacionEnMapaProyectoMap;
   var document_ready = false;
 
   var coords = [];
@@ -19,21 +15,8 @@
   function mapLoaded(){
     if(document_ready){
       initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
-      initializeAreaInfluenciaProyectoMap(-30.0000000, -71.0000000);
-      initializeAlternativasInstalacionMap(-30.0000000, -71.0000000);
-
       setAllMarkers(#{raw json_escape @manifestacion_de_interes.coordernadas_territorios.blank? ? [] :  @manifestacion_de_interes.coordernadas_territorios},representacionSeleccionTerritorioMap);
     }
-  }
-
-  function initializeUbicacionEntidadGestoraMap(lat,lng) {
-    ubicacionEntidadCogestoraMap = new google.maps.Map(document.getElementById('mapa-entidad-cogestora'), {
-      zoom: 14,
-      minZoom: 11,
-      center: new google.maps.LatLng(lat,lng),
-      mapTypeId: google.maps.MapTypeId.ROADMAP
-    });
-    marker = new google.maps.marker.AdvancedMarkerElement({ position: new google.maps.LatLng(lat,lng), title: "Título", map: ubicacionEntidadCogestoraMap });
   }
 
   function initializeRepresentacionSeleccionTerritorioMap(lat,lng) {
@@ -41,104 +24,6 @@
       zoom: 4,
       center: new google.maps.LatLng(lat,lng),
       mapTypeId: google.maps.MapTypeId.TERRAIN
-    });
-  }
-
-  function initializeAreaInfluenciaProyectoMap(lat,lng) {
-    areaInfluenciaProyectoMap = new google.maps.Map(document.getElementById('area-influencia-proyecto-mapa'), {
-      zoom: 4,
-      center: new google.maps.LatLng(lat,lng),
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      mapTypeControl: true,
-      disableDefaultUI: true,
-      zoomControl: true
-    });
-
-    //Permite definir los controles a usar dentro del mapa.-
-    areaInfluenciaProyectoMap.data.setControls(["Point","Polygon"]);
-    areaInfluenciaProyectoMap.data.setStyle({
-      editable: true,
-      draggable: true
-    });
-    areaInfluenciaProyectoMap.data.addListener('addfeature', saveAreaInfluenciaProyectoData);
-    areaInfluenciaProyectoMap.data.addListener('removefeature', saveAreaInfluenciaProyectoData);
-    areaInfluenciaProyectoMap.data.addListener('setgeometry', saveAreaInfluenciaProyectoData);
-    //permite eliminar una figura con el click derecho
-    areaInfluenciaProyectoMap.data.addListener('rightclick', function(e) {
-      areaInfluenciaProyectoMap.data.remove(e.feature);
-    });
-    areaInfluenciaProyectoData = $('#manifestacion_de_interes_area_influencia_proyecto_data').val();
-    if ( areaInfluenciaProyectoData != "" ) {
-      loadSavedData(areaInfluenciaProyectoMap,JSON.parse(areaInfluenciaProyectoData));
-    }
-    // Cargar el control personalizado
-    var centerControlDiv = document.createElement('div');
-    var centerControl = new CenterControl(centerControlDiv, areaInfluenciaProyectoMap);
-    centerControlDiv.index = 1;
-    areaInfluenciaProyectoMap.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
-  }
-
-  function initializeAlternativasInstalacionMap(lat,lng) {
-    alternativasInstalacionMap = new google.maps.Map(document.getElementById('alternativas-instalacion-mapa'), {
-      zoom: 4,
-      center: new google.maps.LatLng(lat,lng),
-      mapTypeId: google.maps.MapTypeId.ROADMAP,
-      mapTypeControl: true,
-      disableDefaultUI: true,
-      zoomControl: true
-    });
-
-    alternativasInstalacionMap.data.setControls(["Point","Polygon"]);
-    alternativasInstalacionMap.data.setStyle({
-      editable: true,
-      draggable: true
-    });
-
-    alternativasInstalacionMap.data.addListener('addfeature', saveAlternativasInstalacionData);
-    alternativasInstalacionMap.data.addListener('removefeature', saveAlternativasInstalacionData);
-    alternativasInstalacionMap.data.addListener('setgeometry', saveAlternativasInstalacionData);
-    alternativasInstalacionMap.data.addListener('rightclick', function(e) {
-      alternativasInstalacionMap.data.remove(e.feature);
-    });
-
-    alternativasInstalacionData = $('#manifestacion_de_interes_alternativas_instalacion_data').val();
-    if ( alternativasInstalacionData != "" ) {
-      loadSavedData(alternativasInstalacionMap,JSON.parse(alternativasInstalacionData));
-    }
-    // Cargar el control personalizado
-    var centerControlDiv = document.createElement('div');
-    var centerControl = new CenterControl(centerControlDiv, alternativasInstalacionMap);
-    centerControlDiv.index = 1;
-    alternativasInstalacionMap.controls[google.maps.ControlPosition.TOP_LEFT].push(centerControlDiv);
-  }
-
-  function loadSavedData(map,data) {
-    try{
-      //var data = JSON.parse(localStorage.getItem(item));
-      map.data.forEach(function (f) {
-        map.data.remove(f);
-      });
-      map.data.addGeoJson(data);
-    }catch(error){
-      console.log('Error al cargar datos kmz');
-    }
-  }
-
-  function saveAreaInfluenciaProyectoData(){
-    e=$('#manifestacion_de_interes_area_influencia_proyecto_data');
-    areaInfluenciaProyectoMap.data.toGeoJson(function(json) {
-      v=JSON.stringify(json);
-      localStorage.setItem('areaInfluenciaProyectoGeoData', v);
-      e.val(v);
-    });
-  }
-
-  function saveAlternativasInstalacionData(){
-    e=$('#manifestacion_de_interes_alternativas_instalacion_data');
-    alternativasInstalacionMap.data.toGeoJson(function(json) {
-      v=JSON.stringify(json);
-      localStorage.setItem('alternativasInstalacionGeoData', v);
-      e.val(v);
     });
   }
 
@@ -152,14 +37,13 @@
       fillOpacity: 0.35
     });
     polygon.setMap(map);
+
   }
 
   function addMarker(map,location) {
-    pinIcon = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00",null,null,null,new google.maps.Size(14,20));
-    marker = new google.maps.marker.AdvancedMarkerElement({
+    marker = new google.maps.Marker({
       position: location,
-      map: map,
-      icon: pinIcon
+      map: map
     });
     markers.push(marker);
   }
@@ -172,20 +56,17 @@
   }
 
   function setAllMarkers(coords,map) {
+
     for (var i = 0; i < coords.length; i++) {
       addMarker(map,coords[i]);
     }
-  }
 
-  // ##
-  // # DOSSA 2019-08-08 10:08
-  // # Funcion encargada de fijar coordenadas en mapa de manifestación de interés (Contexto sector).
-  // # Primero elimina todas las coordenadas fijadas en el mapa, revisa si hay checks activados, de ser así itera sobre ellos y 'addMArker' se encarga de fijar los puntos en el mapa, de lo contrario, sólo setea los valores del campo '#manifestacion_de_interes_coordernadas_territorios' en blanco.
-  // # En versiones anteriores, las funciones 'removeAllMarkers()' y 'addMarker()' se encontraban comentadas.
+  }
 
   function setCoordinates(lugares) {
     removeAllMarkers();
     if ( lugares.length > 0 ) {
+
       $.post("#{geo_localization_coordinates_path}", { geo_localization: { place: JSON.stringify(lugares) }}, function(data){
         coords = [];
         $.each(data.response,function(k,v){
@@ -267,4 +148,3 @@
     }
     return lugares;
   }
-  

@@ -1,7 +1,7 @@
 #DZC Necesario para la habilitación de config.web_console.whitelisted_ips desde cualquier ip
 require 'socket'
 require 'ipaddr'
-require 'psych'
+
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.

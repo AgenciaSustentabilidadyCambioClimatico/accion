@@ -89,11 +89,15 @@
           .card-body
             .row
               .col-12
-                = f.fields_for :documento_registro_proveedores, f.object.documento_registro_proveedores.build do |documento|
-                  = render 'documento_registro_proveedor_fields', f: documento, cv: true 
-
+                = f.fields_for :documento_registro_proveedores do |doc_form|
+                  - if doc_form.object.new_record? && doc_form.index == 0
+                    = render 'documento_registro_proveedor_fields', f: doc_form, cv: true
+                  - elsif doc_form.object.new_record? && doc_form.index == 1
+                    = render 'documento_registro_proveedor_fields', f: doc_form, ci: true
+                  - else
+                    = render 'documento_registro_proveedor_fields', f: doc_form
                 %h5
-                %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos
+                %b(style="color: #5d759e; font-weight: 400; font-size: 15px; font-weight: bold") Otros Documentos. (2.3 y 2.4 Bases Registro de Auditores.)
                 = f.fields_for :documento_registro_proveedores, f.object.documento_registro_proveedores.build do |documento|
                   = render 'documento_registro_proveedor_fields', f: documento
 

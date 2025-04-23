@@ -9,6 +9,7 @@
         %th.url-referencia=t(:url_ref)
         %th.usuario=t(:usuario)
         %th.adjuntos=t(:adjuntos)
+        %th.fecha-lectura=t(:fecha_lectura)   
         %th.fecha-resolucion=t(:fecha_resolucion)   
         %th.dos.iconos-acciones=t(:acciones)
 
@@ -31,6 +32,14 @@
                 = '--'
             %td= record.user_id.blank? ? '--' : record&.user&.nombre_completo
             %td.text-center= render 'layouts/modal_archivos', item: record, adjuntos: record.comentario_archivos
+            %td{id: "comentarios_fechas_lectura_#{record.id}"}
+              - if record.leido
+                - if record.fecha_lectura.present?
+                  = record.fecha_lectura.strftime('%Y-%m-%d')
+                - else
+                  = 'Fecha no disponible'
+              - else
+                = 'No Leído'
             %td{id: "comentarios_fechas_updated_#{record.id}"}
               - if record.resuelto
                 =record[:updated_at].strftime('%Y-%m-%d')
@@ -40,10 +49,10 @@
               - if record.leido
                 %i.fa.fa-envelope-open.pr-1
               - else
-                = link_to leido_comentario_path(record.id), method: :put, data: { confirm: t(:está_seguro_que_desea_marcar_este_item_como_leído?, item: t(:comentario).downcase), remote: true } do
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id, leido: true  } do
                   %i.fa.fa-envelope.pr-1
               - if record.resuelto
                 %i.fa.fa-check.text-success
               - else
-                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id  } do
+                = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-response', email: record.email_contacto, id: record.id, leido: false  } do
                   %i.fa.fa-fire-extinguisher.text-danger

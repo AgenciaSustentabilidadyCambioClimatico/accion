@@ -44,7 +44,7 @@
                 - if es_administador
                   = link_to t(:mis_usuarios), admin_users_path, class: 'dropdown-item'
                 = link_to t(:salir), '#', class: 'dropdown-item', id: "logout"
-            - if true
+            - if true && current_user.session&.dig(:personas, 0, :contribuyente_id) == 639391
               %li.nav-item.dropdown
                 %a#dropdown-tareas-pendientes.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
                   = 'Datos/Estadísticas'
