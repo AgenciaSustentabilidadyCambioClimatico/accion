@@ -31,7 +31,7 @@ gem 'googleauth', '~> 1.5.2'
 gem 'haml'
 gem 'haml-rails', '~> 1.0'
 gem "sidekiq", "~> 7.3.8"
-gem "sidekiq-cron"
+gem 'sidekiq-cron'
 gem 'htmltoword'
 gem 'httparty'
 gem 'jquery-datatables'
