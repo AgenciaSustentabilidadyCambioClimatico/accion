@@ -8,7 +8,7 @@ class ScheduleNotificador
 
     Tarea.find_each do |tarea|
       next if tarea.recordatorio_tarea_frecuencia.blank?
-      next unless Sidekiq::Cron::Job.valid_cron?(tarea.recordatorio_tarea_frecuencia)
+      next unless tarea.recordatorio_tarea_frecuencia =~ /^(\*|\d+|\d+\/\d+)(\s+(\*|\d+|\d+\/\d+)){4}$/
 
       job_name = "Notificador de tareas pendientes - #{tarea.id}"
 
