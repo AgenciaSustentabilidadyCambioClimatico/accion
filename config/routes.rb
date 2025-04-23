@@ -165,6 +165,7 @@ Rails.application.routes.draw do
   get 'revision-proveedores', to: 'registro_proveedores#revision', as: "revision_registro_proveedores"
   patch 'registro_proveedor/revisar_pertinencia', to: "registro_proveedores#revisar_pertinencia", as: :revisar_pertinencia
   get 'registro-proveedor/:id/descargar_documentos_proveedores', to: "registro_proveedores#descargar_documentos_proveedores", as: :descargar_documentos_proveedores
+  get 'registro-proveedor/:id/descargar_documentos_proveedores_filtrados', to: "registro_proveedores#descargar_documentos_proveedores_filtrados", as: :descargar_documentos_proveedores_filtrados
   patch 'registro_proveedor/asignar_revisor', to: "registro_proveedores#asignar_revisor", as: :asignar_revisor
   post 'registro_proveedor/:id/descargar_registro_proveedor_pdf_archivo', to: "registro_proveedores#descargar_registro_proveedor_pdf_archivo", as: :descargar_pdf_proveedores
   get 'resultado_revision', to: 'registro_proveedores#resultado_revision', as: "resultado_revision"
