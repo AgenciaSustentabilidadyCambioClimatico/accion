@@ -1019,7 +1019,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos_seguimiento[1] != nil
         monto_cofinanciamiento = confinanciamiento_empresa[0]
 
-        if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
+        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto_cofinanciamiento && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
           cumple4 = 'SI'
         else
           cumple4 = 'NO'
