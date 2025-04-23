@@ -4291,7 +4291,7 @@
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
-                      - if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_propio_valorado'].to_f != ''
+                      - if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f != ''
                         %span{ class: 'text-success' } SI
                       - else
                         %span{ class: 'text-danger' } NO
