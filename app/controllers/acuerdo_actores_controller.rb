@@ -182,7 +182,7 @@ class AcuerdoActoresController < ApplicationController
   def eliminar_actor
     actor = ListadoActoresTemporal.find(params[:actor_id])
     if actor.destroy
-      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0)
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:tarea_pendiente_id], estado: 0)
       respond_to do |format|
         format.js { render 'actores/eliminar_actor', locals: { actor: actor.id } }
       end
