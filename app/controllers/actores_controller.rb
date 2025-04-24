@@ -72,7 +72,7 @@ class ActoresController < ApplicationController
         flash[:warning] = warning if warning.present?
 
         if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
-          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
+          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-009
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_009].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
@@ -175,7 +175,7 @@ class ActoresController < ApplicationController
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
         if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
-          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@manifestacion_de_interes.id)        
+          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
         end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_010].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
@@ -211,7 +211,7 @@ class ActoresController < ApplicationController
       end
       #cambia de estado actores del listado del mapa de actores
       if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
-        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(params[:manifestacion_de_interes_id])        
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
       end
     when Tarea::COD_APL_013 #DZC Actualiza con posible revisión
       @tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
@@ -236,7 +236,7 @@ class ActoresController < ApplicationController
       end
       #cambia de estado actores del listado del mapa de actores
       if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
-        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(params[:manifestacion_de_interes_id])        
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
       # DZC 2018-11-02 13:14:12 se corrige error en actualización de variable @actores_desde_campo
