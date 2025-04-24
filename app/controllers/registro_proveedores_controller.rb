@@ -556,7 +556,6 @@ class RegistroProveedoresController < ApplicationController
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
 
-
   def descargar_documentos_proveedores_filtrados
     require 'zip'
     require 'open-uri'
@@ -564,8 +563,7 @@ class RegistroProveedoresController < ApplicationController
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
-        unless documento.archivo.url.nil? && documento.description == 'Curriculum Vitae'
-          #nombre = documento.archivo.file.identifier
+        unless documento.archivo.url.nil? || documento.description == 'Curriculum Vitae' || documento.description == "Copia CI"
           url = documento.archivo.url
           nombre = File.basename(URI.parse(url).path)
 
