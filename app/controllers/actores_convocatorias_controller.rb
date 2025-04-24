@@ -124,7 +124,7 @@ class ActoresConvocatoriasController < ApplicationController
 		end
 
 		def set_listado_actores_temporal
-			@listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+			@listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
 		end
 
 		def set_tarea_pendiente
