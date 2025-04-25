@@ -564,7 +564,7 @@ class RegistroProveedoresController < ApplicationController
       registro_proveedor = RegistroProveedor.unscoped.find(params[:id])
       documentos = registro_proveedor.documento_registro_proveedores
       documentos.each do |documento|
-        unless documento.archivo.url.nil? && documento.description == 'Curriculum Vitae'
+        unless documento.archivo.url.nil? || documento.description == 'Curriculum Vitae' || documento.description == "Copia CI"
           #nombre = documento.archivo.file.identifier
           url = documento.archivo.url
           nombre = File.basename(URI.parse(url).path)
