@@ -787,6 +787,8 @@ class FondoProduccionLimpiasController < ApplicationController
           @registro_proveedor.comuna = '.'
           @registro_proveedor.ciudad = '.'
           @registro_proveedor.terminos_y_servicion = true
+          @registro_proveedor.estado = 4
+          @registro_proveedor.user_encargado = 4
 
           # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
           empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
@@ -934,6 +936,8 @@ class FondoProduccionLimpiasController < ApplicationController
       @registro_proveedor.comuna = '.'
       @registro_proveedor.ciudad = '.'
       @registro_proveedor.terminos_y_servicion = true
+      @registro_proveedor.estado = 4
+      @registro_proveedor.user_encargado = 4
 
       # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
       empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
