@@ -466,9 +466,9 @@ class AdhesionesController < ApplicationController
         end
       end
       if @tarea_pendiente.data[:externa] && !params[:adhesion_externa_id].blank?
-        @adhesion = Adhesion.unscoped.where(id: params[:adhesion_externa_id]).first
+        @adhesion = Adhesion.unscoped.where(id: params[:adhesion_externa_id]).last
       else
-        @adhesion = Adhesion.where(flujo_id: @flujo.id).first if @adhesion.nil?
+        @adhesion = Adhesion.where(flujo_id: @flujo.id).last if @adhesion.nil?
   			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
       end
 
