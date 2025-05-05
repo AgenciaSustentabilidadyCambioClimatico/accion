@@ -334,6 +334,7 @@ class FondoProduccionLimpiasController < ApplicationController
       responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
       contribuyentes_ids_entregables = responsables_entregables.pluck(:contribuyente_id).uniq
       @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_entregables)
+      @contribuyente_temporal = nil
     end
 
     def carga_responsable_postulante #FPL-00
