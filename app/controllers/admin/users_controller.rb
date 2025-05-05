@@ -98,6 +98,7 @@ class Admin::UsersController < ApplicationController
 				}
 			end
 		end
+		@usuarios = User.where("rut = ?", params[:user][:rut]).first
 	end
 
 	def destroy
