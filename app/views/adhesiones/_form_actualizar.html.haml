@@ -123,6 +123,7 @@
                   %th=t(:observaciones)
                   %th=t(:estado)
               %tbody
+                = @todas_mias
                 - @todas_mias.each do |k,v|
                   - v.each do |fila|
                     %tr
