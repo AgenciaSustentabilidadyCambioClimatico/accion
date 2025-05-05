@@ -487,6 +487,7 @@ class AdhesionesController < ApplicationController
       @aceptadas_todas = {}
       @todas_todas = {}
       @por_revisar_todas = {}
+      @todas_las_mias = {}
       @adhesiones.each do |adh|
         puts "adhesion: #{adh}"
         @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
@@ -497,6 +498,7 @@ class AdhesionesController < ApplicationController
         @aceptadas_todas[adh.id] = _adh_aceptadas if !_adh_aceptadas.blank?
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
+        @todas_las_mias[adh.id] = adh.adhesiones_todas_mias
       end
 		end
 
