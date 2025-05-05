@@ -5,6 +5,7 @@
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(#{@usuario_temporal.id});
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
     $("#guardar-manifestacion-temporal-button").trigger("click");
+    $('.loading-data').hide();  
   -else
     $('.loading-data').hide();
 -else
