@@ -45,7 +45,7 @@
 						%td=user.telefono
 						%td.last-login
 							- unless user.last_sign_in_at.nil?
-								= l user.last_sign_in_at, format: '%d %b %Y %H:%M:%S'
+								= user.last_sign_in_at.strftime('%Y-%m-%d %H:%M:%S')
 							- else
 								= '--'
 						-# if @acceso == :admin || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
