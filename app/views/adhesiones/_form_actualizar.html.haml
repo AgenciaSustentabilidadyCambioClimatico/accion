@@ -125,25 +125,29 @@
               %tbody
                 ="Adhesiones: #{@adhesion.id}"
                 ="Metodo todas mias: #{@adhesion.adhesiones_todas_mias}"
-                = "-------------"
+                = "-------------------------------------------------------"
+                = "#{@adhesion.flujo_id}"
+                = "Numero Total de Adhesion unscoped: nuevo metodo probable: #{@todas_las_mias.count}"
+                = "Numero: nuevo metodo probable: #{@todas_las_mias.count}"
                 = "Nuevo metodo probable: #{@todas_las_mias}"
                 - @todas_mias
-                - @todas_mias.each do |k,v|
-                  - v.each do |fila|
-                    %tr
-                      %td=fila[:fecha_adhesion]
-                      %td=fila[:rut_institucion]
-                      %td=fila[:nombre_institucion]
-                      %td=fila[:alcance]
-                      %td=fila[:nombre_elemento]
-                      %td=fila[:comuna_instalacion]
-                      %td=fila[:direccion_instalacion]
-                      %td
-                        %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
-                        %div{style: "white-space: nowrap"}=fila[:fono_encargado]
-                        %div{style: "white-space: nowrap"}=fila[:email_encargado]
-                      %td=fila[:observaciones]
-                      %td=k.upcase
+                - @todas_las_mias.each do |k,v|
+                  - v.each do |filas|
+                    -filas[1].each do |fila|
+                      %tr
+                        %td=fila[:fecha_adhesion]
+                        %td=fila[:rut_institucion]
+                        %td=fila[:nombre_institucion]
+                        %td=fila[:alcance]
+                        %td=fila[:nombre_elemento]
+                        %td=fila[:comuna_instalacion]
+                        %td=fila[:direccion_instalacion]
+                        %td
+                          %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                          %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                          %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                        %td=fila[:observaciones]
+                        %td=filas[0].to_s.upcase
     
     .row
       -if @flujo.apl? && @tarea_pendiente.data.has_key?(:observacion_tarea_anterior) && @tarea_pendiente.data[:observacion_tarea_anterior].has_key?(Rol::RESPONSABLE_ENTREGABLES)

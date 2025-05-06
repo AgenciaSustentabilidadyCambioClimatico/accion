@@ -485,6 +485,7 @@ class AdhesionesController < ApplicationController
       @todas = @adhesion.adhesiones_todas
 
       @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesion_todas_sin_unscoped = Adhesion.where(flujo_id: @flujo.id)
       @todas_mias = @adhesion.adhesiones_todas_mias
       @rechazadas_todas = {}
       @pendientes_todas = {}
@@ -504,7 +505,11 @@ class AdhesionesController < ApplicationController
         @aceptadas_todas[adh.id] = _adh_aceptadas if !_adh_aceptadas.blank?
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
-        @todas_las_mias[adh.id] = adh.adhesiones_todas_mias
+
+      end
+
+      @adhesion_todas_sin_unscoped.each do |adhe|
+        @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
       end
 		end
 
