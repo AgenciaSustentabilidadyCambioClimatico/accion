@@ -29,6 +29,7 @@ class Adhesion < ApplicationRecord
 	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
 	validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
 	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
+  validates :rut_representante_legal, presence: true, rut: true, if: :should_validate_rut_representante_legal?
 	validates :nombre_representante_legal,:fono_representante_legal, presence: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
 	validate :validar_datos_tareas_25, if: -> { externa && !tipo.present?}
@@ -891,5 +892,14 @@ class Adhesion < ApplicationRecord
 
 		
 	end
+
+  private
+
+  def should_validate_rut_representante_legal?
+    externa &&
+      !tipo.present? &&
+      current_user.nil? &&
+      !(tarea_id == Tarea::ID_APL_025 && rut_representante_legal.to_s.strip.downcase == "no")
+  end
 
 end

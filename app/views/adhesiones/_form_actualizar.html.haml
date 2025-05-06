@@ -123,14 +123,6 @@
                   %th=t(:observaciones)
                   %th=t(:estado)
               %tbody
-                ="Adhesiones: #{@adhesion.id}"
-                ="Metodo todas mias: #{@adhesion.adhesiones_todas_mias}"
-                = "-------------------------------------------------------"
-                = "#{@adhesion.flujo_id}"
-                = "Numero Total de Adhesion unscoped: nuevo metodo probable: #{@todas_las_mias.count}"
-                = "Numero: nuevo metodo probable: #{@todas_las_mias.count}"
-                = "Nuevo metodo probable: #{@todas_las_mias}"
-                - @todas_mias
                 - @todas_las_mias.each do |k,v|
                   - v.each do |filas|
                     -filas[1].each do |fila|

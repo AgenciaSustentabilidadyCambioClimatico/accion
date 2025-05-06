@@ -466,16 +466,10 @@ class AdhesionesController < ApplicationController
         end
       end
       if @tarea_pendiente.data[:externa] && !params[:adhesion_externa_id].blank?
-        puts "Tarea pendiente externa: #{@tarea_pendiente.data[:externa]}"
         @adhesion = Adhesion.unscoped.where(id: params[:adhesion_externa_id]).first
       else
-        puts "Entro al else"
-        puts "--------------------"
-        puts "#{@adhesion}"
-        puts "#{@adhesion.nil?}"
         @adhesion = Adhesion.where(flujo_id: @flujo.id).first if @adhesion.nil?
-        puts "#{@adhesion.nil?}"
-  			@adhesion_nueva = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
+  			@adhesion = Adhesion.new(flujo_id: @flujo.id) if @adhesion.nil?
       end
 
       @rechazadas = @adhesion.adhesiones_rechazadas
