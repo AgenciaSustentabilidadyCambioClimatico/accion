@@ -244,6 +244,8 @@ class Adhesion < ApplicationRecord
           puts "---------------------------------------"
           puts "#{rut_encargado}"
           puts "#{tarea_id == Tarea::ID_APL_025}"
+          puts "#{tarea_id}"
+          puts "#{rut_encargado.rut_valid?}"
           rut_value = rut_encargado.to_s.strip.downcase
 					# DZC 2018-10-20 18:38:57 se modifican las validaciones a fin de considerar la preexistencia de email y rut en forma conjunta, por que configuran la llave primaria de la tabla users
 					if !fila[:email_encargado].to_s.email_valid?
