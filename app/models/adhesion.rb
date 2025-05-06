@@ -239,13 +239,17 @@ class Adhesion < ApplicationRecord
 					end
 					
           puts "#{rut_encargado.class}"
+          puts "---------------------------------------"
+          puts "---------------------------------------"
+          puts "---------------------------------------"
           puts "#{rut_encargado}"
+          puts "#{tarea_id == Tarea::ID_APL_025}"
           rut_value = rut_encargado.to_s.strip.downcase
 					# DZC 2018-10-20 18:38:57 se modifican las validaciones a fin de considerar la preexistencia de email y rut en forma conjunta, por que configuran la llave primaria de la tabla users
 					if !fila[:email_encargado].to_s.email_valid?
 						# errores[:email_encargado] << fila[:email_encargado]
 						errores[:email_encargado] << " El eMail del encargado para la línea #{(posicion+2)} es inválido"					
-					elsif !rut_encargado.rut_valid? && !(tarea_id == Tarea::ID_APL_025 && rut_value == "no")
+					elsif !rut_encargado.rut_valid? && !(tarea_id == Tarea::ID_APL_025)
 						# errores[:rut_encargado] << fila[:rut_encargado]
 						# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)} es inválido")
 						errores[:rut_encargado] << "El RUT del encargado para la línea #{(posicion+2)} es inválido"
