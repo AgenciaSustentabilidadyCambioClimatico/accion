@@ -29,7 +29,6 @@ class Adhesion < ApplicationRecord
 	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
 	validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
 	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
-  validates :rut_representante_legal, presence: true, rut: true, if: :should_validate_rut_representante_legal?
 	validates :nombre_representante_legal,:fono_representante_legal, presence: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
 	validate :validar_datos_tareas_25, if: -> { externa && !tipo.present?}
@@ -238,20 +237,12 @@ class Adhesion < ApplicationRecord
 						end
 					end
 					
-          puts "#{rut_encargado.class}"
-          puts "---------------------------------------"
-          puts "---------------------------------------"
-          puts "---------------------------------------"
-          puts "#{rut_encargado}"
-          puts "#{tarea_id == Tarea::ID_APL_025}"
-          puts "#{tarea_id}"
-          puts "#{rut_encargado.rut_valid?}"
           rut_value = rut_encargado.to_s.strip.downcase
 					# DZC 2018-10-20 18:38:57 se modifican las validaciones a fin de considerar la preexistencia de email y rut en forma conjunta, por que configuran la llave primaria de la tabla users
 					if !fila[:email_encargado].to_s.email_valid?
 						# errores[:email_encargado] << fila[:email_encargado]
 						errores[:email_encargado] << " El eMail del encargado para la línea #{(posicion+2)} es inválido"					
-					elsif !rut_encargado.rut_valid? && !(tarea_id == Tarea::ID_APL_025)
+					elsif !rut_encargado.rut_valid? && !(tarea_id == Tarea::ID_APL_025 && rut_value == "no")
 						# errores[:rut_encargado] << fila[:rut_encargado]
 						# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)} es inválido")
 						errores[:rut_encargado] << "El RUT del encargado para la línea #{(posicion+2)} es inválido"
@@ -902,13 +893,5 @@ class Adhesion < ApplicationRecord
 		
 	end
 
-  private
-
-  def should_validate_rut_representante_legal?
-    externa &&
-      !tipo.present? &&
-      current_user.nil? &&
-      !(tarea_id == Tarea::ID_APL_025 && rut_representante_legal.to_s.strip.downcase == "no")
-  end
 
 end

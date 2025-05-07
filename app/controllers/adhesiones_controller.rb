@@ -12,6 +12,7 @@ class AdhesionesController < ApplicationController
     @adhesion_new = Adhesion.new
     @adhesion_new.flujo_id = @flujo.id
     @adhesion_new.is_ppf = @ppp.present?
+    @adhesion.tarea_id = @tarea.id if @tarea.present?
     @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
     @adhesion_new.save!
     @adhesion.assign_attributes(adhesion_params)
