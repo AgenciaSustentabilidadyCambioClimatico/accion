@@ -1,7 +1,7 @@
 .row.mt-2
   .col-12.mb-2
     -back_path = root_path
-    -back_path = acuerdo_seleccionado_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]) if !params[:acuerdo_id].blank?
+    -back_path = acuerdo_seleccionado_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id], origen: @origen) if !params[:acuerdo_id].blank?
     .d-flex.align-items-center
       =link_to back_path, class: "btn btn-outline-home" do
         .d-flex.align-items-center

@@ -105,128 +105,135 @@ class HomeController < ApplicationController
       @vista = params[:vista]
       @vista = "clasificaciones" if @vista.blank?
       
-      if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
-        @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
-        personas_ids = current_user.personas.pluck(:id)
-        adhesiones_ids = Adhesion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id)
-        elementos_adheridos = AdhesionElemento.where(persona_id: personas_ids, adhesion_id: adhesiones_ids)
-        personas_flujo = elementos_adheridos.map{|ea| ea.persona.contribuyente_id}
-        @contribuyentes_de_usuario = Contribuyente.where(id: personas_flujo)
-        alcance_ids = elementos_adheridos.pluck(:alcance_id)
-        @acuerdo_seleccionado = ReporteriaDato.new
+      if params[:origen] != "menu_datos_estadisticas"
+        if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
+          @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
+          personas_ids = current_user.personas.pluck(:id)
+          adhesiones_ids = Adhesion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id)
+          elementos_adheridos = AdhesionElemento.where(persona_id: personas_ids, adhesion_id: adhesiones_ids)
+          personas_flujo = elementos_adheridos.map{|ea| ea.persona.contribuyente_id}
+          @contribuyentes_de_usuario = Contribuyente.where(id: personas_flujo)
+          alcance_ids = elementos_adheridos.pluck(:alcance_id)
+          @acuerdo_seleccionado = ReporteriaDato.new
 
-        where_set_metas = {flujo_id: @manifestacion_de_interes.flujo.id}
-        if !@adhesion_elemento.nil?
-          where_set_metas[:alcance_id] = @adhesion_elemento.alcance_id 
-        else
-          where_set_metas[:alcance_id] = alcance_ids 
-        end
-        where_general = {set_metas_acciones: where_set_metas}
-
-         _datos_clasif = {
-          id: @manifestacion_de_interes.id,
-          nombre_acuerdo: @manifestacion_de_interes.nombre_acuerdo,
-          contribuyente_razon_social: (@manifestacion_de_interes.contribuyente.razon_social rescue ""),
-          contribuyente_rut: (@manifestacion_de_interes.contribuyente.rut_completo rescue ""),
-          firma_fecha: @manifestacion_de_interes.firma_fecha,
-          firma_fecha_hora: @manifestacion_de_interes.firma_fecha_hora,
-          acciones: @manifestacion_de_interes.acciones.count,
-          empresas_adheridas: @manifestacion_de_interes.empresas_adheridas.count,
-          empresas_certificadas: @manifestacion_de_interes.empresas_certificadas.count,
-          elementos_adheridos: @manifestacion_de_interes.elementos_adheridos,
-          #elementos_adheridos.map{|ea| {id: ea.id, nombre: ea.nombre_del_elemento_v2}}, utilizado antes, pero marcaba 0 en vista logeado. Se deja comentado por si se requiere volver atrás.
-          clasificaciones: []
-        }
-
-        _cards = []
-
-        if @vista == "clasificaciones"
-          #clasificaciones
-          clasificaciones_ids = []
-          clasif_ids = []
-          clasif_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
-                                                    .where(where_general)
-                                                    .pluck("accion_clasificaciones.clasificacion_id")
-          clasif_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
-                                                    .where(where_general)
-                                                    .pluck("materia_sustancia_clasificaciones.clasificacion_id")
-          Clasificacion.where(id: clasif_ids).each do |clasif|
-            clasificaciones_ids << clasif.mi_padre_mayor.id
+          where_set_metas = {flujo_id: @manifestacion_de_interes.flujo.id}
+          if !@adhesion_elemento.nil?
+            where_set_metas[:alcance_id] = @adhesion_elemento.alcance_id 
+          else
+            where_set_metas[:alcance_id] = alcance_ids 
           end
-          clasificaciones_ids.uniq
-          clasificaciones = Clasificacion.where(id: clasificaciones_ids)
-          clasificaciones.each do |clasificacion|
-            _acciones_comprometidas = []
-            _metas_comprometidas = []
-            acciones_ids = clasificacion.set_metas_acciones_comprometidas(@manifestacion_de_interes, [], alcance_ids).pluck(:id)
-            clasificacion.metas_comprometidas(@manifestacion_de_interes, [], alcance_ids).each do |meta|
-              _meta_comprometida = {nombre: meta.nombre, acciones: []}
-              meta.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes, [], alcance_ids).each do |accion|
-                if acciones_ids.include?(accion.id)
-                  _meta_comprometida[:acciones] << {
-                    descripcion: accion.descripcion_accion,
-                    nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
-                    porcentaje_avance: accion.obtiene_porcentaje_avance,
-                    porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento(nil, elementos_adheridos.pluck(:id)).gsub("%","").to_f
-                  }
-                end
-              end
-              _metas_comprometidas << _meta_comprometida
+          where_general = {set_metas_acciones: where_set_metas}
+
+          _datos_clasif = {
+            id: @manifestacion_de_interes.id,
+            nombre_acuerdo: @manifestacion_de_interes.nombre_acuerdo,
+            contribuyente_razon_social: (@manifestacion_de_interes.contribuyente.razon_social rescue ""),
+            contribuyente_rut: (@manifestacion_de_interes.contribuyente.rut_completo rescue ""),
+            firma_fecha: @manifestacion_de_interes.firma_fecha,
+            firma_fecha_hora: @manifestacion_de_interes.firma_fecha_hora,
+            acciones: @manifestacion_de_interes.acciones.count,
+            empresas_adheridas: @manifestacion_de_interes.empresas_adheridas.count,
+            empresas_certificadas: @manifestacion_de_interes.empresas_certificadas.count,
+            elementos_adheridos: @manifestacion_de_interes.elementos_adheridos,
+            #elementos_adheridos.map{|ea| {id: ea.id, nombre: ea.nombre_del_elemento_v2}}, utilizado antes, pero marcaba 0 en vista logeado. Se deja comentado por si se requiere volver atrás.
+            clasificaciones: []
+          }
+
+          _cards = []
+
+          if @vista == "clasificaciones"
+            #clasificaciones
+            clasificaciones_ids = []
+            clasif_ids = []
+            clasif_ids += AccionClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = accion_clasificaciones.accion_id")
+                                                      .where(where_general)
+                                                      .pluck("accion_clasificaciones.clasificacion_id")
+            clasif_ids += MateriaSustanciaClasificacion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancia_clasificaciones.materia_sustancia_id")
+                                                      .where(where_general)
+                                                      .pluck("materia_sustancia_clasificaciones.clasificacion_id")
+            Clasificacion.where(id: clasif_ids).each do |clasif|
+              clasificaciones_ids << clasif.mi_padre_mayor.id
             end
-            _cards << {
-              id: clasificacion.id,
-              imagen: clasificacion.imagen.url,
-              color: clasificacion.color,
-              icono: clasificacion.icono.url,
-              nombre: clasificacion.nombre,
-              descripcion: clasificacion.descripcion,
-              metas_comprometidas: _metas_comprometidas,
-              acciones_comprometidas: _acciones_comprometidas,
-              empresas_comprometidas: clasificacion.empresas_comprometidas(@manifestacion_de_interes, @vista).length,
-              cumplimiento_promedio: "#{clasificacion.cumplimiento_promedio(@manifestacion_de_interes, @vista, [], elementos_adheridos.to_a)}%",
-              elementos_comprometidos: clasificacion.elementos_comprometidos(@manifestacion_de_interes, @vista).count
-            }
-          end
-        else
-          #metas
-          metas_ids = []
-          metas_ids += Accion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = acciones.id")
-                                          .where(where_general)
-                                          .pluck("acciones.meta_id")
-          metas_ids += MateriaSustanciaMeta.joins("INNER JOIN materia_sustancias ON materia_sustancia_metas.materia_sustancia_id = materia_sustancias.id INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancias.id")
-                                                  .where(where_general)
-                                                  .pluck("materia_sustancia_metas.clasificacion_id")
-          metas_ids += SetMetasAccion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:meta_id)
-          metas = Clasificacion.where(id: metas_ids)
-          metas.each do |clasificacion|
-            _acciones_comprometidas = []
-            _metas_comprometidas = []
-            clasificacion.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes, [], alcance_ids).each do |accion|
-              _acciones_comprometidas << {
-                descripcion: accion.descripcion_accion,
-                nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
-                porcentaje_avance: accion.obtiene_porcentaje_avance,
-                porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento(nil, elementos_adheridos.pluck(:id)).gsub("%","").to_f
+            clasificaciones_ids.uniq
+            clasificaciones = Clasificacion.where(id: clasificaciones_ids)
+            clasificaciones.each do |clasificacion|
+              _acciones_comprometidas = []
+              _metas_comprometidas = []
+              acciones_ids = clasificacion.set_metas_acciones_comprometidas(@manifestacion_de_interes, [], alcance_ids).pluck(:id)
+              clasificacion.metas_comprometidas(@manifestacion_de_interes, [], alcance_ids).each do |meta|
+                _meta_comprometida = {nombre: meta.nombre, acciones: []}
+                meta.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes, [], alcance_ids).each do |accion|
+                  if acciones_ids.include?(accion.id)
+                    _meta_comprometida[:acciones] << {
+                      descripcion: accion.descripcion_accion,
+                      nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
+                      porcentaje_avance: accion.obtiene_porcentaje_avance,
+                      porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento(nil, elementos_adheridos.pluck(:id)).gsub("%","").to_f
+                    }
+                  end
+                end
+                _metas_comprometidas << _meta_comprometida
+              end
+              _cards << {
+                id: clasificacion.id,
+                imagen: clasificacion.imagen.url,
+                color: clasificacion.color,
+                icono: clasificacion.icono.url,
+                nombre: clasificacion.nombre,
+                descripcion: clasificacion.descripcion,
+                metas_comprometidas: _metas_comprometidas,
+                acciones_comprometidas: _acciones_comprometidas,
+                empresas_comprometidas: clasificacion.empresas_comprometidas(@manifestacion_de_interes, @vista).length,
+                cumplimiento_promedio: "#{clasificacion.cumplimiento_promedio(@manifestacion_de_interes, @vista, [], elementos_adheridos.to_a)}%",
+                elementos_comprometidos: clasificacion.elementos_comprometidos(@manifestacion_de_interes, @vista).count
               }
             end
-            _cards << {
-              id: clasificacion.id,
-              imagen: clasificacion.imagen.url,
-              color: clasificacion.color,
-              icono: clasificacion.icono.url,
-              nombre: clasificacion.nombre,
-              descripcion: clasificacion.descripcion,
-              metas_comprometidas: _metas_comprometidas,
-              acciones_comprometidas: _acciones_comprometidas,
-              empresas_comprometidas: clasificacion.empresas_comprometidas(@manifestacion_de_interes, @vista).length,
-              cumplimiento_promedio: "#{clasificacion.cumplimiento_promedio(@manifestacion_de_interes, @vista, [], elementos_adheridos.to_a)}%",
-              elementos_comprometidos: clasificacion.elementos_comprometidos(@manifestacion_de_interes, @vista).count
-            }
+          else
+            #metas
+            metas_ids = []
+            metas_ids += Accion.joins("INNER JOIN set_metas_acciones ON set_metas_acciones.accion_id = acciones.id")
+                                            .where(where_general)
+                                            .pluck("acciones.meta_id")
+            metas_ids += MateriaSustanciaMeta.joins("INNER JOIN materia_sustancias ON materia_sustancia_metas.materia_sustancia_id = materia_sustancias.id INNER JOIN set_metas_acciones ON set_metas_acciones.materia_sustancia_id = materia_sustancias.id")
+                                                    .where(where_general)
+                                                    .pluck("materia_sustancia_metas.clasificacion_id")
+            metas_ids += SetMetasAccion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:meta_id)
+            metas = Clasificacion.where(id: metas_ids)
+            metas.each do |clasificacion|
+              _acciones_comprometidas = []
+              _metas_comprometidas = []
+              clasificacion.set_metas_acciones_comprometidas_de_meta(@manifestacion_de_interes, [], alcance_ids).each do |accion|
+                _acciones_comprometidas << {
+                  descripcion: accion.descripcion_accion,
+                  nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
+                  porcentaje_avance: accion.obtiene_porcentaje_avance,
+                  porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento(nil, elementos_adheridos.pluck(:id)).gsub("%","").to_f
+                }
+              end
+              _cards << {
+                id: clasificacion.id,
+                imagen: clasificacion.imagen.url,
+                color: clasificacion.color,
+                icono: clasificacion.icono.url,
+                nombre: clasificacion.nombre,
+                descripcion: clasificacion.descripcion,
+                metas_comprometidas: _metas_comprometidas,
+                acciones_comprometidas: _acciones_comprometidas,
+                empresas_comprometidas: clasificacion.empresas_comprometidas(@manifestacion_de_interes, @vista).length,
+                cumplimiento_promedio: "#{clasificacion.cumplimiento_promedio(@manifestacion_de_interes, @vista, [], elementos_adheridos.to_a)}%",
+                elementos_comprometidos: clasificacion.elementos_comprometidos(@manifestacion_de_interes, @vista).count
+              }
+            end
           end
+          _datos_clasif[:clasificaciones] = _cards
+          @acuerdo_seleccionado.datos = _datos_clasif
+        else
+          @acuerdo_seleccionado = ReporteriaDato.find_by(ruta: 'acuerdo-seleccionado', acuerdo_id: params[:acuerdo_id], vista: @vista)
         end
-        _datos_clasif[:clasificaciones] = _cards
-        @acuerdo_seleccionado.datos = _datos_clasif
+        @origen = nil
       else
+        @contribuyentes_de_usuario = nil
+        @origen = params[:origen]
         @acuerdo_seleccionado = ReporteriaDato.find_by(ruta: 'acuerdo-seleccionado', acuerdo_id: params[:acuerdo_id], vista: @vista)
       end
 
@@ -239,6 +246,7 @@ class HomeController < ApplicationController
     @acuerdo_seleccionado = ReporteriaDato.find_by(ruta: 'acuerdo-seleccionado', acuerdo_id: params[:acuerdo_id])
     @header = ReporteriaDato.find_by(ruta: nil)
     @elementos_adheridos = ReporteriaDato.find_by(ruta: "empresas-y-elementos-adheridos", acuerdo_id: params[:acuerdo_id])
+    @origen = params[:origen]
   end
 
   def empresas_y_elementos_certificados

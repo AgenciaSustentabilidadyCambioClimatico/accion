@@ -4698,7 +4698,7 @@ class FondoProduccionLimpiasController < ApplicationController
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
         fpl = FondoProduccionLimpia.where(flujo_apl_id: @tarea_pendiente.flujo_id).first
-        binding.pry
+
         flujo_apl = Flujo.find(fpl.flujo_apl_id)
         mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
