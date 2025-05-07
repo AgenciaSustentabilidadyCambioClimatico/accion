@@ -26,7 +26,7 @@
                 %tbody
                   -@acuerdos_firmados.datos.each do |data|
                     %tr
-                      -params_seleccionado = {acuerdo_id: data[:acuerdo_id]}
+                      -params_seleccionado = {acuerdo_id: data[:acuerdo_id], origen: "menu_datos_estadisticas"}
                       -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
                       %td=link_to data[:nombre_acuerdo], acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
                       %td
