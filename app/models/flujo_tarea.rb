@@ -119,7 +119,7 @@ class FlujoTarea < ApplicationRecord
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
 											actor.persona.email_institucional, 
-											rgc.id).deliver_later
+											rgc.id).deliver_now
 									end
 								end
 								 

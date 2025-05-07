@@ -12,6 +12,7 @@ class AdhesionesController < ApplicationController
     @adhesion_new = Adhesion.new
     @adhesion_new.flujo_id = @flujo.id
     @adhesion_new.is_ppf = @ppp.present?
+    @adhesion.tarea_id = @tarea.id if @tarea.present?
     @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
     @adhesion_new.save!
     @adhesion.assign_attributes(adhesion_params)
@@ -479,6 +480,7 @@ class AdhesionesController < ApplicationController
       @todas = @adhesion.adhesiones_todas
 
       @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      @adhesion_todas_sin_unscoped = Adhesion.where(flujo_id: @flujo.id)
       @todas_mias = @adhesion.adhesiones_todas_mias
       @rechazadas_todas = {}
       @pendientes_todas = {}
@@ -487,6 +489,7 @@ class AdhesionesController < ApplicationController
       @aceptadas_todas = {}
       @todas_todas = {}
       @por_revisar_todas = {}
+      @todas_las_mias = {}
       @adhesiones.each do |adh|
         puts "adhesion: #{adh}"
         @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
@@ -497,6 +500,10 @@ class AdhesionesController < ApplicationController
         @aceptadas_todas[adh.id] = _adh_aceptadas if !_adh_aceptadas.blank?
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
+      end
+
+      @adhesion_todas_sin_unscoped.each do |adhe|
+        @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
       end
 		end
 
