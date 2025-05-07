@@ -232,7 +232,13 @@ class HomeController < ApplicationController
         end
         @origen = nil
       else
-        @contribuyentes_de_usuario = nil
+        #@contribuyentes_de_usuario = nil
+        @manifestacion_de_interes = ManifestacionDeInteres.find(params[:acuerdo_id])
+        personas_ids = current_user.personas.pluck(:id)
+        adhesiones_ids = Adhesion.where(flujo_id: @manifestacion_de_interes.flujo.id).pluck(:id)
+        elementos_adheridos = AdhesionElemento.where(persona_id: personas_ids, adhesion_id: adhesiones_ids)
+        personas_flujo = elementos_adheridos.map{|ea| ea.persona.contribuyente_id}
+        @contribuyentes_de_usuario = Contribuyente.where(id: personas_flujo)
         @origen = params[:origen]
         @acuerdo_seleccionado = ReporteriaDato.find_by(ruta: 'acuerdo-seleccionado', acuerdo_id: params[:acuerdo_id], vista: @vista)
       end
