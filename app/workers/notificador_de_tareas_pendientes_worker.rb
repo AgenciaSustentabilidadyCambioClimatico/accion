@@ -70,7 +70,7 @@ class NotificadorDeTareasPendientesWorker
             ft.cuerpo_format(persona.user),
             persona.email_institucional,
             rgc.id
-          )
+          ).deliver_later
         end
       end
     end
@@ -95,7 +95,7 @@ class NotificadorDeTareasPendientesWorker
           flujo_id: pendiente.flujo.id
         )
 
-        FlujoMailer.enviar(asunto, cuerpo, email, rgc.id)
+        FlujoMailer.enviar(asunto, cuerpo, email, rgc.id).deliver_later
         RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_later
       end
     end
