@@ -209,7 +209,8 @@ class ActoresController < ApplicationController
 
   #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
   def set_flujo
-    @solo_lectura = params[:q]
+    #@solo_lectura = params[:q]
+    @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
     @flujo = @tarea_pendiente.flujo
     @tarea = @tarea_pendiente.tarea
     @tipo_instrumento=@flujo.tipo_instrumento

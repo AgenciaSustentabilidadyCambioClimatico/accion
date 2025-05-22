@@ -4312,7 +4312,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
   
       def set_manifestacion_de_interes
-        @solo_lectura = params[:q]
+        #@solo_lectura = params[:q]
+        @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
         flujo_apl = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
         @tarea = @tarea_pendiente.tarea
