@@ -414,9 +414,7 @@ class TareaPendiente < ApplicationRecord
   # end
 
   def solo_lectura(current_user=nil)
-    #ejecucion = @tarea_pendiente.created_at != @tarea_pendiente.updated_at ? @tarea_pendiente.updated_at.strftime("%F %T") : ""
-    ejecucion = self.created_at != self.updated_at
-
+    estado = self.estado_tarea_pendiente.nombre_historial
     #Si es admin veo todo
     puedo_ver_tareas = current_user.is_admin? || current_user.is_ascc?
     personas = current_user.personas
@@ -448,7 +446,7 @@ class TareaPendiente < ApplicationRecord
     solo_lectura = nil
     if puedo_ver_tareas
       if tareas_auditoria == false && tareas_validaciones == false
-        if ejecucion != true
+        if estado != "Ejecutada"
           solo_lectura =  'solo_lectura'
         end
       end
