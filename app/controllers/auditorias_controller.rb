@@ -240,7 +240,6 @@ class AuditoriasController < ApplicationController
     end
 
     def set_flujo
-      #@solo_lectura = params[:q]
       @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento

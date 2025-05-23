@@ -157,7 +157,6 @@ class ManifestacionDeInteresController < ApplicationController
 
   def edit #DZC TAREA APL-001 una vez instanciada la manifestación
     # DZC 2019-02-28 18:03:15 se setean las varibles relativas al mensaje "Recuerde gradar sus cambios"
-    #@solo_lectura = params[:q]
     @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
     @manifestacion_de_interes.seleccion_de_radios
@@ -2447,7 +2446,6 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_manifestacion_de_interes
-      #@solo_lectura = params[:q]
       @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
       # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
       @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)

@@ -8,7 +8,6 @@ class Admin::HitosDePrensaController < ApplicationController
   before_action :set_rutas
 
   def index #DZC APL-007
-    #@solo_lectura = params[:q]
     @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
     @hitos_de_prensa = HitoDePrensa.includes([:tipo_de_medio]).order(id: :desc).all
     #DZC filtra los hitos de prensa por el flujo 
