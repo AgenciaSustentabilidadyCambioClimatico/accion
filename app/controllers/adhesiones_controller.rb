@@ -500,6 +500,11 @@ class AdhesionesController < ApplicationController
         @aceptadas_todas[adh.id] = _adh_aceptadas if !_adh_aceptadas.blank?
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
+
+      end
+
+      @adhesion_todas_sin_unscoped.each do |adhe|
+        @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
       end
 
       @adhesion_todas_sin_unscoped.each do |adhe|

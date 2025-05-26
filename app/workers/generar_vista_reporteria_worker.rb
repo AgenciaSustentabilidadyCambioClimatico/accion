@@ -78,3 +78,4 @@ class GenerarVistaReporteriaWorker
     end
   end
 end
+

@@ -5,6 +5,10 @@ class ActoresController < ApplicationController
   before_action :set_obtiene_mapa_actual_y_actores
   before_action :set_mapa_de_actores_data, only: [:actualizacion,:actualizar,:revision,:enviar_revision]
   before_action :set_crea_archivo, only: [:actualizacion,:actualizar,:descargar] #agregar demás métodos si es necesario
+  before_action :set_mapa_actores
+  before_action :set_listado_actores_temporal
+  before_action :set_contribuyentes
+  before_action :set_usuario_actor
 
   # DZC 2018-10-04 16:16:04 se agrega creación de archivo a efecto de que las tareas sin revisión se pueda descargar el archivo directamente construido desde las tablas
   # before_action :set_crea_archivo, if: -> {action_name.to_sym == :actualizacion || action_name.to_sym == :actualizar || action_name.to_sym == :descargar || (action_name.to_sym == :revision && !@tarea.requiere_revision?)}
@@ -19,12 +23,23 @@ class ActoresController < ApplicationController
     @descargables = @tarea_pendiente.get_descargables
     mapa_antiguo =  @actores_desde_tablas #DZC se reemplaza con lectura de los actores desde tablas
     #DZC se obtiene desde archivo confeccionado al acceder a la vista
-    @manifestacion_de_interes.assign_attributes(actualizar_mapa_de_actores_manifestacion_de_interes_params)
-    
+
+    #Si es distinto de lsita ejecutala asignacion de documentos
+    if params[:from] != 'lista'
+      @manifestacion_de_interes.assign_attributes(actualizar_mapa_de_actores_manifestacion_de_interes_params)
+    end
+
     warning = nil
     success = nil
     @manifestacion_de_interes.temporal = true #DZC sirve para evitar las validaciones. En este caso es necesario que sea true para que se valide
     # @manifestacion_de_interes.tarea_codigo = @tarea.codigo
+
+    #valida si viene de listado de mapa de actores
+    @manifestacion_de_interes.listado_mapa_actores = false
+    if params[:from] == 'lista'
+      @manifestacion_de_interes.listado_mapa_actores = true
+    end
+
     @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
     if @manifestacion_de_interes.save #DZC Gino usó esta línea para validar el guardar los archivos correspondientes
       # DZC ingresar lectura de archivo excel serializado de manifestación, aplicando validaciones
@@ -37,14 +52,28 @@ class ActoresController < ApplicationController
       @tarea_pendiente.update(data: {primera_ejecucion: false})
       continua_flujo_segun_tipo_tarea
     end
+  
+    if params[:from] == 'lista'
+      if @tarea.codigo != Tarea::COD_APL_013 && @tarea.codigo != Tarea::COD_APL_037 
+        @manifestacion_de_interes.data_mapa_de_actores
+        @actores = @manifestacion_de_interes.mapa_de_actores_data
+      else
+        @actores = @actores_desde_campo
+      end
+    end
+
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     respond_to do |format|
-      format.html { redirect_to current_path, notice: success }
+      #format.html { redirect_to current_path, notice: success }
       format.js { 
         flash[:success] = success if success.present?
         
         flash[:error] = @manifestacion_de_interes.errors.messages if @manifestacion_de_interes.errors.messages.present?
         flash[:warning] = warning if warning.present?
+
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
+          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
+        end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-009
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_009].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
       }
@@ -91,7 +120,7 @@ class ActoresController < ApplicationController
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.remove_mapa_de_actores_archivo!
         @manifestacion_de_interes.save
-        success = "Mapa de actores correctamente actualizado"
+        success = "Revisión enviada correctamente"
         continua_flujo_segun_tipo_tarea
       else
         error = @manifestacion_de_interes.errors.messages.first.last
@@ -99,10 +128,20 @@ class ActoresController < ApplicationController
 
       @comentarios_mapa_de_actores = @manifestacion_de_interes.comentarios_mapa_de_actores_ordenados
     else
-              
-      @manifestacion_de_interes.assign_attributes(enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params)
+      #Si es distinto de lsita ejecutala asignacion de documentos
+      if params[:from] != 'lista'
+        @manifestacion_de_interes.assign_attributes(enviar_revision_completo_mapa_de_actores_manifestacion_de_interes_params)  
+      end 
+
       @manifestacion_de_interes.tarea_codigo=@tarea.codigo
+
+      #valida si viene de listado de mapa de actores
+      @manifestacion_de_interes.listado_mapa_actores = false
+      if params[:from] == 'lista'
+        @manifestacion_de_interes.listado_mapa_actores = true
+      end
       @manifestacion_de_interes.revisar_y_actualizar_mapa_de_actores = true
+
       if @manifestacion_de_interes.valid?
         @manifestacion_de_interes.save
         success = "Mapa de actores correctamente actualizado"
@@ -110,16 +149,23 @@ class ActoresController < ApplicationController
       else
         #@manifestacion_de_interes.mapa_de_actores_archivo = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo]
         #@manifestacion_de_interes.mapa_de_actores_archivo_cache = actualizar_mapa_de_actores_manifestacion_de_interes_params[:mapa_de_actores_archivo_cache]
-        error = "Errores en el archivo:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
-        error = error.gsub(',',';')
-        error = error.gsub('.',',')
-        error = error.gsub(';','.')
+        if params[:from] != 'lista'
+          error = "Errores en el archivo:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
+          error = error.gsub(',',';')
+          error = error.gsub('.',',')
+          error = error.gsub(';','.')
+        else
+          error = "Atención:\n#{@manifestacion_de_interes.errors[:mapa_de_actores_archivo].to_sentence}"
+          error = error.gsub(',',';')
+          error = error.gsub('.',',')
+          error = error.gsub(';','.')
+        end
       end
     end
     # (4) finalmente dejamos la variable en nulo para no mostrarla en el formulario
     # @manifestacion_de_interes.comentarios_y_observaciones_actualizacion_mapa_de_actores = nil   
     respond_to do |format|
-      format.html { redirect_to current_path, notice: success }
+      #format.html { redirect_to current_path, notice: success }
       format.js { 
         flash[:success] = success if success.present?
         flash.now[:error] = error if error.present?
@@ -128,6 +174,9 @@ class ActoresController < ApplicationController
         
         set_obtiene_mapa_actual_y_actores #DZC 2018-10-29 15:41:55 se agregan valores actuales de variable @actores
         @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
+        if params[:from] == 'lista' && success.present? && @tarea.codigo != Tarea::COD_APL_009 && @tarea.codigo != Tarea::COD_APL_013
+          ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
+        end 
         # DZC 2018-10-10 16:07:32 redirecciona a bandeja de entrada si no hay errores y se trata de APL-010
         render js: "window.location='#{root_path}'" if ([Tarea::COD_APL_010].include?(@tarea.codigo) && @manifestacion_de_interes.errors.messages.size == 0)
       }
@@ -160,6 +209,10 @@ class ActoresController < ApplicationController
       else
         @tarea_pendiente.pasar_a_siguiente_tarea 'B'
       end
+      #cambia de estado actores del listado del mapa de actores
+      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
+      end
     when Tarea::COD_APL_013 #DZC Actualiza con posible revisión
       @tarea_pendiente.update(data: {}) if @tarea_pendiente.primera_ejecucion
       @tarea_pendiente.pasar_a_siguiente_tarea 'A',{},false #DZC 2018-10-05 11:42:42 se elimina el mantener la tarea pendiente como no terminada
@@ -173,7 +226,17 @@ class ActoresController < ApplicationController
           @manifestacion_de_interes.mapa_de_actores_data = nil
           @manifestacion_de_interes.save(validate: false)
         end
+        #se actualiza mapa de actores con informacion obtenida de el listado de mapa de actores
+        @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+        if @actores_desde_campo != nil
+          @actores_desde_campo.concat(@actores_desde_lista)
+          MapaDeActor.actualiza_tablas_mapa_actores(@actores_desde_campo, @flujo, @tarea_pendiente)
+        end
         #DZC el término de la tarea depende del ḿetodo termina_etapa_diagnostico en el controlador manifestacion_de_interes_controller
+      end
+      #cambia de estado actores del listado del mapa de actores
+      if params[:manifestacion_de_interes][:mapa_de_actores_correctamente_construido] == 'true'
+        ListadoActoresTemporal.actualiza_estado_listado_mapa_actores(@tarea_pendiente.flujo.manifestacion_de_interes_id)        
       end
     when Tarea::COD_APL_018, Tarea::COD_APL_020, Tarea::COD_APL_021, Tarea::COD_APL_023
       # DZC 2018-11-02 13:14:12 se corrige error en actualización de variable @actores_desde_campo
@@ -189,7 +252,6 @@ class ActoresController < ApplicationController
   end
 
   def descargar
-
     send_data File.open(@ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: "mapa_de_actores_base.xlsx"
   end
 
@@ -199,7 +261,41 @@ class ActoresController < ApplicationController
     send_data File.open(ruta).read, type: 'application/xslx', charset: "iso-8859-1", filename: @manifestacion_de_interes.mapa_de_actores_archivo.file.path.split("/").last.to_s
   end
 
+  def actualizacion_actor
+    datos = sanitize_rut(listado_actores_temporal_params.to_h)
+    @mapa_actor.assign_attributes(datos)
+    @mapa_actor.estado = 0
+    @mapa_actor.manifestacion_de_interes_id = @flujo.manifestacion_de_interes.id
+    @mapa_actor.save
+
+    listado_actores_temporal
+  end
+
+  def listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
+    end
+  end
+
   private
+  def set_mapa_actores
+    @mapa_actor =ListadoActoresTemporal.new
+  end
+
+  def set_contribuyentes
+    @contribuyente = Contribuyente.new
+    @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    @contribuyente_actor = Contribuyente.new
+  end
+
+  def set_usuario_actor
+    @usuario_actor = User.new
+  end
+
+  def set_listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id:  @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+  end
 
   def set_tarea_pendiente
     @tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
@@ -222,9 +318,17 @@ class ActoresController < ApplicationController
   #DZC leo las tablas y campo de la manifestación
   def set_obtiene_mapa_actual_y_actores
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
-    
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+
+    if params[:from] == 'lista' || @tarea.codigo == Tarea::COD_APL_010 || @tarea.requiere_revision?
+      @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+      if @actores_desde_tablas != nil
+        @actores_desde_tablas.concat(@actores_desde_lista)
+        #se igualan los arreglos para la insercion a través de el listado
+        @actores_desde_campo = @actores_desde_tablas
+      end
+    end
     
     if @tarea_pendiente.data == {primera_ejecucion: true} || @tarea.codigo =='APL-001'
       @actores = MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas)
@@ -283,5 +387,20 @@ class ActoresController < ApplicationController
       :mapa_de_actores_correctamente_construido,
       :comentarios_y_observaciones_actualizacion_mapa_de_actores
     )
+  end
+
+  def listado_actores_temporal_params
+    params.require(:listado_actores_temporal).permit(
+      :actor_id, :rol_en_acuerdo_id, :cargo_institucion_id, :contribuyente_id, :tipo_institucion_id, :rol_en_acuerdo, 
+      :nombre_actor, :rut_actor, :cargo_institucion, :email_institucional, :telefono_institucional, 
+      :razon_social_institucion, :rut_institucion, :tipo_institucion, :comuna_institucion, :estado,
+      :manifestacion_de_interes, :direccion, :codigo_ciiuv4
+    )
+  end
+
+  def sanitize_rut(params)
+    params["rut_actor"]&.gsub!('.', '')
+    params["rut_institucion"]&.gsub!('.', '')
+    params
   end
 end

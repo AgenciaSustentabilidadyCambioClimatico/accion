@@ -418,6 +418,8 @@ Rails.application.routes.draw do
         put :privacidad
         get :buscador
         get :edit_modal
+        get :edit_actor_modal
+        get :recarga_contribuyente
       end
     end
     
@@ -431,6 +433,7 @@ Rails.application.routes.draw do
         get :mis_instituciones
         get :region_comunas 
         get :edit_modal
+        get :edit_actor_modal
       end
     end
 
@@ -704,6 +707,8 @@ Rails.application.routes.draw do
       get ':manifestacion_de_interes_id/actores/descargar-revisor', to: "actores#descargar_revisor", as: :descargar_revisor_mapa_de_actores
       get ':manifestacion_de_interes_id/actores/revision', to: "actores#revision", as: :revision_mapa_de_actores #DZC APL-010
       patch ':manifestacion_de_interes_id/actores/enviar-revision', to: "actores#enviar_revision", as: :enviar_revision_mapa_de_actores #DZC APL-010
+      patch ':manifestacion_de_interes_id/actores/actualizacion_actor', to: "actores#actualizacion_actor", as: :actualizacion_actor_mapa_de_actores
+      get ':manifestacion_de_interes_id/actores/listado-actores-temporal', to: "actores#listado_actores_temporal", as: :listado_actores_temporal_mapa_de_actores
                  
       get ':manifestacion_de_interes_id/documentos-diagnosticos/actualizacion', to: "documento_diagnosticos#actualizacion", as: :actualizacion_documento_diagnosticos
       patch ':manifestacion_de_interes_id/documentos-diagnosticos/actualizar', to: "documento_diagnosticos#actualizar", as: :actualizar_documento_diagnosticos
@@ -784,6 +789,9 @@ Rails.application.routes.draw do
       post ':id/reload-informe', to: "acuerdo_actores#reload_informe", as: :reload_informe
       post ':id/mostrar-informe', to: "acuerdo_actores#mostrar_informe", as: :mostrar_informe
       patch ':id/guardar-informe', to: "acuerdo_actores#guardar_informe", as: :guardar_informe
+      patch ':id/crear_actor', to: "acuerdo_actores#crear_actor", as: :crear_actor
+      get ':id/listado-actores-temporal', to: "acuerdo_actores#listado_actores_temporal", as: :listado_actores_temporal
+      delete '/:actor_id/eliminar-actor', to: 'acuerdo_actores#eliminar_actor', as: 'eliminar_actor'
     end
 
   end
@@ -943,6 +951,7 @@ Rails.application.routes.draw do
   patch ":tarea_pendiente_id/ceremonia-certificaciones/update(.:format)", to: "ceremonia_certificaciones#update_convocatoria", as: :update_convocatoria_ceremonia_certificaciones
   post ':tarea_pendiente_id/ceremonia-certificaciones/reset_convocatoria', to: "ceremonia_certificaciones#reset_convocatoria", as: :reset_convocatoria_ceremonia_certificaciones
   post ':tarea_pendiente_id/ceremonia-certificaciones/convocatoria', to: "ceremonia_certificaciones#nueva_convocatoria", as: :nueva_convocatoria_ceremonia_certificaciones
+  get ':tarea_pendiente_id/ceremonia-certificaciones/listado-actores-temporal', to: "ceremonia_certificaciones#listado_actores_temporal", as: :listado_actores_temporal_ceremonia_certificaciones
 
   #DZC TAREA-APL-007 ruta para hitos de prensa como tarea pendiente
   get ":tarea_pendiente_id/hitos_de_prensa", to: "admin/hitos_de_prensa#index", as: :tarea_pendiente_hitos_de_prensa #DZC TAREA APL-007

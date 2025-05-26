@@ -5,6 +5,10 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_flujo
   before_action :set_informe
   before_action :set_manifestacion_de_interes
+  before_action :set_mapa_actores
+  before_action :set_contribuyentes
+  before_action :set_usuario_actor
+  before_action :set_listado_actores_temporal
 
   attr_accessor :tipo_linea_seleccionada_l13
 
@@ -269,6 +273,24 @@ class ActualizarComiteAcuerdosController < ApplicationController
         comentarios = @manifestacion_de_interes.comentarios_y_observaciones_set_metas_acciones.last
         @propuestas_con_observaciones = comentarios[:requiere_correcciones]
       end
+    end
+
+    def set_listado_actores_temporal
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+    end
+
+    def set_mapa_actores
+      @mapa_actor =ListadoActoresTemporal.new
+    end
+
+    def set_contribuyentes
+      @contribuyente = Contribuyente.new
+      @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+      @contribuyente_actor = Contribuyente.new
+    end
+  
+    def set_usuario_actor
+      @usuario_actor = User.new
     end
 
     def informe_params

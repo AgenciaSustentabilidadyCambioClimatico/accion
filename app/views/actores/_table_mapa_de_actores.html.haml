@@ -1,0 +1,104 @@
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin= t(:agregar_actores_formulario)
+      .card-body
+        .table-responsive
+          %div#div_mapa_actores.table-responsive  
+            %table.table.table-striped
+              %thead
+                %tr
+                  %th=t(:n°)
+                  %th=t(:rol_en_acuerdo)
+                  %th=t(:nombre_actor)
+                  %th=t(:rut_actor)
+                  %th=t(:cargo_institucion)
+                  %th=t(:email_institucional)
+                  %th=t(:telefono_institucional)
+                  %th=t(:razon_social_institucion)
+                  %th=t(:rut_institucion)
+                  %th=t(:tipo_institucion)
+                  %th=t(:comuna_institucion)
+                  %th=t(:accion)
+              %tbody
+                - if @listado_actores_temporal.present?
+                  - correlativo = 1
+                  - @listado_actores_temporal.each do |listado|
+                    %tr{"data-id" => listado['id']} 
+                      %td= correlativo
+                      %td=listado[:rol_en_acuerdo]
+                      %td=listado[:nombre_actor]
+                      %td=listado[:rut_actor]
+                      %td=listado[:cargo_institucion]
+                      %td=listado[:email_institucional]
+                      %td=listado[:telefono_institucional]
+                      %td=listado[:razon_social_institucion]
+                      %td=listado[:rut_institucion]
+                      %td=listado[:tipo_institucion]
+                      %td=listado[:comuna_institucion]
+                      %td.contenido-form.dos.iconos-acciones
+                        %a{
+                          "data-actor-id" => listado['id'],
+                          "data-confirm" => "¿Está seguro que desea borrar a este Actor?",
+                          "class" => "eliminar-actor",
+                          "id" => "eliminar-actor-#{listado['id']}",
+                          "data-remote" => "true",
+                          "rel" => "nofollow",
+                          "data-method" => "delete",
+                          "href" => "/manifestacion-de-interes/#{@manifestacion_de_interes.id}/#{listado['id']}/eliminar-actor",
+                          "data-original-title" => "Eliminar Actor"
+                        }
+                          %i.fa.fa-trash{title: "Eliminar"}
+                    - correlativo += 1
+                - else
+                  %tr
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles
+                    
+- disabled_button = @listado_actores_temporal.empty? ? 'btn-disabled' : ''
+- button_disabled = @listado_actores_temporal.empty? ? :disabled : nil
+
+.float-right.mr-3.mb-3
+  = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+  = button_tag t(:save),
+    id: 'actualizar-mapa-de-actores-listado-button',
+    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+    class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled",
+    disabled: @listado_actores_temporal.blank?
+
+
+:javascript
+  $(document).ready(function(){
+    $(document).on('click', '.actualizar-mapa-de-actores-listado-button', function(e) {
+      var button = $(this);
+      button.prop("disabled", true);
+      button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
+      $.ajax({
+        url: "#{enviar_revision_mapa_de_actores_manifestacion_de_interes_path(manifestacion_de_interes_id: @manifestacion_de_interes.id)}",
+        data: JSON.stringify({ from: "lista" }),
+        contentType: "application/json",
+        headers: { "Content-Type": "application/json" }, 
+        method: "PATCH",
+        success: function(response) {
+          $.ajax({
+            url: "#{listado_actores_temporal_manifestacion_de_interes_path(@tarea_pendiente)}",
+            data: {
+              id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.id}"
+            },
+            method: "GET",
+            success: function(response) {
+            },
+            error: function(error) {
+              console.error("Error al llamar al método del controlador", error);
+            }
+          });
+          
+        },
+        error: function(error) {
+          console.error("Error al llamar al método del controlador", error);
+          button.prop("disabled", false);
+          button.html("Guardar");
+        }
+      });
+    });
+  });

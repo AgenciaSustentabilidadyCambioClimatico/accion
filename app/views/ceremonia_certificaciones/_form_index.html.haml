@@ -18,9 +18,62 @@
 				}
 			}
 		});
+
+		var button = $("#toggle-actores-form");
+
+		// Establecer el texto inicial basado en la visibilidad
+		if ($("#actualizar-remote-form").hasClass("d-none")) {
+		button.text("Agregar Actores vía Excel");
+		} else {
+		button.text("Agregar Actores Formulario");
+		}
+
+		$("#toggle-actores-form").click(function() {
+		$("#actualizar-remote-form").toggleClass("d-none");
+		$("#mapa_actores-form").toggleClass("d-none");
+
+		// Cambia el texto del botón según la visibilidad
+		if ($("#actualizar-remote-form").hasClass("d-none")) {
+			
+			button.text("Agregar Actores vía Excel");
+		} else {
+			$('#actualizar-remote-form').removeClass('d-none');
+			button.text("Agregar Actores Formulario");
+		}
+		});
 	});
-- titulo t(:actualizar_mapa_actores_convocatoria_certificacion)
+
+	verificarModal();
+	$(document).on('click', '.seleccionar-contribuyente-button', function() {
+		//alert('entro aca');
+		try {
+		// Obtener el input seleccionado
+		var selectedRadio = $('table.contribuyentes').DataTable().$('.contribuyente-radio:checked');
+		var radioValue = selectedRadio.val();  // Obtener el valor
+		console.log('Valor del radio seleccionado:', radioValue);  // Mostrar en la consola
+
+		// Intentar parsear el valor si es un JSON
+		data = JSON.parse(radioValue); 
+		console.log('Datos parsed:', data);  // Ver los datos que has parseado
+
+		// Luego puedes acceder a los atributos que necesitas
+		//alert(data.id);  // Mostrar el id
+		//alert(data.razon_social);  // Mostrar la razón social
+	
+		// Si deseas setear los valores en otros campos de tu formulario:
+		$("#mapa_actores_contribuyente_id").val(data.id);
+		$("#mapa_actores_rut_contribuyente").val(data.rut);
+		$("#mapa_actores_nombre_contribuyente").val(data.razon_social);
+		
+		} catch(e) {
+		alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+		}
+	});
+- titulo t(:actualizar_mapa_actores_convocatoria_firma)
 - tabs = { "listado-de-actores": true, "convocatoria-remote-form": false }
+= render 'admin/users/buscador'
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
 #tab-menu-controls.mb-0.mt-3{:role => "tabpanel"}
 	%ul#manifestacion.nav.nav-tabs{:role => "tablist"}
 		- tabs.each do |tab,active|
@@ -33,6 +86,10 @@
 			.card-body.p-0
 				#actores-remote-table
 					= render 'actores/table'
-				#actualizar-remote-form
+				#mapa_actores-form
+					= render 'actores/form_mapa_de_actores', externo: true 
+					= render 'actores/table_certificaciones_mapa_de_actores', externo: true 
+				#actualizar-remote-form.d-none
 					= render 'actores/form', externo: true
+				%button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
 	#convocatoria-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"convocatoria-remote-form"], "aria-labelledby" => "convocatoria-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"convocatoria-remote-form"])}

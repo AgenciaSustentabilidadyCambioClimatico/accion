@@ -38,7 +38,7 @@ class ManifestacionDeInteresController < ApplicationController
                                       :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
                                       :usuario_entregables, :guardar_usuario_entregables,
                                       :firma, :actualizar_firma,
-                                      :carga_auditoria, :enviar_carga_auditoria]
+                                      :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico]
   before_action :set_tipo_instrumentos, only: [:edit,:update,
                                       :revisor, :asignar_revisor,
                                       :admisibilidad, :revisar_admisibilidad,
@@ -53,6 +53,11 @@ class ManifestacionDeInteresController < ApplicationController
   before_action :set_archivo_mapa_actores, only: [:edit]
   before_action :set_informe, only: [:evaluacion_negociacion, :observaciones_informe, :actualizar_acuerdos_actores, :responder_observaciones_informe]
   before_action :set_comentario_informe, only: [:evaluacion_negociacion, :observaciones_informe]
+
+  before_action :set_mapa_actores, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_listado_actores_temporal, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_usuario_actor, only: [:cargar_actualizar_entregable_diagnostico]
+  before_action :set_contribuyentes_actor, only: [:cargar_actualizar_entregable_diagnostico]
 
   def index
     if params[:query].present?
@@ -1863,6 +1868,13 @@ class ManifestacionDeInteresController < ApplicationController
     # DZC 2018-10-26 16:11:53 se modifica lectura de datos
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+
+    #obtiene actores en estado cero agregados en el APL-013 a traves del mantenedor y se concatenan al @actores_desde_tablas
+    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+    if @actores_desde_tablas != nil
+      @actores_desde_tablas.concat(@actores_desde_lista)
+    end
+
     if @tarea_pendiente.data == {primera_ejecucion: true} || @tarea.codigo =='APL-001'
       @actores = MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas)
     else
@@ -1917,6 +1929,12 @@ class ManifestacionDeInteresController < ApplicationController
     #DZC convierto el hash con string keys a hash_with_indiferent_access, y de vuelta a hash con key simbólicas, o nil, según corresponda
     @actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
     @actores_desde_tablas = MapaDeActor.construye_data_para_apl(@flujo)
+
+    #obtiene actores en estado cero agregados en el APL-013 a traves del mantenedor y se concatenan al @actores_desde_tablas
+    @actores_desde_lista = MapaDeActor.construye_data_para_apl_desde_listado(@manifestacion_de_interes.id)
+    if @actores_desde_tablas != nil
+      @actores_desde_tablas.concat(@actores_desde_lista)
+    end
     @actores = (@actores_desde_campo.blank? ? MapaDeActor.adecua_actores_para_vista(@actores_desde_tablas) : MapaDeActor.adecua_actores_para_vista(@actores_desde_campo))
     @actores = MapaDeActor.adecua_actores_unidos_rut_persona_institucion(@actores)
     # if @manifestacion_de_interes.mapa_de_actores_data.blank?
@@ -2431,6 +2449,13 @@ class ManifestacionDeInteresController < ApplicationController
     end
   end
 
+  def listado_actores_temporal
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
+    end
+  end
+
   private
 
     def set_tarea_pendiente
@@ -2505,6 +2530,10 @@ class ManifestacionDeInteresController < ApplicationController
     	@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
     end
 
+    def set_contribuyentes_actor
+      @contribuyente_actor = Contribuyente.new
+    end
+
     def set_tipo_instrumentos
       tiid = TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
       # DZC 2018-11-16 15:30:03 se modifica para excluir el tipo de acuerdo padre de la selección
@@ -2513,6 +2542,17 @@ class ManifestacionDeInteresController < ApplicationController
 
     end
 
+    def set_mapa_actores
+      @mapa_actor = ListadoActoresTemporal.new
+    end
+
+    def set_listado_actores_temporal
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
+    end
+
+    def set_usuario_actor
+      @usuario_actor = User.new
+    end  
 
     def manifestacion_params
       parameters = params.require(:manifestacion_de_interes).permit(

@@ -23,6 +23,7 @@
 					%th.id=t(:id)
 					%th.cargo-nombre=t(:name)
 					%th.cargo-descripcion=t(:description)
+					%th=t(:mostrar_en_excel)
 					%th.dos.iconos-acciones=t(:acciones)
 			%tbody
 				- @cargos.each do |cargo|
@@ -33,6 +34,7 @@
 								= cargo.nombre
 							%td.cargo-descripcion
 								= cargo.descripcion
+							%td= cargo.mostrar_en_excel ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
 							%td.dos.iconos-acciones
 								%div
 									= link_to edit_admin_cargo_path(cargo) do

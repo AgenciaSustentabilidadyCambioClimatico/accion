@@ -11,13 +11,21 @@
       .col-12.text-right
         %button.btn.btn-primary#nuevo-usuario-button{type: :button}
           =t(:nuevo_representante)
+    -unless @usuario_actor.nil?
+      .col-12.text-right
+        %button.btn.btn-primary#nuevo-actor-button{type: :button}
+          =t(:nuevo_actor)
   .col-12.mt-2
     .usuarios-remote-table
       = render "admin/users/tabla", modal_id: modal_id, lista_usuarios: lista_usuarios
   .col-12.mt-2.text-right
-    -unless @contribuyente_temporal.nil?
-      %button.btn.btn-primary.seleccionar-y-actualizar-usuario-button{type: :button, disabled: :disabled }
+    -unless @usuario_actor.nil?
+      %button.btn.btn-primary.seleccionar-y-actualizar-usuario-actor-button{type: :button, disabled: :disabled }
         Seleccionar
     -else
-      %button.btn.btn-primary.seleccionar-usuario-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled, "data-modal-id" => modal_id}
-        Seleccionar
+      -unless @contribuyente_temporal.nil?
+        %button.btn.btn-primary.seleccionar-y-actualizar-usuario-button{type: :button, disabled: :disabled }
+          Seleccionar
+      -else
+        %button.btn.btn-primary.seleccionar-usuario-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled, "data-modal-id" => modal_id}
+          Seleccionar

@@ -13,8 +13,11 @@
   });
 .card
   .card-header
-    %h5.no-margin{id: "tituloModal_#{modal_id}"}
-      = t(:lista_de_, items: t(:usuarios).downcase)
+    %h5.no-margin
+      -unless @usuario_actor.nil?
+        = t(:lista_de_, items: t(:actores).downcase)
+      -else
+        = t(:lista_de_, items: t(:usuarios).downcase)
   %div.my-2 
     %table.table.usuarios.table-striped{id: 'tabla_usuarios_'+modal_id}
       %thead

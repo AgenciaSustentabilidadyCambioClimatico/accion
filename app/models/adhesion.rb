@@ -237,6 +237,7 @@ class Adhesion < ApplicationRecord
 						end
 					end
 					
+          rut_value = rut_encargado.to_s.strip.downcase
 					# DZC 2018-10-20 18:38:57 se modifican las validaciones a fin de considerar la preexistencia de email y rut en forma conjunta, por que configuran la llave primaria de la tabla users
 					rut_value = rut_encargado.to_s.strip.downcase
           if !fila[:email_encargado].to_s.email_valid?
@@ -245,7 +246,7 @@ class Adhesion < ApplicationRecord
 					elsif !rut_encargado.rut_valid? && !(tarea_id == Tarea::ID_APL_025 && rut_value == "no")
 						# errores[:rut_encargado] << fila[:rut_encargado]
 						# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)} es inválido")
-						errores[:rut_encargado] << " El RUT del encargado para la línea #{(posicion+2)} es inválido"	
+						errores[:rut_encargado] << "El RUT del encargado para la línea #{(posicion+2)} es inválido"
 					elsif externa && rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "") != rut_encargado
 						errores[:rut_encargado] << " Sólo puede solicitar adhesiones para representante señalado, por favor corregir RUT representante en archivo Excel, para la fila #{(posicion+2)}"
 					else 
@@ -892,5 +893,6 @@ class Adhesion < ApplicationRecord
 
 		
 	end
+
 
 end

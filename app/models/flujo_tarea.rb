@@ -17,24 +17,8 @@ class FlujoTarea < ApplicationRecord
 		roles = rol_destinatarios.reject { |r| r.empty? }
 		if roles.blank?
 			errors.add(:rol_destinatarios, "Debe indicar al menos un rol")
-		else
-			condicion = nil
-			condicion = "id = #{tarea_entrada_id}" if tarea_entrada_id.present?
-			condicion += "#{(condicion.blank?) ? '' : ' OR '}id = #{tarea_salida_id}" if tarea_salida_id.present?
-			unless condicion.nil?
-				tareas = Tarea.where(condicion).all
-				roles_encontrados = []
-				tareas.each do |t|
-					roles_encontrados << t.rol_id if roles.map{|r|r.to_i}.include?(t.rol_id)
-				end
-				if roles_encontrados.blank?
-					errors.add(:rol_destinatarios, "Debe indicar también los roles #{tareas.map{|t|t.rol.nombre}.join(' y ')}");
-				elsif tareas.size == 2 && roles_encontrados.size == 1
-					errors.add(:rol_destinatarios, "Debe indicar también el rol #{tareas.map{|t|t.rol.nombre if ( t.rol_id == (tareas.map{|t|t.rol_id}-roles_encontrados).first )}.compact.join('')}")
-				end
-			end
-		end
-	end
+    end
+  end
 
 	def self.metodos(user, reunion=nil, mdi=nil)
 		{
@@ -77,7 +61,7 @@ class FlujoTarea < ApplicationRecord
 					#DZC en realidad si este booleano es true, se deberia enviar la tarea solo a los usuarios contenidos en el mapa de actores que posean el rol escogido por el administrador en el mantenedor de tareas
 					
 					#si tarea es encuesta, utiliza los roles adiocionales de ejecución
-					roles_ids = [sig_tarea.rol_id]
+					roles_ids = self.rol_destinatarios
 					if sig_tarea.es_una_encuesta
 						roles_ids += sig_tarea.encuesta_ejecucion_roles.pluck(:rol_id)
 					end
@@ -170,7 +154,7 @@ class FlujoTarea < ApplicationRecord
 										self.asunto_format(ut.user,mdi), 
 										self.cuerpo_format(ut.user,mdi), 
 										ut.email_institucional,
-										rgc.id).deliver_later #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
+										rgc.id).deliver_now #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
 								end
 							end   
 							if !auditorias.blank? #DZC elimina el último elemento del array

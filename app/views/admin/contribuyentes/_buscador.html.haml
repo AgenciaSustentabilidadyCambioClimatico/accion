@@ -58,7 +58,23 @@
     });
   });
 
- 
+  $(document).on('click','#nuevo-contribuyente-actor-button', function(e){
+    e.preventDefault();
+    $.ajax({
+      url: "#{edit_actor_modal_admin_contribuyentes_path}",
+      type: "GET",
+      data: {
+        id: "",
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-buscador#{custom_id}').html(data);
+      $('.loading-data').hide();
+    });
+  });
 
   $(document).on('click','#deshacer-contribuyente-button', function(e){
     e.preventDefault();    
@@ -103,6 +119,25 @@
     data=JSON.parse($('#contribuyentes-remote-table#{custom_id}').find('.contribuyente-radio:checked').val());
     $.ajax({
       url: "#{edit_modal_admin_contribuyentes_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        contribuyente_id: data.id
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-buscador#{custom_id}').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
+  $(document).on('click', '.seleccionar-y-actualizar-contribuyente-actor-button', function(){
+    data=JSON.parse($('#contribuyentes-remote-table#{custom_id}').find('.contribuyente-radio:checked').val());
+    $.ajax({
+      url: "#{edit_actor_modal_admin_contribuyentes_path}",
       type: "GET",
       data: {
         id: data.id,
@@ -200,6 +235,7 @@
     }
     */
     $('.guarda-contribuyente-button').removeAttr("disabled");
+    $('.guarda-contribuyente-actor-button').removeAttr("disabled");
   }
 
   

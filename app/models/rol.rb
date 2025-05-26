@@ -75,4 +75,8 @@ class Rol < ApplicationRecord
   def self.__select
     Rol.order(nombre: :asc).all.map {|m|[m.nombre,m.id]}
   end
+
+  def self.__select_marcados_excel
+    Rol.where(mostrar_en_excel: true).order(nombre: :asc).all.map {|m|[m.nombre,m.id]}
+  end
 end

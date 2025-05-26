@@ -30,6 +30,8 @@ class User < ApplicationRecord
   validates_uniqueness_of :email, on: :create, if: ->  {email != "no" }
   validates_uniqueness_of :rut, on: :create, if: ->  {rut != "no" }
 
+  attr_accessor :rol, :cargo
+
   before_validation :normalizar_rut, if: ->  {rut != "no" }
   before_save :clear_no_data
 

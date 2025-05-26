@@ -834,6 +834,7 @@ function verificarModal(){
     seleccionado.prop("checked", true);
     $('.seleccionar-contribuyente-button').removeAttr('disabled'); 
     $('.seleccionar-y-actualizar-contribuyente-button').removeAttr('disabled'); 
+    $('.seleccionar-y-actualizar-contribuyente-actor-button').removeAttr('disabled'); 
   });  
 }
 
