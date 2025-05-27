@@ -506,6 +506,10 @@ class AdhesionesController < ApplicationController
       @adhesion_todas_sin_unscoped.each do |adhe|
         @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
       end
+
+      @adhesion_todas_sin_unscoped.each do |adhe|
+        @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
+      end
 		end
 
 		def adhesion_params

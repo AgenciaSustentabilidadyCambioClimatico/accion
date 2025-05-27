@@ -10,7 +10,8 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_04_09_145714) do
+ActiveRecord::Schema.define(version: 2025_04_24_221928) do
+
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -988,6 +989,7 @@ ActiveRecord::Schema.define(version: 2025_04_09_145714) do
     t.string "archivo_contrato"
     t.string "empresas_adheridas"
     t.string "solicitud_cofinanciamiento"
+    t.string "copia_cedula_representantes_legales_ejecutor"
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
