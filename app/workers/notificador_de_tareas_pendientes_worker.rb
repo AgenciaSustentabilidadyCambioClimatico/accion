@@ -96,7 +96,7 @@ class NotificadorDeTareasPendientesWorker
         )
 
         FlujoMailer.enviar(asunto, cuerpo, email, rgc.id).deliver_later
-        RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_later
+        #RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_later
       end
     end
   end
