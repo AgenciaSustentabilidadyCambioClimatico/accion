@@ -283,7 +283,11 @@ class AuditoriasController < ApplicationController
         Adhesion.unscoped.where(flujo_id: @flujo.id).each do |_adh|
           adh_elems += _adh.adhesion_elemento_externos.pluck(:id)
         end
-        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems) #.where(estado: [3,4]) #DZC elementos a auditar
+        @auditoria_elementos = AuditoriaElemento
+        .includes(:auditoria, :set_metas_accion, adhesion_elemento: :alcance)
+        .where(auditoria_id: @auditoria.id)
+        .where(adhesion_elemento_id: adh_elems)
+        .paginate(page: params[:page], per_page: 10) #.where(estado: [3,4]) #DZC elementos a auditar
         # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
         @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
       elsif @tarea.codigo == Tarea::COD_APL_032_1
