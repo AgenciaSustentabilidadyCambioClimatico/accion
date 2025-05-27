@@ -240,7 +240,7 @@ class AuditoriasController < ApplicationController
     end
 
     def set_flujo
-      @solo_lectura = params[:q]
+      @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)

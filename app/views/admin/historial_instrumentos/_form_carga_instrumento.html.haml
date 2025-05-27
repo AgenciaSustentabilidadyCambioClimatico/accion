@@ -118,7 +118,7 @@
                             =ins[:estado]
                         -else
                           -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
-                          - f = data_url[:url] + '/?q=solo_lectura'
+                          - f = data_url[:url]
                           =link_to f, class: "btn-tabla-instrumentos" do
                             =fa_icon 'eye'
                             =ins[:estado]
