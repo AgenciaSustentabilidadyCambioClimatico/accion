@@ -9,6 +9,10 @@
               %br
               %b=@instrumento.subtipo_de_instrumento
               %br
+              -if @instrumento.acuerdo
+                %b Acuerdo
+                =@instrumento.acuerdo
+                %br
               =@instrumento.nombre_instrumento
               %br
               %b ID
