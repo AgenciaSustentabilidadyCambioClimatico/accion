@@ -5,6 +5,13 @@
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").val(#{@usuario_temporal.id});
     $("#manifestacion_de_interes_representante_institucion_para_solicitud_id").change();
     $("#guardar-manifestacion-temporal-button").trigger("click");
+
+    //se utilizan para FPL-00
+    $("#manifestacion_de_interes_usuario_entregables_id").val(#{@usuario_temporal.id});
+    $("#manifestacion_de_interes_usuario_entregables_id").change();
+    $("#manifestacion_de_interes_usuario_entregable_name").val("#{j @usuario_temporal.nombre_completo}");
+    $("#manifestacion_de_interes_usuario_entregable_name").change();
+    $('.loading-data').hide();  
   -else
     $('.loading-data').hide();
 -else

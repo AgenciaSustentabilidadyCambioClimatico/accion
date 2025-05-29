@@ -1,4 +1,4 @@
-class SolicitudCofinanciamientoPostulanteFondoProduccionLimpiaUploader < CarrierWave::Uploader::Base
+class ArchivoCopiaCedulaRepresentantesLegalesEjecutorFondoProduccionLimpiaUploader < CarrierWave::Uploader::Base
   storage :aws
 
   def store_dir
@@ -14,4 +14,3 @@ class SolicitudCofinanciamientoPostulanteFondoProduccionLimpiaUploader < Carrier
   end
 
 end
-

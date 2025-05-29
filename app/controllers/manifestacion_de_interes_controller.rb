@@ -162,7 +162,7 @@ class ManifestacionDeInteresController < ApplicationController
 
   def edit #DZC TAREA APL-001 una vez instanciada la manifestación
     # DZC 2019-02-28 18:03:15 se setean las varibles relativas al mensaje "Recuerde gradar sus cambios"
-    @solo_lectura = params[:q]
+    @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
     @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR
     @manifestacion_de_interes.seleccion_de_radios
     @mantener_temporal = 'true'
@@ -2450,9 +2450,9 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def listado_actores_temporal
-    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
     respond_to do |format|
-      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: params[:id] } }
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
     end
   end
 
@@ -2471,7 +2471,7 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_manifestacion_de_interes
-      @solo_lectura = params[:q]
+      @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
       # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
       @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
       # DZC 2019-07-11 17:41:43 se agrega para generalizar las validaciones y tamaños de texto
@@ -2547,7 +2547,7 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_listado_actores_temporal
-      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
     end
 
     def set_usuario_actor

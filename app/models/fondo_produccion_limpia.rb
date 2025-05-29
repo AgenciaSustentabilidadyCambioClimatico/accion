@@ -44,6 +44,7 @@ class FondoProduccionLimpia < ApplicationRecord
   mount_uploader :certificado_vigencia_constitucion_ejecutor, ArchivoCertificadoVigenciaConstitucionEjecutorFondoProduccionLimpiaUploader
   mount_uploader :copia_instrumento_nombre_representante_ejecutor, ArchivoCopiaInstrumentoNombreRepresentanteEjecutorFondoProduccionLimpiaUploader
   mount_uploader :certificado_vigencia_copia_instrumento_ejecutor, ArchivoCertificadoVigenciaCopiaInstrumentoEjecutorFondoProduccionLimpiaUploader
+  mount_uploader :copia_cedula_representantes_legales_ejecutor, ArchivoCopiaCedulaRepresentantesLegalesEjecutorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_representante_legal_anexo_a_ejecutor, ArchivoDeclaracionJuradaRepresentanteLegalAnexoAEjecutorFondoProduccionLimpiaUploader
   mount_uploader :declaracion_jurada_representante_legal_anexo_b_ejecutor, ArchivoDeclaracionJuradaRepresentanteLegalAnexoBEjecutorFondoProduccionLimpiaUploader
   mount_uploader :certificado_inicio_actividades_sii_ejecutor, ArchivoCertificadoInicioActividadesSiiEjecutorFondoProduccionLimpiaUploader
@@ -1021,7 +1022,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos_seguimiento[1] != nil
         monto_cofinanciamiento = confinanciamiento_empresa[0]
 
-        if costos_seguimiento[1].aporte_propio_valorado <= monto_cofinanciamiento && costos_seguimiento[1].aporte_propio_valorado != ''
+        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto_cofinanciamiento && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
           cumple4 = 'SI'
         else
           cumple4 = 'NO'

@@ -173,16 +173,16 @@ class AcuerdoActoresController < ApplicationController
   end
 
   def listado_actores_temporal
-    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
     respond_to do |format|
-      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: params[:id] } }
+      format.js { render 'actores/listado_actores_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
     end
   end
 
   def eliminar_actor
     actor = ListadoActoresTemporal.find(params[:actor_id])
     if actor.destroy
-      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:tarea_pendiente_id], estado: 0)
+      @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0)
       respond_to do |format|
         format.js { render 'actores/eliminar_actor', locals: { actor: actor.id } }
       end
@@ -284,7 +284,7 @@ class AcuerdoActoresController < ApplicationController
   end
 
   def set_listado_actores_temporal
-    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: params[:id], estado: 0).order(id: :asc).all
+    @listado_actores_temporal = ListadoActoresTemporal.where(manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id, estado: 0).order(id: :asc).all
   end
 
   def actualizar_mapa_de_actores_manifestacion_de_interes_params

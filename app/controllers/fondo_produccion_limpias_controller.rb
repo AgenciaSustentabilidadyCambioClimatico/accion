@@ -334,6 +334,7 @@ class FondoProduccionLimpiasController < ApplicationController
       responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
       contribuyentes_ids_entregables = responsables_entregables.pluck(:contribuyente_id).uniq
       @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_ids_entregables)
+      @contribuyente_temporal = nil
     end
 
     def carga_responsable_postulante #FPL-00
@@ -786,6 +787,8 @@ class FondoProduccionLimpiasController < ApplicationController
           @registro_proveedor.comuna = '.'
           @registro_proveedor.ciudad = '.'
           @registro_proveedor.terminos_y_servicion = true
+          @registro_proveedor.estado = 4
+          @registro_proveedor.user_encargado = 4
 
           # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
           empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
@@ -933,6 +936,8 @@ class FondoProduccionLimpiasController < ApplicationController
       @registro_proveedor.comuna = '.'
       @registro_proveedor.ciudad = '.'
       @registro_proveedor.terminos_y_servicion = true
+      @registro_proveedor.estado = 4
+      @registro_proveedor.user_encargado = 4
 
       # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
       empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
@@ -4306,7 +4311,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end
   
       def set_manifestacion_de_interes
-        @solo_lectura = params[:q]
+        @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
         flujo_apl = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
         @tarea = @tarea_pendiente.tarea

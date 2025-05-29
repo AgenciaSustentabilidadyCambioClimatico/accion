@@ -1,11 +1,11 @@
 class GenerarVistaReporteriaWorker
   include Sidekiq::Job
 
-    sidekiq_options retry: false, queue: "default", backtrace: true
+  sidekiq_options retry: false, queue: "default", backtrace: true
 
-    sidekiq_retries_exhausted do |msg|
-      Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
-    end
+  sidekiq_retries_exhausted do |msg|
+    Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
+  end
 
   def perform
     manif_de_intereses_firmadas = ManifestacionDeInteres.where.not(firma_fecha: nil).or(
@@ -31,7 +31,9 @@ class GenerarVistaReporteriaWorker
     })
 
     clasificaciones_data = ReporteriaDato.find_or_create_by(ruta: "index")
-    clasificaciones = Clasificacion.where(clasificacion_id: nil).order(updated_at: :desc).includes(:acuerdos, :set_metas_acciones, :empresas, :elementos)
+
+
+    clasificaciones = Clasificacion.where(clasificacion_id: nil).order(updated_at: :desc)
 
     clasificaciones_info = clasificaciones.map do |clasificacion|
       {
@@ -65,7 +67,7 @@ class GenerarVistaReporteriaWorker
           diagnostico_de_acuerdo_anterior: manif.diagnostico_de_acuerdo_anterior&.url,
           documento_diagnosticos: manif.documento_diagnosticos.present?,
           informe_acuerdo: manif.informe_acuerdo.archivos_anexos.present?,
-          informe_impacto: manif.informe_impacto.documento&.url,
+          informe_impacto: manif.informe_impacto&.documento&.url,
           estado_consulta_publica: manif.estado_acuerdo,
           empresas_adheridas: manif.empresas_adheridas.count,
           empresas_certificadas: TareaPendiente.exists?(flujo_id: manif.flujo.id, tarea_id: Tarea::ID_APL_032) ? manif.empresas_certificadas.count : "Por certificar"
@@ -76,3 +78,4 @@ class GenerarVistaReporteriaWorker
     end
   end
 end
+
