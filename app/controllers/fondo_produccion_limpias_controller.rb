@@ -4311,7 +4311,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end
   
       def set_manifestacion_de_interes
-        @solo_lectura = params[:q]
+        @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
         flujo_apl = Flujo.find(@fondo_produccion_limpia.flujo_apl_id)
         @manifestacion_de_interes = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
         @tarea = @tarea_pendiente.tarea
@@ -4703,7 +4703,6 @@ class FondoProduccionLimpiasController < ApplicationController
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
         fpl = FondoProduccionLimpia.where(flujo_apl_id: @tarea_pendiente.flujo_id).first
-
         flujo_apl = Flujo.find(fpl.flujo_apl_id)
         mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 

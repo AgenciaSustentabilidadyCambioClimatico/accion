@@ -447,7 +447,7 @@ class AdhesionesController < ApplicationController
 
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
     def set_flujo
-      @solo_lectura = params[:q]
+      @solo_lectura = @tarea_pendiente.solo_lectura(current_user)
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -501,6 +501,10 @@ class AdhesionesController < ApplicationController
         @todas_todas[adh.id] = adh.adhesiones_todas
         @por_revisar_todas[adh.id] = adh.adhesiones_por_revisar
 
+      end
+
+      @adhesion_todas_sin_unscoped.each do |adhe|
+        @todas_las_mias[adhe.id] = adhe.adhesiones_todas_mias
       end
 
       @adhesion_todas_sin_unscoped.each do |adhe|
