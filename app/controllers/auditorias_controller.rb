@@ -112,8 +112,7 @@ class AuditoriasController < ApplicationController
 
   def descargar 
     titulos = AuditoriaElemento.columnas_excel
-    datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria, @adhesion) #DZC obtiene los datos desde las tablas
-    
+    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesion)    
     dominios = AuditoriaElemento.dominios
     archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
     
