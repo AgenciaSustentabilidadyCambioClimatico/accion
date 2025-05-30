@@ -124,14 +124,28 @@ class TipoContribuyente < ApplicationRecord
     select("tipo_contribuyentes.tipo_contribuyente_id")
       .joins("LEFT JOIN dato_anual_contribuyentes ON dato_anual_contribuyentes.tipo_contribuyente_id = tipo_contribuyentes.id")
       .joins("LEFT JOIN fondo_produccion_limpia ON fondo_produccion_limpia.institucion_entregables_id = dato_anual_contribuyentes.contribuyente_id")
-      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id).first
+      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id)
+      .where("dato_anual_contribuyentes.periodo = (
+        SELECT MIN(dac.periodo)
+        FROM dato_anual_contribuyentes dac
+        LEFT JOIN fondo_produccion_limpia fpl ON fpl.institucion_entregables_id = dac.contribuyente_id
+        WHERE fpl.flujo_id = ?
+      )", flujo_id)
+      .first
   end
 
   def self.tipo_contribuyente_id_receptor(flujo_id)
     select("tipo_contribuyentes.tipo_contribuyente_id")
       .joins("LEFT JOIN dato_anual_contribuyentes ON dato_anual_contribuyentes.tipo_contribuyente_id = tipo_contribuyentes.id")
       .joins("LEFT JOIN fondo_produccion_limpia ON fondo_produccion_limpia.institucion_receptor_cof_fpl_id = dato_anual_contribuyentes.contribuyente_id")
-      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id).first
+      .where("fondo_produccion_limpia.flujo_id = ?", flujo_id)
+      .where("dato_anual_contribuyentes.periodo = (
+        SELECT MIN(dac.periodo)
+        FROM dato_anual_contribuyentes dac
+        LEFT JOIN fondo_produccion_limpia fpl ON fpl.institucion_receptor_cof_fpl_id = dac.contribuyente_id
+        WHERE fpl.flujo_id = ?
+      )", flujo_id)
+      .first
   end
 
 end

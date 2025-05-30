@@ -76,6 +76,16 @@ class Flujo < ApplicationRecord
     nombre
   end
 
+  def acuerdo
+    nombre = nil
+    if !self.fondo_produccion_limpia.blank?
+      flujo = Flujo.find(self.fondo_produccion_limpia.flujo_apl_id)
+      mdi = ManifestacionDeInteres.find(flujo.manifestacion_de_interes_id)
+      nombre = mdi.nombre_acuerdo
+    end
+    nombre
+  end
+
   def tipo_de_flujo
     if self.manifestacion_de_interes_id.present?
       return "APL"
