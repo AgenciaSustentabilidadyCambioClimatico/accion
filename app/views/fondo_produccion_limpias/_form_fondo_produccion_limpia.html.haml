@@ -3459,8 +3459,8 @@
                   %th.encabezado2-form=t(:email)
                   %th.encabezado2-form=t(:profesion)
                   %th.encabezado2-form=t(:funciones_proyecto)
-                  %th.encabezado2-form=t(:valor_hh)
-                  %th.encabezado2-form=t(:copia_ci)
+                  -#%th.encabezado2-form=t(:valor_hh)
+                  -#%th.encabezado2-form=t(:copia_ci)
                   %th.encabezado2-form=t(:curriculum_vitae)
                   - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
@@ -3475,10 +3475,10 @@
                       %td.contenido-form= postulante.profesion
                       %td.contenido-form= postulante.funciones_proyecto
                       %td.contenido-form= number_to_currency postulante.valor_hh
-                      %td.contenido-form
-                        = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
-                      %td.contenido-form
-                        = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
+                      -#%td.contenido-form
+                      -#  = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
+                      -#%td.contenido-form
+                      -#  = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
@@ -5042,19 +5042,27 @@
     var funciones_proyecto = $('#funciones_proyecto').val() != "";
     var valor_hh = $('#valor_hh').val() != "";
 
-    var archivoInput = document.getElementById('copia_ci');
-    var archivo = archivoInput.files[0];
-    var copia_ci = '';
-    if (archivo) {
-      copia_ci = archivo.name;
-    }
+    var tipo_equipo = $('#equipo_trabajo_tipo_equipo').val();
 
-    var archivoInput1 = document.getElementById('curriculum');
-    var archivo1 = archivoInput1.files[0];
+    var copia_ci = '';
     var curriculum_vitae = '';
-    if (archivo1) {
-      curriculum_vitae = archivo1.name;
-    }
+
+    if (tipo_equipo === "3") {
+      copia_ci = 'ok'
+      curriculum_vitae = 'ok'
+    } else {
+      var archivoInput = document.getElementById('copia_ci');
+      var archivo = archivoInput.files[0];
+      if (archivo) {
+        copia_ci = archivo.name;
+      }
+
+      var archivoInput1 = document.getElementById('curriculum');
+      var archivo1 = archivoInput1.files[0];
+      if (archivo1) {
+        curriculum_vitae = archivo1.name;
+      }
+    }  
 
     if (rut && nombre_completo && email && telefono && profesión && funciones_proyecto && valor_hh && copia_ci && curriculum_vitae) {
       $('.guarda-equipo-fpl-button').removeAttr("disabled");
