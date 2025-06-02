@@ -112,7 +112,7 @@ class AuditoriasController < ApplicationController
 
   def descargar 
     titulos = AuditoriaElemento.columnas_excel
-    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesion)    
+    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesiones)    
     dominios = AuditoriaElemento.dominios
     archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
     
@@ -255,6 +255,7 @@ class AuditoriasController < ApplicationController
         end
       else
         @adhesion = Adhesion.find_by(flujo_id: @flujo.id)
+        @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
       end
 
       if @tarea_pendiente.tarea_id == Tarea::ID_APL_032_1
