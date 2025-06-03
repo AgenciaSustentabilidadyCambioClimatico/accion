@@ -254,6 +254,7 @@ class AuditoriasController < ApplicationController
           @adhesiones_externas << adh if adh.rut_representante_legal.gsub('k', 'K').gsub(".", "") == current_user.rut.gsub('k', 'K').gsub(".", "")
         end
       else
+        # Se añade adhesiones ya que se estaba utilizando solo la primera, y se perdían valores. Se mantiene adhesiones para compatibilidad con otras tareas
         @adhesion = Adhesion.find_by(flujo_id: @flujo.id)
         @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
       end

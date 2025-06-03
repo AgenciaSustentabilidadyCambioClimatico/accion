@@ -255,8 +255,7 @@ class AuditoriaElemento < ApplicationRecord
 		flujo = Flujo.find_by(manifestacion_de_interes_id: manif_de_interes.id)
 		elems_id = []
 		elementos = []
-		# DZC 2018-11-05 14:15:31 se cambia dependencia de manif_de_interes a flujo
-		
+		# Ahora se trabaja con todas las adhesiones, no solo con la primera
 		adhesiones.each do |adhesion|
 			if adhesion.externa
 				elementos.concat(adhesion.adhesion_elemento_externos) unless adhesion.adhesion_elemento_externos.empty?
