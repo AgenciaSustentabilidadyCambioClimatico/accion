@@ -732,105 +732,178 @@ class FondoProduccionLimpiasController < ApplicationController
     end 
 
     def insert_modal
-      respond_to do |format|
-        tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
-        @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
-        @user = User.new(create_user_params)
+      # Buscar la tarea específica por código
+      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+      # Encontrar la tarea pendiente asociada al flujo_id recibido
+      @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+      
+      # Inicializar un nuevo objeto User con los parámetros permitidos
+      @user = User.new(create_user_params)
 
-        @usuarios = User
-        if @user.rut.present?
-          rut = @user.rut.upcase
-          @usuarios = @usuarios.where("rut = ?", rut)
+      # --- MODIFICACIÓN CLAVE: Asegura que el campo temporal sea false para usuarios NUEVOS ---
+      # Esto sobrescribe cualquier valor que venga del formulario para 'temporal' si el usuario es nuevo.
+      if @user.new_record? # Verifica si es un nuevo registro en la base de datos (aún no guardado)
+        @user.temporal = false 
+        
+        # Generar una contraseña temporal si no se ha proporcionado una.
+        # Esto es crucial si el modelo User tiene `has_secure_password` y requiere una contraseña.
+        unless @user.password.present? 
+          generated_password = SecureRandom.hex(10) # Genera una contraseña aleatoria de 10 caracteres
+          @user.password = generated_password
+          @user.password_confirmation = generated_password # has_secure_password requiere `password_confirmation`
+          # NOTA: En un entorno de producción, considera cómo se comunicará esta contraseña al usuario
+          # (ej. por correo electrónico con enlace para cambiarla, o primer inicio de sesión con reseteo forzado).
+        end
+      end
+      # --- FIN DE LA MODIFICACIÓN CLAVE ---
+
+      # Preparar la consulta para verificar si el usuario ya existe por RUT
+      @usuarios = User
+      if @user.rut.present?
+        rut = @user.rut.upcase
+        @usuarios = @usuarios.where("rut = ?", rut)
+      end
+
+      # Variables para manejar los mensajes y redirecciones en la respuesta JS/HTML
+      success_message = nil
+      error_message = nil
+      redirect_path_html = nil
+      render_js_alert = nil
+      render_js_redirect = nil
+      
+      # Flag para determinar si se debe proceder con el guardado del usuario y equipo
+      should_save_user_and_equipo = true
+
+      if @usuarios.count > 0
+        # Lógica si el usuario ya existe
+        error_message = "El usuario con el RUT #{rut} ya existe."
+        render_js_alert = "alert('#{error_message}');"
+        redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id) # Redirige al mismo formulario con el error
+        should_save_user_and_equipo = false
+      else
+        # Lógica de verificación de archivos adjuntos
+        if params[:equipo_trabajo][:tipo_equipo] != "3"
+          unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+            error_message = "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx."
+            render_js_alert = "alert('#{error_message}');"
+            redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id)
+            should_save_user_and_equipo = false
+          end
+        end
+      end
+
+      if should_save_user_and_equipo
+        # Preparar los parámetros para el objeto EquipoTrabajo
+        if params[:equipo_trabajo][:tipo_equipo] != "3"
+          copia_ci = params[:archivos_copia_ci]
+          curriculum = params[:archivos_curriculum]
+        else
+          copia_ci = nil
+          curriculum = nil
         end
 
-        if @usuarios.count > 0
-          # Usuario ya existe
-          format.js { render js: "alert('El usuario con el RUT #{rut} ya existe.');" }
-          format.html { redirect_to some_path, alert: "El usuario con el RUT #{rut} ya existe." }
-        else
-          # Verificación de archivos
-          unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
-            respond_to do |format|
-              format.js { render js: "alert('La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.');" }
-              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión de uno o más archivos no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx." }
-            end
-            return
-          end
-
-          #SETEO PARAMETROS EQUIPO
-          custom_params_equipo = {
-            equipo_trabajo: {
-              profesion: params[:equipo_trabajo][:profesion],
-              funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
-              valor_hh: params[:equipo_trabajo][:valor_hh],
-              copia_ci: params[:archivos_copia_ci],
-              curriculum: params[:archivos_curriculum],
-              tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
-              flujo_id: params[:user][:flujo_id],
-              user_id: params[:user][:user_id]
-            }
+        custom_params_equipo = {
+          equipo_trabajo: {
+            profesion: params[:equipo_trabajo][:profesion],
+            funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+            valor_hh: params[:equipo_trabajo][:valor_hh],
+            copia_ci: copia_ci,
+            curriculum: curriculum,
+            tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+            flujo_id: params[:user][:flujo_id],
+            user_id: params[:user][:user_id] # Este user_id puede venir para asociar un equipo a un user existente (no nuevo)
           }
-          tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
+        }
 
-          #SETEO PARAMETROS PROVEEDOR
-          @registro_proveedor = RegistroProveedor.new()
-          @registro_proveedor.rut = @user.rut
-          @registro_proveedor.nombre = @user.nombre_completo
-          @registro_proveedor.email = @user.email
-          @registro_proveedor.telefono = @user.telefono
-          @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
-          @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL
-          @registro_proveedor.calificado = false
-          @registro_proveedor.apellido = '.'
-          @registro_proveedor.direccion = '.'
-          @registro_proveedor.region = '.'
-          @registro_proveedor.comuna = '.'
-          @registro_proveedor.ciudad = '.'
-          @registro_proveedor.terminos_y_servicion = true
-          @registro_proveedor.estado = 4
-          @registro_proveedor.user_encargado = 4
+        # Preparar el objeto RegistroProveedor
+        @registro_proveedor = RegistroProveedor.new()
+        @registro_proveedor.rut = @user.rut
+        @registro_proveedor.nombre = @user.nombre_completo
+        @registro_proveedor.email = @user.email
+        @registro_proveedor.telefono = @user.telefono
+        @registro_proveedor.profesion = params[:equipo_trabajo][:profesion]
+        @registro_proveedor.tipo_proveedor_id = FondoProduccionLimpia::TIPO_CONSULTOR_FPL # Asegúrate de que esta constante exista
+        @registro_proveedor.calificado = false
+        @registro_proveedor.apellido = '.' # Datos de placeholder, considera validaciones o si son requeridos
+        @registro_proveedor.direccion = '.'
+        @registro_proveedor.region = '.'
+        @registro_proveedor.comuna = '.'
+        @registro_proveedor.ciudad = '.'
+        @registro_proveedor.terminos_y_servicion = true
+        @registro_proveedor.estado = 4 # Asegúrate de que este estado sea válido en tu modelo RegistroProveedor
+        @registro_proveedor.user_encargado = 4 # Asegúrate de que este ID de usuario sea válido
 
-          # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
-          empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+        # Si el tipo de equipo es "externo" (2), asigna el contribuyente_id de la empresa asociada al flujo
+        empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
 
-          if params[:equipo_trabajo][:tipo_equipo].to_i == 2
-            custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
-            @registro_proveedor.contribuyente_id = empresa.contribuyente_id
-          end
-        
-          if @user.user_id.nil?
-            if @user.save
-              usuario_temporal = User.unscoped.find(@user.id)
-              usuario_final = usuario_temporal.confirmar_temporal
-              if(create_user_params[:temporal] == "true")
-                @usuario_temporal = @user
-                custom_params_equipo[:equipo_trabajo][:user_id] =  @user.id
-                @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
-                if @equipo_temporal.save  
-                  if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
-                    if @registro_proveedor.save
-                      #flash[:success] = 'Consultor creado exitosamente.'
-                      format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-                      format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-                    end
-                  else
-                    #flash[:success] = 'Consultor creado exitosamente.'
-                    format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
-                    format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
-                  end  
-                end  
+        if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+          custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id if empresa
+          @registro_proveedor.contribuyente_id = empresa.contribuyente_id if empresa
+        end
+
+        # Lógica para guardar el usuario (nuevo o existente) y sus asociaciones
+        if @user.user_id.nil? # Si user_id es nil, significa que estamos creando un nuevo usuario
+          if @user.save # Intenta guardar el nuevo usuario
+            # Si el usuario se guarda exitosamente, procedemos a guardar el EquipoTrabajo y RegistroProveedor
+            custom_params_equipo[:equipo_trabajo][:user_id] = @user.id # Asigna el ID del nuevo usuario
+            @equipo_temporal = EquipoTrabajo.new(custom_params_equipo[:equipo_trabajo])
+
+            if @equipo_temporal.save # Intenta guardar el EquipoTrabajo
+              # Verifica si ya existe un RegistroProveedor con el mismo RUT
+              if RegistroProveedor.unscoped.where(rut: @user.rut).count == 0
+                if @registro_proveedor.save # Intenta guardar el RegistroProveedor
+                  success_message = 'Consultor creado exitosamente.' 
+                  render_js_redirect = "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo';"
+                  redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id)
+                else
+                  # Manejo de error si @registro_proveedor.save falla
+                  error_message = @registro_proveedor.errors.full_messages.to_sentence
+                  render_js_alert = "alert('Error al guardar el proveedor: #{error_message}');"
+                  redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id)
+                end
               else
-                message = t(:m_successfully_created, m: t(:user))
-                format.js { flash.now[:success] = message }
-                format.html { redirect_to admin_users_url, notice: message }
+                # Si RegistroProveedor ya existe (pero el usuario era nuevo y se guardó)
+                success_message = 'Consultor creado exitosamente.' 
+                render_js_redirect = "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo';"
+                redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id)
               end
+            else
+              # Manejo de error si @equipo_temporal.save falla
+              error_message = @equipo_temporal.errors.full_messages.to_sentence
+              render_js_alert = "alert('Error al guardar equipo de trabajo: #{error_message}');"
+              redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id)
             end
-          else
-            @user.save(validate: false)
-            #Metodo devuelve el registro final (sea nuevo o editado)
-            @usuario_temporal = @user
-            format.js {}
+          else 
+            # Manejo de error si @user.save falla para un nuevo usuario
+            error_message = @user.errors.full_messages.to_sentence
+            render_js_alert = "alert('Error al guardar el usuario: #{error_message}');"
+            redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id) 
           end
+        else 
+          # Lógica si user_id no es nil (usuario existente, se asume actualización)
+          # NOTA: Aquí solo se llama a @user.save(validate: false). Si necesitas que el campo temporal
+          # también sea false para usuarios *existentes* actualizados por este modal, deberías setearlo
+          # explícitamente aquí también: @user.temporal = false
+          @user.save(validate: false) 
+          @usuario_temporal = @user # Asignación redundante, @usuario_temporal ya es @user
+
+          render_js_alert = "$('#buscar-usuario').modal('hide'); $('.loading-data').hide();" # Cierra el modal y oculta el spinner
+          success_message = "Usuario actualizado exitosamente." 
+          redirect_path_html = edit_fondo_produccion_limpia_path(@tarea_pendiente.id) 
+        end
+      end
+
+      # --- BLOQUE ÚNICO DE RESPUESTA respond_to ---
+      respond_to do |format|
+        if error_message.present?
+          format.js { render js: render_js_alert }
+          format.html { redirect_to redirect_path_html, alert: error_message }
+        elsif render_js_redirect.present?
+          format.js { render js: render_js_redirect }
+          format.html { redirect_to redirect_path_html, notice: success_message }
+        else 
+          format.js { render js: render_js_alert || "" } # Renderiza JS si existe, o una cadena vacía
+          format.html { redirect_to redirect_path_html, notice: success_message } 
         end
       end
     end
@@ -906,14 +979,22 @@ class FondoProduccionLimpiasController < ApplicationController
         return
       end
 
+      if params[:equipo_trabajo][:tipo_equipo] != "3"
+        copia_ci = params[:archivos_copia_ci]
+        curriculum = params[:archivos_curriculum]
+      else
+        copia_ci = nil
+        curriculum = nil
+      end
+
       #SETEO PARAMETROS EQUIPO
       custom_params_equipo = {
         equipo_trabajo: {
           profesion: params[:equipo_trabajo][:profesion],
           funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
           valor_hh: params[:equipo_trabajo][:valor_hh],
-          copia_ci: params[:archivos_copia_ci],
-          curriculum: params[:archivos_curriculum],
+          copia_ci: copia_ci,
+          curriculum: curriculum,
           tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
           flujo_id: params[:user][:flujo_id],
           user_id: params[:user][:user_id]
@@ -1926,6 +2007,7 @@ class FondoProduccionLimpiasController < ApplicationController
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
           send_message(tarea_fondo, responsable.user_id)
+          #@tarea_pendiente.pasar_a_siguiente_tarea 'A'
         end  
 
         #SE CAMBIA EL ESTADO DEL FPL-01 A 2
@@ -4702,13 +4784,13 @@ class FondoProduccionLimpiasController < ApplicationController
       def send_message(tarea, user)
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
-        fpl = FondoProduccionLimpia.where(flujo_apl_id: @tarea_pendiente.flujo_id).first
+        fpl = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
         flujo_apl = Flujo.find(fpl.flujo_apl_id)
         mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
         metodo = FondoProduccionLimpiaMensaje.metodos(u,mdi,fpl)
         mensajes.each do |mensaje|
-          FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
+          FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_later
         end
       end
 
@@ -4734,7 +4816,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @count_user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
         @user_equipo = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: [1, 2])
         @postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
-        
+
         # Obtener los equipos de trabajo que coinciden
         equipo_trabajos = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 4)
 
