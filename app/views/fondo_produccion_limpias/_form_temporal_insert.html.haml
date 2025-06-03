@@ -21,7 +21,7 @@
     .col-12.mt-2.text-right
       -#
     = simple_form_for @equipo_temporal, url: insert_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
-      = f.input :tipo_equipo, as: :hidden, wrapper: false # Este campo es crucial para la condición
+      = f.input :tipo_equipo, as: :hidden, wrapper: false, input_html: { id: 'tipo_equipo' } # Este campo es crucial para la condición
       .row
         .col-12
           .col-12

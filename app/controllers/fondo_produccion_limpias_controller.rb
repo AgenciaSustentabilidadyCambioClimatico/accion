@@ -979,14 +979,22 @@ class FondoProduccionLimpiasController < ApplicationController
         return
       end
 
+      if params[:equipo_trabajo][:tipo_equipo] != "3"
+        copia_ci = params[:archivos_copia_ci]
+        curriculum = params[:archivos_curriculum]
+      else
+        copia_ci = nil
+        curriculum = nil
+      end
+
       #SETEO PARAMETROS EQUIPO
       custom_params_equipo = {
         equipo_trabajo: {
           profesion: params[:equipo_trabajo][:profesion],
           funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
           valor_hh: params[:equipo_trabajo][:valor_hh],
-          copia_ci: params[:archivos_copia_ci],
-          curriculum: params[:archivos_curriculum],
+          copia_ci: copia_ci,
+          curriculum: curriculum,
           tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
           flujo_id: params[:user][:flujo_id],
           user_id: params[:user][:user_id]
@@ -1998,7 +2006,8 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          send_message(tarea_fondo, responsable.user_id)
+          #send_message(tarea_fondo, responsable.user_id)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         end  
 
         #SE CAMBIA EL ESTADO DEL FPL-01 A 2
@@ -4775,7 +4784,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def send_message(tarea, user)
         u = User.find(user)
         mensajes = FondoProduccionLimpiaMensaje.where(tarea_id: tarea.id)
-        fpl = FondoProduccionLimpia.where(flujo_apl_id: @tarea_pendiente.flujo_id).first
+        fpl = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
         flujo_apl = Flujo.find(fpl.flujo_apl_id)
         mdi = ManifestacionDeInteres.find(flujo_apl.manifestacion_de_interes_id)
 
