@@ -2006,8 +2006,8 @@ class FondoProduccionLimpiasController < ApplicationController
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo, responsable.user_id)
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+          send_message(tarea_fondo, responsable.user_id)
+          #@tarea_pendiente.pasar_a_siguiente_tarea 'A'
         end  
 
         #SE CAMBIA EL ESTADO DEL FPL-01 A 2
@@ -4790,7 +4790,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
         metodo = FondoProduccionLimpiaMensaje.metodos(u,mdi,fpl)
         mensajes.each do |mensaje|
-          FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_now
+          FondoProduccionLimpiaMailer.paso_de_tarea(mensaje.asunto, mensaje.body, u).deliver_later
         end
       end
 
