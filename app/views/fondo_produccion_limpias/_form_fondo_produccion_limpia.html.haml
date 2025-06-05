@@ -3130,12 +3130,15 @@
         .alert.alert-primary
           %small  
             %i.fa.fa-question-circle.fa-1-5x
-            Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
-            
-            - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1  
-              %br{ :style => 'margin-bottom: 10px;' }
+            - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+              TEXTO POR DEFINIR POR EQUIPO APL
+            - else
+              Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
               
-              %a{ href: "https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view", target: "_blank" } Descargar Guía Nº1
+              - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1  
+                %br{ :style => 'margin-bottom: 10px;' }
+                
+                %a{ href: "https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view", target: "_blank" } Descargar Guía Nº1
         %br
         %h1= t(:objetivo_específico)
         %br
@@ -3459,8 +3462,8 @@
                   %th.encabezado2-form=t(:email)
                   %th.encabezado2-form=t(:profesion)
                   %th.encabezado2-form=t(:funciones_proyecto)
-                  %th.encabezado2-form=t(:valor_hh)
-                  %th.encabezado2-form=t(:copia_ci)
+                  -#%th.encabezado2-form=t(:valor_hh)
+                  -#%th.encabezado2-form=t(:copia_ci)
                   %th.encabezado2-form=t(:curriculum_vitae)
                   - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
@@ -3475,10 +3478,10 @@
                       %td.contenido-form= postulante.profesion
                       %td.contenido-form= postulante.funciones_proyecto
                       %td.contenido-form= number_to_currency postulante.valor_hh
-                      %td.contenido-form
-                        = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
-                      %td.contenido-form
-                        = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
+                      -#%td.contenido-form
+                      -#  = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
+                      -#%td.contenido-form
+                      -#  = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
@@ -5005,8 +5008,16 @@
   });
 
   $(document).on('click','#deshacer-usuario-fpl-button', function(e){
-    e.preventDefault();    
-    $('#buscar-usuario .body-usuario-buscador').html("#{j render 'fondo_produccion_limpias/buscador_form'}");
+    e.preventDefault();
+    const tipoEquipo = $('#tipo_equipo').val();
+       
+    if (tipoEquipo == 1) {
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: '1')}");
+    } else if (tipoEquipo === "2") {
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: '2')}");
+    } else if (tipoEquipo === "3") {
+      $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-postulante', tipo_equipo: '3')}");
+    }  
   });
 
   function nuevo_usuario_temporal_fpl_validaciones(){
@@ -5038,25 +5049,33 @@
     var email = $('#user_email').val() != "";
     var telefono = $('#user_telefono').val() != "";
 
-    var profesión = $('#profesión').val() != "";
-    var funciones_proyecto = $('#funciones_proyecto').val() != "";
-    var valor_hh = $('#valor_hh').val() != "";
+    var profesion = $('#equipo_trabajo_profesion').val() != "";
+    var funciones_proyecto = $('#equipo_trabajo_funciones_proyecto').val() != "";
+    var valor_hh = $('#equipo_trabajo_valor_hh').val() != "";
 
-    var archivoInput = document.getElementById('copia_ci');
-    var archivo = archivoInput.files[0];
+    var tipo_equipo = $('#tipo_equipo').val();
+
     var copia_ci = '';
-    if (archivo) {
-      copia_ci = archivo.name;
-    }
-
-    var archivoInput1 = document.getElementById('curriculum');
-    var archivo1 = archivoInput1.files[0];
     var curriculum_vitae = '';
-    if (archivo1) {
-      curriculum_vitae = archivo1.name;
-    }
 
-    if (rut && nombre_completo && email && telefono && profesión && funciones_proyecto && valor_hh && copia_ci && curriculum_vitae) {
+    if (tipo_equipo === "3") {
+      copia_ci = 'ok'
+      curriculum_vitae = 'ok'
+    } else {
+      var archivoInput = document.getElementById('copia_ci');
+      var archivo = archivoInput.files[0];
+      if (archivo) {
+        copia_ci = archivo.name;
+      }
+
+      var archivoInput1 = document.getElementById('curriculum');
+      var archivo1 = archivoInput1.files[0];
+      if (archivo1) {
+        curriculum_vitae = archivo1.name;
+      }
+    }  
+
+    if (rut && nombre_completo && email && telefono && profesion && funciones_proyecto && valor_hh && copia_ci && curriculum_vitae) {
       $('.guarda-equipo-fpl-button').removeAttr("disabled");
     } else {
       $('.guarda-equipo-fpl-button').attr("disabled", true);
