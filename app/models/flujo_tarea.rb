@@ -62,10 +62,10 @@ class FlujoTarea < ApplicationRecord
 					
 					#si tarea es encuesta, utiliza los roles adiocionales de ejecución
 					roles_ids = self.rol_destinatarios
+					roles_sig_tarea = [sig_tarea.rol_id]
 					if sig_tarea.es_una_encuesta
 						roles_ids += sig_tarea.encuesta_ejecucion_roles.pluck(:rol_id)
 					end
-
 					MapaDeActor.where(flujo_id: flujo_id).where(rol_id: roles_ids).each do |actor| #DZC modificado para que asigne la tarea a cada actor contenido en el mapa de actores
 						#DZC obtiene los id de auditorias para instanciar idéntica cantidad de tareas   pendientes si se trata de tarea siguiente APL-032
 						
@@ -82,14 +82,16 @@ class FlujoTarea < ApplicationRecord
 								
 								unless ((sig_tarea.codigo == Tarea::COD_APL_032) && auditorias.blank?)
 									extra = auditorias.blank? ? extra : auditorias.last
-									tp = TareaPendiente.find_or_create_by({
-										flujo_id: flujo_id, 
-										tarea_id: sig_tarea.id, 
-										estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
-										user_id: actor.persona.user_id, 
-										data: extra,
-										persona_id: actor.persona.id
+									if (roles_sig_tarea.include?(actor.rol_id))
+										tp = TareaPendiente.find_or_create_by({
+											flujo_id: flujo_id, 
+											tarea_id: sig_tarea.id, 
+											estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, 
+											user_id: actor.persona.user_id, 
+											data: extra,
+											persona_id: actor.persona.id
 									})
+									end
 									if ((!self.mensaje_salida_asunto.blank?) && (!self.mensaje_salida_cuerpo.blank?) && (self.tarea_entrada.codigo != Tarea::COD_FPL_006) && !(sig_tarea.codigo == Tarea::COD_APL_032 && !tp.new_record?))
 										rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
 										
@@ -98,7 +100,7 @@ class FlujoTarea < ApplicationRecord
 										rescue
 											mdi = nil
 										end
-                    puts 'enviado mail segunda vez'
+                   						puts 'enviado mail segunda vez'
 										FlujoMailer.enviar(
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
