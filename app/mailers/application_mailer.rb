@@ -1,5 +1,5 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: 'mailing@binarybag.com'
+  default from: ENV["MAILER_DEFAULT_OPTIONS_FROM"]
   layout 'mailer'
 
   after_action :interceptor

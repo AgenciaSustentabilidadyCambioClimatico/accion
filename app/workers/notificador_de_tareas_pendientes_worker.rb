@@ -1,7 +1,7 @@
 class NotificadorDeTareasPendientesWorker
   include Sidekiq::Job
 
-  sidekiq_options retry: false, queue: "default", backtrace: true
+  sidekiq_options retry: true, queue: "default", backtrace: true
 
   sidekiq_retries_exhausted do |msg|
     Sidekiq.logger.warn "Failed #{msg["class"]} with #{msg["args"]}: #{msg["error_message"]}"
@@ -96,7 +96,7 @@ class NotificadorDeTareasPendientesWorker
         )
 
         FlujoMailer.enviar(asunto, cuerpo, email, rgc.id).deliver_later
-        RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_later
+        #RecordatorioMailer.enviar(email, asunto, cuerpo).deliver_later
       end
     end
   end

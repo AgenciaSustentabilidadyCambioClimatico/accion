@@ -2,7 +2,7 @@
   $(document).ready(function(){
     $("#auditorias_rechazadas").DataTable({
       responsive: true,
-      lengthMenu: [[10], [10]],
+      paging: false,
       language: {
         url: "#{asset_path('spanish.json')}"
       },
@@ -19,7 +19,16 @@
     $('.chosen-control').change(function(){
       window.location = '/manifestacion-de-interes/#{@tarea_pendiente.id}/#{@flujo.id}/auditoria/actualizar?adhesion_externa_id='+this.value;
     });
+    $('.ver-mas').on('click', function(e) {
+      e.preventDefault();
+      $(this).siblings('.descripcion-corta, .descripcion-completa').toggleClass('d-none');
+      $(this).text(function(i, text){
+        return text === 'Ver más' ? 'Ver menos' : 'Ver más';
+      });
+    });
+
   });
+
 - solo_lectura = @solo_lectura == 'solo_lectura'
 - titulo t(:auditoria_carga_, item: "#{@auditoria.nombre.upcase}")
 -if @tarea_pendiente.tarea_id == Tarea::ID_APL_032_1 && params[:adhesion_externa_id].blank?
@@ -101,7 +110,11 @@
                       %td=aud.id
                       %td=adh.nombre_del_elemento_v2
                       %td=ae.id
-                      %td=ae.set_metas_accion.descripcion_accion
+                      %td
+                        %span{class: "descripcion-corta"}= truncate(ae.set_metas_accion.descripcion_accion, length: 50)
+                        %span{class: "descripcion-completa d-none"}= ae.set_metas_accion.descripcion_accion
+                        %a{href: "#", class: "ver-mas"} Ver más
+                      
                       %td=ae.aplica ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
                       %td=ae.motivo
                       %td=ae.cumple ? t(:yes_with_fa_check).html_safe : t(:no_with_fa_times).html_safe
@@ -116,6 +129,8 @@
                 -# else
                   %tr
                     %td.text-center{colspan: 13} No hay elementos de auditoría
+            = will_paginate @auditoria_elementos
+         
 
     .row
       .col-12.col-lg-6
