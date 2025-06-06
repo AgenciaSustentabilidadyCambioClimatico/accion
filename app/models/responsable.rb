@@ -48,19 +48,22 @@ class Responsable < ApplicationRecord
     personas.uniq
   end
 # DZC 2018-10-10 13:06:02 obtiene el array de personas proponentes de determinada institución
-  def self.responsables_por_rol(roles_id, contribuyente_id=nil, tipo_instrumento_id=nil)
+  def self.responsables_por_rol(roles_id, contribuyente_id=nil, tipo_instrumento_id=nil, user=nil)
     personas=[]
     # roles_id = [roles_id] if !roles_id.is_a?(Array)
     if tipo_instrumento_id.nil?
       TipoInstrumento.pluck(:id).each do |ti|
         # roles_id.each do |rol_id|
-          personas += Responsable.__personas_responsables(roles_id, ti)
+        
+          personas += Responsable.__personas_responsables(roles_id, ti, nil, nil, nil, user)
         # end
       end
     else
       tipo_instrumento_id = [tipo_instrumento_id] if !tipo_instrumento_id.is_a?(Array)
       tipo_instrumento_id.each do |ti|
-        personas += Responsable.__personas_responsables(roles_id, ti)
+        
+        personas += Responsable.__personas_responsables(roles_id, ti, nil, nil, nil, user)
+        
       end
     end
 
@@ -69,17 +72,19 @@ class Responsable < ApplicationRecord
     unless contribuyente_id.nil?
       contribuyente_id = [contribuyente_id] if !contribuyente_id.is_a?(Array)
       personas.select do |p|  
+        
         contribuyente_id.include?(p.contribuyente_id)
       end
     end
     personas
   end
 
-  def self.__personas_responsables(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil)
+  def self.__personas_responsables(rol_id, instrumento_id, contribuyente_id=nil, actividad_economica_id=nil, tipo_contribuyente_id=nil, user=nil)
     personas = []
     instrumentos_id =[]
     instrumentos_id << instrumento_id
     
+
     instrumentos_id << TipoInstrumento.where(id: instrumento_id).first.tipo_instrumento_id unless TipoInstrumento.find_by(id: instrumento_id).tipo_instrumento_id.blank? #DZC agrega instrumento_id padre, en caso de que instrumento_id sea hijo
     
     
@@ -87,41 +92,75 @@ class Responsable < ApplicationRecord
     
     instrumentos_id.uniq #DZC elimina repetidos
     
+    
     #DZC TODO: Se debe modificar para contemplar todas las combinaciones de reglas posibles segun valores de tabla responsables
     #DZC TODO: Se debe leer el tipo de instrumento desde la instancia del proceso (manifestación, ppf, ppp) y no desde la tarea 
     
-    responsables = self.where(rol_id: rol_id)
-                        .where(tipo_instrumento_id: instrumentos_id)
+    responsables = self.where(rol_id: rol_id).where(tipo_instrumento_id: instrumentos_id)
+    
     responsables = responsables.where(contribuyente_id: contribuyente_id) if(!contribuyente_id.nil?)
+    
     responsables = responsables.where(actividad_economica_id: actividad_economica_id) if(!actividad_economica_id.nil?)
+    
     responsables = responsables.where(tipo_contribuyente_id: tipo_contribuyente_id) if(!tipo_contribuyente_id.nil?)
-    # self.where(rol_id: rol_id)
-    #   .where("cargo_id IS NOT NULL")
-    responsables.each do |r|  
-      cgid = r.cargo_id
-      ctid = r.contribuyente_id
-      aeid = []
-      if !r.actividad_economica_id.blank?
-        aeid = [r.actividad_economica_id]
-        aeid += r.actividad_economica.get_children.pluck(:id)
-      end
-      tcid = []
-      if !r.tipo_contribuyente_id.blank?
-        tcid = [r.tipo_contribuyente_id]
-        tcid += r.tipo_contribuyente.get_children_id
-      end
-      if r.cargo_id.blank? == false       
-        PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
-          
-          if self.__info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
-            personas << pc.persona
+
+    if (user.present?)
+      user_personas = user.session[:personas]
+      user_personas_cargos = user_personas.map{ |p| PersonaCargo.includes([:persona]).where(persona_id: p[:id]).pluck(:cargo_id) }.flatten
+      respon = responsables.filter{ |r| user_personas_cargos.include?(r.cargo_id) }
+      respon.each do |r|
+        cgid = r.cargo_id
+      
+        ctid = r.contribuyente_id
+        
+        aeid = []
+        if !r.actividad_economica_id.blank?
+          aeid = [r.actividad_economica_id]
+          aeid += r.actividad_economica.get_children.pluck(:id)
+        end
+        tcid = []
+        if !r.tipo_contribuyente_id.blank?
+          tcid = [r.tipo_contribuyente_id]
+          tcid += r.tipo_contribuyente.get_children_id
+        end
+        user_personas = [user.session[:personas]].flatten
+        user_personas.each do |p|
+          persona = Persona.includes([:contribuyente]).find(p[:id])
+          if self.__info_contribuyente(persona.contribuyente,ctid,aeid,tcid)
+            personas << persona
           end
         end
-      else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
+      end
+    else
+    
+    # self.where(rol_id: rol_id)
+    #   .where("cargo_id IS NOT NULL")
+      responsables.each do |r|  
+        cgid = r.cargo_id
         
-        personas = PersonaCargo.includes([:persona]).each do |pc|
-          if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
-            personas << pc.persona
+        ctid = r.contribuyente_id
+        
+        aeid = []
+        if !r.actividad_economica_id.blank?
+          aeid = [r.actividad_economica_id]
+          aeid += r.actividad_economica.get_children.pluck(:id)
+        end
+        tcid = []
+        if !r.tipo_contribuyente_id.blank?
+          tcid = [r.tipo_contribuyente_id]
+          tcid += r.tipo_contribuyente.get_children_id
+        end
+        if r.cargo_id.blank? == false       
+          PersonaCargo.includes([:persona]).where(cargo_id: r.cargo_id).each do |pc|
+            if self.__info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
+              personas << pc.persona
+            end
+          end
+        else #DZC busca todas las personas asociadas a todos los cargos del contribuyente, para el caso de que no se indique cargo
+          personas = PersonaCargo.includes([:persona]).each do |pc|
+            if __info_contribuyente(pc.persona.contribuyente,ctid,aeid,tcid)
+              personas << pc.persona
+            end
           end
         end
       end

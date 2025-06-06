@@ -56,6 +56,7 @@ class FlujoTarea < ApplicationRecord
 				})
 			else
 				flujo = Flujo.find(flujo_id)
+				
 				if sig_tarea.cualquiera_con_rol_o_usuario_asignado
 									 
 					#DZC en realidad si este booleano es true, se deberia enviar la tarea solo a los usuarios contenidos en el mapa de actores que posean el rol escogido por el administrador en el mantenedor de tareas
@@ -82,7 +83,9 @@ class FlujoTarea < ApplicationRecord
 								
 								unless ((sig_tarea.codigo == Tarea::COD_APL_032) && auditorias.blank?)
 									extra = auditorias.blank? ? extra : auditorias.last
+									
 									if (roles_sig_tarea.include?(actor.rol_id))
+										
 										tp = TareaPendiente.find_or_create_by({
 											flujo_id: flujo_id, 
 											tarea_id: sig_tarea.id, 
@@ -101,6 +104,7 @@ class FlujoTarea < ApplicationRecord
 											mdi = nil
 										end
                    						puts 'enviado mail segunda vez'
+										
 										FlujoMailer.enviar(
 											self.asunto_format(actor.persona.user, mdi), 
 											self.cuerpo_format(actor.persona.user, mdi), 
