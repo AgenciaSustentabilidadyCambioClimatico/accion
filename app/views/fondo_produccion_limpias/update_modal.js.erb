@@ -86,8 +86,6 @@ var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     "<td class='contenido-form'>" + profesion + "</td>" +
     "<td class='contenido-form'>" + funcionesProyecto + "</td>" +
     "<td class='contenido-form'>" + valorHH + "</td>" +
-    "<td class='contenido-form'><a class='btn btn-sm btn-descargar btn-block tooltip-block px-5' data-original-title='' download='' href='<%= escape_javascript(@equipo_temporal.copia_ci.url) %>' title=''><i class='fa fa-download'></i></a></td>" +
-    "<td class='contenido-form'><a class='btn btn-sm btn-descargar btn-block tooltip-block px-5' data-original-title='' download='' href='<%= escape_javascript(@equipo_temporal.curriculum.url) %>' title=''><i class='fa fa-download'></i></a></td>" +
     "<td id='iconos-acciones-" + user_id + "' class='contenido-form dos iconos-acciones'>" +
     "<a data-user-id="+ user_id + " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' class='eliminar-user-consultora' id='eliminar-postulante-"+ user_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo_postulante/"+ tarea_pendiente_id +"?user_id="+ user_id +"' data-original-title='Eliminar al consultor'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
     "</td>" +
