@@ -4,7 +4,8 @@ development:
   timeout: 5000
   pool: 5
   host: localhost
-  username: guillo10
+  username: cazambra
+  password: postgres
   template: template0
   schema_search_path: "public, admin"
   database: bd_accion

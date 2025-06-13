@@ -112,8 +112,7 @@ class AuditoriasController < ApplicationController
 
   def descargar 
     titulos = AuditoriaElemento.columnas_excel
-    datos = AuditoriaElemento.datos(@manifestacion_de_interes, @auditoria, @adhesion) #DZC obtiene los datos desde las tablas
-    
+    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesion)    
     dominios = AuditoriaElemento.dominios
     archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
     
@@ -240,7 +239,7 @@ class AuditoriasController < ApplicationController
     end
 
     def set_flujo
-      @solo_lectura = params[:q]
+      @solo_lectura = @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente)
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -283,7 +282,11 @@ class AuditoriasController < ApplicationController
         Adhesion.unscoped.where(flujo_id: @flujo.id).each do |_adh|
           adh_elems += _adh.adhesion_elemento_externos.pluck(:id)
         end
-        @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems) #.where(estado: [3,4]) #DZC elementos a auditar
+        @auditoria_elementos = AuditoriaElemento
+        .includes(:auditoria, :set_metas_accion, adhesion_elemento: :alcance)
+        .where(auditoria_id: @auditoria.id)
+        .where(adhesion_elemento_id: adh_elems)
+        .paginate(page: params[:page], per_page: 10) #.where(estado: [3,4]) #DZC elementos a auditar
         # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
         @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
       elsif @tarea.codigo == Tarea::COD_APL_032_1
