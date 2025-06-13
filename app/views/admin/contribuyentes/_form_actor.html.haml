@@ -71,7 +71,7 @@
                           label: false
                       - else
                         = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
-                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione dirección" }, 
+                          input_html: { class: 'form-temporal-boton-guardar-actor-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Cargando...", disabled: true }, 
                           label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
                         = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
                           input_html: { class: 'form-temporal-boton-guardar-actor-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
