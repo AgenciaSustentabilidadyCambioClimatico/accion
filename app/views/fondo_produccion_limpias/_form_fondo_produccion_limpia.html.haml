@@ -3756,6 +3756,9 @@
                       %td.contenido-form.dos.iconos-acciones
                         = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
                           %i.fa.fa-edit 
+                        - if actividad.tipo_permiso == 3
+                          = link_to eliminar_plan_actividades_fondo_produccion_limpia_path(actividad_id: actividad.id), remote: true, method: :delete, data: { actividad_id: actividad.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar Actividad", class: 'eliminar-actividad', id: "eliminar-actividad-#{actividad.id}" do
+                            %i.fa.fa-trash   
                     - else
                       - (1..@duracion).each do |d|
                         %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
@@ -3771,6 +3774,7 @@
                         - else
                           = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
                             %i.fa.fa-edit
+                    
               %tr
                 %td.contenido-form{style: 'font-weight: bold;', colspan: 1 + @duracion} Total
                 %td.contenido-form{id: "total_valor_hh_tipo_3", colspan: 1}= number_to_currency(total_valor_hh_tipo_3)

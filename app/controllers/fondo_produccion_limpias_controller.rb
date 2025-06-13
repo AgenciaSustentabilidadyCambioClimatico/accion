@@ -1369,7 +1369,39 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
       end
     end
-    
+
+    def eliminar_plan_actividades
+      plan_actividad = PlanActividad.find_by(actividad_id: params[:actividad_id])
+
+      unless plan_actividad
+        flash[:error] = 'No se encontró la actividad.'
+        return
+      end
+
+      tiene_rr_hh = RecursoHumano.exists?(plan_actividad_id: plan_actividad.id)
+      tiene_gasto = Gasto.exists?(plan_actividad_id: plan_actividad.id)
+
+      # Si no tiene RRHH ni gastos asociados, se puede eliminar
+      if !tiene_rr_hh && !tiene_gasto
+        actividad = ActividadPorLinea.find_by(actividad_id: params[:actividad_id])
+
+        if actividad&.destroy
+
+          respond_to do |format|
+            format.js { render 'eliminar_plan_actividades', locals: { actividad: params[:actividad_id] } }
+          end
+        else
+          flash[:error] = 'No se pudo eliminar la actividad.'
+        end
+      else
+        flash[:error] = 'La actividad no puede ser eliminada ya que se encuentra asociada a recursos humanos o gastos.'
+        respond_to do |format|
+          format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(params[:id])}?tabs=plan-de-actividades'" }
+          format.html { redirect_to link, flash: { success: success, error: error }; return }
+        end
+      end
+    end
+
     def get_recursos_propios
       @postulantes_faltantes = EquipoTrabajo.postulantes_faltantes(params['actividad_id'], @tarea_pendiente.flujo_id)
       respond_to do |format|
