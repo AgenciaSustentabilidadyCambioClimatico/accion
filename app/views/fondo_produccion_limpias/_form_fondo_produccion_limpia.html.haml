@@ -3462,9 +3462,7 @@
                   %th.encabezado2-form=t(:email)
                   %th.encabezado2-form=t(:profesion)
                   %th.encabezado2-form=t(:funciones_proyecto)
-                  -#%th.encabezado2-form=t(:valor_hh)
-                  -#%th.encabezado2-form=t(:copia_ci)
-                  %th.encabezado2-form=t(:curriculum_vitae)
+                  %th.encabezado2-form=t(:valor_hh)
                   - if !solo_lectura
                     %th.encabezado2-form.dos.iconos-acciones=t(:acción)
               %tbody
@@ -3478,10 +3476,6 @@
                       %td.contenido-form= postulante.profesion
                       %td.contenido-form= postulante.funciones_proyecto
                       %td.contenido-form= number_to_currency postulante.valor_hh
-                      -#%td.contenido-form
-                      -#  = __descargar_archivo(postulante.copia_ci,postulante.copia_ci,false,false)
-                      -#%td.contenido-form
-                      -#  = __descargar_archivo(postulante.curriculum,postulante.curriculum,false,false)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{postulante.id}"}
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
@@ -3759,6 +3753,9 @@
                       %td.contenido-form.dos.iconos-acciones
                         = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
                           %i.fa.fa-edit 
+                        - if actividad.tipo_permiso == 3
+                          = link_to eliminar_plan_actividades_fondo_produccion_limpia_path(actividad_id: actividad.id), remote: true, method: :delete, data: { actividad_id: actividad.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar Actividad", class: 'eliminar-actividad', id: "eliminar-actividad-#{actividad.id}" do
+                            %i.fa.fa-trash   
                     - else
                       - (1..@duracion).each do |d|
                         %td.contenido-form{id: "mes_#{actividad.id}_#{d.to_s}"}= ""
@@ -3774,6 +3771,7 @@
                         - else
                           = link_to "#", title: "Editar", onclick: "crearPlanActividades(#{actividad.id},#{@solo_lectura})", class: 'crear_plan_actividad', data: { actividad_id: actividad.id }, id:"crear_plan_actividad_#{actividad.id}" do
                             %i.fa.fa-edit
+                    
               %tr
                 %td.contenido-form{style: 'font-weight: bold;', colspan: 1 + @duracion} Total
                 %td.contenido-form{id: "total_valor_hh_tipo_3", colspan: 1}= number_to_currency(total_valor_hh_tipo_3)

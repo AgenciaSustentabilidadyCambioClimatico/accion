@@ -1,1 +1,16 @@
 =render 'form_actor', contribuyente_actor: @contribuyente_actor
+:javascript
+    setTimeout(function() {
+        var $direccion = $('#contribuyente_direccion');
+        $direccion.prop('disabled', false);
+        $direccion.trigger("chosen:updated");
+
+        // 1. Habilitar el <select>
+        $direccion.prop('disabled', false);
+        $direccion.trigger("chosen:updated");
+
+        // 2. Cambiar el texto "Cargando..." a "Seleccione dirección" en la UI de Chosen
+        var $chosenSpan = $('#contribuyente_direccion_chosen .chosen-single span');
+        $chosenSpan.text('Seleccione dirección');
+
+    }, 1000);
