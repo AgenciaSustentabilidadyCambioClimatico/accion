@@ -16,8 +16,10 @@
     = javascript_include_tag 'ckeditor/config.js', async: true
 
   %body
+    - 
     - if user_signed_in?
       = render 'layouts/navigation'
+      - 
       =yield :subheader
       .container.fix-width#-fluid
         - if content_for?(:titulo)

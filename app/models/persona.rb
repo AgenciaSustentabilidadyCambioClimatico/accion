@@ -43,6 +43,7 @@ class Persona < ApplicationRecord
 	end
 
 	def self.responsables_por_rol_tipo_instrumento_select(rol_id,tipos_instrumentos_ids)
+		
 		self.to_select(
 			:"user.nombre_completo",
 			:"id",
@@ -61,6 +62,7 @@ class Persona < ApplicationRecord
 	  actecos_id = []
 	  tip_cont_id = []
 	  cargos_id = []
+	  
 
 	  responsables.each do |responsable|
 	    # obtengo las instituciones que vienen por rol y tipo instrumento
@@ -76,6 +78,7 @@ class Persona < ApplicationRecord
 
 	  # registros por tipo contribuyente
 	  # muchos registros
+	  
 	  instituciones_id += DatoAnualContribuyente.where(periodo: Date.today.year).where(tipo_contribuyente_id: tip_cont_id).map{ |e| e.contribuyente_id}
 
 	  # registros por actividad_economica
