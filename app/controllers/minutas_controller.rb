@@ -263,16 +263,18 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     @objetivo_especifico = @flujo.manifestacion_de_interes.informe_acuerdo.objetivo_especifico if @flujo.manifestacion_de_interes.informe_acuerdo.present?
     if @flujo.manifestacion_de_interes.informe_acuerdo.present?
       @mecanismo_de_implementacion = @flujo.manifestacion_de_interes.informe_acuerdo.mecanismo_de_implementacion
-      InformeAcuerdo.palabras_claves("mecanismo_de_implementacion").each do |key, val|
-        valor = @informe_de_acuerdo.attributes[val.to_s].to_s
-        if valor == "true"
-          valor = "Si"
-        elsif valor == "false"
-          valor = "No"
-        elsif valor.include?("_")
-          valor = t(valor)
+      if @mecanismo_de_implementacion.present?
+        InformeAcuerdo.palabras_claves("mecanismo_de_implementacion").each do |key, val|
+          valor = @informe_de_acuerdo.attributes[val.to_s].to_s
+          if valor == "true"
+            valor = "Si"
+          elsif valor == "false"
+            valor = "No"
+          elsif valor.include?("_")
+            valor = t(valor)
+          end
+          @mecanismo_de_implementacion = @mecanismo_de_implementacion.gsub("[#{key.to_s}]", valor)
         end
-        @mecanismo_de_implementacion = @mecanismo_de_implementacion.gsub("[#{key.to_s}]", valor)
       end
     end
     @tipo_de_acuerdo = @flujo.manifestacion_de_interes.informe_acuerdo.tipo_acuerdo if @flujo.manifestacion_de_interes.informe_acuerdo.present?
@@ -455,7 +457,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
 
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
     def set_flujo
-      @solo_lectura = @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente)
+      @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @flujo = @tarea_pendiente.blank? ? Flujo.find(params[:flujo]) : @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
