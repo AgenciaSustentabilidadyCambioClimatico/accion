@@ -2094,10 +2094,10 @@ class FondoProduccionLimpiasController < ApplicationController
       year = Date.today.year.to_s
       correlativo = Correlativo.obtener_correlativo 
       linea = ''
-      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
-        linea = TipoInstrumento::L1
-      else
+      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
         linea = TipoInstrumento::L5
+      else
+        linea = TipoInstrumento::L1
       end
 
       #Se concatenan las variables para formar el codigo del proyecto
