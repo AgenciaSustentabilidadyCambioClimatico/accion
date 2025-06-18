@@ -124,7 +124,29 @@ class Admin::ContribuyentesController < ApplicationController
 
   def create
     parameters = contribuyente_params
-    @contribuyente = Contribuyente.new(parameters)
+   
+    # Se busca un contribuyente "maestro" (no temporal, sin flujo_id ni contribuyente_id padre)
+    existing_contribuyente = nil
+    if parameters[:rut].present?
+      existing_contribuyente = Contribuyente.unscoped.find_by(
+        rut: parameters[:rut],
+        flujo_id: nil,
+        contribuyente_id: nil 
+      )
+    end
+
+    if existing_contribuyente
+      # Si el contribuyente ya existe, creamos una nueva instancia TEMPORAL
+      @contribuyente = Contribuyente.new(parameters.except(:actividad_economica_contribuyentes_attributes, :establecimiento_contribuyentes_attributes, :dato_anual_contribuyentes_attributes))
+      @contribuyente.contribuyente_id = existing_contribuyente.id
+      @contribuyente.temporal = true
+      @contribuyente.flujo_id = parameters[:flujo_id] # Asegurarse de mantener el flujo_id
+      @contribuyente.assign_attributes(parameters.slice(:actividad_economica_contribuyentes_attributes, :establecimiento_contribuyentes_attributes, :dato_anual_contribuyentes_attributes))
+
+    else
+      # Si no existe, creamos una nueva institución (podría ser temporal o no)
+      @contribuyente = Contribuyente.new(parameters)
+    end
     
     if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
       @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
