@@ -1467,6 +1467,8 @@ class FondoProduccionLimpiasController < ApplicationController
         actividad = ActividadPorLinea.find_by(actividad_id: params[:actividad_id])
 
         if actividad&.destroy
+          #elimina registro de la tabla plan de actividades
+          plan_actividad.delete
 
           respond_to do |format|
             format.js { render 'eliminar_plan_actividades', locals: { actividad: params[:actividad_id] } }
