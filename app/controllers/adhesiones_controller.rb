@@ -386,13 +386,12 @@ class AdhesionesController < ApplicationController
     when Tarea::COD_APL_028
       # DZC 2018-11-06 11:04:40 se modifica acorde a los cambios realizados en las condiciones de continuación de flujo
       # DZC 2018-11-08 14:58:14 se corrige erro en acceso a condición 'C'
-       
       if !@aceptadas_todas.blank? && (@tarea_pendiente.data.blank? || @tarea_pendiente.data!={primera_ejecucion: true})
         #@tarea_pendiente.update(data: {primera_ejecucion: false})#no se para que se usa, no encontree el sentido
         @tarea_pendiente.pasar_a_siguiente_tarea 'C', {}, false
 
         adhesion_base = Adhesion.find_by(flujo_id: @flujo.id)
-        if !adhesion_base.nil? && @aceptadas_todas.keys.include?(adhesion_base.id)
+        if !adhesion_base.nil? && !@aceptadas_todas.empty?
           @tarea_pendiente.pasar_a_siguiente_tarea 'A', {}, false
         end
 
@@ -447,7 +446,7 @@ class AdhesionesController < ApplicationController
 
     #DZC define el flujo y tipo_instrumento, junto con la manifestación o el proyecto según corresponda, para efecto de completar datos. El id de la manifestación se obtiene del flujo correspondiente a la tarea pendiente.
     def set_flujo
-      @solo_lectura = @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente)
+      @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -491,7 +490,6 @@ class AdhesionesController < ApplicationController
       @por_revisar_todas = {}
       @todas_las_mias = {}
       @adhesiones.each do |adh|
-        puts "adhesion: #{adh}"
         @rechazadas_todas[adh.id] = adh.adhesiones_rechazadas
         @pendientes_todas[adh.id] = adh.adhesiones_pendientes
         @no_pendientes_todas[adh.id] = adh.adhesiones_aceptadas_y_observadas

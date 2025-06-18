@@ -112,7 +112,7 @@ class AuditoriasController < ApplicationController
 
   def descargar 
     titulos = AuditoriaElemento.columnas_excel
-    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesion)    
+    datos = AuditoriaElemento.includes( :set_metas_accion, adhesion_elemento: [:alcance, persona: [:user, :contribuyente, persona_cargos: :cargo], establecimiento_contribuyente: :comuna]).datos(@manifestacion_de_interes, @auditoria, @adhesiones)    
     dominios = AuditoriaElemento.dominios
     archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "auditorias.xlsx" )
     
@@ -239,7 +239,7 @@ class AuditoriasController < ApplicationController
     end
 
     def set_flujo
-      @solo_lectura = @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente)
+      @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @flujo = @tarea_pendiente.flujo
       @tipo_instrumento=@flujo.tipo_instrumento
       @manifestacion_de_interes = @flujo.manifestacion_de_interes_id.blank? ? nil : ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -254,7 +254,9 @@ class AuditoriasController < ApplicationController
           @adhesiones_externas << adh if adh.rut_representante_legal.gsub('k', 'K').gsub(".", "") == current_user.rut.gsub('k', 'K').gsub(".", "")
         end
       else
+        # Se añade adhesiones ya que se estaba utilizando solo la primera, y se perdían valores. Se mantiene adhesiones para compatibilidad con otras tareas
         @adhesion = Adhesion.find_by(flujo_id: @flujo.id)
+        @adhesiones = Adhesion.unscoped.where(flujo_id: @flujo.id)
       end
 
       if @tarea_pendiente.tarea_id == Tarea::ID_APL_032_1

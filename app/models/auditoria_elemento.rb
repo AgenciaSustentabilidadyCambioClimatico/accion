@@ -249,17 +249,21 @@ class AuditoriaElemento < ApplicationRecord
 		}
 	end
 
-	def self.datos manif_de_interes, auditoria, adhesion
+	def self.datos manif_de_interes, auditoria, adhesiones
 		
 		datos = []
 		flujo = Flujo.find_by(manifestacion_de_interes_id: manif_de_interes.id)
 		elems_id = []
-		# DZC 2018-11-05 14:15:31 se cambia dependencia de manif_de_interes a flujo
-		if adhesion.externa
-			elementos = adhesion.adhesion_elemento_externos
-		else
-			elementos = adhesion.adhesion_elementos
+		elementos = []
+		# Ahora se trabaja con todas las adhesiones, no solo con la primera
+		adhesiones.each do |adhesion|
+			if adhesion.externa
+				elementos.concat(adhesion.adhesion_elemento_externos) unless adhesion.adhesion_elemento_externos.empty?
+			else
+				elementos.concat(adhesion.adhesion_elementos) unless adhesion.adhesion_elementos.empty?
+			end
 		end
+		
 		elementos.each do |ae|
 			elems_id << ae.id
 			propuestas = SetMetasAccion.where(flujo_id: flujo.id).where(alcance_id: ae.alcance_id).all
