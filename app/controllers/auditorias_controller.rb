@@ -293,10 +293,10 @@ class AuditoriasController < ApplicationController
         @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
       elsif @tarea.codigo == Tarea::COD_APL_032_1
         if params[:adhesion_externa_id].blank?
-          @auditoria_elementos = []
+          @auditoria_elementos = AuditoriaElemento.none.paginate(page: params[:page], per_page: 10)
         else
           adh_elems = @adhesion.adhesion_elemento_externos.pluck(:id)
-          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems) #.where(estado: [3,4]) #DZC elementos a auditar
+          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).where(adhesion_elemento_id: adh_elems).paginate(page: params[:page], per_page: 10) #.where(estado: [3,4]) #DZC elementos a auditar
           # DZC 2019-06-19 13:02:10 se agrega para ordernar la tabla de resultados
           @auditoria_elementos = @auditoria_elementos.order(:estado) if @auditoria_elementos.present?
         end
