@@ -7,8 +7,10 @@ $('#modal_rrhh_auditor-form').on('hidden.bs.modal', function () {
   // Cierra modal_create_plan_actividades-form si está abierto
   $('#modal_create_plan_actividades-form').modal("hide");
 
-  // Llama a la función para abrir el nuevo modal
-  crearPlanActividades('<%= j @plan_id %>', 'false');
+  <% if @plan_actividades.actividad_id == @plan_id.to_i  %>
+    // Llama a la función para abrir el nuevo modal
+    crearPlanActividades('<%= j @plan_id %>', 'false');
+  <% end %>
 });
 
 $('#div_plan_recurso_auditor table tbody').empty();
