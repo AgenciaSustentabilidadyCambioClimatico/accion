@@ -10,3 +10,4 @@ queues:
   - [mailers, 2]
 limits:
   default: 15
+  mailers: 5  # Limitar a 5 emails por minuto

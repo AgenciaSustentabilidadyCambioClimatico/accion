@@ -126,10 +126,9 @@
                           %i.fa.fa-download
                       %td=ae.observacion
                       %td= ae.estado_detalle
-                -# else
-                  %tr
-                    %td.text-center{colspan: 13} No hay elementos de auditoría
-            = will_paginate @auditoria_elementos
+            - unless @auditoria_elementos.blank?
+              = will_paginate @auditoria_elementos
+                
          
 
     .row

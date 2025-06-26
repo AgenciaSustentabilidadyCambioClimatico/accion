@@ -1193,16 +1193,24 @@ class FondoProduccionLimpiasController < ApplicationController
           set_costos
            
           ### se obtiene el valor de la suma de los recursos internos, externos, gastos adm, gastos ope por id y se renderiza al dashboard principal
-          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(@tarea_pendiente.flujo_id, params[:plan_id])
-          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(@tarea_pendiente.flujo_id, params[:plan_id])
-          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(@tarea_pendiente.flujo_id, params[:plan_id])
-          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(@tarea_pendiente.flujo_id, params[:plan_id])
+          @valor_hh_tipo_3 = PlanActividad.valor_hh_tipo_3(@tarea_pendiente.flujo_id, params[:plan_id]) ||
+                   OpenStruct.new(valor_hh_tipo_3: 0, actividad_id: params[:plan_id])
+          @valor_hh_tipos_1_2_ = PlanActividad.valor_hh_tipos_1_2_(@tarea_pendiente.flujo_id, params[:plan_id]) ||
+                   OpenStruct.new(valor_hh_tipos_1_2_: 0, actividad_id: params[:plan_id])
+          @total_gastos_tipo_1 = PlanActividad.total_gastos_tipo_1_insert(@tarea_pendiente.flujo_id, params[:plan_id]) ||
+                   OpenStruct.new(total_gastos_tipo_1: 0, actividad_id: params[:plan_id])
+          @total_gastos_tipo_2 = PlanActividad.total_gastos_tipo_2_insert(@tarea_pendiente.flujo_id, params[:plan_id]) ||
+                   OpenStruct.new(total_gastos_tipo_2: 0, actividad_id: params[:plan_id])
 
           #Totales generales
-          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(@tarea_pendiente.flujo_id)
-          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(@tarea_pendiente.flujo_id)
-          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(@tarea_pendiente.flujo_id)
-          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(@tarea_pendiente.flujo_id)
+          @total_valor_hh_tipo_3 = PlanActividad.total_valor_hh_tipo_3(@tarea_pendiente.flujo_id) ||
+                   OpenStruct.new(total_valor_hh_tipo_3: 0, actividad_id: params[:plan_id])
+          @total_valor_hh_tipos_1_2 = PlanActividad.total_valor_hh_tipos_1_2(@tarea_pendiente.flujo_id) ||
+                   OpenStruct.new(total_valor_hh_tipos_1_2: 0, actividad_id: params[:plan_id])
+          @total_total_gastos_tipo_1 = PlanActividad.total_total_gastos_tipo_1(@tarea_pendiente.flujo_id) ||
+                   OpenStruct.new(total_total_gastos_tipo_1: 0, actividad_id: params[:plan_id])
+          @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(@tarea_pendiente.flujo_id) ||
+                   OpenStruct.new(total_total_gastos_tipo_2: 0, actividad_id: params[:plan_id])
 
           format.js { render 'eliminar_recursos_humanos', locals: { rr_hh_id: params[:rr_hh_id] } }
         end
@@ -1432,7 +1440,7 @@ class FondoProduccionLimpiasController < ApplicationController
       ###OBTIENE RECURSOS Y GASTOS
       @recursos_internos = PlanActividad.recursos_internos(@tarea_pendiente.flujo_id, params['plan_id'])
     
-      @recursos_externos = PlanActividad.recursos_externos(@tarea_pendiente.flujo_id, params['plan_id'])
+      @recursos_externos = PlanActividad.recursos_externos(@tarea_pendiente.flujo_id, params['plan_id']).order(:user_name)
     
       @gastos_operaciones = PlanActividad.gastos_operaciones(@tarea_pendiente.flujo_id, params['plan_id'])
  
@@ -1467,6 +1475,8 @@ class FondoProduccionLimpiasController < ApplicationController
         actividad = ActividadPorLinea.find_by(actividad_id: params[:actividad_id])
 
         if actividad&.destroy
+          #elimina registro de la tabla plan de actividades
+          plan_actividad.delete
 
           respond_to do |format|
             format.js { render 'eliminar_plan_actividades', locals: { actividad: params[:actividad_id] } }
@@ -1698,42 +1708,69 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_recursos_humanos_externos
       data = JSON.parse(params[:data])
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
-    
-      rrhh_externo_ids = []  # Array para almacenar los IDs de rrhhPropioId
-     
-      data.each do |clave, valor|
-        #if clave['hh'] != ""
-          if clave['nombreUsuario'] != ""
-            custom_params = {
-              recursos: {
-                hh: clave['hh'],
-                equipo_trabajo_id: clave['rrhhExternoId'],
-                flujo_id: params[:flujo_id],
-                plan_actividad_id: @plan_actividades.id,
-                  tipo_aporte_id: params['tipoAporte']
-                }  
-              }
-
-            if (clave['rhhEquipoId'] == "")
-              #se inserta un nuevo usuario
-              @recursos = RecursoHumano.new(custom_params[:recursos])
-              @recursos.save 
-            else
-              #se actualiza un usuario
-              @recursos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
-              @recursos.update(custom_params[:recursos])
-            end
       
-            if (clave['hh'] == "")
-              eliminar_rrhh_externos = RecursoHumano.find_by(flujo_id: params[:flujo_id], plan_actividad_id: @plan_actividades.id, equipo_trabajo_id: clave['rrhhExternoId'])
-              eliminar_rrhh_externos.destroy
-            else
-              rrhh_externo_ids << clave['rrhhExternoId']  # Agregar el ID a la lista
-            end
+      rrhh_externo_ids = []
+  
+      data.each do |clave, valor|
+        #Resursos humanos aporte liquido
+        custom_params_liquido = {
+          recursos: {
+            hh: clave['hh_liquido'],
+            equipo_trabajo_id: clave['rhhEquipoId'],
+            flujo_id: params[:flujo_id],
+            plan_actividad_id: @plan_actividades.id,
+              tipo_aporte_id: 2
+          }  
+        }
 
+        if clave['rrhhIdLiquido'] == ''
+          #se inserta un nuevo usuario
+          if (clave['hh_liquido'] != "")
+            rr_hh_liquido = RecursoHumano.new(custom_params_liquido[:recursos])
+            rr_hh_liquido.save 
+            rrhh_externo_ids << clave['rrhhIdLiquido']
           end
-        #end
+        else
+          #se actualiza un usuario
+          rr_hh_liquido = RecursoHumano.find_by(id: clave['rrhhIdLiquido'])
+          if (clave['hh_liquido'] != "")
+            rr_hh_liquido.update(custom_params_liquido[:recursos])
+            rrhh_externo_ids << clave['rrhhIdLiquido']
+          else
+            rr_hh_liquido.destroy
+          end
+        end
+        
+        #Resursos humanos aporte fondo pl
+        custom_params_fondo = {
+          recursos: {
+            hh: clave['hh_fondo'],
+            equipo_trabajo_id: clave['rhhEquipoId'],
+            flujo_id: params[:flujo_id],
+            plan_actividad_id: @plan_actividades.id,
+              tipo_aporte_id: 3
+          }  
+        }
+
+        if clave['rrhhIdFondo'] == ''
+          #se inserta un nuevo usuario
+          if (clave['hh_fondo'] != "")
+            rr_hh_fondo = RecursoHumano.new(custom_params_fondo[:recursos])
+            rr_hh_fondo.save
+            rrhh_externo_ids << clave['rrhhIdFondo']
+          end
+        else
+          #se actualiza un usuario
+          rr_hh_fondo = RecursoHumano.find_by(id: clave['rrhhIdFondo'])
+          if (clave['hh_fondo'] != "")
+            rr_hh_fondo.update(custom_params_fondo[:recursos])
+            rrhh_externo_ids << clave['rrhhIdFondo']
+          else
+            rr_hh_fondo.destroy
+          end
+        end
       end
+
       ### Utilizar rrhh_externo_ids como necesites fuera del bucle
       @recursos_externos = PlanActividad.recursos_x_ids(params[:flujo_id], params['plan_id'], rrhh_externo_ids)
 
@@ -2092,10 +2129,10 @@ class FondoProduccionLimpiasController < ApplicationController
       year = Date.today.year.to_s
       correlativo = Correlativo.obtener_correlativo 
       linea = ''
-      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
-        linea = TipoInstrumento::L1
-      else
+      if @fondo_produccion_limpia.flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1
         linea = TipoInstrumento::L5
+      else
+        linea = TipoInstrumento::L1
       end
 
       #Se concatenan las variables para formar el codigo del proyecto
@@ -5147,7 +5184,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @adhesiones.each do |adh|
           puts "adhesion: #{adh}"
           @empresas_adheridas[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
-            tamano = empresa["tamaño_empresa"].split('-')
+            tamano = empresa[:tamaño_empresa].split('-')
             tamano_empresa = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano[2])
             empresa.merge(
               'tamano_empresa_id' => tamano_empresa.tamano_contribuyente_id,
@@ -5160,23 +5197,23 @@ class FondoProduccionLimpiasController < ApplicationController
 
         if flag_guarda_datos == true
           # Filtrar empresas seleccionadas
-          empresas_seleccionadas = @empresas_adheridas.select { |empresa| empresa["seleccionada"] }
+          empresas_seleccionadas = @empresas_adheridas.select { |empresa| empresa[:seleccionada] }
           
           # Obtener la cantidad de empresas únicas por rut_institucion
-          empresas_unicas = empresas_seleccionadas.uniq { |empresa| empresa["rut_institucion"] }
+          empresas_unicas = empresas_seleccionadas.uniq { |empresa| empresa[:rut_institucion] }
           
           # Contar el número de empresas
           numero_empresas = empresas_unicas.count
           
           # Contar el número de tamaños de empresa por elementos (tamano_empresa_id)
-          tamano_elementos_count = empresas_seleccionadas.group_by { |empresa| empresa["tamano_empresa_id"] }
+          tamano_elementos_count = empresas_seleccionadas.group_by { |empresa| empresa[:tamano_empresa_id] }
           numero_tamanos = tamano_elementos_count.count
           
           # Para obtener específicamente el conteo por tamaño de elementos
           tamanos_detalle_elementos = tamano_elementos_count.transform_values(&:count)
       
           # Contar el número de tamaños de empresa (tamano_empresa_id)
-          tamano_empresas_count = empresas_unicas.group_by { |empresa| empresa["tamano_empresa_id"] }
+          tamano_empresas_count = empresas_unicas.group_by { |empresa| empresa[:tamano_empresa_id] }
           
           # Para obtener específicamente el conteo por tamaño de empresa
           tamanos_detalle_empresas = tamano_empresas_count.transform_values(&:count)

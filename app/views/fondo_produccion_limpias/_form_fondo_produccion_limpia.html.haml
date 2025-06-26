@@ -708,7 +708,6 @@
         }
       });
     }
-    //crearPlanActividades(plan_id, 'false');
   }
 
   function guardarRrhhPropioshh(plan_id){
@@ -752,56 +751,30 @@
     // Recorre cada fila de la tabla
     var alertaMostrada = false;
     $('#div_consultor_faltantes_externos table tbody tr').each(function() {
-      var rrhhExternoId = $(this).find('td:nth-child(1)').text();
-      var rrhhEquipoId = $(this).find('td:nth-child(2)').text();
-      var nombreUsuario = $(this).find('td:nth-child(3)').text();
-      var hh = $(this).find('input[type="text"]').val();
-      
-      if (nombreUsuario !== "Fuente de financiamiento*") {
-
-        // Obtener todos los radio buttons con el nombre 'radio_tipo_aporte'
-        var radioButtons = document.getElementsByName('radio_tipo_aporte');
-
-        // Iterar sobre los radio buttons para verificar si alguno está seleccionado
-
-        var seleccionado = false;
-        for (var i = 0; i < radioButtons.length; i++) {
-            if (radioButtons[i].checked) {
-                seleccionado = true;
-                break;
-            }
-        }
-        // Verificar si al menos uno está seleccionado
-        if (seleccionado) {
-        // Agrega los datos al arreglo
-          data.push({
-              rrhhExternoId: rrhhExternoId,
-              rhhEquipoId: rrhhEquipoId,
-              nombreUsuario: nombreUsuario,
-              hh: hh
-          });
-          alertaMostrada = true;
-        }else{ 
-          if (!alertaMostrada) {
-            alertaMostrada = true;
-            alert('Por favor, seleccione alguna Fuente de financiamiento');
-            event.preventDefault();
-            return false;
-          }
-        }
-      }
+      var rrhhIdLiquido = $(this).find('td:nth-child(1)').text();
+      var rrhhIdFondo = $(this).find('td:nth-child(2)').text();
+      var rrhhEquipoId = $(this).find('td:nth-child(3)').text();
+      var nombreUsuario = $(this).find('td:nth-child(4)').text();
+      var hh_liquido = $(this).find('input[name="rrhh_externo_liquido_hh"]').val();
+      var hh_fondo = $(this).find('input[name="rrhh_externo_fondo_hh"]').val();
+    
+      data.push({
+          rrhhIdLiquido: rrhhIdLiquido,
+          rrhhIdFondo: rrhhIdFondo,
+          rhhEquipoId: rrhhEquipoId,
+          nombreUsuario: nombreUsuario,
+          hh_liquido: hh_liquido,
+          hh_fondo: hh_fondo
+      });
+  
     });
-
-    var tipoAporteSeleccionado = $('#div_consultor_faltantes_externos input[name="radio_tipo_aporte"]:checked').val();
-
     // Envía el arreglo al controlador utilizando AJAX
     $.ajax({
         type: "GET",
         url: "#{insert_recursos_humanos_externos_fondo_produccion_limpia_path}",
         data: { data: JSON.stringify(data), 
                 flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}", 
-                plan_id: plan_id, 
-                tipoAporte: tipoAporteSeleccionado},// Envía los datos como JSON
+                plan_id: plan_id},// Envía los datos como JSON
         success: function(response) {
           // Maneja la respuesta del servidor
           //console.log(response);
@@ -3716,7 +3689,7 @@
               - if @actividad_x_linea.present?  
                 - current_tipo_actividad = nil
                 - @actividad_x_linea.each do |actividad|
-                  - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
+                  - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
                     - if current_tipo_actividad != actividad.tipo_actividad
                       - current_tipo_actividad = actividad.tipo_actividad
                       %tr
@@ -4783,7 +4756,8 @@
                           %tr
                             -#%td.sub-contenido-popup-form ID
                             %td.sub-contenido-popup-form Nombre
-                            %td.sub-contenido-popup-form HH en la actividad
+                            %td.sub-contenido-popup-form HH Aporte propio liquido
+                            %td.sub-contenido-popup-form HH Solicitado al fondo
                         %tbody
           .modal-footer
             %button.btn.btn-secondary{"data-dismiss" => "modal"} Cerrar
