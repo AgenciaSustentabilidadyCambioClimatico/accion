@@ -415,44 +415,46 @@ class TareaPendiente < ApplicationRecord
 
   def solo_lectura(current_user=nil, tarea_pendiente)
     solo_lectura = nil
-    if tarea_pendiente.user_id != current_user.personas[0].user_id
-      estado = self.estado_tarea_pendiente.nombre_historial
+    if current_user.present? && current_user.personas.present?
+      if tarea_pendiente.user_id != current_user.personas[0].user_id
+        estado = self.estado_tarea_pendiente.nombre_historial
 
-      #Si es admin veo todo
-      puedo_ver_tareas = current_user.is_admin? || current_user.is_ascc?
-      personas = current_user.personas
-      personas_id = personas.pluck(:id)
-      if !puedo_ver_tareas
-        #jefe de linea ve todo lo relacionado a los tipos de instrumento donde es responsable
-        #consulto directo a responsables
-        jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, self.tipo_instrumento_id)
-        puedo_ver_tareas = (personas_id & jefes_de_linea.map{|jl| jl.id}).size > 0
-
+        #Si es admin veo todo
+        puedo_ver_tareas = current_user.is_admin? || current_user.is_ascc?
+        personas = current_user.personas
+        personas_id = personas.pluck(:id)
         if !puedo_ver_tareas
-          #los roles descritos abajo ven todo lo relacionado al flujo
-          #por eso consulto al mapa de actores, para saber cual fue su rol de participacion en el flujo
-          roles = self.mapa_de_actores.where(persona_id: personas.pluck(:id)).pluck(:rol_id)
-          puedo_ver_tareas = (roles & [Rol::COORDINADOR, Rol::RESPONSABLE_ENTREGABLES, Rol::REVISOR_TECNICO]).size > 0
-        end
-      end
+          #jefe de linea ve todo lo relacionado a los tipos de instrumento donde es responsable
+          #consulto directo a responsables
+          jefes_de_linea = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, self.tipo_instrumento_id)
+          puedo_ver_tareas = (personas_id & jefes_de_linea.map{|jl| jl.id}).size > 0
 
-      tareas_auditoria = false
-      if self.tarea.codigo == Tarea::COD_APL_033
-        tareas_auditoria = true
-      end
-
-      tareas_validaciones = false
-      if self.tarea.codigo == Tarea::COD_APL_034
-        tareas_validaciones = true
-      end
-
-      if puedo_ver_tareas
-        if tareas_auditoria == false && tareas_validaciones == false
-          if estado != "Ejecutada"
-            solo_lectura =  'solo_lectura'
+          if !puedo_ver_tareas
+            #los roles descritos abajo ven todo lo relacionado al flujo
+            #por eso consulto al mapa de actores, para saber cual fue su rol de participacion en el flujo
+            roles = self.mapa_de_actores.where(persona_id: personas.pluck(:id)).pluck(:rol_id)
+            puedo_ver_tareas = (roles & [Rol::COORDINADOR, Rol::RESPONSABLE_ENTREGABLES, Rol::REVISOR_TECNICO]).size > 0
           end
         end
-      end 
+
+        tareas_auditoria = false
+        if self.tarea.codigo == Tarea::COD_APL_033
+          tareas_auditoria = true
+        end
+
+        tareas_validaciones = false
+        if self.tarea.codigo == Tarea::COD_APL_034
+          tareas_validaciones = true
+        end
+
+        if puedo_ver_tareas
+          if tareas_auditoria == false && tareas_validaciones == false
+            if estado != "Ejecutada"
+              solo_lectura =  'solo_lectura'
+            end
+          end
+        end 
+      end
     end
     return solo_lectura
   end
