@@ -57,7 +57,7 @@
       $('.loading-data').hide();
     });
   });
-
+  $(document).off('click', '#nuevo-contribuyente-actor-button');
   $(document).on('click','#nuevo-contribuyente-actor-button', function(e){
     e.preventDefault();
     $.ajax({
@@ -133,7 +133,7 @@
       $('.loading-data').hide();
     });
   });
-
+  $(document).off('click', '.seleccionar-y-actualizar-contribuyente-actor-button');
   $(document).on('click', '.seleccionar-y-actualizar-contribuyente-actor-button', function(){
     data=JSON.parse($('#contribuyentes-remote-table#{custom_id}').find('.contribuyente-radio:checked').val());
     $.ajax({
@@ -155,7 +155,7 @@
 
   $(document).ready(function(){
 
-    $('#intitucion_cogestora').click(function(e){
+    $('#intitucion_cogestora').off('click').on('click', function(e){
       e.preventDefault();
       $('#body-contribuyente-buscador#{custom_id}').html("");
       if(#{!@contribuyente_temporal.nil? && !@contribuyente_temporal.new_record?}){
