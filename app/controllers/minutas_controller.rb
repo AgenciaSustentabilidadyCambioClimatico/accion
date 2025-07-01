@@ -486,7 +486,7 @@ class MinutasController < ApplicationController #crea la depencia con convocator
       @minuta=@convocatoria.minuta
       @minuta.establece_mensaje_encabezado
       @minuta.establece_mensaje_cuerpo
-      @convocados=@minuta.convocados
+      @convocados= MapaDeActor.adecua_actores_unidos_rut_persona_institucion_convocatorias(@minuta.convocados)
     end
 
     def set_descargable_tareas 
