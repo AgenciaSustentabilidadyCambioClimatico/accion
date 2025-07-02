@@ -20,7 +20,7 @@ class FlujoTarea < ApplicationRecord
     end
   end
 
-	def self.metodos(user, reunion=nil, mdi=nil)
+	def self.metodos(user, reunion=nil, mdi=nil, fpl=nil)
 		{
 			"[asunto]": "Mensaje de salida",
 			"[nombre]": user.nombre_completo,
@@ -29,7 +29,9 @@ class FlujoTarea < ApplicationRecord
 			"[rut]": user.rut,
 			"[fecha_reunion]": reunion.nil? ? "[fecha_reunion]" : reunion.fecha,
 			"[lugar_reunion]": reunion.nil? ? "[lugar_reunion]" : reunion.direccion,
-			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo
+			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
+			"[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
+			"[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto
 		}
 	end
 
@@ -100,14 +102,16 @@ class FlujoTarea < ApplicationRecord
 										
 										begin
 											mdi = flujo.manifestacion_de_interes
+											fpl = flujo.fondo_produccion_limpia
 										rescue
 											mdi = nil
+											fpl = nil
 										end
                    						puts 'enviado mail segunda vez'
 										
 										FlujoMailer.enviar(
-											self.asunto_format(actor.persona.user, mdi), 
-											self.cuerpo_format(actor.persona.user, mdi), 
+											self.asunto_format(actor.persona.user, mdi, fpl), 
+											self.cuerpo_format(actor.persona.user, mdi, fpl), 
 											actor.persona.email_institucional, 
 											rgc.id).deliver_now
 									end
@@ -152,13 +156,15 @@ class FlujoTarea < ApplicationRecord
 									rgc = RegistroAperturaCorreo.create(user_id: ut.user_id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)
 									begin
 										mdi = flujo.manifestacion_de_interes
+										fpl = flujo.fondo_produccion_limpia
 									rescue
 										mdi = nil
+										fpl = nil
 									end
                   puts 'Enviando mails 1 ves'
 									FlujoMailer.enviar(
-										self.asunto_format(ut.user,mdi), 
-										self.cuerpo_format(ut.user,mdi), 
+										self.asunto_format(ut.user,mdi,fpl), 
+										self.cuerpo_format(ut.user,mdi,fpl), 
 										ut.email_institucional,
 										rgc.id).deliver_now #DZC 2018-10-05 13:12:23 se agrega id para efectos instanciar la ruta a la imágen asociada al registro del receptor del corren en tabla RegistroAperturaCorreo
 								end
@@ -173,17 +179,17 @@ class FlujoTarea < ApplicationRecord
 		end
 	end
 
-	def asunto_format user,mdi=nil
+	def asunto_format user,mdi=nil,fpl=nil
 		asunto = self.mensaje_salida_asunto
-		FlujoTarea.metodos(user,nil,mdi).each do |key, value|
+		FlujoTarea.metodos(user,nil,mdi,fpl).each do |key, value|
 			asunto = asunto.gsub(key.to_s, value.to_s)
 		end
 		asunto
 	end
 
-	def cuerpo_format user,mdi=nil
+	def cuerpo_format user,mdi=nil,fpl=nil
 		cuerpo = self.mensaje_salida_cuerpo
-		FlujoTarea.metodos(user,nil,mdi).each do |key, value|
+		FlujoTarea.metodos(user,nil,mdi,fpl).each do |key, value|
 			cuerpo = cuerpo.gsub(key.to_s, value.to_s)
 		end
 		cuerpo
