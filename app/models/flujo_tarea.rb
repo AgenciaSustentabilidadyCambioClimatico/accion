@@ -103,6 +103,10 @@ class FlujoTarea < ApplicationRecord
 										begin
 											mdi = flujo.manifestacion_de_interes
 											fpl = flujo.fondo_produccion_limpia
+											if fpl.present?
+												flujo_mdi = Flujo.find_by(id: fpl.flujo_apl_id)
+												mdi = flujo_mdi&.manifestacion_de_interes
+											end
 										rescue
 											mdi = nil
 											fpl = nil
@@ -157,6 +161,10 @@ class FlujoTarea < ApplicationRecord
 									begin
 										mdi = flujo.manifestacion_de_interes
 										fpl = flujo.fondo_produccion_limpia
+										if fpl.present?
+											flujo_mdi = Flujo.find_by(id: fpl.flujo_apl_id)
+											mdi = flujo_mdi&.manifestacion_de_interes
+										end
 									rescue
 										mdi = nil
 										fpl = nil
