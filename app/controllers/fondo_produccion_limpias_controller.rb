@@ -4970,6 +4970,8 @@ class FondoProduccionLimpiasController < ApplicationController
               @fondo_produccion_limpia.cantidad_pequeña_empresa != 0 || 
               @fondo_produccion_limpia.cantidad_mediana_empresa != 0
                 @confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
+            else
+              @confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
             end
           end
           
