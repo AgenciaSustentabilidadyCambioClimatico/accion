@@ -137,7 +137,8 @@ class FondoProduccionLimpiasController < ApplicationController
           )
 
           flujo.update(fondo_produccion_limpia_id: fpl.id)
-          send_message(tarea_fondo, postulante.user_id)
+          #send_message(tarea_fondo, postulante.user_id)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
           respond_to do |format|
@@ -2200,7 +2201,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          send_message(tarea_fondo_FPL_03, params[:revisor_financiero_id])
+          #send_message(tarea_fondo_FPL_03, params[:revisor_financiero_id])
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
           #SE CREA FPL-04
           tarea_fondo_FPL_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
@@ -2217,7 +2219,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          send_message(tarea_fondo_FPL_04, params[:revisor_tecnico_id])
+          #send_message(tarea_fondo_FPL_04, params[:revisor_tecnico_id])
+          @tarea_pendiente.pasar_a_siguiente_tarea 'B'
 
           #SE CREA FPL-05
           tarea_fondo_FPL_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
@@ -2234,7 +2237,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          send_message(tarea_fondo_FPL_05, params[:revisor_juridico_id])
+          #send_message(tarea_fondo_FPL_05, params[:revisor_juridico_id])
+          @tarea_pendiente.pasar_a_siguiente_tarea 'C'
 
           #SE CAMBIA EL ESTADO DEL FPL-02 A 2
           tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_02)
@@ -2388,7 +2392,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+        #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
       end
   
       respond_to do |format|
@@ -2511,7 +2516,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+        #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
       end
 
       respond_to do |format|
@@ -2663,7 +2669,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+          #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         end
       else
         #consulto si la admisibilidad juridica es distinto a 0 se devuelve la evaluacion al postulante FPL-009, y el postulante debe corregir y volver a enviar al FPL-05
@@ -2702,7 +2709,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            @tarea_pendiente.pasar_a_siguiente_tarea 'B'
         end
       end
       respond_to do |format|
@@ -2981,7 +2989,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
               #SE ENVIAR EL MAIL AL RESPONSABLE
               mdi = @manifestacion_de_interes
-              send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+              #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+              @tarea_pendiente.pasar_a_siguiente_tarea 'A'
           end
         end
           
@@ -3085,7 +3094,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            @tarea_pendiente.pasar_a_siguiente_tarea 'B'
         end  
 
         #consulto si la pertinencia tecnica es distinto a 0 se devuelve la evaluacion al postulante FPL-001, y el postulante debe corregir y volver a enviar al FPL-04
@@ -3110,7 +3120,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
+            @tarea_pendiente.pasar_a_siguiente_tarea 'C'
         end  
       end 
       
@@ -3317,7 +3328,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      send_message(tarea_fondo, tarea_pendiente.user_id)
+      #send_message(tarea_fondo, tarea_pendiente.user_id)
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Financiera enviada correctamente'
@@ -3514,7 +3526,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      send_message(tarea_fondo, tarea_pendiente.user_id)
+      #send_message(tarea_fondo, tarea_pendiente.user_id)
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A'
   
       respond_to do |format|
         format.js { flash.now[:success] = 'Correción Admisibilidad Técnica enviada correctamente'
@@ -3623,7 +3636,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      send_message(tarea_fondo, tarea_pendiente_admisibilidad_juridica.user_id)
+      #send_message(tarea_fondo, tarea_pendiente_admisibilidad_juridica.user_id)
+      @tarea_pendiente.pasar_a_siguiente_tarea 'A'
      
       respond_to do |format|
         format.js { flash.now[:success] = 'Correcciones de Admisibilidad Jurídica enviadas correctamente'
@@ -3718,7 +3732,8 @@ class FondoProduccionLimpiasController < ApplicationController
         TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        send_message(tarea_fondo, tarea_pendiente_juridica.user_id)
+        #send_message(tarea_fondo, tarea_pendiente_juridica.user_id)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
         respond_to do |format|
           format.js { flash.now[:success] = 'Evaluación General enviada correctamente'
