@@ -36,12 +36,8 @@ class Admin::ClaveUnicaController < ApplicationController
 				personas = user.personas.map{|m|m}.compact
 				cargos = personas.map{|p|p.persona_cargos.map{|cp| cp.cargo_id}}
 				user.session[:cargos] = cargos.blank? ? [] : cargos[0]
-				user.session[:personas] = personas.blank? ? [] : personas.map(&:id)
+				user.session[:personas] = personas.blank? ? [] : personas.map{|p|p.attributes.to_json.as_hash}
 				user.save
-
-				#Se mantiene lógica previa para que no se rompa la aplicación
-				session[:cargos] = cargos.blank? ? [] : cargos[0]
-				session[:personas] = personas.blank? ? [] : personas.map(&:id)
 
 				format.html{ redirect_to red_path, flash: {success: "Sesión iniciada correctamente mediante Clave Única" } }
 			else
