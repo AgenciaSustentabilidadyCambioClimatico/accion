@@ -1884,8 +1884,8 @@ class FondoProduccionLimpiasController < ApplicationController
         #inserta en tabla actividades la actividad nueva, se debe agregar un estado o ver como se identidica
         custom_params_actividades = {
           actividades: {
-            nombre: params['nombre_actividad'],
-            descripcion: params['nombre_actividad']
+            nombre: normalize_string(params['nombre_actividad']),
+            descripcion: normalize_string(params['nombre_actividad'])
           }
         }
         
