@@ -1428,161 +1428,183 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def elementos_adheridos
-    elementos_adheridos = []
-    adhesiones_ids = Adhesion.unscoped.where(flujo_id: self.flujo.id).pluck(:id)
-    AdhesionElemento.where(adhesion_id: adhesiones_ids).each do |elem|
-      institucion = Contribuyente.find_by(rut: elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
-      dir_principal = institucion.direccion_principal
+  elementos_adheridos = []
+  adhesiones_ids = Adhesion.unscoped.where(flujo_id: self.flujo.id).pluck(:id)
+  adhesion_elementos = AdhesionElemento.where(adhesion_id: adhesiones_ids)
 
-      elementos_adheridos << {
-        fecha_adhesion: elem.fila[:fecha_adhesion],
-        nombre_institucion: institucion.razon_social,
-        rut_institucion: elem.fila[:rut_institucion],
-        region: dir_principal.comuna.provincia.region.nombre,
-        comuna: dir_principal.comuna.nombre,
-        tamano_empresa: elem.fila[:tamaño_empresa],
-        tipo_elemento: elem.alcance.nombre,
-        nombre_elemento: elem.nombre_del_elemento_v2,
-        otro_dato: elem.otro_dato
-      }
-    end
-    elementos_adheridos
+  # Precarga todos los ruts de instituciones
+  ruts = adhesion_elementos.map { |ae| ae.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first }.uniq
+
+  # Precarga todos los contribuyentes por rut
+  contribuyentes_by_rut = Contribuyente.where(rut: ruts).includes(establecimiento_contribuyentes: [
+    :region,
+    { comuna: :provincia }
+  ]).index_by(&:rut)
+
+  # Precarga todos los establecimientos principales por contribuyente
+  establecimientos_by_contribuyente = EstablecimientoContribuyente
+    .where(contribuyente_id: contribuyentes_by_rut.values.map(&:id), casa_matriz: true, fecha_eliminacion: nil)
+    .group_by(&:contribuyente_id)
+
+  adhesion_elementos.each do |elem|
+    rut = elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first
+    institucion = contribuyentes_by_rut[rut]
+    next unless institucion
+
+    dir_principal = establecimientos_by_contribuyente[institucion.id]&.first
+    next unless dir_principal
+
+    comuna = dir_principal.comuna
+    provincia = comuna&.provincia
+    region = provincia&.region
+
+    elementos_adheridos << {
+      fecha_adhesion: elem.fila[:fecha_adhesion],
+      nombre_institucion: institucion.razon_social,
+      rut_institucion: elem.fila[:rut_institucion],
+      region: region&.nombre,
+      comuna: comuna&.nombre,
+      tamano_empresa: elem.fila[:tamaño_empresa],
+      tipo_elemento: elem.alcance&.nombre,
+      nombre_elemento: elem.nombre_del_elemento_v2,
+      otro_dato: elem.otro_dato
+    }
+  end
+  elementos_adheridos
   end
 
   def elementos_certificados
-    elementos_certificados = []
-    adhesiones = Adhesion.unscoped.where(flujo_id: self.flujo.id)
-    #obtengo elementos
-    AdhesionElemento.where(adhesion_id: adhesiones.pluck(:id)).each do |adhesion_elemento|
+  elementos_certificados = []
+  adhesiones = Adhesion.unscoped.where(flujo_id: self.flujo.id)
+  adhesion_elementos = AdhesionElemento.where(adhesion_id: adhesiones.pluck(:id))
 
-      institucion = Contribuyente.find_by(rut: adhesion_elemento.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first)
+  # Precarga todos los ruts de instituciones
+  ruts = adhesion_elementos.map { |ae| ae.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first }.uniq
 
-      auditorias = Auditoria.where(flujo_id: self.flujo.id, con_certificacion: true).order(plazo_cierre: :desc)
-      auditoria = nil
-      niveles = {}
-      fecha_certificacion = "Pendiente"
-      vigencia_certificacion = "Pendiente"
-      vigente = false
-      auditorias.each do |aud|
-        flujo = aud.flujo
-        convocatoria_id = aud.convocatoria_id
-        if convocatoria_id.present?
-          #si esta la convocatoria es porque se hace entrega de certificado, mientras no esta certificado?
-          minuta_ceremonia = Minuta.find_by(convocatoria_id: convocatoria_id)
+  # Precarga todos los contribuyentes por rut
+  contribuyentes_by_rut = Contribuyente.where(rut: ruts).includes(establecimiento_contribuyentes: [
+    :region,
+    { comuna: :provincia }
+  ]).index_by(&:rut)
 
+  # Precarga todos los establecimientos principales por contribuyente
+  establecimientos_by_contribuyente = EstablecimientoContribuyente
+    .where(contribuyente_id: contribuyentes_by_rut.values.map(&:id), casa_matriz: true, fecha_eliminacion: nil)
+    .group_by(&:contribuyente_id)
 
-          if auditoria.nil? && !minuta_ceremonia.nil? && !minuta_ceremonia.fecha_acta.blank?
-            if adhesion_elemento.calcula_porcentaje_cumplimiento(aud, true) == 1
-              #primero obtengo la ultima auditoria en la que está certificado
-              auditoria = aud
+  adhesion_elementos.each do |adhesion_elemento|
+    rut = adhesion_elemento.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first
+    institucion = contribuyentes_by_rut[rut]
+    next unless institucion
 
-              fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
-              if auditoria.final
-                #si es audit final tomo valor general de informe
-                tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final
-              else
-                #si no el plazo cargado en lista de plazos
-                tiempo = auditoria.plazo
-                #si no esta en la lista de plazos utilizo el de auditoria final
-                tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if tiempo.blank?
-              end
-              tiempo_calculado = 0
-              if tiempo.blank?
-                #para version antigua (utilizaba meses)
-                tiempo = auditoria.plazo if tiempo.blank?
-                #si no existe dato se fuerza a el plazo minimo (1 año/12 meses)
-                tiempo = 12 if tiempo.blank?
-                tiempo_calculado = tiempo
-              else
-                #años a meses
-                tiempo_calculado = tiempo * 12
-              end
-              vigencia_certificacion = (minuta_ceremonia.fecha_acta + tiempo_calculado.months)
-              vigente = vigencia_certificacion >= Date.today
-              vigencia_certificacion = vigencia_certificacion.strftime("%F")
+    dir_principal = establecimientos_by_contribuyente[institucion.id]&.first
+    next unless dir_principal
+
+    comuna = dir_principal.comuna
+    provincia = comuna&.provincia
+    region = provincia&.region
+
+    auditorias = Auditoria.where(flujo_id: self.flujo.id, con_certificacion: true).order(plazo_cierre: :desc)
+    auditoria = nil
+    niveles = {}
+    fecha_certificacion = "Pendiente"
+    vigencia_certificacion = "Pendiente"
+    vigente = false
+    auditorias.each do |aud|
+      flujo = aud.flujo
+      convocatoria_id = aud.convocatoria_id
+      if convocatoria_id.present?
+        minuta_ceremonia = Minuta.find_by(convocatoria_id: convocatoria_id)
+        if auditoria.nil? && !minuta_ceremonia.nil? && !minuta_ceremonia.fecha_acta.blank?
+          if adhesion_elemento.calcula_porcentaje_cumplimiento(aud, true) == 1
+            auditoria = aud
+            fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
+            if auditoria.final
+              tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final
+            else
+              tiempo = auditoria.plazo
+              tiempo = auditoria.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if tiempo.blank?
             end
-          end
-
-          nivel = adhesion_elemento.cumple_nivel(aud)
-          if !nivel.nil?
-            _fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
-
-            #cargo el plazo del nivel
-            _tiempo = nivel.plazo
-            #si nivel no tiene cargo el de auditoria
-            _tiempo = aud.plazo if _tiempo.blank?
-            #si auditoria no tiene cargo el de aud final
-            _tiempo = aud.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if _tiempo.blank?
-            #si no existe plazo final se fuerza al minimo 1 año/12 meses
-            _tiempo = 1 if _tiempo.blank?
-
-            _tiempo_calculado = _tiempo * 12
-
-            _vigencia_certificacion = (minuta_ceremonia.fecha_acta + _tiempo_calculado.months)
-            _vigente = _vigencia_certificacion >= Date.today
-            _vigencia_certificacion = _vigencia_certificacion.strftime("%F")
-
-            if !niveles.has_key?(nivel.id)
-              #evito que niveles se repitan
-              niveles[nivel.id] = {aud_nivel: nivel, auditoria: aud, fecha_certificacion: _fecha_certificacion, vigencia_certificacion: _vigencia_certificacion, vigente: _vigente}
+            tiempo_calculado = 0
+            if tiempo.blank?
+              tiempo = auditoria.plazo if tiempo.blank?
+              tiempo = 12 if tiempo.blank?
+              tiempo_calculado = tiempo
+            else
+              tiempo_calculado = tiempo * 12
             end
+            vigencia_certificacion = (minuta_ceremonia.fecha_acta + tiempo_calculado.months)
+            vigente = vigencia_certificacion >= Date.today
+            vigencia_certificacion = vigencia_certificacion.strftime("%F")
           end
-        else
-          #nada
         end
-      end
 
-      auditoria = auditorias.last if auditoria.nil?
-
-      if !auditoria.nil? && vigencia_certificacion != "Pendiente"
-
-        #este es de validacion general
-        elementos_certificados << {
-          auditoria_id: auditoria.id,
-          auditoria_nombre: auditoria.nombre,
-          tipo_elemento: adhesion_elemento.alcance.nombre,
-          id_elemento: adhesion_elemento.id,
-          nombre_elemento: adhesion_elemento.nombre_del_elemento_v2,
-          fecha_certificacion: fecha_certificacion,
-          con_extension: "No",
-          vigencia_certificacion: vigencia_certificacion,
-          nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
-          nombre_estandar: nil,
-          nombre_institucion: institucion.razon_social,
-          rut_institucion: adhesion_elemento.fila[:rut_institucion],
-          region: institucion.direccion_principal.comuna.provincia.region.nombre,
-          comuna: institucion.direccion_principal.comuna.nombre,
-          vigente: vigente,
-          nivel_id: nil,
-          otro_dato: adhesion_elemento.otro_dato
-        }
-      end
-
-      #este es de validacion por nivel
-      niveles.each do |nivel_id, data|
-        elementos_certificados << {
-          auditoria_id: data[:auditoria].id,
-          auditoria_nombre: data[:auditoria].nombre,
-          tipo_elemento: adhesion_elemento.alcance.nombre,
-          id_elemento: adhesion_elemento.id,
-          nombre_elemento: adhesion_elemento.nombre_segun_alcance,
-          fecha_certificacion: data[:fecha_certificacion],
-          con_extension: "No",
-          vigencia_certificacion: data[:vigencia_certificacion],
-          nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
-          nombre_estandar: data[:aud_nivel].estandar_nivel.estandar_homologacion.nombre+"-"+data[:aud_nivel].estandar_nivel.nombre,
-          nombre_institucion: institucion.razon_social,
-          rut_institucion: adhesion_elemento.fila[:rut_institucion],
-          region: institucion.direccion_principal.comuna.provincia.region.nombre,
-          comuna: institucion.direccion_principal.comuna.nombre,
-          vigente: data[:vigente],
-          nivel_id: nivel_id,
-          otro_dato: adhesion_elemento.otro_dato
-        }
+        nivel = adhesion_elemento.cumple_nivel(aud)
+        if !nivel.nil?
+          _fecha_certificacion = minuta_ceremonia.fecha_acta.strftime("%F")
+          _tiempo = nivel.plazo
+          _tiempo = aud.plazo if _tiempo.blank?
+          _tiempo = aud.flujo.manifestacion_de_interes.informe_acuerdo.vigencia_certificacion_final if _tiempo.blank?
+          _tiempo = 1 if _tiempo.blank?
+          _tiempo_calculado = _tiempo * 12
+          _vigencia_certificacion = (minuta_ceremonia.fecha_acta + _tiempo_calculado.months)
+          _vigente = _vigencia_certificacion >= Date.today
+          _vigencia_certificacion = _vigencia_certificacion.strftime("%F")
+          unless niveles.has_key?(nivel.id)
+            niveles[nivel.id] = {aud_nivel: nivel, auditoria: aud, fecha_certificacion: _fecha_certificacion, vigencia_certificacion: _vigencia_certificacion, vigente: _vigente}
+          end
+        end
       end
     end
 
-    elementos_certificados
+    auditoria = auditorias.last if auditoria.nil?
+
+    if !auditoria.nil? && vigencia_certificacion != "Pendiente"
+      elementos_certificados << {
+        auditoria_id: auditoria.id,
+        auditoria_nombre: auditoria.nombre,
+        tipo_elemento: adhesion_elemento.alcance&.nombre,
+        id_elemento: adhesion_elemento.id,
+        nombre_elemento: adhesion_elemento.nombre_del_elemento_v2,
+        fecha_certificacion: fecha_certificacion,
+        con_extension: "No",
+        vigencia_certificacion: vigencia_certificacion,
+        nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
+        nombre_estandar: nil,
+        nombre_institucion: institucion.razon_social,
+        rut_institucion: adhesion_elemento.fila[:rut_institucion],
+        region: region&.nombre,
+        comuna: comuna&.nombre,
+        vigente: vigente,
+        nivel_id: nil,
+        otro_dato: adhesion_elemento.otro_dato
+      }
+    end
+
+    niveles.each do |nivel_id, data|
+      elementos_certificados << {
+        auditoria_id: data[:auditoria].id,
+        auditoria_nombre: data[:auditoria].nombre,
+        tipo_elemento: adhesion_elemento.alcance&.nombre,
+        id_elemento: adhesion_elemento.id,
+        nombre_elemento: adhesion_elemento.nombre_segun_alcance,
+        fecha_certificacion: data[:fecha_certificacion],
+        con_extension: "No",
+        vigencia_certificacion: data[:vigencia_certificacion],
+        nombre_acuerdo: adhesion_elemento.adhesion.flujo.nombre_instrumento,
+        nombre_estandar: data[:aud_nivel].estandar_nivel.estandar_homologacion.nombre+"-"+data[:aud_nivel].estandar_nivel.nombre,
+        nombre_institucion: institucion.razon_social,
+        rut_institucion: adhesion_elemento.fila[:rut_institucion],
+        region: region&.nombre,
+        comuna: comuna&.nombre,
+        vigente: data[:vigente],
+        nivel_id: nivel_id,
+        otro_dato: adhesion_elemento.otro_dato
+      }
+    end
+  end
+
+  elementos_certificados
   end
 
 end

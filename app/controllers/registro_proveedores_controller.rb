@@ -181,7 +181,6 @@ class RegistroProveedoresController < ApplicationController
   def update
     @editar = params[:editar]
     @registro_proveedor = RegistroProveedor.find(params[:id])
-    puts "--------> #{@registro_proveedor.inspect}"
     asociar_institucion = @registro_proveedor.asociar_institucion
     contribuyente_id = @registro_proveedor.contribuyente_id
     rut_institucion = @registro_proveedor.rut_institucion
