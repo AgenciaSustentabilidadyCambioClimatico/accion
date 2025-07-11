@@ -2186,58 +2186,16 @@ class FondoProduccionLimpiasController < ApplicationController
             persona_id: @tarea_pendiente.persona_id
           })
 
-          #SE CREA FPL-03
-          tarea_fondo_FPL_03 = Tarea.find_by_codigo(Tarea::COD_FPL_03)
-          custom_params_tarea_pendiente_FPL_03 = {
-            tarea_pendientes: {
-              flujo_id: @flujo.id,
-              tarea_id: tarea_fondo_FPL_03.id,
-              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: params[:revisor_financiero_id],
-              data: { }
-            }
-          }
-          TareaPendiente.new(custom_params_tarea_pendiente_FPL_03[:tarea_pendientes]).save
-
-          #SE ENVIAR EL MAIL AL RESPONSABLE
+          #SE ENVIAR EL MAIL AL RESPONSABLE FPL-03
           mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo_FPL_03, params[:revisor_financiero_id])
           @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
-          #SE CREA FPL-04
-          tarea_fondo_FPL_04 = Tarea.find_by_codigo(Tarea::COD_FPL_04)
-          custom_params_tarea_pendiente_FPL_04 = {
-            tarea_pendientes: {
-              flujo_id: @flujo.id,
-              tarea_id: tarea_fondo_FPL_04.id,
-              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: params[:revisor_tecnico_id],
-              data: { }
-            }
-          }
-          TareaPendiente.new(custom_params_tarea_pendiente_FPL_04[:tarea_pendientes]).save
-
-          #SE ENVIAR EL MAIL AL RESPONSABLE
+          #SE ENVIAR EL MAIL AL RESPONSABLE FPL-04
           mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo_FPL_04, params[:revisor_tecnico_id])
           @tarea_pendiente.pasar_a_siguiente_tarea 'B'
 
-          #SE CREA FPL-05
-          tarea_fondo_FPL_05 = Tarea.find_by_codigo(Tarea::COD_FPL_05)
-          custom_params_tarea_pendiente_FPL_05 = {
-            tarea_pendientes: {
-              flujo_id: @flujo.id,
-              tarea_id: tarea_fondo_FPL_05.id,
-              estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-              user_id: params[:revisor_juridico_id],
-              data: { }
-            }
-          }
-          TareaPendiente.new(custom_params_tarea_pendiente_FPL_05[:tarea_pendientes]).save
-
-          #SE ENVIAR EL MAIL AL RESPONSABLE
+          #SE ENVIAR EL MAIL AL RESPONSABLE FPL-05
           mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo_FPL_05, params[:revisor_juridico_id])
           @tarea_pendiente.pasar_a_siguiente_tarea 'C'
 
           #SE CAMBIA EL ESTADO DEL FPL-02 A 2
