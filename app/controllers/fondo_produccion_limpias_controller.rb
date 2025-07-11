@@ -137,7 +137,7 @@ class FondoProduccionLimpiasController < ApplicationController
           )
 
           flujo.update(fondo_produccion_limpia_id: fpl.id)
-          #send_message(tarea_fondo, postulante.user_id)
+      
           @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
           msj = 'Flujo fondo de producción limpia creado correctamente.'
@@ -408,9 +408,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        #send_message(tarea_fondo, postulante)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-       
 
         #SE CAMBIA EL ESTADO DEL FPL-00 A 2
         tarea_fondo_FPL_00 = Tarea.find_by_codigo(Tarea::COD_FPL_00)
@@ -2075,8 +2073,7 @@ class FondoProduccionLimpiasController < ApplicationController
           }
           TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
           #SE ENVIAR EL MAIL AL RESPONSABLE
-          mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo, responsable.user_id)         
+          mdi = @manifestacion_de_interes   
         end  
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
@@ -2350,7 +2347,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
       end
   
@@ -2474,7 +2470,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
       end
 
@@ -2627,7 +2622,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
           #SE ENVIAR EL MAIL AL RESPONSABLE
           mdi = @manifestacion_de_interes
-          #send_message(tarea_fondo, tarea_pendiente_jefe_de_linea.user_id)
           @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         end
       else
@@ -2667,7 +2661,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
             @tarea_pendiente.pasar_a_siguiente_tarea 'B'
         end
       end
@@ -2947,7 +2940,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
               #SE ENVIAR EL MAIL AL RESPONSABLE
               mdi = @manifestacion_de_interes
-              #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
               @tarea_pendiente.pasar_a_siguiente_tarea 'A'
           end
         end
@@ -3054,7 +3046,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
             @tarea_pendiente.pasar_a_siguiente_tarea 'B'
         end  
 
@@ -3080,7 +3071,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
             #SE ENVIAR EL MAIL AL RESPONSABLE
             mdi = @manifestacion_de_interes
-            #send_message(tarea_fondo, tarea_pendiente_postulante.user_id)
             @tarea_pendiente.pasar_a_siguiente_tarea 'C'
         end  
       end 
@@ -3273,22 +3263,8 @@ class FondoProduccionLimpiasController < ApplicationController
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
       tarea_pendiente = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
      
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_03)
-      custom_params_tarea_pendiente = {
-        tarea_pendientes: {
-          flujo_id: @flujo.id,
-          tarea_id: tarea_fondo.id,
-          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-          user_id: tarea_pendiente.user_id,
-          data: { }
-        }
-      }
-  
-      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
-
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      #send_message(tarea_fondo, tarea_pendiente.user_id)
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
       respond_to do |format|
@@ -3471,22 +3447,8 @@ class FondoProduccionLimpiasController < ApplicationController
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
       tarea_pendiente = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
 
-  
-      tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_04)
-      custom_params_tarea_pendiente = {
-        tarea_pendientes: {
-          flujo_id: @flujo.id,
-          tarea_id: tarea_fondo.id,
-          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-          user_id: tarea_pendiente.user_id,
-          data: { }
-        }
-      }
-      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
-
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      #send_message(tarea_fondo, tarea_pendiente.user_id)
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
   
       respond_to do |format|
@@ -3596,7 +3558,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
-      #send_message(tarea_fondo, tarea_pendiente_admisibilidad_juridica.user_id)
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
      
       respond_to do |format|
@@ -3678,21 +3639,8 @@ class FondoProduccionLimpiasController < ApplicationController
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
         tarea_pendiente_juridica = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
 
-        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_11)
-        custom_params_tarea_pendiente = {
-          tarea_pendientes: {
-            flujo_id: @flujo.id,
-            tarea_id: tarea_fondo.id,
-            estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-            user_id: tarea_pendiente_juridica.user_id,
-            persona_id: tarea_pendiente_juridica.persona_id,
-            data: { }
-          }
-        }
-        TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save 
         #SE ENVIAR EL MAIL AL RESPONSABLE
         mdi = @manifestacion_de_interes
-        #send_message(tarea_fondo, tarea_pendiente_juridica.user_id)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
         respond_to do |format|
