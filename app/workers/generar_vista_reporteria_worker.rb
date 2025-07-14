@@ -11,26 +11,22 @@ class GenerarVistaReporteriaWorker
     #header
     manif_de_intereses_firmadas = ManifestacionDeInteres.where("firma_fecha IS NOT NULL OR firma_fecha_hora IS NOT NULL")
     acuerdos_firmados = manif_de_intereses_firmadas.count
-    empresas_adheridas = []
-    empresas_certificadas = []
-    ManifestacionDeInteres.all.each do |manif_de_interes|
-      manif_de_interes.elementos_adheridos.each do |elem_adherido|
-        empresas_adheridas << elem_adherido[:rut_institucion]
-      end
-      manif_de_interes.elementos_certificados.each do |elem_cert|
-        empresas_certificadas << elem_cert[:rut_institucion]
-      end
+    empresas_adheridas = Set.new
+    empresas_certificadas = Set.new
+
+    ManifestacionDeInteres.find_each do |manif_de_interes|
+      empresas_adheridas.merge(manif_de_interes.elementos_adheridos.pluck(:rut_institucion))
+      empresas_certificadas.merge(manif_de_interes.elementos_certificados.pluck(:rut_institucion))
     end
-    empresas_adheridas = empresas_adheridas.uniq.length
-    empresas_certificadas = empresas_certificadas.uniq.length
+
     flujos = Flujo.where(manifestacion_de_interes_id: manif_de_intereses_firmadas.pluck(:id))
     acciones = SetMetasAccion.where(flujo_id: flujos.pluck(:id)).count
 
     header = ReporteriaDato.find_or_create_by(ruta: nil)
     header.datos = {
       acuerdos_firmados: acuerdos_firmados,
-      empresas_adheridas: empresas_adheridas,
-      empresas_certificadas: empresas_certificadas,
+      empresas_adheridas: empresas_adheridas.size,
+      empresas_certificadas: empresas_certificadas.size,
       acciones: acciones
     }
     header.save
@@ -187,6 +183,55 @@ class GenerarVistaReporteriaWorker
     empresas_certificadas_totales.datos = _elementos_certificados
     empresas_certificadas_totales.save
 
+  end
+
+  def clasificaciones_acuerdo_seleccionado(manif_de_interes, clasificaciones, vista)
+    _data = []
+    clasificaciones.each do |clasificacion|
+    _acciones_comprometidas = []
+    _metas_comprometidas = []
+    if vista == "clasificaciones"
+      acciones_ids = clasificacion.set_metas_acciones_comprometidas(manif_de_interes).pluck(:id)
+  
+      clasificacion.metas_comprometidas(manif_de_interes).each do |meta|
+        _meta_comprometida = {nombre: meta.nombre, acciones: []}
+        meta.set_metas_acciones_comprometidas_de_meta(manif_de_interes).each do |accion|
+          if acciones_ids.include?(accion.id)
+            _meta_comprometida[:acciones] << {
+              descripcion: accion.descripcion_accion,
+              nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
+              porcentaje_avance: accion.obtiene_porcentaje_avance,
+              porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f
+            }
+          end
+        end
+        _metas_comprometidas << _meta_comprometida
+      end
+    else
+      clasificacion.set_metas_acciones_comprometidas_de_meta(manif_de_interes).each do |accion|
+        _acciones_comprometidas << {
+          descripcion: accion.descripcion_accion,
+          nombre: "#{accion.accion.nombre}#{(accion.materia_sustancia.blank? ? '' : '/'+accion.materia_sustancia.nombre)}",
+          porcentaje_avance: accion.obtiene_porcentaje_avance,
+          porcentaje_cumplimiento: accion.obtiene_procentaje_cumplimiento.gsub("%","").to_f
+        }
+      end
+    end
+    _data << {
+      id: clasificacion.id,
+      imagen: clasificacion.imagen.url,
+      color: clasificacion.color,
+      icono: clasificacion.icono.url,
+      nombre: clasificacion.nombre,
+      descripcion: clasificacion.descripcion,
+      metas_comprometidas: _metas_comprometidas,
+      acciones_comprometidas: _acciones_comprometidas,
+      empresas_comprometidas: clasificacion.empresas_comprometidas(manif_de_interes, vista).length,
+      cumplimiento_promedio: "#{clasificacion.cumplimiento_promedio(manif_de_interes, vista)}%",
+      elementos_comprometidos: clasificacion.elementos_comprometidos(manif_de_interes, vista).count
+    }
+  end
+  return _data
   end
 end
 

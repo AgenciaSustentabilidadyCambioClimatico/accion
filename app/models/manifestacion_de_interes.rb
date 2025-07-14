@@ -1431,7 +1431,6 @@ class ManifestacionDeInteres < ApplicationRecord
   elementos_adheridos = []
   adhesiones_ids = Adhesion.unscoped.where(flujo_id: self.flujo.id).pluck(:id)
   adhesion_elementos = AdhesionElemento.where(adhesion_id: adhesiones_ids)
-
   # Precarga todos los ruts de instituciones
   ruts = adhesion_elementos.map { |ae| ae.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first }.uniq
 
@@ -1447,7 +1446,7 @@ class ManifestacionDeInteres < ApplicationRecord
     .group_by(&:contribuyente_id)
 
   adhesion_elementos.each do |elem|
-    rut = elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first
+    rut = elem.fila[:rut_institucion].to_s.gsub("k","K").gsub(".","").split("-").first.to_i
     institucion = contribuyentes_by_rut[rut]
     next unless institucion
 
