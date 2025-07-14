@@ -3545,17 +3545,6 @@ class FondoProduccionLimpiasController < ApplicationController
       tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_05)
       tarea_pendiente_admisibilidad_juridica = TareaPendiente.where(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id).last
       
-      custom_params_tarea_pendiente = {
-        tarea_pendientes: {
-          flujo_id: @flujo.id,
-          tarea_id: tarea_fondo.id,
-          estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-          user_id: tarea_pendiente_admisibilidad_juridica.user_id,
-          data: { }
-        }
-      }
-      TareaPendiente.new(custom_params_tarea_pendiente[:tarea_pendientes]).save
-
       #SE ENVIAR EL MAIL AL RESPONSABLE
       mdi = @manifestacion_de_interes
       @tarea_pendiente.pasar_a_siguiente_tarea 'A'
