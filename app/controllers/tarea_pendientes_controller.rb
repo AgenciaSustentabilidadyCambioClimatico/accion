@@ -19,7 +19,14 @@ class TareaPendientesController < ApplicationController
 
 
 	def seguimientos_fpl
-		@pendientes = TareaPendiente.seguimientos_de_(current_user.id)
+		gg = TareaPendiente.todas_fpl_(current_user.id).group_by {|f| f.flujo.id }# DZC continua con el flujo de las tareas con plazo vencido, para que se excluyan de la bandeja de entrada
+		rr = []
+		gg.each do |index, value|
+		rr << value.first
+		end
+		@algo = TareaPendiente.todas_fpl_(current_user.id) + rr
+
+		@pendientes     = @algo
 	end
 
 	def auditoria_sin_elementos_adheridos
