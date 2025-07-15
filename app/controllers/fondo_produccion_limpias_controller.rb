@@ -675,7 +675,7 @@ class FondoProduccionLimpiasController < ApplicationController
     helper_method :tope_maximo_solicitar_diagnostico
   
     def buscador
-      rut = buscador_params[:rut]
+      rut = buscador_params[:rut].gsub('.', '')
       nombre = buscador_params[:nombre_completo]
       @usuarios = User
       if rut.present?

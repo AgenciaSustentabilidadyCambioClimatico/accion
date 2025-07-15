@@ -71,6 +71,14 @@ class TareaPendiente < ApplicationRecord
     self.includes([:tarea,:flujo]).where("#{filtrar_usuario}estado_tarea_pendiente_id = #{EstadoTareaPendiente::NO_INICIADA}").all
   end
 
+  def self.todas_fpl_(user_id = nil)
+    fpl_ids = TipoInstrumento.fpl.map { |ti| ti.id }
+    tareas_fpl = Tarea.where(tipo_instrumento_id: fpl_ids).pluck(:id) 
+    filtrar_usuario = user_id.present? ? "user_id = #{user_id} AND " : ""
+    self.includes([:tarea, :flujo])
+        .where("#{filtrar_usuario}estado_tarea_pendiente_id = ? AND tarea_id IN (?)", EstadoTareaPendiente::NO_INICIADA, tareas_fpl)
+  end
+
   def self.crear_flujo(contribuyente_id,tipo_instrumento_id,tareas)
     resultado = { flujo: Flujo.new, tarea_pendientes: [Flujo.new.tarea_pendientes.build] }
     resultado[:flujo] = Flujo.new({

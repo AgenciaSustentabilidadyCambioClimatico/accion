@@ -51,8 +51,7 @@
         .col-12.mt-2.text-right
           %button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
             =t(:volver_a_lista)
-          -confirmar = User.unscoped.where(flujo_id: usuario_temporal.flujo_id).size > 0 && usuario_temporal.user_id.nil? ? {confirm: 'Al crear un usuario nuevo, se descartará el anterior. ¿Desea continuar? '} : {}
-          %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, id: 'oculta_modal', disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe, data: confirmar}
+          %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, id: 'oculta_modal', disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
             Guardar
 
 :javascript
