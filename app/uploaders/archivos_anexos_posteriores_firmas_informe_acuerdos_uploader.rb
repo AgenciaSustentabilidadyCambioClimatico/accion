@@ -11,4 +11,7 @@ class ArchivosAnexosPosterioresFirmasInformeAcuerdosUploader < CarrierWave::Uplo
     %w(pdf docx png jpeg)
   end
 
+  def size_range
+    1.byte...50.megabytes
+  end
 end

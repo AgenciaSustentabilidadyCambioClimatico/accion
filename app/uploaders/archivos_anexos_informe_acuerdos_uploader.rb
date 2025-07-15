@@ -10,4 +10,8 @@ class ArchivosAnexosInformeAcuerdosUploader < CarrierWave::Uploader::Base
   def extension_whitelist
     %w(jpg jpeg png pdf zip rar xls xlsx doc docx)
   end
+
+  def size_range
+    1.byte...50.megabytes
+  end
 end
