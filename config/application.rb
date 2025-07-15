@@ -18,9 +18,6 @@ module Ascc
     config.active_record.use_yaml_unsafe_load = true
 
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
-    
-    # Configurar límite de upload para archivos grandes
-    config.middleware.use Rack::ContentLength, 50 * 1024 * 1024  # 50MB
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do
     #   config.web_console.whitelisted_ips = '0.0.0.0/0'

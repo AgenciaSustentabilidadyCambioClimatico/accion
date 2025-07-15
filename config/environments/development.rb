@@ -83,4 +83,11 @@ Rails.application.configure do
 
   #oob_uri for Google Calendar authentication
   config.oob_uri = 'http://localhost:3999/oauth2callback'
+  
+  # Configurar límite de upload para archivos grandes
+  config.middleware.insert_before Rack::Runtime, Rack::ContentLength
+  
+
+  
+
 end
