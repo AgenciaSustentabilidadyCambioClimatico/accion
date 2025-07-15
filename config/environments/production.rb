@@ -109,13 +109,4 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
   #oob_uri for Google Calendar authentication
   config.oob_uri = 'https://accion.ascc.cl/oauth2callback'
-  
-  # Configurar límites para archivos grandes en Rack
-  config.middleware.insert_before Rack::Runtime, Rack::Utils
-  config.middleware.use Rack::Utils do |env|
-    env['rack.input'] = env['rack.input'].tap do |input|
-      input.instance_variable_set(:@key_space_limit, 50 * 1024 * 1024) # 50MB
-      input.instance_variable_set(:@param_depth_limit, 100)
-    end
-  end
 end
