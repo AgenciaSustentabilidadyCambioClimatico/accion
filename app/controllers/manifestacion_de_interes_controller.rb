@@ -1445,14 +1445,7 @@ class ManifestacionDeInteresController < ApplicationController
                   tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada] #params[:manifestacion_de_interes][:tipo_instrumento_id] 
                 })
                 if flujo.save
-                  tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_00)
-                  flujo.tarea_pendientes.create([{
-                      tarea_id: tarea_fondo.id,
-                      estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA,
-                      user_id: postulante.user_id,
-                      data: { }
-                    }]
-                  )
+                  @tarea_pendiente.pasar_a_siguiente_tarea 'A'
 
                   persona_by_user = Persona.where(user_id: postulante.user_id).first
 
