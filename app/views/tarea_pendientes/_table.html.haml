@@ -1,3 +1,4 @@
+-# encoding: utf-8
 - todos = todos.nil? ? false : todos
 :javascript
   function childFormat(data){
@@ -44,17 +45,70 @@
       })
     })
   }
-  $(document).ready(function() {
-   const table=  $('table.acuerdos-pendientes').DataTable({
-      order: [[0, 'asc']],
-      responsive: true,
-      lengthMenu: [[10],[10]],
-      columnDefs: [ { targets: [-1], orderable: false } ],
-      language: {
-        url: "#{asset_path('spanish.json')}"
-      },
-      "defaultContent": "",
-    });
+              
+      // Función para normalizar caracteres especiales (quitar tildes)
+      function normalizeText(text) {
+        const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return normalized;
+      }
+
+    $(document).ready(function() {
+     const table=  $('table.acuerdos-pendientes').DataTable({
+        order: [[0, 'asc']],
+        responsive: true,
+        lengthMenu: [[10],[10]],
+        columnDefs: [ { targets: [-1], orderable: false } ],
+        language: {
+          url: "#{asset_path('spanish.json')}"
+        },
+        "defaultContent": "",
+        // MANTENER la búsqueda habilitada pero ocultar el input nativo
+        "searching": true,
+        // Configurar ordenamiento para caracteres especiales
+        "ordering": true,
+        "orderClasses": false
+      });
+
+      // Personalizar la búsqueda para que funcione con y sin tildes
+      
+      // Esperar a que DataTables esté completamente inicializado
+      setTimeout(function() {
+        const searchInput = $('.dataTables_filter input');
+        
+        // Ocultar el input de búsqueda nativo
+        $('.dataTables_filter').hide();
+        
+        // Crear input de búsqueda personalizado con estilo
+        const customSearchHtml = `
+          <div class="custom-search" style="margin-bottom: 10px; text-align: right;">
+            <input type="text" id="customSearch" placeholder="Buscar..." 
+                   class="form-control" style="width: 200px; display: inline-block;">
+          </div>
+        `;
+        $('.dataTables_wrapper').prepend(customSearchHtml);
+        
+        // Usar nuestro input personalizado para controlar la búsqueda nativa
+        $('#customSearch').off('keyup').on('keyup', function() {
+          const searchTerm = normalizeText(this.value.toLowerCase());
+          
+          // Limpiar búsquedas personalizadas anteriores
+          $.fn.dataTable.ext.search.splice(0, $.fn.dataTable.ext.search.length);
+          
+          // Agregar función de búsqueda personalizada para caracteres especiales
+          if (searchTerm.length > 0) {
+            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+              const rowText = normalizeText(data.join(' ').toLowerCase());
+              return rowText.includes(searchTerm);
+            });
+          }
+          
+          table.draw();
+        });
+        
+        // Agregar evento para cuando se carga la página (búsqueda vacía)
+        $('#customSearch').trigger('keyup');
+        
+      }, 100);
 
     $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
 
