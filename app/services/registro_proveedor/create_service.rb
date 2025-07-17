@@ -31,13 +31,11 @@ class RegistroProveedor::CreateService
   end
 
   def create_flujo
-    puts "-------> Creando tarea1"
 
     # user = User.where(rut: @registro_proveedor.rut).first
     f = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
     tarea = Tarea.where(codigo: "PRO-002").first
     u = User.select { |f| f.posee_rol_ascc?(Rol::JEFE_DE_LINEA_PROVEEDORES) }.last
-    puts "-------> Creando tarea"
     TareaPendiente.create(flujo_id: f.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: u.id, data: @registro_proveedor.id)
   end
 
@@ -58,12 +56,10 @@ class RegistroProveedor::CreateService
     comuna = Comuna.where(nombre: @registro_proveedor.comuna).first
     rut_para_institucion = @registro_proveedor.rut.chop.gsub(/[^0-9]/,'')
     institucion = Institucion.find_or_create_by(rut: rut_para_institucion, dv: dv, razon_social: razon_social)
-    puts "-------> #{institucion.id}"
     actividad_economica = ActividadEconomica.where(codigo_ciiuv4: '702000')
     ActividadEconomicaContribuyente.create(actividad_economica_id: actividad_economica.first, contribuyente_id: institucion.id)
     establecimiento = EstablecimientoContribuyente.create(contribuyente_id: institucion.id, direccion: @registro_proveedor.direccion, comuna_id: comuna.id, region_id: region.id , ciudad: @registro_proveedor.ciudad, casa_matriz: true)
     user = User.where(rut: @registro_proveedor.rut).first
-    puts "-----> aki se cae"
     persona = Persona.create(user_id: user.id, contribuyente_id: institucion.id, email_institucional: @registro_proveedor.email, telefono_institucional: @registro_proveedor.telefono)
     cargo = Cargo.where(nombre: 'Representante Legal')
     PersonaCargo.create(persona_id: persona.id, cargo_id: cargo.first.id, establecimiento_contribuyente_id: establecimiento.id)
