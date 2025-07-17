@@ -67,12 +67,15 @@
                         %td=elem[:otro_dato]
 :javascript
   $(document).ready(function(){
-    $('.table-home').DataTable({
+    const table = $('.table-home').DataTable({
       dom: "<'d-none'f>ti",
       paging: false,
+      "defaultContent": "",
+      "searching": true,
+      "ordering": true,
+      "orderClasses": false
     });
-
-    $('#buscar_custom').on('input paste', function(){
-      $('.dataTables_filter input').val(this.value).trigger("input");
-    });
+    setTimeout(function() {
+      customSearch(table, '#buscar_custom');
+    }, 100);
   });

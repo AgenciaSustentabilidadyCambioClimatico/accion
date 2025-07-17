@@ -73,41 +73,7 @@
       
       // Esperar a que DataTables esté completamente inicializado
       setTimeout(function() {
-        const searchInput = $('.dataTables_filter input');
-        
-        // Ocultar el input de búsqueda nativo
-        $('.dataTables_filter').hide();
-        
-        // Crear input de búsqueda personalizado con estilo
-        const customSearchHtml = `
-          <div class="custom-search" style="margin-bottom: 10px; text-align: right;">
-            <input type="text" id="customSearch" placeholder="Buscar..." 
-                   class="form-control" style="width: 200px; display: inline-block;">
-          </div>
-        `;
-        $('.dataTables_wrapper').prepend(customSearchHtml);
-        
-        // Usar nuestro input personalizado para controlar la búsqueda nativa
-        $('#customSearch').off('keyup').on('keyup', function() {
-          const searchTerm = normalizeText(this.value.toLowerCase());
-          
-          // Limpiar búsquedas personalizadas anteriores
-          $.fn.dataTable.ext.search.splice(0, $.fn.dataTable.ext.search.length);
-          
-          // Agregar función de búsqueda personalizada para caracteres especiales
-          if (searchTerm.length > 0) {
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
-              const rowText = normalizeText(data.join(' ').toLowerCase());
-              return rowText.includes(searchTerm);
-            });
-          }
-          
-          table.draw();
-        });
-        
-        // Agregar evento para cuando se carga la página (búsqueda vacía)
-        $('#customSearch').trigger('keyup');
-        
+        customSearch(table);
       }, 100);
 
     $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
