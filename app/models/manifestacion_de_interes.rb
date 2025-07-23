@@ -1116,8 +1116,8 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :motivacion_y_objetivos, validaciones)
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :relacion_de_politicas, validaciones)
-      self.pdf_contenido_formato(pdf, :otras_iniciativas_relacionadas_en_ejecucion, validaciones)
-      self.pdf_contenido_formato(pdf, :programas_o_proyectos_relacionados_ids, validaciones)
+      #self.pdf_contenido_formato(pdf, :otras_iniciativas_relacionadas_en_ejecucion, validaciones)
+      #self.pdf_contenido_formato(pdf, :programas_o_proyectos_relacionados_ids, validaciones)
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :fuente_de_fondos, validaciones)
       self.pdf_contenido_formato(pdf, :justificacion_de_estimacion_de_fondos_requeridos, validaciones)
@@ -1152,13 +1152,13 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato(pdf, :produccion, validaciones)
       self.pdf_contenido_formato(pdf, :unidad_de_medida_volumen, validaciones)
       self.pdf_contenido_formato_custom(pdf, :ventas, ActionController::Base.helpers.number_to_currency(self.ventas), validaciones)
-      self.pdf_contenido_formato_custom(pdf, :porcentaje_exportaciones, self.porcentaje_exportaciones, validaciones)
+      #self.pdf_contenido_formato_custom(pdf, :porcentaje_exportaciones, self.porcentaje_exportaciones, validaciones)
       self.pdf_contenido_formato(pdf, :numero_trabajadores, validaciones)
-      self.pdf_contenido_formato(pdf, :comentarios_cifras, validaciones)
+      #self.pdf_contenido_formato(pdf, :comentarios_cifras, validaciones)
       self.pdf_separador(pdf, 11)
-      self.pdf_contenido_formato(pdf, :principales_mercados, validaciones)
+      #self.pdf_contenido_formato(pdf, :principales_mercados, validaciones)
       self.pdf_contenido_formato(pdf, :cadena_de_valor, validaciones)
-      self.pdf_contenido_formato(pdf, :otras_caracteristicas_relevantes, validaciones)
+      #self.pdf_contenido_formato(pdf, :otras_caracteristicas_relevantes, validaciones)
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato_custom(pdf, :acuerdo_de_alcance_nacional, (self.acuerdo_de_alcance_nacional ? "Si" : "No"), validaciones, true)
       self.pdf_contenido_formato_checks(pdf, :comunas_ids, self.comunas_beauty_tree_selector, validaciones)
@@ -1167,7 +1167,7 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato_checks(pdf, :cuencas_ids, self.cuencas_beauty_tree_selector, validaciones)
       self.pdf_contenido_formato(pdf, :caracterizacion_sector_territorio, validaciones)
       self.pdf_contenido_formato(pdf, :vulnerabilidad_al_cambio_climatico_del_sector, validaciones)
-      self.pdf_contenido_formato(pdf, :principales_impactos_socioambientales_del_sector, validaciones)
+      #self.pdf_contenido_formato(pdf, :principales_impactos_socioambientales_del_sector, validaciones)
       self.pdf_contenido_formato(pdf, :principales_problemas_y_desafios, validaciones)
       self.pdf_contenido_formato(pdf, :principales_conflictos, validaciones)
       self.pdf_contenido_formato(pdf, :otro_contexto_sector, validaciones)
@@ -1175,10 +1175,10 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_separador(pdf, 20)
 
       #PESTAÑA 3
-      self.pdf_titulo_formato(pdf, I18n.t(:actores_y_partes_interesadas), "Identificación de actores relevantes para el Acuerdo, así como recursos que estos podrían comprometer")
+      self.pdf_titulo_formato(pdf, I18n.t(:actores_y_partes_interesadas), "Identificación de actores relevantes para el Acuerdo.")
       self.pdf_contenido_formato(pdf, :principales_actores, validaciones)
       self.pdf_contenido_formato(pdf, :mapa_de_actores_archivo, validaciones)
-      self.pdf_contenido_formato(pdf, :otros_recursos_comprometidos, validaciones)
+      #self.pdf_contenido_formato(pdf, :otros_recursos_comprometidos, validaciones)
       self.pdf_contenido_formato(pdf, :carta_de_apoyo_y_compromiso, validaciones)
       self.pdf_separador(pdf, 20)
 
@@ -1207,19 +1207,19 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_separador(pdf, 20)
 
       #PESTAÑA 5
-      self.pdf_titulo_formato(pdf, I18n.t(:datos_proyecto), "Solo Aplica a Acuerdos que tienen por objetivo la instalación de proyectos de inversión socio ambientalmente sólidos y confiables")
+      self.pdf_titulo_formato(pdf, I18n.t(:datos_proyecto), "Solo Aplica a Acuerdos Voluntarios de Participación Temprana.")
       self.pdf_contenido_formato(pdf, :nombre_proyecto, validaciones)
       self.pdf_contenido_formato(pdf, :descripcion_proyecto, validaciones)
       self.pdf_contenido_formato(pdf, :justificacion_proyecto, validaciones)
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :detalle_de_localizacion, validaciones)
-      self.pdf_contenido_formato(pdf, :detalle_de_alternativa_de_instalacion, validaciones)
+      #self.pdf_contenido_formato(pdf, :detalle_de_alternativa_de_instalacion, validaciones)
       pdf.image StringIO.new(Base64.decode64(splitBase64(mapa_area_influencia)[:data])), fit: [pdf.bounds.width, 400]
       pdf.move_down 11
       self.pdf_contenido_formato(pdf, :area_influencia_proyecto_archivo, validaciones)
       pdf.image StringIO.new(Base64.decode64(splitBase64(mapa_alternativas)[:data])), fit: [pdf.bounds.width, 400]
       pdf.move_down 11
-      self.pdf_contenido_formato(pdf, :alternativas_instalacion_archivo, validaciones)
+      #self.pdf_contenido_formato(pdf, :alternativas_instalacion_archivo, validaciones)
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :estado_proyecto, validaciones)
       self.pdf_contenido_formato(pdf, :tecnologia, validaciones)
