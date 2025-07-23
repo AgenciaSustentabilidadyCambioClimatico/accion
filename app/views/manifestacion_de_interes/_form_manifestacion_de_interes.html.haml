@@ -824,14 +824,15 @@
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:ventas][:nombre]
               %p#manifestacion_de_interes_ventas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : number_to_currency(f.object.ventas))
-          .col-12.col-md-6
-            -if !solo_lectura
-              = f.input :porcentaje_exportaciones, input_html: { class: 'text-fixed-size'}, label: @validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre], required: true
-            -else
-              -no_data = f.object.porcentaje_exportaciones.blank?
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre]
-              %p#manifestacion_de_interes_porcentaje_exportaciones.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                =(no_data ? 'No se ingresó respuesta' : f.object.porcentaje_exportaciones)
+          - if 1 == 2
+            .col-12.col-md-6
+              -if !solo_lectura
+                = f.input :porcentaje_exportaciones, input_html: { class: 'text-fixed-size'}, label: @validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre], required: true
+              -else
+                -no_data = f.object.porcentaje_exportaciones.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:porcentaje_exportaciones][:nombre]
+                %p#manifestacion_de_interes_porcentaje_exportaciones.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.porcentaje_exportaciones)
           .col-12.col-md-6
             -if !solo_lectura
               = f.input :numero_trabajadores, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre], required: true
@@ -840,7 +841,7 @@
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:numero_trabajadores][:nombre]
               %p#manifestacion_de_interes_numero_trabajadores.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.numero_trabajadores)
-          .col-12.col-md-6
+          .col-12.col-md-12
             -if !solo_lectura
               = f.input :comentarios_cifras, input_html: { class: 'text-fixed-size' }, label: false, required: false
             -else
@@ -855,17 +856,17 @@
         .row
           .col-12
             .h5=@validaciones[:manifestacion_de_interes][:titulo_caracterizacion_actividades_economicas][:nombre]
-
-          .col-12.col-md-6
-            -if !solo_lectura
-              = f.input :principales_mercados, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:principales_mercados][:nombre], required: true
-            -else
-              .form-group
-                -no_data = f.object.principales_mercados.blank?
-                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_mercados][:nombre]
-                %p#manifestacion_de_interes_principales_mercados.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_mercados)
-          .col-12.col-md-6
+          - if 1 == 2
+            .col-12.col-md-6
+              -if !solo_lectura
+                = f.input :principales_mercados, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:principales_mercados][:nombre], required: true
+              -else
+                .form-group
+                  -no_data = f.object.principales_mercados.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_mercados][:nombre]
+                  %p#manifestacion_de_interes_principales_mercados.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.principales_mercados)
+          .col-12.col-md-12
             -if !solo_lectura
               = f.input :cadena_de_valor, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:cadena_de_valor][:nombre], required: true
             -else
@@ -874,15 +875,16 @@
                 %label.control-label.string=@validaciones[:manifestacion_de_interes][:cadena_de_valor][:nombre]
                 %p#manifestacion_de_interes_cadena_de_valor.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                   =(no_data ? 'No se ingresó respuesta' : f.object.cadena_de_valor)
-          .col-12.col-md-6
-            -if !solo_lectura
-              = f.input :otras_caracteristicas_relevantes, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
-            -else
-              .form-group
-                -no_data = f.object.otras_caracteristicas_relevantes.blank?
-                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
-                %p#manifestacion_de_interes_otras_caracteristicas_relevantes.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                  =(no_data ? 'No se ingresó respuesta' : f.object.otras_caracteristicas_relevantes)
+          - if 1 == 2
+            .col-12.col-md-6
+              -if !solo_lectura
+                = f.input :otras_caracteristicas_relevantes, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
+              -else
+                .form-group
+                  -no_data = f.object.otras_caracteristicas_relevantes.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_caracteristicas_relevantes][:nombre]
+                  %p#manifestacion_de_interes_otras_caracteristicas_relevantes.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.otras_caracteristicas_relevantes)
         .col-12
           %hr{style: 'display: block;'}
         .row.mt-3{class: (solo_lectura ? '' : 'align-items-end')}
@@ -987,15 +989,17 @@
                 %label.control-label.string=@validaciones[:manifestacion_de_interes][:vulnerabilidad_al_cambio_climatico_del_sector][:nombre]
                 %p#manifestacion_de_interes_vulnerabilidad_al_cambio_climatico_del_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                   =(no_data ? 'No se ingresó respuesta' : f.object.vulnerabilidad_al_cambio_climatico_del_sector)
-          .col-12.col-md-6
-            -if !solo_lectura
-              = f.input :principales_impactos_socioambientales_del_sector, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre], required: true
-            -else
-              .form-group
-                -no_data = f.object.principales_impactos_socioambientales_del_sector.blank?
-                %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre]
-                %p#manifestacion_de_interes_principales_impactos_socioambientales_del_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                  =(no_data ? 'No se ingresó respuesta' : f.object.principales_impactos_socioambientales_del_sector)
+          
+          - if 1 == 2
+            .col-12.col-md-6
+              -if !solo_lectura
+                = f.input :principales_impactos_socioambientales_del_sector, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre], required: true
+              -else
+                .form-group
+                  -no_data = f.object.principales_impactos_socioambientales_del_sector.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_impactos_socioambientales_del_sector][:nombre]
+                  %p#manifestacion_de_interes_principales_impactos_socioambientales_del_sector.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.principales_impactos_socioambientales_del_sector)
           .col-12.col-md-6
             -if !solo_lectura
               = f.input :principales_problemas_y_desafios, input_html: { class: 'text-fixed-size' }, label: @validaciones[:manifestacion_de_interes][:principales_problemas_y_desafios][:nombre], required: true
@@ -1144,7 +1148,7 @@
         .alert.alert-primary
           %small
             %i.fa.fa-question-circle.fa-1-5x
-            Solo Aplica a Acuerdos que tienen por objetivo la instalación de proyectos de inversión socio ambientalmente sólidos y confiables.
+            Solo Aplica a Acuerdos Voluntarios de Participación Temprana.
         .row
           .col-lg-6.col-12
             .col-lg-12.p-0.col-12
@@ -1179,7 +1183,7 @@
             %hr{style: 'display: block;'}
           .col-lg-6.col-12
             -if !solo_lectura
-              = f.input :detalle_de_localizacion, as: :text, input_html: {class: 'text-fixed-size'}
+              = f.input :detalle_de_localizacion, as: :text, input_html: { style: 'height: 300px;' }
             -else
               .form-group
                 -no_data = f.object.detalle_de_localizacion.blank?
@@ -1187,80 +1191,83 @@
                 %p#manifestacion_de_interes_detalle_de_localizacion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                   =(no_data ? 'No se ingresó respuesta' : f.object.detalle_de_localizacion)
           .col-lg-6.col-12
-            -if !solo_lectura
-              = f.input :detalle_de_alternativa_de_instalacion, as: :text, input_html: {class: 'text-fixed-size'}
-            -else
-              .form-group
-                -no_data = f.object.detalle_de_alternativa_de_instalacion.blank?
-                %label.control-label.string=@validaciones[:manifestacion_de_interes][:detalle_de_alternativa_de_instalacion][:nombre]
-                %p#manifestacion_de_interes_detalle_de_alternativa_de_instalacion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                  =(no_data ? 'No se ingresó respuesta' : f.object.detalle_de_alternativa_de_instalacion)
+            .row
+              = f.hidden_field :area_influencia_proyecto_data
+              - tlt_influencia = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip_activo]
+              .col
+                %label.control-label.string
+                  = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:nombre]
+              .col-auto.pr-0
+                -if @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda_activo]
+                  %a.btn.show-ayuda.pb-0{campo: "9998"}
+                    %i.fa.fa-info-circle{style: "color: #0c5460;"}
+              .col-12
+                .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9998'}
+                  = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda].html_safe
+              .col-12.tooltip-block{"data-original-title": "#{tlt_influencia ? @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip] : '' }"}
+                #area-influencia-proyecto-mapa
+            .row.mt-3
+              -if !solo_lectura
+                .col-12.col-lg-6
+                  = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form- validado' }, label: false
+                  = f.hidden_field :area_influencia_proyecto_archivo_cache
+                .col-lg-6.col-12.mt-auto
+                  = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object,false)
+              -else
+                -no_data = f.object.area_influencia_proyecto_archivo.blank?
+                .col-12.col-lg-6
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:area_influencia_proyecto_archivo][:nombre]
+                  -if no_data
+                    %p#manifestacion_de_interes_area_influencia_proyecto_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                  -else
+                    #manifestacion_de_interes_area_influencia_proyecto_archivo
+                    = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object, false)
+          - if 1 == 2
+            .col-lg-6.col-12
+              -if !solo_lectura
+                = f.input :detalle_de_alternativa_de_instalacion, as: :text, input_html: {class: 'text-fixed-size'}
+              -else
+                .form-group
+                  -no_data = f.object.detalle_de_alternativa_de_instalacion.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:detalle_de_alternativa_de_instalacion][:nombre]
+                  %p#manifestacion_de_interes_detalle_de_alternativa_de_instalacion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.detalle_de_alternativa_de_instalacion)
           .col-12
             .row
-              .col-lg-6.col-12
-                .row
-                  = f.hidden_field :area_influencia_proyecto_data
-                  - tlt_influencia = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip_activo]
-                  .col
-                    %label.control-label.string
-                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:nombre]
-                  .col-auto.pr-0
-                    -if @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda_activo]
-                      %a.btn.show-ayuda.pb-0{campo: "9998"}
-                        %i.fa.fa-info-circle{style: "color: #0c5460;"}
-                  .col-12
-                    .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9998'}
-                      = @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:ayuda].html_safe
-                  .col-12.tooltip-block{"data-original-title": "#{tlt_influencia ? @validaciones[:manifestacion_de_interes][:area_influencia_proyecto_data][:tooltip] : '' }"}
-                    #area-influencia-proyecto-mapa
-                .row.mt-3
-                  -if !solo_lectura
-                    .col-12.col-lg-6
-                      = f.input :area_influencia_proyecto_archivo, as: :file, input_html: { class: 'form- validado' }, label: false
-                      = f.hidden_field :area_influencia_proyecto_archivo_cache
-                    .col-lg-6.col-12.mt-auto
-                      = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object,false)
-                  -else
-                    -no_data = f.object.area_influencia_proyecto_archivo.blank?
-                    .col-12.col-lg-6
-                      %label.control-label.string=@validaciones[:manifestacion_de_interes][:area_influencia_proyecto_archivo][:nombre]
-                      -if no_data
-                        %p#manifestacion_de_interes_area_influencia_proyecto_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
-                      -else
-                        #manifestacion_de_interes_area_influencia_proyecto_archivo
-                        = __descargar_archivo(f.object.area_influencia_proyecto_archivo,f.object, false)
-              .col-lg-6.col-12
-                .row
-                  = f.hidden_field :alternativas_instalacion_data
-                  - tlt_alt = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip_activo]
-                  .col
-                    %label.control-label.string
-                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:nombre]
-                  .col-auto.pr-0
-                    -if @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda_activo]
-                      %a.btn.show-ayuda.pb-0{campo: "9999"}
-                        %i.fa.fa-info-circle{style: "color: #0c5460;"}
-                  .col-12
-                    .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9999'}
-                      = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda].html_safe
-                  .col-12.tooltip-block{"data-original-title": "#{tlt_alt ? @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip] : '' }"}
-                    #alternativas-instalacion-mapa
-                .row.mt-3
-                  -if !solo_lectura
-                    .col-12.col-lg-6
-                      = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control validado' }, label: false
-                      = f.hidden_field :alternativas_instalacion_archivo_cache
-                    .col-lg-6.col-12.mt-auto
-                      = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object,false)
-                  -else
-                    -no_data = f.object.alternativas_instalacion_archivo.blank?
-                    .col-12.col-lg-6
-                      %label.control-label.string=@validaciones[:manifestacion_de_interes][:alternativas_instalacion_archivo][:nombre]
-                      -if no_data
-                        %p#manifestacion_de_interes_alternativas_instalacion_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
-                      -else
-                        #manifestacion_de_interes_alternativas_instalacion_archivo
-                        = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object, false)
+              
+              - if 1 == 2  
+                .col-lg-6.col-12
+                  .row
+                    = f.hidden_field :alternativas_instalacion_data
+                    - tlt_alt = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip_activo]
+                    .col
+                      %label.control-label.string
+                        = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:nombre]
+                    .col-auto.pr-0
+                      -if @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda_activo]
+                        %a.btn.show-ayuda.pb-0{campo: "9999"}
+                          %i.fa.fa-info-circle{style: "color: #0c5460;"}
+                    .col-12
+                      .alert.ayuda-div.small{style: "display: none", class: 'ayuda-campo-div-9999'}
+                        = @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:ayuda].html_safe
+                    .col-12.tooltip-block{"data-original-title": "#{tlt_alt ? @validaciones[:manifestacion_de_interes][:alternativas_instalacion_data][:tooltip] : '' }"}
+                      #alternativas-instalacion-mapa
+                  .row.mt-3
+                    -if !solo_lectura
+                      .col-12.col-lg-6
+                        = f.input :alternativas_instalacion_archivo, as: :file, input_html: { class: 'form-control validado' }, label: false
+                        = f.hidden_field :alternativas_instalacion_archivo_cache
+                      .col-lg-6.col-12.mt-auto
+                        = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object,false)
+                    -else
+                      -no_data = f.object.alternativas_instalacion_archivo.blank?
+                      .col-12.col-lg-6
+                        %label.control-label.string=@validaciones[:manifestacion_de_interes][:alternativas_instalacion_archivo][:nombre]
+                        -if no_data
+                          %p#manifestacion_de_interes_alternativas_instalacion_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                        -else
+                          #manifestacion_de_interes_alternativas_instalacion_archivo
+                          = __descargar_archivo(f.object.alternativas_instalacion_archivo,f.object, false)
           .col-12
             %hr{style: 'display: block;'}
           .col-lg-6.col-12
@@ -1438,7 +1445,7 @@
             .col-md-6.col-12.mt-auto
               = f.input :priorizacion, as: :text, input_html: { class: '' }, label: t(:priorización), required: true
           
-          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+          .col-md-12.col-12{class: (solo_lectura ? '' : 'mt-auto')}
             -if !solo_lectura
               = f.input :relacion_de_politicas, as: :text, label: @validaciones[:manifestacion_de_interes][:relacion_de_politicas][:nombre]
             -else
@@ -1446,34 +1453,35 @@
               %label.control-label.string=@validaciones[:manifestacion_de_interes][:relacion_de_politicas][:nombre]
               %p#manifestacion_de_interes_relacion_de_politicas.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                 =(no_data ? 'No se ingresó respuesta' : f.object.relacion_de_politicas)
-          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
-            -if !solo_lectura
-              = f.input :otras_iniciativas_relacionadas_en_ejecucion, as: :text, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
-            -else
-              -no_data = f.object.otras_iniciativas_relacionadas_en_ejecucion.blank?
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
-              %p#manifestacion_de_interes_otras_iniciativas_relacionadas_en_ejecucion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                =(no_data ? 'No se ingresó respuesta' : f.object.otras_iniciativas_relacionadas_en_ejecucion)
-          .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
-            -if !solo_lectura
-              = f.input :programas_o_proyectos_relacionados_ids, collection: ManifestacionDeInteres.ppp_aprobados, input_html: { class: 'select-ppp', multiple: true }, label: @validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre], required: true
-              #selection-container
-                -f.object.programas_o_proyectos_relacionados.each do |ppr|
-                  .selection-list-boxes{value: ppr.id}
-                    %a.x-remove-selection{value: ppr.id}
-                      %span{style: "color: #999;"} &times;
-                    =ppr.nombre_propuesta
-            -else
-              -no_data = f.object.programas_o_proyectos_relacionados_ids.blank? || f.object.programas_o_proyectos_relacionados_ids.size == 1
-              %label.control-label.string=@validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre]
-              #manifestacion_de_interes_programas_o_proyectos_relacionados_ids.d-inline{align: :justify, class: (no_data ? 'font-italic text-muted fs-14' : '')}
-                -if no_data
-                  No se ingresó respuesta
-                -else
-                  #selection-container
-                    -f.object.programas_o_proyectos_relacionados.each do |ppr|
-                      .selection-list-boxes{value: ppr.id}
-                        =ppr.nombre_propuesta
+          - if 1 == 2
+            .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+              -if !solo_lectura
+                = f.input :otras_iniciativas_relacionadas_en_ejecucion, as: :text, input_html: { class: '' }, label: @validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
+              -else
+                -no_data = f.object.otras_iniciativas_relacionadas_en_ejecucion.blank?
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otras_iniciativas_relacionadas_en_ejecucion][:nombre]
+                %p#manifestacion_de_interes_otras_iniciativas_relacionadas_en_ejecucion.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                  =(no_data ? 'No se ingresó respuesta' : f.object.otras_iniciativas_relacionadas_en_ejecucion)
+            .col-md-6.col-12{class: (solo_lectura ? '' : 'mt-auto')}
+              -if !solo_lectura
+                = f.input :programas_o_proyectos_relacionados_ids, collection: ManifestacionDeInteres.ppp_aprobados, input_html: { class: 'select-ppp', multiple: true }, label: @validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre], required: true
+                #selection-container
+                  -f.object.programas_o_proyectos_relacionados.each do |ppr|
+                    .selection-list-boxes{value: ppr.id}
+                      %a.x-remove-selection{value: ppr.id}
+                        %span{style: "color: #999;"} &times;
+                      =ppr.nombre_propuesta
+              -else
+                -no_data = f.object.programas_o_proyectos_relacionados_ids.blank? || f.object.programas_o_proyectos_relacionados_ids.size == 1
+                %label.control-label.string=@validaciones[:manifestacion_de_interes][:programas_o_proyectos_relacionados_ids][:nombre]
+                #manifestacion_de_interes_programas_o_proyectos_relacionados_ids.d-inline{align: :justify, class: (no_data ? 'font-italic text-muted fs-14' : '')}
+                  -if no_data
+                    No se ingresó respuesta
+                  -else
+                    #selection-container
+                      -f.object.programas_o_proyectos_relacionados.each do |ppr|
+                        .selection-list-boxes{value: ppr.id}
+                          =ppr.nombre_propuesta
           .col-12
             %hr{style: 'display: block;'}
 
@@ -1682,7 +1690,7 @@
         .alert.alert-primary
           %small
             %i.fa.fa-question-circle.fa-1-5x
-            Identificación de actores relevantes para el Acuerdo, así como recursos que estos podrían comprometer
+            Identificación de actores relevantes para el Acuerdo.
         .row
           .col-12.col-lg-6
             -if !solo_lectura
@@ -1693,36 +1701,38 @@
                 %label.control-label.string=@validaciones[:manifestacion_de_interes][:principales_actores][:nombre]
                 %p#manifestacion_de_interes_principales_actores.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                   =(no_data ? 'No se ingresó respuesta' : f.object.principales_actores)
-          .col-12.col-lg-6
-            -if !solo_lectura
-              = f.input :otros_recursos_comprometidos, as: :text, label: @validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre], required: true
-            -else
-              .form-group
-                -no_data = f.object.otros_recursos_comprometidos.blank?
-                %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre]
-                %p#manifestacion_de_interes_otros_recursos_comprometidos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
-                  =(no_data ? 'No se ingresó respuesta' : f.object.otros_recursos_comprometidos)
-          .col-12.col-lg-6
-            .row
-              .col-12
-                = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-descargar btn-block', id: 'manifestacion_de_interes_descarga_formato_listado_de_actores' do
-                  %i.fa.fa-download
-                  = @validaciones[:manifestacion_de_interes][:descarga_formato_listado_de_actores][:nombre]
+          - if 1 == 2
+            .col-12.col-lg-6
               -if !solo_lectura
-                .col-lg-6.col-12
-                  = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control' }, label: false, required: true
-                  = f.hidden_field :mapa_de_actores_archivo_cache
-                .col-lg-6.col-12.mt-auto
-                  = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object,false)
+                = f.input :otros_recursos_comprometidos, as: :text, label: @validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre], required: true
               -else
-                -no_data = f.object.mapa_de_actores_archivo.blank?
-                .col-12.col-md-8
-                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:mapa_de_actores_archivo][:nombre]
-                  -if no_data
-                    %p#manifestacion_de_interes_mapa_de_actores_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
-                  -else
-                    #manifestacion_de_interes_mapa_de_actores_archivo
-                    = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object, false)
+                .form-group
+                  -no_data = f.object.otros_recursos_comprometidos.blank?
+                  %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre]
+                  %p#manifestacion_de_interes_otros_recursos_comprometidos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                    =(no_data ? 'No se ingresó respuesta' : f.object.otros_recursos_comprometidos)
+          - if 1 == 2
+            .col-12.col-lg-6
+              .row
+                .col-12
+                  = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-descargar btn-block', id: 'manifestacion_de_interes_descarga_formato_listado_de_actores' do
+                    %i.fa.fa-download
+                    = @validaciones[:manifestacion_de_interes][:descarga_formato_listado_de_actores][:nombre]
+                -if !solo_lectura
+                  .col-lg-6.col-12
+                    = f.input :mapa_de_actores_archivo, as: :file, input_html: { class: 'form-control' }, label: false, required: true
+                    = f.hidden_field :mapa_de_actores_archivo_cache
+                  .col-lg-6.col-12.mt-auto
+                    = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object,false)
+                -else
+                  -no_data = f.object.mapa_de_actores_archivo.blank?
+                  .col-12.col-md-8
+                    %label.control-label.string=@validaciones[:manifestacion_de_interes][:mapa_de_actores_archivo][:nombre]
+                    -if no_data
+                      %p#manifestacion_de_interes_mapa_de_actores_archivo.d-inline.fs-14.font-italic.text-muted{align: :justify} No se ingresó respuesta
+                    -else
+                      #manifestacion_de_interes_mapa_de_actores_archivo
+                      = __descargar_archivo(f.object.mapa_de_actores_archivo,f.object, false)
           .col-lg-6.col-12
             .row
               .col-12

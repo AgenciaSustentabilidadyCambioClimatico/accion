@@ -116,7 +116,7 @@ class Admin::UsersController < ApplicationController
 	end
 
 	def buscador
-		rut = buscador_params[:rut]
+		rut = buscador_params[:rut].gsub('.', '')
 		nombre = buscador_params[:nombre_completo]
 		@usuarios = User
 		if rut.present?
