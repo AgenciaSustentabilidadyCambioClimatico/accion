@@ -962,7 +962,7 @@ function _set_seleccionados_tree(lista_html,lista_elementos, solo_lectura){
 }
 // Función para normalizar caracteres especiales (quitar tildes)
 function normalizeText(text) {
-  const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  var normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   return normalized;
 }
 function customSearch(table, inputSelector = null) {
