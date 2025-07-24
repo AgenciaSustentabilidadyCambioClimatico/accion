@@ -960,3 +960,54 @@ function _set_seleccionados_tree(lista_html,lista_elementos, solo_lectura){
     }
   });
 }
+// Función para normalizar caracteres especiales (quitar tildes)
+function normalizeText(text) {
+  const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return normalized;
+}
+function customSearch(table, inputSelector = null) {
+  // Oculta el input nativo de DataTables
+  $('.dataTables_filter').hide();
+  
+  let $input;
+  let searchTimeout;
+  
+  if (inputSelector) {
+    // Usar input existente en la vista
+    $input = $(inputSelector);
+    if ($input.length === 0) {
+      console.warn('No se encontró el input:', inputSelector);
+      return;
+    }
+  } else {
+    // Crear input nuevo si no existe
+    const customSearchHtml = `
+      <div class="custom-search" style="margin-bottom: 10px; text-align: right;">
+        <input type="text" id="customSearch" placeholder="Buscar..." 
+               class="form-control" style="width: 200px; display: inline-block;">
+      </div>
+    `;
+    $('.dataTables_wrapper').prepend(customSearchHtml);
+    $input = $('#customSearch');
+  }
+  
+  // Tu lógica de búsqueda personalizada (sin sincronizar con nativo)
+  $input.off('keyup').on('keyup', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      const searchTerm = normalizeText(this.value.toLowerCase());
+      $.fn.dataTable.ext.search.splice(0, $.fn.dataTable.ext.search.length);
+      
+      if (searchTerm.length > 0) {
+        $.fn.dataTable.ext.search.push(function(settings, data, dataIndex) {
+          const rowText = normalizeText(data.join(' ').toLowerCase());
+          return rowText.includes(searchTerm);
+        });
+      }
+      
+      table.draw();
+    }, 300); // 300ms de delay
+  });
+  
+  $input.trigger('keyup');
+}

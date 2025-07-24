@@ -1,3 +1,4 @@
+-# encoding: utf-8
 - todos = todos.nil? ? false : todos
 :javascript
   function childFormat(data){
@@ -44,17 +45,36 @@
       })
     })
   }
-  $(document).ready(function() {
-   const table=  $('table.acuerdos-pendientes').DataTable({
-      order: [[0, 'asc']],
-      responsive: true,
-      lengthMenu: [[10],[10]],
-      columnDefs: [ { targets: [-1], orderable: false } ],
-      language: {
-        url: "#{asset_path('spanish.json')}"
-      },
-      "defaultContent": "",
-    });
+              
+      // Función para normalizar caracteres especiales (quitar tildes)
+      function normalizeText(text) {
+        const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        return normalized;
+      }
+
+    $(document).ready(function() {
+     const table=  $('table.acuerdos-pendientes').DataTable({
+        order: [[0, 'asc']],
+        responsive: true,
+        lengthMenu: [[10],[10]],
+        columnDefs: [ { targets: [-1], orderable: false } ],
+        language: {
+          url: "#{asset_path('spanish.json')}"
+        },
+        "defaultContent": "",
+        // MANTENER la búsqueda habilitada pero ocultar el input nativo
+        "searching": true,
+        // Configurar ordenamiento para caracteres especiales
+        "ordering": true,
+        "orderClasses": false
+      });
+
+      // Personalizar la búsqueda para que funcione con y sin tildes
+      
+      // Esperar a que DataTables esté completamente inicializado
+      setTimeout(function() {
+        customSearch(table);
+      }, 100);
 
     $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
 
