@@ -35,13 +35,11 @@
           %table.table.table-bordered.table-striped{style: "margin-top: 0px !important;"}
             %thead
               %tr
-                -#%th=t(:instrumento_tipo)
                 - flag = false
                 - @instancias.each do |ins|
-                  - if ins[:tarea][:tipo_instrumento_id] == 10 && !flag
-                    %th=t(:id)     
-                    - flag = true             
-                -#%th=t(:instrumento_nombre)
+                  - if !flag    
+                    %th= t(:id) 
+                    - flag = true 
                 %th=t(:tarea_nombre)
                 %th=t(:tarea_responsables)
                 %th=t(:instancia)
@@ -50,12 +48,9 @@
                 %th=t(:tarea_documentos_asociados)
                 %th=t(:estado)
             %tbody
-              - @instancias.each do |ins|
+              - @instancias.sort_by { |ins| ins[:id] }.each do |ins|
                 %tr.accion
-                  -#%td=ins[:tipo_instrumento]
-                  - if ins[:tarea][:tipo_instrumento_id] == 10
-                    %td=ins[:id_instrumento]
-                  -#%td=ins[:nombre_instrumento]
+                  %td=ins[:id_instrumento]
                   %td=ins[:nombre_tarea]
                   %td=ins[:responsables].to_sentence
                   %td=ins[:instancia].to_sentence

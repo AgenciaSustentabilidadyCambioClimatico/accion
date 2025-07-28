@@ -368,10 +368,11 @@ class Flujo < ApplicationRecord
 
     jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
     puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
+    apl_002_added = false
 
-    self.tareas_del_flujo.each do |t|
+    self.tarea_pendientes.order(created_at: :asc).each do |tarea_pend| 
       documentos_asociados = [{nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}]
-      tarea_pend = self.tarea_pendientes.where(tarea_id: t.id).first
+      t = tarea_pend
       estado = tarea_pend.estado_tarea_pendiente.nombre_historial
       pendiente = (tarea_pend.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA) ? tarea_pend : tarea_pend
       activacion = tarea_pend.created_at.strftime("%F %T")
@@ -379,17 +380,25 @@ class Flujo < ApplicationRecord
       #finalmente solo puede ver la tarea en especifico si es el que la respondio
       puedo_ver_tarea = puedo_ver_tareas
       puedo_ver_tarea = tarea_pend.user_id == current_user.id if !puedo_ver_tarea
-      if t.es_convocatoria?
-        instancia = Convocatoria.where(flujo_id: self.id, tarea_codigo: t.codigo).pluck(:nombre)
-      elsif t.es_minuta?
-        tps = self.tarea_pendientes.where(tarea_id: t.id)
+
+      if t.tarea.codigo == Tarea::COD_APL_002
+        # Si el código es APL-002 y ya se añadió, saltar al siguiente
+        next if apl_002_added
+        # Marcar que el APL-002 ya fue añadido
+        apl_002_added = true
+      end
+
+      if t.tarea.es_convocatoria?
+        instancia = Convocatoria.where(flujo_id: self.id, tarea_codigo: t.tarea.codigo).pluck(:nombre)
+      elsif t.tarea.es_minuta?
+        tps = self.tarea_pendientes.where(tarea_id: t.tarea.id)
         convocatorias_ids = []
         tps.each do |tp|
           convocatorias_ids << tp.data[:convocatoria_id] if (tp.data.present? && tp.data.has_key?(:convocatoria_id))
         end
         convocatorias_ids = convocatorias_ids.uniq
         instancia = Convocatoria.where(flujo_id: self.id, id: convocatorias_ids).order(nombre: :asc).pluck(:nombre)
-      elsif t.es_auditoria?
+      elsif t.tarea.es_auditoria?
         # 
         instancia = []
         contador = 0
@@ -401,9 +410,9 @@ class Flujo < ApplicationRecord
         instancia = ["Única"]
       end
       # Documentos asociados funcionará como arreglo de diferentes documentos con sus datos
-      if t.codigo == Tarea::COD_APL_005
+      if t.tarea.codigo == Tarea::COD_APL_005
         documentos_asociados = [{nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
-      elsif t.codigo == Tarea::COD_APL_011
+      elsif t.tarea.codigo == Tarea::COD_APL_011
         documentos_asociados = []
         convocatorias_apl_once = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-011").all
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 57).first
@@ -413,14 +422,14 @@ class Flujo < ApplicationRecord
         else
           documentos_asociados << {nombre: "Talleres de Diagnóstico Inicial", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "011"], metodo: true}
         end
-      elsif t.codigo == Tarea::COD_APL_014
+      elsif t.tarea.codigo == Tarea::COD_APL_014
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 66).first
         if self.manifestacion_de_interes.documento_diagnosticos.nil? || self.manifestacion_de_interes.documento_diagnosticos.empty?
           documentos_asociados = [{nombre: "Sin documentos aún"}]
         else 
           documentos_asociados = [{nombre: "Documentación Diagnóstico", url: 'descargar_compilado_manif_manifestacion_de_interes_path',parametros: [id: self.manifestacion_de_interes_id, tarea_pendiente_id: tarea_pendiente.id], metodo: true}]
         end 
-      elsif t.codigo == Tarea::COD_APL_016
+      elsif t.tarea.codigo == Tarea::COD_APL_016
         convocatorias_apl = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-016").all
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 69).first
         if convocatorias_apl.nil?
@@ -428,18 +437,18 @@ class Flujo < ApplicationRecord
         else
           documentos_asociados = [{nombre: "Reuniones de Comité de Negociación", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "016"], metodo: true}]
         end
-      elsif t.codigo == Tarea::COD_APL_018# && estado == "Ejecutada"
+      elsif t.tarea.codigo == Tarea::COD_APL_018# && estado == "Ejecutada"
         informe_acuerdo = self.manifestacion_de_interes.informe_acuerdo
         if !informe_acuerdo.nil? && (tarea_pend.user_id == current_user.id || puedo_ver_descargable_apl_018)
           documentos_asociados = [{nombre: "Documento Borrador de Acuerdo", url: 'obtener_archivo_acuerdo_anexos_zip_path', parametros: [self.id], metodo: true }]
         end
-      elsif t.codigo == Tarea::COD_APL_019
+      elsif t.tarea.codigo == Tarea::COD_APL_019
         #solo si es admin puede descargar el documento
         if current_user.is_admin?
           #agregamos documento personalizado para tarea APL-019
           documentos_asociados = [{nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
         end
-      elsif t.codigo == Tarea::COD_APL_022
+      elsif t.tarea.codigo == Tarea::COD_APL_022
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 62).first
         convocatoria = Convocatoria.where(flujo_id: self.id, tarea_codigo: "APL-021").first
         if !convocatoria.minuta.acta.file.nil?
@@ -455,10 +464,10 @@ class Flujo < ApplicationRecord
           resolucion = {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
         end
           documentos_asociados = [acta, resolucion]
-      elsif t.codigo == Tarea::COD_APL_028
+      elsif t.tarea.codigo == Tarea::COD_APL_028
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 54).first
         documentos_asociados = [{nombre: "Documentos Adhesiones", url: "descargar_compilado_adhesion_path", parametros: [tarea_pendiente], metodo: true}]
-      elsif t.codigo == Tarea::COD_APL_030
+      elsif t.tarea.codigo == Tarea::COD_APL_030
         documentos_asociados = []
         convocatorias_apl = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-030").all
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 69).first
@@ -467,11 +476,11 @@ class Flujo < ApplicationRecord
         else
           documentos_asociados << {nombre: "Reuniones de Comité de Negociación", url: "descargar_compilado_adjuntos_path", parametros: [tarea_pendiente.id, codigo: "030"], metodo: true}
         end
-      elsif t.codigo == Tarea::COD_APL_042
+      elsif t.tarea.codigo == Tarea::COD_APL_042
         if self.tarea_pendientes.where(tarea_id: [Tarea::ID_APL_041, Tarea::ID_APL_042]).where(estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).length == 0
           documentos_asociados = [{nombre: 'Informe de Impacto', url: self.manifestacion_de_interes.informe_impacto.documento.url}]
         end
-      elsif t.codigo == Tarea::COD_APL_039
+      elsif t.tarea.codigo == Tarea::COD_APL_039
         #admin, usuario con cargo encargado encuestas de ascc y roles de tarea autorizados
         allow = current_user.is_admin?
         if !allow
@@ -497,7 +506,7 @@ class Flujo < ApplicationRecord
           end
           documentos_asociados[:lista] = lista.values
         end
-      elsif t.es_una_encuesta && t.codigo != Tarea::COD_APL_039
+      elsif t.tarea.es_una_encuesta && t.codigo != Tarea::COD_APL_039
         #admin, usuario con cargo encargado encuestas de ascc y roles de tarea autorizados
         allow = current_user.is_admin?
         if !allow
@@ -522,7 +531,7 @@ class Flujo < ApplicationRecord
       
       end
       tareas_auditoria = {}
-      if t.codigo == Tarea::COD_APL_033
+      if t.tarea.codigo == Tarea::COD_APL_033
         self.tarea_pendientes.where(tarea_id: t.id).each do |tp|
           auditoria = tp.determina_auditoria
           tareas_auditoria[auditoria.id] = {nombre: auditoria.nombre, id: auditoria.id, tarea_pendiente_id: tp.id} if !tareas_auditoria.has_key?(auditoria.id)
@@ -530,7 +539,7 @@ class Flujo < ApplicationRecord
         tareas_auditoria = tareas_auditoria.values
       end
       tareas_validaciones = {}
-      if t.codigo == Tarea::COD_APL_034
+      if t.tarea.codigo == Tarea::COD_APL_034
         self.tarea_pendientes.where(tarea_id: t.id).order(data: :asc).each do |tp|
           auditoria = tp.determina_auditoria
           tareas_validaciones[tp.user_id] = {nombre: tp.user.nombre_completo, validaciones: []} if !tareas_validaciones.has_key?(tp.user_id)
@@ -545,7 +554,7 @@ class Flujo < ApplicationRecord
       revision_juridica = 1
 
       # Comprueba si la tarea tiene el código FPL_05
-      if t.codigo == Tarea::COD_FPL_05
+      if t.tarea.codigo == Tarea::COD_FPL_05
         # Intenta encontrar el cuestionario relevante
         tarea_fondo_fpl_09 = Tarea.find_by_codigo(Tarea::COD_FPL_09)
         existe_fpl_09 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_09.id, flujo_id: self.id).count
@@ -567,7 +576,7 @@ class Flujo < ApplicationRecord
       tareas_validaciones_fpl_06 = []
 
       # Comprueba si la tarea tiene el código FPL_06
-      if t.codigo == Tarea::COD_FPL_06
+      if t.tarea.codigo == Tarea::COD_FPL_06
         # Intenta encontrar el cuestionario relevante
         cuestionario_fpl = CuestionarioFpl.where(flujo_id: self.id, tipo_cuestionario_id: 4).first 
 
@@ -584,7 +593,7 @@ class Flujo < ApplicationRecord
       end 
 
       tareas_validaciones_fpl_11 = false
-      if t.codigo == Tarea::COD_FPL_11
+      if t.tarea.codigo == Tarea::COD_FPL_11
         @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
         if @fondo_produccion_limpia.archivo_resolucion.present?
           # Obtener la ruta completa del archivo
@@ -603,10 +612,10 @@ class Flujo < ApplicationRecord
         tipo_instrumento: self.tipo_instrumento.nombre,
         id_instrumento: self.id,
         nombre_instrumento: self.nombre_instrumento,
-        tarea: t,
+        tarea: t.tarea,
         manifestacion_de_interes: self.manifestacion_de_interes,
-        nombre_tarea: t.nombre,
-        responsables: t.responsables_de_la_tarea(self.id),
+        nombre_tarea: t.tarea.nombre,
+        responsables: t.tarea.responsables_de_la_tarea(self.id),
         documentos_asociados: documentos_asociados,
         instancia: instancia,
         estado: estado,
