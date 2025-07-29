@@ -2984,7 +2984,7 @@
               %tr
                 %th{colspan: 9, style: 'text-align: right; border-right: 0px solid #dee2e6; border-left: 0px solid #dee2e6;'}
               %tr
-                %th.encabezado-form{colspan: 6}Cantidad de empresas por tamaño <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">(clasificación SII)</a>
+                %th.encabezado-form{colspan: 6}Cantidad de empresas por tamaño <a href="https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6503.htm" target="_blank">(clasificación SII)</a>
 
               %tr
                 %th.encabezado2-form Micro
@@ -3106,12 +3106,11 @@
             - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
               TEXTO POR DEFINIR POR EQUIPO APL
             - else
-              Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
-              
+              Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable. Dicho diagnóstico contendrá (poner como lista): - Motivación, oportunidad y fundamento del APL propuesto. - Objetivos del APL propuesto. - Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas, así como el comportamiento sanitario ambiental de estas. - Identificación de los problemas y/o oportunidades a ser abordados por el APL, indicando además cómo éstos están relacionados con el desarrollo sustentable. - Identificación de potenciales suscriptores y grupos de interés relevantes para el objeto del APL, considerando a las organizaciones de trabajadores, sociedad civil y comunidades. - Metodologías utilizadas en la elaboración del Diagnóstico General. - Propuesta de contenidos para el APL y otros elementos a considerar, producto de su validación con potenciales adherentes y, si corresponde, con grupos de interés relevantes. Estos contenidos considerarán la adopción de estándares y certificaciones relevantes a las materias del mismo. Para la elaboración se utilizara la Guía para la Elaboración de un Diagnóstico como base para proponer un Acuerdo de Producción Limpia
               - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1  
                 %br{ :style => 'margin-bottom: 10px;' }
                 
-                %a{ href: "https://drive.google.com/file/d/1bPi8FL885eDb1dJbT5t5BoWpopSoKW5t/view", target: "_blank" } Descargar Guía Nº1
+                %a{ href: "https://drive.google.com/file/d/1D1-2IcCBBT_4EuCIE-38jmkYrrroIhPC/view", target: "_blank" } Descargar Guía Nº1
         %br
         %h1= t(:objetivo_específico)
         %br
@@ -3175,7 +3174,7 @@
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
                 %tr
-                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6503.htm" target="_blank">clasificación SII</a>
                 %tr
                   %th.encabezado2-form Micro
                   %th.encabezado2-form Pequeña
@@ -3298,7 +3297,7 @@
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
                 %tr
-                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="http://www.sii.cl/estadisticas/empresas_tamano_ventas.htm" target="_blank">clasificación SII</a>
+                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6503.htm" target="_blank">clasificación SII</a>
                 %tr
                   %th.encabezado2-form 
                   %th.encabezado2-form Micro
@@ -3639,7 +3638,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead  
               %tr
-                %th.encabezado-form{colspan: 6} Indicar fortalezas del o los consultores
+                %th.encabezado-form{colspan: 6} Indicar fortalezas del equipo consultor en relación al proyecto, destacando experiencias de características similares al proyecto que se presenta.
               %tr
                 -if !solo_lectura
                   %th
