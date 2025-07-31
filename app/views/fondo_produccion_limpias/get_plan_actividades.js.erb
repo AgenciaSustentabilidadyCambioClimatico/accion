@@ -36,7 +36,7 @@ $('#div_plan_recursos_propios table tbody').empty();
     var user_name = '<%= recursos_interno.user_name %>';
     var hh = '<%= recursos_interno.hh %>';
     var valor_hh = '<%=number_to_currency recursos_interno.valor_hh %>';
-    var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh.to_i %>';
+    var costo = '<%=number_to_currency recursos_interno.valor_hh.to_i * recursos_interno.hh %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var plan_id = '<%= @plan %>';
     var tipo_aporte = '<%= recursos_interno.tipo_aporte %>';
@@ -64,7 +64,7 @@ $('#div_plan_recursos_externos table tbody').empty();
     var nombre_proveedor = '<%= recursos_externos.nombre_proveedor %> (Auditor)';
     var hh = '<%= recursos_externos.hh %>';
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
-    var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh.to_i %>';
+    var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
     var tipo_aporte = '<%= recursos_externos.tipo_aporte %>';
     <% if recursos_externos.tipo_equipo == 4 %>
