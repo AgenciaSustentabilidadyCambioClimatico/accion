@@ -917,6 +917,25 @@
     return (key >= 48 && key <= 57);
   }
 
+  function soloNumerosYComas(e) {
+    var key = window.Event ? e.which : e.keyCode;
+    var value = e.target.value;
+    
+    // Evita que se ingrese 0 como primer carácter, a menos que sea seguido por una coma
+    // Esta parte de la lógica necesita una revisión si quieres permitir "0,5" por ejemplo
+    if ((key === 48 && (value === "" || isNaN(parseInt(value[0])))) || (value === "0" && isNaN(parseInt(String.fromCharCode(key))))) {
+        // En este caso, si la siguiente tecla es una coma, no queremos prevenirla
+        if (key !== 44) { 
+            e.preventDefault();
+        }
+    }
+
+    // Permitir números (48-57) y la coma (44)
+    // También se podría permitir el punto (46) si fuera necesario
+    return (key >= 48 && key <= 57 || key === 44);
+  }
+
+
   function agregarPlanActividades() {
      $.ajax({
       url: "#{new_plan_actividades_fondo_produccion_limpia_path}",
