@@ -506,7 +506,7 @@ class Flujo < ApplicationRecord
           end
           documentos_asociados[:lista] = lista.values
         end
-      elsif t.tarea.es_una_encuesta && t.codigo != Tarea::COD_APL_039
+      elsif t.tarea.es_una_encuesta && t.tarea.codigo != Tarea::COD_APL_039
         #admin, usuario con cargo encargado encuestas de ascc y roles de tarea autorizados
         allow = current_user.is_admin?
         if !allow
@@ -524,7 +524,7 @@ class Flujo < ApplicationRecord
 
         if allow
           nombre_boton = "Resultado encuesta"
-          nombre_boton = "Encuesta diagnóstico general" if t.codigo == Tarea::COD_APL_015
+          nombre_boton = "Encuesta diagnóstico general" if t.tarea.codigo == Tarea::COD_APL_015
 
           documentos_asociados = [{nombre: nombre_boton, url: 'descargar_respuesta_encuesta_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id, t.id], metodo: true}]
         end
