@@ -18,7 +18,6 @@ module Ascc
     config.active_record.use_yaml_unsafe_load = true
 
     config.middleware.insert_before(Rack::Sendfile, Rack::Deflater)
-    config.middleware.use UTF8Sanitizer
     # config.web_console.whitelisted_ips = '190.215.33.10'
     # Rails.application.configure do
     #   config.web_console.whitelisted_ips = '0.0.0.0/0'
