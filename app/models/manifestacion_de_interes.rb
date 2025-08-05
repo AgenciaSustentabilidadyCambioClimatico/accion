@@ -130,7 +130,7 @@ class ManifestacionDeInteres < ApplicationRecord
   #validates :proponente_institucion_id, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   #validates :caracterizacion_sector_territorio, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }numero_trabajadores
   #validates :principales_actores, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
-  #validates :mapa_de_actores_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
+  validates :mapa_de_actores_archivo, presence: true, if: :updating_record?, unless: -> { temporal.to_s == "true" }
   # DZC 2019-06-25 16:19:21 se agrega para manejar monto máximo a ingresar
   validates :numero_de_socios_institucion_gestora, numericality: { only_integer: true, less_than_or_equal_to: 2147483647 }, if: -> { (self.numero_de_socios_institucion_gestora.present? && temporal.to_s != "true") && :updating_record? }
 

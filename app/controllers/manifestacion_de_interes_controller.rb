@@ -1445,8 +1445,6 @@ class ManifestacionDeInteresController < ApplicationController
                   tipo_instrumento_id: manifestacion_pertinencia_params[:tipo_linea_seleccionada] #params[:manifestacion_de_interes][:tipo_instrumento_id] 
                 })
                 if flujo.save
-                  @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-
                   persona_by_user = Persona.where(user_id: postulante.user_id).first
 
                   #Se inserta en el mapa de actores al postulante
@@ -1458,7 +1456,6 @@ class ManifestacionDeInteresController < ApplicationController
 
                   #SE ENVIAR EL MAIL AL RESPONSABLE  
                   mdi = @manifestacion_de_interes
-                  send_message(tarea_fondo, postulante.user_id)
                   
                   #Inicia el flujo con el nombre Sin nombre
                   codigo_proyecto = "Proyecto DyAPL"
@@ -1474,6 +1471,9 @@ class ManifestacionDeInteresController < ApplicationController
                     flujo.fondo_produccion_limpia_id = fpl.id
                     flujo.save
 
+                    #envio de correo
+                    @tarea_pendiente.pasar_a_siguiente_tarea 'D'
+                    
                   success = 'Flujo fondo de producción limpia creado correctamente.'
                 else
                   warning = 'Usted NO puede iniciar Flujo FPL.'

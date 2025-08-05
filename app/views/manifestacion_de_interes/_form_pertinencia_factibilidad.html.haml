@@ -300,7 +300,7 @@
                           -else
                             .col-12.col-lg-6
                               .form-group
-                              %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
+                              %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
                               %br
                               - if @instrumento_seleccionado.present?
                                 = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia', disabled: true do |b|
