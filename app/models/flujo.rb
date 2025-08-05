@@ -369,6 +369,8 @@ class Flujo < ApplicationRecord
     jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
     puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
     apl_002_added = false
+    apl_025_added = false 
+    apl_032_1_added = false 
 
     self.tarea_pendientes.order(created_at: :asc).each do |tarea_pend| 
       documentos_asociados = [{nombre: "Sin documentos asociados", url: "", parametros: [], metodo: false}]
@@ -387,6 +389,21 @@ class Flujo < ApplicationRecord
         # Marcar que el APL-002 ya fue añadido
         apl_002_added = true
       end
+
+      if t.tarea.codigo == Tarea::COD_APL_025
+        # Si el código es APL-025 y ya se añadió, saltar al siguiente
+        next if apl_025_added
+        # Marcar que el APL-025 ya fue añadido
+        apl_025_added = true
+      end
+
+      if t.tarea.codigo == Tarea::COD_APL_032_1
+        # Si el código es APL-032.1 y ya se añadió, saltar al siguiente
+        next if apl_032_1_added
+        # Marcar que el APL-032.1 ya fue añadido
+        apl_032_1_added = true
+      end
+
 
       if t.tarea.es_convocatoria?
         instancia = Convocatoria.where(flujo_id: self.id, tarea_codigo: t.tarea.codigo).pluck(:nombre)
