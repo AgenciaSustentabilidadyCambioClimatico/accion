@@ -1702,7 +1702,7 @@
                 %label.control-label.string=@validaciones[:manifestacion_de_interes][:otros_recursos_comprometidos][:nombre]
                 %p#manifestacion_de_interes_otros_recursos_comprometidos.d-inline.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
                   =(no_data ? 'No se ingresó respuesta' : f.object.otros_recursos_comprometidos)
-          .col-12.col-lg-6
+          .col-12.col-lg-6{ class: ('d-none') }
             .row
               .col-12
                 = link_to descargar_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente, @manifestacion_de_interes), class: 'btn btn-sm btn-descargar btn-block', id: 'manifestacion_de_interes_descarga_formato_listado_de_actores' do
