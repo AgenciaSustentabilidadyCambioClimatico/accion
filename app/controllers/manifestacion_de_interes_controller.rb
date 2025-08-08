@@ -1416,11 +1416,11 @@ class ManifestacionDeInteresController < ApplicationController
                 rol_id: Rol::COORDINADOR,
                 persona_id: manifestacion_pertinencia_params[:coordinador_subtipo_instrumento_id]
               })
-              MapaDeActor.find_or_create_by({
-                flujo_id: @tarea_pendiente.flujo_id,
-                rol_id: Rol::PRENSA,
-                persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
-              })
+              #MapaDeActor.find_or_create_by({
+              #  flujo_id: @tarea_pendiente.flujo_id,
+              #  rol_id: Rol::PRENSA,
+              #  persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
+              #})
               actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
               MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
