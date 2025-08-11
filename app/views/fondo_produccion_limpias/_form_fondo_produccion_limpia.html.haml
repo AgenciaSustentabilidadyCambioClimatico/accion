@@ -3176,10 +3176,10 @@
                       - if @empresas_adheridas.present?
                         - @empresas_adheridas.each do |empresas_adherida|
                           %tr{"data-id" => empresas_adherida['id']} 
-                            %td.contenido-form= empresas_adherida['nombre_institucion']
-                            %td.contenido-form= format_rut(empresas_adherida['rut_institucion'])
-                            %td.contenido-form= empresas_adherida['nombre_elemento']
-                            %td.contenido-form= empresas_adherida['comuna_instalacion']
+                            %td.contenido-form= empresas_adherida[:nombre_institucion]
+                            %td.contenido-form= format_rut(empresas_adherida[:rut_institucion])
+                            %td.contenido-form= empresas_adherida[:nombre_elemento]
+                            %td.contenido-form= empresas_adherida[:comuna_instalacion]
                             %td.contenido-form= empresas_adherida['tamano_contribuyente_nombre']
                             %td.contenido-form
                               - if !solo_lectura
