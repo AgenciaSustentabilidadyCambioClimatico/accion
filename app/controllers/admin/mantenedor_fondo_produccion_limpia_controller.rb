@@ -24,8 +24,9 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
     @flujos = Flujo.find_by(id: params[:apl_id].to_i)
 
     if @flujos != nil
-      @flujo.user_id = @flujos.manifestacion_de_interes.representante_institucion_para_solicitud_id
-      @flujo.nombre_completo = @flujos.manifestacion_de_interes.proponente
+      postulante = MapaDeActor.where(flujo_id: @flujos.id,rol_id: Rol::PROPONENTE).first
+      @flujo.user_id = postulante&.persona&.user_id
+      @flujo.nombre_completo = postulante&.persona&.user&.nombre_completo
     else
       @flujo.user_id = ''
       @flujo.nombre_completo = ''

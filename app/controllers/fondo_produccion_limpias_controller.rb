@@ -1646,7 +1646,7 @@ class FondoProduccionLimpiasController < ApplicationController
       data.each do |clave, valor|
         custom_params = {
           recursos: {
-            hh: clave['hh'],
+            hh: clave['hh'].gsub(',', '.'),
             equipo_trabajo_id: clave['rrhhPropioId'],
             flujo_id: params[:flujo_id],
             plan_actividad_id: @plan_actividades.id,
@@ -1714,7 +1714,7 @@ class FondoProduccionLimpiasController < ApplicationController
         #Resursos humanos aporte liquido
         custom_params_liquido = {
           recursos: {
-            hh: clave['hh_liquido'],
+            hh: clave['hh_liquido'].gsub(',', '.'),
             equipo_trabajo_id: clave['rhhEquipoId'],
             flujo_id: params[:flujo_id],
             plan_actividad_id: @plan_actividades.id,
@@ -1743,7 +1743,7 @@ class FondoProduccionLimpiasController < ApplicationController
         #Resursos humanos aporte fondo pl
         custom_params_fondo = {
           recursos: {
-            hh: clave['hh_fondo'],
+            hh: clave['hh_fondo'].gsub(',', '.'),
             equipo_trabajo_id: clave['rhhEquipoId'],
             flujo_id: params[:flujo_id],
             plan_actividad_id: @plan_actividades.id,

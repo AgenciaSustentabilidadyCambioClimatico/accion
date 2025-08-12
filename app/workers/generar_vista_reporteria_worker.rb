@@ -53,8 +53,7 @@ class GenerarVistaReporteriaWorker
 
       #acuerdos firmados por clasificacion
       _acuerdos_firmados = ReporteriaDato.find_or_create_by(ruta: "acuerdos-firmados", clasificacion_id: clasificacion.id)
-      flujos_ids = clasificacion.acuerdos
-      manifestacion_de_intereses_ids = Flujo.where(id: flujos_ids).pluck(:manifestacion_de_interes_id)
+      manifestacion_de_intereses_ids= clasificacion.acuerdos
       _acuerdos_firmados.datos = manif_de_intereses_firmadas.where(id: manifestacion_de_intereses_ids).map{|manif_de_interes|
         {
           acuerdo_id: manif_de_interes.id,

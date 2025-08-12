@@ -104,13 +104,13 @@
     if(resultado_pertinencia == "aceptada"){
       $(".chosen-control").prop('disabled', false).trigger('chosen:updated');
       required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", true);
-      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", true);
+      //required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", true);
 
       required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", false);
     }else if(resultado_pertinencia != ""){
       $(".chosen-control").prop('disabled', true).trigger('chosen:updated');
       required_dinamico(".manifestacion_de_interes_coordinador_subtipo_instrumento_id", false);
-      required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", false);
+      //required_dinamico(".manifestacion_de_interes_encargado_hitos_prensa_id", false);
 
       required_dinamico(".manifestacion_de_interes_secciones_observadas_pertinencia_factibilidad_parent", true);
     }
@@ -251,7 +251,7 @@
                           .col-12
                             - if @nuevo_usuario
                               = label_tag t(:alerta_nuevo_usuario), nil, class: 'no-form label string'
-                      .col-12.col-lg-6
+                      .col-12.col-lg-6{ class: ('d-none') }
                         -if !solo_lectura
                           = f.input :encargado_hitos_prensa_id, collection: @responsables_prensa.map{|p| [p.user.nombre_completo, p.id]}, label: t(:selección_de_encargado_de_hitos_de_prensa), input_html: {class: "chosen-control required", type: :string, "data-placeholder"=>"Seleccione un Encargado"}
                         -else
@@ -300,7 +300,7 @@
                           -else
                             .col-12.col-lg-6
                               .form-group
-                              %label.control-label.string=t(:postular_a_fonfo_produccion_limpia)
+                              %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
                               %br
                               - if @instrumento_seleccionado.present?
                                 = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia', disabled: true do |b|

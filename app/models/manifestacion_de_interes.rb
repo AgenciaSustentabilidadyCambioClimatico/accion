@@ -234,7 +234,7 @@ class ManifestacionDeInteres < ApplicationRecord
   validate :is_compromiso_pertinencia_factibilidad, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
   validate :pertinencia_secciones_observadas, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
   validates :coordinador_subtipo_instrumento_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
-  validates :encargado_hitos_prensa_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
+  #validates :encargado_hitos_prensa_id, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
   validates :resultado_pertinencia, presence: true, if: -> { :updating_record? &&  update_pertinencia.present? && temp_siguientes.to_s != "true" }
   validates :fondo_produccion_limpia, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}
   validates :tipo_linea_seleccionada, presence: true, if: -> { :updating_record? &&  resultado_pertinencia == "aceptada" && update_pertinencia.present? && temp_siguientes.to_s != "true"}

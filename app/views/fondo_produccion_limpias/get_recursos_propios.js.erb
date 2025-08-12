@@ -10,7 +10,7 @@ $('#div_postulantes_faltantes table tbody').empty();
     "<td class='contenido-form' id='rrhh_equipo_id_<%= postulantes_faltante.id %>'>" + rrhh_equipo_id + "</td>" +
     "<td class='contenido-form'>" + nombre_usuario + "</td>" +
     "<td class='contenido-form'>" +
-    "<input type='text' name='rrhh_propios_hh' id='rrhh_propios_hh' value='" + hh + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='3' onKeyPress='return soloNumeros(event)'>" +
+    "<input type='text' name='rrhh_propios_hh' id='rrhh_propios_hh' value='" + hh.replace('.', ',') + "' class='required-field ' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='4' onKeyPress='return soloNumerosYComas(event)'>" +
     "</td>" +
     "</tr>";
   $('#div_postulantes_faltantes table tbody').append(newRow);
