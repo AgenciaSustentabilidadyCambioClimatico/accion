@@ -4186,7 +4186,7 @@
                         %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_gastos_administrativos.contenido-form-costo $0
-                    %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
+                    %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
                     %td#valida_porcentaje_gastos_administrativos.contenido-form-costo  0,00%
                     %td#valida_pregunta_gastos_administrativos.contenido-form-center
                       %span{ class: 'text-danger' } NO
@@ -4203,7 +4203,7 @@
                         %span{ class: 'text-danger' } NO
                   - else
                     %td#valida_aporte_solicitado_al_fondo.contenido-form-costo $0
-                    %td.contenido-form Mayor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
+                    %td.contenido-form Menor o igual al #{number_to_currency(tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id))}
                     %td#valida_porcentaje_aporte_solicitado_al_fondo.contenido-form-costo  0,00%
                     %td#valida_pregunta_aporte_solicitado_al_fondo.contenido-form-center
                       %span{ class: 'text-danger' } NO

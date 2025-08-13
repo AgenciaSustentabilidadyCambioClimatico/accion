@@ -20,10 +20,10 @@ $('#div_consultor_faltantes_externos table tbody').empty();
     "<td class='contenido-form' id='rrhh_equipo_id_<%= consultor_faltante.id %>' style='display:none'>" + rrhh_equipo_id + "</td>" +
     "<td class='contenido-form'>" + nombre_usuario + "</td>" +
     "<td class='contenido-form'>" +
-    "<input type='text' name='rrhh_externo_liquido_hh' id='rrhh_externo_liquido_hh' value='" + hh_liquido.replace('.', ',') + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='4' size='5' onKeyPress='return soloNumerosYComas(event)'>" +
+    "<input type='text' name='rrhh_externo_liquido_hh' id='rrhh_externo_liquido_hh' value='" + hh_liquido.replace('.', ',') + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='5' size='5' onKeyPress='return soloNumerosYComas(event)'>" +
     "</td>" +
     "<td class='contenido-form'>" +
-    "<input type='text' name='rrhh_externo_fondo_hh' id='rrhh_externo_fondo_hh' value='" + hh_fondo.replace('.', ',') + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='4' size='5' onKeyPress='return soloNumerosYComas(event)'>" +
+    "<input type='text' name='rrhh_externo_fondo_hh' id='rrhh_externo_fondo_hh' value='" + hh_fondo.replace('.', ',') + "' class='required-field numero' style='border: 1px solid #ced4da; border-radius: 0.25rem;' maxlength='5' size='5' onKeyPress='return soloNumerosYComas(event)'>" +
     "</td>" +
     "</tr>";
   $('#div_consultor_faltantes_externos table tbody').append(newRow);

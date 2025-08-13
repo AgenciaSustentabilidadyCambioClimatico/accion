@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_07_30_212323) do
+ActiveRecord::Schema.define(version: 2025_08_13_141529) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1751,7 +1751,7 @@ ActiveRecord::Schema.define(version: 2025_07_30_212323) do
   end
 
   create_table "recurso_humanos", force: :cascade do |t|
-    t.decimal "hh", precision: 5, scale: 1
+    t.decimal "hh", precision: 5, scale: 2
     t.bigint "equipo_trabajo_id"
     t.bigint "flujo_id"
     t.bigint "plan_actividad_id"
