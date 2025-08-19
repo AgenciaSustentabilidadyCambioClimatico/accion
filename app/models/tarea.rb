@@ -84,13 +84,15 @@ class Tarea < ApplicationRecord
 		( ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_asunto.blank? && ! recordatorio_tarea_cuerpo.blank? )
 	end
 
-	def metodos(o,mdi=nil)
+	def metodos(o,mdi=nil,fpl=nil)
 		metodos = {
 			"[nombre]": o.nombre_completo,
 			"[telefono]": o.telefono, 
 			"[email]": o.email, 
 			"[rut]": o.rut,
-			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo
+			"[nombre_acuerdo]": mdi.nil? ? '[nombre_acuerdo]' : mdi.nombre_acuerdo,
+			"[tipo_proyecto]": fpl.nil? ? '[tipo_proyecto]' : fpl.flujo.tipo_instrumento.nombre,
+			"[codigo_proyecto]": fpl.nil? ? '[codigo_proyecto]' : fpl.codigo_proyecto
 		}
 	end
 
