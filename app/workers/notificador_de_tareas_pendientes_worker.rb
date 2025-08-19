@@ -82,8 +82,13 @@ class NotificadorDeTareasPendientesWorker
     User.includes(:personas).where(id: contenido_pendientes.keys).each do |user|
       contenido_pendientes[user.id].each do |pendiente|
         mdi = obtener_manifestacion_interes(pendiente.flujo)
+      
+        fpl = nil
+        if pendiente.flujo.fondo_produccion_limpia.present?
+          fpl = pendiente.flujo.fondo_produccion_limpia
+        end
 
-        metodos = tarea.metodos(user, mdi)
+        metodos = tarea.metodos(user, mdi, fpl)
         email = pendiente.persona&.email_institucional.presence || user.email
         asunto = Tarea.replace_values(metodos, tarea.recordatorio_tarea_asunto)
         cuerpo = Tarea.replace_values(metodos, tarea.recordatorio_tarea_cuerpo)
