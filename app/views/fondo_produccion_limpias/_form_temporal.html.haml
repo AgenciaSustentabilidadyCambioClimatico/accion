@@ -16,7 +16,7 @@
             .col-12.col-lg-4
               = f.input :email, required: true, label: t(:email), placeholder: "Ingresar email", input_html: { class: 'form-temporal-boton-guardar-fpl-usuario' }
             .col-12.col-lg-4
-              = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-fpl-usuario' }
+              = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-fpl-usuario', onchange: 'limpiarSoloNumeros(this)' }
     .col-12.mt-2.text-right
       -#
     = simple_form_for @equipo_temporal, url: insert_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
@@ -65,3 +65,8 @@
     $('#buscar-usuario').modal('hide');
     $('.loading-data').show();
   });
+
+  function limpiarSoloNumeros(input) {
+    // Reemplaza todo lo que no sea número
+    input.value = input.value.replace(/\D/g, '');
+  }
