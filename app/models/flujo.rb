@@ -369,6 +369,7 @@ class Flujo < ApplicationRecord
     jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
     puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
     apl_002_added = false
+    apl_017_added = false 
     apl_025_added = false 
     apl_032_1_added = false 
 
@@ -388,6 +389,13 @@ class Flujo < ApplicationRecord
         next if apl_002_added
         # Marcar que el APL-002 ya fue añadido
         apl_002_added = true
+      end
+
+      if t.tarea.codigo == Tarea::COD_APL_017
+        # Si el código es APL-017 y ya se añadió, saltar al siguiente
+        next if apl_017_added
+        # Marcar que el APL-017 ya fue añadido
+        apl_017_added = true
       end
 
       if t.tarea.codigo == Tarea::COD_APL_025

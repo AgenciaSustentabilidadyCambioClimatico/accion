@@ -34,7 +34,7 @@ $('#modal_gastos_operacion-form').on('hidden.bs.modal', function () {
   $('#modal_create_plan_actividades-form').modal("hide");
 
   // Llama a la función para abrir el nuevo modal
-  crearPlanActividades('<%= @plan_id %>', 'false');
+  crearPlanActividades('<%= @plan_id.to_i %>', 'false');
 });
 
 document.querySelectorAll('#div_consultor_faltantes input[type="text"]').forEach(function(input) {
