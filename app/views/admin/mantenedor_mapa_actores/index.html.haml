@@ -1,0 +1,193 @@
+:javascript	
+	$(document).ready(function(){
+		$(document).on('click', '#guardarFlujo', function () {
+			guardarFlujo();
+		});
+
+		__chosen_instrumentos();
+
+		$(document).on("change", 'input[name="eliminar_actores[]"]', function () {
+			const seleccionados = $('input[name="eliminar_actores[]"]:checked').length > 0;
+			$("#eliminarRegistro").prop("disabled", !seleccionados);
+		});
+
+	})
+
+	function actualizarTipoInstrumento(selectId) {
+		// Obtén el valor seleccionado del select
+		var valorSeleccionado = document.getElementById(selectId).value;
+
+		// Actualiza el campo oculto con el valor seleccionado
+		document.getElementById('tipo_instrumento_id').value = valorSeleccionado;
+	}
+
+	function obtenerMapaActores(id) {
+		alert(id);
+	
+	}
+
+	function guardarFlujo() {
+		// Obtener los elementos del DOM
+		const apl = document.getElementById('apl').value;
+		const tipoInstrumentoId = document.getElementById('tipo_instrumento_id').value;
+		const userId = document.getElementById('flujo_user_id').value;
+
+		// Validar si los elementos existen
+		if (!apl) {
+			alert("El elemento Instrumento no está disponible. Por favor, seleccione un Acuerdo de Producción Limpia.");
+			event.preventDefault();
+			return;
+		}
+
+		if (!tipoInstrumentoId) {
+			alert("El elemento Tipo instrumento no está disponible. Por favor, asegúrese de seleccionar un tipo de instrumento.");
+			event.preventDefault();
+			return;
+		}
+	
+		if (!userId) {
+			alert("El elemento Usuario no está disponible. Por favor, seleccione un usuario.");
+			event.preventDefault();
+			return;
+		}
+
+		// Confirmación del usuario
+		if (confirm("¿Está seguro que desea crear la postulación del fondo de producción limpia?")) {
+			$('.loading-data').show();
+
+			const button_guardar = document.getElementById('guardarFlujo');
+			button_guardar.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+			button_guardar.disabled = true;
+
+			// Llamada AJAX
+			$.ajax({
+				url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
+				data: { 
+					tipo_instrumento_id: tipoInstrumentoId, 
+					apl: apl, 
+					user_id: userId 
+				},
+				method: "POST",
+				success: function(response) {
+					$('.loading-data').hide();
+					button_guardar.innerHTML = 'Guardar';
+					button_guardar.disabled = false;
+
+					// Resetear el combo APL
+					$('#apl').val('').trigger('change'); // Restablece el valor del combo
+				
+					// Resetear y deshabilitar columnas relacionadas
+					$('#columna_linea_1_1, #columna_linea_1_2_1, #columna_linea_1_2_2, #columna_linea_1_3').find('select').empty().prop('disabled', false);
+
+					// Deshabilitar el botón Guardar
+					$("#guardarFlujo").prop("disabled", true);
+					
+				},
+				error: function(error) {
+					console.error("Error al llamar al método del controlador", error);
+					$('.loading-data').hide();
+				}
+			});
+		}else{
+			event.preventDefault();
+			return;
+		}
+	}
+
+	function obtenerMapaActores(id) {
+		if (!id) {
+			alert("Debe seleccionar un Acuerdo de Producción Limpia");
+			return;
+		}
+
+		$.ajax({
+			url: "#{obtener_admin_mantenedor_mapa_actores_path}",
+			method: "GET",
+			data: { apl_id: id },
+			success: function(response) {
+			// Aquí puedes procesar la respuesta
+			//console.log("Datos recibidos:", response);
+
+			// Ejemplo: llenar un div con la info
+			$("#mapa_actores_container").html(response.html);
+			},
+			error: function(error) {
+			console.error("Error al obtener el mapa de actores:", error);
+			}
+		});
+	}
+
+	function __chosen_instrumentos() {
+		$('.instrumentos_select').chosen({
+		allow_single_deselect: true,
+		no_results_text: 'No se encontraron resultados',
+		width: '100%',
+		search_contains: true
+		});
+	}
+
+
+	function confirmarEliminacion() {
+		const checkboxes = document.querySelectorAll('input[name="eliminar_actores[]"]:checked');
+
+		// Validar selección
+		if (checkboxes.length === 0) {
+			alert("No has seleccionado ningún actor para eliminar.");
+			return false;
+		}
+
+		// Confirmación
+		if (!confirm("¿Estás seguro que deseas eliminar los actores seleccionados?")) {
+			return false;
+		}
+
+		// Construir arreglo con los IDs seleccionados
+		let ids = [];
+		checkboxes.forEach(cb => ids.push(cb.value));
+
+		// AJAX para eliminar
+		$.ajax({
+			url: "#{eliminar_admin_mantenedor_mapa_actores_path}",
+			method: "POST",
+			data: { actor_ids: ids },
+			success: function(response) {
+				//console.log("Eliminados correctamente:", response);
+				$("#mapa_actores_container").html(response.html);
+			},
+			error: function(error) {
+				//console.error("Error al eliminar actores:", error);
+				alert("Ocurrió un error al intentar eliminar los actores.");
+			}
+		});
+
+		return false; // Evitar que un form haga submit por defecto
+	}
+
+- titulo t(:mapa_de_actores)
+- url = (@flujo.nil? or @flujo.id.nil?) ? admin_mantenedor_fondo_produccion_limpia_path : admin_mantenedor_fondo_produccion_limpia_path
+= simple_form_for @flujo, url: url, remote: true, html: { autocomplete: :off } do |f|
+	.row
+		.col-12
+			.card
+				.card-header
+					%h5.no-margin
+						=t(:modificar_mapa_actores)
+				.card-body
+					.row
+						.col-12.col-md-12
+							%label.string.control-label.required
+								%abbr{title: "Requerido"} *
+								Instrumento
+								= select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", selected: @apl), { class: 'form-control instrumentos_select', prompt: 'Seleccione un Acuerdo de Producción Limpia', onchange: 'obtenerMapaActores(this.value);' }									
+	.row
+		.col-12
+			#mapa_actores_container
+	%br
+	.float-right
+		= link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+		= button_tag t(:eliminar_actores), 
+			id: 'eliminarRegistro',
+			class: "btn btn-sm btn-danger", 
+			disabled: true,
+			'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Eliminando...".html_safe, 
+			onclick: "return confirmarEliminacion();"
