@@ -390,6 +390,13 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :mantenedor_mapa_actores, only: [:index] do
+      collection do
+         get :obtener
+         post :eliminar
+      end
+    end
+
     # resources :proveedores, except: [:show] do
     #   patch 'proveedores/establecimientos(.:format)', to: 'proveedores#establecimientos', as: :proveedores_establecimientos
     # end
