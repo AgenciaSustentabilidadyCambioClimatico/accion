@@ -1786,27 +1786,13 @@ class ManifestacionDeInteresController < ApplicationController
   def usuario_entregables #DZC APL-008
     puts "-----> Cargando usuario entregables <-----"
     puts "-----> Tipo instrumento <-----"
-    puts @manifestacion_de_interes.tipo_instrumento_id
-    puts "-----> Rol tarea <-----"
-    puts Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-    puts "-----> Cargando responsables <-----"
-    responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
-    puts "-----> Responsables cargados <----"
-    puts "-----> Cargando contribuyentes <-----"
-    @contribuyentes = Contribuyente.includes(
-      :actividad_economicas,
-      :actividad_economica_contribuyentes,
-      :establecimiento_contribuyentes,
-      personas: [:persona_cargos],
-      dato_anual_contribuyentes: [:tipo_contribuyente]
-    ).where(id: contribuyentes_ids)
-    puts "-----> Contribuyentes cargados <----"
-  end
-
     tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
     rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
+    puts "-----> Cargando responsables <-----"
     responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
+    puts "-----> Responsables cargados <-----"
     contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
+    puts "-----> Responsables cargados <----"
     puts "-----> Cargando contribuyentes <-----"
     @contribuyentes = Contribuyente.includes(
       :actividad_economicas,
@@ -2489,7 +2475,6 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_manifestacion_de_interes
-      puts "-----> seteando manifestacion de interes <-----"
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       # @manifestacion_de_interes = ManifestacionDeInteres.find(params[:id])
       @manifestacion_de_interes = ManifestacionDeInteres.find(@flujo.manifestacion_de_interes_id)
@@ -2533,8 +2518,6 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_contribuyentes
-
-      puts "-----> Cargando contribuyentes <-----"
       # DZC 2018-10-10 16:42:42 se agrega contribuyente del proponente
       @contribuyente = Contribuyente.new
       personas_proponentes = current_user.personas & Responsable.responsables_solo_rol_fast(Rol::PROPONENTE)
@@ -2556,7 +2539,6 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_tipo_instrumentos
-      puts "-----> seteando tipo instrumentos <-----"
       tiid = TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
       # DZC 2018-11-16 15:30:03 se modifica para excluir el tipo de acuerdo padre de la selección
       @tipo_instrumentos = TipoInstrumento.where("tipo_instrumento_id = (?)",tiid).all
@@ -2847,7 +2829,6 @@ class ManifestacionDeInteresController < ApplicationController
     end
 
     def set_representantes
-      puts "-----> seteando representantes <-----"
       usuario = User.unscoped.find_by_id(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
       resultado = Persona.por_institucion_cargo(@manifestacion_de_interes.contribuyente_id, Cargo::ENCARGADO_INS, usuario, true)
       @representantes = resultado[0]
