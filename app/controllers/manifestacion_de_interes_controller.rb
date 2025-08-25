@@ -1791,7 +1791,13 @@ class ManifestacionDeInteresController < ApplicationController
     rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
     responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
     contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-    @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
+    @contribuyentes = Contribuyente.includes(
+      :dato_anual_contribuyentes,
+      :actividad_economicas,
+      :tipo_contribuyente,
+      :actividad_economica_contribuyentes,
+      persona: [:persona_cargos]
+    ).where(id: contribuyentes_ids)
   end
 
   def lista_usuarios_entregables
