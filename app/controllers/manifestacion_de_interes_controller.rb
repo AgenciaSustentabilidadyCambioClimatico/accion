@@ -1792,10 +1792,10 @@ class ManifestacionDeInteresController < ApplicationController
     responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
     contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
     @contribuyentes = Contribuyente.includes(
-      :dato_anual_contribuyentes,
       :actividad_economicas,
       :actividad_economica_contribuyentes,
-      persona: [:persona_cargos]
+      persona: [:persona_cargos],
+      dato_anual_contribuyentes: [:tipo_contribuyente],
     ).where(id: contribuyentes_ids)
   end
 
