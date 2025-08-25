@@ -1794,8 +1794,8 @@ class ManifestacionDeInteresController < ApplicationController
     @contribuyentes = Contribuyente.includes(
       :actividad_economicas,
       :actividad_economica_contribuyentes,
-      persona: [:persona_cargos],
-      dato_anual_contribuyentes: [:tipo_contribuyente],
+      personas: [:persona_cargos],
+      dato_anual_contribuyentes: [:tipo_contribuyente]
     ).where(id: contribuyentes_ids)
   end
 
