@@ -108,10 +108,12 @@ class Contribuyente < ApplicationRecord
 		
 		# Verificar si los datos están cargados
 		if dato_anual_contribuyentes.loaded?
+			puts "-----> Datos cargados <----"
 		  tc = dato_anual_contribuyentes
 			   .select { |d| d.tipo_contribuyente_id.present? }
 			   .max_by(&:periodo)
 		else
+			puts "-----> Datos NO cargados <----"
 		  tc = dato_anual_contribuyentes
 			   .includes(:tipo_contribuyente)  #  Incluye para evitar N+1 en la consulta
 			   .where.not(tipo_contribuyente_id: nil)
