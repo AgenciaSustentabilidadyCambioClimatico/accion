@@ -1784,6 +1784,8 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def usuario_entregables #DZC APL-008
+    @contribuyente = Contribuyente.new
+
     puts "-----> Cargando usuario entregables <-----"
     puts "-----> Tipo instrumento <-----"
     tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
