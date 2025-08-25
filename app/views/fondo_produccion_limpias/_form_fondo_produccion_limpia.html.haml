@@ -29,7 +29,7 @@
     sumarTrabajadoresTemporales();
     sumarValores(); 
     sumarValoresTec();
-    sumarValoresTecElementosCarga();
+    //sumarValoresTecElementosCarga();
     cargarObjetivosEspecificos();
     valida_div();
 
@@ -201,22 +201,14 @@
       var tipoInstrumentoValores = {
         LINEA_1_1: #{@tipo_instrumento_valores[:linea_1_1]},
         LINEA_5_1: #{@tipo_instrumento_valores[:linea_5_1]},
-        LINEA_1_2_1: #{@tipo_instrumento_valores[:linea_1_2_1]},
-        LINEA_1_2_2: #{@tipo_instrumento_valores[:linea_1_2_2]},
-        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]},
-        EXTRAPRESUPUESTARIO_SEGUIMIENTO: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento]},
-        EXTRAPRESUPUESTARIO_SEGUIMIENTO_2: #{@tipo_instrumento_valores[:extrapresupuestario_seguimiento_2]}
+        EXTRAPRESUPUESTARIO_DIAGNOSTICO: #{@tipo_instrumento_valores[:extrapresupuestario_diagnostico]}
       }
 
       var tipoInstrumentoId = #{ @flujo.tipo_instrumento_id };
 
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
-          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 ) {
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ) {
 
         
         // Obtener todos los elementos con la clase 'valor-a-sumar-tec'
@@ -1789,11 +1781,7 @@
 
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
       cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
       cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -1829,17 +1817,7 @@
         console.log(datos); // Muestra los datos en la consola
       }  
     }
-    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
-
-      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
-      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
-      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
-      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
-    }
-
+    
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
 
@@ -1920,11 +1898,7 @@
   
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
         tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
+        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
 
       cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
       cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -1959,17 +1933,6 @@
         } 
     }
     
-    if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
-        tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
-        tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
-
-      elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
-      elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
-      elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
-      elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
-    }
-
     if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION) {
 
@@ -3150,7 +3113,7 @@
             %tbody
       
         %br
-        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+        - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
           <h1>Empresas Adheridas</h1>
           - if !solo_lectura
             .d-flex.justify-content-between.align-items-center
@@ -3310,113 +3273,6 @@
                       %th
                         = f.object.empresas_no_asociadas_ag
               %br
-        - elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
-          <h1>Empresas que serán consideradas para la realizacion del diagnóstico sectorial</h1>
-          %div.table-responsive
-            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
-              %thead
-                %tr
-                  %th.encabezado-form{colspan: 6}Cantidad y tamaño de las empresas consideradas para la realización del diagnóstico sectorial. <a href="https://www.sii.cl/preguntas_frecuentes/factura_electronica/001_003_6503.htm" target="_blank">clasificación SII</a>
-                %tr
-                  %th.encabezado2-form 
-                  %th.encabezado2-form Micro
-                  %th.encabezado2-form Pequeña
-                  %th.encabezado2-form Mediana
-                  %th.encabezado2-form Grande
-                  %th.encabezado2-form Total
-                %tr
-                  -if !solo_lectura
-                    %th
-                      Empresas Totales a Adherir
-                    %th
-                      %label.label-estilo{ for: 'cantidad_micro_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Cantidad Micro Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :cantidad_micro_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_micro_empresa', data: tooltip_data 
-                    %th
-                      %label.label-estilo{ for: 'cantidad_pequeña_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Cantidad Pequeña Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_pequeña_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :cantidad_pequeña_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_pequeña_empresa', data: tooltip_data           
-                    %th
-                      %label.label-estilo{ for: 'cantidad_mediana_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Cantidad Mediana Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :cantidad_mediana_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_mediana_empresa', data: tooltip_data         
-                    %th
-                      %label.label-estilo{ for: 'cantidad_grande_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Cantidad Grande Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.cantidad_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :cantidad_grande_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec #{border_class}", required: 'required', type: 'number', onchange: 'sumarValoresTec();', id: 'cantidad_grande_empresa', data: tooltip_data     
-                    %th#total_tecnica 
-                  -else
-                    %th
-                      Empresas Totales a Adherir
-                    %th
-                      = f.object.cantidad_micro_empresa
-                    %th
-                      = f.object.cantidad_pequeña_empresa
-                    %th
-                      = f.object.cantidad_mediana_empresa
-                    %th
-                      = f.object.cantidad_grande_empresa                  
-                    %th
-                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
-                %tr
-                  -if !solo_lectura
-                    %th
-                      Elementos Totales a Adherir
-                    %th
-                      %label.label-estilo{ for: 'elementos_micro_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Elementos Micro Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_micro_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :elementos_micro_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_micro_empresa', 'elementos_micro_empresa', 'Micro');", id: 'elementos_micro_empresa', data: tooltip_data  
-                    %th
-                      %label.label-estilo{ for: 'elementos_pequena_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Elementos Pequeña Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_pequena_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :elementos_pequena_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_pequeña_empresa' , 'elementos_pequena_empresa', 'Pequeña');", id: 'elementos_pequena_empresa', data: tooltip_data        
-                    %th
-                      %label.label-estilo{ for: 'elementos_mediana_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Elementos Mediana Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_mediana_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :elementos_mediana_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_mediana_empresa', 'elementos_mediana_empresa', 'Mediana');", id: 'elementos_mediana_empresa', data: tooltip_data  
-                    %th
-                      %label.label-estilo{ for: 'elementos_grande_empresa' }
-                        %abbr{ title: "Campo requerido" } *
-                        Elementos Grande Empresas
-                      - border_class = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? 'border-error' : 'border-text'
-                      - tooltip_data = @total_de_errores_por_tab.present? && @fondo_produccion_limpia.elementos_grande_empresa.nil? ? { toggle: 'tooltip', placement: 'top', original_title: 'Campo no puede estar vacío' } : {}
-                      = f.text_field :elementos_grande_empresa, class: "form-control text required tooltip-block valor-a-sumar-tec-elementos #{border_class}", required: 'required', type: 'number', onchange: "sumarValoresTecElementos('cantidad_grande_empresa', 'elementos_grande_empresa', 'Grande');", id: 'elementos_grande_empresa', data: tooltip_data           
-                    %th#total_tecnica_elementos
-                  -else
-                    %th
-                      Elementos Totales a Adherir
-                    %th
-                      = f.object.elementos_micro_empresa
-                    %th
-                      = f.object.elementos_pequena_empresa
-                    %th
-                      = f.object.elementos_mediana_empresa
-                    %th
-                      = f.object.elementos_grande_empresa                  
-                    %th
-                      = f.object.elementos_micro_empresa + f.object.elementos_pequena_empresa + f.object.elementos_mediana_empresa + f.object.elementos_grande_empresa    
-            %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
