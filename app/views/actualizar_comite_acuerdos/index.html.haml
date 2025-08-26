@@ -81,12 +81,13 @@
   = render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
   .simple_form
     .row
-      -if !@manifestacion_de_interes.detenido
-        .col-12.mb-3
-          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#detener-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
-            %i.fa.fa-file-text-o
-            =t(:detener_acuerdo)
-          = render 'detener_acuerdo', remote: true
+      -if !@manifestacion_de_interes.detenido 
+        - if !@solo_lectura
+          .col-12.mb-3
+            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#detener-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
+              %i.fa.fa-file-text-o
+              =t(:detener_acuerdo)
+            = render 'detener_acuerdo', remote: true
       .col-12
         .card
           .card-header.p-0
@@ -124,11 +125,13 @@
                     #actores-remote-table
                       = render 'actores/table', externo: true
                     #mapa_actores-form
-                      = render 'actores/form_mapa_de_actores', externo: true 
-                      = render 'actores/table_mapa_de_actores', externo: true 
+                      - if !@solo_lectura
+                        = render 'actores/form_mapa_de_actores', externo: true 
+                        = render 'actores/table_mapa_de_actores', externo: true 
                     #actualizar-remote-form.d-none
                       = render 'actores/form', externo: true
-                    %button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
+                    - if !@solo_lectura
+                      %button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
               #set-metas-accion.tab-pane.fade{"aria-expanded" => tabs[:"set-metas-accion"], "aria-labelledby" => "set-metas-accion-tab", :role => "tabpanel", class: ("show active" if tabs[:"set-metas-accion"])}
                 .card.m-0
                   .card-body.p-0

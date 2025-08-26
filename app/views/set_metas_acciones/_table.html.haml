@@ -139,8 +139,9 @@
       - if comite_propuestas
         .row
           .col-12
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma", class: 'btn btn-sm btn-primary m-0 btn-sm float-right', style: "white-space: normal;" do
-              Agregar archivos anexos posteriores a la firma
+            - if !@solo_lectura
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-archivos-anexos-posteriores-firma", class: 'btn btn-sm btn-primary m-0 btn-sm float-right', style: "white-space: normal;" do
+                Agregar archivos anexos posteriores a la firma
         -#
           .col-lg-9.ml-auto
             = link_to '#', "data-toggle"=>:modal, "data-target"=>"#DESCARGAR-SET-METAS", class: 'btn btn-sm btn-primary m-0 btn-sm float-left' do
@@ -177,7 +178,7 @@
             %th=t(:plazo)
             - if (indicar_propuestas_con_observaciones || ver_propuestas_con_observaciones)  && @tarea.codigo != Tarea::COD_APL_018
               %th=t(:requiere_correcciones)
-            -if !indicar_propuestas_con_observaciones
+            -if !indicar_propuestas_con_observaciones && !@solo_lectura
               %th=t(:acciones)
 
         %tbody
@@ -211,7 +212,7 @@
                   %td.text-center
                     = propuestas_con_observaciones.include?(record[:id].to_s) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
               
-              -if !indicar_propuestas_con_observaciones
+              -if !indicar_propuestas_con_observaciones && !@solo_lectura
                 %td
                   .d-flex.align-items-start.flex-column.flex-lg-row
                     -
@@ -289,7 +290,8 @@
         %h5.m-0.float-left
           = t(:metas_acciones_definidas_posterioridad_firma_parentesis)
         - new_link_to = new_tarea_pendiente_manifestacion_de_interes_set_metas_accion_path(@tarea_pendiente,@manifestacion_de_interes, accion: @manifestacion_de_interes.accion_en_set_metas_accion, anexo: true)
-        = link_to t(:agregar_, item: t(:acción).downcase), new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary m-0 btn-sm float-right'
+        - if !@solo_lectura
+          = link_to t(:agregar_, item: t(:acción).downcase), new_link_to, "data-toggle"=>:modal, "data-target"=>"#set-metas-accion-remote-modal-form", class: 'btn btn-sm btn-primary m-0 btn-sm float-right'
       .card-body
         .table-responsive
           %table.table.entregables.table-striped
