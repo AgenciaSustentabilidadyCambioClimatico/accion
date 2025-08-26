@@ -38,6 +38,8 @@ class Flujo < ApplicationRecord
   FPL = 'Fondo de Producción Limpia'
   PPF = 'Programas y Proyectos de Financiamiento'
 
+  COD_FLJ_REG = 1000
+
   def adhesiones
     Adhesion.unscoped.where(flujo_id: self.id)
   end
@@ -72,6 +74,9 @@ class Flujo < ApplicationRecord
       nombre = self.ppp.nombre_propuesta.blank? ? "Sin nombre": self.ppp.nombre_propuesta
     elsif !self.fondo_produccion_limpia.blank?
       nombre = self.fondo_produccion_limpia.codigo_proyecto.blank? ? "Sin nombre": self.fondo_produccion_limpia.codigo_proyecto
+    elsif !self.registro_proveedor.blank? || self.id == COD_FLJ_REG
+      
+      nombre = "Registro Proveedores"
     end
     nombre
   end
@@ -371,6 +376,7 @@ class Flujo < ApplicationRecord
     apl_002_added = false
     apl_017_added = false 
     apl_025_added = false 
+    apl_032_added = false 
     apl_032_1_added = false 
 
     self.tarea_pendientes.order(created_at: :asc).each do |tarea_pend| 
@@ -403,6 +409,13 @@ class Flujo < ApplicationRecord
         next if apl_025_added
         # Marcar que el APL-025 ya fue añadido
         apl_025_added = true
+      end
+
+      if t.tarea.codigo == Tarea::COD_APL_032
+        # Si el código es APL-032 y ya se añadió, saltar al siguiente
+        next if apl_032_added
+        # Marcar que el APL-032 ya fue añadido
+        apl_032_added = true
       end
 
       if t.tarea.codigo == Tarea::COD_APL_032_1
