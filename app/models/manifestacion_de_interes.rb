@@ -1150,7 +1150,7 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato_checks(pdf, :actividad_economicas_ids, self.actividades_economicas_beauty_tree_selector, validaciones)
       self.pdf_contenido_formato(pdf, :numero_empresas, validaciones)
       self.pdf_contenido_formato(pdf, :produccion, validaciones)
-      self.pdf_contenido_formato(pdf, :unidad_de_medida_volumen, validaciones)
+      #self.pdf_contenido_formato(pdf, :unidad_de_medida_volumen, validaciones)
       self.pdf_contenido_formato_custom(pdf, :ventas, ActionController::Base.helpers.number_to_currency(self.ventas), validaciones)
       #self.pdf_contenido_formato_custom(pdf, :porcentaje_exportaciones, self.porcentaje_exportaciones, validaciones)
       self.pdf_contenido_formato(pdf, :numero_trabajadores, validaciones)
@@ -1177,7 +1177,7 @@ class ManifestacionDeInteres < ApplicationRecord
       #PESTAÑA 3
       self.pdf_titulo_formato(pdf, I18n.t(:actores_y_partes_interesadas), "Identificación de actores relevantes para el Acuerdo.")
       self.pdf_contenido_formato(pdf, :principales_actores, validaciones)
-      self.pdf_contenido_formato(pdf, :mapa_de_actores_archivo, validaciones)
+      #self.pdf_contenido_formato(pdf, :mapa_de_actores_archivo, validaciones)
       #self.pdf_contenido_formato(pdf, :otros_recursos_comprometidos, validaciones)
       self.pdf_contenido_formato(pdf, :carta_de_apoyo_y_compromiso, validaciones)
       self.pdf_separador(pdf, 20)
