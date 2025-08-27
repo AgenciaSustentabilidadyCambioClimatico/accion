@@ -9,12 +9,14 @@
           %tr
             %th Nombre
             %th Rol
+            %th Razón Social Institución
             %th Eliminar
         %tbody
           - mapa_actores.each do |actor|
             %tr{id: "actor_row_#{actor.id}"} 
               %td= actor.persona.user.nombre_completo
               %td= actor.rol.nombre
+              %td= actor.persona.contribuyente.razon_social
               %td
                 = check_box_tag "eliminar_actores[]", actor.id, false, id: "eliminar_actor_#{actor.id}"
     - else
