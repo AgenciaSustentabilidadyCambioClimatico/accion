@@ -44,7 +44,9 @@
     
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_5_1 || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO) {
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_DIAGNOSTICO ||
+          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 ||
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
 
         cantidad_micro_empresa = document.getElementById('cantidad_micro_empresa').value;
         cantidad_pequeña_empresa = document.getElementById('cantidad_pequeña_empresa').value;
@@ -78,12 +80,19 @@
           console.log(datos); // Muestra los datos en la consola
         }  
       }
+
+      if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 ||  
+          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO) {
+
+        elementos_micro_empresa = document.getElementById('elementos_micro_empresa').value;
+        elementos_pequena_empresa = document.getElementById('elementos_pequena_empresa').value;
+        elementos_mediana_empresa = document.getElementById('elementos_mediana_empresa').value;
+        elementos_grande_empresa = document.getElementById('elementos_grande_empresa').value;
+      }
       
       if (tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_3 || 
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_EVALUACION ||
-          tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_1 || 
           tipoInstrumentoId === tipoInstrumentoValores.LINEA_1_2_2 || 
-          tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO || 
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
         // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
