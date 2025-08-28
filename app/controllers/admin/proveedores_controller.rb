@@ -109,7 +109,9 @@ class Admin::ProveedoresController < ApplicationController
       @resolucion = registro.archivo_aprobado_directiva
       @apls = registro.get_apl
       format.js {}
-      format.json { render :json => @apls}
+      format.json { render :json => @apls }
+      format.html { render :json => @apls } 
+      format.any { render :json => @apls } 
     end
   end
 
