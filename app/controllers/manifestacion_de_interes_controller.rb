@@ -1786,16 +1786,11 @@ class ManifestacionDeInteresController < ApplicationController
   def usuario_entregables #DZC APL-008
     @contribuyente = Contribuyente.new
 
-    puts "-----> Cargando usuario entregables <-----"
-    puts "-----> Tipo instrumento <-----"
     tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
     rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
-    puts "-----> Cargando responsables <-----"
     responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
-    puts "-----> Responsables cargados <-----"
     contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-    puts "-----> Responsables cargados <----"
-    puts "-----> Cargando contribuyentes <-----"
+
     @contribuyentes = Contribuyente.includes(
       :actividad_economicas,
       :actividad_economica_contribuyentes,
@@ -1803,7 +1798,6 @@ class ManifestacionDeInteresController < ApplicationController
       personas: [:persona_cargos],
       dato_anual_contribuyentes: [:tipo_contribuyente]
     ).where(id: contribuyentes_ids)
-    puts "-----> Contribuyentes cargados <----"
   end
 
   def lista_usuarios_entregables
