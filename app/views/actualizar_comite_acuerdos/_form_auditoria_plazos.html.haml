@@ -240,9 +240,10 @@
             .col-12.col-lg-6
               = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002", tarea_pendiente: @tarea_pendiente, carta_interes: t(:instrucciones_para_auditorías_plazos_y_certificaciones))
             .col-12.col-lg-6
-              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
-                %i.fa.fa-file-text-o
-                Terminar Acuerdo
+              - if !@solo_lectura
+                = link_to '#', "data-toggle"=>:modal, "data-target"=>"#terminar-acuerdo", class: 'btn btn-danger btn-outline btn-primary m-0 btn-sm float-left' do
+                  %i.fa.fa-file-text-o
+                  Terminar Acuerdo
         .col-12
           .card
             .card-header
@@ -284,9 +285,10 @@
           .card
             .card-header
               %label.control-label=t(:auditorías)
-              = link_to '#', class: 'pull-right add-auditoria fw-400' do
-                %i.fa.fa-plus-circle
-                = t(:agregar)
+              - if !@solo_lectura
+                = link_to '#', class: 'pull-right add-auditoria fw-400' do
+                  %i.fa.fa-plus-circle
+                  = t(:agregar)
             .card-body.p-0
               .table-responsive
                 %table.table.table-striped.table-bordered#tabla_auditoria
@@ -353,7 +355,8 @@
                         -if aud.con_certificacion && !aud.final
                           =render 'acuerdo_actores/form_auditoria_vigencia', aud_id: aud.id, nombre: aud.nombre, plazo: aud.plazo, auditoria_niveles: aud.auditoria_niveles, puede_editar: puede_editar
         .col-12
-          .float-right
-            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary button-send"
+          - if !@solo_lectura
+            .float-right
+              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary button-send"
 = render 'terminar_acuerdo', remote: true
 = render 'acuerdo_actores/modal_asociar_estandar'

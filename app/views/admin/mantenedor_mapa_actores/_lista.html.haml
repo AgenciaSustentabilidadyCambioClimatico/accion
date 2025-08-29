@@ -1,0 +1,35 @@
+.card
+  .card-header
+    %h5.no-margin
+      = t(:lista_de_, items: t(:actores).downcase)
+  %div.my-2 
+    - if mapa_actores.any?
+      %table.table.mapa_actores.table-striped{id: 'tabla_mapa_actores'}
+        %thead
+          %tr
+            %th Nombre
+            %th Rol
+            %th Razón Social Institución
+            %th Eliminar
+        %tbody
+          - mapa_actores.each do |actor|
+            %tr{id: "actor_row_#{actor.id}"} 
+              %td= actor.persona.user.nombre_completo
+              %td= actor.rol.nombre
+              %td= actor.persona.contribuyente.razon_social
+              %td
+                = check_box_tag "eliminar_actores[]", actor.id, false, id: "eliminar_actor_#{actor.id}"
+    - else
+      %p No hay actores registrados para este APL.
+
+:javascript
+  $(document).ready(function() {
+    $('#tabla_mapa_actores').DataTable({
+      lengthMenu: [[10], [10]],
+      pageLength: 10,
+      columnDefs: [ { targets: [2], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      }
+    });
+  });

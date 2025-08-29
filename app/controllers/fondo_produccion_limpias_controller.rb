@@ -523,8 +523,9 @@ class FondoProduccionLimpiasController < ApplicationController
         @total_de_errores_por_tab = {}
       end
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -1952,8 +1953,9 @@ class FondoProduccionLimpiasController < ApplicationController
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
           #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-          if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
-            obtiene_y_graba_empresas_adheridas(true)
+          if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
+            params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
+              obtiene_y_graba_empresas_adheridas(true)
           end
 
           set_flujo
@@ -2106,8 +2108,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @revisor = true
       @adm_juridica = false
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -2244,8 +2247,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -2369,8 +2373,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -2493,8 +2498,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -2687,8 +2693,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -3101,8 +3108,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @tipo_aporte = TipoAporte.all
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -3180,7 +3188,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
         obtiene_y_graba_empresas_adheridas(true)
       end
 
@@ -3287,8 +3296,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @tipo_aporte = TipoAporte.all
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -3364,7 +3374,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
         obtiene_y_graba_empresas_adheridas(true)
       end
 
@@ -3471,8 +3482,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = true
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 
@@ -3571,8 +3583,9 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
 
-      #Obtenie empresas adheridas Linea 1.3
-      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION
+      #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
       end
 

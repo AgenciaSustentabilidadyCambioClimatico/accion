@@ -113,5 +113,6 @@
           
                   %br 
           .col-12
-            .float-right
-              = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "grabar-postulacion-fpl-button btn btn-sm btn-primary button-send", id:"grabar-postulacion-fpl-button", disabled: true #, onclick: 'confirmarGuardar(event); return false;'
+            - if !@solo_lectura
+              .float-right
+                = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "grabar-postulacion-fpl-button btn btn-sm btn-primary button-send", id:"grabar-postulacion-fpl-button", disabled: true #, onclick: 'confirmarGuardar(event); return false;'

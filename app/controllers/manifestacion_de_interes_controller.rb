@@ -23,7 +23,6 @@ class ManifestacionDeInteresController < ApplicationController
                                       :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                       :pertinencia_factibilidad, :revisar_pertinencia_factibilidad,
                                       :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
-                                      :usuario_entregables, :guardar_usuario_entregables,
                                       :firma, :actualizar_firma,
                                       :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico,
                                       :revisar_entregable_diagnostico,
@@ -36,7 +35,6 @@ class ManifestacionDeInteresController < ApplicationController
                                       :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                       :pertinencia_factibilidad, :revisar_pertinencia_factibilidad,
                                       :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
-                                      :usuario_entregables, :guardar_usuario_entregables,
                                       :firma, :actualizar_firma,
                                       :carga_auditoria, :enviar_carga_auditoria,:cargar_actualizar_entregable_diagnostico]
   before_action :set_tipo_instrumentos, only: [:edit,:update,
@@ -47,7 +45,6 @@ class ManifestacionDeInteresController < ApplicationController
                                       :observaciones_admisibilidad_juridica, :resolver_observaciones_admisibilidad_juridica,
                                       :pertinencia_factibilidad, :revisar_pertinencia_factibilidad,
                                       :responder_pertinencia_factibilidad, :responder_cond_obs_pertinencia_factibilidad,
-                                      :usuario_entregables, :guardar_usuario_entregables,
                                       :firma, :actualizar_firma,
                                       :carga_auditoria, :enviar_carga_auditoria]
   before_action :set_archivo_mapa_actores, only: [:edit]
@@ -1787,11 +1784,20 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   def usuario_entregables #DZC APL-008
+    @contribuyente = Contribuyente.new
+
     tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
     rol_tarea = Tarea::find_by(codigo: Tarea::COD_APL_009).rol_id
     responsables = Responsable.__personas_responsables(rol_tarea, tipo_instrumento)
     contribuyentes_ids = responsables.map{|p| p.contribuyente_id }.uniq
-    @contribuyentes = Contribuyente.where(id: contribuyentes_ids)
+
+    @contribuyentes = Contribuyente.includes(
+      :actividad_economicas,
+      :actividad_economica_contribuyentes,
+      :establecimiento_contribuyentes,
+      personas: [:persona_cargos],
+      dato_anual_contribuyentes: [:tipo_contribuyente]
+    ).where(id: contribuyentes_ids)
   end
 
   def lista_usuarios_entregables

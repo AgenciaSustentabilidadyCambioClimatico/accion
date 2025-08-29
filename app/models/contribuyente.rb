@@ -105,12 +105,26 @@ class Contribuyente < ApplicationRecord
 
 	def tipo_contribuyente
 		tipo_string = "Tipo contribuyente no informado"
-		tc = dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
-		unless tc.blank?
-			tipo_string = tc.tipo_contribuyente.nombre
+		
+		# Verificar si los datos están cargados
+		if dato_anual_contribuyentes.loaded?
+		  tc = dato_anual_contribuyentes
+			   .select { |d| d.tipo_contribuyente_id.present? }
+			   .max_by(&:periodo)
+		else
+		  tc = dato_anual_contribuyentes
+			   .includes(:tipo_contribuyente)  #  Incluye para evitar N+1 en la consulta
+			   .where.not(tipo_contribuyente_id: nil)
+			   .order(periodo: :desc)
+			   .first
 		end
+		
+		unless tc.blank?
+		  tipo_string = tc.tipo_contribuyente.nombre
+		end
+		
 		tipo_string
-	end
+	  end
 
 	def tipo_contribuyente_id
 		tipo_id = nil
