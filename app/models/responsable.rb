@@ -246,6 +246,7 @@ class Responsable < ApplicationRecord
   def self.__personas_responsables_v3(rol_id, instrumento_id, contribuyente_id = nil, actividad_economica_id = nil, tipo_contribuyente_id = nil)
     # Usamos un Set para evitar duplicados
     personas = Set.new
+    all_personas = []
     
     # Obtenemos el instrumento y sus instrumentos relacionados
     instrumento = TipoInstrumento.find_by(id: instrumento_id)
@@ -269,19 +270,31 @@ class Responsable < ApplicationRecord
       if r.cargo_id.present?
         # Usamos `find_each` para cargar los registros de personas por cargo de manera más eficiente
         PersonaCargo.includes(:persona).where(cargo_id: r.cargo_id).find_each do |pc|
-          if __info_contribuyente_v2(pc.persona.contribuyente, ctid, aeid, tcid)
-            personas.add(pc.persona)  # Añadimos a personas sin duplicados
-          end
+          all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
         end
       else
         # Si no tiene cargo_id, buscamos todas las personas asociadas a todos los cargos
         PersonaCargo.includes(:persona).find_each do |pc|
-          if __info_contribuyente_v2(pc.persona.contribuyente, ctid, aeid, tcid)
-            personas.add(pc.persona)
-          end
+          all_personas << { persona: pc.persona, ctid: ctid, aeid: aeid, tcid: tcid }
         end
       end 
     end
+    
+    # OPTIMIZACIÓN: Hacer un solo includes para todos los contribuyentes
+    contribuyente_ids = all_personas.map { |p| p[:persona].contribuyente_id }.compact.uniq
+    contribuyentes_loaded = Contribuyente.includes(
+      :actividad_economica_contribuyentes,
+      :dato_anual_contribuyentes
+    ).where(id: contribuyente_ids).index_by(&:id)
+    
+    # Ahora procesar con datos ya cargados
+    all_personas.each do |p|
+      contribuyente = contribuyentes_loaded[p[:persona].contribuyente_id]
+      if contribuyente && self.__info_contribuyente_optimized(contribuyente, p[:ctid], p[:aeid], p[:tcid], contribuyente_id, actividad_economica_id, tipo_contribuyente_id)
+        personas.add(p[:persona])
+      end
+    end
+    
     # Devolvemos los resultados como un array
     personas.to_a
   end
