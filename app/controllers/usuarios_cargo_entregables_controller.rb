@@ -10,14 +10,16 @@ class UsuariosCargoEntregablesController < ApplicationController
     tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : @manifestacion_de_interes.tipo_instrumento_id
     
     rol_tarea_entregables = Tarea::find_by(codigo: Tarea::COD_APL_025).rol_id
-    responsables_entregables = Responsable.__personas_responsables(rol_tarea_entregables, tipo_instrumento)
+    responsables_entregables = Responsable.__personas_responsables_v3(rol_tarea_entregables, tipo_instrumento)
     contribuyentes_entregables_ids = responsables_entregables.map{|p| p.contribuyente_id }.uniq
-    @contribuyentes_entregables = Contribuyente.where(id: contribuyentes_entregables_ids)
+    @contribuyentes_entregables = Contribuyente.includes(:actividad_economica_contribuyentes, :dato_anual_contribuyentes)
+                                              .where(id: contribuyentes_entregables_ids)
 
     rol_tarea_cargadores = Tarea::find_by(codigo: Tarea::COD_APL_029).rol_id
-    responsables_cargadores = Responsable.__personas_responsables(rol_tarea_cargadores, tipo_instrumento)
+    responsables_cargadores = Responsable.__personas_responsables_v3(rol_tarea_cargadores, tipo_instrumento)
     contribuyentes_cargadores_ids = responsables_cargadores.map{|p| p.contribuyente_id }.uniq
-    @contribuyentes_cargadores = Contribuyente.where(id: contribuyentes_cargadores_ids)
+    @contribuyentes_cargadores = Contribuyente.includes(:actividad_economica_contribuyentes, :dato_anual_contribuyentes)
+                                             .where(id: contribuyentes_cargadores_ids)
     
   end
 
