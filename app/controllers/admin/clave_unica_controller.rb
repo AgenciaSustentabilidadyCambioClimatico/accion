@@ -31,15 +31,21 @@ class Admin::ClaveUnicaController < ApplicationController
 			end
 
 			if(error.blank?)
-				sign_in(user)
-				#Lo agrego por si acaso
-				personas = user.personas.map{|m|m}.compact
-				cargos = personas.map{|p|p.persona_cargos.map{|cp| cp.cargo_id}}
-				user.session[:cargos] = cargos.blank? ? [] : cargos[0]
-				user.session[:personas] = personas.blank? ? [] : personas.map{|p|p.attributes.to_json.as_hash}
-				user.save
-
-				format.html{ redirect_to red_path, flash: {success: "Sesión iniciada correctamente mediante Clave Única" } }
+				begin
+					user.session = {}
+					sign_in(user)
+					#Lo agrego por si acaso
+					personas = user.personas.map{|m|m}.compact
+					cargos = personas.map{|p|p.persona_cargos.map{|cp| cp.cargo_id}}
+					user.session[:cargos] = cargos.blank? ? [] : cargos[0]
+					user.session[:personas] = personas.blank? ? [] : personas.map{|p|p.attributes.to_json.as_hash}
+					user.save
+					
+					format.html{ redirect_to red_path, flash: {success: "Sesión iniciada correctamente mediante Clave Única" } }
+				  rescue => e
+					Rails.logger.error "Error al configurar sesión de usuario: #{e.message}"
+					format.html{ redirect_to root_path, flash: {error: "Error al iniciar sesión, reintente" } }
+				  end
 			else
 				format.html{ redirect_to root_path, flash: {error: error} }
 			end
