@@ -1858,6 +1858,7 @@ GEM
       net-pop
       net-smtp
     marcel (1.0.4)
+    matrix (0.4.3)
     memoist (0.16.2)
     method_source (1.1.0)
     mini_magick (4.13.2)
@@ -2145,6 +2146,7 @@ DEPENDENCIES
   jquery-rails
   letter_opener
   listen (>= 3.1.5, < 3.7.1)
+  matrix
   mini_magick
   multi_json (~> 1.14.1)
   nested_form
@@ -2187,7 +2189,7 @@ DEPENDENCIES
   zip-zip
 
 RUBY VERSION
-   ruby 3.0.6p216
+   ruby 3.1.4p223
 
 BUNDLED WITH
-   2.2.33
+   2.6.9
