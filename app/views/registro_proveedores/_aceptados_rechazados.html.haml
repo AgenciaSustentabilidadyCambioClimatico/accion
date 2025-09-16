@@ -23,7 +23,7 @@
     %tbody
       - @rechazo_aprobado.each_with_index do |registro, index|
         %tr{"data-id" => "#{registro.id}","id" => "#{registro.id}"}
-          %td=index + 1
+          %td= (@rechazo_aprobado.current_page - 1) * @rechazo_aprobado.per_page + index + 1
           %td=registro.rut
           %td=registro.nombre
           %td= registro.tipo_proveedor_id.present? ? TipoProveedor.find(registro.tipo_proveedor_id).nombre : 'not found'
@@ -51,6 +51,9 @@
           %td
             = registro.estado
           =render "modal_experiencia", registro: registro
+  - unless @rechazo_aprobado.blank?
+    .d-flex.justify-content-center.mt-3
+      = will_paginate @rechazo_aprobado
 
   / .float-right
   /   = volver_root
