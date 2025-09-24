@@ -49,6 +49,8 @@ es:
 
   prefijo_tarea: Prefijo tarea
   subir_archivo: ¿Subir archivo?
+  
+  pendientes: Pendientes
 
   comentario_modificacion: Comentario modificación
   seleccionar: Seleccionar

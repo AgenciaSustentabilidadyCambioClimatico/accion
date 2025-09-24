@@ -103,6 +103,7 @@
                         %ul.dropdown-menu
                           %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
                           %li= link_to t(:tipos_proveedores), admin_tipos_proveedores_path, class: 'dropdown-item'
+                          %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
                           = t(:presupuesto)
@@ -133,6 +134,12 @@
                       %li= link_to t(:config_reporte_sustentabilidad), admin_edit_reporte_sustentabilidad_path, class: 'dropdown-item'
                       %li= link_to t(:descargar_reporte_sustentabilidad), descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
                       %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
+                  - elsif current_user.is_ascc?
+                    %li.dropdown-submenu
+                      %a.dropdown-item.dropdown-toggle
+                        = t(:proveedores)
+                      %ul.dropdown-menu
+                        %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
                   %li= link_to t(:historial_instrumentos), admin_historial_instrumentos_path, class: 'dropdown-item'
                   - if current_user.is_ascc?
                     %li= link_to 'Estado APL', estado_apl_path, class: 'dropdown-item'

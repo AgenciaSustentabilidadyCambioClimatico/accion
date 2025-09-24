@@ -99,15 +99,15 @@ class Admin::ProveedoresController < ApplicationController
   def get_apls_registro
     respond_to do |format|
       @registro_proveedor = RegistroProveedor.find(params[:id])
-      registro = RegistroProveedor.find(params[:id])
-      if registro.tipo_proveedor_id == 1
-         @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first if current_user
+      @registro = RegistroProveedor.find(params[:id])
+      if @registro.tipo_proveedor_id == 1
+         @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: @registro.id, description: "Curriculum Vitae").first if current_user
       else
-        @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: registro.id, description: "Curriculum Vitae").first
+        @cv = DocumentoRegistroProveedor.where(registro_proveedor_id: @registro.id, description: "Curriculum Vitae").first
       end
-      @experiencias = CertificadoProveedor.where(registro_proveedor_id: registro.id)
-      @resolucion = registro.archivo_aprobado_directiva
-      @apls = registro.get_apl
+      @experiencias = CertificadoProveedor.where(registro_proveedor_id: @registro.id)
+      @resolucion = @registro.archivo_aprobado_directiva
+      @apls = @registro.get_apl
       format.js {}
       format.json { render :json => @apls }
       format.html { render :json => @apls } 

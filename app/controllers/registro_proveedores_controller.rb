@@ -517,6 +517,11 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 110)
   end
 
+  #PRO-11
+  def proveedores_pendientes
+    @tareas = TareaPendiente.where(tarea_id: 104, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).order(:created_at)
+  end
+
   def descargar_documentos_proveedores
     require 'zip'
     require 'open-uri'

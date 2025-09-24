@@ -1,6 +1,6 @@
 - pick_a_institucion="Seleccione una institución desde el buscador"
 - pick_a_contribuyente="Seleccione un establecimiento"
-= simple_form_for @registro_proveedor, url: admin_proveedores_path, remote: true do |f|
+= simple_form_for @registro_proveedor, url: admin_proveedores_path, remote: true, html: { multipart: true } do |f|
   .row
     .col-12.mt-3
       %h1.titulo='Solicitud de Registro'
@@ -43,7 +43,7 @@
               .col-12.col-lg-4
                 =f.label 'Archivo Resolución'
                 =f.input :archivo_aprobado_directiva, label: false, input_html: {class: "validado form-control"}
-                = f.input :archivo_aprobado_directiva_cache, as: :hidden
+                =f.input :archivo_aprobado_directiva_cache, as: :hidden
               .col-12.col-lg-1
                 = __descargar_archivo(f.object.archivo_aprobado_directiva,f.object.archivo_aprobado_directiva)
               .col-12.col-lg-3

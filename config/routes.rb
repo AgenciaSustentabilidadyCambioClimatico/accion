@@ -183,7 +183,8 @@ Rails.application.routes.draw do
   patch 'clasificar_proveedores', to: 'registro_proveedores#clasificar_proveedores', as: "clasificar_proveedores"
   #PRO-010
   get 'enviar_carta_compromiso/:id', to: 'registro_proveedores#enviar_carta_compromiso', as: "enviar_carta_compromiso"
-
+  #PRO-11
+  get 'proveedores_pendientes', to: 'registro_proveedores#proveedores_pendientes', as: "admin_proveedores_pendientes"
   #------------------------------------------------------------------------------------------------------------#
   #Fondo Producción Limpia
   resources :fondo_produccion_limpia

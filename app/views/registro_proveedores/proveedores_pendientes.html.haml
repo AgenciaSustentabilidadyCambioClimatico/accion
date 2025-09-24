@@ -1,0 +1,56 @@
+/ PRO-11
+- titulo 'Revisiones Pendientes de Proveedores'
+.card
+  .card-header
+    .d-flex.justify-content-between.align-items-center
+      %h5.no-margin Revisiones Pendientes de Proveedores
+      .badge.badge-primary
+        = @tareas.count
+        = @tareas.count == 1 ? ' revisión pendiente' : ' revisiones pendientes'
+  .card-body.p-0
+    %table.table.table-striped.table-bordered#tareas_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+      %thead
+        %tr
+          %th #
+          %th Nombre Proveedor
+          %th Fecha de Solicitud
+      %tbody
+        - @tareas.each_with_index do |tarea, index|
+          %tr{"data-id" => "#{tarea.id}","id" => "#{tarea.id}"}
+            %td= index + 1
+            %td
+              - if tarea.user.present?
+                = tarea.user.nombre_completo
+              - else
+                %span.text-muted Nombre proveedor no encontrado
+            %td= tarea.created_at.strftime("%d/%m/%Y %H:%M")
+  .card-footer
+    .d-flex.justify-content-between.align-items-center
+      .text-muted
+        = "Mostrando #{@tareas.count} de #{@tareas.count} revisiones pendientes"
+      = link_to root_path, class: 'btn btn-secondary' do
+        %i.fa.fa-arrow-left
+        Volver al inicio
+
+:javascript
+  $(document).ready(function(){
+    $('#revisiones_pendientes').DataTable({
+      dom: 't',
+      paging: false,
+      responsive: {
+        details: {
+          type: 'column',
+          target: 'tr'
+        }
+      },
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      columnDefs: [
+        { responsivePriority: 1, targets: 1 },
+        { responsivePriority: 2, targets: 2 },
+        { responsivePriority: 3, targets: -1, orderable: false }
+      ],
+      order: [[2, 'desc']] // Ordenar por fecha de creación descendente
+    });
+  });

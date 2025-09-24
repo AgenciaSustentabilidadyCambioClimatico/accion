@@ -17,7 +17,7 @@
 
   %div.flex{style: 'margin-left: 20px; width: 700px'}
     %div.flex{style: 'width: 250px'}             
-      =__descargar_archivo(@resolucion, @resolucion, true, false, "Archivo Resolución") if current_user && current_user.is_admin?  
+      =__descargar_archivo(@resolucion, @registro, true, false, "Archivo Resolución")
     .card
       .card-header
         %h5.no-margin Experiencias
