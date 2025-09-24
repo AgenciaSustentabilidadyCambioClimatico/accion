@@ -34,7 +34,7 @@
           const taskName = element.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
           
           // Códigos de tareas que no deben duplicarse en flujo 1000
-          const restrictedCodes = ['PRO-002','PRO-004', 'PRO-004.1', 'PRO-004.2'];
+          const restrictedCodes = ['PRO-002','PRO-005'];
           const isRestrictedTask = restrictedCodes.some(code => taskName.includes(code));
           
           // Si es flujo 1000 y es una tarea restringida que ya vimos, saltarla
