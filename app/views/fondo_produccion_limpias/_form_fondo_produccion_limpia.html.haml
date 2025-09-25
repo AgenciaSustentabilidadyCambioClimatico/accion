@@ -3778,6 +3778,8 @@
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
+                      - if descargable.id != 34
+                        (En caso de tratarse de un consorcio, se deberá presentar la documentación correspondiente a todas las empresas que lo integran.)
                     %td.contenido-form   
                       = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
                     %td.contenido-form{id: "archivo_cargado_postulante_#{descargable.id}"} 
