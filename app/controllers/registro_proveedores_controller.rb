@@ -220,7 +220,7 @@ class RegistroProveedoresController < ApplicationController
     if current_user.posee_rol_ascc?(Rol::REVISOR_PROVEEDORES)
       @registro_proveedores = RegistroProveedor.where(estado: 'recomendado')
       rechazo_aprobado_array = RegistroProveedor.select { |registro| (registro.estado == 'aprobado' || registro.estado == 'rechazado_directiva') && (registro.tipo_proveedor_id == 1 || registro.tipo_proveedor_id == 2)}
-      @rechazo_aprobado = rechazo_aprobado_array.paginate(page: params[:page], per_page: 5)
+      @rechazo_aprobado = rechazo_aprobado_array.paginate(page: params[:page], per_page: 10)
     else
       redirect_to root_path
       flash[:success] = "No tienes permiso para acceder a esta pagina"
