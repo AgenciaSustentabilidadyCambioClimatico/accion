@@ -3741,6 +3741,7 @@ class FondoProduccionLimpiasController < ApplicationController
           aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
           aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
           tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+          obtiene_y_graba_empresas_adheridas(false)
         else
           aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
           aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
@@ -3750,6 +3751,7 @@ class FondoProduccionLimpiasController < ApplicationController
             tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
           elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
             tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+            obtiene_y_graba_empresas_adheridas(false)
           end
         end
 
@@ -3764,9 +3766,9 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
       end
-
+      
       pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas)
         
       # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
