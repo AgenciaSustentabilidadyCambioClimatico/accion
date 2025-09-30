@@ -1951,7 +1951,7 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-
+          
           #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
           if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
             params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
@@ -3014,7 +3014,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @fondo_produccion_limpia.cantidad_mediana_empresa != 0
                 confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
             else
-              @confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
+              confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
             end
           end
 
@@ -3761,7 +3761,7 @@ class FondoProduccionLimpiasController < ApplicationController
             @fondo_produccion_limpia.cantidad_mediana_empresa != 0
               confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@flujo.id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
           else
-            @confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
+            confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
           end
         end
 
@@ -5112,7 +5112,7 @@ class FondoProduccionLimpiasController < ApplicationController
           @empresas_adheridas_ids = JSON.parse(@fondo_produccion_limpia.empresas_adheridas)
         end
         @adhesiones = Adhesion.unscoped.where(flujo_id: @fondo_produccion_limpia.flujo_apl_id)
-        
+ 
         @empresas_adheridas = {}
         @adhesiones.each do |adh|
           puts "adhesion: #{adh}"
@@ -5150,7 +5150,7 @@ class FondoProduccionLimpiasController < ApplicationController
           
           # Para obtener específicamente el conteo por tamaño de empresa
           tamanos_detalle_empresas = tamano_empresas_count.transform_values(&:count)
-          
+
           custom_params = {
             fondo_produccion_limpia: {
               cantidad_micro_empresa: (tamanos_detalle_empresas[2].nil? ? 0 : tamanos_detalle_empresas[2]),
@@ -5164,7 +5164,7 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-        
+      
         end
 
       end

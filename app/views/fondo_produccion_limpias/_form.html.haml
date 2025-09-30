@@ -1,4 +1,35 @@
 :javascript
+  let empresasSeleccionadas = new Set();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1.1. Selecciona TODOS los checkboxes que tienen la clase y están marcados
+    const checkboxesPreseleccionados = document.querySelectorAll('input.seleccionar-elemento-adhesion:checked');
+    
+    // 1.2. Itera sobre ellos y añade sus valores al Set
+    checkboxesPreseleccionados.forEach(checkbox => {
+        empresasSeleccionadas.add(checkbox.value);
+    });
+
+    console.log(`IDs iniciales preseleccionados: ${Array.from(empresasSeleccionadas)}`);
+  });
+
+  document.addEventListener('click', (event) => {
+    // Verifica si el clic fue en un checkbox de selección
+    if (event.target.classList.contains('seleccionar-elemento-adhesion')) {
+      const checkbox = event.target;
+      const id = checkbox.value;
+
+      if (checkbox.checked) {
+        // Si se selecciona, añade el ID a la lista
+        empresasSeleccionadas.add(id);
+      } else {
+        // Si se desmarca, elimina el ID
+        empresasSeleccionadas.delete(id);
+      }
+      console.log(`IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+    }
+  });
+
   $(document).ready(function(){
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
@@ -96,13 +127,9 @@
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
         // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
-        const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
-        
-        // Crea un array para almacenar los valores de los checkboxes seleccionados
-        const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
-        empresas_adh = empresas_adheridas;
+          empresas_adh = Array.from(empresasSeleccionadas);
       }
-    
+
       $.ajax({
         url: "#{guardar_fondo_temporal_fondo_produccion_limpia_path}",
         data: {
