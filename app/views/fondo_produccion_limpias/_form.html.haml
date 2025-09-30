@@ -31,6 +31,58 @@
   });
 
   $(document).ready(function(){
+
+    $('.seleccionar-elemento-adhesion').click(function(){
+      cambio_estado_check();
+    });
+
+    // ====================================================================
+    // Función para seleccionar todos los IDs
+    // ====================================================================
+    $('#boton_sel_todos').click(function(){
+        // 1. Selecciona visualmente todos los checkboxes de la página actual
+        const checkboxes = $('.seleccionar-elemento-adhesion');
+        checkboxes.prop("checked", true);
+
+        // 2. Itera sobre TODOS los checkboxes (incluyendo los de otras páginas si usas un selector general)
+        //    y añade sus IDs al Set global 'empresasSeleccionadas'.
+        //    Usaremos el selector más amplio para asegurar que se consideran todos los IDs existentes
+        //    en el DOM, si tu paginación no elimina los elementos.
+        
+        // Si tu tabla con paginación solo muestra los elementos de la página actual,
+        // DEBES usar el selector de todos los elementos que forman parte de la lista
+        // (incluso los ocultos en otras páginas, si existen en el DOM).
+        
+        // Si solo los elementos VISIBLES se marcan:
+        checkboxes.each(function() {
+            // Aseguramos que solo añadimos los elementos visibles y que el Set no tenga duplicados
+            empresasSeleccionadas.add($(this).val()); 
+        });
+
+        // 3. (Opcional) Llamas a cualquier otra función de actualización visual que necesites
+        //    Si `cambio_estado_check` solo actualiza estilos, puedes mantenerla,
+        //    pero la lógica de IDs ya está cubierta aquí.
+        cambio_estado_check(); 
+
+        console.log(`Todos los IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+    });
+
+    // ====================================================================
+    // Lógica de deselección (necesitas esto para una gestión completa)
+    // ====================================================================
+    $('#boton_desel_todos').click(function(){ // Asumiendo que tienes un botón de deselección
+        // 1. Desmarca visualmente todos los checkboxes de la página actual
+        const checkboxes = $('.seleccionar-elemento-adhesion');
+        checkboxes.prop("checked", false);
+
+        // 2. Itera sobre todos los checkboxes y ELIMINA sus IDs del Set global.
+        checkboxes.each(function() {
+            empresasSeleccionadas.delete($(this).val()); 
+        });
+        cambio_estado_check(); 
+        console.log(`IDs restantes (después de deseleccionar): ${Array.from(empresasSeleccionadas)}`);
+    });
+
     var anular_confirmado = false;
     $('#guardar-fondo-temporal-button').click(function(){
 
@@ -127,7 +179,7 @@
           tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
         // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
-          empresas_adh = Array.from(empresasSeleccionadas);
+        empresas_adh = Array.from(empresasSeleccionadas);
       }
 
       $.ajax({
@@ -231,8 +283,24 @@
       }
     });
 
+    
+
     $('body').on('ajax:complete','#fondo-produccion-limpias-form',function(xhr,status){ $('.loading-data').show()});
   });
+
+  function cambio_estado_check(){
+    check_length = $('.seleccionar-elemento-adhesion:checked').length
+    total_length = $('.seleccionar-elemento-adhesion').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
+  }
+
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 - titulo t(:postulacion_fondo_produccion_limpia)
 - tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }

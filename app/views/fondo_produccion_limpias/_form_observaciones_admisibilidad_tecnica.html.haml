@@ -1,5 +1,80 @@
 :javascript
+  let empresasSeleccionadas = new Set();
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1.1. Selecciona TODOS los checkboxes que tienen la clase y están marcados
+    const checkboxesPreseleccionados = document.querySelectorAll('input.seleccionar-elemento-adhesion:checked');
+    
+    // 1.2. Itera sobre ellos y añade sus valores al Set
+    checkboxesPreseleccionados.forEach(checkbox => {
+        empresasSeleccionadas.add(checkbox.value);
+    });
+
+    console.log(`IDs iniciales preseleccionados: ${Array.from(empresasSeleccionadas)}`);
+  });
+
+  document.addEventListener('click', (event) => {
+    // Verifica si el clic fue en un checkbox de selección
+    if (event.target.classList.contains('seleccionar-elemento-adhesion')) {
+      const checkbox = event.target;
+      const id = checkbox.value;
+
+      if (checkbox.checked) {
+        // Si se selecciona, añade el ID a la lista
+        empresasSeleccionadas.add(id);
+      } else {
+        // Si se desmarca, elimina el ID
+        empresasSeleccionadas.delete(id);
+      }
+      console.log(`IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+    }
+  });
+
   $(document).ready(function(){
+    $('.seleccionar-elemento-adhesion').click(function(){
+      cambio_estado_check();
+    });
+
+    $('#boton_sel_todos').click(function(){
+        // 1. Selecciona visualmente todos los checkboxes de la página actual
+        const checkboxes = $('.seleccionar-elemento-adhesion');
+        checkboxes.prop("checked", true);
+
+        // 2. Itera sobre TODOS los checkboxes (incluyendo los de otras páginas si usas un selector general)
+        //    y añade sus IDs al Set global 'empresasSeleccionadas'.
+        //    Usaremos el selector más amplio para asegurar que se consideran todos los IDs existentes
+        //    en el DOM, si tu paginación no elimina los elementos.
+        
+        // Si tu tabla con paginación solo muestra los elementos de la página actual,
+        // DEBES usar el selector de todos los elementos que forman parte de la lista
+        // (incluso los ocultos en otras páginas, si existen en el DOM).
+        
+        // Si solo los elementos VISIBLES se marcan:
+        checkboxes.each(function() {
+            // Aseguramos que solo añadimos los elementos visibles y que el Set no tenga duplicados
+            empresasSeleccionadas.add($(this).val()); 
+        });
+
+        // 3. (Opcional) Llamas a cualquier otra función de actualización visual que necesites
+        //    Si `cambio_estado_check` solo actualiza estilos, puedes mantenerla,
+        //    pero la lógica de IDs ya está cubierta aquí.
+        cambio_estado_check(); 
+
+        console.log(`Todos los IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+    });
+
+    $('#boton_desel_todos').click(function(){ // Asumiendo que tienes un botón de deselección
+        // 1. Desmarca visualmente todos los checkboxes de la página actual
+        const checkboxes = $('.seleccionar-elemento-adhesion');
+        checkboxes.prop("checked", false);
+
+        // 2. Itera sobre todos los checkboxes y ELIMINA sus IDs del Set global.
+        checkboxes.each(function() {
+            empresasSeleccionadas.delete($(this).val()); 
+        });
+        cambio_estado_check(); 
+        console.log(`IDs restantes (después de deseleccionar): ${Array.from(empresasSeleccionadas)}`);
+    });
 
     //$(".disabled *:not('.fa')").prop('disabled',true);
     //$(".disabled *:not('.fa')").off();
@@ -114,6 +189,19 @@
         console.error("Error al llamar al método del controlador", error);
       }
     });
+  }
+
+  function cambio_estado_check(){
+    check_length = $('.seleccionar-elemento-adhesion:checked').length
+    total_length = $('.seleccionar-elemento-adhesion').length
+    $('#boton_clasificar').prop('disabled', (check_length == 0));
+    if(check_length > 1 || check_length == total_length){
+      $('#boton_sel_todos').addClass("d-none");
+      $('#boton_desel_todos').removeClass("d-none");
+    }else{
+      $('#boton_sel_todos').removeClass("d-none");
+      $('#boton_desel_todos').addClass("d-none");
+    }
   }
 
 
