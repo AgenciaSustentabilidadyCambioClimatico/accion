@@ -10,7 +10,7 @@
         empresasSeleccionadas.add(checkbox.value);
     });
 
-    console.log(`IDs iniciales preseleccionados: ${Array.from(empresasSeleccionadas)}`);
+    //console.log(`IDs iniciales preseleccionados: ${Array.from(empresasSeleccionadas)}`);
   });
 
   document.addEventListener('click', (event) => {
@@ -26,7 +26,7 @@
         // Si se desmarca, elimina el ID
         empresasSeleccionadas.delete(id);
       }
-      console.log(`IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+      //console.log(`IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
     }
   });
 
@@ -60,7 +60,7 @@
         //    pero la lógica de IDs ya está cubierta aquí.
         cambio_estado_check(); 
 
-        console.log(`Todos los IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
+        //console.log(`Todos los IDs seleccionados: ${Array.from(empresasSeleccionadas)}`);
     });
 
     $('#boton_desel_todos').click(function(){ // Asumiendo que tienes un botón de deselección
@@ -73,7 +73,7 @@
             empresasSeleccionadas.delete($(this).val()); 
         });
         cambio_estado_check(); 
-        console.log(`IDs restantes (después de deseleccionar): ${Array.from(empresasSeleccionadas)}`);
+        //console.log(`IDs restantes (después de deseleccionar): ${Array.from(empresasSeleccionadas)}`);
     });
 
     //$(".disabled *:not('.fa')").prop('disabled',true);

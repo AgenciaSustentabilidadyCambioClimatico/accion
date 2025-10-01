@@ -14,7 +14,8 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
+    :enviar_observaciones_admisibilidad_tecnica]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -3188,8 +3189,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
-        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(true)
       end
 
@@ -3374,8 +3375,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
-        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(true)
       end
 
