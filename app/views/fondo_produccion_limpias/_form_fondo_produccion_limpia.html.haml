@@ -3120,8 +3120,8 @@
                         %th.encabezado2-form Tamaño Empresa
                         %th.encabezado2-form Seleccionar
                     %tbody
-                      - if @empresas_adheridas.present?
-                        - @empresas_adheridas.each do |empresas_adherida|
+                      - if @empresas_adheridas_fpl.present?
+                        - @empresas_adheridas_fpl.each do |empresas_adherida|
                           %tr{"data-id" => empresas_adherida['id']} 
                             %td.contenido-form= empresas_adherida[:nombre_institucion]
                             %td.contenido-form= format_rut(empresas_adherida[:rut_institucion])

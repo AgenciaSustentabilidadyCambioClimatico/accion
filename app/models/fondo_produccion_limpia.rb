@@ -219,13 +219,19 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
-      self.pdf_tabla_costos(pdf, costos)
+      if costos != nil
+        self.pdf_tabla_costos(pdf, costos)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
-        self.pdf_tabla_validacion(pdf, costos)
+        if costos != nil
+          self.pdf_tabla_validacion(pdf, costos)
+        end
       else
-        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        if costos != nil
+          self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        end
       end
       self.pdf_separador(pdf, 20)
     end
@@ -392,7 +398,7 @@ class FondoProduccionLimpia < ApplicationRecord
         self.pdf_separador(pdf, 20)
       elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO  
         #implementar tabla elementos 
-        self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
+        self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial") 
         self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
         self.pdf_separador(pdf, 20)
       elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_2 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || tipo_instrumento == TipoInstrumento::FPL_LINEA_1_3 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
@@ -418,7 +424,9 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_equipo_trabajo(pdf, postulantes)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Equipo de Institución Ejecutora")
-      self.pdf_tabla_empresa(pdf, empresa)
+      if empresa.count != 0
+        self.pdf_tabla_empresa(pdf, empresa)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_tabla_equipo_trabajo(pdf, consultores)
       self.pdf_separador(pdf, 20)
@@ -436,13 +444,19 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
-      self.pdf_tabla_costos(pdf, costos)
+      if costos != nil
+        self.pdf_tabla_costos(pdf, costos)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
-        self.pdf_tabla_validacion(pdf, costos)
+        if costos != nil
+          self.pdf_tabla_validacion(pdf, costos)
+        end
       else
-        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        if costos != nil
+          self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        end
       end
       self.pdf_separador(pdf, 20)
     end
@@ -506,7 +520,7 @@ class FondoProduccionLimpia < ApplicationRecord
     begin
       # Crear la tabla en el PDF
       data = [
-        ["Micro","Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
+        ["Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
         [campo1.to_s, campo2.to_s, campo3.to_s, campo4.to_s] # Datos de los campos
       ]
 
@@ -1059,7 +1073,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos_seguimiento[1] != nil
         monto_cofinanciamiento = confinanciamiento_empresa[0]
 
-        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto_cofinanciamiento && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
+        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
           cumple4 = 'SI'
         else
           cumple4 = 'NO'

@@ -3767,9 +3767,9 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
       end
-      
+
       pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas)
+                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl)
         
       # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
@@ -5114,10 +5114,11 @@ class FondoProduccionLimpiasController < ApplicationController
         end
         @adhesiones = Adhesion.unscoped.where(flujo_id: @fondo_produccion_limpia.flujo_apl_id)
  
-        @empresas_adheridas = {}
+        @empresas_adheridas_fpl = {}
         @adhesiones.each do |adh|
           puts "adhesion: #{adh}"
-          @empresas_adheridas[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
+          @empresas_adheridas_fpl[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
+            empresa.with_indifferent_access
             tamano = empresa[:tamaño_empresa].split('-')
             tamano_empresa = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano[2])
             empresa.merge(
@@ -5127,11 +5128,11 @@ class FondoProduccionLimpiasController < ApplicationController
             )
           end
         end
-        @empresas_adheridas = @empresas_adheridas.values.flatten
+        @empresas_adheridas_fpl = @empresas_adheridas_fpl.values.flatten
 
         if flag_guarda_datos == true
           # Filtrar empresas seleccionadas
-          empresas_seleccionadas = @empresas_adheridas.select { |empresa| empresa[:seleccionada] }
+          empresas_seleccionadas = @empresas_adheridas_fpl.select { |empresa| empresa[:seleccionada] }
           
           # Obtener la cantidad de empresas únicas por rut_institucion
           empresas_unicas = empresas_seleccionadas.uniq { |empresa| empresa[:rut_institucion] }
