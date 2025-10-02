@@ -14,7 +14,8 @@ class FondoProduccionLimpiasController < ApplicationController
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
-    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante]
+    :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
+    :enviar_observaciones_admisibilidad_tecnica]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -1951,7 +1952,7 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-
+          
           #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
           if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
             params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
@@ -3014,7 +3015,7 @@ class FondoProduccionLimpiasController < ApplicationController
               @fondo_produccion_limpia.cantidad_mediana_empresa != 0
                 confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@tarea_pendiente.flujo_id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
             else
-              @confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
+              confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
             end
           end
 
@@ -3188,8 +3189,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
-        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(true)
       end
 
@@ -3374,8 +3375,8 @@ class FondoProduccionLimpiasController < ApplicationController
       fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
 
       #ingresa solo cuand el linea 1.3, para grabar empresas adheridad seleccionadas en el APL-028
-      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION.to_s ||
-        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2.to_s || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2.to_s
+      if params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_3 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
+        params[:tipo_instrumento_id] == TipoInstrumento::FPL_LINEA_1_2_2 || params[:tipo_instrumento_id] == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(true)
       end
 
@@ -3741,6 +3742,7 @@ class FondoProduccionLimpiasController < ApplicationController
           aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA_L13
           aporte_mediana = FondoProduccionLimpia::APORTE_MEDIANA_EMPRESA_L13
           tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
+          obtiene_y_graba_empresas_adheridas(false)
         else
           aporte_micro = FondoProduccionLimpia::APORTE_MICRO_EMPRESA
           aporte_pequena = FondoProduccionLimpia::APORTE_PEQUEÑA_EMPRESA
@@ -3750,6 +3752,7 @@ class FondoProduccionLimpiasController < ApplicationController
             tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
           elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
             tope_maximo = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+            obtiene_y_graba_empresas_adheridas(false)
           end
         end
 
@@ -3759,14 +3762,14 @@ class FondoProduccionLimpiasController < ApplicationController
             @fondo_produccion_limpia.cantidad_mediana_empresa != 0
               confinanciamiento_empresa = FondoProduccionLimpia.calcular_suma_y_porcentaje(@flujo.id,aporte_micro,aporte_pequena,aporte_mediana,tope_maximo)
           else
-            @confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
+            confinanciamiento_empresa = { 0 => 0, 1 => 1 }  # valor por defecto
           end
         end
 
       end
 
       pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios)
+                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl)
         
       # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
@@ -5110,11 +5113,12 @@ class FondoProduccionLimpiasController < ApplicationController
           @empresas_adheridas_ids = JSON.parse(@fondo_produccion_limpia.empresas_adheridas)
         end
         @adhesiones = Adhesion.unscoped.where(flujo_id: @fondo_produccion_limpia.flujo_apl_id)
-        
-        @empresas_adheridas = {}
+ 
+        @empresas_adheridas_fpl = {}
         @adhesiones.each do |adh|
           puts "adhesion: #{adh}"
-          @empresas_adheridas[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
+          @empresas_adheridas_fpl[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
+            empresa.with_indifferent_access
             tamano = empresa[:tamaño_empresa].split('-')
             tamano_empresa = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano[2])
             empresa.merge(
@@ -5124,11 +5128,11 @@ class FondoProduccionLimpiasController < ApplicationController
             )
           end
         end
-        @empresas_adheridas = @empresas_adheridas.values.flatten
+        @empresas_adheridas_fpl = @empresas_adheridas_fpl.values.flatten
 
         if flag_guarda_datos == true
           # Filtrar empresas seleccionadas
-          empresas_seleccionadas = @empresas_adheridas.select { |empresa| empresa[:seleccionada] }
+          empresas_seleccionadas = @empresas_adheridas_fpl.select { |empresa| empresa[:seleccionada] }
           
           # Obtener la cantidad de empresas únicas por rut_institucion
           empresas_unicas = empresas_seleccionadas.uniq { |empresa| empresa[:rut_institucion] }
@@ -5148,7 +5152,7 @@ class FondoProduccionLimpiasController < ApplicationController
           
           # Para obtener específicamente el conteo por tamaño de empresa
           tamanos_detalle_empresas = tamano_empresas_count.transform_values(&:count)
-          
+
           custom_params = {
             fondo_produccion_limpia: {
               cantidad_micro_empresa: (tamanos_detalle_empresas[2].nil? ? 0 : tamanos_detalle_empresas[2]),
@@ -5162,7 +5166,7 @@ class FondoProduccionLimpiasController < ApplicationController
             }
           }
           @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-        
+      
         end
 
       end

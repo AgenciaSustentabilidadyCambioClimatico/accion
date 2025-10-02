@@ -101,20 +101,6 @@
       $('#manifestacion_de_interes_current_tab').val($(this).attr('id'));
     });
 
-    $('.seleccionar-elemento-adhesion').click(function(){
-      cambio_estado_check();
-    });
-
-    $('#boton_sel_todos').click(function(){
-      $('.seleccionar-elemento-adhesion').prop("checked", true);
-      cambio_estado_check();
-    });
-
-    $('#boton_desel_todos').click(function(){
-      $('.seleccionar-elemento-adhesion').prop("checked", false);
-      cambio_estado_check();
-    });
-
     function checkbox_related_element(c) {
       element = $('#'+$(c).parents('.form-group').find('label.boolean').attr('for'));
       if (element === undefined) {
@@ -1826,11 +1812,7 @@
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
       // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
-      const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
-      
-      // Crea un array para almacenar los valores de los checkboxes seleccionados
-      const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
-      empresas_adh = empresas_adheridas;
+      empresas_adh = Array.from(empresasSeleccionadas);
     }
 
     if(confirm("¿Está seguro que desea enviar?")){
@@ -1954,11 +1936,7 @@
         tipoInstrumentoId === tipoInstrumentoValores.EXTRAPRESUPUESTARIO_SEGUIMIENTO_2) {
 
       // Selecciona todos los checkboxes que tengan la clase 'seleccionar-elemento-adhesion'
-      const checkboxes = document.querySelectorAll('input.form-control.seleccionar-elemento-adhesion.mt-2:checked');
-      
-      // Crea un array para almacenar los valores de los checkboxes seleccionados
-      const empresas_adheridas = Array.from(checkboxes).map(checkbox => checkbox.value);
-      empresas_adh = empresas_adheridas;
+      empresas_adh = Array.from(empresasSeleccionadas);
     }
     
     if(confirm("¿Está seguro que desea enviar?")){
@@ -2683,20 +2661,7 @@
       
     //} 
   }
-
-  function cambio_estado_check(){
-    check_length = $('.seleccionar-elemento-adhesion:checked').length
-    total_length = $('.seleccionar-elemento-adhesion').length
-    $('#boton_clasificar').prop('disabled', (check_length == 0));
-    if(check_length > 1 || check_length == total_length){
-      $('#boton_sel_todos').addClass("d-none");
-      $('#boton_desel_todos').removeClass("d-none");
-    }else{
-      $('#boton_sel_todos').removeClass("d-none");
-      $('#boton_desel_todos').addClass("d-none");
-    }
-  }
-                                    
+                             
 %style
   :css
     .table-responsive {
@@ -3155,8 +3120,8 @@
                         %th.encabezado2-form Tamaño Empresa
                         %th.encabezado2-form Seleccionar
                     %tbody
-                      - if @empresas_adheridas.present?
-                        - @empresas_adheridas.each do |empresas_adherida|
+                      - if @empresas_adheridas_fpl.present?
+                        - @empresas_adheridas_fpl.each do |empresas_adherida|
                           %tr{"data-id" => empresas_adherida['id']} 
                             %td.contenido-form= empresas_adherida[:nombre_institucion]
                             %td.contenido-form= format_rut(empresas_adherida[:rut_institucion])
