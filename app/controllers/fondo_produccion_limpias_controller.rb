@@ -5118,13 +5118,13 @@ class FondoProduccionLimpiasController < ApplicationController
         @adhesiones.each do |adh|
           puts "adhesion: #{adh}"
           @empresas_adheridas_fpl[adh.id] = adh.adhesiones_aceptadas.map do |empresa|
-            empresa.with_indifferent_access
+            empresa = empresa.with_indifferent_access
             tamano = empresa[:tamaño_empresa].split('-')
             tamano_empresa = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano[2])
             empresa.merge(
-              'tamano_empresa_id' => tamano_empresa.tamano_contribuyente_id,
-              'tamano_contribuyente_nombre' => tamano_empresa.tamano_contribuyente.nombre,
-              'seleccionada' => @empresas_adheridas_ids.include?(empresa['id'].to_s)
+              tamano_empresa_id: tamano_empresa.tamano_contribuyente_id,
+              tamano_contribuyente_nombre: tamano_empresa.tamano_contribuyente.nombre,
+              seleccionada: @empresas_adheridas_ids.include?(empresa[:id].to_s)
             )
           end
         end
