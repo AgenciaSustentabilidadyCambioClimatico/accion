@@ -1092,7 +1092,7 @@ class FondoProduccionLimpia < ApplicationRecord
         end
 
         valida_pregunta_gastos_administrativos = (costos.costo_total_de_la_propuesta * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO) / 100
-        if costos.aporte_solicitado_al_fondo <= monto && costos.costo_total_de_la_propuesta != ''
+        if costos.gastos_administrativos <= valida_pregunta_gastos_administrativos && costos.costo_total_de_la_propuesta != ''
           cumple6 = 'SI'
         else
           cumple6 = 'NO'
