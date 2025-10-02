@@ -219,13 +219,19 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
-      self.pdf_tabla_costos(pdf, costos)
+      if costos != nil
+        self.pdf_tabla_costos(pdf, costos)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
-        self.pdf_tabla_validacion(pdf, costos)
+        if costos != nil
+          self.pdf_tabla_validacion(pdf, costos)
+        end
       else
-        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        if costos != nil
+          self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        end
       end
       self.pdf_separador(pdf, 20)
     end
@@ -335,7 +341,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
   def generar_formulario_fpl(objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
                   costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
-                  comentarios = nil)
+                  comentarios = nil, adheridas = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -382,17 +388,22 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
       self.pdf_tabla_objetivos(pdf, objetivo_especificos)
       self.pdf_separador(pdf, 20)
-      self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
       
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
+        self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial")
         self.pdf_tabla_cantidad_empresas(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa)
         self.pdf_separador(pdf, 20)  
         self.pdf_sub_titulo_formato(pdf, "Territorios involucrados en el acuerdo")
         self.pdf_tabla_empresas_A_G(pdf, self.empresas_asociadas_ag, self.empresas_no_asociadas_ag)
         self.pdf_separador(pdf, 20)
-      else
+      elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO  
         #implementar tabla elementos 
+        self.pdf_sub_titulo_formato(pdf, "Empresas que serán consideradas para la realizacion del diagnóstico sectorial") 
         self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
+        self.pdf_separador(pdf, 20)
+      elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_2 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || tipo_instrumento == TipoInstrumento::FPL_LINEA_1_3 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+        self.pdf_sub_titulo_formato(pdf, "Empresas Adheridas")
+        self.pdf_tabla_empresas_adheridas(pdf, adheridas)
         self.pdf_separador(pdf, 20)
       end
       self.pdf_sub_titulo_formato(pdf, "Duración del proyecto")
@@ -413,7 +424,9 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_tabla_equipo_trabajo(pdf, postulantes)
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Equipo de Institución Ejecutora")
-      self.pdf_tabla_empresa(pdf, empresa)
+      if empresa.count != 0
+        self.pdf_tabla_empresa(pdf, empresa)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_tabla_equipo_trabajo(pdf, consultores)
       self.pdf_separador(pdf, 20)
@@ -431,13 +444,19 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
-      self.pdf_tabla_costos(pdf, costos)
+      if costos != nil
+        self.pdf_tabla_costos(pdf, costos)
+      end
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Validación")
       if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
-        self.pdf_tabla_validacion(pdf, costos)
+        if costos != nil
+          self.pdf_tabla_validacion(pdf, costos)
+        end
       else
-        self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        if costos != nil
+          self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
+        end
       end
       self.pdf_separador(pdf, 20)
     end
@@ -501,7 +520,7 @@ class FondoProduccionLimpia < ApplicationRecord
     begin
       # Crear la tabla en el PDF
       data = [
-        ["Micro","Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
+        ["Micro", "Pequeña", "Mediana", "Grande"], # Encabezados de la tabla
         [campo1.to_s, campo2.to_s, campo3.to_s, campo4.to_s] # Datos de los campos
       ]
 
@@ -526,6 +545,38 @@ class FondoProduccionLimpia < ApplicationRecord
         ["Elementos Totales a Adherir", campo_elementos1.to_s, campo_elementos2.to_s, campo_elementos3.to_s, campo_elementos4.to_s] # Datos de los campos
       ]
     
+      pdf.table(data, header: true, column_widths: [120, 100, 100, 100, 100], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+    rescue => e
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+  def pdf_tabla_empresas_adheridas(pdf, empresas_adheridas)
+    begin
+      # Encabezados de la tabla
+      headers = ["Nombre", "RUT", "Establecimiento", "Comuna", "Tamaño Empresa"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      empresas_adheridas.each do |adheridas|
+        if adheridas[:seleccionada] == true
+          fila = [ 
+            adheridas[:nombre_institucion],
+            adheridas[:rut_institucion],
+            adheridas[:nombre_elemento],
+            adheridas[:comuna_instalacion],
+            adheridas[:tamano_contribuyente_nombre]
+          ]
+          data << fila
+        end
+      end
       pdf.table(data, header: true, column_widths: [120, 100, 100, 100, 100], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
@@ -1022,7 +1073,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos_seguimiento[1] != nil
         monto_cofinanciamiento = confinanciamiento_empresa[0]
 
-        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto_cofinanciamiento && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
+        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
           cumple4 = 'SI'
         else
           cumple4 = 'NO'
