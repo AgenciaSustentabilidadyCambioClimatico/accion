@@ -115,6 +115,66 @@
       $('#usuarios_cargadores table.usuarios #usuario-#{@mapa_actor.usuario_carga_datos}').prop("checked", true);
     }
   });
+
+  function cargarListaUsuariosEntregables(contribuyente_id){
+    try {
+      //cargo los usuarios de la tabla usuarios entregables
+      $.ajax({
+        url: "#{usuarios_cargo_entregables_entregables_manifestacion_de_interes_path}",
+        type: "POST",
+        data: {
+          contribuyente_id: contribuyente_id,
+          tarea_pendiente_id: #{@tarea_pendiente.id}
+        },
+        success: function(data) {
+          $('#usuarios_entregables').modal('show');
+
+          $('#usuarios_entregables').on('shown.bs.modal', function() {
+            $('#tituloModal_buscar-usuario').text('Elija un usuario a cargo de la postulación');
+          });
+
+          $('.loading-data').hide();
+        },
+        error: function(xhr, status, error) {
+          alert("Ocurrió un error al cargar el contenido: " + error);
+        }
+      });
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  }
+
+  function cargarListaUsuariosCargoDatos(contribuyente_id){
+    try {
+      //cargo los usuarios de la tabla usuarios entregables
+      
+
+
+      $.ajax({
+        url: "#{usuarios_cargo_entregables_carga_datos_manifestacion_de_interes_path}",
+        type: "POST",
+        data: {
+          contribuyente_id: contribuyente_id,
+          tarea_pendiente_id: #{@tarea_pendiente.id}
+        },
+        success: function(data) {
+          $('#usuarios_cargadores').modal('show');
+
+          $('#usuarios_cargadores').on('shown.bs.modal', function() {
+            $('#tituloModal_buscar-usuario').text('Elija un usuario a cargo de la postulación');
+          });
+          $("#institucion_entregables_name").val('prueba');
+
+          $('.loading-data').hide();
+        },
+        error: function(xhr, status, error) {
+          alert("Ocurrió un error al cargar el contenido: " + error);
+        }
+      });
+    } catch(e) {
+      alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+    }
+  }
 :css
   .dataTables_filter input[type="search"] {
     margin-right: 10px;
@@ -142,17 +202,20 @@
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
-              %label.string.control-label
-                %abbr{title: :required}*
-                = t(:elegir_institucion_entregables)
+              -#%label.string.control-label
+              -#  %abbr{title: :required}*
+              -#  = t(:elegir_institucion_entregables)
               .row
-                .col-12.col-lg-2.pr-1
-                  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-entregables", class: 'buscar-entregables form-control btn btn-primary btn-sm' do
-                    %i.fa.fa-search-plus
-                    Buscar
-                .col-12.col-lg-10.pl-1
-                  = f.input :institucion_entregables, as: :hidden, wrapper: false
-                  = f.input :institucion_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
+                .col-12.col-lg-12
+                  = f.input :institucion_entregables, collection: @contribuyentes_entregables.map{|p| ["#{format_rut_with_miles(p.rut)}-#{p.dv} - #{p.razon_social}", p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione Institución", onchange: "cargarListaUsuariosEntregables(this.value)" }, label: t(:elegir_institucion_entregables), id: 'institucion_entregables'
+                  = f.input :institucion_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false, id: 'institucion_entregables_name'
+        -#        .col-12.col-lg-2.pr-1
+        -#          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-entregables", class: 'buscar-entregables form-control btn btn-primary btn-sm' do
+        -#            %i.fa.fa-search-plus
+        -#            Buscar
+        -#        .col-12.col-lg-10.pl-1
+        -#          = f.input :institucion_entregables, as: :hidden, wrapper: false
+        -#          = f.input :institucion_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
@@ -160,14 +223,14 @@
                 %abbr{title: :required}*
                 = t(:elegir_encargado_entregables)
               .row
-                .col-12.col-lg-2.pr-1
-                  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_entregables", class: 'form-control btn btn-primary btn-sm' do
-                    %i.fa.fa-search-plus
-                    Buscar
+                -#.col-12.col-lg-2.pr-1
+                -#  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_entregables", class: 'form-control btn btn-primary btn-sm' do
+                -#    %i.fa.fa-search-plus
+                -#    Buscar
                 .col-12.col-lg-10.pl-1
                   = f.input :usuario_entregables, as: :hidden, wrapper: false
                   = f.input :usuario_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true, label: false
-        .col-12.col-lg-6.mb-2
+        .col-12.col-lg-12.mb-2
           = f.input :observacion_entregables,  as: :text, label: t(:comentarios_encargado), required: false, :input_html => {:rows => 6}
         
     .card-header{ :style => "border-top: 1px solid rgba(0, 0, 0, 0.125)"}
@@ -177,17 +240,20 @@
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
-              %label.string.control-label
-                %abbr{title: :required}*
-                = t(:elegir_institucion_carga_datos)
+              -#%label.string.control-label
+              -#  %abbr{title: :required}*
+              -#  = t(:elegir_institucion_carga_datos)
               .row
-                .col-12.col-lg-2.pr-1
-                  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-cargadores", class: ' buscar-carga-datos form-control btn btn-primary btn-sm px-0' do
-                    %i.fa.fa-search-plus
-                    Buscar
-                .col-lg-10.col-12.pl-1
-                  = f.input :institucion_carga_datos, as: :hidden, wrapper: false
+                .col-12.col-lg-12
+                  = f.input :institucion_carga_datos, collection: @contribuyentes_cargadores.map{|p| ["#{format_rut_with_miles(p.rut)}-#{p.dv} - #{p.razon_social}", p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione Institución", onchange: "cargarListaUsuariosCargoDatos(this.value)" }, label: t(:elegir_institucion_carga_datos), id: 'institucion_carga_datos'
                   = f.input :institucion_carga_datos_name, as: :string, input_html: { class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
+
+        -#          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-cargadores", class: ' buscar-carga-datos form-control btn btn-primary btn-sm px-0' do
+        -#            %i.fa.fa-search-plus
+        -#            Buscar
+        -#        .col-lg-10.col-12.pl-1
+        -#          = f.input :institucion_carga_datos, as: :hidden, wrapper: false
+        -#          = f.input :institucion_carga_datos_name, as: :string, input_html: { class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
@@ -195,14 +261,14 @@
                 %abbr{title: :required}*
                 = t(:elegir_encargado_carga_datos)
               .row
-                .col-12.col-lg-2.pr-1
-                  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_cargadores", class: 'form-control btn btn-primary btn-sm' do
-                    %i.fa.fa-search-plus
-                    Buscar
+                -#.col-12.col-lg-2.pr-1
+                -#  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_cargadores", class: 'form-control btn btn-primary btn-sm' do
+                -#    %i.fa.fa-search-plus
+                -#    Buscar
                 .col-12.col-lg-10.pl-1
                   = f.input :usuario_carga_datos, as: :hidden, wrapper: false
                   = f.input :usuario_carga_datos_name, as: :string ,input_html:{ class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
-        .col-12.col-lg-6.mb-2
+        .col-12.col-lg-12.mb-2
           = f.input :observacion_carga_datos, label: t(:comentarios_carga_datos),as: :text, required: false, :input_html => {:rows => 6}
   .float-right
     = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
