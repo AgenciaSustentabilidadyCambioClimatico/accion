@@ -119,6 +119,10 @@
   function cargarListaUsuariosEntregables(contribuyente_id){
     try {
       //cargo los usuarios de la tabla usuarios entregables
+      const select = document.getElementById('mapa_de_actor_institucion_entregables');
+      const razonSocial = select.options[select.selectedIndex].text.split(' - ').slice(1).join(' - ');
+      $("#mapa_de_actor_institucion_entregables_name").val(razonSocial);
+
       $.ajax({
         url: "#{usuarios_cargo_entregables_entregables_manifestacion_de_interes_path}",
         type: "POST",
@@ -147,8 +151,9 @@
   function cargarListaUsuariosCargoDatos(contribuyente_id){
     try {
       //cargo los usuarios de la tabla usuarios entregables
-      
-
+      const select = document.getElementById('mapa_de_actor_institucion_carga_datos');
+      const razonSocial = select.options[select.selectedIndex].text.split(' - ').slice(1).join(' - ');
+      $("#mapa_de_actor_institucion_carga_datos_name").val(razonSocial);
 
       $.ajax({
         url: "#{usuarios_cargo_entregables_carga_datos_manifestacion_de_interes_path}",
@@ -202,20 +207,10 @@
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
-              -#%label.string.control-label
-              -#  %abbr{title: :required}*
-              -#  = t(:elegir_institucion_entregables)
               .row
                 .col-12.col-lg-12
                   = f.input :institucion_entregables, collection: @contribuyentes_entregables.map{|p| ["#{format_rut_with_miles(p.rut)}-#{p.dv} - #{p.razon_social}", p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione Institución", onchange: "cargarListaUsuariosEntregables(this.value)" }, label: t(:elegir_institucion_entregables), id: 'institucion_entregables'
-                  = f.input :institucion_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false, id: 'institucion_entregables_name'
-        -#        .col-12.col-lg-2.pr-1
-        -#          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-entregables", class: 'buscar-entregables form-control btn btn-primary btn-sm' do
-        -#            %i.fa.fa-search-plus
-        -#            Buscar
-        -#        .col-12.col-lg-10.pl-1
-        -#          = f.input :institucion_entregables, as: :hidden, wrapper: false
-        -#          = f.input :institucion_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
+                  = f.input :institucion_entregables_name, as: :hidden ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false, id: 'institucion_entregables_name'
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
@@ -223,10 +218,6 @@
                 %abbr{title: :required}*
                 = t(:elegir_encargado_entregables)
               .row
-                -#.col-12.col-lg-2.pr-1
-                -#  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_entregables", class: 'form-control btn btn-primary btn-sm' do
-                -#    %i.fa.fa-search-plus
-                -#    Buscar
                 .col-12.col-lg-10.pl-1
                   = f.input :usuario_entregables, as: :hidden, wrapper: false
                   = f.input :usuario_entregables_name, as: :string ,input_html: {class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true, label: false
@@ -240,20 +231,10 @@
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
-              -#%label.string.control-label
-              -#  %abbr{title: :required}*
-              -#  = t(:elegir_institucion_carga_datos)
               .row
                 .col-12.col-lg-12
                   = f.input :institucion_carga_datos, collection: @contribuyentes_cargadores.map{|p| ["#{format_rut_with_miles(p.rut)}-#{p.dv} - #{p.razon_social}", p.id]}, required: true, input_html: {class: "required-field chosen-control", type: :string, "data-placeholder"=>"Seleccione Institución", onchange: "cargarListaUsuariosCargoDatos(this.value)" }, label: t(:elegir_institucion_carga_datos), id: 'institucion_carga_datos'
-                  = f.input :institucion_carga_datos_name, as: :string, input_html: { class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
-
-        -#          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#buscar-contribuyente-cargadores", class: ' buscar-carga-datos form-control btn btn-primary btn-sm px-0' do
-        -#            %i.fa.fa-search-plus
-        -#            Buscar
-        -#        .col-lg-10.col-12.pl-1
-        -#          = f.input :institucion_carga_datos, as: :hidden, wrapper: false
-        -#          = f.input :institucion_carga_datos_name, as: :string, input_html: { class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
+                  = f.input :institucion_carga_datos_name, as: :hidden, input_html: { class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
         .col-12.col-lg-6.mb-2
           .row.align-items.end
             .col-12
@@ -261,10 +242,6 @@
                 %abbr{title: :required}*
                 = t(:elegir_encargado_carga_datos)
               .row
-                -#.col-12.col-lg-2.pr-1
-                -#  = link_to '#', "data-toggle"=>:modal, "data-target"=>"#usuarios_cargadores", class: 'form-control btn btn-primary btn-sm' do
-                -#    %i.fa.fa-search-plus
-                -#    Buscar
                 .col-12.col-lg-10.pl-1
                   = f.input :usuario_carga_datos, as: :hidden, wrapper: false
                   = f.input :usuario_carga_datos_name, as: :string ,input_html:{ class: 'form-control string required readonly required-field im-not-required-check-the-others float-left'}, readonly: true , label: false
