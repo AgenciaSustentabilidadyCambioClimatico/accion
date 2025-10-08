@@ -3103,8 +3103,9 @@
             .d-flex.justify-content-between.align-items-center
               %h5.no-margin
               %div
-                %button.btn.btn-ascc.btn-sm#boton_sel_todos{type: :button} Seleccionar todos
-                %button.btn.btn-ascc.btn-sm#boton_desel_todos.d-none{type: :button} Deseleccionar todos
+                - button_class_adh = @total_de_errores_por_tab.present? ? (@empresas_adh != 0 ? 'btn-primary' : 'btn-danger') : 'btn-primary'
+                = button_tag 'Seleccionar todos', id: 'boton_sel_todos', class: "btn btn-sm #{button_class_adh} margin-bottom-20", type: 'button'
+                = button_tag 'Deseleccionar todos', id: 'boton_desel_todos', class: "btn btn-sm #{button_class_adh} margin-bottom-20 d-none", type: 'button'
           %br
           .row
             .col-12

@@ -1005,6 +1005,8 @@ class FondoProduccionLimpia < ApplicationRecord
           monto = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_1
         when 29
           monto = Gasto::TOPE_MAXIMO_SOLICITAR_SEGUIMIENTO_L1_2
+        when 13
+          monto = Gasto::TOPE_MAXIMO_SOLICITAR_EVALUACION_L1_3
         else
           nil
         end
