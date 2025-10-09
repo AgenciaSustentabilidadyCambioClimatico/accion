@@ -159,7 +159,7 @@ class FondoProduccionLimpiasController < ApplicationController
     def get_valida_campos_nulos
       # Obtener el fondo_produccion_limpia
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: params[:flujo_id])
-
+      
       set_equipo_trabajo
       set_actividades_x_linea
       set_costos
@@ -237,6 +237,15 @@ class FondoProduccionLimpiasController < ApplicationController
       campos_completos << :duracion if @fondo_produccion_limpia.duracion.present?
       campos_nulos << :duracion if @fondo_produccion_limpia.duracion.nil?
       propuesta_tecnica << :duracion if @fondo_produccion_limpia.duracion.nil?
+
+      if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 ||
+        @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+        empresas_adheridas = JSON.parse(@fondo_produccion_limpia.empresas_adheridas.presence || '[]')
+        @empresas_adh = empresas_adheridas.count
+        if empresas_adheridas.count == 0
+          propuesta_tecnica << 1
+        end
+      end
 
       @total_de_errores_por_tab[:"propuesta-tecnica"] = propuesta_tecnica.count if propuesta_tecnica.count != 0
 
@@ -528,6 +537,8 @@ class FondoProduccionLimpiasController < ApplicationController
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
         obtiene_y_graba_empresas_adheridas(false)
+        empresas_adheridas = JSON.parse(@fondo_produccion_limpia.empresas_adheridas.presence || '[]')
+        @empresas_adh = empresas_adheridas.count
       end
 
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
