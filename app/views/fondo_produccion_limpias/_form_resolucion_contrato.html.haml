@@ -10,6 +10,78 @@
     });
     htmlErrorToTooltip('top');
   });
+
+  let archivosCargados = {
+  archivo_resolucion: false,
+  archivo_contrato: false
+  };
+
+  function guardarYActualizar(event, nombreCampo, origen) {
+    guardarArchivos(event, nombreCampo, origen);
+  }
+
+  function guardarArchivos(event, nombreCampo, origen) {
+    const archivoInput = document.getElementById(nombreCampo);
+    const archivo = archivoInput.files[0];
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    formData.append('nombre_campo', nombreCampo);
+
+    // ID del flujo
+    const Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
+    formData.append('id', Id);
+
+    fetch('/subir_documento_refresh_pagina', {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+      }
+    })
+    .then(async response => {
+      const text = await response.text();
+      try {
+        const data = JSON.parse(text);
+        if (data.success) {
+          marcarArchivoCargado(nombreCampo, true);
+        } else {
+          marcarArchivoCargado(nombreCampo, false);
+        }
+      } catch {
+        // Si el servidor retorna JS (window.location), lo ejecutamos
+        eval(text);
+        marcarArchivoCargado(nombreCampo, true);
+      }
+    })
+    .catch(error => {
+      console.error("Error al subir archivo:", error);
+      marcarArchivoCargado(nombreCampo, false);
+    });
+  }
+
+  function marcarArchivoCargado(nombreCampo, cargado) {
+    archivosCargados[nombreCampo] = cargado;
+    validarArchivosCargados();
+  }
+
+  function validarArchivosCargados() {
+    const botonEnviar = document.getElementById('enviar-button');
+    if (archivosCargados.archivo_resolucion && archivosCargados.archivo_contrato) {
+      botonEnviar.classList.remove('btn-disabled');
+      botonEnviar.disabled = false;
+    } else {
+      botonEnviar.classList.add('btn-disabled');
+      botonEnviar.disabled = true;
+    }
+  }
+
+  // Si quieres que al cargar la página ya se evalúe si existen archivos previos:
+  document.addEventListener("DOMContentLoaded", function() {
+    // Si en el backend ya hay archivos cargados, marcamos esos campos como true:
+    archivosCargados.archivo_resolucion = #{@fondo_produccion_limpia.archivo_resolucion.present?};
+    archivosCargados.archivo_contrato = #{@fondo_produccion_limpia.archivo_contrato.present?};
+    validarArchivosCargados();
+  });
 - titulo t(:resolucion_contrato)
 = simple_form_for @fondo_produccion_limpia, url: adjuntar_resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
   .row
@@ -18,22 +90,47 @@
         .card-header
           %h5.no-margin=t(:adjuntar_resolucion_contrato)
         .card-body
-          .row
-            .col-lg-6.col-12
-              - if @fondo_produccion_limpia['archivo_resolucion'].present?
-                %span{ style: "color: #5d759e; font-weight: 400; font-size: 14px;" } Archivo Resolución: 
-                %br  
-                %span{ style: "color: black; font-weight: 400; font-size: 14px;" }= @fondo_produccion_limpia['archivo_resolucion']
-              - else
-                = f.input :archivo_resolucion, as: :file, label: t(:subir_archivo_resolucion), required: true, input_html: { class: 'form-control' }
-            .col-lg-6.col-12
-              - if @fondo_produccion_limpia['archivo_contrato'].present?
-                %span{ style: "color: #5d759e; font-weight: 400; font-size: 14px;" } Archivo Contrato: 
-                %br
-                %span{ style: "color: black; font-weight: 400; font-size: 14px;" }= @fondo_produccion_limpia['archivo_contrato']
-              - else
-                = f.input :archivo_contrato, as: :file, label: t(:subir_archivo_contrato), required: true, input_html: { class: 'form-control' }
+          %div.table-responsive
+            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 25%;'} Documento
+                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 25%;'} Subir Documento
+                %tbody
+                  %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      Archivo Resolución
+                    %td.contenido-form{id: "archivo_cargado_resolucion"} 
+                      = __descargar_archivo_sin_titulo(f.object.send("archivo_resolucion"), f.object)
+                      -#
+                        = __upload_status(f.object,"archivo_resolucion")
+                    %td.contenido-form
+                      - valor = @fondo_produccion_limpia.send('archivo_resolucion')
+                      - if valor.nil? || valor.file.nil? || !valor.file.present?
+                        = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
+                      - else
+                        = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
+                  %tr{id: "fila_contrato", data: { original_title: "", title: "" }}
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      Archivo Resolución
+                    %td.contenido-form{id: "archivo_cargado_contrato"} 
+                      = __descargar_archivo_sin_titulo(f.object.send("archivo_contrato"), f.object)
+                      -#
+                        = __upload_status(f.object,"archivo_contrato")
+                    %td.contenido-form
+                      - valor = @fondo_produccion_limpia.send('archivo_contrato')
+                      - if valor.nil? || valor.file.nil? || !valor.file.present?
+                        = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
+                      - else
+                        = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
   .float-right
     = volver_root
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary btn-disabled", disabled: :disabled
-
+    = button_tag t(:enviar), 
+      'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, 
+      id: 'enviar-button', 
+      class: "btn btn-sm btn-success btn-disabled", 
+      disabled: true,
+      data: { confirm: "¿Está seguro que desea enviar los documentos?", remote: false }
