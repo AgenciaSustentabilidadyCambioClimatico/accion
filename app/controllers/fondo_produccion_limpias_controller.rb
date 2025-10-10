@@ -3,16 +3,16 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :authenticate_user!, unless: proc { action_name == 'google_map_kml' }
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
     :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
-    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
+    :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
     :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
-    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :get_revisor, 
+    :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
     :enviar_observaciones_admisibilidad_tecnica]
@@ -2067,7 +2067,38 @@ class FondoProduccionLimpiasController < ApplicationController
           format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
         end
       end
-    end     
+    end   
+    
+    def subir_documento_refresh_pagina
+      nombre_campo = params[:nombre_campo]
+      archivo = params[:archivo]
+    
+      unless valid_extensions?(archivo)
+        respond_to do |format|
+          format.json { render json: { error: 'La extensión del archivo no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.' }, status: :unprocessable_entity }
+          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión del archivo no es válida." }
+        end
+        return
+      end
+    
+      custom_params = {
+        fondo_produccion_limpia: {
+          nombre_campo => archivo
+        }
+      }
+    
+      if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+        respond_to do |format|
+          flash[:success] = 'Archivo subido correctamente.'
+          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+        end
+      else
+        respond_to do |format|
+          format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+        end
+      end
+    end 
 
     def enviar_postulacion
       respond_to do |format|
@@ -3677,25 +3708,47 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def adjuntar_resolucion_contrato
       respond_to do |format|
-        if @fondo_produccion_limpia.update(fondo_produccion_limpia_archivos_params)
-
-          #SE CAMBIA EL ESTADO DEL FPL-11 A 2
+        # Validamos que existan ambos archivos
+        if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?
+          
+          # SE CAMBIA EL ESTADO DEL FPL-11 A 2 (ENVIADA)
           tarea_fondo_fpl_11 = Tarea.find_by_codigo(Tarea::COD_FPL_11)
-          tarea_pendiente_fpl_11 = TareaPendiente.find_by(tarea_id: tarea_fondo_fpl_11.id, flujo_id: @tarea_pendiente.flujo_id, user_id: @tarea_pendiente.user_id)
+          tarea_pendiente_fpl_11 = TareaPendiente.find_by(
+            tarea_id: tarea_fondo_fpl_11.id,
+            flujo_id: @tarea_pendiente.flujo_id,
+            user_id: @tarea_pendiente.user_id
+          )
 
           if tarea_pendiente_fpl_11.present?
             tarea_pendiente_fpl_11.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            tarea_pendiente_fpl_11.save  
+            tarea_pendiente_fpl_11.save
           end
 
-          format.js { flash.now[:success] = 'Documentos ingresados correctamente'
-            render js: "window.location='#{root_path}'"}
-          format.html { redirect_to root_path, flash: {notice: 'Documentos ingresados correctamente' }}
-       
+          format.js do
+            flash.now[:success] = 'Documentos verificados correctamente'
+            render js: "window.location='#{root_path}'"
+          end
+
+          format.html do
+            redirect_to root_path, flash: { notice: 'Documentos verificados correctamente' }
+          end
+
         else
-          flash[:error] = "Error al actualizar: #{@fondo_produccion_limpia.errors.full_messages.join(', ')}"
-          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
-          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: error }
+          # Si falta algún documento, mostramos error
+          faltantes = []
+          faltantes << "Resolución" unless @fondo_produccion_limpia.archivo_resolucion.present?
+          faltantes << "Contrato" unless @fondo_produccion_limpia.archivo_contrato.present?
+          
+          flash[:error] = "Debe adjuntar los documentos: #{faltantes.join(' y ')}"
+
+          format.js do
+            render js: "alert('Debe adjuntar los documentos: #{faltantes.join(' y ')}');"
+          end
+
+          format.html do
+            redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id),
+              flash: { error: "Debe adjuntar los documentos: #{faltantes.join(' y ')}" }
+          end
         end
       end
     end
