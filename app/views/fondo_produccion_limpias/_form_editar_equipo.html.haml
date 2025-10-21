@@ -43,11 +43,13 @@
                         %abbr{ title: "Campo requerido" } *
                         Copia CI 
                       = f.file_field :copia_ci, required: true, label: t(:copia_ci), id: "copia_ci", name: "archivos_copia_ci", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
+                      = __descargar_archivo(@equipo_temporal.copia_ci,@equipo_temporal.copia_ci,false,false)
                     .col-12.col-lg-4
                       %label.label-estilo{ for: 'curriculum' }
                         %abbr{ title: "Campo requerido" } *
                         Curriculum Vitae 
                       = f.file_field :curriculum, required: true, label: t(:curriculum), id: "curriculum", name: "archivos_curriculum", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
+                      = __descargar_archivo(@equipo_temporal.curriculum,@equipo_temporal.curriculum,false,false)
         .col-12.mt-2.text-right
           %button.btn.btn-secondary#cerrar-usuario-fpl-button{ type: :button, 'data-dismiss' => 'modal', onclick: "cerrar_modal()"}
             = t(:cerrar)
