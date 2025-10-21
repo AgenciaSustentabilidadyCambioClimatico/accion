@@ -1,0 +1,8 @@
+// Insertamos el contenido HTML devuelto por el servidor dentro del modal
+$('#buscar-usuario .body-usuario-buscador').html('<%= j render partial: "form_editar_equipo", locals: { usuario_temporal: @usuario_temporal, equipo_temporal: @equipo_temporal } %>');
+
+// Mostramos el modal
+$('#buscar-usuario').modal('show');
+
+// (Opcional) inicializa validaciones o plugins JS si los usas
+htmlErrorToTooltip('top');

@@ -1,6 +1,30 @@
-<% @recursos_externos_no_asignados.each do |recursos_externos_no_asignados| %>
-  $('#iconos-acciones-<%= recursos_externos_no_asignados.id %>').html('<a data-user-id="<%= recursos_externos_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recursos_externos_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recursos_externos_no_asignados.id %>"><i class="fa fa-trash"></i>');
+/*<% @recursos_externos_no_asignados.each do |recursos_externos_no_asignados| %>
+  <% if recursos_externos_no_asignados.contribuyente_id.present? %>
+    $('#iconos-acciones-<%= recursos_externos_no_asignados.id %>').html(
+      '<a data-user-id="<%= recursos_externos_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recursos_externos_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recursos_externos_no_asignados.id %>"><i class="fa fa-trash"></i>'
+    );
+  <% else %>
+  <% end %>
+<% end %>*/
+
+<% @recursos_externos_no_asignados.each do |recurso| %>
+  <% if recurso.contribuyente_id.present? %>
+    $('#iconos-acciones-<%= recurso.id %>').html(
+      "<a data-user-id='<%= recurso.id %>' class='editar-user-consultora_empresa' id='editar-usuario_empresa-<%= recurso.id %>' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/<%= recurso.id %>' data-original-title='Editar al consultor' title='Editar al consultor'>" +
+        "<i class='fa fa-edit'></i></a>&nbsp;" +
+      "<a data-user-id='<%= recurso.id %>' data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' class='eliminar-user-consultora_empresa' id='eliminar-usuario_empresa-<%= recurso.id %>' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recurso.id %>'>" +
+        "<i class='fa fa-trash'></i></a>"
+    );
+  <% else %>
+    $('#iconos-acciones-<%= recurso.id %>').html(
+      "<a data-user-id='<%= recurso.id %>' class='editar-user-consultora' id='editar-usuario-<%= recurso.id %>' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/<%= recurso.id %>' data-original-title='Editar al consultor' title='Editar al consultor'>" +
+        "<i class='fa fa-edit'></i></a>&nbsp;" +
+      "<a data-user-id='<%= recurso.id %>' data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' class='eliminar-user-consultora' id='eliminar-usuario-<%= recurso.id %>' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_equipo/<%= tarea_pendiente.id %>?user_id=<%= recurso.id %>'>" +
+        "<i class='fa fa-trash'></i></a>"
+    );
+  <% end %>
 <% end %>
+
 
 $('#div_plan_recursos_externos table tbody').empty();
 <% recursos_externos.each do |recursos_externo| %>

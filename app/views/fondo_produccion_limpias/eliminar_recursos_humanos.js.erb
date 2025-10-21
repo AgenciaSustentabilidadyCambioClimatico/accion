@@ -1,4 +1,54 @@
 $('.loading-data').hide();
+
+var equipo_trabajo_id = <%= equipo_trabajo_id %>;
+
+<% if tipo_aporte == "1" %>
+  $('#iconos-acciones-' + equipo_trabajo_id).html(
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " class='editar-user-consultora_empresa' id='editar-usuario_empresa-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/" + equipo_trabajo_id + 
+    "' data-original-title='Editar al consultor' title='Editar al consultor'>" + 
+    "<i class='fa fa-edit'></i></a>&nbsp;" +
+
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' " +
+    "class='eliminar-user-consultora_empresa' id='eliminar-usuario_empresa-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='delete' " +
+    "href='/eliminar_consultor_empresa/<%= tarea_pendiente %>?user_id=" + equipo_trabajo_id + 
+    "'><i class='fa fa-trash'></i></a>"
+  );
+<% elsif tipo_aporte == "2" %>
+  $('#iconos-acciones-' + equipo_trabajo_id).html(
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " class='editar-user-consultora' id='editar-usuario-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/" + equipo_trabajo_id + 
+    "' data-original-title='Editar al consultor' title='Editar al consultor'>" + 
+    "<i class='fa fa-edit'></i></a>&nbsp;" +
+
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' " +
+    "class='eliminar-user-consultora' id='eliminar-usuario-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='delete' " +
+    "href='/eliminar_equipo/<%= tarea_pendiente %>?user_id=" + equipo_trabajo_id + 
+    "'><i class='fa fa-trash'></i></a>"
+  );
+<% elsif tipo_aporte == "3" %>
+  $('#iconos-acciones-' + equipo_trabajo_id).html(
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " class='editar-user-consultora' id='editar-postulante-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/" + equipo_trabajo_id + 
+    "' data-original-title='Editar al consultor' title='Editar al consultor'>" + 
+    "<i class='fa fa-edit'></i></a>&nbsp;" +
+
+    "<a data-user-id=" + equipo_trabajo_id + 
+    " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' " +
+    "class='eliminar-user-consultora' id='eliminar-postulante-" + equipo_trabajo_id + 
+    "' data-remote='true' rel='nofollow' data-method='delete' " +
+    "href='/eliminar_equipo_postulante/<%= tarea_pendiente %>?user_id=" + equipo_trabajo_id + 
+    "'><i class='fa fa-trash'></i></a>"
+  );
+<% end %>
+
 $("#eliminar-recursos-humanos-<%= rr_hh_id %>").closest('tr').remove();
 
 <% if @valor_hh_tipo_3.valor_hh_tipo_3 != 0 %>

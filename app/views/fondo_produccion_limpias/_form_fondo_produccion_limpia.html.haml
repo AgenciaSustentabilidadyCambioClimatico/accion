@@ -3407,7 +3407,7 @@
               %tbody
                 - if @postulantes.present?
                   - @postulantes.each do |postulante|
-                    %tr
+                    %tr{id: "tr-postulantes-#{postulante.id}"}
                       %td.contenido-form= postulante.user.nombre_completo
                       %td.contenido-form= format_rut(postulante.user.rut)
                       %td.contenido-form= postulante.user.telefono
@@ -3420,6 +3420,8 @@
                           - if recurso_humano_existente?(postulante.id, postulante.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El postulante no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
+                            = link_to editar_equipo_fondo_produccion_limpia_path(postulante.id), remote: true, method: :get, data: { user_id: postulante.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-postulante-#{postulante.id}" do
+                              %i.fa.fa-edit
                             = link_to eliminar_equipo_postulante_fondo_produccion_limpia_path(user_id: postulante.id), remote: true, method: :delete, data: { user_id: postulante.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-postulante-#{postulante.id}" do
                               %i.fa.fa-trash 
         </br>
@@ -3501,7 +3503,7 @@
               %tbody
                 - if @user_equipo.present?
                   - @user_equipo.each do |user|
-                    %tr
+                    %tr{id: "tr-consultora-empresa-#{user.id}"}
                       %td.contenido-form= user.user.nombre_completo
                       %td.contenido-form= format_rut(user.user.rut)
                       %td.contenido-form= user.user.telefono
@@ -3518,6 +3520,8 @@
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
+                            = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora_empresa', id: "editar-usuario_empresa-#{user.id}" do
+                              %i.fa.fa-edit
                             = link_to eliminar_consultor_empresa_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora_empresa', id: "eliminar-usuario_empresa-#{user.id}" do
                               %i.fa.fa-trash 
         </br>
@@ -3543,7 +3547,7 @@
               %tbody
                 - if @user_equipo.present?
                   - @user_equipo.each do |user|
-                    %tr
+                    %tr{id: "tr-consultora-#{user.id}"}
                       %td.contenido-form= user.user.nombre_completo
                       %td.contenido-form= format_rut(user.user.rut)
                       %td.contenido-form= user.user.telefono
@@ -3560,6 +3564,8 @@
                           - if recurso_humano_existente?(user.id, user.flujo.id)
                             %i.fa.fa-exclamation-circle{'data-toggle'=>"tooltip", 'title'=>"El consultor no puede ser eliminado ya que se encuentra asociado a alguna actividad."}
                           - else
+                            = link_to editar_equipo_fondo_produccion_limpia_path(user.id), remote: true, method: :get, data: { user_id: user.id }, title: "Editar al consultor", class: 'editar-user-consultora', id: "editar-usuario-#{user.id}" do
+                              %i.fa.fa-edit
                             = link_to eliminar_equipo_fondo_produccion_limpia_path(user_id: user.id), remote: true, method: :delete, data: { user_id: user.id, confirm: t(:está_seguro_que_desea_borrar?, item: t(:responsable)) }, title: "Eliminar al consultor", class: 'eliminar-user-consultora', id: "eliminar-usuario-#{user.id}" do
                               %i.fa.fa-trash 
         - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION  
@@ -4300,7 +4306,7 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         
                         %tr
-                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:nombre_objetivo)
                           %td.contenido-popup-form(style='width: 66.67%;')  
                             = f.text_area  :descripcion, class: 'required-field', id: 'descripcion', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr
@@ -4336,7 +4342,7 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         = hidden_field_tag 'id_edit', @tarea_pendiente.id, id: 'id_edit'                       
                         %tr
-                          %td.contenido-popup-form(style='width: 33.33%;')=t(:descripcion)
+                          %td.contenido-popup-form(style='width: 33.33%;')=t(:nombre_objetivo)
                           %td.contenido-popup-form(style='width: 66.67%;')
                             = f.text_area :descripcion_edit, class: 'required-field', id: 'descripcion_edit', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;'
                         %tr

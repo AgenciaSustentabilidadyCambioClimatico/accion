@@ -4,11 +4,11 @@ class FondoProduccionLimpiasController < ApplicationController
     before_action :set_tarea_pendiente, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo]
     before_action :set_flujo, except: [:iniciar_flujo, :lista_usuarios_entregables, :get_sub_lineas_seleccionadas, :guardar_duracion, :buscador, :update_modal, 
     :insert_modal, :insert_modal_contribuyente, :insert_plan_actividades,
     :new_plan_actividades, :eliminar_objetivo_especifico, :update_objetivo_especifico, :guardar_fondo_temporal, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, :descargar_pdf, :insert_registro_proveedores_equipo,
-    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente]
+    :descargar_admisibilidad_juridica_pdf, :descargar_formulario_fpl, :create_contribuyente, :update_equipo]
     before_action :set_fondo_produccion_limpia, only: [:edit, :update, :revisor, :get_sub_lineas_seleccionadas, :admisibilidad, :admisibilidad_tecnica, 
     :admisibilidad_juridica, :pertinencia_factibilidad, :observaciones_admisibilidad, :observaciones_admisibilidad_tecnica, :observaciones_admisibilidad_juridica,
     :evaluacion_general, :guardar_duracion, :buscador, :usuario_entregables, :guardar_usuario_entregables, :guardar_fondo_temporal, :asignar_revisor, 
@@ -1175,6 +1175,91 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def editar_equipo
+      equipo_trabajo = EquipoTrabajo.find(params[:id])
+      @usuario_temporal = User.unscoped.find(equipo_trabajo[:user_id])
+      @usuario_temporal.temporal = true
+      @usuario_temporal.flujo_id = equipo_trabajo[:flujo_id]
+      @usuario_temporal.user_id = equipo_trabajo[:user_id] unless equipo_trabajo[:user_id].blank?
+      @equipo_temporal = equipo_trabajo
+
+      render layout: false
+    end
+
+    def update_equipo
+      tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first 
+      @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:user][:flujo_id])
+      #SETEO PARAMETROS USUARIO
+      @user = User.find(params[:user][:user_id])
+      custom_params = {
+        user: {
+          id: params[:user][:user_id],
+          nombre_completo: params[:user][:nombre_completo],
+          telefono: params[:user][:telefono],
+          email: params[:user][:email]
+        }
+      }
+
+      # Verificación de archivos
+      unless valid_extensions?(params[:archivos_copia_ci]) && valid_extensions?(params[:archivos_curriculum])
+        respond_to do |format|
+          format.js { render js: "alert('Las extensiones de los archivos no son válidas. Las permitidas son: (pdf jpg png tiff zip rar doc docx)');" }
+          format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "Las extensiones de archivo no son válidas." }
+        end
+        return
+      end
+
+      if params[:equipo_trabajo][:tipo_equipo] != "3"
+        copia_ci = params[:archivos_copia_ci]
+        curriculum = params[:archivos_curriculum]
+      else
+        copia_ci = nil
+        curriculum = nil
+      end
+
+      #SETEO PARAMETROS EQUIPO
+      custom_params_equipo = {
+        equipo_trabajo: {
+          profesion: params[:equipo_trabajo][:profesion],
+          funciones_proyecto: params[:equipo_trabajo][:funciones_proyecto],
+          valor_hh: params[:equipo_trabajo][:valor_hh],
+          copia_ci: copia_ci,
+          curriculum: curriculum,
+          tipo_equipo: params[:equipo_trabajo][:tipo_equipo],
+          flujo_id: params[:user][:flujo_id],
+          user_id: params[:user][:user_id]
+        }
+      }
+      tipo_proveedor = TipoProveedor.find(FondoProduccionLimpia::TIPO_CONSULTOR_FPL)
+
+      # Si el tipo de equipo es diferente de 1, asigna el contribuyente_id
+      empresa = EquipoEmpresa.find_by(flujo_id: params[:user][:flujo_id])
+      if params[:equipo_trabajo][:tipo_equipo].to_i == 2
+        custom_params_equipo[:equipo_trabajo][:contribuyente_id] = empresa.contribuyente_id
+      end
+
+      @equipo_temporal = EquipoTrabajo.find(params[:equipo_trabajo][:id])
+      
+      @contribuyente = Contribuyente
+        .unscoped
+        .joins(:equipo_empresas)
+        .select("contribuyentes.id, contribuyentes.rut, contribuyentes.dv, contribuyentes.razon_social")
+        .where(equipo_empresas: {flujo_id: @tarea_pendiente.flujo_id})
+        .all
+        
+      respond_to do |format|
+        if @user.update(custom_params[:user]) && @equipo_temporal.update(custom_params_equipo[:equipo_trabajo])
+          #flash[:success] = 'Consultor creado exitosamente.'
+          format.js { render 'update_equipo', locals: { user: @user, equipo: @equipo_temporal, tarea_pendiente: @tarea_pendiente } }
+            
+        else
+          flash[:error] = 'Hubo un problema al crear al Consultor.'
+          render 'edit'
+        end
+      end
+    end
+
+
     def eliminar_equipo_postulante
       equipo_trabajo = EquipoTrabajo.find(params[:user_id])
       if equipo_trabajo.destroy  
@@ -1199,7 +1284,17 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def eliminar_recursos_humanos
       eliminar = RecursoHumano.find_by(id: params[:rr_hh_id])
+      equipo_trabajo_id = eliminar.equipo_trabajo_id
 
+      tipo_aporte = params[:tipo_aporte]
+
+      if tipo_aporte == "2"
+        equipo = EquipoTrabajo.find_by(id: equipo_trabajo_id)
+        if equipo.contribuyente_id != nil
+          tipo_aporte = "1"
+        end
+      end
+      
       if eliminar.destroy  
         respond_to do |format|
           set_costos
@@ -1223,8 +1318,8 @@ class FondoProduccionLimpiasController < ApplicationController
                    OpenStruct.new(total_total_gastos_tipo_1: 0, actividad_id: params[:plan_id])
           @total_total_gastos_tipo_2 = PlanActividad.total_total_gastos_tipo_2(@tarea_pendiente.flujo_id) ||
                    OpenStruct.new(total_total_gastos_tipo_2: 0, actividad_id: params[:plan_id])
-
-          format.js { render 'eliminar_recursos_humanos', locals: { rr_hh_id: params[:rr_hh_id] } }
+          
+          format.js { render 'eliminar_recursos_humanos', locals: { rr_hh_id: params[:rr_hh_id], tarea_pendiente: params[:id], equipo_trabajo_id: equipo_trabajo_id, tipo_aporte: tipo_aporte } }
         end
       else
         flash[:error] = 'El recurso propio no puede ser eliminado ya que se encuentra asociado a alguna actividad.'
@@ -1740,14 +1835,14 @@ class FondoProduccionLimpiasController < ApplicationController
           if (clave['hh_liquido'] != "")
             rr_hh_liquido = RecursoHumano.new(custom_params_liquido[:recursos])
             rr_hh_liquido.save 
-            rrhh_externo_ids << clave['rrhhIdLiquido']
+            rrhh_externo_ids << clave['rhhEquipoId']
           end
         else
           #se actualiza un usuario
           rr_hh_liquido = RecursoHumano.find_by(id: clave['rrhhIdLiquido'])
           if (clave['hh_liquido'] != "")
             rr_hh_liquido.update(custom_params_liquido[:recursos])
-            rrhh_externo_ids << clave['rrhhIdLiquido']
+            rrhh_externo_ids << clave['rhhEquipoId']
           else
             rr_hh_liquido.destroy
           end
@@ -1769,14 +1864,14 @@ class FondoProduccionLimpiasController < ApplicationController
           if (clave['hh_fondo'] != "")
             rr_hh_fondo = RecursoHumano.new(custom_params_fondo[:recursos])
             rr_hh_fondo.save
-            rrhh_externo_ids << clave['rrhhIdFondo']
+            rrhh_externo_ids << clave['rhhEquipoId']
           end
         else
           #se actualiza un usuario
           rr_hh_fondo = RecursoHumano.find_by(id: clave['rrhhIdFondo'])
           if (clave['hh_fondo'] != "")
             rr_hh_fondo.update(custom_params_fondo[:recursos])
-            rrhh_externo_ids << clave['rrhhIdFondo']
+            rrhh_externo_ids << clave['rhhEquipoId']
           else
             rr_hh_fondo.destroy
           end
@@ -1806,7 +1901,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @recursos_externos_no_asignados = EquipoTrabajo.left_outer_joins(:recurso_humanos)
              .where(recurso_humanos: { equipo_trabajo_id: nil })
              .where(flujo_id: params[:flujo_id], tipo_equipo: [1,2])
-     
+
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_externos', locals: { recursos_externos: @recursos_externos, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
         valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
