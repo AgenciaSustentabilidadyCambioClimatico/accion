@@ -75,22 +75,27 @@ class ComentariosController < ApplicationController
       @comentario = Comentario.new(comentario_params)
       @comentario.user_id = current_user.id unless current_user.nil?
       respond_to do |format|
-        if @comentario.save
+        if verify_recaptcha(model: @comentario)
+          if @comentario.save
           ComentarioMailer.nuevo(@comentario).deliver_now
-          @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-          @users.each do |user|
+            @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
+            @users.each do |user|
             ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_now
-          end
-          format.js { 
-            flash.now[:success] = success_message
-            @comentario = Comentario.new
-          }
-          format.html { redirect_to @comentario, notice: success_message }
+            end
+            format.js { 
+              flash.now[:success] = success_message
+              @comentario = Comentario.new
+            }
+            format.html { redirect_to @comentario, notice: success_message }
 
+          else
+            @error = true
+            format.html { render :new }
+            format.js
+          end
         else
-          @error = true
-          format.html { render :new }
-          format.js
+          format.js { flash.now[:alert] = "Por favor, confirma que no eres un robot." }
+          format.html { redirect_to @comentario, notice: "Por favor, confirma que no eres un robot." }
         end
       end
     end
