@@ -160,7 +160,7 @@
                               =(no_data ? 'No se ingresó respuesta' : f.object.comentario_jefe_de_linea)
                       .col-12.col-lg-6
                         -if !solo_lectura
-                          = f.input :resultado_admisibilidad_juridica, collection: ManifestacionDeInteres.resultado_admisibilidades.keys.map { |w| [(w == "en_observación" ? "Con observaciones" : w.humanize), w] }, required: true, label: t(:resultado_admisibilidad_juridica)
+                          = f.input :resultado_admisibilidad_juridica, collection: ManifestacionDeInteres.resultado_admisibilidades.keys .reject { |w| w == "rechazado" }.map { |w| [(w == "en_observación" ? "Con observaciones" : w.humanize), w] }, required: true, label: t(:resultado_admisibilidad_juridica)
                         -else
                           .form-group
                             -no_data = f.object.resultado_admisibilidad_juridica.blank?

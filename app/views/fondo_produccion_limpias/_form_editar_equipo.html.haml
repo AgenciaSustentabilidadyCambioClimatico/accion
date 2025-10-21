@@ -1,4 +1,4 @@
-= simple_form_for @usuario_temporal, url: update_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off, multipart: true } do |f|
+= simple_form_for @usuario_temporal, url: update_equipo_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off, multipart: true } do |f|
   = f.input :temporal, as: :hidden, wrapper: false
   = f.input :flujo_id, as: :hidden, wrapper: false
   = f.input :user_id, as: :hidden, wrapper: false
@@ -19,8 +19,9 @@
               = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-temporal-boton-guardar-fpl-usuario', onchange: 'limpiarSoloNumeros(this)' }
     .col-12.mt-2.text-right
       -#
-    = simple_form_for @equipo_temporal, url: insert_modal_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
+    = simple_form_for @equipo_temporal, url: update_equipo_fondo_produccion_limpia_path, remote: true, html: { autocomplete: :off } do |f|
       = f.input :tipo_equipo, as: :hidden, wrapper: false, input_html: { id: 'tipo_equipo' }
+      = f.input :id, as: :hidden, wrapper: false, input_html: { id: 'id' }
       .row
         .col-12
           .col-12
@@ -42,15 +43,16 @@
                         %abbr{ title: "Campo requerido" } *
                         Copia CI 
                       = f.file_field :copia_ci, required: true, label: t(:copia_ci), id: "copia_ci", name: "archivos_copia_ci", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
+                      = __descargar_archivo(@equipo_temporal.copia_ci,@equipo_temporal.copia_ci,false,false)
                     .col-12.col-lg-4
                       %label.label-estilo{ for: 'curriculum' }
                         %abbr{ title: "Campo requerido" } *
                         Curriculum Vitae 
                       = f.file_field :curriculum, required: true, label: t(:curriculum), id: "curriculum", name: "archivos_curriculum", class: "form-control form-temporal-boton-equipo-trabajo-fpl-usuario smaller-text"
-
+                      = __descargar_archivo(@equipo_temporal.curriculum,@equipo_temporal.curriculum,false,false)
         .col-12.mt-2.text-right
-          %button.btn.btn-primary#deshacer-usuario-fpl-button{type: :submit, 'data-disable-with' => t(:volver_a_lista)}
-            =t(:volver_a_lista)
+          %button.btn.btn-secondary#cerrar-usuario-fpl-button{ type: :button, 'data-dismiss' => 'modal', onclick: "cerrar_modal()"}
+            = t(:cerrar)
           %button.btn.btn-primary.guarda-equipo-fpl-button{type: :submit, id: 'oculta_modal', disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
             Guardar
 
@@ -59,7 +61,7 @@
     nuevo_usuario_temporal_fpl_validaciones();
     nuevo_equipo_trabajo_fpl_validaciones();
     htmlErrorToTooltip('top'); 
-    $('.cerrar-equipo-fpl-button').show();
+    $('.cerrar-equipo-fpl-button').hide();
   });
 
   $('#oculta_modal').click(function(){
@@ -70,4 +72,9 @@
   function limpiarSoloNumeros(input) {
     // Reemplaza todo lo que no sea número
     input.value = input.value.replace(/\D/g, '');
+  }
+
+  function cerrar_modal() {
+    $('.loading-data').hide();
+    $('#buscar-usuario').modal('hide');
   }
