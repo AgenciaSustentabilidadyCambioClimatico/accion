@@ -4182,7 +4182,7 @@
                   - if @costos_seguimiento[0].present?
                     %td#apoyo_general_postulante_aporte_postulante_monto.contenido-form-costo=number_to_currency(@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'])
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)}% del total de actividades de Tipo A
-                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100))
+                    %td#apoyo_general_postulante_aporte_postulante_limite.contenido-form-costo=number_to_currency((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100).to_i)
                     %td#apoyo_general_postulante_aporte_postulante_cumple.contenido-form-center
                       - if @costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido'] >= ((((@costos_seguimiento[0]['aporte_solicitado_al_fondo']+@costos_seguimiento[0]['aporte_propio_valorado']+@costos_seguimiento[0]['aporte_propio_liquido']) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO)/100)) && @costos_seguimiento[0]['aporte_propio_valorado'] != ''
                         %span{ class: 'text-success' } SI
@@ -4258,7 +4258,7 @@
                   - if @costos.present?
                     %td#total_proyecto_aporte_liquido_postulante_monto.contenido-form-costo=number_to_currency @costos.aporte_propio_liquido
                     %td.contenido-form Mayor o igual al #{(Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)}% del total del proyecto
-                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100))
+                    %td#total_proyecto_aporte_liquido_postulante_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100).to_i)
                     %td#total_proyecto_aporte_liquido_postulante_cumple.contenido-form-center
                       - if @costos.aporte_propio_liquido >= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_APORTE_LIQUIDO_MINIMO_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
                         %span{ class: 'text-success' } SI
@@ -4275,7 +4275,7 @@
                   - if @costos.present?
                     %td#total_proyecto_gastos_administracion_monto.contenido-form-costo=number_to_currency @costos.gastos_administrativos
                     %td.contenido-form Menor o igual al #{(Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)}% del total del proyecto
-                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100))
+                    %td#total_proyecto_gastos_administracion_limite.contenido-form-costo=number_to_currency(((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100).to_i)
                     %td#total_proyecto_gastos_administracion_cumple.contenido-form-center
                       - if @costos.gastos_administrativos <= (((@costos['costo_total_de_la_propuesta'].to_f * Gasto::PORCENTAJE_GASTO_ADMINISTRACION_DIAGNOSTICO)/100)) && @costos.costo_total_de_la_propuesta != ''
                         %span{ class: 'text-success' } SI
