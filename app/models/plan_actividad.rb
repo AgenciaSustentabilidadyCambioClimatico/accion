@@ -148,7 +148,7 @@ class PlanActividad < ApplicationRecord
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 1 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_valorado',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 2 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_propio_liquido',
         'SUM(CASE WHEN recurso_humanos.tipo_aporte_id = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS aporte_solicitado_al_fondo'
-        )
+      )
       .joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
       .joins('LEFT JOIN plan_actividades ON plan_actividades.id = recurso_humanos.plan_actividad_id')
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
@@ -156,7 +156,7 @@ class PlanActividad < ApplicationRecord
       .where(flujo_id: flujo_id)
       .where('actividad_por_lineas.tipo_instrumento_id' => tipo_instrumento_id)
       .group('recurso_humanos.flujo_id', 'actividad_por_lineas.tipo_actividad')
-  
+
     # Subconsulta para gastos
     gastos_subquery = Gasto
       .select(
@@ -165,28 +165,53 @@ class PlanActividad < ApplicationRecord
         'SUM(CASE WHEN gastos.tipo_aporte_id = 1 THEN gastos.valor_unitario * gastos.cantidad ELSE 0 END) AS aporte_propio_valorado',
         'SUM(CASE WHEN gastos.tipo_aporte_id = 2 THEN gastos.valor_unitario * gastos.cantidad ELSE 0 END) AS aporte_propio_liquido',
         'SUM(CASE WHEN gastos.tipo_aporte_id = 3 THEN gastos.valor_unitario * gastos.cantidad ELSE 0 END) AS aporte_solicitado_al_fondo'
-        )
+      )
       .joins('LEFT JOIN plan_actividades ON plan_actividades.id = gastos.plan_actividad_id')
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
-      .joins('LEFT JOIN actividad_por_lineas ON actividad_por_lineas.actividad_id = actividades.id')  
+      .joins('LEFT JOIN actividad_por_lineas ON actividad_por_lineas.actividad_id = actividades.id')
       .where(flujo_id: flujo_id)
       .where('actividad_por_lineas.tipo_instrumento_id' => tipo_instrumento_id)
       .group('gastos.flujo_id', 'actividad_por_lineas.tipo_actividad')
-  
-    # Consulta principal que une las dos subconsultas
-    result = RecursoHumano
-      .from("(#{hh_gastos_subquery.to_sql}) AS hh_gastos_subquery")
-      .joins("LEFT JOIN (#{gastos_subquery.to_sql}) AS gastos_subquery ON hh_gastos_subquery.flujo_id = gastos_subquery.flujo_id AND hh_gastos_subquery.tipo_actividad = gastos_subquery.tipo_actividad")
-      .select(
-        'COALESCE(hh_gastos_subquery.aporte_propio_valorado, 0) + COALESCE(gastos_subquery.aporte_propio_valorado, 0) AS aporte_propio_valorado',
-        'COALESCE(hh_gastos_subquery.aporte_propio_liquido, 0) + COALESCE(gastos_subquery.aporte_propio_liquido, 0) AS aporte_propio_liquido',
-        'COALESCE(hh_gastos_subquery.aporte_solicitado_al_fondo, 0) + COALESCE(gastos_subquery.aporte_solicitado_al_fondo, 0) AS aporte_solicitado_al_fondo'
-      )
-      .order('hh_gastos_subquery.tipo_actividad ASC')  # Ordenar por la columna tipo_actividad de hh_gastos_subquery
-  
+
+    tipo_actividades = "(SELECT 0 AS tipo_actividad UNION SELECT 1 AS tipo_actividad) AS tipos"
+
+    sql = <<-SQL
+      SELECT
+        #{flujo_id} AS flujo_id,
+        tipos.tipo_actividad,
+        COALESCE(hh.aporte_propio_valorado, 0) + COALESCE(g.aporte_propio_valorado, 0) AS aporte_propio_valorado,
+        COALESCE(hh.aporte_propio_liquido, 0) + COALESCE(g.aporte_propio_liquido, 0) AS aporte_propio_liquido,
+        COALESCE(hh.aporte_solicitado_al_fondo, 0) + COALESCE(g.aporte_solicitado_al_fondo, 0) AS aporte_solicitado_al_fondo
+      FROM #{tipo_actividades}
+      LEFT JOIN (#{hh_gastos_subquery.to_sql}) AS hh
+        ON hh.tipo_actividad = tipos.tipo_actividad
+      LEFT JOIN (#{gastos_subquery.to_sql}) AS g
+        ON g.tipo_actividad = tipos.tipo_actividad
+      ORDER BY tipos.tipo_actividad ASC
+    SQL
+
+    raw_result = ActiveRecord::Base.connection.exec_query(sql)
+
+    # 🔹 Conversión robusta: string → integer o float según corresponda
+    result = raw_result.map do |row|
+      row.transform_values do |value|
+        case value
+        when String
+          if value.match?(/^\d+$/)
+            value.to_i # solo dígitos → integer
+          elsif value.match?(/^\d+\.\d+$/)
+            value.to_f # con decimales → float
+          else
+            value # deja texto sin tocar
+          end
+        else
+          value
+        end
+      end
+    end
     result
   end
-  
+
   ##Insertar Gastos
   def self.total_gastos_tipo_1_insert(flujo_id, actividad_id)
     select('plan_actividades.id, plan_actividades.actividad_id, SUM(
