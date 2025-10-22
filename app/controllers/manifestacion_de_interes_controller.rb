@@ -2505,11 +2505,14 @@ class ManifestacionDeInteresController < ApplicationController
     def set_archivo_mapa_actores
       @manifestacion_de_interes.update(tarea_codigo: Tarea::COD_APL_001)
       if @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::NO_INICIADA
-        MapaDeActor.find_or_create_by(
-            flujo_id: @flujo.id,
-            persona_id: current_user.personas.first.id,
-            rol_id: Rol::PROPONENTE
-        )
+        postulante = MapaDeActor.where(flujo_id: @flujo.id, rol_id: Rol::PROPONENTE).count
+        if postulante == 0
+          MapaDeActor.find_or_create_by(
+              flujo_id: @flujo.id,
+              persona_id: current_user.personas.first.id,
+              rol_id: Rol::PROPONENTE
+          )
+        end
       end
     end
 
