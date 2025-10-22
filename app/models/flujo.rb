@@ -374,10 +374,6 @@ class Flujo < ApplicationRecord
     jefes_de_linea_coordinadores = Responsable::__personas_responsables([Rol::JEFE_DE_LINEA, Rol::COORDINADOR], self.tipo_instrumento_id)
     puedo_ver_descargable_apl_018 = (personas_id & jefes_de_linea_coordinadores.map{|jlc| jlc.id}).size > 0
     apl_002_added = false
-    apl_003_1_added = false
-    apl_003_2_added = false
-    apl_004_1_added = false
-    apl_004_2_added = false
     apl_017_added = false 
     apl_025_added = false 
     apl_032_added = false 
@@ -399,34 +395,6 @@ class Flujo < ApplicationRecord
         next if apl_002_added
         # Marcar que el APL-002 ya fue añadido
         apl_002_added = true
-      end
-
-      if t.tarea.codigo == Tarea::COD_APL_003_1
-        # Si el código es _APL_004_1 y ya se añadió, saltar al siguiente
-        next if apl_003_1_added
-        # Marcar que el APL_004_1 ya fue añadido
-        apl_003_1_added = true
-      end
-
-      if t.tarea.codigo == Tarea::COD_APL_003_2
-        # Si el código es _APL_004_1 y ya se añadió, saltar al siguiente
-        next if apl_003_2_added
-        # Marcar que el APL_004_1 ya fue añadido
-        apl_003_2_added = true
-      end
-
-      if t.tarea.codigo == Tarea::COD_APL_004_1
-        # Si el código es _APL_004_1 y ya se añadió, saltar al siguiente
-        next if apl_004_1_added
-        # Marcar que el APL_004_1 ya fue añadido
-        apl_004_1_added = true
-      end
-
-      if t.tarea.codigo == Tarea::COD_APL_004_2
-        # Si el código es _APL_004_1 y ya se añadió, saltar al siguiente
-        next if apl_004_2_added
-        # Marcar que el APL_004_1 ya fue añadido
-        apl_004_2_added = true
       end
 
       if t.tarea.codigo == Tarea::COD_APL_017

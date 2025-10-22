@@ -1,0 +1,9 @@
+-if @user.temporal
+  $('#buscar-usuario .body-usuario-buscador').html("#{j render 'form_temporal', usuario_temporal: @usuario_temporal}");
+  -if @usuario_temporal.errors.blank?
+    $('#buscar-usuario').modal("hide");
+  -else
+    $('.loading-data').hide();
+-else
+  = render 'layouts/remote_form', block: 'user'
+  clearTimeout(cierreAlerta);

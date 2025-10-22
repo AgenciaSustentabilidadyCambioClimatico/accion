@@ -48,7 +48,7 @@ $('#div_plan_recursos_propios table tbody').empty();
       "<td class='contenido-form'>" + costo + "</td>";
       <% if !solo_lectura %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
-        "<a data-rr-pp-id=" + rr_pp_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_pp_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_pp_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos propios'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+        "<a data-rr-pp-id=" + rr_pp_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_pp_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_pp_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 3 + "' data-original-title='Eliminar recursos propios'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>";
       <% end %> 
       newRow += "</tr>";
@@ -66,6 +66,7 @@ $('#div_plan_recursos_externos table tbody').empty();
     var valor_hh = '<%=number_to_currency recursos_externos.valor_hh %>';
     var costo = '<%=number_to_currency recursos_externos.valor_hh.to_i * recursos_externos.hh %>';
     var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+    var plan_id = '<%= @plan %>';
     var tipo_aporte = '<%= recursos_externos.tipo_aporte %>';
     <% if recursos_externos.tipo_equipo == 4 %>
       var newRow = "<tr>" +
@@ -76,7 +77,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         "<td class='contenido-form'>" + costo + "</td>";
         <% if !solo_lectura %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
-          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 4 + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
           "</td>";
         <% end %> 
         newRow += "</tr>";
@@ -89,7 +90,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         "<td class='contenido-form'>" + costo + "</td>";
         <% if !solo_lectura %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
-          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
+          "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 2 + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
           "</td>";
         <% end %> 
         newRow += "</tr>";

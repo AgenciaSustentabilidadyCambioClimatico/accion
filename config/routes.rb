@@ -237,6 +237,8 @@ Rails.application.routes.draw do
   post  'insert_modal', to: "fondo_produccion_limpias#insert_modal", as: :insert_modal_fondo_produccion_limpia
   get 'eliminar_equipo/:id', to: "fondo_produccion_limpias#eliminar_equipo", as: :eliminar_equipo_fondo_produccion_limpia
   delete '/eliminar_equipo/:id', to: 'fondo_produccion_limpias#eliminar_equipo', as: 'eliminar_equipo'
+  get 'editar_equipo/:id', to: "fondo_produccion_limpias#editar_equipo", as: :editar_equipo_fondo_produccion_limpia
+  patch 'update_equipo', to: "fondo_produccion_limpias#update_equipo", as: :update_equipo_fondo_produccion_limpia
 
   #Modal Contribuyentes
   get 'edit_modal_contribuyente/:id', to: "fondo_produccion_limpias#edit_modal_contribuyente", as: :edit_modal_contribuyente_fondo_produccion_limpia

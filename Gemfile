@@ -109,3 +109,4 @@ group :development do
 end
 
 gem "health_check", "~> 3.1"
+gem 'recaptcha', require: 'recaptcha/rails'

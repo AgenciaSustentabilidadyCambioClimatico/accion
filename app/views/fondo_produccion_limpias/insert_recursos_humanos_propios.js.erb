@@ -1,5 +1,20 @@
 <% @recursos_propios_no_asignados.each do |recursos_propios_no_asignados| %>
-  $('#iconos-acciones-<%= recursos_propios_no_asignados.id %>').html('<a data-user-id="<%= recursos_propios_no_asignados.id %>" data-confirm="¿Está seguro que desea borrar este(a) Responsable?" title="Eliminar al consultor" class="eliminar-user-consultora_empresa" id="eliminar-usuario_empresa-<%= recursos_propios_no_asignados.id %>" data-remote="true" rel="nofollow" data-method="delete" href="/eliminar_consultor_empresa/<%= tarea_pendiente.id %>?user_id=<%= recursos_propios_no_asignados.id %>"><i class="fa fa-trash"></i>');
+  var recursos_propios_no_asignados = <%= recursos_propios_no_asignados.id %>;
+
+  $('#iconos-acciones-' + recursos_propios_no_asignados).html(
+    "<a data-user-id=" + recursos_propios_no_asignados + 
+    " class='editar-user-consultora' id='editar-postulante-" + recursos_propios_no_asignados + 
+    "' data-remote='true' rel='nofollow' data-method='get' href='/editar_equipo/" + recursos_propios_no_asignados + 
+    "' data-original-title='Editar al consultor' title='Editar al consultor'>" + 
+    "<i class='fa fa-edit'></i></a>&nbsp;" +
+
+    "<a data-user-id=" + recursos_propios_no_asignados + 
+    " data-confirm='¿Está seguro que desea borrar este(a) Responsable?' title='Eliminar al consultor' " +
+    "class='eliminar-user-consultora' id='eliminar-postulante-" + recursos_propios_no_asignados + 
+    "' data-remote='true' rel='nofollow' data-method='delete' " +
+    "href='/eliminar_equipo_postulante/<%= tarea_pendiente.id %>?user_id=" + recursos_propios_no_asignados + 
+    "'><i class='fa fa-trash'></i></a>"
+  );
 <% end %>
 
 $('#div_plan_recursos_propios table tbody').empty();
