@@ -8,9 +8,37 @@
     } else if (instrumentoSeleccionado.length === 1 && instrumentoSeleccionado1_3.length === 1) {
         document.getElementById('grabar-postulacion-fpl-button').disabled = true;
     } else {
-        document.getElementById('grabar-postulacion-fpl-button').disabled = false;
+        document.getElementById('grabar-postulacion-fpl-button').disabled = true;
     }
   });
+
+  function mostrarBloques(valor) {
+    console.log("Seleccionaste:", valor);
+  
+    const bloqueL12 = document.getElementById("bloque_linea_12");
+    const bloqueL13 = document.getElementById("bloque_linea_13");
+    const boton_grabar = document.getElementById("grabar-postulacion-fpl-button");
+
+    if (!bloqueL12 || !bloqueL13) {
+      console.warn("No se encontraron los bloques esperados en el DOM.");
+      return;
+    }
+
+    // Ocultar ambos primero
+    bloqueL12.style.display = "none";
+    bloqueL13.style.display = "none";
+
+    // Mostrar el bloque según el valor seleccionado
+    if (valor === "29") {
+      bloqueL12.style.display = "block";
+      boton_grabar.disabled = true;
+    } else if (valor === "13") {
+      bloqueL13.style.display = "block";
+      boton_grabar.disabled = true;
+    } else if (valor === "") {
+      boton_grabar.disabled = true;
+    }
+  }
 
   function habilitaOpciones(radio) {
     var valorSeleccionado = radio.value === 'true';
@@ -66,30 +94,37 @@
           %h5.no-margin
             = t(:postulacion_fondo_produccion_limpia)
         .card-body 
+          .col-12
+            .form-group
+              %label.control-label.string=t(:seleccionar_linea_para_la_creacion_de_flujo)
+              %br
+                = select_tag :tipo_instrumento, options_for_select([["Seleccione un instrumento", ""]] + @tipos_instrumentos.map { |p| [p.nombre, p.id] }), class: "chosen-control", id: "tipo_instrumento_select", onchange: "mostrarBloques(this.value)"
           .col-12.mb-3
-            %label.control-label.string Línea 1.2
-            .row
-              .col-6
-                .form-group
-                  %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
-                  %br
+            #bloque_linea_12{ style: "display:none;" }
+              %label.control-label.string Línea 1.2
+              .row
+                .col-6
+                  .form-group
+                    %label.control-label.string=t(:postular_a_fondo_produccion_limpia)
+                    %br
+                    - if @flujos_con_tipo_instrumento.present?
+                      = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia', disabled: true do |b|
+                        = b.radio_button(disabled: true, onchange: 'habilitaOpciones(this);')
+                        = b.label
+                    - else
+                      = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia' do |b|
+                        = b.radio_button onchange: 'habilitaOpciones(this);'
+                        = b.label
+                .col-6
+                  - primer_id = @lineas_fpl.first.id if @lineas_fpl.present?
                   - if @flujos_con_tipo_instrumento.present?
-                    = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia', disabled: true do |b|
-                      = b.radio_button(disabled: true, onchange: 'habilitaOpciones(this);')
-                      = b.label
+                    = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}, selected: @instrumento_seleccionado
                   - else
-                    = f.collection_radio_buttons :fondo_produccion_limpia, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia' do |b|
-                      = b.radio_button onchange: 'habilitaOpciones(this);'
-                      = b.label
-              .col-6
-                - primer_id = @lineas_fpl.first.id if @lineas_fpl.present?
-                - if @flujos_con_tipo_instrumento.present?
-                  = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: true}, selected: @instrumento_seleccionado
-                - else
-                  = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: false}, selected: primer_id
-        
-                %br 
-            - if @instrumento_seleccionado.present?
+                    = f.input :tipo_linea_seleccionada, collection: (@lineas_fpl.present? ? @lineas_fpl.map{|p| [p.nombre, p.id]} : []), label: t(:seleccion_de_linea), input_html: {class: "chosen-control", "data-placeholder" => "Seleccione una Línea", id: 'tipo_linea_seleccionada', disabled: false}, selected: primer_id
+          
+                  %br 
+          .col-12.mb-3
+            #bloque_linea_13{ style: "display:none;" }
               %label.control-label.string Línea 1.3
               .row
                 .col-6
@@ -101,7 +136,7 @@
                         = b.radio_button(disabled: true, onchange: 'habilitaOpcionesL13(this);')
                         = b.label
                     - else
-                      = f.collection_radio_buttons :fondo_produccion_limpia_l13, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: true, id: 'fondo_produccion_limpia_l13' do |b|
+                      = f.collection_radio_buttons :fondo_produccion_limpia_l13, [[true, t(:yes)], [false, t(:no)]], :first, :last, item_wrapper_class: 'ml-3', label: 'Fondo de Producción Limpia:', checked: false, id: 'fondo_produccion_limpia_l13' do |b|
                         = b.radio_button onchange: 'habilitaOpcionesL13(this);'
                         = b.label
                 .col-6
