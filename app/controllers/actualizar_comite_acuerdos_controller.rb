@@ -10,9 +10,12 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_usuario_actor
   before_action :set_listado_actores_temporal
 
-  attr_accessor :tipo_linea_seleccionada_l13
+  attr_accessor :tipo_linea_seleccionada_l13, :tipo_instrumento
 
   def index
+    #Lista los tipos de lineas 1.2 y 1.3
+    @tipos_instrumentos = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_LINEA_1_3]).order(id: :desc)
+
     #Obtiene las lineas para el seguimiento del FPL Línea 1.2 - Implementación de APL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
     @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
