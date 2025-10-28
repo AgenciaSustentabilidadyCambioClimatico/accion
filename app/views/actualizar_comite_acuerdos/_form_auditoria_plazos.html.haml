@@ -355,6 +355,27 @@
                         -if aud.con_certificacion && !aud.final
                           =render 'acuerdo_actores/form_auditoria_vigencia', aud_id: aud.id, nombre: aud.nombre, plazo: aud.plazo, auditoria_niveles: aud.auditoria_niveles, puede_editar: puede_editar
         .col-12
+          .card
+            .card-header
+              %label.control-label=t(:modificaciones)
+            .card-body.p-0
+              .table-responsive
+                %table.table.table-striped.table-bordered
+                  %thead
+                    %tr
+                      %th=t(:nombre_archivo)
+                      %th=t(:fecha_modificacion)
+                      %th=t(:descargar)
+                  %tbody
+                    - @informe.archivos_anexos_posteriores_firmas.each_with_index do |aapf, index|
+                      %tr
+                        %td.text-center{style: "overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 25%;min-width: 25%;max-width: 25%", title: aapf.file.filename}=aapf.file.filename
+                        %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                          = @informe.updated_at.strftime("%d/%m/%Y")
+                        %td.text-center{style: 'width: 15%;min-width: 15%;max-width: 15%'}
+                          = link_to aapf.url do
+                            %i.fa.fa-download.fa-2x     
+        .col-12
           - if !@solo_lectura
             .float-right
               = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary button-send"
