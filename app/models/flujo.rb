@@ -631,8 +631,10 @@ class Flujo < ApplicationRecord
       end 
 
       tareas_validaciones_fpl_11 = false
+      documentos_fpl = nil
       if t.tarea.codigo == Tarea::COD_FPL_11
         @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
+        documentos_fpl = @fondo_produccion_limpia
         if @fondo_produccion_limpia.archivo_resolucion.present?
           # Obtener la ruta completa del archivo
           archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
@@ -664,6 +666,7 @@ class Flujo < ApplicationRecord
         tarea_fpl_05: tareas_validaciones_fpl_05,
         tarea_fpl_06: tareas_validaciones_fpl_06,
         tarea_fpl_11: tareas_validaciones_fpl_11,
+        documentos_fpl: documentos_fpl,
         activacion: activacion,
         ejecucion: ejecucion
       } 
@@ -784,8 +787,10 @@ class Flujo < ApplicationRecord
       end 
 
       tareas_validaciones_fpl_11 = false
+      documentos_fpl = nil
       if tarea_pend.tarea.codigo == Tarea::COD_FPL_11
         @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: self.id).first
+        documentos_fpl = @fondo_produccion_limpia
         if @fondo_produccion_limpia.archivo_resolucion.present?
           # Obtener la ruta completa del archivo
           archivo_resolucion_ruta = @fondo_produccion_limpia.archivo_resolucion.file.path
@@ -817,6 +822,7 @@ class Flujo < ApplicationRecord
         tarea_fpl_05: tareas_validaciones_fpl_05,
         tarea_fpl_06: tareas_validaciones_fpl_06,
         tarea_fpl_11: tareas_validaciones_fpl_11,
+        documentos_fpl: documentos_fpl,
         activacion: activacion,
         ejecucion: ejecucion
       } 

@@ -511,7 +511,13 @@ class FondoProduccionLimpiasController < ApplicationController
     
 
     def edit 
-      @solo_lectura = false
+      solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if solo_lectura == nil
+        @solo_lectura = false
+      else
+        @solo_lectura = true
+      end
+
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @mantener_temporal = 'true'
       @es_para_seleccion = 'true'
@@ -618,7 +624,21 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def get_objetivo_especifico
-      @solo_lectura = params['solo_lectura'] == "true" ? true : false
+      solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+
+      fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
+      is_fpl_task = fpl_codes.include?(@tarea_pendiente.tarea.codigo)
+
+      if is_fpl_task
+        if solo_lectura == nil
+          @solo_lectura = false
+        else
+          @solo_lectura = true
+        end
+      else
+        @solo_lectura = true
+      end 
+
       @objetivo_especificos = ObjetivosEspecifico.where(flujo_id: params['flujo_id'])
       set_costos
       respond_to do |format|
@@ -1465,6 +1485,7 @@ class FondoProduccionLimpiasController < ApplicationController
       arreglo = []
       @existe_plan = nil
       @tipo_permiso = 0
+      solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
 
       # Crear un Set con los códigos FPL
       fpl_codes = Set.new(['FPL-01', 'FPL-07', 'FPL-08'])
@@ -1532,6 +1553,10 @@ class FondoProduccionLimpiasController < ApplicationController
             checked = "checked='checked'"
           end
 
+          if solo_lectura != nil
+            is_disabled = true
+          end
+
           # Construir el HTML del checkbox
           checkbox_html = "<input type='checkbox' name='descripcion' class='required-field' id='#{mes}' style='border: 1px solid #ced4da; border-radius: 0.25rem;' #{checked} #{'disabled' if is_disabled}>"
 
@@ -1555,14 +1580,18 @@ class FondoProduccionLimpiasController < ApplicationController
      
       @plan = params['plan_id']
 
-      if is_fpl_task #@tarea_pendiente.tarea.codigo == 'FPL-01' ||  @tarea_pendiente.tarea.codigo == 'FPL-07' ||  @tarea_pendiente.tarea.codigo == 'FPL-08'
-        @solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == 2 ? true : false
+      if is_fpl_task
+        if solo_lectura == nil
+          @solo_lectura = false
+        else
+          @solo_lectura = true
+        end
       else
         @solo_lectura = true
       end  
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso  } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso, solo_lectura: @solo_lectura  } } 
       end
     end
 
@@ -1804,7 +1833,6 @@ class FondoProduccionLimpiasController < ApplicationController
              .where(recurso_humanos: { equipo_trabajo_id: nil })
              .where(flujo_id: params[:flujo_id], tipo_equipo: 3)
 
-      #@solo_lectura = false
       respond_to do |format|
         format.js { render 'insert_recursos_humanos_propios', locals: { recursos_internos: @recursos_internos, tarea_pendiente: @tarea_pendiente, plan_id: @plan_id, flujo_id: params[:flujo_id], 
         valor_hh_tipo_3: @valor_hh_tipo_3, valor_hh_tipos_1_2_: @valor_hh_tipos_1_2_, total_gastos_tipo_1: @total_gastos_tipo_1, total_gastos_tipo_2:@total_gastos_tipo_2, 
@@ -2028,7 +2056,13 @@ class FondoProduccionLimpiasController < ApplicationController
         
         @plan_actividades = PlanActividad.new(custom_params_plan_actividades[:plan_actividades])
         @plan_actividades.save
-        @solo_lectura = false                                            
+
+        solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+        if solo_lectura == nil
+          @solo_lectura = false
+        else
+          @solo_lectura = true
+        end                                        
         @duracion_x = params['duracion'].join(',')
 
         respond_to do |format|
@@ -2245,7 +2279,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @revisores_tecnicos = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       @revisor = true
       @adm_juridica = false
-
+    
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
@@ -2259,6 +2293,13 @@ class FondoProduccionLimpiasController < ApplicationController
       set_costos 
 
       @solo_lectura = true
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = false
+      else
+        @tiene_permisos = true
+      end
     end
 
     def get_revisor
@@ -2384,6 +2425,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @admisibilidad = true
       @solo_lectura = true
       @adm_juridica = false
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
 
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
@@ -2511,6 +2559,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
+
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
@@ -2635,6 +2690,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
       @adm_juridica = false
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
 
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
@@ -2831,6 +2893,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = false
 
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
+      
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
@@ -3255,6 +3324,14 @@ class FondoProduccionLimpiasController < ApplicationController
       @admisibilidad = true
       @solo_lectura = false
       @adm_juridica = false
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+        @solo_lectura = true
+      end
       
       count_user_persona = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 1).count
       count_user_empresa =  EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
@@ -3431,6 +3508,14 @@ class FondoProduccionLimpiasController < ApplicationController
     def observaciones_admisibilidad_tecnica #TAREA FPL-08
       @recuerde_guardar_minutos = ManifestacionDeInteres::MINUTOS_MENSAJE_GUARDAR #DZC 2019-04-04 18:33:08 corrige requerimiento 2019-04-03
       @solo_lectura = false
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+        @solo_lectura = true
+      end
 
       @tipo_aporte = TipoAporte.all
 
@@ -3620,6 +3705,14 @@ class FondoProduccionLimpiasController < ApplicationController
       @solo_lectura = true
       @adm_juridica = true
 
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+        @adm_juridica = false
+      end
+
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
@@ -3721,6 +3814,13 @@ class FondoProduccionLimpiasController < ApplicationController
       @manifestacion_de_interes.seleccion_de_radios
       @solo_lectura = true
 
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
+      
       #Obtenie empresas adheridas Linea 1.2.2 y Linea 1.3
       if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION ||
         @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
@@ -3799,6 +3899,12 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def resolucion_contrato
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
     end
 
     def adjuntar_resolucion_contrato

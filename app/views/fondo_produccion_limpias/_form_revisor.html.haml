@@ -196,4 +196,5 @@
                       .col-12
                         .float-right
                           = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-                          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_revisor", onclick: 'guardarAsignarRevisores(); return false;'
+                          -if @tiene_permisos
+                            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_revisor", onclick: 'guardarAsignarRevisores(); return false;'

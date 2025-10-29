@@ -70,12 +70,14 @@
                           = "Revisión #{revision}"
                     - if ins[:tarea][:codigo] == 'FPL-11'
                       - if ins[:tarea_fpl_11] == true
-                        = link_to descargar_resolucion_pdf_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
-                          = fa_icon 'file-pdf-o'
-                          = "Resolución"
-                        = link_to descargar_contrato_pdf_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
-                          = fa_icon 'file-pdf-o'
-                          = "Contrato"
+                        - if ins[:documentos_fpl][:archivo_resolucion].present?
+                          = link_to descargar_resolucion_pdf_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                            = fa_icon 'file-pdf-o'
+                            = "Resolución"
+                        - if ins[:documentos_fpl][:archivo_contrato].present?
+                          = link_to descargar_contrato_pdf_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                            = fa_icon 'file-pdf-o'
+                            = "Contrato"
                     -# Se recorre arreglo con los documentos asociados a cada APL.
                     - ins[:documentos_asociados].each do |documento| 
                       - if documento[:url].blank?

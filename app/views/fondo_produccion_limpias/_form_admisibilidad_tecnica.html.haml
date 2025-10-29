@@ -427,7 +427,8 @@
                     .col-12
                       .float-right
                         = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-                        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
-                        = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
-                          %i.fa.fa-arrow-circle-right
-                          =t(:enviar) 
+                        -if @tiene_permisos
+                          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_admisibilidad_tecnica", onclick: 'guardarAdmisibilidadTecnica(); return false;'
+                          = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_admisibilidad_tecnica_button", onclick: 'enviarAdmisibilidadTecnica(); return false;' do
+                            %i.fa.fa-arrow-circle-right
+                            =t(:enviar) 
