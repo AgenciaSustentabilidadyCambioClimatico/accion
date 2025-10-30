@@ -438,7 +438,10 @@ class TareaPendiente < ApplicationRecord
 
     if !["APL-025.1", "APL-025.2", "APL-025.3"].include?(tarea)
       if current_user.present? && current_user.personas.present?
-        if tarea_pendiente.user_id != current_user.personas[0].user_id
+        user_id = current_user.personas.first.user_id
+        existe_users_tarea = TareaPendiente.where(flujo_id: tarea_pendiente.flujo_id, tarea_id: tarea_pendiente.tarea_id, user_id: user_id)
+        
+        if !existe_users_tarea.present?
           estado = self.estado_tarea_pendiente.nombre_historial
 
           #Si es admin veo todo

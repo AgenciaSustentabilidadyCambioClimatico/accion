@@ -301,7 +301,7 @@
     }
   }
 
-- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura
 - titulo t(:postulacion_fondo_produccion_limpia)
 - tabs = { "propuesta-tecnica": true, "equipo-trabajo": false, "plan-de-actividades": false, "documentacion-legal": false, "costos": false }
 - formulario_remote = true #flag para mostrar/ocultar el botón de guardado
@@ -331,12 +331,12 @@
             - if @manifestacion_de_interes.errors.messages.size < 1 &&  !mantener_temporal
               - formulario_remote = false
         = render "form_fondo_produccion_limpia", tabs: tabs, f: f, solo_lectura: solo_lectura
-  -if !solo_lectura
-    .float-left
-      -#= button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
-      = link_to t(:descargar_postulacion), descargar_formulario_fpl_fondo_produccion_limpia_path(@tarea_pendiente.flujo_id), class: "btn btn-success btn-sm"
-    .float-right
-      = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+  .float-left
+    -#= button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
+    = link_to t(:descargar_postulacion), descargar_formulario_fpl_fondo_produccion_limpia_path(@tarea_pendiente.flujo_id), class: "btn btn-success btn-sm"
+  .float-right
+    = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
+    -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1
       = button_tag t(:guardar_cambios_temporales), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-fondo-temporal-button', class: "btn btn-sm btn-primary"
       = button_tag t(:enviar_postulación), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, id: 'enviar-postulacion-button', class: "btn btn-success btn-sm float-right ml-1"
 
