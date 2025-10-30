@@ -514,8 +514,10 @@ class FondoProduccionLimpiasController < ApplicationController
       solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       if solo_lectura == nil
         @solo_lectura = false
+        @tiene_permisos = true
       else
         @solo_lectura = true
+        @tiene_permisos = false
       end
 
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
@@ -2296,9 +2298,9 @@ class FondoProduccionLimpiasController < ApplicationController
 
       tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       if tiene_permisos == nil
-        @tiene_permisos = false
-      else
         @tiene_permisos = true
+      else
+        @tiene_permisos = false
       end
     end
 

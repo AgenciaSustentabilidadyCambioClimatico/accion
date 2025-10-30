@@ -3741,7 +3741,7 @@
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
                 %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                - if adm_juridica
+                - if adm_juridica && @tiene_permisos
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_postulante.each do |descargable|
@@ -3757,7 +3757,7 @@
                       = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if adm_juridica
+                    - if adm_juridica && @tiene_permisos
                       %td.contenido-form
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
@@ -3776,7 +3776,7 @@
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
                 %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                - if adm_juridica  
+                - if adm_juridica && @tiene_permisos
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_receptor.each do |descargable|
@@ -3790,7 +3790,7 @@
                       = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if adm_juridica
+                    - if adm_juridica &&  @tiene_permisos
                       %td.contenido-form
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
@@ -3809,7 +3809,7 @@
                 %th.encabezado-form{style: 'width: 25%;'} Documento
                 %th.encabezado-form{style: 'width: 25%;'} Formatos y/o Instrucciones
                 %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                - if adm_juridica
+                - if adm_juridica && @tiene_permisos
                   %th.encabezado-form{style: 'width: 25%;'} Subir Documento
               %tbody
                 - @descargables_ejecutor.each do |descargable|
@@ -3823,7 +3823,7 @@
                       = __descargar_archivo_sin_titulo(f.object.send(descargable.nombre_campo), f.object)
                       -#
                         = __upload_status(f.object,descargable.nombre_campo)
-                    - if adm_juridica 
+                    - if adm_juridica && @tiene_permisos
                       %td.contenido-form
                         - if @total_de_errores_por_tab.present?
                           - valor = @fondo_produccion_limpia.send(descargable.nombre_campo)
