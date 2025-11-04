@@ -206,11 +206,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
-      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO   
-        self.pdf_tabla_plan_actividades(pdf, planes)
-      else
-        self.pdf_tabla_plan_actividades_tipos(pdf, planes)
-      end  
+      self.pdf_tabla_plan_actividades(pdf, planes)    
       self.pdf_separador(pdf, 20)
 
       #self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
@@ -435,11 +431,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
-      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO   
-        self.pdf_tabla_plan_actividades(pdf, planes)
-      else
-        self.pdf_tabla_plan_actividades_tipos(pdf, planes)
-      end  
+      self.pdf_tabla_plan_actividades(pdf, planes)  
       self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
@@ -702,46 +694,6 @@ class FondoProduccionLimpia < ApplicationRecord
   end
 
   def pdf_tabla_plan_actividades(pdf, planes)
-    begin
-      # Encabezados de la tabla
-      headers = ["Etapa / Actividades", "1", "2", "3", "4", "Recursos Humanos Propios", "Recursos Humanos Externos", "Gastos de Operación", "Gastos de Administración"]
-
-      # Datos de la tabla
-      data = [headers] # Comienza con los encabezados
-
-      # Agregar cada objetivo específico a la tabla
-      duracion_total = self.duracion
-      planes.each do |plan|
-        fila = [
-          plan.nombre,
-          *Array.new(duracion_total) do |index|
-            mes = index + 1
-            if plan.duracion.split(',').include?(mes.to_s)
-              'X'
-            else
-              ''
-            end
-          end,
-          plan.valor_hh_tipo_3,
-          plan.valor_hh_tipos_1_2,
-          plan.total_gastos_tipo_1,
-          plan.total_gastos_tipo_2
-        ]
-        data << fila
-      end
-      pdf.table(data, header: true, column_widths: [100,45,45,45,45,60,60,60,60], cell_style: { size: 9, padding: [4, 8] }) do |table|
-        # Sin estilos adicionales por ahora
-      end
-
-      pdf.move_down 10 # Espacio después de la tabla
-
-    rescue => e
-      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
-      puts "Error creando la tabla en el PDF: #{e.message}"
-    end
-  end
-
-  def pdf_tabla_plan_actividades_tipos(pdf, planes)
     begin
       # Encabezados de la tabla
       headers = ["Actividades", "Periodos", "Recursos Humanos Propios", "Recursos Humanos Externos", "Gastos de Operación", "Gastos de Administración"]
@@ -1015,23 +967,23 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     
       if costos_seguimiento[0] != nil
-        valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0].aporte_solicitado_al_fondo + costos_seguimiento[0].aporte_propio_valorado + costos_seguimiento[0].aporte_propio_liquido) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
-        if costos_seguimiento[0].aporte_propio_valorado.to_f + costos_seguimiento[0].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0].aporte_propio_valorado.present?
+        valida_pregunta__aporte_del_postulante = ((costos_seguimiento[0]["aporte_solicitado_al_fondo"] + costos_seguimiento[0]["aporte_propio_valorado"] + costos_seguimiento[0]["aporte_propio_liquido"]) * Gasto::PORCENTAJE_APORTE_PROPIO_MINIMO_DIAGNOSTICO) / 100
+        if costos_seguimiento[0]["aporte_propio_valorado"].to_f + costos_seguimiento[0]["aporte_propio_liquido"].to_f >= valida_pregunta__aporte_del_postulante && costos_seguimiento[0]["aporte_propio_valorado"].present?
           cumple1 = 'SI'
         else
           cumple1 = 'NO'
         end
 
 
-        if costos_seguimiento[0].aporte_solicitado_al_fondo <= monto && costos_seguimiento[0].aporte_solicitado_al_fondo.present?
+        if costos_seguimiento[0]["aporte_solicitado_al_fondo"] <= monto && costos_seguimiento[0]["aporte_solicitado_al_fondo"].present?
           cumple2 = 'SI'
         else
           cumple2 = 'NO'
         end
 
-        costos_seguimiento_0_aporte_propio_liquido = costos_seguimiento[0].aporte_propio_liquido
-        costos_seguimiento_0_aporte_propio_valorado = costos_seguimiento[0].aporte_propio_valorado
-        costos_seguimiento_0_aporte_solicitado_al_fondo = costos_seguimiento[0].aporte_solicitado_al_fondo
+        costos_seguimiento_0_aporte_propio_liquido = costos_seguimiento[0]["aporte_propio_liquido"]
+        costos_seguimiento_0_aporte_propio_valorado = costos_seguimiento[0]["aporte_propio_valorado"]
+        costos_seguimiento_0_aporte_solicitado_al_fondo = costos_seguimiento[0]["aporte_solicitado_al_fondo"]
 
       else
         valida_pregunta__aporte_del_postulante = 0
@@ -1050,16 +1002,16 @@ class FondoProduccionLimpia < ApplicationRecord
         # Formatear el valor como porcentaje con coma como separador decimal
         confinanciamiento_formateado = sprintf("%.2f", confinanciamiento).gsub('.', ',') + " %"
 
-        valida_pregunta__aporte_del_empresa = ((costos_seguimiento[1].aporte_solicitado_al_fondo + costos_seguimiento[1].aporte_propio_valorado + costos_seguimiento[1].aporte_propio_liquido) * confinanciamiento_empresa[1]) / 100
-        if costos_seguimiento[1].aporte_propio_valorado.to_f + costos_seguimiento[1].aporte_propio_liquido.to_f >= valida_pregunta__aporte_del_empresa && costos_seguimiento[1].aporte_propio_valorado.present?
+        valida_pregunta__aporte_del_empresa = ((costos_seguimiento[1]["aporte_solicitado_al_fondo"] + costos_seguimiento[1]["aporte_propio_valorado"] + costos_seguimiento[1]["aporte_propio_liquido"]) * confinanciamiento_empresa[1]) / 100
+        if costos_seguimiento[1]["aporte_propio_valorado"].to_f + costos_seguimiento[1]["aporte_propio_liquido"].to_f >= valida_pregunta__aporte_del_empresa && costos_seguimiento[1]["aporte_propio_valorado"].present?
           cumple3 = 'SI'
         else
           cumple3 = 'NO'
         end
 
-        costos_seguimiento_1_aporte_propio_liquido = costos_seguimiento[1].aporte_propio_liquido
-        costos_seguimiento_1_aporte_propio_valorado = costos_seguimiento[1].aporte_propio_valorado
-        costos_seguimiento_1_aporte_solicitado_al_fondo = costos_seguimiento[1].aporte_solicitado_al_fondo
+        costos_seguimiento_1_aporte_propio_liquido = costos_seguimiento[1]["aporte_propio_liquido"]
+        costos_seguimiento_1_aporte_propio_valorado = costos_seguimiento[1]["aporte_propio_valorado"]
+        costos_seguimiento_1_aporte_solicitado_al_fondo = costos_seguimiento[1]["aporte_solicitado_al_fondo"]
 
       else
         cumple3 = 'NO'
@@ -1075,7 +1027,7 @@ class FondoProduccionLimpia < ApplicationRecord
       if costos_seguimiento[1] != nil
         monto_cofinanciamiento = confinanciamiento_empresa[0]
 
-        if costos_seguimiento[1].aporte_solicitado_al_fondo <= monto && costos_seguimiento[1].aporte_solicitado_al_fondo != ''
+        if costos_seguimiento[1]["aporte_solicitado_al_fondo"] <= monto && costos_seguimiento[1]["aporte_solicitado_al_fondo"] != ''
           cumple4 = 'SI'
         else
           cumple4 = 'NO'
