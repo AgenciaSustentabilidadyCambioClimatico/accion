@@ -5,6 +5,7 @@ class ComentariosController < ApplicationController
   def index
     if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
       @comentarios = Comentario.order(created_at: :desc).all
+      @comentario = Comentario.new 
     else
       redirect_to root_path, alert: "No tiene permiso para acceder a esta vista"
     end
@@ -104,9 +105,11 @@ class ComentariosController < ApplicationController
 
       if params[:comentario][:leido] == 'true' 
         @comentario_response.fecha_lectura = Time.current
+        @comentario_response.comentario_leido = params[:comentario][:comentario]
         @leido = true
       else
         @comentario_response.resuelto = true
+        @comentario_response.comentario_resuelto = params[:comentario][:comentario]
       end
         
       @comentario_response.leido = true

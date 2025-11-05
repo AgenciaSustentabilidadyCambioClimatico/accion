@@ -46,6 +46,8 @@
               - else
                 = 'No Resuelto'
             %td.dos.iconos-acciones{id: "comentarios_acciones_#{record.id}"}
+              = link_to "#", data: { remote: false, toggle: 'modal', target: '#site-comments-mostrar', id: record.id, comentario_leido: record.comentario_leido || '', comentario_resuelto: record.comentario_resuelto || '' } do
+                %i.fa.fa-eye
               - if record.leido
                 %i.fa.fa-envelope-open.pr-1
               - else

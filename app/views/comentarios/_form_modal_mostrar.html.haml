@@ -1,0 +1,32 @@
+- comentario = (@comentario.blank? ? Comentario.new : @comentario)
+= simple_form_for comentario, remote: true, url: modal_response_comentarios_path, html: { autocomplete: :off, multipart: true } do |f|
+  .modal-header
+    %h5.modal-title#siteCommentsResponseLabel
+      = t(:respuestas_comentarios)
+  .modal-body
+    .row
+      .col-12
+        #comentario-messages-remote-block
+      .col-12
+        .alert.alert-info
+          .col-lg-12
+            .row
+              .col-12
+                = f.input :comentario_leido, as: :text, label: t(:comentario_leido), input_html: { class: 'form-control', rows: 4, readonly: true }
+          .col-lg-12
+            .row
+              .col-12
+                = f.input :comentario_resuelto, as: :text, label: t(:comentario_resolucion), input_html: { class: 'form-control', rows: 4, readonly: true }
+  .modal-footer
+    %button.btn.btn-sm.btn-secondary.descartar-button{type: :button, "data-dismiss" => :modal}
+      Cerrar
+
+:javascript
+  $(document).on('show.bs.modal', '#site-comments-mostrar', function (event) {
+    var button = $(event.relatedTarget);
+    var comentario_leido = button.data('comentario-leido');
+    var comentario_resuelto = button.data('comentario-resuelto');
+
+    $('#comentario_comentario_leido').val(comentario_leido);
+    $('#comentario_comentario_resuelto').val(comentario_resuelto);
+  });
