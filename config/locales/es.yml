@@ -558,6 +558,7 @@ es:
   medio_verificación: Medio verificación
   enviar_comentarios: Enviar comentarios
   respuesta_enviar_comentarios: Respuesta comentario
+  respuestas_comentarios: Respuestas comentario
   usuarios: Usuarios
   campos_disponibles: Campos disponibles
   tipos_contribuyentes: Tipos de contribuyentes
@@ -1527,6 +1528,8 @@ es:
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
   respuesta_comentario: Respuesta comentario
+  comentario_leido: Comentario Leido
+  comentario_resolucion: Comentario Resolución
   agregar_actores: Agregar Actores
   agregar_actores_via_excel: Agregar Actores vía excel
   agregar_actores_formulario: Agregar Actores Formulario

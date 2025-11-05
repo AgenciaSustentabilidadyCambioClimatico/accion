@@ -3,6 +3,7 @@ $('#site-comments-response').modal("hide");
 
 <% if @leido == true %>
   $('#comentarios_acciones_<%= @comentario.id %>').html(`
+    <a data-remote="false" data-toggle="modal" data-target="#site-comments-mostrar" data-comentario-leido="<%= @comentario_response.comentario_leido %>" data-comentario-resuelto="<%= @comentario_response.comentario_resuelto %>" href="#"><i class="fa fa-eye"></i></a>
     <i class="fa fa-envelope-open pr-1"></i>
     <a data-remote="false" data-toggle="modal" data-target="#site-comments-response" data-email="<%= @comentario.email_contacto %>" data-id="<%= @comentario.id %>" data-leido="false" href="#"><i class="fa fa-fire-extinguisher text-danger"></i></a>
   `);
@@ -15,6 +16,7 @@ $('#site-comments-response').modal("hide");
   }
 <% else %>
   $('#comentarios_acciones_<%= @comentario.id %>').html(`
+    <a data-remote="false" data-toggle="modal" data-target="#site-comments-mostrar" data-comentario-leido="<%= @comentario_response.comentario_leido %>" data-comentario-resuelto="<%= @comentario_response.comentario_resuelto %>" href="#"><i class="fa fa-eye"></i></a>
     <i class="fa fa-envelope-open pr-1"></i>
     <i class="fa fa-check text-success"></i>
   `);
