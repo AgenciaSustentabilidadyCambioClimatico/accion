@@ -362,6 +362,7 @@
     .float-right.mr-3.mb-3.mt-3
       -if !externo
         = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-      = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
+      - if !@solo_lectura
+        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "actualizar-mapa-de-actores-button btn btn-sm btn-primary btn-disabled", disabled: :disabled
 - if comite_propuestas                      
   = render 'actualizar_comite_acuerdos/modal_archivos_anexos_posteriores_firmas', remote: true

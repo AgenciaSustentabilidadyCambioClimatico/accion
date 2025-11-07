@@ -157,6 +157,7 @@
       = render 'modal_12', f: f
       = render 'modal_asociar_estandar'
       .float-right
-        = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
+        - if !@solo_lectura
+          = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
 
               

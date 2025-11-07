@@ -87,9 +87,11 @@
 				#actores-remote-table
 					= render 'actores/table'
 				#mapa_actores-form
-					= render 'actores/form_mapa_de_actores', externo: true 
-					= render 'actores/table_certificaciones_mapa_de_actores', externo: true 
+					- if !@solo_lectura
+						= render 'actores/form_mapa_de_actores', externo: true 
+						= render 'actores/table_certificaciones_mapa_de_actores', externo: true 
 				#actualizar-remote-form.d-none
 					= render 'actores/form', externo: true
-				%button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
+				- if !@solo_lectura
+					%button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
 	#convocatoria-remote-form.tab-pane.fade{"aria-expanded" => tabs[:"convocatoria-remote-form"], "aria-labelledby" => "convocatoria-remote-form-tab", :role => "tabpanel", class: ("show active" if tabs[:"convocatoria-remote-form"])}
