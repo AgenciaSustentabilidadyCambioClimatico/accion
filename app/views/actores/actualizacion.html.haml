@@ -60,9 +60,11 @@
 	= render 'comentarios_coordinador'
 	= render 'actores/table_comentarios_anteriores_formulario'        
 #mapa_actores-form
-	= render 'actores/form_mapa_de_actores', externo: true 
-	%br 
-	= render 'actores/table_actualiza_mapa_de_actores', externo: true 
+	- if !@solo_lectura
+		= render 'actores/form_mapa_de_actores', externo: true 
+		%br 
+		= render 'actores/table_actualiza_mapa_de_actores', externo: true 
 #actualizar-remote-form.d-none
 	= render 'form'
-%button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel
+- if !@solo_lectura	
+	%button#toggle-actores-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Actores vía excel

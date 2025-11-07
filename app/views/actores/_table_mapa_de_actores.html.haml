@@ -59,12 +59,13 @@
 - button_disabled = @listado_actores_temporal.empty? ? :disabled : nil
 
 .float-right.mr-3.mb-3
-  = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
-  = button_tag t(:save),
-    id: 'actualizar-mapa-de-actores-listado-button',
-    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
-    class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled",
-    disabled: @listado_actores_temporal.blank?
+  - if !@solo_lectura
+    = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
+    = button_tag t(:save),
+      id: 'actualizar-mapa-de-actores-listado-button',
+      'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+      class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled",
+      disabled: @listado_actores_temporal.blank?
 
 
 :javascript
