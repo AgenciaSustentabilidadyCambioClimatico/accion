@@ -36,6 +36,9 @@
         - session[:original_url] = request.original_url
         = link_to '#', "data-toggle"=>:modal, "data-target"=>"#site-comments", class: 'show-comments' do
           %i.fa.fa-commenting.fa-4x
+
+        #chat-toggle{style: "position: fixed; bottom: 20px; right: 20px; cursor: pointer; z-index: 2000;"}
+          %i.fa.fa-comments.fa-3x{style: "color:#1976d2;"}
     -else
       .fixed-top.bg-white
         .container.d-none.d-lg-flex.justify-content-between.align-items-center.px-0.container-header-home
@@ -174,3 +177,69 @@
           }
         });
     .clearfix
+
+    / === Contenedor del Chatbot (inicialmente oculto) === /
+    #chatbot-container{style: "display:none; position: fixed; bottom: 80px; right: 20px; width: 320px; background: white; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1999; overflow: hidden;"}
+      .chat-header{style: "background-color:#1976d2; color:white; padding:10px; text-align:center; font-weight:bold;"}
+        Chat Bot 🤖
+        %span#close-chat{style: "float:right; cursor:pointer; font-weight:bold;"} ×
+      .chat-body{style: "padding:10px;"}
+        #chat-messages{style: "border:1px solid #ddd; padding:10px; height:250px; overflow:auto; background-color:#fafafa; border-radius:8px;"}
+        %form#chat-form{style: "margin-top:10px; display:flex; gap:5px;"}
+          %input#chat-input{type: "text", placeholder: "Escribe tu pregunta...", style: "flex:1; padding:6px; border:1px solid #ccc; border-radius:4px;"}
+          %button{type: "submit", style: "padding:6px 12px; background-color:#1976d2; color:white; border:none; border-radius:4px;"} Enviar
+
+    :javascript
+      document.addEventListener("DOMContentLoaded", () => {
+        const toggle = document.getElementById("chat-toggle");
+        const container = document.getElementById("chatbot-container");
+        const closeBtn = document.getElementById("close-chat");
+        const form = document.getElementById("chat-form");
+        const input = document.getElementById("chat-input");
+        const messages = document.getElementById("chat-messages");
+
+        // Mostrar / ocultar el chat
+        toggle.addEventListener("click", () => {
+          container.style.display = (container.style.display === "none" || container.style.display === "") ? "block" : "none";
+        });
+
+        closeBtn.addEventListener("click", () => {
+          container.style.display = "none";
+        });
+
+        const append = (who, text) => {
+          const el = document.createElement("div");
+          el.innerHTML = `<strong>${who}:</strong> ${text}`;
+          el.style.marginBottom = "8px";
+          messages.appendChild(el);
+          messages.scrollTop = messages.scrollHeight;
+        };
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const text = input.value.trim();
+          if (!text) return;
+          append("Tú", text);
+          input.value = "";
+          append("Soporte", "⏳ pensando...");
+
+          try {
+            const res = await fetch("/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Accept": "application/json" },
+              body: JSON.stringify({ message: text })
+            });
+            const data = await res.json();
+            messages.lastElementChild.remove(); // quitar "pensando..."
+            if (data.ok) {
+              append("Soporte", data.reply || "(sin respuesta)");
+            } else {
+              append("Error", data.error || "Error desconocido");
+            }
+          } catch (err) {
+            messages.lastElementChild.remove();
+            append("Error", "No se pudo conectar con el servidor");
+            console.error(err);
+          }
+        });
+      });

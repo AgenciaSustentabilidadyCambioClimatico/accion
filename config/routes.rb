@@ -348,6 +348,10 @@ Rails.application.routes.draw do
   get ':id/descargar_resolucion_pdf', to: "fondo_produccion_limpias#descargar_resolucion_pdf", as: :descargar_resolucion_pdf_fondo_produccion_limpia
   #------------------------------------------------------------------------------------------------------------#
 
+  #chatbot
+  post '/chat', to: 'chats#create'
+  #------------------------------------------------------------------------------------------------------------#
+
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'
   
   get 'manifestacion-de-interes/:id/google-map-kml/:file(.:format)', to: 'manifestacion_de_interes#google_map_kml', as: :google_map_kml

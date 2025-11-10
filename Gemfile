@@ -110,3 +110,8 @@ end
 
 gem "health_check", "~> 3.1"
 gem 'recaptcha', require: 'recaptcha/rails'
+gem 'httparty'
+gem 'dotenv-rails', groups: [:development, :test]
+gem 'docx'
+gem "google-apis-docs_v1"
+
