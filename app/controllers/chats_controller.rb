@@ -3,8 +3,12 @@ class ChatsController < ApplicationController
 
   def create
     message = params[:message] || params.dig(:chat, :message)
-    manual_path = Rails.root.join('app', 'manuales', 'ASCC_Manual_de_Usuario_Plataforma_Accion.docx')
-    client = GeminiClient.new(manual_path: manual_path)
+    doc_id = ENV["GEMINI_ID_DOC"] 
+
+    docs_service = GoogleDocsService.new
+    manual_text = docs_service.get_document_text(doc_id)
+
+    client = GeminiClient.new(manual_text: manual_text)
 
     begin
       reply = client.generate_content(message)
