@@ -16,6 +16,7 @@ class GeminiClient
       ❌ No inventes información.
       ❌ No respondas preguntas generales.
       ✅ Si la respuesta no está en el manual, responde exactamente: "No lo sé, el manual no tiene esa información."
+      ✅ No incluyas referencias visuales como "Ver Figura", "Figura", "Gráfico", "ver tabla", ni comentarios similares.
 
       --- MANUAL DEL SISTEMA ---
       #{@manual_text}

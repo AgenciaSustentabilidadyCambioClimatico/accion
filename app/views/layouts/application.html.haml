@@ -181,7 +181,7 @@
     / === Contenedor del Chatbot (inicialmente oculto) === /
     #chatbot-container{style: "display:none; position: fixed; bottom: 80px; right: 20px; width: 320px; background: white; border: 1px solid #ccc; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2); z-index: 1999; overflow: hidden;"}
       .chat-header{style: "background-color:#1976d2; color:white; padding:10px; text-align:center; font-weight:bold;"}
-        Chat Bot 🤖
+        Chat Bot Sustentable ♻️🌱🌍💚💧🌳
         %span#close-chat{style: "float:right; cursor:pointer; font-weight:bold;"} ×
       .chat-body{style: "padding:10px;"}
         #chat-messages{style: "border:1px solid #ddd; padding:10px; height:250px; overflow:auto; background-color:#fafafa; border-radius:8px;"}
@@ -221,7 +221,7 @@
           if (!text) return;
           append("Tú", text);
           input.value = "";
-          append("Soporte", "⏳ pensando...");
+          append("Agente Verde", "⏳ pensando...");
 
           try {
             const res = await fetch("/chat", {
@@ -232,7 +232,7 @@
             const data = await res.json();
             messages.lastElementChild.remove(); // quitar "pensando..."
             if (data.ok) {
-              append("Soporte", data.reply || "(sin respuesta)");
+              append("Agente Verde", data.reply || "(sin respuesta)");
             } else {
               append("Error", data.error || "Error desconocido");
             }
