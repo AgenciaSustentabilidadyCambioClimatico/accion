@@ -558,6 +558,7 @@ es:
   medio_verificación: Medio verificación
   enviar_comentarios: Enviar comentarios
   respuesta_enviar_comentarios: Respuesta comentario
+  respuestas_comentarios: Respuestas comentario
   usuarios: Usuarios
   campos_disponibles: Campos disponibles
   tipos_contribuyentes: Tipos de contribuyentes
@@ -1439,6 +1440,7 @@ es:
   sub_linea_instrumento: Sublinea del instrumento
   titulo_proyecto: Título del Proyecto
   postular_a_fondo_produccion_limpia: ¿Postular a Fondo Producción Limpia?
+  seleccionar_linea_para_la_creacion_de_flujo: Seleccionar línea para la creación del flujo
   enviar_postulación: Enviar postulación
   descargar_postulacion: Descargar postulación
   descripcion: Objetivo Específico
@@ -1526,6 +1528,8 @@ es:
   admiisibilidad_financiera : Admisibilidad Financiera
   admiisibilidad_tecnica : Admisibilidad Técnica
   respuesta_comentario: Respuesta comentario
+  comentario_leido: Comentario Leido
+  comentario_resolucion: Comentario Resolución
   agregar_actores: Agregar Actores
   agregar_actores_via_excel: Agregar Actores vía excel
   agregar_actores_formulario: Agregar Actores Formulario
@@ -1547,6 +1551,8 @@ es:
   fecha_lectura: Fecha lectura
   modificar_mapa_actores: Modificar mapa actores
   eliminar_actores: Eliminar actores
+  modificaciones: Modificaciones
+  fecha_modificacion: Fecha Modificación
 
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   crea_nuevo_flujo_fpl: Crea nuevo flujo FPL

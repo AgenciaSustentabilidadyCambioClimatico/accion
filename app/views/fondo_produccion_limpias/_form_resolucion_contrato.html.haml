@@ -82,6 +82,55 @@
     archivosCargados.archivo_contrato = #{@fondo_produccion_limpia.archivo_contrato.present?};
     validarArchivosCargados();
   });
+
+%style
+:css
+  .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+
+  .table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+  }
+
+  .table tbody + tbody {
+    border-top: 2px solid #dee2e6;
+  }
+
+  .table .table {
+    background-color: #fff;
+  }
+
+  .table thead th {
+    font-size: 12px;
+    border-bottom: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6; 
+    border-left: 2px solid #dee2e6;
+  }
+
+  .encabezado-form {
+    vertical-align: middle;
+    border-bottom: 2px solid #dee2e6;
+    background-color: #E0EFF6;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  .contenido-form {
+    border-bottom: 2px solid #dee2e6;
+    border-right: 2px solid #dee2e6; 
+    border-left: 2px solid #dee2e6; 
+    font-size: 12px; 
+    vertical-align: top;
+    background-color: #fff;
+    color: #5d759e;
+  }
 - titulo t(:resolucion_contrato)
 = simple_form_for @fondo_produccion_limpia, url: adjuntar_resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
   .row
@@ -96,7 +145,8 @@
                 %tr
                   %th.encabezado-form{style: 'width: 25%;'} Documento
                   %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                  %th.encabezado-form{style: 'width: 25%;'} Subir Documento
+                  -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    %th.encabezado-form{style: 'width: 25%;'} Subir Documento
                 %tbody
                   %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}
@@ -106,31 +156,26 @@
                       = __descargar_archivo_sin_titulo(f.object.send("archivo_resolucion"), f.object)
                       -#
                         = __upload_status(f.object,"archivo_resolucion")
-                    %td.contenido-form
-                      - valor = @fondo_produccion_limpia.send('archivo_resolucion')
-                      - if valor.nil? || valor.file.nil? || !valor.file.present?
-                        = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
-                      - else
+                    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                      %td.contenido-form
                         = f.file_field :archivo_resolucion, id: "archivo_resolucion", name: "archivo_resolucion", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_resolucion', 'resolucion')", label: false
                   %tr{id: "fila_contrato", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
-                      Archivo Resolución
+                      Archivo Contrato
                     %td.contenido-form{id: "archivo_cargado_contrato"} 
                       = __descargar_archivo_sin_titulo(f.object.send("archivo_contrato"), f.object)
                       -#
                         = __upload_status(f.object,"archivo_contrato")
-                    %td.contenido-form
-                      - valor = @fondo_produccion_limpia.send('archivo_contrato')
-                      - if valor.nil? || valor.file.nil? || !valor.file.present?
-                        = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-error", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
-                      - else
+                    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                      %td.contenido-form
                         = f.file_field :archivo_contrato, id: "archivo_contrato", name: "archivo_contrato", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_contrato', 'contrato')", label: false
   .float-right
     = volver_root
-    = button_tag t(:enviar), 
-      'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, 
-      id: 'enviar-button', 
-      class: "btn btn-sm btn-success btn-disabled", 
-      disabled: true,
-      data: { confirm: "¿Está seguro que desea enviar los documentos?", remote: false }
+    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+      = button_tag t(:enviar), 
+        'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, 
+        id: 'enviar-button', 
+        class: "btn btn-sm btn-success btn-disabled", 
+        disabled: true,
+        data: { confirm: "¿Está seguro que desea enviar los documentos?", remote: false }

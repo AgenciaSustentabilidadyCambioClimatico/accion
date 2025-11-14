@@ -33,9 +33,10 @@
             = snf.link_to_add :comentario_archivos, data: { target: "#modal-comentario-archivos" }, class: 'modal-comentario-archivos' do
               %i.fa.fa-plus-square.fa-2x 
           = render 'comentarios/nested_form_archivos', snf: snf, target: "modal-comentario-archivos"
-      .row
-        .col-12.d-flex.justify-content-center
-          = recaptcha_tags
+      -if !user_signed_in?
+        .row
+          .col-12.d-flex.justify-content-center
+            = recaptcha_tags
     .modal-footer
       %button.btn.btn-sm.btn-secondary.descartar-button{type: :button, "data-dismiss"=>:modal}
         Descartar

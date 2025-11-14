@@ -46,7 +46,7 @@ $('#div_plan_recursos_propios table tbody').empty();
       "<td class='contenido-form'>" + valor_hh + "</td>" +
       "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + costo + "</td>";
-      <% if !solo_lectura %>
+      <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-rr-pp-id=" + rr_pp_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_pp_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_pp_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 3 + "' data-original-title='Eliminar recursos propios'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>";
@@ -75,7 +75,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         "<td class='contenido-form'>" + valor_hh + "</td>" +
         "<td class='contenido-form'>" + tipo_aporte + "</td>" +
         "<td class='contenido-form'>" + costo + "</td>";
-        <% if !solo_lectura %>
+        <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
           "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 4 + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
           "</td>";
@@ -88,7 +88,7 @@ $('#div_plan_recursos_externos table tbody').empty();
         "<td class='contenido-form'>" + valor_hh + "</td>" +
         "<td class='contenido-form'>" + tipo_aporte + "</td>" +
         "<td class='contenido-form'>" + costo + "</td>";
-        <% if !solo_lectura %>
+        <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 %>
           newRow += "<td class='contenido-form dos iconos-acciones'>" +
           "<a data-rr-ex-id=" + rr_ex_id + " data-confirm='¿Está seguro que desea borrar este registro?' class='eliminar-recursos-humanos' id='eliminar-recursos-humanos-" + rr_ex_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_recursos_humanos/" + tarea_pendiente_id + "?rr_hh_id=" + rr_ex_id + "&plan_id=" + plan_id + "&tipo_aporte=" + 2 + "' data-original-title='Eliminar recursos externos'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
           "</td>";
@@ -142,7 +142,7 @@ $('#div_plan_gastos_operacion table tbody').empty();
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
       "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + total + "</td>";
-      <% if !solo_lectura %>
+      <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id=" + gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_operacion' id='eliminar-gasto-operacion-" + gastos_id + "' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_operacion/" + tarea_pendiente_id + "?gastos_id=" + gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>";
@@ -171,7 +171,7 @@ $('#div_plan_gastos_administracion table tbody').empty();
       "<td class='contenido-form'>" + unidad_medida + "</td>" +
       "<td class='contenido-form'>" + tipo_aporte + "</td>" +
       "<td class='contenido-form'>" + total + "</td>";
-      <% if !solo_lectura %>
+      <% if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1 %>
         newRow += "<td class='contenido-form dos iconos-acciones'>" +
         "<a data-gasto-id="+ gastos_id + " data-confirm='¿Está seguro que desea borrar este Gasto?' class='eliminar-gasto_administracion' id='eliminar-gasto-administracion-"+ gastos_id +"' data-remote='true' rel='nofollow' data-method='delete' href='/eliminar_gasto_administracion/"+ tarea_pendiente_id +"?gastos_id="+ gastos_id + "&plan_id=" + plan_id + "' data-original-title='Eliminar gasto'><i class='fa fa-trash' data-original-title='' title=''></i></a>" +
         "</td>";

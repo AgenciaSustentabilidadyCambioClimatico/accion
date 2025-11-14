@@ -10,9 +10,12 @@ class ActualizarComiteAcuerdosController < ApplicationController
   before_action :set_usuario_actor
   before_action :set_listado_actores_temporal
 
-  attr_accessor :tipo_linea_seleccionada_l13
+  attr_accessor :tipo_linea_seleccionada_l13, :tipo_instrumento
 
   def index
+    #Lista los tipos de lineas 1.2 y 1.3
+    @tipos_instrumentos = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_LINEA_1_3]).order(id: :desc)
+
     #Obtiene las lineas para el seguimiento del FPL Línea 1.2 - Implementación de APL
     @lineas_fpl = TipoInstrumento.where(id: [TipoInstrumento::FPL_LINEA_1_2_2,TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2])
     @fondo_produccion_limpia_ids = FondoProduccionLimpia.where(flujo_apl_id: @flujo.id).pluck(:flujo_id)
@@ -77,22 +80,46 @@ class ActualizarComiteAcuerdosController < ApplicationController
         archivos_previos =[]
         archivos_nuevos =[]
         @informe.archivos_anexos_posteriores_firmas.each do |archivo|
-          
-          unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.identifier))
-            archivos_previos << URI.open(archivo.url)
+          id = archivo.respond_to?(:identifier) ? archivo.identifier : archivo.original_filename
+          unless (params[:por_eliminar].present? && params[:por_eliminar].include?(id))
+            begin
+              file_temp = URI.open(archivo.url)
+              filename  = File.basename(URI.parse(archivo.url).path)
+              uploaded_file = ActionDispatch::Http::UploadedFile.new(
+                tempfile: file_temp,
+                filename: filename,
+                type: Marcel::MimeType.for(file_temp)
+              )
+              archivos_previos << uploaded_file
+            rescue => e
+              Rails.logger.error("Error cargando archivo previo: #{e.message}")
+            end
           end
         end
-        if !informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].blank?
+
+        if informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].present?
           informe_archivos_anexos_posteriores_firma_params[:archivos_anexos_posteriores_firmas].each do |archivo|
-            
-            unless (params[:por_eliminar].present? && params[:por_eliminar].include?(archivo.identifier))
+            id = archivo.respond_to?(:identifier) ? archivo.identifier : archivo.original_filename
+            unless (params[:por_eliminar].present? && params[:por_eliminar].include?(id))
               archivos_nuevos << archivo
             end
           end
         end
 
-        if !informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria].blank?
-          archivos_nuevos << URI.open(Convocatoria.find(informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria]).minuta.acta.url)
+        if informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria].present?
+          convocatoria = Convocatoria.find(informe_archivos_anexos_posteriores_firma_params[:acta_convocatoria])
+          acta_url = convocatoria.minuta.acta.url
+          
+          file = URI.open(acta_url)
+          filename = File.basename(URI.parse(acta_url).path)
+
+          uploaded_file = ActionDispatch::Http::UploadedFile.new(
+            tempfile: file,
+            filename: filename,
+            type: Marcel::MimeType.for(file)
+          )
+
+          archivos_nuevos << uploaded_file
         end
 
         @informe.assign_attributes(archivos_anexos_posteriores_firmas: archivos_previos+archivos_nuevos)

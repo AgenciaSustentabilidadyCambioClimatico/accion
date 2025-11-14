@@ -5,6 +5,7 @@ class ComentariosController < ApplicationController
   def index
     if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) 
       @comentarios = Comentario.order(created_at: :desc).all
+      @comentario = Comentario.new 
     else
       redirect_to root_path, alert: "No tiene permiso para acceder a esta vista"
     end
@@ -74,28 +75,19 @@ class ComentariosController < ApplicationController
     def __create_or_send(success_message)
       @comentario = Comentario.new(comentario_params)
       @comentario.user_id = current_user.id unless current_user.nil?
-      respond_to do |format|
-        if verify_recaptcha(model: @comentario)
-          if @comentario.save
-          ComentarioMailer.nuevo(@comentario).deliver_now
-            @users = Responsable.__personas_responsables(Rol::REVISOR_COMENTARIOS, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
-            @users.each do |user|
-            ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_now
-            end
-            format.js { 
-              flash.now[:success] = success_message
-              @comentario = Comentario.new
-            }
-            format.html { redirect_to @comentario, notice: success_message }
 
+      respond_to do |format|
+        # Si el usuario NO ha iniciado sesión, verificamos reCAPTCHA
+        if !user_signed_in?
+          if verify_recaptcha(model: @comentario)
+            procesar_comentario(format, success_message)
           else
-            @error = true
-            format.html { render :new }
-            format.js
+            format.js { flash.now[:alert] = "Por favor, confirma que no eres un robot." }
+            format.html { redirect_back fallback_location: root_path, alert: "Por favor, confirma que no eres un robot." }
           end
         else
-          format.js { flash.now[:alert] = "Por favor, confirma que no eres un robot." }
-          format.html { redirect_to @comentario, notice: "Por favor, confirma que no eres un robot." }
+          # Si el usuario está autenticado, no pedimos reCAPTCHA
+          procesar_comentario(format, success_message)
         end
       end
     end
@@ -113,9 +105,11 @@ class ComentariosController < ApplicationController
 
       if params[:comentario][:leido] == 'true' 
         @comentario_response.fecha_lectura = Time.current
+        @comentario_response.comentario_leido = params[:comentario][:comentario]
         @leido = true
       else
         @comentario_response.resuelto = true
+        @comentario_response.comentario_resuelto = params[:comentario][:comentario]
       end
         
       @comentario_response.leido = true
@@ -123,6 +117,33 @@ class ComentariosController < ApplicationController
 
       respond_to do |format|
         format.js { render 'comentarios/modal_response' }
+      end
+    end
+
+    private
+
+    def procesar_comentario(format, success_message)
+      if @comentario.save
+        ComentarioMailer.nuevo(@comentario).deliver_later
+
+        @users = Responsable.__personas_responsables(
+          Rol::REVISOR_COMENTARIOS,
+          TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id
+        )
+
+        @users.each do |user|
+          ComentarioMailer.nuevo_para_revisor(@comentario, user).deliver_later
+        end
+
+        format.js do
+          flash.now[:success] = success_message
+          @comentario = Comentario.new
+        end
+        format.html { redirect_to @comentario, notice: success_message }
+      else
+        @error = true
+        format.html { render :new }
+        format.js
       end
     end
 end

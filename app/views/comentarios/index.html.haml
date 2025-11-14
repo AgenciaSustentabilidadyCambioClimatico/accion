@@ -45,3 +45,8 @@
   .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
     .modal-content#modal-response-comentario-remote-form
       = render 'comentarios/form_modal_response', email: email, id: id
+
+.modal.fade{id: :"site-comments-mostrar", tabindex: "-1", role: :dialog, "aria-labelledby": :siteCommentsMostrarLabel, "aria-hidden": true}
+  .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
+    .modal-content#modal-mostrar-comentario-remote-form
+      = render 'comentarios/form_modal_mostrar', email: email, id: id

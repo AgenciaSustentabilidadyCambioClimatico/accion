@@ -374,8 +374,9 @@
                   .col-12
                     .float-right
                       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
-                      = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
-                        %i.fa.fa-arrow-circle-right
-                        =t(:enviar)   
+                      -if @tiene_permisos
+                        = button_tag 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, class: "btn btn-sm btn-success", id: "enviar_observaciones_admisibilidad_financiera_button", onclick: 'enviarObservacionesAdmisibilidadFinanciera(); return false;' do
+                          %i.fa.fa-arrow-circle-right
+                          =t(:enviar)   
 = render 'fondo_produccion_limpias/buscador'
 = render 'fondo_produccion_limpias/contribuyentes/buscador', es_para_seleccion: true
