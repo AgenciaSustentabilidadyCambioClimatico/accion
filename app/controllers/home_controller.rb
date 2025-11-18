@@ -15,24 +15,12 @@ class HomeController < ApplicationController
         rr << value.first
       end
       @algo = TareaPendiente.todas_del_(current_user.id) + rr
-
-      # Filtro especial: si es tarea 103 (PRO-003) en flujo 1000 → solo mostrar una vez
-      @pendientes = @algo.group_by { |p| [p.flujo.id, p.tarea.codigo] }.map do |(flujo_id, tarea_codigo), tasks|
-        if flujo_id == 1000 && tarea_codigo == Tarea::COD_PRO_003
-          @registro_proveedores = RegistroProveedor.where(user_encargado: current_user.id, estado: 'enviado')
-          if @registro_proveedores.any?
-            tasks.first
-          else
-            nil
-          end
-        else
-          tasks
-        end
-      end.flatten.compact  
+      
+      @pendientes = @algo 
 
     else
       @clasificaciones_padre = ReporteriaDato.find_by(ruta: "index")
-    end    
+    end  
   end
 
   def consulta_publica_propuestas_acuerdo
