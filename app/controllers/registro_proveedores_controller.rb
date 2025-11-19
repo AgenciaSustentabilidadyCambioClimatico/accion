@@ -298,16 +298,16 @@ class RegistroProveedoresController < ApplicationController
       end
     end
 
-    archivos = params[:archivo]
-    archivos_seleccionados = archivos.select { |k, v| v.present? }
+    #archivos = params[:archivo]
+    #archivos_seleccionados = archivos.select { |k, v| v.present? }
 
-    archivos_seleccionados.each do |k, v|
-      key = k
-      value = v
-      @registro_proveedor = RegistroProveedor.find(key)
-      @registro_proveedor.archivo_respuesta_rechazo_directiva = value
-      @registro_proveedor.save!
-    end
+    #archivos_seleccionados.each do |k, v|
+    #  key = k
+    #  value = v
+    #  @registro_proveedor = RegistroProveedor.find(key)
+    #  @registro_proveedor.archivo_respuesta_rechazo_directiva = value
+    #  @registro_proveedor.save!
+    #end
 
     redirect_to root_path
     flash[:success] = "Registro enviado correctamente"
@@ -634,6 +634,14 @@ class RegistroProveedoresController < ApplicationController
   def registro_get_comunas_casa_matriz
     @region = Region.find params[:id]
     @comunas = @region.comunas.order('nombre').vigente?
+  end
+
+  def subir_documento()
+    registro = RegistroProveedor.find(params[:id])
+    campo = params[:nombre_campo] # "archivo_aprobado_directiva"
+    archivo = params[:archivo]    # #<UploadedFile ...>
+    registro.update(campo => archivo)
+    render json: { ok: true, mensaje: "Archivo guardado" }
   end
 
   private

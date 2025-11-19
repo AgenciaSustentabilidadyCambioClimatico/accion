@@ -174,8 +174,9 @@
     });
 
     $('#enviar_modal_resultado_revision').click(function(){
+      guardarArchivos();
       estado = $('#adhesion_estado_elementos option:selected');
-      estado_val = estado.prop("value");
+      estado_val = $('#adhesion_estado_elementos option:selected').prop("value");
       estado_nombre = estado.text();
       comentario = $('#adhesion_justificacion_elementos').val();
       fecha = $('#adhesion_fecha').val();
@@ -203,3 +204,45 @@
       $('#enviar_button').prop("disabled", false);
     });
   });
+
+  function guardarArchivos() {
+    const archivoInput = document.getElementById("adhesion_archivo");
+
+    if (!archivoInput || archivoInput.files.length === 0) {
+        console.log("No se seleccionó archivo");
+        return;
+    }
+
+    const archivo = archivoInput.files[0];
+
+    // 1. obtener el id del registro seleccionado en la tabla
+    const seleccionado = document.querySelector('.seleccionar-elemento-adhesion:checked');
+    if (!seleccionado) {
+        alert("Seleccione un registro antes de subir el archivo");
+        return;
+    }
+
+    const registroId = seleccionado.value;
+
+    // 2. Construir FormData
+    const formData = new FormData();
+    formData.append("id", registroId);
+    formData.append("nombre_campo", "archivo_aprobado_directiva");
+    formData.append("archivo", archivo);
+
+    // 3. Enviar por fetch
+    fetch('/subir_documento_registro_proveedores', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Archivo subido correctamente:", data);
+    })
+    .catch(error => {
+        console.error("Error al subir archivo:", error);
+    });
+  }
