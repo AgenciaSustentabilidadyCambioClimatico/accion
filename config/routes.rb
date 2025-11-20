@@ -172,6 +172,7 @@ Rails.application.routes.draw do
   patch 'registro_proveedor/resultado_de_revision', to: "registro_proveedores#resultado_de_revision", as: :resultado_de_revision
   get 'registro_proveedores/:id/edit_proveedor', to: "registro_proveedores#edit_proveedor", as: :edit_proveedor
   patch 'registro_proveedores/:id/update_proveedor', to: "registro_proveedores#update_proveedor", as: :update_proveedor
+  post 'subir_documento_registro_proveedores', to: 'registro_proveedores#subir_documento', as: :subir_documento_registro_proveedores
   #PRO-007
   get 'registro_proveedores/:id/actualizar_proveedor', to: "registro_proveedores#actualizar_proveedor", as: :actualizar_proveedor
   patch 'registro_proveedores/:id/update_plazo_proveedor', to: "registro_proveedores#update_plazo_proveedor", as: :update_plazo_proveedor
