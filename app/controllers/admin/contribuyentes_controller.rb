@@ -165,6 +165,14 @@ class Admin::ContribuyentesController < ApplicationController
       establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
     end
 
+    if @contribuyente.dato_anual_contribuyentes.present?
+      @contribuyente.dato_anual_contribuyentes.each do |dato|
+        dato.rango_venta_contribuyente_id = 1
+        dato.periodo = Date.today.year-1
+        dato.contribuyente = @contribuyente
+      end
+    end
+
     errores = false
     errores = true unless @error_extra.nil? 
     errores = true unless @contribuyente.valid?
@@ -292,8 +300,10 @@ class Admin::ContribuyentesController < ApplicationController
   def edit_modal
     if params[:id].blank?
       @contribuyente_temporal = Contribuyente.new
+      @contribuyente_temporal.dato_anual_contribuyentes.build
     else
       @contribuyente_temporal = Contribuyente.unscoped.find_by(contribuyente_id: params[:id], flujo_id: params[:flujo_id]) || Contribuyente.unscoped.find(params[:id])
+      @contribuyente_temporal.dato_anual_contribuyentes.build if @contribuyente_temporal.dato_anual_contribuyentes.empty?
     end
     @contribuyente_temporal.temporal = true
     @contribuyente_temporal.flujo_id = params[:flujo_id]

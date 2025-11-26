@@ -1093,6 +1093,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def edit_modal_contribuyente
       @contribuyente_temporal = Contribuyente.new
+      @contribuyente_temporal.dato_anual_contribuyentes.build
       @contribuyente_temporal.temporal = true
       @contribuyente_temporal.flujo_id = params[:flujo_id]
       @contribuyente_temporal.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
@@ -1116,9 +1117,34 @@ class FondoProduccionLimpiasController < ApplicationController
         @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
       end
 
+      # 1. Obtener los atributos anidados
+      datos_anuales = contribuyente_params[:dato_anual_contribuyentes_attributes]
+      if datos_anuales.present?
+        # 2. Tomar el primer (y probablemente único) registro anidado.
+        # Usamos values.first para obtener el hash de parámetros del primer registro.
+        primer_dato_anual = datos_anuales.values.first
+
+        if primer_dato_anual.present?
+          tipo_id = primer_dato_anual[:tipo_contribuyente_id]
+
+          # 3. Validar si el campo es nil o está en blanco (cadena vacía)
+          if tipo_id.nil? || tipo_id.blank?
+            @error_extra = "Debe ingresar el tipo de contribuyente" if @error_extra.nil?
+          end
+        end
+      end
+
       # Habilita la validación de teléfono durante el create
       @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
         establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
+      end
+
+      if @contribuyente.dato_anual_contribuyentes.present?
+        @contribuyente.dato_anual_contribuyentes.each do |dato|
+          dato.rango_venta_contribuyente_id = 1
+          dato.periodo = Date.today.year-1
+          dato.contribuyente = @contribuyente
+        end
       end
 
       errores = false
@@ -1129,7 +1155,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @contribuyente.actividad_economica_contribuyentes.each{|aec| errores = true unless aec.valid?}
 
       respond_to do |format|
-        if @contribuyente.contribuyente_id.nil?
+        if @contribuyente.contribuyente_id.nil? 
           unless errores
             @contribuyente.save
             if(parameters[:temporal] == "true") 

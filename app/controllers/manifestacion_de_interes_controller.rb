@@ -1418,11 +1418,12 @@ class ManifestacionDeInteresController < ApplicationController
               #  rol_id: Rol::PRENSA,
               #  persona_id: manifestacion_pertinencia_params[:encargado_hitos_prensa_id]
               #})
-              actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
-              MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
               #paso los temporales de contribuyente y responsable te tarea apl-001 a definitivos
               @manifestacion_de_interes.confirmar_temporales_a_definitivos
+
+              actores_desde_campo = @manifestacion_de_interes.mapa_de_actores_data.blank? ? nil : @manifestacion_de_interes.mapa_de_actores_data.map{|i| i.transform_keys!(&:to_sym).to_h}
+              MapaDeActor.actualiza_tablas_mapa_actores(actores_desde_campo, @flujo, @tarea_pendiente)
 
               @tarea_pendiente.pasar_a_siguiente_tarea 'A'
               #Cargar set de metas si se adherio a estandar o diagnostico.-
@@ -2896,27 +2897,34 @@ class ManifestacionDeInteresController < ApplicationController
         @persona_cargos = PersonaCargo.includes(:cargo).where(persona_id: @postulante.persona_id).first
         @cargo = @persona_cargos.cargo
 
+        tipo_institucion = @contribuyente_temporal
+          &.dato_anual_contribuyentes
+          &.first
+
+        establecimiento_contribuyentes = @contribuyente_temporal
+          &.establecimiento_contribuyentes&.first
+ 
         #Agrega a postulante a mapa de actores
         @listado_actores_temporal =ListadoActoresTemporal.new
         @listado_actores_temporal.rol_en_acuerdo_id = @postulante&.rol.id
         @listado_actores_temporal.cargo_institucion_id = @cargo.id
-        @listado_actores_temporal.contribuyente_id = @contribuyente_editado.contribuyente_id
-        @listado_actores_temporal.tipo_institucion_id = @contribuyente_editado.dato_anual_contribuyentes.first&.tipo_contribuyente_id
+        @listado_actores_temporal.contribuyente_id = @contribuyente_temporal.contribuyente_id
+        @listado_actores_temporal.tipo_institucion_id = @contribuyente_temporal.dato_anual_contribuyentes.first&.tipo_contribuyente_id
         @listado_actores_temporal.rol_en_acuerdo = @postulante&.rol.nombre
         @listado_actores_temporal.nombre_actor = @postulante&.persona&.user.nombre_completo
         @listado_actores_temporal.rut_actor = @postulante&.persona&.user.rut
         @listado_actores_temporal.cargo_institucion = @cargo.nombre
         @listado_actores_temporal.email_institucional = @postulante&.persona&.user&.session&.dig(:personas, 0, :email_institucional)
         @listado_actores_temporal.telefono_institucional = @postulante&.persona&.user&.session&.dig(:personas, 0, :telefono_institucional) 
-        @listado_actores_temporal.razon_social_institucion = @contribuyente_editado.razon_social
-        @listado_actores_temporal.rut_institucion = "#{@contribuyente_editado.rut}-#{@contribuyente_editado.dv}"
-        @listado_actores_temporal.tipo_institucion =  @contribuyente_editado.dato_anual_contribuyentes.first.tipo_contribuyente.nombre
-        @listado_actores_temporal.comuna_institucion = @contribuyente_editado.establecimiento_contribuyentes.first.comuna.nombre
-        @listado_actores_temporal.direccion = @contribuyente_editado.establecimiento_contribuyentes.first.direccion
+        @listado_actores_temporal.razon_social_institucion = @contribuyente_temporal.razon_social
+        @listado_actores_temporal.rut_institucion = "#{@contribuyente_temporal.rut}-#{@contribuyente_temporal.dv}"
+        @listado_actores_temporal.tipo_institucion = tipo_institucion&.tipo_contribuyente&.nombre || ""
+        @listado_actores_temporal.comuna_institucion = establecimiento_contribuyentes&.comuna&.nombre || ""
+        @listado_actores_temporal.direccion = establecimiento_contribuyentes&.direccion || ""
         @listado_actores_temporal.estado = 0
         @listado_actores_temporal.manifestacion_de_interes_id = @flujo.manifestacion_de_interes.id
         @listado_actores_temporal.save
-
+        
         datos = MapaDeActor.construye_data_para_apl_desde_listado(@flujo.manifestacion_de_interes.id)
         datos = datos.flatten
 
