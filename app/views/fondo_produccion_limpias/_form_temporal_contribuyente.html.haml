@@ -158,7 +158,7 @@
         type: "PATCH",
         data: formData,
       }).fail(function(a, b, c) {
-        alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+        alert( "Debe completar todos los datos requeridos" );
         $('.loading-data').hide();
       }).success(function(data){
         $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
