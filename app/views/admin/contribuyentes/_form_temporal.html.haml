@@ -1,6 +1,7 @@
 -# Variable para verificar si es una edicion desde mis instituciones
 = simple_form_for [:admin,cont_temporal], remote: true, html: { autocomplete: :off } do |f|
   = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :es_fpl, as: :hidden, wrapper: false
   = f.input :flujo_id, as: :hidden, wrapper: false
   = f.input :contribuyente_id, as: :hidden, wrapper: false
   = simple_nested_form_for [:admin,cont_temporal] do |snf|
