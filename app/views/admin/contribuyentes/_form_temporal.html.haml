@@ -54,7 +54,7 @@
                             %th.codigo-acteco=t(:código_descripción)
                             %th
                         %tbody
-                          = snf.fields_for :actividad_economica_contribuyentes, snf.object.actividad_economica_contribuyentes.select('DISTINCT actividad_economica_id'), :wrapper => false  do |actecos|
+                          = snf.fields_for :actividad_economica_contribuyentes, wrapper: false do |actecos|
                             -style = '';
                             -style = "display: none;" if actecos.object.marked_for_destruction?
                             %tr.fields{style: style}

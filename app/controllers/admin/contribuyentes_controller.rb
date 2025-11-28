@@ -203,6 +203,8 @@ class Admin::ContribuyentesController < ApplicationController
     respond_to do |format|
       if @contribuyente.contribuyente_id.nil?
         unless errores
+          #se limpia el campo flujo id cuando viene de FPL
+          @contribuyente.flujo_id = nil if @contribuyente.es_fpl == "true"
           @contribuyente.save
           if(parameters[:temporal] == "true") 
             @contribuyente_temporal = @contribuyente
@@ -377,6 +379,7 @@ class Admin::ContribuyentesController < ApplicationController
         :dv,
         :razon_social,
         :temporal,
+        :es_fpl,
         :flujo_id,
         :contribuyente_id,
         fields_visibility: {},
