@@ -113,7 +113,11 @@ class MapaDeActor < ApplicationRecord
 				acteco = institucion.actividad_economica_contribuyentes.first.actividad_economica if institucion.actividad_economica_contribuyentes.first.present?
 			else
 				institucion = nil
-				acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+				if  l[:codigo_ciiuv4] != nil
+					acteco = ActividadEconomica.find_by(codigo_ciiuv4: l[:codigo_ciiuv4].split('-').first.strip)
+				else
+					acteco = nil
+				end
 			end
 		
 			rol_en_acuerdo = l[:rol_en_acuerdo]

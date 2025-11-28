@@ -34,7 +34,7 @@ class Contribuyente < ApplicationRecord
 	default_scope { where(temporal: false) }
 
 	#validates :tipo_institucion ,presence: true
-	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4
+	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl
 
 	def rut_unico
 		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first
@@ -428,4 +428,13 @@ class Contribuyente < ApplicationRecord
       .where(contribuyentes: { rut: rut })
   end
 
+  def rut=(valor)
+	if valor != ""
+		valor = valor.to_s
+		valor = valor.gsub('.', '')
+		valor = valor.split('-').first
+		valor = valor.gsub(/[^\d]/, '')
+	end
+    super(valor)
+  end
 end

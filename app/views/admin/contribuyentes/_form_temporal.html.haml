@@ -1,6 +1,7 @@
 -# Variable para verificar si es una edicion desde mis instituciones
 = simple_form_for [:admin,cont_temporal], remote: true, html: { autocomplete: :off } do |f|
   = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :es_fpl, as: :hidden, wrapper: false
   = f.input :flujo_id, as: :hidden, wrapper: false
   = f.input :contribuyente_id, as: :hidden, wrapper: false
   = simple_nested_form_for [:admin,cont_temporal] do |snf|
@@ -53,7 +54,7 @@
                             %th.codigo-acteco=t(:código_descripción)
                             %th
                         %tbody
-                          = snf.fields_for :actividad_economica_contribuyentes, snf.object.actividad_economica_contribuyentes.select('DISTINCT actividad_economica_id'), :wrapper => false  do |actecos|
+                          = snf.fields_for :actividad_economica_contribuyentes, wrapper: false do |actecos|
                             -style = '';
                             -style = "display: none;" if actecos.object.marked_for_destruction?
                             %tr.fields{style: style}
@@ -114,6 +115,19 @@
                               %td.accion.no-padding.remove-row
                                 = establ.link_to_remove do
                                   %i.fa.fa-times-circle.left.link-to-remove-row
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    .row
+                      .col-12.col-lg-10
+                        =t(:tipo_institucion)
+                .card-body.table
+                  .row
+                    .col-lg-12.col-md-6
+                      = snf.fields_for :dato_anual_contribuyentes do |datos|
+                        = datos.input :tipo_contribuyente_id, collection: TipoContribuyente.__select, input_html: { class: 'tipo_institucion_select', "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
+
       .col-12.mt-2.text-right
         %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
           =t(:volver_a_lista)
@@ -124,9 +138,19 @@
 
   $(document).ready(function(){
     __chosen_actecos();
+    __chosen_contribuyentes();
     iniciarAutoNumeric();
     iniciarDigitoVerificador();
     htmlErrorToTooltip('top');
     nuevo_contribuyente_temporal_validaciones();
 
   });
+
+  function __chosen_contribuyentes() {
+    $('.tipo_institucion_select').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%',
+      search_contains: true
+    });
+  }
