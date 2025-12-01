@@ -381,7 +381,7 @@ document.getElementById('total_total_suma').innerText = '<%= number_to_currency 
       <% end %>
 
       <% if @costos_seguimiento[1].present? %>
-        <% if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f  <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_solicitado_al_fondo'].present? %>
+        <% if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f  <= @confinanciamiento_empresa[0].to_f && @costos_seguimiento[1]['aporte_solicitado_al_fondo'].present? %>
           document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'SI';
         <% else %>
           document.getElementById('apoyo_general_empresa_cofinanciamiento_cpl_cumple').innerText = 'NO';
