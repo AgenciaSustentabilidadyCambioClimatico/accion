@@ -85,7 +85,11 @@
               <td><%= telefono.blank? ? '--' : telefono %></td>
               <td><%= email.blank? ? '--' : email %></td>
               <% if !current_user %>
-                <td class="fecha-registro-td d-none"><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <% if record.continuidad %>
+                  <td class="fecha-registro-td d-none">Continuidad de registro</td>
+                <% else%>
+                  <td class="fecha-registro-td d-none"><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <% end %>
                 <td class="fecha-actualizacion-td d-none"><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
