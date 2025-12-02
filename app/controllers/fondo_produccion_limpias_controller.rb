@@ -5246,7 +5246,8 @@ class FondoProduccionLimpiasController < ApplicationController
         tipo_contribuyente_id_receptor = TipoContribuyente.tipo_contribuyente_id_receptor(@tarea_pendiente.flujo_id)   
         @descargables_receptor = DocumentacionLegal.descargables_receptor(tipo_contribuyente_id_receptor[:tipo_contribuyente_id])
 
-        @descargables_ejecutor = DocumentacionLegal.descargables_ejecutor(@tarea_pendiente.flujo_id)      
+        @descargables_ejecutor = DocumentacionLegal.descargables_ejecutor(@tarea_pendiente.flujo_id)    
+        @tarea = Tarea.find_by_codigo(Tarea::COD_FPL_01)
       end
 
       def set_regiones
