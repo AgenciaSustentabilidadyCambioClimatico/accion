@@ -243,29 +243,41 @@ class PlanActividad < ApplicationRecord
 
   ##Eliminar Gastos
   def self.total_gastos_tipo_1(flujo_id, plan_actividad_id)
-    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-      CASE 
-        WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
-        ELSE 0 
-      END
-    ) AS total_gastos_tipo_1')
-    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-    .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
-    .group("plan_actividades.id, plan_actividades.actividad_id")
-    .first
+    result =  select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+                CASE 
+                  WHEN gastos.tipo_gasto = 1  THEN gastos.valor_unitario * gastos.cantidad 
+                  ELSE 0 
+                END
+              ) AS total_gastos_tipo_1')
+              .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+              .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
+              .group("plan_actividades.id, plan_actividades.actividad_id")
+              .first
+
+    # si no hay gasto, devolvemos un objeto con valores en cero
+    result || OpenStruct.new(
+      actividad_id: plan_actividad_id,
+      total_gastos_tipo_1: 0
+    )
   end
 
   def self.total_gastos_tipo_2(flujo_id, plan_actividad_id)
-    select('plan_actividades.id, plan_actividades.actividad_id, SUM(
-        CASE 
-          WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
-          ELSE 0 
-        END
-      ) AS total_gastos_tipo_2')
-    .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
-    .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
-    .group("plan_actividades.id, plan_actividades.actividad_id")
-    .first
+    result =  select('plan_actividades.id, plan_actividades.actividad_id, SUM(
+                CASE 
+                  WHEN gastos.tipo_gasto = 2  THEN gastos.valor_unitario * gastos.cantidad 
+                  ELSE 0 
+                END
+              ) AS total_gastos_tipo_2')
+            .joins("LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id")
+            .where(gastos: { flujo_id: flujo_id, plan_actividad_id: plan_actividad_id })
+            .group("plan_actividades.id, plan_actividades.actividad_id")
+            .first
+
+      # Retorno seguro: si no hay resultado, devolvemos un objeto con los datos en 0
+      result || OpenStruct.new(
+        actividad_id: plan_actividad_id,
+        total_gastos_tipo_2: 0
+      )
   end
 
   def self.recursos_internos(flujo_id, actividad_id)
