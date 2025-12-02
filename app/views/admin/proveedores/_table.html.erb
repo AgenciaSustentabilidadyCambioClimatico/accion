@@ -90,7 +90,12 @@
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
               <% if current_user && current_user.is_admin? %>
-                <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <% if record.continuidad %>
+                  <td>Continuidad de registro</td>
+                <% else%>
+                  <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                <% end %>
+                
                 <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
                 <% if local_assigns[:retirados] %>
                   <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
