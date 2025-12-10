@@ -78,8 +78,8 @@ class RegistroProveedoresController < ApplicationController
       send_message(tarea, value)
       TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: value, data: @registro_proveedor.id)
       tarea_previa = Tarea.where(codigo: 'PRO-002').first
-      tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-      tarea_pendiente.first.delete
+      tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+      tarea_pendiente.first&.delete
     end
     redirect_to root_path
     flash[:success] = 'Registro enviado correctamente'
@@ -111,8 +111,8 @@ class RegistroProveedoresController < ApplicationController
         send_message(tarea, @registro_proveedor.user_encargado)
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(codigo: 'PRO-003').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       elsif value == 3
         @registro_proveedor.update!(rechazo: @registro_proveedor.rechazo + 1)
       end
@@ -138,8 +138,8 @@ class RegistroProveedoresController < ApplicationController
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
         tarea_previa = Tarea.where(codigo: 'PRO-003').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
 
       if @registro_proveedor.rechazo > 1
@@ -147,8 +147,8 @@ class RegistroProveedoresController < ApplicationController
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_now
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
         tarea_previa = Tarea.where(codigo: 'PRO-003').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
     end
 
@@ -245,8 +245,8 @@ class RegistroProveedoresController < ApplicationController
         send_message(tarea, user.id)
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(codigo: 'PRO-005').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
 
       if value == 2
@@ -271,16 +271,16 @@ class RegistroProveedoresController < ApplicationController
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id)
         tarea_previa = Tarea.where(codigo: 'PRO-005').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
 
       if @registro_proveedor.rechazo_directiva > 1
         @registro_proveedor.update!(estado: 6)
         RegistroProveedorMailer.rechazo_definitivo(@registro_proveedor).deliver_now
         tarea_previa = Tarea.where(codigo: 'PRO-005').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
     end
 
@@ -378,8 +378,8 @@ class RegistroProveedoresController < ApplicationController
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(codigo: 'PRO-007').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
         if @registro_proveedor.region.present? && @registro_proveedor.comuna.present?
           @registro_proveedor.region = Region.find(@registro_proveedor.region.to_i).nombre
           @registro_proveedor.comuna = Comuna.find(@registro_proveedor.comuna.to_i).nombre
@@ -423,8 +423,8 @@ class RegistroProveedoresController < ApplicationController
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(codigo: 'PRO-008').first
-        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, data: @registro_proveedor.id)
-        tarea_pendiente.first.delete
+        tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+        tarea_pendiente.first&.delete
       end
 
       if value == 2
