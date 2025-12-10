@@ -1,5 +1,6 @@
 - solo_tabla = solo_tabla.nil? ? false : solo_tabla
 - lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
+- es_fpl = es_fpl.blank? ? false : es_fpl
 .row
   -if !solo_tabla
     .col-12
@@ -31,8 +32,11 @@
       %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-actor-button{type: :button, disabled: :disabled }
         Seleccionar
     -else
-      -unless @contribuyente_temporal.nil?
+      -if @contribuyente_temporal.nil? || es_fpl == false
         %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-button{type: :button, disabled: :disabled }
+          Seleccionar
+      -elsif es_fpl == true
+        %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled }
           Seleccionar
       -else
         %button.btn.btn-primary.seleccionar-contribuyente-button{type: :button, "data-dismiss"=>:modal, disabled: :disabled }

@@ -10,12 +10,13 @@
 - tipo_instrumento = tipo_instrumento.nil? ? TipoInstrumento::PPP_EJECUTADOS_POR_TERCEROS : tipo_instrumento
 - solo_tabla = solo_tabla.nil? ? false : solo_tabla
 - lista_contribuyentes = lista_contribuyentes.nil? ? (@contribuyentes.nil? ? [] : @contribuyentes) : lista_contribuyentes
+- es_fpl = es_fpl.blank? ? false : es_fpl
 .modal.fade{id: :"buscar-contribuyente#{custom_id}", tabindex: "-1", role: :dialog, "aria-labelledby": :buscarContribuyenteLabel, "aria-hidden": true}
   .modal-dialog.modal-dialog-centered.modal-lg.modal-lg-fix.animated{role: :document}
     .modal-content
       .modal-body
         .container-fluid{id: "body-contribuyente-buscador#{custom_id}"}
-          =render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes
+          =render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, solo_tabla: solo_tabla, lista_contribuyentes: lista_contribuyentes, es_fpl: es_fpl
       .modal-footer
         %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
           Cerrar
@@ -46,7 +47,9 @@
       type: "GET",
       data: {
         id: "",
-        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+        es_fpl: "#{es_fpl}"
       }
     }).fail(function(a, b, c) {
       alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
@@ -77,7 +80,7 @@
 
   $(document).on('click','#deshacer-contribuyente-button', function(e){
     e.preventDefault();    
-    $('#body-contribuyente-buscador#{custom_id}').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento}");
+    $('#body-contribuyente-buscador#{custom_id}').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, es_fpl: es_fpl}");
   });
   //solo es para modal nuevo contribuyente
   $(document).on('change keyup', '.form-temporal-boton-guardar', function(){
@@ -122,7 +125,9 @@
       data: {
         id: data.id,
         flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
-        contribuyente_id: data.id
+        contribuyente_id: data.id,
+        tarea_pendiente_id: "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}",
+        es_fpl: "#{es_fpl}"
       }
     }).fail(function(a, b, c) {
       alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
@@ -176,7 +181,7 @@
           $('#buscar-contribuyente#{custom_id}').modal("show");
         });
       }else{
-        $('#body-contribuyente-buscador#{custom_id}').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento}");
+        $('#body-contribuyente-buscador#{custom_id}').html("#{j render 'admin/contribuyentes/buscador_form', custom_id: custom_id, data_table: data_table, es_maquinaria: es_maquinaria, es_para_seleccion: es_para_seleccion, seleccion_basica: seleccion_basica, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, tipo_instrumento: tipo_instrumento, es_fpl: es_fpl}");
         $('#buscar-contribuyente#{custom_id}').modal("show");
       }
     });

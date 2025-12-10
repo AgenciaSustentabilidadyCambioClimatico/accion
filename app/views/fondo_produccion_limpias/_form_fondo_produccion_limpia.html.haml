@@ -74,9 +74,10 @@
       $('#buscar-usuario').modal("show");
     });
 
-    $('#open-modal-button_buscar_contribuyente').click(function(){
-        $("#buscar-contribuyente-fpl").modal('show');
+    $(document).on('click', '#open-modal-button_buscar_contribuyente', function () {
+      $('[id^=buscar-contribuyente]').modal('show');
     });
+
 
     $('#open-modal-button_buscar_usuario_consultora').click(function(){
       $('#buscar-usuario .body-usuario-buscador').html("#{j render('fondo_produccion_limpias/buscador_form', modal_id: 'buscar-usuario-consultor', tipo_equipo: '2')}");
@@ -132,7 +133,38 @@
       $(this).addClass("card");
       $(this).css("margin-bottom", "0");
     });
+
+    $('body').on('change','.contribuyente-radio',function() {
+      console.log('entro aca')
+      $('.seleccionar-contribuyente-button').removeAttr('disabled');
+      
+    });
   });
+
+  $(document).on('click', '.seleccionar-contribuyente-button', function() {
+      try {
+        data=JSON.parse($('table.contribuyentes').DataTable().$('.contribuyente-radio:checked').val());
+          $.ajax({
+            url: "#{insert_modal_contribuyente_fondo_produccion_limpia_path}",
+            type: "PATCH",
+            data: {
+              id: data.id,
+              flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+            }
+          }).fail(function(a, b, c) {
+            alert( "El contribuyente seleccionado ya se encuentra asociado al proyecto" );
+            $('.loading-data').hide();
+          }).success(function(data){
+            $('#buscar-contribuyente-fpl .body-contribuyente-fpl-buscador').html(data);
+            $('#buscar-contribuyente-fpl').modal('hide');
+            $('.loading-data').hide();
+          });
+      } catch(e) {
+        alert("Ocurrió un error. Intente nuevamente o contáctese con el administrador del sitio.\n\nMensaje de error: "+e);
+      }
+
+      
+    });
   
   function crear_tooltip(elemento_id, tooltip){
     var card_header = $('input[name="manifestacion_de_interes['+elemento_id.replace("#manifestacion_de_interes_", "")+'][]"]').closest(".card").children(".card-header");
@@ -4238,7 +4270,7 @@
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_porcentaje.contenido-form{style: 'text-align: left; vertical-align: middle;'} Menor o igual a #{number_to_currency(@confinanciamiento_empresa[0])}
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_limite.contenido-form-costo=number_to_currency(@confinanciamiento_empresa[0])
                     %td#apoyo_general_empresa_cofinanciamiento_cpl_cumple.contenido-form-center
-                      - if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f <= tope_maximo_solicitar_diagnostico(@tarea_pendiente.flujo_id) && @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f != ''
+                      - if @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f <= @confinanciamiento_empresa[0].to_f && @costos_seguimiento[1]['aporte_solicitado_al_fondo'].to_f != ''
                         %span{ class: 'text-success' } SI
                       - else
                         %span{ class: 'text-danger' } NO

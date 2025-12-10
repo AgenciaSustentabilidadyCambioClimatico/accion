@@ -147,6 +147,8 @@ class Admin::ContribuyentesController < ApplicationController
       # Si no existe, creamos una nueva institución (podría ser temporal o no)
       @contribuyente = Contribuyente.new(parameters)
     end
+
+    @contribuyente.es_fpl = params[:contribuyente]["es_fpl"]
     
     if contribuyente_params[:actividad_economica_contribuyentes_attributes].nil? || contribuyente_params[:actividad_economica_contribuyentes_attributes].values.select{|ae| ae[:_destroy] == "false" }.size == 0
       @error_extra = "Debe ingresar al menos una actividad economica" if @error_extra.nil?
@@ -160,9 +162,35 @@ class Admin::ContribuyentesController < ApplicationController
       @error_extra = "Puede haber solo una casa matriz" if @error_extra.nil?
     end
 
+    # 1. Obtener los atributos anidados
+    datos_anuales = contribuyente_params[:dato_anual_contribuyentes_attributes]
+    if datos_anuales.present?
+      # 2. Tomar el primer (y probablemente único) registro anidado.
+      # Usamos values.first para obtener el hash de parámetros del primer registro.
+      primer_dato_anual = datos_anuales.values.first
+
+      if primer_dato_anual.present?
+        tipo_id = primer_dato_anual[:tipo_contribuyente_id]
+
+        # 3. Validar si el campo es nil o está en blanco (cadena vacía)
+        if tipo_id.nil? || tipo_id.blank?
+          @error_extra = "Debe ingresar el tipo de contribuyente" if @error_extra.nil?
+          @contribuyente.dato_anual_contribuyentes.build
+        end
+      end
+    end
+
     # Habilita la validación de teléfono durante el create
     @contribuyente.establecimiento_contribuyentes.each do |establecimiento|
       establecimiento.skip_telefono_validation = false # Habilitar validación del teléfono
+    end
+
+    if @contribuyente.dato_anual_contribuyentes.present?
+      @contribuyente.dato_anual_contribuyentes.each do |dato|
+        dato.rango_venta_contribuyente_id = 1
+        dato.periodo = Date.today.year-1
+        dato.contribuyente = @contribuyente
+      end
     end
 
     errores = false
@@ -175,14 +203,28 @@ class Admin::ContribuyentesController < ApplicationController
     respond_to do |format|
       if @contribuyente.contribuyente_id.nil?
         unless errores
+          #se limpia el campo flujo id cuando viene de FPL
+          @contribuyente.flujo_id = nil if @contribuyente.es_fpl == "true"
           @contribuyente.save
           if(parameters[:temporal] == "true") 
             @contribuyente_temporal = @contribuyente
             format.js {}
           else
+            if params[:contribuyente]["es_fpl"] == "true"
+              custom_params_empresa = {
+                equipo_empresa: {
+                  flujo_id: params[:contribuyente]["flujo_id"],
+                  contribuyente_id: @contribuyente.id
+                }
+              }
+              @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
+              @empresa.save
+            end
             format.js { 
               flash.now[:success] = 'Institución correctamente creada.'
-              @contribuyente = Contribuyente.new
+              
+              #@contribuyente = Contribuyente.new
+              @contribuyente.es_fpl = params[:contribuyente]["es_fpl"]
             }
             format.html { redirect_to edit_admin_contribuyente_url(@contribuyente), notice: 'Institución correctamente creada.' }
           end
@@ -292,11 +334,24 @@ class Admin::ContribuyentesController < ApplicationController
   def edit_modal
     if params[:id].blank?
       @contribuyente_temporal = Contribuyente.new
+      @contribuyente_temporal.dato_anual_contribuyentes.build
     else
       @contribuyente_temporal = Contribuyente.unscoped.find_by(contribuyente_id: params[:id], flujo_id: params[:flujo_id]) || Contribuyente.unscoped.find(params[:id])
+      @contribuyente_temporal.dato_anual_contribuyentes.build if @contribuyente_temporal.dato_anual_contribuyentes.empty?
     end
-    @contribuyente_temporal.temporal = true
-    @contribuyente_temporal.flujo_id = params[:flujo_id]
+
+    if params[:es_fpl] == "false" || params[:es_fpl] == nil
+      @contribuyente_temporal.temporal = true
+      @contribuyente_temporal.flujo_id = params[:flujo_id]
+      es_fpl = false
+    else
+      @contribuyente_temporal.temporal = false
+      tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id])
+      @contribuyente_temporal.flujo_id = tarea_pendiente.flujo_id
+      es_fpl = true
+    end
+    
+    @contribuyente_temporal.es_fpl = es_fpl
     @contribuyente_temporal.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
     render layout: false
   end
@@ -324,6 +379,7 @@ class Admin::ContribuyentesController < ApplicationController
         :dv,
         :razon_social,
         :temporal,
+        :es_fpl,
         :flujo_id,
         :contribuyente_id,
         fields_visibility: {},
