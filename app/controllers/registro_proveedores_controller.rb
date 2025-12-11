@@ -519,7 +519,7 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-11
   def proveedores_pendientes
-    @tareas = TareaPendiente.proveedores_pendientes.to_a
+    @tareas = RegistroProveedor.proveedores_pendientes.to_a
   end
 
   def descargar_documentos_proveedores

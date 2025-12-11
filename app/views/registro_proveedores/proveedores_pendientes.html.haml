@@ -8,7 +8,7 @@
         = @tareas.count
         = @tareas.count == 1 ? ' revisión pendiente' : ' revisiones pendientes'
   .card-body.p-0
-    %table.table.table-striped.table-bordered#tareas_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+    %table.table.table-striped.table-bordered#revisiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
       %thead
         %tr
           %th #
@@ -49,8 +49,9 @@
       columnDefs: [
         { responsivePriority: 1, targets: 1 },
         { responsivePriority: 2, targets: 2 },
-        { responsivePriority: 3, targets: -1, orderable: false }
+        { responsivePriority: 3, targets: 3 },
+        { responsivePriority: 4, targets: 4 }
       ],
-      order: [[2, 'desc']] // Ordenar por fecha de creación descendente
+      //order: [[5, 'desc']] // Ordenar por fecha de creación descendente
     });
   });
