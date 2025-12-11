@@ -485,4 +485,30 @@ class TareaPendiente < ApplicationRecord
     end
     return solo_lectura
   end
+
+  def self.proveedores_pendientes
+    select(
+      "users.nombre_completo AS nombre_completo,
+       tarea_pendientes.created_at AS created_at,
+       tipo_proveedores.nombre AS tipo_proveedor,
+       CASE registro_proveedores.estado
+          WHEN 0 THEN 'Enviado'
+          WHEN 1 THEN 'Recomendado'
+          WHEN 2 THEN 'Con observaciones'
+          WHEN 3 THEN 'Rechazado'
+          WHEN 4 THEN 'Aprobado'
+          WHEN 5 THEN 'Rechazado directiva'
+          WHEN 6 THEN 'Rechazado definitivo'
+          WHEN 7 THEN 'Actualizar'
+          WHEN 8 THEN 'Vencido'
+          WHEN 9 THEN 'Actualizado'
+          WHEN 10 THEN 'Calificación negativa'
+          ELSE 'Desconocido'
+       END AS estado_descripcion"
+    )
+    .joins("INNER JOIN users ON users.id = tarea_pendientes.user_id")
+    .joins("INNER JOIN registro_proveedores ON registro_proveedores.rut = users.rut")
+    .joins("INNER JOIN tipo_proveedores ON tipo_proveedores.id = registro_proveedores.tipo_proveedor_id")
+    .where(tarea_id: [104, 108], estado_tarea_pendiente_id: 1)
+  end
 end
