@@ -62,6 +62,7 @@
               - else
                 %label.estado-elem Pendiente
                 = f.input :estado, as: :hidden, input_html: { name: "estado[#{registro.id}]", class: "elemento-estado"}, wrapper: false
+                = f.input :comentario, as: :hidden, input_html: { name: "comentario[#{registro.id}]", class: "elemento-estado"}, wrapper: false
                 = f.input :fecha_revalidacion, as: :hidden, input_html: { name: "fecha[#{registro.id}]", class: "elemento-estado"}, wrapper: false
             %td.text-center
               %input.form-control.seleccionar-elemento-adhesion.mt-2{type: :checkbox, value: registro.id}
@@ -91,10 +92,16 @@
     console.log(`${$('#adhesion_estado_elementos').val()}`);
     $('abbr').remove();
     if($('#adhesion_estado_elementos').val() != ""){
-      $("<abbr title='Campo requerido'>*</abbr>").insertBefore("#comentario_label");
+      $("<abbr title='Campo requerido'>*</abbr>").insertBefore("#fecha_label");
       if($('#adhesion_estado_elementos').val() == "2"){
         $('abbr').remove();
         $('#enviar_modal_resultado_actualizar').prop('disabled', false);
+      }else if($('#adhesion_estado_elementos').val() == "3"){
+        $('abbr').remove();
+        $("<abbr title='Campo requerido'>*</abbr>").insertBefore("#comentario_label");
+        if($('#comentario_justificacion_elementos').val() != ""){
+          $('#enviar_modal_resultado_actualizar').prop('disabled', false);
+        }
       }else{
         if($('#adhesion_justificacion_elementos').val() != ""){
           $('#enviar_modal_resultado_actualizar').prop('disabled', false);
@@ -126,7 +133,9 @@
       activar_guardar_modal_clasificar();
     });
 
-
+    $('#comentario_justificacion_elementos').change(function(){
+      activar_guardar_modal_clasificar();
+    });
 
     $('#adhesiones_pendientes').DataTable({
       dom: 't',
@@ -152,7 +161,7 @@
       estado_val = estado.prop("value");
       estado_nombre = estado.text();
       fecha = $('#adhesion_justificacion_elementos').val();
-
+      comentario = $('#comentario_justificacion_elementos').val();
       $('.seleccionar-elemento-adhesion:checked').each(function(index, elem){
         posicion = elem.value;
         tr = $('#adhesiones_pendientes tr[data-id="'+posicion+'"]');
@@ -162,6 +171,7 @@
         tr.find("input[name='estado["+posicion+"]']").val(estado_val)
         tr.find("input[name='aceptado["+posicion+"]']").val(estado_val);
         tr.find("input[name='fecha["+posicion+"]']").val(fecha);
+        tr.find("input[name='comentario["+posicion+"]']").val(comentario);
       });
 
       $('.seleccionar-elemento-adhesion').attr("checked", false);
@@ -169,6 +179,7 @@
       $('#modal_resultado_actualizar').modal("hide");
       $('#adhesion_estado_elementos').val("");
       $('#adhesion_justificacion_elementos').val("");
+      $('#comentario_justificacion_elementos').val("");
       $('#enviar_modal_resultado_actualizar').prop("disabled", true);
       $('#enviar_button').prop("disabled", false);
     });

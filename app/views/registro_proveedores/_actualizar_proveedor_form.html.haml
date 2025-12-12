@@ -4,8 +4,21 @@
 = simple_form_for @registro_proveedor, url: "/registro_proveedores/#{@registro_proveedor.id}/update_plazo_proveedor", method: :patch, remote: true do |f|
   .row
     .col-12.mt-3
-      %h1.titulo='Actualizar Registro Proveedor'
+      - if @registro_proveedor.estado == 'actualizar_observado'
+        %h1.titulo='Actualizar Observación Registro Proveedor'
+      - else
+        %h1.titulo='Actualizar Registro Proveedor'
       .col-12
+        - if @registro_proveedor.estado == 'actualizar_observado'
+          .card
+            .card-header
+              %h5.no-margin
+                %b Actualización con observaciones
+              %h5.no-margin=titulo_acuerdo.html_safe
+            .card-body
+              .row
+                .col-12
+                  = f.input :comentario, as: :text, as: :text, disabled: true, label: 'Comentario de Revisor', input_html: { style: 'width: 100%', rows: 5 }
         .card
           .card-header
             %h5.no-margin
