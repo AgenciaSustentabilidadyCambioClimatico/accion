@@ -45,7 +45,7 @@
               <th id='fecha-actualizacion-th' class="d-none">Fecha última actualización de registro</th>
               <th id='promedio-th' class="d-none">Promedio Evaluación</th>
             <% end %>
-            <% if current_user && current_user.is_admin? %>
+            <% if current_user && current_user.is_admin? || current_user.posee_rol_ascc?(Rol::REVISOR_JURIDICO) %>
               <th><%= t(:fecha_ingreso_registro) %></th>
               <th>Fecha última actualización de registro</th>
               <% if local_assigns[:retirados]%>
@@ -93,7 +93,7 @@
                 <td class="fecha-actualizacion-td d-none"><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
-              <% if current_user && current_user.is_admin? %>
+              <% if current_user && current_user.is_admin? || current_user.posee_rol_ascc?(Rol::REVISOR_JURIDICO) %>
                 <% if record.continuidad %>
                   <td>Continuidad de registro</td>
                 <% else%>
