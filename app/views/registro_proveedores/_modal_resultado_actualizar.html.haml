@@ -9,12 +9,17 @@
             .form-group
               %select.form-control.validado.select2#adhesion_estado_elementos
                 %option{value: "",  selected: ''} Seleccione un estado de revisión
-                %option{value: "1" } Positiva
-                %option{value: "2" } Negativa
+                %option{value: "1" } Aprobar
+                %option{value: "3" } Observar
+                %option{value: "2" } Rechazar
           .col-12
             .form-group.mb-3.mt-3
-              %label.control-label#comentario_label Fecha
+              %label.control-label#fecha_label Fecha
               %input.validado#adhesion_justificacion_elementos{:type => 'date'}
+          .col-12
+            .form-group
+              %label.control-label#comentario_label Comentarios
+              %textarea.form-control.validado#comentario_justificacion_elementos
       .modal-footer
         %button.btn.btn-primary.btn-sm#enviar_modal_resultado_actualizar{type: :button, disabled: true}
           Guardar

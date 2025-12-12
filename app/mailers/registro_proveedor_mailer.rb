@@ -76,4 +76,11 @@ class RegistroProveedorMailer < ApplicationMailer
     encabezado = 'Actualizar postulacion'
     mail(to: user, subject: encabezado)
   end
+
+  def actualizacion_con_observaciones(registro_proveedor)
+    @registro_proveedor = registro_proveedor
+    user = registro_proveedor.email
+    encabezado = 'Actualización observada'
+    mail(to: user, subject: encabezado)
+  end
 end

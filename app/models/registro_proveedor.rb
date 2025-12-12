@@ -39,7 +39,7 @@ class RegistroProveedor < ApplicationRecord
   validate :terms_of_service_value
 
 
-  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado, :calificacion_negativa]
+  enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado, :calificacion_negativa, :actualizar_observado]
 
   before_validation :normalizar_rut
 
@@ -239,10 +239,11 @@ class RegistroProveedor < ApplicationRecord
           WHEN 8 THEN 'Vencido'
           WHEN 9 THEN 'Actualizado'
           WHEN 10 THEN 'Calificación negativa'
+          WHEN 11 THEN 'Actualización observado'
           ELSE 'Desconocido'
       END AS estado_descripcion"
     )
     .joins("INNER JOIN tipo_proveedores ON tipo_proveedores.id = registro_proveedores.tipo_proveedor_id")
-    .where("registro_proveedores.estado IN (2,3,5,6,8,9)")
+    .where("registro_proveedores.estado IN (2,3,5,6,8,9,11)")
   end
 end
