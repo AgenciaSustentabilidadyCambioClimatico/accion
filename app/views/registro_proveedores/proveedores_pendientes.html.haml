@@ -8,21 +8,21 @@
         = @tareas.count
         = @tareas.count == 1 ? ' revisión pendiente' : ' revisiones pendientes'
   .card-body.p-0
-    %table.table.table-striped.table-bordered#tareas_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
+    %table.table.table-striped.table-bordered#revisiones_pendientes{style: "margin-top: 0 !important;margin-bottom:0 !important;"}
       %thead
         %tr
           %th #
           %th Nombre Proveedor
+          %th Tipo de Proveedor
+          %th Estado
           %th Fecha de Solicitud
       %tbody
         - @tareas.each_with_index do |tarea, index|
-          %tr{"data-id" => "#{tarea.id}","id" => "#{tarea.id}"}
+          %tr{"data-id" => tarea['id'], "id" => tarea['id']}
             %td= index + 1
-            %td
-              - if tarea.user.present?
-                = tarea.user.nombre_completo
-              - else
-                %span.text-muted Nombre proveedor no encontrado
+            %td= tarea['nombre_completo'] || 'Nombre proveedor no encontrado'
+            %td= tarea['tipo_proveedor'] || 'Sin tipo'
+            %td= tarea['estado_descripcion'] || 'Sin estado'
             %td= tarea.created_at.strftime("%d/%m/%Y %H:%M")
   .card-footer
     .d-flex.justify-content-between.align-items-center
@@ -49,8 +49,9 @@
       columnDefs: [
         { responsivePriority: 1, targets: 1 },
         { responsivePriority: 2, targets: 2 },
-        { responsivePriority: 3, targets: -1, orderable: false }
+        { responsivePriority: 3, targets: 3 },
+        { responsivePriority: 4, targets: 4 }
       ],
-      order: [[2, 'desc']] // Ordenar por fecha de creación descendente
+      //order: [[5, 'desc']] // Ordenar por fecha de creación descendente
     });
   });

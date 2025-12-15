@@ -435,10 +435,31 @@ class RegistroProveedoresController < ApplicationController
         tarea_pendiente.destroy
         # flujo.destroy
       end
+
+      if value == 3
+        comentarios = params[:comentario]
+        comentarios_seleccionados = comentarios.select { |k, v| v.present? }
+
+        comentarios_seleccionados.each do |k, v|
+          key = k
+          value = v
+          @registro_proveedor = RegistroProveedor.find(key)
+          @registro_proveedor.update!(comentario: value, estado: 11)
+    
+          flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
+          tarea = Tarea.where(codigo: 'PRO-007').first
+          user = User.where(rut: @registro_proveedor.rut).first
+          TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: user.id, data: @registro_proveedor.id)
+          RegistroProveedorMailer.actualizacion_con_observaciones(@registro_proveedor).deliver_later
+          tarea_previa = Tarea.where(codigo: 'PRO-008').first
+          tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
+          tarea_pendiente.first&.delete
+        end
+      end
     end
 
     fechas = params[:fecha]
-    fechas_seleccionados = fechas.select { |k, v| v.present? }
+    fechas_seleccionados = fechas.select { |k, v| v.present? } 
 
     fechas_seleccionados.each do |k, v|
       key = k
@@ -449,7 +470,7 @@ class RegistroProveedoresController < ApplicationController
         @registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
         RegistroProveedorMailer.revision_positiva(@registro_proveedor).deliver_now
       end
-    @registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
+      #@registro_proveedor.update!(fecha_revalidacion: value, estado: 'aprobado')
 
     end
 
@@ -519,7 +540,7 @@ class RegistroProveedoresController < ApplicationController
 
   #PRO-11
   def proveedores_pendientes
-    @tareas = TareaPendiente.where(tarea_id: 104, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).order(:created_at)
+    @tareas = RegistroProveedor.proveedores_pendientes.to_a
   end
 
   def descargar_documentos_proveedores
