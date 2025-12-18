@@ -140,8 +140,7 @@
                           = t(:proveedores)
                         %ul.dropdown-menu
                           %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
-                          - if current_user.posee_rol_ascc?(Rol::REVISOR_JURIDICO)
-                            %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
+                          %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
                   - elsif current_user.is_ascc?
                     %li.dropdown-submenu
                       %a.dropdown-item.dropdown-toggle

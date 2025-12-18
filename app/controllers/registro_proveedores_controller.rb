@@ -562,6 +562,20 @@ class RegistroProveedoresController < ApplicationController
 
         end
       end
+      documentos_extras = registro_proveedor.documento_proveedor_extras
+      documentos_extras.each do |documento|
+        unless documento.archivo.url.nil?
+          #nombre = documento.archivo.file.identifier
+          url = documento.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+
+        end
+      end
       certificados = registro_proveedor.certificado_proveedores
       certificados.each do |certificado|
         unless certificado.archivo_certificado.url.nil?
@@ -575,8 +589,20 @@ class RegistroProveedoresController < ApplicationController
           end
         end
       end
+      certificados_extras = registro_proveedor.certificado_proveedor_extras
+      certificados_extras.each do |certificado|
+        unless certificado.archivo.url.nil?
+          url = certificado.archivo.url
+          nombre = File.basename(URI.parse(url).path)
+          # nombre = "certificado"
+          # rename the file
+          URI.open(url) do |file_data|
+            stream.put_next_entry(nombre)
+            stream.write file_data.read
+          end
+        end
+      end
     end
-
     archivo_zip.rewind
     #enviamos el archivo para ser descargado
     send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
