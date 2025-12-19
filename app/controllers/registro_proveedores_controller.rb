@@ -365,6 +365,7 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor.documento_proveedor_extras.build
     @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
     @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    @tarea = Tarea.find(107)
   end
 
   # PRO-007
