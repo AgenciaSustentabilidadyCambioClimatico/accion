@@ -3099,7 +3099,9 @@
           %small  
             %i.fa.fa-question-circle.fa-1-5x
             - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_3 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
-              Texto en revisión por el equipo APL
+              Etapa de evaluación final de cumplimiento es aquella en la cual se verifica el estado de cumplimiento de la totalidad de las acciones establecidas en el APL una vez finalizada la etapa de implementación, mediante el desarrollo de auditoría de evaluación final de cumplimiento. Considera, además, el desarrollo de un informe de impacto de un APL que cuantifique los efectos económicos, ambientales y sociales derivados de su implementación. La etapa se debe realizar conforme con la 
+              = link_to 'guía técnica', 'https://ascc.cl/pagina/guias_apl', target: '_blank', rel: 'noopener'
+              y la norma NCh 2787 Acuerdos de Producción Limpia (APL) – Especificaciones.
             -elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
               Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
             - else
