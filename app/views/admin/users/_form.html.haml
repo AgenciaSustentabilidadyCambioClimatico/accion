@@ -202,4 +202,4 @@
 				- else
 					= button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary btn-disabled", data: { confirm: t(:confirma_edicion_usuario), remote: false }, disabled: :disabled 
 
-= render 'admin/contribuyentes/buscador', es_para_seleccion: true
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, es_asociar_a_institucion: true
