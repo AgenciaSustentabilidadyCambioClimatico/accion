@@ -531,8 +531,9 @@ class Flujo < ApplicationRecord
         end
         if !allow
           #evaluo si tiene rol de flujo autorizado
-          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
-          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          #roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          #allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          allow = 1
         end
 
         if allow
@@ -556,8 +557,10 @@ class Flujo < ApplicationRecord
         end
         if !allow
           #evaluo si tiene rol de flujo autorizado
-          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
-          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          #roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          #allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          
+          allow = 1
         end
 
         if allow

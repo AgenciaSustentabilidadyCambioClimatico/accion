@@ -45,16 +45,26 @@
               <th id='fecha-actualizacion-th' class="d-none">Fecha última actualización de registro</th>
               <th id='promedio-th' class="d-none">Promedio Evaluación</th>
             <% end %>
-            <% if current_user && current_user.is_admin? || current_user.posee_rol_ascc?(Rol::REVISOR_JURIDICO) %>
-              <th><%= t(:fecha_ingreso_registro) %></th>
-              <th>Fecha última actualización de registro</th>
-              <% if local_assigns[:retirados]%>
-                <th> <%= t(:fecha_retiro) %> </th>
+            <% if user_signed_in? %>
+              <% if current_user.is_admin? %>
+                <th><%= t(:fecha_ingreso_registro) %></th>
+                <th>Fecha última actualización de registro</th>
+                <% if local_assigns[:retirados]%>
+                  <th> <%= t(:fecha_retiro) %> </th>
+                <% end %>
+              <% elsif current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                <th><%= t(:fecha_ingreso_registro) %></th>
+                <th>Fecha última actualización de registro</th>
+                <% if local_assigns[:retirados]%>
+                  <th> <%= t(:fecha_retiro) %> </th>
+                <% end %>
               <% end %>
             <% end %>
             <th class="detalles">Detalles</th>
-            <% if current_user && current_user.is_admin?%>
-              <th class="dos iconos-acciones"><%= t(:acciones) %></th>
+            <% if user_signed_in? %>
+              <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                <th class="dos iconos-acciones"><%= t(:acciones) %></th>
+              <% end %>
             <% end %>
           </tr>
         </thead>
@@ -93,17 +103,30 @@
                 <td class="fecha-actualizacion-td d-none"><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
-              <% if current_user && current_user.is_admin? || current_user.posee_rol_ascc?(Rol::REVISOR_JURIDICO) %>
-                <% if record.continuidad %>
-                  <td>Continuidad de registro</td>
-                <% else%>
-                  <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
-                <% end %>
-                
-                <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
-                <% if local_assigns[:retirados] %>
-                  <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
-                <% end %>
+              <% if user_signed_in? %>
+                <% if current_user.is_admin? %>
+                  <% if record.continuidad %>
+                    <td>Continuidad de registro</td>
+                  <% else%>
+                    <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                  <% end %>
+                  
+                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                  <% if local_assigns[:retirados] %>
+                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
+                  <% end %>
+                <% elsif current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                  <% if record.continuidad %>
+                    <td>Continuidad de registro</td>
+                  <% else%>
+                    <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
+                  <% end %>
+                  
+                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
+                  <% if local_assigns[:retirados] %>
+                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
+                  <% end %>
+                <% end %>  
               <% end %>
               <td class="dos iconos-acciones">
                 <%= link_to get_apls_registro_admin_proveedores_path(record.id),
@@ -117,12 +140,14 @@
                   <i class="fa fa-info-circle"></i>
                 <% end %>
               </td>
-              <% if current_user && current_user.is_admin?%>
-                <td class="dos iconos-acciones">
-                  <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
-                    <i class='fa fa-edit'></i>
-                  <% end %>
-                </td>
+              <% if user_signed_in? %>
+                <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                  <td class="dos iconos-acciones">
+                    <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
+                      <i class='fa fa-edit'></i>
+                    <% end %>
+                  </td>
+                <% end %>
               <% end %>
             </tr>
           <% end %>
