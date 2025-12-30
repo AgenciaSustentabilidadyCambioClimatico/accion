@@ -46,13 +46,7 @@
               <th id='promedio-th' class="d-none">Promedio Evaluación</th>
             <% end %>
             <% if user_signed_in? %>
-              <% if current_user.is_admin? %>
-                <th><%= t(:fecha_ingreso_registro) %></th>
-                <th>Fecha última actualización de registro</th>
-                <% if local_assigns[:retirados]%>
-                  <th> <%= t(:fecha_retiro) %> </th>
-                <% end %>
-              <% elsif current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+              <% if current_user.is_ascc?%>
                 <th><%= t(:fecha_ingreso_registro) %></th>
                 <th>Fecha última actualización de registro</th>
                 <% if local_assigns[:retirados]%>
@@ -62,7 +56,7 @@
             <% end %>
             <th class="detalles">Detalles</th>
             <% if user_signed_in? %>
-              <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+              <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::COORDINADOR_PROVEEDORES) %>
                 <th class="dos iconos-acciones"><%= t(:acciones) %></th>
               <% end %>
             <% end %>
@@ -104,18 +98,7 @@
                 <td class="promedio-td d-none">5.0</td>
               <% end %>
               <% if user_signed_in? %>
-                <% if current_user.is_admin? %>
-                  <% if record.continuidad %>
-                    <td>Continuidad de registro</td>
-                  <% else%>
-                    <td><%= fecha_ingreso.blank? ? '--' : fecha_ingreso %></td>
-                  <% end %>
-                  
-                  <td><%= fecha_revalidacion.blank? ? '--' : fecha_revalidacion %></td>
-                  <% if local_assigns[:retirados] %>
-                    <td><%= fecha_retiro.blank? ? '--' : fecha_retiro %></td>
-                  <% end %>
-                <% elsif current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                <% if current_user.is_ascc? %>
                   <% if record.continuidad %>
                     <td>Continuidad de registro</td>
                   <% else%>
@@ -141,7 +124,7 @@
                 <% end %>
               </td>
               <% if user_signed_in? %>
-                <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::ESPECIALISTA_JURIDICO) %>
+                <% if current_user.is_admin? || current_user.posee_cargo_ascc?(Cargo::COORDINADOR_PROVEEDORES) %>
                   <td class="dos iconos-acciones">
                     <%= link_to edit_registro_proveedor_path(record.id,editar: true) do %>
                       <i class='fa fa-edit'></i>
