@@ -531,8 +531,9 @@ class Flujo < ApplicationRecord
         end
         if !allow
           #evaluo si tiene rol de flujo autorizado
-          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
-          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          #roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          #allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          allow = 1
         end
 
         if allow
@@ -556,15 +557,16 @@ class Flujo < ApplicationRecord
         end
         if !allow
           #evaluo si tiene rol de flujo autorizado
-          roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
-          allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          #roles_autorizados = t.encuesta_descarga_roles.pluck(:rol_id)
+          #allow = MapaDeActor.where(persona_id: personas_id, rol_id: roles_autorizados).count > 0
+          
+          allow = 1
         end
 
         if allow
           nombre_boton = "Resultado encuesta"
           nombre_boton = "Encuesta diagnóstico general" if t.tarea.codigo == Tarea::COD_APL_015
-
-          documentos_asociados = [{nombre: nombre_boton, url: 'descargar_respuesta_encuesta_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id, t.id], metodo: true}]
+          documentos_asociados = [{nombre: nombre_boton, url: 'descargar_respuesta_encuesta_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id, t.tarea_id], metodo: true}]
         end
       
       end

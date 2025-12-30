@@ -113,5 +113,5 @@
 
 - tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
 / - @contribuyentes = Responsable.where(rol_id: Rol::RESPONSABLE_ENTREGABLES, tipo_instrumento: TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA)
-= render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: tipo_instrumento, solo_tabla: true
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, seleccion_basica: true, tipo_instrumento: tipo_instrumento, solo_tabla: true, es_asociar_a_institucion: true
 = render 'admin/users/buscador', solo_tabla: true
