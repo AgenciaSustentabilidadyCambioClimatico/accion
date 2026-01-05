@@ -117,6 +117,23 @@ class User < ApplicationRecord
     lo_es
   end
 
+  def posee_cargo_ascc? (cargo=nil)
+    personas = self.personas
+    cargos = []
+    tiene_cargo = false
+    if self.is_ascc?
+      self.personas.each do |p|
+        cargos += p.persona_cargos.map{|cp| cp.cargo_id}
+        cargos.each do |c|
+          if c == cargo
+            tiene_cargo = true
+          end 
+        end
+      end
+    end
+    tiene_cargo
+  end
+
   def is_ascc?
     !self.personas.includes(:contribuyente).where(contribuyentes: {rut: 75980060}).blank?
   end

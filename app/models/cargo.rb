@@ -26,6 +26,9 @@ class Cargo < ApplicationRecord
 
 	INSTITUCION 	= [DUEÑO,DIRECTOR,REPRESENTANTE,ENCARGADO_INS]
 
+	ESPECIALISTA_JURIDICO = 28
+	COORDINADOR_PROVEEDORES = 33
+
 	#Jamás podremos borrar los cargos root, admin ni user
 	def destroy
 		unless BASIC.include?(self.id) || INSTITUCION.include?(self.id)
