@@ -10,11 +10,11 @@ class GenericoMailer < ApplicationMailer
         persona_cargos: { cargo_id: Cargo::ADMIN }
       })
 
-    destinatarios = admins.pluck(:email)
+    destinatarios = admins.pluck(:email).compact.uniq
     
     @nombre_instrumento = "#{@flujo.nombre_para_raa}" 
 		titulo = "ASCC Sistemas: Eliminaciones realizadas en actores del mapa de actores '#{@nombre_instrumento}'"
 		@message = "ASCC Sistemas informa que se han eliminado actores del mapa de actores asociado al instrumento '#{@nombre_instrumento}'."
-    mail(to: destinatarios, subject: titulo)
+    mail(to: destinatarios.join(','), subject: titulo)
   end
 end
