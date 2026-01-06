@@ -27,12 +27,22 @@ class Admin::MantenedorMapaActoresController < ApplicationController
     respond_to do |format|
       if params[:actor_ids].present?
         @actor_ids = params[:actor_ids]
-        MapaDeActor.where(id: @actor_ids).destroy_all
+        actores = MapaDeActor.where(id: @actor_ids)
+        actores_para_mail = actores.to_a
+
+        actores_info = actores_para_mail.map do |a|
+          {
+            nombre_completo: a.persona.user.nombre_completo,
+            rol: a.rol.nombre
+          }
+        end
+        actores.destroy_all
         if params[:actor_ids].count == 1
           flash.now[:success] = 'Registro eliminado correctamente.'
         else
           flash.now[:success] = 'Registros eliminados correctamente.'
         end
+        GenericoMailer.elimina_mapa_actores(params[:flujo_id], actores_info).deliver_later
         format.js
       else
         format.js { render js: "alert('No seleccionaste ningún actor.');" }

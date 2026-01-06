@@ -1,0 +1,17 @@
+%p.m-0= @message
+
+%br
+
+%p Se eliminaron los siguientes actores del mapa:
+
+%ul
+  - @actores_info.each do |actor|
+    %li
+      %strong= actor[:nombre_completo]
+      = " (#{actor[:rol]})"
+
+%br
+
+%p Cordialmente
+%p Sistema Informático de Soporte de la Gestión
+%p Agencia de Sustentabilidad y Cambio Climático
