@@ -13,8 +13,8 @@ class GenericoMailer < ApplicationMailer
     destinatarios = admins.pluck(:email)
     
     @nombre_instrumento = "#{@flujo.nombre_para_raa}" 
-		titulo = "ASCC Sistemas: Modificaciones realizadas en usuarios del mapa de actores '#{@nombre_instrumento}'"
-		@message = "Estimados, ASCC Sistemas le informa que se eliminaron usuarios del mapa del actores para el instrumento '#{@nombre_instrumento}'."
+		titulo = "ASCC Sistemas: Eliminaciones realizadas en actores del mapa de actores '#{@nombre_instrumento}'"
+		@message = "ASCC Sistemas informa que se han eliminado actores del mapa de actores asociado al instrumento '#{@nombre_instrumento}'."
     mail(to: destinatarios, subject: titulo)
   end
 end
