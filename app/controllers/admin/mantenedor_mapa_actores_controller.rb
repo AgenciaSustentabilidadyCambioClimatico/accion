@@ -42,7 +42,7 @@ class Admin::MantenedorMapaActoresController < ApplicationController
         else
           flash.now[:success] = 'Registros eliminados correctamente.'
         end
-        GenericoMailer.elimina_mapa_actores(params[:flujo_id], actores_info).deliver_now
+        GenericoMailer.elimina_mapa_actores(params[:flujo_id], actores_info).deliver_later
         format.js
       else
         format.js { render js: "alert('No seleccionaste ningún actor.');" }
