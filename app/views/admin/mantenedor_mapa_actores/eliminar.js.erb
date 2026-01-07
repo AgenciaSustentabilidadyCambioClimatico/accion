@@ -1,5 +1,9 @@
-<% @actor_ids.each do |id| %>
-  $("#actor_row_<%= id %>").fadeOut(300, function() { $(this).remove(); });
+<% if @actor_ids.present? %>
+  <% @actor_ids.each do |id| %>
+    $("#actor_row_<%= id %>").fadeOut(300, function() {
+      $(this).remove();
+    });
+  <% end %>
 <% end %>
 
 $("#messages-remote-block").html("<%= j render('layouts/messages') %>");
