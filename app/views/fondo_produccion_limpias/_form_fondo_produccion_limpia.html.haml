@@ -3223,7 +3223,7 @@
                     %th
                       = f.object.cantidad_grande_empresa                  
                     %th
-                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
+                      = f.object.cantidad_micro_empresa.to_i  + f.object.cantidad_pequeña_empresa.to_i  + f.object.cantidad_mediana_empresa.to_i  + f.object.cantidad_grande_empresa.to_i  
           %br 
             .row
               .col-12
@@ -3350,7 +3350,7 @@
                     %th
                       = f.object.cantidad_grande_empresa                  
                     %th
-                      = f.object.cantidad_micro_empresa + f.object.cantidad_pequeña_empresa + f.object.cantidad_mediana_empresa + f.object.cantidad_grande_empresa 
+                      = f.object.cantidad_micro_empresa.to_i  + f.object.cantidad_pequeña_empresa.to_i  + f.object.cantidad_mediana_empresa.to_i  + f.object.cantidad_grande_empresa.to_i  
                 %tr
                   -if !solo_lectura
                     %th
@@ -3396,7 +3396,7 @@
                     %th
                       = f.object.elementos_grande_empresa                  
                     %th
-                      = f.object.elementos_micro_empresa + f.object.elementos_pequena_empresa + f.object.elementos_mediana_empresa + f.object.elementos_grande_empresa    
+                      = f.object.elementos_micro_empresa.to_i  + f.object.elementos_pequena_empresa.to_i  + f.object.elementos_mediana_empresa.to_i  + f.object.elementos_grande_empresa.to_i     
             %br
         <h1>Duración del proyecto</h1>
         %div.table-responsive{style: 'border-bottom: 0px solid #dee2e6;'} 
