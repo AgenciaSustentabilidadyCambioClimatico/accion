@@ -1,58 +1,59 @@
 -content_for :subheader do
   .subheader-home
     .container{class: (user_signed_in? ? 'fix-width' : '')}
-      .d-flex.flex-column.my-3
-        .title=@acuerdo_seleccionado.datos[:nombre_acuerdo]
-        -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
-          .empresa="#{@acuerdo_seleccionado.datos[:contribuyente_razon_social]} - RUT: #{@acuerdo_seleccionado.datos[:contribuyente_rut]}"
-        -if !@acuerdo_seleccionado.datos[:firma_fecha].nil? || !@acuerdo_seleccionado.datos[:firma_fecha_hora].nil?
-          -_firma_fecha = @acuerdo_seleccionado.datos[:firma_fecha_hora].blank? ? @acuerdo_seleccionado.datos[:firma_fecha] : @acuerdo_seleccionado.datos[:firma_fecha_hora]
-          .firma="Firmado #{l(_firma_fecha, format: '%e de %B del %Y')}"
-        .d-flex.flex-column.flex-lg-row.mt-3.align-items-lg-center
-          -if @acuerdo_seleccionado.datos[:acciones] > 0
-            .acciones
-              .numero="#{@acuerdo_seleccionado.datos[:acciones]} "
-              acciones
-          -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
-            =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id], origen: @origen), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
-              .numero="#{@acuerdo_seleccionado.datos[:empresas_adheridas]} "
-              empresas adheridas
-          -if @acuerdo_seleccionado.datos[:empresas_certificadas] > 0
-            =link_to empresas_y_elementos_certificados_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
-              .numero="#{@acuerdo_seleccionado.datos[:empresas_certificadas]} "
-              empresas certificadas
-          -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
-            =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id], origen: @origen), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
-              .numero="#{@acuerdo_seleccionado.datos[:elementos_adheridos].count} "
-              elementos adheridos
-          .btn-group.ml-lg-auto.mt-1.mt-lg-0
-            =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas, origen: @origen), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
-            =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones, origen: @origen), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
-        -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
-          .d-flex.flex-column.flex-lg-row.justify-content-between.mt-2
-            .d-flex
-              .btn-group
-                -if @contribuyentes_de_usuario != nil
-                  -if @contribuyentes_de_usuario.length > 1
-                    %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos_empresa{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
+      - if @acuerdo_seleccionado&.datos.present?
+        .d-flex.flex-column.my-3
+          .title=@acuerdo_seleccionado.datos[:nombre_acuerdo]
+          -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
+            .empresa="#{@acuerdo_seleccionado.datos[:contribuyente_razon_social]} - RUT: #{@acuerdo_seleccionado.datos[:contribuyente_rut]}"
+          -if !@acuerdo_seleccionado.datos[:firma_fecha].nil? || !@acuerdo_seleccionado.datos[:firma_fecha_hora].nil?
+            -_firma_fecha = @acuerdo_seleccionado.datos[:firma_fecha_hora].blank? ? @acuerdo_seleccionado.datos[:firma_fecha] : @acuerdo_seleccionado.datos[:firma_fecha_hora]
+            .firma="Firmado #{l(_firma_fecha, format: '%e de %B del %Y')}"
+          .d-flex.flex-column.flex-lg-row.mt-3.align-items-lg-center
+            -if @acuerdo_seleccionado.datos[:acciones] > 0
+              .acciones
+                .numero="#{@acuerdo_seleccionado.datos[:acciones]} "
+                acciones
+            -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
+              =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id], origen: @origen), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+                .numero="#{@acuerdo_seleccionado.datos[:empresas_adheridas]} "
+                empresas adheridas
+            -if @acuerdo_seleccionado.datos[:empresas_certificadas] > 0
+              =link_to empresas_y_elementos_certificados_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id]), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+                .numero="#{@acuerdo_seleccionado.datos[:empresas_certificadas]} "
+                empresas certificadas
+            -if @acuerdo_seleccionado.datos[:empresas_adheridas] > 0
+              =link_to empresas_y_elementos_adheridos_path(acuerdo_id: params[:acuerdo_id], clasificacion_id: params[:clasificacion_id], origen: @origen), class: "btn boton ml-lg-2 mt-1 mt-lg-0" do
+                .numero="#{@acuerdo_seleccionado.datos[:elementos_adheridos].count} "
+                elementos adheridos
+            .btn-group.ml-lg-auto.mt-1.mt-lg-0
+              =link_to "Metas", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :metas, origen: @origen), class: "btn btn-meta-clasificacion #{(@vista == 'metas' ? 'active' : '')}"
+              =link_to "Clasificaciones", acuerdo_seleccionado_path(acuerdo_id: @acuerdo_seleccionado.datos[:id], clasificacion_id: params[:clasificacion_id], vista: :clasificaciones, origen: @origen), class: "btn btn-meta-clasificacion #{(@vista == 'clasificaciones' ? 'active' : '')}"
+          -if user_signed_in? && current_user.session&.dig(:personas, 0, :contribuyente_id) != 639391
+            .d-flex.flex-column.flex-lg-row.justify-content-between.mt-2
+              .d-flex
+                .btn-group
+                  -if @contribuyentes_de_usuario != nil
+                    -if @contribuyentes_de_usuario.length > 1
+                      %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos_empresa{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
+                        =fa_icon :download
+                        Descargar Reporte Consolidado
+                      .dropdown-menu{"aria-labelledby" => :btn_group_elementos_empresa}
+                        -@contribuyentes_de_usuario.each do |contribuyente|
+                          =link_to contribuyente.razon_social, descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: contribuyente.id), class: "dropdown-item"
+                    -else
+                      -c_id = @contribuyentes_de_usuario.blank? ? nil : @contribuyentes_de_usuario.first.id
+                      =link_to descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: c_id), class: 'btn btn-dark-blue', style: "border-right: 1px solid #FFFFFF" do
+                        =fa_icon :download
+                        Descargar Reporte Consolidado
+                    
+                  .dropdown.ml-2
+                    %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
                       =fa_icon :download
-                      Descargar Reporte Consolidado
-                    .dropdown-menu{"aria-labelledby" => :btn_group_elementos_empresa}
-                      -@contribuyentes_de_usuario.each do |contribuyente|
-                        =link_to contribuyente.razon_social, descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: contribuyente.id), class: "dropdown-item"
-                  -else
-                    -c_id = @contribuyentes_de_usuario.blank? ? nil : @contribuyentes_de_usuario.first.id
-                    =link_to descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], c_id: c_id), class: 'btn btn-dark-blue', style: "border-right: 1px solid #FFFFFF" do
-                      =fa_icon :download
-                      Descargar Reporte Consolidado
-                  
-                .dropdown.ml-2
-                  %button.btn.btn-dark-blue.dropdown-toggle#btn_group_elementos{type: :button, "data-toggle" => :dropdown, "aria-expanded" => false}
-                    =fa_icon :download
-                    Descargar Reporte por Unidad Funcional
-                  .dropdown-menu{"aria-labelledby" => :btn_group_elementos}
-                    -@acuerdo_seleccionado.datos[:elementos_adheridos].each do |elem|
-                      =link_to elem[:nombre], descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], ae_id: elem[:id]), class: "dropdown-item"
+                      Descargar Reporte por Unidad Funcional
+                    .dropdown-menu{"aria-labelledby" => :btn_group_elementos}
+                      -@acuerdo_seleccionado.datos[:elementos_adheridos].each do |elem|
+                        =link_to elem[:nombre], descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path(@acuerdo_seleccionado.datos[:id], ae_id: elem[:id]), class: "dropdown-item"
 .row
   .col-12
     -@acuerdo_seleccionado.datos[:clasificaciones].each_slice(3) do |sub_grupo|
