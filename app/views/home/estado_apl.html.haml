@@ -37,7 +37,7 @@
           - convocatoria_prop = m.flujo.convocatorias.select { |c| c.tarea_codigo == "APL-016" }.sort_by(&:fecha)
           - red_prop = t_prop.nil? ? "": descargar_compilado_adjuntos_path(t_prop&.id, codigo: "016")
           // Firma
-          - conv_firma = Convocatoria.where(flujo_id: m.id, tarea_codigo:"APL-021")
+          - conv_firma = Convocatoria.where(flujo_id: m.flujo.id, tarea_codigo:"APL-021")
           - c_firma = conv_firma.first
           - minuta_id = conv_firma.first&.minuta&.id
           - t_firma = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 62 }
