@@ -129,6 +129,7 @@
 
 	function confirmarEliminacion() {
 		const checkboxes = document.querySelectorAll('input[name="eliminar_actores[]"]:checked');
+		const flujo_id = document.getElementById('apl').value;
 
 		// Validar selección
 		if (checkboxes.length === 0) {
@@ -149,7 +150,7 @@
 		$.ajax({
 			url: "#{eliminar_admin_mantenedor_mapa_actores_path}",
 			method: "POST",
-			data: { actor_ids: ids },
+			data: { actor_ids: ids, flujo_id: flujo_id },
 			success: function(response) {
 				//console.log("Eliminados correctamente:", response);
 				$("#mapa_actores_container").html(response.html);

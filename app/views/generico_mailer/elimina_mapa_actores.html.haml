@@ -1,0 +1,21 @@
+%p Estimados,
+
+%br
+
+%p.m-0= @message
+
+%br
+
+%p Los actores eliminados son los siguientes:
+
+%ul
+  - @actores_info.each do |actor|
+    %li
+      %strong= actor[:nombre_completo]
+      = " (#{actor[:rol]})"
+
+%br
+
+%p Cordialmente
+%p Sistema Informático de Soporte de la Gestión
+%p Agencia de Sustentabilidad y Cambio Climático
