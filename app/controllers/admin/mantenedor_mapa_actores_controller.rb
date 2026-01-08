@@ -25,8 +25,8 @@ class Admin::MantenedorMapaActoresController < ApplicationController
 
   def eliminar
     respond_to do |format|
-      if params[:actor_ids].present?
-        @actor_ids = params[:actor_ids]
+      @actor_ids = Array(params[:actor_ids])
+      if @actor_ids.any?
         actores = MapaDeActor.where(id: @actor_ids)
         actores_para_mail = actores.to_a
 

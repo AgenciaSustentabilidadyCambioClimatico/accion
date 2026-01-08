@@ -24,47 +24,51 @@
                     %th=t(:empresas_adheridas)
                     %th=t(:empresas_certificadas)
                 %tbody
-                  -@acuerdos_firmados.datos.each do |data|
+                  - if @acuerdos_firmados&.datos.present?
+                    -@acuerdos_firmados.datos.each do |data|
+                      %tr
+                        -params_seleccionado = {acuerdo_id: data[:acuerdo_id], origen: "menu_datos_estadisticas"}
+                        -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
+                        %td=link_to data[:nombre_acuerdo], acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
+                        %td
+                          -if !data[:diagnostico_de_acuerdo_anterior].blank? && @datos_publicos.visibilidad_documentos.include?("1")
+                            %div.text-nowrap
+                              - flujo = Flujo.find(data[:flujo_id])
+                              - r = flujo.manifestacion_de_interes.diagnostico_de_acuerdo_anterior.url
+                              = link_to "Documento Diagnóstico",r
+                          -if data[:documento_diagnosticos] && @datos_publicos.visibilidad_documentos.include?("2")
+                            %div.text-nowrap
+                              =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
+
+
+                          -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
+                            %div.text-nowrap
+                              -tarea_pendiente = TareaPendiente.where(flujo_id: data[:flujo_id], tarea_id: Tarea::ID_APL_022).last
+                              - flujo = tarea_pendiente.data[:convocatoria_id]
+                              - convocatoria = Convocatoria.find(flujo)
+                              - @minuta = convocatoria.minuta
+                              - if !@minuta.acta.file.nil?
+                                = link_to "Documento de Acuerdo", descargar_acta_path(@minuta.id), target: '_blank'
+                          -if !data[:informe_impacto].blank? && @datos_publicos.visibilidad_documentos.include?("4")
+                            %div.text-nowrap
+                              =link_to "Informe de Impacto", data[:informe_impacto]
+
+                        %td
+                          .d-flex.align-items-center{style: "white-space: nowrap;"}
+                            -if data[:estado_consulta_publica] == "No iniciada"
+                              .estado-consulta.amarillo
+                            -if data[:estado_consulta_publica] == "Abierta"
+                              .estado-consulta.verde
+                            -if data[:estado_consulta_publica] == "Cerrada"
+                              .estado-consulta.amarillo
+                            -if data[:estado_consulta_publica] == "Finalizada"
+                              .estado-consulta.rojo
+                            =data[:estado_consulta_publica]
+                        %td=data[:empresas_adheridas]
+                        %td=data[:empresas_certificadas]
+                  - else
                     %tr
-                      -params_seleccionado = {acuerdo_id: data[:acuerdo_id], origen: "menu_datos_estadisticas"}
-                      -params_seleccionado[:clasificacion_id] = params[:clasificacion_id] if !params[:clasificacion_id].blank?
-                      %td=link_to data[:nombre_acuerdo], acuerdo_seleccionado_path(params_seleccionado), class: 'btn btn-tabla', style: "white-space: break-spaces;"
-                      %td
-                        -if !data[:diagnostico_de_acuerdo_anterior].blank? && @datos_publicos.visibilidad_documentos.include?("1")
-                          %div.text-nowrap
-                            - flujo = Flujo.find(data[:flujo_id])
-                            - r = flujo.manifestacion_de_interes.diagnostico_de_acuerdo_anterior.url
-                            = link_to "Documento Diagnóstico",r
-                        -if data[:documento_diagnosticos] && @datos_publicos.visibilidad_documentos.include?("2")
-                          %div.text-nowrap
-                            =link_to "Documentos de Diagnóstico", descarga_estandar_o_acuerdo_documento_diagnosticos_manifestacion_de_interes_path(0, data[:acuerdo_id],acuerdo_id: data[:acuerdo_id])
-
-
-                        -if data[:informe_acuerdo] && @datos_publicos.visibilidad_documentos.include?("3")
-                          %div.text-nowrap
-                            -tarea_pendiente = TareaPendiente.where(flujo_id: data[:flujo_id], tarea_id: Tarea::ID_APL_022).last
-                            - flujo = tarea_pendiente.data[:convocatoria_id]
-                            - convocatoria = Convocatoria.find(flujo)
-                            - @minuta = convocatoria.minuta
-                            - if !@minuta.acta.file.nil?
-                              = link_to "Documento de Acuerdo", descargar_acta_path(@minuta.id), target: '_blank'
-                        -if !data[:informe_impacto].blank? && @datos_publicos.visibilidad_documentos.include?("4")
-                          %div.text-nowrap
-                            =link_to "Informe de Impacto", data[:informe_impacto]
-
-                      %td
-                        .d-flex.align-items-center{style: "white-space: nowrap;"}
-                          -if data[:estado_consulta_publica] == "No iniciada"
-                            .estado-consulta.amarillo
-                          -if data[:estado_consulta_publica] == "Abierta"
-                            .estado-consulta.verde
-                          -if data[:estado_consulta_publica] == "Cerrada"
-                            .estado-consulta.amarillo
-                          -if data[:estado_consulta_publica] == "Finalizada"
-                            .estado-consulta.rojo
-                          =data[:estado_consulta_publica]
-                      %td=data[:empresas_adheridas]
-                      %td=data[:empresas_certificadas]
+                      %td{ colspan: 5 } No existen acuerdos firmados.  
 :javascript
   $(document).ready(function(){
     $('.table-home').DataTable({
