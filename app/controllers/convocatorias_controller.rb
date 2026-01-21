@@ -60,7 +60,12 @@ class ConvocatoriasController < ApplicationController
 			#Generar Google meeting solo si hay destinatario
 			if @convocatoria.virtual? && params[:virtual_meeting]
 				seleccionados = params[:seleccionados].map { |id| Persona.find(id) }
-				credentials_hash = JSON.parse(ENV.fetch('GOOGLE_CALENDAR_TOKEN'))
+				token_json = Base64.decode64(
+				ENV.fetch('GOOGLE_CALENDAR_TOKEN_B64')
+				)
+
+				credentials_hash = JSON.parse(token_json)
+
 				credentials = Google::Auth::UserRefreshCredentials.new(
   				client_id: credentials_hash['client_id'],
 				client_secret: credentials_hash['client_secret'],
