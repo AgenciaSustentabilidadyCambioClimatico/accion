@@ -58,49 +58,62 @@ class ConvocatoriasController < ApplicationController
 		respond_to do |format|
 		if @convocatoria.save
 			#Generar Google meeting solo si hay destinatario
-			if  @convocatoria.virtual? && params[:virtual_meeting]
-				seleccionados = []
-				params[:seleccionados].each do |id|
-					persona = Persona.find(id)
-					seleccionados << persona
-				end
-				token_path = Rails.root.join('tmp', 'google_token.yaml').to_s.freeze
-				token_store = Google::Auth::Stores::FileTokenStore.new(file: token_path)
-				credentials_json = token_store.load("sistemaaccion@ascc.cl")
-				credentials_hash = JSON.parse(credentials_json)
-				credentials = Signet::OAuth2::Client.new(credentials_hash)
-				service = Google::Apis::CalendarV3::CalendarService.new
-				service.authorization = credentials
-				
+			if @convocatoria.virtual? && params[:virtual_meeting]
+				seleccionados = params[:seleccionados].map { |id| Persona.find(id) }
+				token_json = Base64.decode64(
+				ENV.fetch('GOOGLE_CALENDAR_TOKEN_B64')
+				)
+
+				credentials_hash = JSON.parse(token_json)
+
+				credentials = Google::Auth::UserRefreshCredentials.new(
+  				client_id: credentials_hash['client_id'],
+				client_secret: credentials_hash['client_secret'],
+				refresh_token: credentials_hash['refresh_token'],
+				scope: credentials_hash['scope'],
+				token_uri: credentials_hash['token_uri']
+				)
+
 				credentials.refresh!
 
-				meet = Google::Apis::CalendarV3::Event.new({
+				service = Google::Apis::CalendarV3::CalendarService.new
+				service.authorization = credentials
+
+				meet = Google::Apis::CalendarV3::Event.new(
 					summary: @convocatoria.nombre,
 					start: {
-						date_time: @convocatoria.fecha_hora.to_time.utc.iso8601,
-						time_zone: 'America/Santiago'
-					  },
-					end: {
-						date_time: (@convocatoria.fecha_hora.to_time + 2.hour).utc.strftime('%FT%T%:z'),
-						time_zone: 'America/Santiago'
+					date_time: @convocatoria.fecha_hora.utc.iso8601,
+					time_zone: 'America/Santiago'
 					},
-					attendees: seleccionados.map { |seleccionado| { email: seleccionado[:email_institucional]} },
+					end: {
+					date_time: (@convocatoria.fecha_hora + 2.hours).utc.iso8601,
+					time_zone: 'America/Santiago'
+					},
+					attendees: seleccionados.map { |s| { email: s.email_institucional } },
 					conference_data: {
-					  create_request: {
-						conference_solution_key: {
-						  type: 'hangoutsMeet'
-						},
+					create_request: {
+						conference_solution_key: { type: 'hangoutsMeet' },
 						request_id: SecureRandom.uuid
-					  }
 					}
-				  })
-				  result = service.insert_event("sistemaaccion@ascc.cl", meet, conference_data_version: 1, send_notifications: true)
-				
-					
-				  @convocatoria.update(direccion: result.conference_data.entry_points[0].uri) if result.conference_data.present?
-				  @convocatoria.update(mensaje_cuerpo: @convocatoria.mensaje_cuerpo + result.conference_data.entry_points[0].uri)
+					}
+				)
 
+				result = service.insert_event(
+					'primary',
+					meet,
+					conference_data_version: 1,
+					send_notifications: true
+				)
+
+				if result.conference_data.present?
+					meet_url = result.conference_data.entry_points.first.uri
+					@convocatoria.update(
+					direccion: meet_url,
+					mensaje_cuerpo: "#{@convocatoria.mensaje_cuerpo} #{meet_url}"
+					)
+				end
 			end
+
 
 
 				#crea minuta relacionada con esta convocatoria
@@ -124,7 +137,7 @@ class ConvocatoriasController < ApplicationController
 				@convocatoria.convocatoria_destinatarios.each do |rd|
 					rgc = RegistroAperturaCorreo.create(convocatoria_destinatario_id: rd.id, fecha_envio_correo: DateTime.now)
 					# DZC 2018-10-04 19:44:58 se corrige error en el nombre de la variable rgc
-					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id).deliver_now
+					ConvocatoriaMailer.enviar(rd, @convocatoria.mensaje_encabezado, @convocatoria.mensaje_cuerpo, @convocatoria.archivo_adjunto, rgc.id).deliver_later
 				end
 				continua_flujo_segun_tipo_tarea
 		  	format.html { redirect_to root_path, notice: "Convocatoria creada" }
