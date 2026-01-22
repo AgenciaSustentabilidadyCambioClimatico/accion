@@ -101,8 +101,7 @@ class ConvocatoriasController < ApplicationController
 				result = service.insert_event(
 					'primary',
 					meet,
-					conference_data_version: 1,
-					send_notifications: true
+					send_updates: 'all'
 				)
 
 				if result.conference_data.present?
