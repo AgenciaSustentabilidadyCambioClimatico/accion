@@ -2,7 +2,9 @@ var descripcion = '<%= @objetivo_especifico.descripcion %>';
 var metodologia = '<%= @objetivo_especifico.metodologia %>';
 var resultado = '<%= @objetivo_especifico.resultado %>';
 var indicadores = '<%= @objetivo_especifico.indicadores %>';
+var correlativo = '<%= @objetivo_especifico.correlativo %>';
 
+$('#objetivo_correlativo_<%= @objetivo_especifico.id %>').text(correlativo);
 $('#objetivo_descripcion_<%= @objetivo_especifico.id %>').text(descripcion);
 $('#objetivo_metodologia_<%= @objetivo_especifico.id %>').text(metodologia);
 $('#objetivo_resultado_<%= @objetivo_especifico.id %>').text(resultado);

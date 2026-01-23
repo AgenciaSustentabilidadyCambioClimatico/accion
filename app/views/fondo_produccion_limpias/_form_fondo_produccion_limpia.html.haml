@@ -3121,6 +3121,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
+                %th.encabezado2-form=t(:n°)
                 %th.encabezado2-form=t(:descripcion)
                 %th.encabezado2-form.center=t(:metodologia)
                 %th.encabezado2-form=t(:resultado)
@@ -3672,6 +3673,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
+                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
                 %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
@@ -3700,6 +3702,7 @@
                       %tr
                         %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                   %tr
+                    %td.contenido-form{id: "id_correlativo_plan_actividad_#{actividad.id}"}=actividad.correlativo
                     %td.contenido-form{id: "nombre_actividad_#{actividad.id}"}=actividad.nombre
                     - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
                     - if detalle_existente.present?
@@ -3758,6 +3761,10 @@
                 %td.contenido-form{id: "total_total_gastos_tipo_2", colspan: 1}= number_to_currency(total_total_gastos_tipo_2)
                 %td.contenido-form{id: "total_total_suma", colspan: 1}= number_to_currency(total_total_suma)
                 %td.contenido-form{colspan: 1}
+          -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1
+            %br
+            .float-right
+              = link_to t(:ordenar_actividades), "#{request.path}?tabs=plan-de-actividades", class: "btn btn-sm btn-primary"
 
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card
