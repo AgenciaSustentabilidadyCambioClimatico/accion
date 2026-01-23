@@ -5,8 +5,10 @@ $('#div_objetivo_especifico table tbody').empty();
   var metodologia = '<%= objetivo_especifico.metodologia %>';
   var resultado = '<%= objetivo_especifico.resultado %>';
   var indicadores = '<%= objetivo_especifico.indicadores %>';
+  var correlativo = '<%= objetivo_especifico.correlativo %>';
 
   var newRow = "<tr>" +
+  "<td class='contenido-form' id='objetivo_correlativo_<%= objetivo_especifico.id %>'>" + correlativo + "</td>" +
   "<td class='contenido-form' id='objetivo_descripcion_<%= objetivo_especifico.id %>'>" + descripcion + "</td>" +
   "<td class='contenido-form' id='objetivo_metodologia_<%= objetivo_especifico.id %>'>" + metodologia + "</td>" +
   "<td class='contenido-form' id='objetivo_resultado_<%= objetivo_especifico.id %>'>" + resultado + "</td>" +

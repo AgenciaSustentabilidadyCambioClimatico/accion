@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2025_12_02_151756) do
+ActiveRecord::Schema.define(version: 2026_01_22_193628) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1441,6 +1441,7 @@ ActiveRecord::Schema.define(version: 2025_12_02_151756) do
     t.string "indicadores"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "correlativo"
     t.index ["flujo_id"], name: "index_objetivos_especificos_on_flujo_id"
   end
 
@@ -1501,6 +1502,7 @@ ActiveRecord::Schema.define(version: 2025_12_02_151756) do
     t.bigint "objetivos_especifico_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "correlativo"
     t.index ["actividad_id"], name: "index_plan_actividades_on_actividad_id"
     t.index ["flujo_id"], name: "index_plan_actividades_on_flujo_id"
     t.index ["objetivos_especifico_id"], name: "index_plan_actividades_on_objetivos_especifico_id"

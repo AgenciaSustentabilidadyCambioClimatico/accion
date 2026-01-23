@@ -11,10 +11,14 @@ class ObjetivosEspecifico < ApplicationRecord
   #validates :email, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { !email.blank? && email != "no"}
 
   def self.opciones_para_descripcion
-    # Lógica para obtener las opciones
-    # Ejemplo simple para propósitos ilustrativos:
-    #['Opción 1', 'Opción 2', 'Opción 3']
+    # Lï¿½gica para obtener las opciones
+    # Ejemplo simple para propï¿½sitos ilustrativos:
+    #['Opciï¿½n 1', 'Opciï¿½n 2', 'Opciï¿½n 3']
     ObjetivosEspecifico.pluck(:descripcion, :id)
+  end
+
+  def label_con_correlativo
+    "#{correlativo} - #{descripcion}"
   end
 
 end

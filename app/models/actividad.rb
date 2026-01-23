@@ -15,8 +15,8 @@ class Actividad < ApplicationRecord
 			[1, 3], flujo_id, 1
 			)
 			.group("actividades.id", "actividades.nombre", "actividad_por_lineas.tipo_actividad", "actividad_por_lineas.tipo_permiso")
-			.order("actividad_por_lineas.tipo_actividad")
-			.select("actividades.id", "actividades.nombre", "actividad_por_lineas.tipo_actividad", "actividad_por_lineas.tipo_permiso")
+			.order("actividad_por_lineas.tipo_actividad ASC, correlativo ASC NULLS LAST")
+			.select("actividades.id", "actividades.nombre", "actividad_por_lineas.tipo_actividad", "actividad_por_lineas.tipo_permiso", "MAX(plan_actividades.correlativo) AS correlativo")
 	end
 	
 end

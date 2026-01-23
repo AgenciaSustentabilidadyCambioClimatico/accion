@@ -7,6 +7,8 @@
   <% end %>
 <% end %>
 
+$("#id_correlativo_plan_actividad_<%= @plan_actividades.actividad_id %>").text("<%= @correlativo_final %>");
+
 var tipoPermiso = <%= @tipo_perm %>;
 if (tipoPermiso === 1) {
   $("#nombre_actividad_<%= @plan_actividades.actividad_id %>").text("<%= @nombre_actividad %>");
