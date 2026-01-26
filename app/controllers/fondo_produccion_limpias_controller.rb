@@ -1961,10 +1961,11 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_plan_actividades
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
-      
-      if @plan_actividades.correlativo == nil
-        #obtiene el correlativo del objetivo especifico
-        objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
+
+      #obtiene el correlativo del objetivo especifico
+      objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
+
+      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo
         correlativo_objetivo = objetivo.correlativo.to_s
 
         #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
