@@ -558,4 +558,158 @@ class PlanActividad < ApplicationRecord
               )')
     .first
   end
+
+  def self.cabecera_objetivos_y_plan_actividades(flujo_id)
+    select(
+      "actividades.id",
+      "(objetivos_especificos.correlativo || ' - ' || objetivos_especificos.descripcion) AS objetivo",
+      "(plan_actividades.correlativo || ' - ' || actividades.nombre) AS plan_actividad"
+    )
+      .left_joins(:actividad)
+      .left_joins(:objetivos_especifico)
+      .where(plan_actividades: { flujo_id: flujo_id })
+      .group(
+        'actividades.id',
+        'plan_actividades.correlativo',
+        'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo'
+      )
+      .order("string_to_array(plan_actividades.correlativo, '.')::int[] ASC")
+  end
+
+  
+  def self.detalle_objetivos_y_plan_actividades(flujo_id, actividad_id)
+    sql = <<~SQL
+      SELECT *
+      FROM (
+
+        /* ===============================
+           RRHH PROPIO
+           =============================== */
+        SELECT
+          'RRHH Propio' AS item_gasto,
+          u.nombre_completo AS nombre_item,
+          rh.hh AS cantidad,
+          'HH' AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'APV'
+            WHEN 2 THEN 'APL'
+            WHEN 3 THEN 'FPL'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          et.valor_hh AS valor,
+          (rh.hh * et.valor_hh) AS total
+        FROM plan_actividades pa
+        JOIN recurso_humanos rh
+          ON rh.plan_actividad_id = pa.id
+        JOIN equipo_trabajos et
+          ON et.id = rh.equipo_trabajo_id
+        JOIN users u
+          ON u.id = et.user_id
+        JOIN tipo_aportes ta
+          ON ta.id = rh.tipo_aporte_id
+        WHERE rh.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND et.tipo_equipo = 3
+
+        UNION ALL
+
+        /* ===============================
+           RRHH EXTERNO
+           =============================== */
+        SELECT
+          'RRHH Externo' AS item_gasto,
+          u.nombre_completo AS nombre_item,
+          rh.hh AS cantidad,
+          'HH' AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'APV'
+            WHEN 2 THEN 'APL'
+            WHEN 3 THEN 'FPL'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          et.valor_hh AS valor,
+          (rh.hh * et.valor_hh) AS total
+        FROM plan_actividades pa
+        JOIN recurso_humanos rh
+          ON rh.plan_actividad_id = pa.id
+        JOIN equipo_trabajos et
+          ON et.id = rh.equipo_trabajo_id
+        JOIN users u
+          ON u.id = et.user_id
+        JOIN tipo_aportes ta
+          ON ta.id = rh.tipo_aporte_id
+        WHERE rh.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND et.tipo_equipo IN (1,2,4)
+
+        UNION ALL
+
+        /* ===============================
+           GASTOS OPERACIÓN (GGOO)
+           =============================== */
+        SELECT
+          'GGOO' AS item_gasto,
+          g.nombre AS nombre_item,
+          g.cantidad AS cantidad,
+          CASE g.unidad_medida
+            WHEN 1 THEN 'Unidad'
+            WHEN 2 THEN 'Global'
+            ELSE 'Otro'
+          END AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'APV'
+            WHEN 2 THEN 'APL'
+            WHEN 3 THEN 'FPL'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          g.valor_unitario AS valor,
+          (g.cantidad * g.valor_unitario) AS total
+        FROM plan_actividades pa
+        JOIN gastos g
+          ON g.plan_actividad_id = pa.id
+        JOIN tipo_aportes ta
+          ON ta.id = g.tipo_aporte_id
+        WHERE g.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND g.tipo_gasto = 1
+
+        UNION ALL
+
+        /* ===============================
+           GASTOS ADMINISTRACIÓN (GGAA)
+           =============================== */
+        SELECT
+          'GGAA' AS item_gasto,
+          g.nombre AS nombre_item,
+          g.cantidad AS cantidad,
+          CASE g.unidad_medida
+            WHEN 1 THEN 'Unidad'
+            WHEN 2 THEN 'Global'
+            ELSE 'Otro'
+          END AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'APV'
+            WHEN 2 THEN 'APL'
+            WHEN 3 THEN 'FPL'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          g.valor_unitario AS valor,
+          (g.cantidad * g.valor_unitario) AS total
+        FROM plan_actividades pa
+        JOIN gastos g
+          ON g.plan_actividad_id = pa.id
+        JOIN tipo_aportes ta
+          ON ta.id = g.tipo_aporte_id
+        WHERE g.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND g.tipo_gasto = 2
+
+      ) resumen
+      ORDER BY item_gasto, nombre_item
+    SQL
+
+    find_by_sql([sql, { flujo_id: flujo_id, actividad_id: actividad_id }])
+  end
 end

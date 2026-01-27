@@ -384,13 +384,7 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_sub_titulo_formato(pdf, "Objetivos del proyecto")
       self.pdf_separador(pdf, 20)
       self.pdf_sub_titulo_formato(pdf, "Objetivo general")
-      #if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_1 || tipo_instrumento == TipoInstrumento::FPL_LINEA_5_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO  
-      #  self.pdf_contenido_formato(pdf, "Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable. Dicho diagnóstico contendrá (poner como lista): - Motivación, oportunidad y fundamento del APL propuesto. - Objetivos del APL propuesto. - Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas, así como el comportamiento sanitario ambiental de estas. - Identificación de los problemas y/o oportunidades a ser abordados por el APL, indicando además cómo éstos están relacionados con el desarrollo sustentable. - Identificación de potenciales suscriptores y grupos de interés relevantes para el objeto del APL, considerando a las organizaciones de trabajadores, sociedad civil y comunidades. - Metodologías utilizadas en la elaboración del Diagnóstico General. - Propuesta de contenidos para el APL y otros elementos a considerar, producto de su validación con potenciales adherentes y, si corresponde, con grupos de interés relevantes. Estos contenidos considerarán la adopción de estándares y certificaciones relevantes a las materias del mismo. Para la elaboración se utilizara la Guía para la Elaboración de un Diagnóstico como base para proponer un Acuerdo de Producción Limpia https://drive.google.com/file/d/1D1-2IcCBBT_4EuCIE-38jmkYrrroIhPC/view")
-      #elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_1 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO  || tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_2 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 
-      #  self.pdf_contenido_formato(pdf, "Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.") 
-      #elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_3 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
-      #  self.pdf_contenido_formato(pdf, "Etapa de evaluación final de cumplimiento es aquella en la cual se verifica el estado de cumplimiento de la totalidad de las acciones establecidas en el APL una vez finalizada la etapa de implementación, mediante el desarrollo de auditoría de evaluación final de cumplimiento. Considera, además, el desarrollo de un informe de impacto de un APL que cuantifique los efectos económicos, ambientales y sociales derivados de su implementación. La etapa se debe realizar conforme con la https://ascc.cl/pagina/guias_apl y la norma NCh 2787 Acuerdos de Producción Limpia (APL) – Especificaciones.")
-      #end
+
       if [
         TipoInstrumento::FPL_LINEA_1_1,
         TipoInstrumento::FPL_LINEA_5_1,
@@ -438,8 +432,6 @@ class FondoProduccionLimpia < ApplicationRecord
           link: "https://ascc.cl/pagina/guias_apl",
           link_text: "Guía técnica"
         )
-
-
       end
 
       self.pdf_separador(pdf, 20)
@@ -462,6 +454,8 @@ class FondoProduccionLimpia < ApplicationRecord
       elsif tipo_instrumento == TipoInstrumento::FPL_LINEA_1_2_2 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2 || tipo_instrumento == TipoInstrumento::FPL_LINEA_1_3 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
         self.pdf_sub_titulo_formato(pdf, "Empresas Adheridas")
         self.pdf_tabla_empresas_adheridas(pdf, adheridas)
+        self.pdf_sub_titulo_formato(pdf, "Resumen de Empresas Adheridas")
+        self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
         self.pdf_separador(pdf, 20)
       end
       self.pdf_sub_titulo_formato(pdf, "Duración del proyecto")
@@ -512,6 +506,9 @@ class FondoProduccionLimpia < ApplicationRecord
           self.pdf_tabla_validacion_tipos(pdf, costos, costos_seguimiento, confinanciamiento_empresa)
         end
       end
+      self.pdf_separador(pdf, 20)
+      self.pdf_sub_titulo_formato(pdf, "Detalle Costos Por Actividad")
+      self.pdf_tabla_detalle_costos_x_actividad(pdf, fondo_produccion_limpia.flujo_id)
       self.pdf_separador(pdf, 20)
     end
 
@@ -1160,6 +1157,69 @@ class FondoProduccionLimpia < ApplicationRecord
       puts "Error creando la tabla en el PDF: #{e.message}"
     end
   end
+
+  def pdf_tabla_detalle_costos_x_actividad(pdf, flujo_id)
+    planes = PlanActividad.cabecera_objetivos_y_plan_actividades(flujo_id)
+
+    planes.each do |plan|
+
+      # ===== OBJETIVO =====
+      pdf.table(
+        [["Objetivo", plan.objetivo]],
+        column_widths: [100, 440],
+        cell_style: { size: 9, padding: [4, 6] },
+        header: false
+      )
+
+      # ===== ACTIVIDAD =====
+      pdf.table(
+        [["Actividad", plan.plan_actividad]],
+        column_widths: [100, 440],
+        cell_style: { size: 9, padding: [4, 6] },
+        header: false
+      )
+
+      pdf.move_down 6
+
+      # ===== DETALLE =====
+      headers = ["Item Gasto", "Nombre / Item", "Cantidad", "Unidad", "Tipo Aporte", "Valor", "Total"]
+      data = [headers]
+
+      detalle = PlanActividad.detalle_objetivos_y_plan_actividades(flujo_id, plan.id)
+
+      if detalle.present?
+        detalle.each do |det|
+          data << [
+            det.item_gasto,
+            det.nombre_item,
+            det.cantidad,
+            det.unidad,
+            det.tipo_aporte,
+            det.valor,
+            det.total
+          ]
+        end
+      else
+        data << [
+          {
+            content: "Sin registros disponibles",
+            colspan: headers.size,
+            align: :center
+          }
+        ]
+      end
+
+      pdf.table(
+        data,
+        header: true,
+        column_widths: [80, 160, 60, 60, 60, 60, 60],
+        cell_style: { size: 9, padding: [4, 6] }
+      )
+
+      pdf.move_down 15
+    end
+  end
+
 
   def pdf_contenido_formato_custom pdf, variable, valor, validaciones, forzar_mostrar=false
     var = validaciones[:manifestacion_de_interes][variable]
