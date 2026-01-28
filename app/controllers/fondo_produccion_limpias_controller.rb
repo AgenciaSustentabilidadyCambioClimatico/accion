@@ -615,9 +615,21 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def update_objetivo_especifico
       @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
+      
+      if @objetivo_especifico.correlativo == nil
+        # Calcular correlativo por flujo
+        correlativo = ObjetivosEspecifico
+                    .where(flujo_id: params['flujo_id'])
+                    .maximum(:correlativo)
+                    .to_i + 1
+      else
+        correlativo = @objetivo_especifico.correlativo
+      end
+ 
       custom_params = {
         objetivos_especifico: {
           id: params['objetivo_id'],
+          correlativo: correlativo,
           flujo_id: params['flujo_id'],
           descripcion: normalize_string(params['descripcion']),
           metodologia: normalize_string(params['metodologia']),
@@ -1965,7 +1977,7 @@ class FondoProduccionLimpiasController < ApplicationController
       #obtiene el correlativo del objetivo especifico
       objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
 
-      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo
+      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo || @plan_actividades.correlativo == nil
         correlativo_objetivo = objetivo.correlativo.to_s
 
         #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
