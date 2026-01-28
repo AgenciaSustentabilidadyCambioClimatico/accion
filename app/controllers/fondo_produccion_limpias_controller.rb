@@ -1965,7 +1965,7 @@ class FondoProduccionLimpiasController < ApplicationController
       #obtiene el correlativo del objetivo especifico
       objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
 
-      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo
+      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo || @plan_actividades.correlativo == nil
         correlativo_objetivo = objetivo.correlativo.to_s
 
         #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
