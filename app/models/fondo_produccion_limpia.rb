@@ -720,7 +720,7 @@ class FondoProduccionLimpia < ApplicationRecord
           equipo.user.email.to_s,
           equipo.profesion.to_s,
           equipo.funciones_proyecto.to_s,
-          equipo.valor_hh.to_s
+          sprintf("$%<valor_hh>.0f", valor_hh: equipo.valor_hh).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1.")
         ]
         data << fila
       end
@@ -788,10 +788,10 @@ class FondoProduccionLimpia < ApplicationRecord
           "#{plan.objetivo_correlativo} - #{plan.objetivo_descripcion}",
           "#{plan.correlativo} - #{plan.nombre}",
           meses,
-          plan.valor_hh_tipo_3,
-          plan.valor_hh_tipos_1_2,
-          plan.total_gastos_tipo_1,
-          plan.total_gastos_tipo_2
+          sprintf("$%<valor_hh_tipo_3>.0f", valor_hh_tipo_3: plan.valor_hh_tipo_3).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."),
+          sprintf("$%<valor_hh_tipos_1_2>.0f", valor_hh_tipos_1_2: plan.valor_hh_tipos_1_2).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."),
+          sprintf("$%<total_gastos_tipo_1>.0f", total_gastos_tipo_1: plan.total_gastos_tipo_1).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."),
+          sprintf("$%<total_gastos_tipo_2>.0f", total_gastos_tipo_2: plan.total_gastos_tipo_2).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1.")
         ]
         data << fila
       end
@@ -1195,14 +1195,14 @@ class FondoProduccionLimpia < ApplicationRecord
             det.cantidad,
             det.unidad,
             det.tipo_aporte,
-            det.valor,
-            det.total
+            sprintf("$%<valor>.0f", valor: det.valor).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1."),
+            sprintf("$%<total>.0f", total: det.total).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1.")
           ]
         end
       else
         data << [
           {
-            content: "Sin registros disponibles",
+            content: "SIN REGISTROS DISPONIBLES",
             colspan: headers.size,
             align: :center
           }
