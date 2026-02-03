@@ -27,7 +27,7 @@
           %i.fa.fa-file-text-o
           Terminar Etapa de Diagnóstico General y Pasar a Propuesta de Acuerdo
       .d-flex.justify-content-between
-        - tabs = { "listado-de-actores": true, "cargar-documentos-diagnostico": false, "set-metas-accion": false }
+        - tabs = { "listado-de-actores": true, "cargar-documentos-diagnostico": false }
         #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
           %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
             - tabs.each do |tab,active|

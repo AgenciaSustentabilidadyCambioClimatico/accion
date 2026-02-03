@@ -134,7 +134,7 @@
     .d-block.d-lg-none.d-flex.justify-content-end.pb-3.pr-3
       = link_to t(:back), root_path, class: 'volver-desde-mapa-de-actores-link btn btn-sm btn-warning ml-1'
     .d-flex.justify-content-between
-      - tabs = { "listado-de-actores": true, "cargar-documentos-diagnostico": false, "set-metas-accion": false }
+      - tabs = { "listado-de-actores": true, "cargar-documentos-diagnostico": false }
       - (@tab_metas.present? && @tab_metas) ? tabs = { "listado-de-actores": false, "cargar-documentos-diagnostico": false, "set-metas-accion": true } : ""
       #tab-menu-controls.mb-0.w-100{:role => "tabpanel"}
         %ul#manifestacion.nav.nav-tabs.border-bottom-0{:role => "tablist"}
