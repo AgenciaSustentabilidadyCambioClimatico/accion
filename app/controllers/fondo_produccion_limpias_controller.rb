@@ -2110,13 +2110,41 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad_por_linea = ActividadPorLinea.new(custom_params_actividad_por_linea [:actividad_por_linea])
         @actividad_por_linea.save
 
+        #obtiene el correlativo del objetivo especifico
+        objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
+
+        correlativo_objetivo = objetivo.correlativo.to_s
+
+        #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
+        ultimo = PlanActividad
+        .where(
+          flujo_id: params['flujo_id'],
+          objetivos_especifico_id: params['objetivos_especifico_id']
+        )
+        .where("correlativo LIKE ?", "#{correlativo_objetivo}.%")
+        .order("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC")
+        .limit(1)
+        .pluck(:correlativo)
+        .first
+
+        #asigna el siguiente correlativo del plan de actividades
+        siguiente =
+          if ultimo.present?
+            ultimo.split('.').last.to_i + 1
+          else
+            1
+          end
+    
+        @correlativo_final = "#{correlativo_objetivo}.#{siguiente}"
+
         #inserta en tabla plan_actividades
         custom_params_plan_actividades = {
           plan_actividades: {
             duracion: params['duracion'].join(','),
             actividad_id: @actividad.id,
             flujo_id: params['flujo_id'],
-            objetivos_especifico_id: params['objetivos_especifico_id']
+            objetivos_especifico_id: params['objetivos_especifico_id'],
+            correlativo: @correlativo_final
           }
         }
         
