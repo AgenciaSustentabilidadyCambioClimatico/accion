@@ -3225,7 +3225,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
           
       else
-        #GENERA FOTO DE DIAGNOSTICO Y LA CONVIERTE EN PDF
+        #GENERA FOTO DE FORMULARIO FPL Y LA CONVIERTE EN PDF
         @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.fondo_produccion_limpia_id)
         cuestionario_observacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).first 
 
@@ -3247,7 +3247,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end 
 
 
-        objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
+        objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).order(:correlativo)
         postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
         consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
         empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)

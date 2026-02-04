@@ -116,7 +116,7 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
           pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
-            pdf.text "FORMULARIO DE DIAGNÓSTICO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
+            pdf.text "FORMULARIO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
           end
         end
         pdf.move_down 8
@@ -349,7 +349,7 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
           pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf") do
-            pdf.text "FORMULARIO DE DIAGNÓSTICO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
+            pdf.text "FORMULARIO FONDO PRODUCCIÓN LIMPIA", size: 10, color: "003DA6", align: :right
           end
         end
         pdf.move_down 8
