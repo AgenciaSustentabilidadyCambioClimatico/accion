@@ -593,9 +593,9 @@ class PlanActividad < ApplicationRecord
           rh.hh AS cantidad,
           'HH' AS unidad,
           CASE ta.id
-            WHEN 1 THEN 'APV'
-            WHEN 2 THEN 'APL'
-            WHEN 3 THEN 'FPL'
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
             ELSE 'Otro'
           END AS tipo_aporte,
           et.valor_hh AS valor,
@@ -624,9 +624,9 @@ class PlanActividad < ApplicationRecord
           rh.hh AS cantidad,
           'HH' AS unidad,
           CASE ta.id
-            WHEN 1 THEN 'APV'
-            WHEN 2 THEN 'APL'
-            WHEN 3 THEN 'FPL'
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
             ELSE 'Otro'
           END AS tipo_aporte,
           et.valor_hh AS valor,
@@ -659,9 +659,9 @@ class PlanActividad < ApplicationRecord
             ELSE 'Otro'
           END AS unidad,
           CASE ta.id
-            WHEN 1 THEN 'APV'
-            WHEN 2 THEN 'APL'
-            WHEN 3 THEN 'FPL'
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
             ELSE 'Otro'
           END AS tipo_aporte,
           g.valor_unitario AS valor,
@@ -690,9 +690,9 @@ class PlanActividad < ApplicationRecord
             ELSE 'Otro'
           END AS unidad,
           CASE ta.id
-            WHEN 1 THEN 'APV'
-            WHEN 2 THEN 'APL'
-            WHEN 3 THEN 'FPL'
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
             ELSE 'Otro'
           END AS tipo_aporte,
           g.valor_unitario AS valor,

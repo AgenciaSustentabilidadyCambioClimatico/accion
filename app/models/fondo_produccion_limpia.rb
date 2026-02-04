@@ -393,16 +393,16 @@ class FondoProduccionLimpia < ApplicationRecord
 
         pdf_texto_con_link(
           pdf,
-          "Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable. " \
-          "Dicho diagnóstico contendrá (poner como lista): " \
-          "- Motivación, oportunidad y fundamento del APL propuesto. " \
-          "- Objetivos del APL propuesto. " \
-          "- Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas. " \
-          "- Identificación de los problemas y/o oportunidades a ser abordados. " \
-          "- Identificación de potenciales suscriptores y grupos de interés. " \
-          "- Metodologías utilizadas en la elaboración del Diagnóstico General. " \
-          "- Propuesta de contenidos para el APL. " \
-          "Para la elaboración se utilizará la Guía para la Elaboración de un Diagnóstico",
+          "Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable.\n\n" \
+          "Dicho diagnóstico contendrá:\n " \
+          "- Motivación, oportunidad y fundamento del APL propuesto.\n " \
+          "- Objetivos del APL propuesto.\n " \
+          "- Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas.\n " \
+          "- Identificación de los problemas y/o oportunidades a ser abordados.\n " \
+          "- Identificación de potenciales suscriptores y grupos de interés.\n " \
+          "- Metodologías utilizadas en la elaboración del Diagnóstico General.\n " \
+          "- Propuesta de contenidos para el APL.\n\n " \
+          "Para la elaboración se utilizará la Guía para la Elaboración de un Diagnóstico ",
           link: "https://drive.google.com/file/d/1D1-2IcCBBT_4EuCIE-38jmkYrrroIhPC/view",
           link_text: "Descargar Guía Nº1"
         )
@@ -1163,31 +1163,32 @@ class FondoProduccionLimpia < ApplicationRecord
 
     planes.each do |plan|
 
-      # ===== OBJETIVO =====
-      pdf.table(
-        [["Objetivo", plan.objetivo]],
-        column_widths: [100, 440],
-        cell_style: { size: 9, padding: [4, 6] },
-        header: false
-      )
-
-      # ===== ACTIVIDAD =====
-      pdf.table(
-        [["Actividad", plan.plan_actividad]],
-        column_widths: [100, 440],
-        cell_style: { size: 9, padding: [4, 6] },
-        header: false
-      )
-
-      pdf.move_down 6
-
-      # ===== DETALLE =====
-      headers = ["Item Gasto", "Nombre / Item", "Cantidad", "Unidad", "Tipo Aporte", "Valor", "Total"]
-      data = [headers]
-
       detalle = PlanActividad.detalle_objetivos_y_plan_actividades(flujo_id, plan.id)
-
+      
       if detalle.present?
+
+        # ===== OBJETIVO =====
+        pdf.table(
+          [["Objetivo", plan.objetivo]],
+          column_widths: [100, 440],
+          cell_style: { size: 9, padding: [4, 6] },
+          header: false
+        )
+
+        # ===== ACTIVIDAD =====
+        pdf.table(
+          [["Actividad", plan.plan_actividad]],
+          column_widths: [100, 440],
+          cell_style: { size: 9, padding: [4, 6] },
+          header: false
+        )
+
+        pdf.move_down 6
+
+        # ===== DETALLE =====
+        headers = ["Item Gasto", "Nombre / Item", "Cantidad", "Unidad", "Tipo Aporte", "Valor", "Total"]
+        data = [headers]
+        
         detalle.each do |det|
           data << [
             det.item_gasto,
@@ -1199,24 +1200,15 @@ class FondoProduccionLimpia < ApplicationRecord
             sprintf("$%<total>.0f", total: det.total).gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1.")
           ]
         end
-      else
-        data << [
-          {
-            content: "SIN REGISTROS DISPONIBLES",
-            colspan: headers.size,
-            align: :center
-          }
-        ]
+         pdf.table(
+          data,
+          header: true,
+          column_widths: [80, 160, 60, 60, 60, 60, 60],
+          cell_style: { size: 9, padding: [4, 6] }
+        )
+
+        pdf.move_down 15
       end
-
-      pdf.table(
-        data,
-        header: true,
-        column_widths: [80, 160, 60, 60, 60, 60, 60],
-        cell_style: { size: 9, padding: [4, 6] }
-      )
-
-      pdf.move_down 15
     end
   end
 
