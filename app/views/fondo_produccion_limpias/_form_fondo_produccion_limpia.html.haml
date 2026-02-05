@@ -3105,7 +3105,27 @@
             -elsif @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_2_2 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
               Apoyar a sectores productivos del país a la formación de Cultura de Producción Limpia a través del desarrollo de estrategias, programas o proyectos de comunicación hacia empresas, los trabajadores y la comunidad en general, y que pongan de relieve impactos, beneficios, mejores prácticas, técnicas, avances o innovaciones fruto de la implementación de Acuerdos de Producción Limpia o de la aplicación de sistemas o estrategias de gestión productivas sustentables con una visión preventiva de la contaminación y uso eficiente de los recursos.
             - else
-              Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable. Dicho diagnóstico contendrá (poner como lista): - Motivación, oportunidad y fundamento del APL propuesto. - Objetivos del APL propuesto. - Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas, así como el comportamiento sanitario ambiental de estas. - Identificación de los problemas y/o oportunidades a ser abordados por el APL, indicando además cómo éstos están relacionados con el desarrollo sustentable. - Identificación de potenciales suscriptores y grupos de interés relevantes para el objeto del APL, considerando a las organizaciones de trabajadores, sociedad civil y comunidades. - Metodologías utilizadas en la elaboración del Diagnóstico General. - Propuesta de contenidos para el APL y otros elementos a considerar, producto de su validación con potenciales adherentes y, si corresponde, con grupos de interés relevantes. Estos contenidos considerarán la adopción de estándares y certificaciones relevantes a las materias del mismo. Para la elaboración se utilizara la Guía para la Elaboración de un Diagnóstico como base para proponer un Acuerdo de Producción Limpia
+              Realizar el Diagnóstico General de un grupo de empresas o un sector empresarial, que permitirá definir acciones y metas específicas que contribuyan a su desarrollo sustentable. 
+              %br
+              %br
+              Dicho diagnóstico contendrá: 
+              %br
+              %span - Motivación, oportunidad y fundamento del APL propuesto. 
+              %br 
+              %span - Objetivos del APL propuesto. 
+              %br
+              %span - Caracterización económica, ambiental y social del sector económico y/o territorio en que operan las empresas, así como el comportamiento sanitario ambiental de estas. 
+              %br
+              %span - Identificación de los problemas y/o oportunidades a ser abordados por el APL, indicando además cómo éstos están relacionados con el desarrollo sustentable. 
+              %br
+              %span - Identificación de potenciales suscriptores y grupos de interés relevantes para el objeto del APL, considerando a las organizaciones de trabajadores, sociedad civil y comunidades. 
+              %br
+              %span - Metodologías utilizadas en la elaboración del Diagnóstico General. 
+              %br
+              %span - Propuesta de contenidos para el APL y otros elementos a considerar, producto de su validación con potenciales adherentes y, si corresponde, con grupos de interés relevantes. Estos contenidos considerarán la adopción de estándares y certificaciones relevantes a las materias del mismo. 
+              %br
+              %br
+              Para la elaboración se utilizara la Guía para la Elaboración de un Diagnóstico como base para proponer un Acuerdo de Producción Limpia
               - if @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_1_1 || @flujo.tipo_instrumento_id == TipoInstrumento::FPL_LINEA_5_1  
                 %br{ :style => 'margin-bottom: 10px;' }
                 
@@ -3121,6 +3141,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
+                %th.encabezado2-form=t(:n°)
                 %th.encabezado2-form=t(:descripcion)
                 %th.encabezado2-form.center=t(:metodologia)
                 %th.encabezado2-form=t(:resultado)
@@ -3672,6 +3693,7 @@
           %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
             %thead
               %tr
+                %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:n°)
                 %th.encabezado-form{style: 'text-align: center; vertical-align: middle;', rowspan: 2}=t(:actividades)
                 %th.encabezado-form{colspan: @duracion, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:duracion)
                 %th.encabezado-form{colspan: 4, style: 'text-align: center; border-right: 1px solid #dee2e6;'}=t(:costos)
@@ -3700,6 +3722,7 @@
                       %tr
                         %th.contenido-form{style: 'font-weight: bold;', colspan: (@duracion + 6)}= current_tipo_actividad == 0 ? t(:tipo_a) : t(:tipo_b)
                   %tr
+                    %td.contenido-form{id: "id_correlativo_plan_actividad_#{actividad.id}"}=actividad.correlativo
                     %td.contenido-form{id: "nombre_actividad_#{actividad.id}"}=actividad.nombre
                     - detalle_existente = @actividad_detalle.find { |detalle| detalle.id == actividad.id }
                     - if detalle_existente.present?
@@ -3758,6 +3781,10 @@
                 %td.contenido-form{id: "total_total_gastos_tipo_2", colspan: 1}= number_to_currency(total_total_gastos_tipo_2)
                 %td.contenido-form{id: "total_total_suma", colspan: 1}= number_to_currency(total_total_suma)
                 %td.contenido-form{colspan: 1}
+          -if !solo_lectura && @tarea_pendiente.estado_tarea_pendiente_id == 1
+            %br
+            .float-right
+              = link_to t(:ordenar_actividades), "#{request.path}?tabs=plan-de-actividades", class: "btn btn-sm btn-primary"
 
   #documentacion-legal.tab-pane.fade.disabled{"aria-expanded" => (tabs[:"documentacion-legal"] ? 'true' : 'false'), "aria-labelledby" => "documentacion-legal-tab", :role => "tabpanel", class: ("show active" if tabs[:"documentacion-legal"])}
     .card

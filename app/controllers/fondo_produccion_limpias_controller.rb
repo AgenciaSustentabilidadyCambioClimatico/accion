@@ -578,9 +578,15 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def insert_objetivo_especifico
+      # Calcular correlativo por flujo
+      correlativo = ObjetivosEspecifico
+                  .where(flujo_id: params['flujo_id'])
+                  .maximum(:correlativo)
+                  .to_i + 1
       custom_params = {
         objetivos_especifico: {
           flujo_id: params['flujo_id'],
+          correlativo: correlativo,
           descripcion: normalize_string(params['descripcion']),
           metodologia: normalize_string(params['metodologia']),
           resultado: normalize_string(params['resultado']),
@@ -590,8 +596,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @objetivo_especifico = ObjetivosEspecifico.new(custom_params[:objetivos_especifico])
       respond_to do |format|
         if @objetivo_especifico.save
-          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
-          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id, :correlativo)
+          @objetivos_options = @objetivo.map do |objetivo|
+            [objetivo.label_con_correlativo, objetivo.id]
+          end
+
           format.js { render 'insert_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico, tarea_pendiente: params['id'], objetivos_options: @objetivos_options } }
         end
       end
@@ -606,9 +615,21 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def update_objetivo_especifico
       @objetivo_especifico = ObjetivosEspecifico.find(params[:objetivo_id])
+      
+      if @objetivo_especifico.correlativo == nil
+        # Calcular correlativo por flujo
+        correlativo = ObjetivosEspecifico
+                    .where(flujo_id: params['flujo_id'])
+                    .maximum(:correlativo)
+                    .to_i + 1
+      else
+        correlativo = @objetivo_especifico.correlativo
+      end
+ 
       custom_params = {
         objetivos_especifico: {
           id: params['objetivo_id'],
+          correlativo: correlativo,
           flujo_id: params['flujo_id'],
           descripcion: normalize_string(params['descripcion']),
           metodologia: normalize_string(params['metodologia']),
@@ -618,8 +639,11 @@ class FondoProduccionLimpiasController < ApplicationController
       }
       respond_to do |format|
         if @objetivo_especifico.update(custom_params[:objetivos_especifico])
-          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id)
-          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          @objetivo = ObjetivosEspecifico.where(flujo_id: params['flujo_id']).select(:descripcion, :id, :correlativo)
+          @objetivos_options = @objetivo.map do |objetivo|
+            [objetivo.label_con_correlativo, objetivo.id]
+          end
+
           format.js { render 'update_objetivo_especifico', locals: { objetivo_especifico: @objetivo_especifico, objetivos_options: @objetivos_options } }
         end
       end
@@ -660,8 +684,11 @@ class FondoProduccionLimpiasController < ApplicationController
       objetivo_especifico = ObjetivosEspecifico.find(params[:id])
       respond_to do |format|
         if objetivo_especifico.destroy
-          @objetivo = ObjetivosEspecifico.where(flujo_id: objetivo_especifico['flujo_id']).select(:descripcion, :id)
-          @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+          @objetivo = ObjetivosEspecifico.where(flujo_id: objetivo_especifico['flujo_id']).select(:descripcion, :id, :correlativo)
+          @objetivos_options = @objetivo.map do |objetivo|
+            [objetivo.label_con_correlativo, objetivo.id]
+          end
+
           format.js { render 'eliminar_objetivo_especifico', locals: { objetivo_especifico: objetivo_especifico.id, objetivos_options: @objetivos_options } }
         else
           format.js { render 'eliminar_objetivo_especifico', status: :unprocessable_entity }
@@ -1946,6 +1973,38 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_plan_actividades
       @plan_actividades = PlanActividad.find_by(flujo_id: params[:flujo_id], actividad_id: params[:plan_id])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
+
+      #obtiene el correlativo del objetivo especifico
+      objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
+
+      if @plan_actividades.objetivos_especifico.correlativo != objetivo.correlativo || @plan_actividades.correlativo == nil
+        correlativo_objetivo = objetivo.correlativo.to_s
+
+        #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
+        ultimo = PlanActividad
+        .where(
+          flujo_id: params['flujo_id'],
+          objetivos_especifico_id: params['objetivos_especifico_id']
+        )
+        .where("correlativo LIKE ?", "#{correlativo_objetivo}.%")
+        .order("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC")
+        .limit(1)
+        .pluck(:correlativo)
+        .first
+  
+        #asigna el siguiente correlativo del plan de actividades
+        siguiente =
+          if ultimo.present?
+            ultimo.split('.').last.to_i + 1
+          else
+            1
+          end
+    
+        @correlativo_final = "#{correlativo_objetivo}.#{siguiente}"
+      else
+        @correlativo_final = @plan_actividades.correlativo
+      end
+
       arreglo = []
 
       maximo = @duracion_general.duracion
@@ -1959,7 +2018,8 @@ class FondoProduccionLimpiasController < ApplicationController
             duracion: params['duracion'].join(','),
             actividad_id: params['plan_id'],
             flujo_id: params['flujo_id'],
-            objetivos_especifico_id: params['objetivos_especifico_id']
+            objetivos_especifico_id: params['objetivos_especifico_id'],
+            correlativo: @correlativo_final
           }
         }
         @valida_ceros = false
@@ -2050,13 +2110,41 @@ class FondoProduccionLimpiasController < ApplicationController
         @actividad_por_linea = ActividadPorLinea.new(custom_params_actividad_por_linea [:actividad_por_linea])
         @actividad_por_linea.save
 
+        #obtiene el correlativo del objetivo especifico
+        objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
+
+        correlativo_objetivo = objetivo.correlativo.to_s
+
+        #obtiene ul ultimo correlativo ingresado del objetivo especifico seleccionado
+        ultimo = PlanActividad
+        .where(
+          flujo_id: params['flujo_id'],
+          objetivos_especifico_id: params['objetivos_especifico_id']
+        )
+        .where("correlativo LIKE ?", "#{correlativo_objetivo}.%")
+        .order("CAST(split_part(correlativo, '.', 2) AS INTEGER) DESC")
+        .limit(1)
+        .pluck(:correlativo)
+        .first
+
+        #asigna el siguiente correlativo del plan de actividades
+        siguiente =
+          if ultimo.present?
+            ultimo.split('.').last.to_i + 1
+          else
+            1
+          end
+    
+        @correlativo_final = "#{correlativo_objetivo}.#{siguiente}"
+
         #inserta en tabla plan_actividades
         custom_params_plan_actividades = {
           plan_actividades: {
             duracion: params['duracion'].join(','),
             actividad_id: @actividad.id,
             flujo_id: params['flujo_id'],
-            objetivos_especifico_id: params['objetivos_especifico_id']
+            objetivos_especifico_id: params['objetivos_especifico_id'],
+            correlativo: @correlativo_final
           }
         }
         
@@ -3165,7 +3253,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
           
       else
-        #GENERA FOTO DE DIAGNOSTICO Y LA CONVIERTE EN PDF
+        #GENERA FOTO DE FORMULARIO FPL Y LA CONVIERTE EN PDF
         @fondo_produccion_limpia = FondoProduccionLimpia.find(@flujo.fondo_produccion_limpia_id)
         cuestionario_observacion = CuestionarioFpl.where(flujo_id: params[:flujo_id], tipo_cuestionario_id: 4).first 
 
@@ -3187,7 +3275,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end 
 
 
-        objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
+        objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).order(:correlativo)
         postulantes = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 3)
         consultores = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo:[1,2])
         empresas = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id)
@@ -5070,8 +5158,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
       def set_objetivos_especificos
         @objetivos = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).all
-        @objetivo = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).select(:descripcion, :id)
-        @objetivos_options = @objetivo.map { |objetivo| [objetivo.descripcion, objetivo.id] }
+        @objetivo = ObjetivosEspecifico.where(flujo_id: @tarea_pendiente.flujo_id).select(:descripcion, :id, :correlativo)
+        @objetivos_options = @objetivo.map do |objetivo|
+          [objetivo.label_con_correlativo, objetivo.id]
+        end
       end
 
       def set_registro_proveedores

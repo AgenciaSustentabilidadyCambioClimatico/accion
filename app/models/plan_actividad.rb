@@ -10,62 +10,150 @@ class PlanActividad < ApplicationRecord
 
 
   def self.actividad_detalle(flujo_id)
-    # Subconsulta para recursos humanos
+    # ===========================
+    # Subconsulta HH
+    # ===========================
     hh_gastos_subquery = PlanActividad
       .select(
         'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
         'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo AS objetivo_correlativo',
         'plan_actividades.duracion',
-        'SUM(CASE WHEN equipo_trabajos.tipo_equipo = 3 THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipo_3',
-        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1, 2, 4) THEN equipo_trabajos.valor_hh * recurso_humanos.hh ELSE 0 END) AS valor_hh_tipos_1_2'
+        'SUM(CASE WHEN equipo_trabajos.tipo_equipo = 3
+                  THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                  ELSE 0 END) AS valor_hh_tipo_3',
+        'SUM(CASE WHEN equipo_trabajos.tipo_equipo IN (1,2,4)
+                  THEN equipo_trabajos.valor_hh * recurso_humanos.hh
+                  ELSE 0 END) AS valor_hh_tipos_1_2'
       )
       .joins('LEFT JOIN recurso_humanos ON recurso_humanos.plan_actividad_id = plan_actividades.id')
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
       .joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
+      .joins('LEFT JOIN objetivos_especificos ON objetivos_especificos.id = plan_actividades.objetivos_especifico_id')
       .where(plan_actividades: { flujo_id: flujo_id })
-      .group('plan_actividades.actividad_id, actividades.nombre, plan_actividades.duracion')
-  
-    # Subconsulta para gastos
+      .group(
+        'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
+        'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo',
+        'plan_actividades.duracion'
+      )
+
+    # ===========================
+    # Subconsulta Gastos
+    # ===========================
     gastos_subquery = PlanActividad
       .select(
         'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
         'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo AS objetivo_correlativo',
         'plan_actividades.duracion',
-        'SUM(CASE WHEN gastos.tipo_gasto = 1 THEN gastos.valor_unitario * gastos.cantidad ELSE 0 END) AS total_gastos_tipo_1',
-        'SUM(CASE WHEN gastos.tipo_gasto = 2 THEN gastos.valor_unitario * gastos.cantidad ELSE 0 END) AS total_gastos_tipo_2'
+        'SUM(CASE WHEN gastos.tipo_gasto = 1
+                  THEN gastos.valor_unitario * gastos.cantidad
+                  ELSE 0 END) AS total_gastos_tipo_1',
+        'SUM(CASE WHEN gastos.tipo_gasto = 2
+                  THEN gastos.valor_unitario * gastos.cantidad
+                  ELSE 0 END) AS total_gastos_tipo_2'
       )
       .joins('LEFT JOIN gastos ON gastos.plan_actividad_id = plan_actividades.id')
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
+      .joins('LEFT JOIN objetivos_especificos ON objetivos_especificos.id = plan_actividades.objetivos_especifico_id')
       .where(plan_actividades: { flujo_id: flujo_id })
-      .group('plan_actividades.actividad_id, actividades.nombre, plan_actividades.duracion')
-  
-    # Subconsulta para todas las actividades
+      .group(
+        'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
+        'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo',
+        'plan_actividades.duracion'
+      )
+
+    # ===========================
+    # Subconsulta todas
+    # ===========================
     todas_actividades = PlanActividad
       .select(
         'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
         'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo AS objetivo_correlativo',
         'plan_actividades.duracion'
       )
       .joins('LEFT JOIN actividades ON actividades.id = plan_actividades.actividad_id')
+      .joins('LEFT JOIN objetivos_especificos ON objetivos_especificos.id = plan_actividades.objetivos_especifico_id')
       .where(plan_actividades: { flujo_id: flujo_id })
-      .group('plan_actividades.actividad_id, actividades.nombre, plan_actividades.duracion')
-  
-    # Consulta principal que une las subconsultas
-    result = PlanActividad
+      .group(
+        'plan_actividades.actividad_id',
+        'plan_actividades.correlativo',
+        'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo',
+        'plan_actividades.duracion'
+      )
+
+    # ===========================
+    # Query final
+    # ===========================
+    PlanActividad
       .from("(#{hh_gastos_subquery.to_sql}) AS hh_gastos_subquery")
-      .joins("LEFT JOIN (#{gastos_subquery.to_sql}) AS gastos_subquery ON hh_gastos_subquery.actividad_id = gastos_subquery.actividad_id")
-      .joins("LEFT JOIN (#{todas_actividades.to_sql}) AS todas_actividades ON todas_actividades.actividad_id = COALESCE(hh_gastos_subquery.actividad_id, gastos_subquery.actividad_id)")
+      .joins(
+        "LEFT JOIN (#{gastos_subquery.to_sql}) AS gastos_subquery
+        ON hh_gastos_subquery.actividad_id = gastos_subquery.actividad_id"
+      )
+      .joins(
+        "LEFT JOIN (#{todas_actividades.to_sql}) AS todas_actividades
+        ON todas_actividades.actividad_id =
+            COALESCE(hh_gastos_subquery.actividad_id, gastos_subquery.actividad_id)"
+      )
       .select(
-        'COALESCE(hh_gastos_subquery.actividad_id, gastos_subquery.actividad_id, todas_actividades.actividad_id) AS id',
-        'COALESCE(hh_gastos_subquery.nombre, gastos_subquery.nombre, todas_actividades.nombre) AS nombre',
-        'COALESCE(hh_gastos_subquery.duracion, gastos_subquery.duracion, todas_actividades.duracion) AS duracion',
+        'COALESCE(
+          hh_gastos_subquery.actividad_id,
+          gastos_subquery.actividad_id,
+          todas_actividades.actividad_id
+        ) AS id',
+
+        'COALESCE(
+          hh_gastos_subquery.nombre,
+          gastos_subquery.nombre,
+          todas_actividades.nombre
+        ) AS nombre',
+
+        'COALESCE(
+          hh_gastos_subquery.duracion,
+          gastos_subquery.duracion,
+          todas_actividades.duracion
+        ) AS duracion',
+
+        'COALESCE(
+          hh_gastos_subquery.correlativo,
+          gastos_subquery.correlativo,
+          todas_actividades.correlativo
+        ) AS correlativo',
+
+        'COALESCE(
+          hh_gastos_subquery.descripcion,
+          gastos_subquery.descripcion,
+          todas_actividades.descripcion
+        ) AS objetivo_descripcion',
+
+        'COALESCE(
+          hh_gastos_subquery.objetivo_correlativo,
+          gastos_subquery.objetivo_correlativo,
+          todas_actividades.objetivo_correlativo
+        ) AS objetivo_correlativo',
+
         'COALESCE(hh_gastos_subquery.valor_hh_tipo_3, 0) AS valor_hh_tipo_3',
         'COALESCE(hh_gastos_subquery.valor_hh_tipos_1_2, 0) AS valor_hh_tipos_1_2',
         'COALESCE(gastos_subquery.total_gastos_tipo_1, 0) AS total_gastos_tipo_1',
         'COALESCE(gastos_subquery.total_gastos_tipo_2, 0) AS total_gastos_tipo_2'
       )
-  
-    result
+      .order("string_to_array(todas_actividades.correlativo, '.')::int[] ASC")
   end
   
   def self.costos(flujo_id)
@@ -469,5 +557,159 @@ class PlanActividad < ApplicationRecord
                 END
               )')
     .first
+  end
+
+  def self.cabecera_objetivos_y_plan_actividades(flujo_id)
+    select(
+      "actividades.id",
+      "(objetivos_especificos.correlativo || ' - ' || objetivos_especificos.descripcion) AS objetivo",
+      "(plan_actividades.correlativo || ' - ' || actividades.nombre) AS plan_actividad"
+    )
+      .left_joins(:actividad)
+      .left_joins(:objetivos_especifico)
+      .where(plan_actividades: { flujo_id: flujo_id })
+      .group(
+        'actividades.id',
+        'plan_actividades.correlativo',
+        'actividades.nombre',
+        'objetivos_especificos.descripcion',
+        'objetivos_especificos.correlativo'
+      )
+      .order("string_to_array(plan_actividades.correlativo, '.')::int[] ASC")
+  end
+
+  
+  def self.detalle_objetivos_y_plan_actividades(flujo_id, actividad_id)
+    sql = <<~SQL
+      SELECT *
+      FROM (
+
+        /* ===============================
+           RRHH PROPIO
+           =============================== */
+        SELECT
+          'RRHH Propio' AS item_gasto,
+          u.nombre_completo AS nombre_item,
+          rh.hh AS cantidad,
+          'HH' AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          et.valor_hh AS valor,
+          (rh.hh * et.valor_hh) AS total
+        FROM plan_actividades pa
+        JOIN recurso_humanos rh
+          ON rh.plan_actividad_id = pa.id
+        JOIN equipo_trabajos et
+          ON et.id = rh.equipo_trabajo_id
+        JOIN users u
+          ON u.id = et.user_id
+        JOIN tipo_aportes ta
+          ON ta.id = rh.tipo_aporte_id
+        WHERE rh.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND et.tipo_equipo = 3
+
+        UNION ALL
+
+        /* ===============================
+           RRHH EXTERNO
+           =============================== */
+        SELECT
+          'RRHH Externo' AS item_gasto,
+          u.nombre_completo AS nombre_item,
+          rh.hh AS cantidad,
+          'HH' AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          et.valor_hh AS valor,
+          (rh.hh * et.valor_hh) AS total
+        FROM plan_actividades pa
+        JOIN recurso_humanos rh
+          ON rh.plan_actividad_id = pa.id
+        JOIN equipo_trabajos et
+          ON et.id = rh.equipo_trabajo_id
+        JOIN users u
+          ON u.id = et.user_id
+        JOIN tipo_aportes ta
+          ON ta.id = rh.tipo_aporte_id
+        WHERE rh.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND et.tipo_equipo IN (1,2,4)
+
+        UNION ALL
+
+        /* ===============================
+           GASTOS OPERACIÓN (GGOO)
+           =============================== */
+        SELECT
+          'GGOO' AS item_gasto,
+          g.nombre AS nombre_item,
+          g.cantidad AS cantidad,
+          CASE g.unidad_medida
+            WHEN 1 THEN 'Unidad'
+            WHEN 2 THEN 'Global'
+            ELSE 'Otro'
+          END AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          g.valor_unitario AS valor,
+          (g.cantidad * g.valor_unitario) AS total
+        FROM plan_actividades pa
+        JOIN gastos g
+          ON g.plan_actividad_id = pa.id
+        JOIN tipo_aportes ta
+          ON ta.id = g.tipo_aporte_id
+        WHERE g.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND g.tipo_gasto = 1
+
+        UNION ALL
+
+        /* ===============================
+           GASTOS ADMINISTRACIÓN (GGAA)
+           =============================== */
+        SELECT
+          'GGAA' AS item_gasto,
+          g.nombre AS nombre_item,
+          g.cantidad AS cantidad,
+          CASE g.unidad_medida
+            WHEN 1 THEN 'Unidad'
+            WHEN 2 THEN 'Global'
+            ELSE 'Otro'
+          END AS unidad,
+          CASE ta.id
+            WHEN 1 THEN 'Propio Valorado'
+            WHEN 2 THEN 'Propio Líquido'
+            WHEN 3 THEN 'Solicitado al Fondo'
+            ELSE 'Otro'
+          END AS tipo_aporte,
+          g.valor_unitario AS valor,
+          (g.cantidad * g.valor_unitario) AS total
+        FROM plan_actividades pa
+        JOIN gastos g
+          ON g.plan_actividad_id = pa.id
+        JOIN tipo_aportes ta
+          ON ta.id = g.tipo_aporte_id
+        WHERE g.flujo_id = :flujo_id
+          AND pa.actividad_id = :actividad_id
+          AND g.tipo_gasto = 2
+
+      ) resumen
+      ORDER BY item_gasto, nombre_item
+    SQL
+
+    find_by_sql([sql, { flujo_id: flujo_id, actividad_id: actividad_id }])
   end
 end
