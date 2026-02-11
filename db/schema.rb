@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_01_22_193628) do
+ActiveRecord::Schema.define(version: 2026_02_09_184541) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1083,6 +1083,7 @@ ActiveRecord::Schema.define(version: 2026_01_22_193628) do
     t.text "vigencia_certificacion"
     t.integer "vigencia_certificacion_final"
     t.text "respuesta_observaciones"
+    t.string "archivo_informe"
     t.index ["manifestacion_de_interes_id"], name: "index_informe_acuerdos_on_manifestacion_de_interes_id"
   end
 

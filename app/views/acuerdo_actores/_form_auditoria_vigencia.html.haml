@@ -12,7 +12,7 @@
           = text_field_tag "informe_acuerdo[auditorias][#{aud_id}][plazo]", plazo, {class: "form-control numero vigencia-cert-intermedia-plazo", style: "width: 50px;", readonly: !puede_editar}
           %label.control-label.ml-2 años
         - if puede_editar
-          = link_to '#', onclick: "asociar_estandar('#{aud_id}');" do
+          = link_to '#', onclick: "asociar_estandar('#{aud_id}', event);" do
             %i.fa.fa-plus-circle
             = t(:asociar_estándar)
         -else

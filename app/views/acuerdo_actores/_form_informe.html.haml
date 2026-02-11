@@ -67,19 +67,35 @@
       $("input[name='informe_acuerdo[adhesiones]']").removeAttr('disabled');
     });
 
-    $('.add-auditoria').click(function(){
+    $('.add-auditoria').click(function(e){
+      e.preventDefault(); 
       var id_temporal = 'id_temporal_'+$.now();
       var partial_auditorias = "#{ j render partial: 'form_auditoria'}";
       partial_auditorias = partial_auditorias.replace(/id_temporal/g, id_temporal);
-      $('#tabla_auditoria').append(partial_auditorias);
-      // $('#tabla_auditoria').append("#{ j render partial: 'form_auditoria'}");
-      
+      $('#tabla_auditoria tbody').append(partial_auditorias);
       iniciarAutoNumeric();
     });
+
 
     mostrar_auditoria_vigencia();
     
   });
+
+  function remover_auditoria(id,event){
+    if (event) event.preventDefault();
+    $(".auditoria-row[data-id='"+id+"']").remove();
+
+    mostrar_auditoria_vigencia_informe();
+  }
+
+  function mostrar_auditoria_vigencia_informe(){
+    if($('#tabla_auditoria .con-certificacion:checked').length == 0){
+      $('#div-certificaciones-intermedias').hide();
+    }else{
+      $('#div-certificaciones-intermedias').show();
+    }
+  }
+
 :css 
   #previsualizacion { font-size: 10px; }
   #previsualizacion p[style=''] { height: 15px; }
@@ -89,54 +105,51 @@
     .row
       .col-12.mb-2
         .row
+        -#    
           .col-12.col-lg-5
             .form-group
               = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-002",tarea_pendiente: @tarea_pendiente, carta_interes: t(:instrucciones_para_auditorías_plazos_y_certificaciones))
-      .col-12.col-lg-6
-        %ul.list-group
-          -#
-            %li.list-group-item
-              ="Partes que suscriben el Acuerdo:"
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-1" do
+          .col-12.col-lg-6
+            %ul.list-group 
               %li.list-group-item
-                =t(:fundamentos_antecedentes_y_normativas_aplicables)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-2" do
-              %li.list-group-item
-                =t(:alcance_campo_de_aplicación_y_definiciones)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-3" do
-              %li.list-group-item
-                =t(:objetivo_general_y_específico)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-10" do
-              %li.list-group-item
-                =t(:vigencia_del_acuerdo_de_producción_limpia)
-            -#
-              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-4" do
+                ="Partes que suscriben el Acuerdo:"
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-1" do
                 %li.list-group-item
-                  =t(:mecanismo_de_implementación)
-              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-5" do
+                  =t(:fundamentos_antecedentes_y_normativas_aplicables)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-2" do
                 %li.list-group-item
-                  =t(:mecanismo_de_evaluación_de_cumplimiento)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-11" do
-              %li.list-group-item
-                =t(:mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-12" do
-              %li.list-group-item
-                =t(:vigencia_certificación)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-6" do
-              %li.list-group-item
-                =t(:derechos_y_obligaciones_de_las_partes_que_suscriben_el_acuerdo)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-7" do
-              %li.list-group-item
-                =t(:difusión_promoción_incentivos_y_sanciones)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-8" do
-              %li.list-group-item
-                =t(:personerías_ejemplares_y_firmas)
-            = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-9" do
-              %li.list-group-item
-                =t(:anexos)
-          = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal_consolidado_fechas" do
-            %li.list-group-item
-              =t(:vigencia_del_acuerdo_de_producción_limpia)
+                  =t(:alcance_campo_de_aplicación_y_definiciones)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-3" do
+                %li.list-group-item
+                  =t(:objetivo_general_y_específico)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-10" do
+                %li.list-group-item
+                  =t(:vigencia_del_acuerdo_de_producción_limpia)
+              -#
+                = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-4" do
+                  %li.list-group-item
+                    =t(:mecanismo_de_implementación)
+                = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-5" do
+                  %li.list-group-item
+                    =t(:mecanismo_de_evaluación_de_cumplimiento)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-11" do
+                %li.list-group-item
+                  =t(:mecanismo_de_adhesión_implementación_y_evaluación_de_cumplimiento)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-12" do
+                %li.list-group-item
+                  =t(:vigencia_certificación)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-6" do
+                %li.list-group-item
+                  =t(:derechos_y_obligaciones_de_las_partes_que_suscriben_el_acuerdo)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-7" do
+                %li.list-group-item
+                  =t(:difusión_promoción_incentivos_y_sanciones)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-8" do
+                %li.list-group-item
+                  =t(:personerías_ejemplares_y_firmas)
+              = link_to '#', "data-toggle"=>:modal, "data-target"=>"#modal-9" do
+                %li.list-group-item
+                  =t(:anexos)
       -#
         .col-12.col-lg-6
           .card
@@ -160,7 +173,7 @@
       =# render 'modal_11', f: f
       =# render 'modal_12', f: f
       = render 'modal_asociar_estandar'
-      = render 'modal_consolidado_fechas', f: f
+      = render 'form_subir_texto_apl_consulta_publica', f: f
       .float-right
         - if !@solo_lectura
           = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'consultar-button', class: "btn btn-sm btn-primary"
