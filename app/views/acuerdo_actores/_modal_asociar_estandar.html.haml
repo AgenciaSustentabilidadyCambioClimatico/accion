@@ -25,7 +25,7 @@
                           %label.form-check-label.fw-400=nivel.nombre
         .modal-footer
           -if @estandares_certificacion.length > 0
-            %button.btn.btn-primary{type: :button, onclick: "anadir_estandar();"}
+            %button.btn.btn-primary{type: :button, onclick: "anadir_estandar(event);"}
               Añadir
           %button.btn.btn-secondary{type: :button, "data-dismiss"=>:modal}
             Cerrar
