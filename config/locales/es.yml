@@ -1558,6 +1558,8 @@ es:
   descargar_informe: Descargar Informe
   subir_informe: Subir Informe
   formato_formulario: Formato del formulario
+  guia_practica: Guía práctica para redacción de APL
+
   cron_list: "<ol><li>minuto (0-59)</li><li>hora (0-23)<li>día del mes (1-31)</li><li>mes (1-12)</li><li>día de la semana (0-6 donde 0=Domingo)</li></ol>"
   crea_nuevo_flujo_fpl: Crea nuevo flujo FPL
   helpers:
