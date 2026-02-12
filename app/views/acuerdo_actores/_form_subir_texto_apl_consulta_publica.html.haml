@@ -175,8 +175,6 @@
       .col-lg-12.col-12
         .row
           .col-12.col-lg-4
-            = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", t(:formato_formulario), tarea_pendiente: @tarea_pendiente, nombre_boton: "Descargar guía práctica para redacción de APL")
-          .col-12.col-lg-4
             = f.input :archivo_informe, as: :file, input_html: { class: 'form-control required-field' }, label: t(:subir_informe), required: true
           .col-12.col-lg-4
             = __descargar_archivo(f.object.archivo_informe,f.object)
