@@ -1,3 +1,8 @@
+
+.row  
+  .col-12.col-lg-4
+    = __mostrar_descargable(@descargables,"#{@tarea_pendiente.tarea.codigo}-DES-001", nil, tarea_pendiente: @tarea_pendiente, nombre_boton: "Descargar guía práctica para redacción de APL")
+%br
 / ================= VIGENCIA APL =================
 .card.mb-4
   .card-header
@@ -173,7 +178,7 @@
   .card-body
     .row.mt-3
       .col-lg-12.col-12
-        .row
+        .row  
           .col-12.col-lg-4
             = f.input :archivo_informe, as: :file, input_html: { class: 'form-control required-field' }, label: t(:subir_informe), required: true
           .col-12.col-lg-4
