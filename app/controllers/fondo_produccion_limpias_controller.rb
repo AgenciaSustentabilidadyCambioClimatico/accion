@@ -2283,7 +2283,7 @@ class FondoProduccionLimpiasController < ApplicationController
     
       if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
         respond_to do |format|
-          format.json { render json: { success: true, message: 'Archivo subido correctamente.' } }
+          format.json { render json: { success: true, message: 'Archivo subido correctamente.', url: @fondo_produccion_limpia.send(nombre_campo).url } }
         end
       else
         respond_to do |format|
@@ -5542,8 +5542,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       def valid_extensions?(archivo)
-        return true if archivo.nil? # Si no hay archivo, considera válido
-      
+        return true unless archivo.is_a?(ActionDispatch::Http::UploadedFile)
         # Extensiones permitidas
         extension = File.extname(archivo.original_filename).delete('.').downcase
         extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]

@@ -2614,14 +2614,14 @@
       .then(data => {
         // Aquí puedes realizar alguna acción después de subir los documentos, como actualizar la interfaz de usuario
         alert(data.message); // Muestra el mensaje de éxito
-        actualizarContenidoDescarga(id_doc, event.target.value.split('\\').pop(), nombreCampo, origen);
+        actualizarContenidoDescarga(id_doc, event.target.value.split('\\').pop(), nombreCampo, origen, data.url);
       })
       .catch(error => {
         alert(error.message); // Muestra el mensaje de error
       });
     }
 
-    function actualizarContenidoDescarga(id, nombreArchivo, nombreCampo, origen) {
+    function actualizarContenidoDescarga(id, nombreArchivo, nombreCampo, origen, url) {
       var fila = document.getElementById(`fila_${id}`);
       var linkDescarga = fila.querySelector(`#archivo_cargado_${origen}${id} a.btn-descargar`);
 
@@ -2629,7 +2629,7 @@
         // Si se ha cargado un archivo, actualizar el contenido del enlace de descarga
         linkDescarga.dataset.originalTitle = nombreArchivo;
         linkDescarga.innerHTML = `<i class="fa fa-download"></i> ${nombreArchivo}`;
-        linkDescarga.href = `/uploads/fondo_produccion_limpia/${nombreCampo}/${id}/${nombreArchivo}`;
+        linkDescarga.href = url;
         linkDescarga.classList.remove('btn-disabled');
         linkDescarga.classList.add('btn-block', 'btn-descargar', 'tooltip-block');
         linkDescarga.setAttribute('download', ''); // Agregar el atributo 'download'
