@@ -5535,7 +5535,10 @@ class FondoProduccionLimpiasController < ApplicationController
       
       def normalize_string(string)
         return string unless string.is_a?(String)  # Verifica que sea un string
-        string.gsub(/\n+/, ' ').strip  # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+        string
+          .gsub(/\n+/, ' ')   # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+          .gsub('"', '')      # Elimina comillas dobles
+          .strip              # Elimina espacios al inicio y final
       end
 
       def valid_extensions?(archivo)
