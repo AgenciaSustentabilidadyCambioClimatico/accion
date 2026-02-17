@@ -45,9 +45,8 @@ class Admin::ReporteAutomatizadoAvancesController < ApplicationController
       if params[:instrumento].present? 
         @instrumento = Flujo.find_by_id(params[:instrumento])
         if @instrumento.present?
-          @auditorias = Auditoria.where(flujo_id: @instrumento.id).order(id: :desc).all
-          @auditoria = @auditorias.first
-          @auditoria_elementos = AuditoriaElemento.where(auditoria_id: @auditoria.id).all
+          @auditoria = Auditoria.where(flujo_id: @instrumento.id).order(id: :desc).first
+          @auditoria_elementos = @auditoria ? @auditoria.auditoria_elementos : AuditoriaElemento.none
           @adhesion_elementos = AdhesionElemento.where(id: @auditoria_elementos.pluck(:adhesion_elemento_id)).all.uniq
           @set_metas_acciones = @instrumento.set_metas_acciones
 
