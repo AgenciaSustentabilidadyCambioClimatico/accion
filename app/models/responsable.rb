@@ -105,7 +105,7 @@ class Responsable < ApplicationRecord
     responsables = responsables.where(tipo_contribuyente_id: tipo_contribuyente_id) if(!tipo_contribuyente_id.nil?)
 
     if (user.present?)
-      user_personas = user.session[:personas] || []
+      user_personas = user.present? ? (user.session[:personas] || []) : []
       user_personas_cargos = user_personas.map{ |p| PersonaCargo.includes([:persona]).where(persona_id: p[:id]).pluck(:cargo_id) }.flatten
       respon = responsables.filter{ |r| user_personas_cargos.include?(r.cargo_id) }
       all_user_personas = []
