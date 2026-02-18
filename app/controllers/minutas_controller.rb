@@ -483,10 +483,16 @@ class MinutasController < ApplicationController #crea la depencia con convocator
     end
 
     def set_minuta #asigna al objeto los valores correspondientes a los campos del registro que calza con el id obtenido como parámetro de la URL
-      @minuta=@convocatoria.minuta
-      @minuta.establece_mensaje_encabezado
-      @minuta.establece_mensaje_cuerpo
-      @convocados= MapaDeActor.adecua_actores_unidos_rut_persona_institucion_convocatorias(@minuta.convocados)
+      @minuta = @convocatoria.minuta
+
+      if @minuta.present?
+        @minuta.establece_mensaje_encabezado
+        @minuta.establece_mensaje_cuerpo
+        @convocados = MapaDeActor.adecua_actores_unidos_rut_persona_institucion_convocatorias(@minuta.convocados)
+      else
+        # manejar el caso cuando no existe minuta
+        @convocados = []
+      end
     end
 
     def set_descargable_tareas 
