@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_02_09_184541) do
+ActiveRecord::Schema.define(version: 2026_02_20_150018) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "unaccent"
 
   create_table "accion_clasificaciones", force: :cascade do |t|
     t.integer "accion_id", null: false

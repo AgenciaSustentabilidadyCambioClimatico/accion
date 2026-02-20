@@ -63,7 +63,7 @@ class Admin::ContribuyentesController < ApplicationController
       end
       if @contribuyente.actividad_economica_id.blank?
         unless @contribuyente.razon_social.blank?
-          @contribuyentes = @contribuyentes.where("razon_social ILIKE '%#{@contribuyente.razon_social}%'")
+          @contribuyentes = @contribuyentes.where("unaccent(razon_social) ILIKE unaccent(?)","%#{@contribuyente.razon_social}%")
           @filtro_utilizado = "Razón Social: #{@contribuyente.razon_social}"
         end
         unless @contribuyente.rut.blank?
