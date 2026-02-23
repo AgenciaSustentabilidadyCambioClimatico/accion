@@ -10,13 +10,10 @@
 		.card-body
 			.row
 				.col-12.col-lg-6
-					.card
-						.card-header
-							%h5.no-margin.float-left
-								= t(:previsualización)
-						.card-body.table-responsive
-							#previsualizacion_base{style: "font-size: 11px; min-width: 450px; height: 600px"}
-								= render 'manifestacion_de_interes/informe'
+					%h5.no-margin.float-left
+						= t(:descargar_informe)
+					= __descargar_archivo(@informe.archivo_informe, @informe)
+					-# = __upload_status(@informe, :archivo_informe)
 				.col-12.col-lg-6
 					.row
 						- if @informe.archivos_anexos.size > 0
