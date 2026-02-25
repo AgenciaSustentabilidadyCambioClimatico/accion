@@ -30,6 +30,8 @@
 // = require select2-full
 // = require cocoon
 //= require rails-ujs
+//= require chosen_accent
+
 
 dataConfirmModal.setDefaults({
   title: 'Confirme antes de continuar',
