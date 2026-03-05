@@ -432,9 +432,13 @@ class MapaDeActor < ApplicationRecord
 			# relación persona pero no en la tabla user.
 			fila[:rut_persona] = fila[:rut_persona].to_s.gsub('k', 'K').gsub(".", "")
 			rut_persona = fila[:rut_persona]
-			if rut_persona.blank? || rut_persona.downcase == "no"
-				#debo buscar segun mi condicion
-				if fila[:email_institucional].to_s.blank? || fila[:email_institucional].to_s.downcase == "no"
+			rut_invalido = rut_persona.blank? || rut_persona == "no"
+
+			email = fila[:email_institucional].to_s.strip.downcase
+			email_invalido = email.blank? || email == "no"
+	
+			if rut_invalido
+				if email_invalido
 					#puede ser que no tenga email, entonces primero me fijaré en traer a persona que tenga el rol de mi fila en el mapa
 					#asi, aunque no sea el mismo nombre da lo mismo porque se actualizará
 					#y ordenaré por fecha de actualizacion asc en mapa y traere el primero
