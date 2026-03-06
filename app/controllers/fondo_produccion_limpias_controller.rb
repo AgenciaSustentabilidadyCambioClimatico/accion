@@ -744,7 +744,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @filtro_utilizado = "Rut: #{rut}"
       end
       if nombre.present?
-        @usuarios = @usuarios.where("nombre_completo ILIKE '%#{nombre}%'")
+        @usuarios = @usuarios.where("unaccent(nombre_completo) ILIKE unaccent(?)","%#{nombre}%")
         filtro = "Nombre: #{nombre}"
         if @filtro_utilizado.blank?
           @filtro_utilizado = filtro
