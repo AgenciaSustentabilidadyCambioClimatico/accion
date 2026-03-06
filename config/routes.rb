@@ -213,6 +213,7 @@ Rails.application.routes.draw do
   #Postulantes
   get 'eliminar_equipo_postulante/:id', to: "fondo_produccion_limpias#eliminar_equipo_postulante", as: :eliminar_equipo_postulante_fondo_produccion_limpia
   delete '/eliminar_equipo_postulante/:id', to: 'fondo_produccion_limpias#eliminar_equipo_postulante', as: 'eliminar_equipo_postulante'
+  post 'seleccionar_documentos_juridicos/:id', to: "fondo_produccion_limpias#seleccionar_documentos_juridicos", as: :seleccionar_documentos_juridicos_fondo_produccion_limpia
 
   #Auditores
   get 'eliminar_equipo_auditor/:id', to: "fondo_produccion_limpias#eliminar_equipo_auditor", as: :eliminar_equipo_auditor_fondo_produccion_limpia

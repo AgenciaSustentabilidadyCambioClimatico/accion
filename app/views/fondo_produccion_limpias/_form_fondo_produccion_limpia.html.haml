@@ -2693,6 +2693,22 @@
       
     //} 
   }
+
+  function check_documentos_juridicos(checkbox){
+    $.ajax({
+      url: "#{seleccionar_documentos_juridicos_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}",
+        check_documentos_juridicos: checkbox.checked
+      },
+      method: "POST",
+      success: function(response) {
+      },
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
                              
 %style
   :css
@@ -3539,7 +3555,7 @@
           - if !solo_lectura
             - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
             = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario_consultora', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'
-          %br
+            %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
                 %tr
@@ -3584,6 +3600,12 @@
             - button_class = @total_de_errores_por_tab.present? ? (@user_equipo.present? ? 'btn-primary' : 'btn-danger') : 'btn-primary'
             = button_tag 'Agregar Consultor', id: 'open-modal-button_buscar_usuario', class: "btn btn-sm #{button_class} margin-bottom-20", type: 'button'  
           %br
+            %div.table-responsive       
+              %table 
+                %tr
+                  %td= f.check_box :check_documentos_juridicos,  { onchange: "check_documentos_juridicos(this);" },"1","0"
+                  %td.option-form Subir Documentos Persona JurÍdica
+            %br
             %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
               %thead
                 %tr
