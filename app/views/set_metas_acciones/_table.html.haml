@@ -178,7 +178,7 @@
             %th=t(:plazo)
             - if (indicar_propuestas_con_observaciones || ver_propuestas_con_observaciones)  && @tarea.codigo != Tarea::COD_APL_018
               %th=t(:requiere_correcciones)
-            -if !indicar_propuestas_con_observaciones && !@solo_lectura
+            -if !indicar_propuestas_con_observaciones
               %th=t(:acciones)
 
         %tbody
@@ -212,7 +212,7 @@
                   %td.text-center
                     = propuestas_con_observaciones.include?(record[:id].to_s) ? t(:yes_with_fa_times).html_safe : t(:no_with_fa_check).html_safe
               
-              -if !indicar_propuestas_con_observaciones && !@solo_lectura
+              -if !indicar_propuestas_con_observaciones
                 %td
                   .d-flex.align-items-start.flex-column.flex-lg-row
                     -
