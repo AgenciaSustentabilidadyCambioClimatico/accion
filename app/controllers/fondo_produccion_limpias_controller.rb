@@ -15,7 +15,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
-    :enviar_observaciones_admisibilidad_tecnica]
+    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -557,6 +557,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos
+      check_documentos_juridicos = @fondo_produccion_limpia.check_documentos_juridicos
 
       @tipo = 0
       if count_user_persona > 0 
@@ -569,6 +570,10 @@ class FondoProduccionLimpiasController < ApplicationController
         else 
           @tipo = 0
         end
+      end
+    
+      if check_documentos_juridicos
+        @tipo = 3
       end
      
       #ESTE ID SE OBTIENE DESDE EL FPL00, CONSIDERAR ID_CONTRIBUYENTE EN LA TABLA FONDO PRODUCCION LIMPIA
@@ -1400,7 +1405,9 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_modal_contribuyente
       tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first #Tarea::COD_FPL_01
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:flujo_id])
-     
+      fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: params[:flujo_id]).first
+      @check_documentos_juridicos = fondo_produccion_limpia.check_documentos_juridicos
+
       #SETEO PARAMETROS EQUIPO
       custom_params_empresa = {
         equipo_empresa: {
@@ -1423,8 +1430,11 @@ class FondoProduccionLimpiasController < ApplicationController
               set_descargables
 
               #flash[:success] = 'Contribuyente creado exitosamente.'
-              format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal, descargables_ejecutor: @descargables_ejecutor} }
-        end    
+              #format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal, descargables_ejecutor: @descargables_ejecutor, check: @check_documentos_juridicos} }
+              flash[:success] = 'Institución correctamente creada.'
+              format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
+          end    
       end
     end
 
@@ -1468,7 +1478,20 @@ class FondoProduccionLimpiasController < ApplicationController
           end
           respond_to do |format|
             #flash[:success] = 'Contribuyente eliminado exitosamente.'
-            format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
+            #format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
+
+            custom_params = {
+              fondo_produccion_limpia: {
+                check_documentos_juridicos: false
+              }
+            }
+   
+            @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: equipo_empresa.flujo_id).first
+            @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+            flash[:success] = 'Institución correctamente eliminada.'
+            format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
           end 
       else
         flash[:error] = 'Hubo un problema al eliminar al contribuyente.'
@@ -4198,6 +4221,21 @@ class FondoProduccionLimpiasController < ApplicationController
       rescue Aws::S3::Errors::NoSuchKey
         flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
         redirect_to request.referer || root_path
+      end
+    end
+
+    def seleccionar_documentos_juridicos
+      custom_params = {
+        fondo_produccion_limpia: {
+          check_documentos_juridicos: params[:check_documentos_juridicos]
+        }
+      }
+      @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
       end
     end
 

@@ -219,6 +219,16 @@ class Admin::ContribuyentesController < ApplicationController
               }
               @empresa = EquipoEmpresa.new(custom_params_empresa[:equipo_empresa])
               @empresa.save
+              
+              #Obtiene id tarea FPL_01
+              tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first
+              tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:contribuyente]["flujo_id"])
+
+              #una vez creada unan ueva empresa desde el flujo FPL, se refresca la pagina dado a los cambios en los documentos del ejecutor 
+              flash[:success] = 'Institución correctamente creada.'
+              format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(tarea_pendiente.id), notice: success } 
+
             end
             format.js { 
               flash.now[:success] = 'Institución correctamente creada.'
