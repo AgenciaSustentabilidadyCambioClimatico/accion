@@ -845,8 +845,11 @@
       divEmpresaConsultora.style.display = 'block';
       divEquipoConsultoraEmpresa.style.display = 'none';
       $('#open-modal-button_buscar_contribuyente').prop('disabled', false);
+    } else if (tipo == 3){
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'block';
     }
-   
   }
 
   function actualizarObjetivo() {
