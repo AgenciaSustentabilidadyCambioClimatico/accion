@@ -573,7 +573,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     
       if check_documentos_juridicos
-        @tipo = 3
+        if count_user_empresa > 0 
+          @tipo = 3
+        else 
+          @tipo = 4
+        end
       end
      
       #ESTE ID SE OBTIENE DESDE EL FPL00, CONSIDERAR ID_CONTRIBUYENTE EN LA TABLA FONDO PRODUCCION LIMPIA
@@ -5249,7 +5253,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_equipo_empresa
         @count_empresa_equipo = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
         @count_user_empresa = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 2).count
-     
+        @option_select_value = @count_empresa_equipo.to_i == 1 ? 3 : 0
         @empresa_equipo = Contribuyente
         .unscoped
         .joins(:equipo_empresas)

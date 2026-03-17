@@ -800,7 +800,7 @@
     var divEquipoConsultora = document.getElementById('div_equipo_consultora');
     var divEmpresaConsultora = document.getElementById('div_empresa_consultora');
     var divEquipoConsultoraEmpresa = document.getElementById('div_equipo_consultora_empresa');
-    
+
     if (tipo == 1) {
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
@@ -819,6 +819,11 @@
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
       divEquipoConsultoraEmpresa.style.display = 'block';  
+      check_documentos_juridicos(true);
+    } else if (tipo == 4){
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'none';  
       check_documentos_juridicos(true);
     } 
     
@@ -849,7 +854,11 @@
       divEquipoConsultora.style.display = 'none';
       divEmpresaConsultora.style.display = 'block';
       divEquipoConsultoraEmpresa.style.display = 'block';
-    }
+    } else if (tipo == 4){
+      divEquipoConsultora.style.display = 'none';
+      divEmpresaConsultora.style.display = 'block';
+      divEquipoConsultoraEmpresa.style.display = 'none';  
+    } 
   }
 
   function actualizarObjetivo() {
@@ -3521,7 +3530,7 @@
                   %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
                   %td.option-form Equipo de Consultores
                 %tr
-                  %td= f.radio_button :nombre_acuerdo, 'opcion_3', { class: 'required-field', id: 'opcion_3', onclick: "optionSelect(3);" }
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_3', { class: 'required-field', id: 'opcion_3', onclick: "optionSelect(4);" }
                   %td.option-form Empresa Consultora Mixta
               -if @tipo == 2
                 %tr
@@ -3545,7 +3554,7 @@
                   %td.option-form Empresa Consultora Mixta
               -if @tipo == 3
                 %tr
-                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(document.getElementById('Tipo_1_Option').value);" }
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(1);" }
                   %td.option-form Empresa Consultora
 
                 %tr
@@ -3554,6 +3563,16 @@
 
                 %tr
                   %td= f.radio_button :nombre_acuerdo, 'opcion_3', checked: true, class: 'required-field', id: 'opcion_3', onclick: "optionSelect(3);"
+                  %td.option-form Empresa Consultora Mixta
+              -if @tipo == 4
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_1', { class: 'required-field', id: 'opcion_1', onclick: "optionSelect(0);" } 
+                  %td.option-form Empresa Consultora
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_2', { class: 'required-field', id: 'opcion_2', onclick: 'optionSelect(2);'  }
+                  %td.option-form Equipo de Consultores
+                %tr
+                  %td= f.radio_button :nombre_acuerdo, 'opcion_3', { checked: true, class: 'required-field', id: 'opcion_3', onclick: "optionSelect(4);" }
                   %td.option-form Empresa Consultora Mixta
         %br   
         %div#div_empresa_consultora.table-responsive  
