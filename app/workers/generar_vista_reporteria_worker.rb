@@ -55,7 +55,7 @@ class GenerarVistaReporteriaWorker
       _acuerdos_firmados = ReporteriaDato.find_or_create_by(ruta: "acuerdos-firmados", clasificacion_id: clasificacion.id)
       manifestacion_de_intereses_ids= clasificacion.acuerdos
       _acuerdos_firmados.datos = manif_de_intereses_firmadas.where(id: manifestacion_de_intereses_ids).map{|manif_de_interes|
-          tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: 62)
+          tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: Tarea::ID_APL_022)
           convocatoria_id = tarea&.data&.dig(:convocatoria_id)
 
           acta = Convocatoria.includes(:minuta)
@@ -87,7 +87,7 @@ class GenerarVistaReporteriaWorker
     acuerdos_firmados_totales = ReporteriaDato.find_or_create_by(ruta: 'acuerdos-firmados', clasificacion_id: nil)
     _acuerdos_firmados_totales = []
     manif_de_intereses_firmadas.each do |manif_de_interes|
-      tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: 62)
+      tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: Tarea::ID_APL_022)
       convocatoria_id = tarea&.data&.dig(:convocatoria_id)
 
       acta = Convocatoria.includes(:minuta)
