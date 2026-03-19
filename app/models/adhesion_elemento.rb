@@ -87,7 +87,15 @@ class AdhesionElemento < ApplicationRecord
       rut_institucion = self.fila["rut_institucion"]
       if rut_institucion.present?
         ec_elem = Contribuyente.find_by(rut: rut_institucion.split('-').first).direccion_principal
-        otro_dato = [ec_elem.direccion, ec_elem.comuna.nombre, ec_elem.comuna.provincia.region.nombre].join(", ") if ec_elem
+
+        return "" if ec_elem.nil?
+
+        otro_dato = [
+          ec_elem.direccion,
+          ec_elem.comuna&.nombre,
+          ec_elem.comuna&.provincia&.region&.nombre
+        ].compact.join(", ")
+        
       else
         otro_dato = "Datos incompletos"
       end
