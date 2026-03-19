@@ -83,7 +83,7 @@ class AdhesionElemento < ApplicationRecord
     elsif self.alcance_id == Alcance::ESTABLECIMIENTO
       ec_elem = self.establecimiento_contribuyente
       otro_dato = [
-          ec_elem.direccion,
+          ec_elem&.direccion,
           ec_elem.comuna&.nombre,
           ec_elem.comuna&.provincia&.region&.nombre
         ].compact.join(", ")
@@ -95,7 +95,7 @@ class AdhesionElemento < ApplicationRecord
         return "" if ec_elem.nil?
 
         otro_dato = [
-          ec_elem.direccion,
+          ec_elem&.direccion,
           ec_elem.comuna&.nombre,
           ec_elem.comuna&.provincia&.region&.nombre
         ].compact.join(", ")
