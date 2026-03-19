@@ -82,7 +82,11 @@ class AdhesionElemento < ApplicationRecord
       otro_dato = self.otro.identificador_unico
     elsif self.alcance_id == Alcance::ESTABLECIMIENTO
       ec_elem = self.establecimiento_contribuyente
-      otro_dato = [ec_elem.direccion,ec_elem.comuna.nombre,ec_elem.comuna.provincia.region.nombre].join(", ")
+      otro_dato = [
+          ec_elem.direccion,
+          ec_elem.comuna&.nombre,
+          ec_elem.comuna&.provincia&.region&.nombre
+        ].compact.join(", ")
     else
       rut_institucion = self.fila["rut_institucion"]
       if rut_institucion.present?
