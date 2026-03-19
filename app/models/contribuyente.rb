@@ -244,13 +244,7 @@ class Contribuyente < ApplicationRecord
 	  	#establecimientos se reemplazan los datos de originales
 	  	#primero elimino los que en temporal se eliminaron
 	  	establecimientos_ids = self.establecimiento_contribuyentes.pluck(:establecimiento_contribuyente_id)
-	
-		#eliminar primero las personas relacionadas a los establecimientos
-		establecimientos = contribuyente_final.establecimiento_contribuyentes.where(contribuyente_id: self.contribuyente_id).where.not(id: establecimientos_ids)
-		establecimientos.each do |ec|
-		ec.personas.destroy_all
-		ec.destroy
-		end
+		contribuyente_final.establecimiento_contribuyentes.where(contribuyente_id: self.contribuyente_id).where.not(id: establecimientos_ids).destroy_all
 
 	  	#despues actualizo los valoresde los originales
 	  	self.establecimiento_contribuyentes.each do |ect|
