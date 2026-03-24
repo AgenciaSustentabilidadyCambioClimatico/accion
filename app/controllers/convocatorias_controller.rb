@@ -11,7 +11,7 @@ class ConvocatoriasController < ApplicationController
 	before_action :permiso_tarea
 	before_action :set_flujo
 	before_action :set_tipo
-	before_action	:set_descargable_tareas
+	before_action :set_descargable_tareas
 	before_action :set_convocatorias, only: [:index, :termina_etapa_negociacion]
 	before_action :set_convocatoria, only: [:new, :create, :edit, :update, :destroy, :descargar_adjuntos]
 	
@@ -394,6 +394,7 @@ class ConvocatoriasController < ApplicationController
 
 		def set_descargable_tareas 
 			@descargable_tareas = DescargableTarea.where(tarea_id: @tarea.id).order(id: :asc).all
+			@descargables = @tarea_pendiente.get_descargables
 		end
 
 		def permiso_tarea

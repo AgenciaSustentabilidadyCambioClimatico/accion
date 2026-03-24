@@ -30,6 +30,8 @@
 // = require select2-full
 // = require cocoon
 //= require rails-ujs
+//= require chosen_accent
+
 
 dataConfirmModal.setDefaults({
   title: 'Confirme antes de continuar',
@@ -1011,3 +1013,48 @@ function customSearch(table, inputSelector = null) {
   
   $input.trigger('keyup');
 }
+
+/**
+ * Función Global: Normalización de tildes en tiempo real para inputs tipo search
+ */
+$(document).on('input', 'input[type="search"]', function() {
+  const start = this.selectionStart;
+  const end = this.selectionEnd;
+  
+  // Mapeo de caracteres con tilde a sus versiones sin tilde
+  const mapaTildes = {
+    'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+    'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+    'ü': 'u', 'Ü': 'U'
+  };
+
+  // Reemplazo mediante expresión regular
+  const valorOriginal = $(this).val();
+  const nuevoValor = valorOriginal.replace(/[áéíóúÁÉÍÓÚüÜ]/g, match => mapaTildes[match]);
+
+  // Solo actualizar si el valor cambió para evitar bucles infinitos y pérdida de foco
+  if (valorOriginal !== nuevoValor) {
+    $(this).val(nuevoValor);
+    
+    // Restaurar la posición del cursor (importante al escribir en medio del texto)
+    this.setSelectionRange(start, end);
+    
+    // Si usas DataTables, forzar el redibujado de la tabla asociada
+    const tableId = $(this).attr('aria-controls');
+    if (tableId && $.fn.DataTable.isDataTable('#' + tableId)) {
+      $('#' + tableId).DataTable().search(nuevoValor).draw();
+    }
+  }
+});
+
+// Plugin oficial accent neutralise
+jQuery.extend(jQuery.fn.dataTable.ext.type.search, {
+  string: function (data) {
+    if (!data) return '';
+    return typeof data === 'string'
+      ? data
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+      : data;
+  }
+});

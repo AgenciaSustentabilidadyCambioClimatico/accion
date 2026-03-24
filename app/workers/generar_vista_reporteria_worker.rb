@@ -55,20 +55,27 @@ class GenerarVistaReporteriaWorker
       _acuerdos_firmados = ReporteriaDato.find_or_create_by(ruta: "acuerdos-firmados", clasificacion_id: clasificacion.id)
       manifestacion_de_intereses_ids= clasificacion.acuerdos
       _acuerdos_firmados.datos = manif_de_intereses_firmadas.where(id: manifestacion_de_intereses_ids).map{|manif_de_interes|
-        {
-          acuerdo_id: manif_de_interes.id,
-          flujo_id: manif_de_interes.flujo.id,
-          clasificacion_id: nil,
-          nombre_acuerdo: manif_de_interes.nombre_acuerdo,
-          diagnostico_de_acuerdo_anterior: (manif_de_interes.diagnostico_de_acuerdo_anterior.url rescue nil),
-          documento_diagnosticos: !manif_de_interes.documento_diagnosticos.blank?,
-          informe_acuerdo: (!manif_de_interes.informe_acuerdo.archivos_anexos.blank? rescue false),
-          informe_impacto: (manif_de_interes.informe_impacto.documento.url rescue nil),
-          estado_consulta_publica: manif_de_interes.estado_acuerdo,
-          empresas_adheridas: manif_de_interes.empresas_adheridas.count,
+          tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: Tarea::ID_APL_022)
+          convocatoria_id = tarea&.data&.dig(:convocatoria_id)
+
+          acta = Convocatoria.includes(:minuta)
+                    .find_by(id: convocatoria_id)
+                    &.minuta
+                    &.acta
+          {
+            acuerdo_id: manif_de_interes.id,
+            flujo_id: manif_de_interes.flujo.id,
+            clasificacion_id: nil,
+            nombre_acuerdo: manif_de_interes.nombre_acuerdo,
+            diagnostico_de_acuerdo_anterior: (manif_de_interes.diagnostico_de_acuerdo_anterior.url rescue nil),
+            documento_diagnosticos: !manif_de_interes.documento_diagnosticos.blank?,
+            informe_acuerdo: acta.present?,
+            informe_impacto: (manif_de_interes.informe_impacto.documento.url rescue nil),
+            estado_consulta_publica: manif_de_interes.estado_acuerdo,
+            empresas_adheridas: manif_de_interes.empresas_adheridas.count,
           empresas_certificadas: (TareaPendiente.where(flujo_id: manif_de_interes.flujo.id, tarea_id: Tarea::ID_APL_032).count > 0 ? manif_de_interes.empresas_certificadas.count : "Por certificar")
+          }
         }
-      }
       _acuerdos_firmados.save
     end
     clasificaciones_data.datos = _clasificaciones_data
@@ -80,6 +87,14 @@ class GenerarVistaReporteriaWorker
     acuerdos_firmados_totales = ReporteriaDato.find_or_create_by(ruta: 'acuerdos-firmados', clasificacion_id: nil)
     _acuerdos_firmados_totales = []
     manif_de_intereses_firmadas.each do |manif_de_interes|
+      tarea = manif_de_interes.flujo.tarea_pendientes.find_by(tarea_id: Tarea::ID_APL_022)
+      convocatoria_id = tarea&.data&.dig(:convocatoria_id)
+
+      acta = Convocatoria.includes(:minuta)
+                .find_by(id: convocatoria_id)
+                &.minuta
+                &.acta
+      
       _acuerdos_firmados_totales << {
         acuerdo_id: manif_de_interes.id,
         flujo_id: manif_de_interes.flujo.id,
@@ -87,7 +102,7 @@ class GenerarVistaReporteriaWorker
         nombre_acuerdo: manif_de_interes.nombre_acuerdo,
         diagnostico_de_acuerdo_anterior: (manif_de_interes.diagnostico_de_acuerdo_anterior.url rescue nil),
         documento_diagnosticos: !manif_de_interes.documento_diagnosticos.blank?,
-        informe_acuerdo: (!manif_de_interes.informe_acuerdo.archivos_anexos.blank? rescue false),
+        informe_acuerdo: acta.present?,
         informe_impacto: (manif_de_interes.informe_impacto.documento.url rescue nil),
         estado_consulta_publica: manif_de_interes.estado_acuerdo,
         empresas_adheridas: manif_de_interes.empresas_adheridas.count,

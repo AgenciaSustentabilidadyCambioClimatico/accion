@@ -67,6 +67,12 @@ class AcuerdoActoresController < ApplicationController
         end
       end
     end
+
+    if params[:informe_acuerdo][:archivo_informe].present?
+      @informe.archivo_informe =
+        params[:informe_acuerdo][:archivo_informe]
+    end
+
     @informe.assign_attributes(informe_params)
     # DZC 2019-06-19 17:39:50 se modifica para corregir error en asignación de archivos
     # @informe.assign_attributes(archivos_anexos: archivos_previos+archivos_nuevos)
@@ -103,7 +109,12 @@ class AcuerdoActoresController < ApplicationController
       if @informe.valid?
         @informe.save
         audits_ids = []
-        Auditoria.where(flujo_id: @flujo.id).where.not(id: @informe.auditorias.map{|a| a[:id]}).delete_all #DZC busca y elimina los audits existentes y relacionados con esta instancia de informe, y que el usuario decidio no mantener
+        
+        auditorias_a_eliminar = Auditoria.where(flujo_id: @flujo.id)
+                                  .where.not(id: @informe.auditorias.map{|a| a[:id]})
+        AuditoriaNivel.where(auditoria_id: auditorias_a_eliminar.pluck(:id)).delete_all
+        auditorias_a_eliminar.delete_all
+  
         @informe.auditorias.each do |aud_data|
           
           audits_ids << aud_data[:id] if aud_data[:id] != "no"
@@ -190,7 +201,7 @@ class AcuerdoActoresController < ApplicationController
       flash[:error] = 'Hubo un problema al eliminar al actor.'
     end
   end
-  
+
   private
 
   def set_tarea_pendiente
@@ -300,7 +311,7 @@ class AcuerdoActoresController < ApplicationController
       :fundamentos,:antecedentes, :normativas_aplicables, :alcance, :campo_de_aplicacion, :definiciones, 
       :objetivo_general, :objetivo_especifico, :mecanismo_de_implementacion, :tipo_acuerdo, :plazo_maximo_adhesion, 
       :plazo_finalizacion_implementacion, :mecanismo_evaluacion_cumplimiento, :plazo_maximo, :plazo_maximo_neto, :adhesiones,
-      :vigencia_acuerdo, :plazo_vigencia_acuerdo,
+      :vigencia_acuerdo, :plazo_vigencia_acuerdo, :archivo_informe, 
       :vigencia_certificacion, :vigencia_certificacion_final,
       :derechos, :obligaciones, :difusion, :promocion, :incentivos, :sanciones, :personerias, :ejemplares, :firmas,
       :archivos_anexos_cache, archivos_anexos: []

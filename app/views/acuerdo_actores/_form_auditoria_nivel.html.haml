@@ -17,5 +17,5 @@
       = text_field_tag "informe_acuerdo[auditorias][#{aud_id}][auditoria_niveles][#{nivel_id}][plazo]", plazo, {class: "form-control numero vigencia-cert-intermedia-plazo", style: "width: 50px;", readonly: !puede_editar}
       %label.control-label.ml-2 años
     -if puede_editar
-      = link_to '#', {class: 'remove-auditoria-nivel', onclick: "remover_auditoria_nivel('#{aud_id}','#{nivel_id}');", style: "width: 10%;"} do
+      = link_to '#', {class: 'remove-auditoria-nivel', onclick: "remover_auditoria_nivel('#{aud_id}','#{nivel_id}', event);", style: "width: 10%;"} do
         %i.fa.fa-times-circle.link-to-remove-row

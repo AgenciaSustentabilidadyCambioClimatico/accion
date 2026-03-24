@@ -204,7 +204,8 @@
     }
   }
 
-  function asociar_estandar(id){
+  function asociar_estandar(id, event){
+    if (event) event.preventDefault();
     //aqui muestro el modal con estandares y sus niveles
     $('#modal_asociar_estandar_auditoria_id').val(id);
     $('.modal_asociar_estandar_nivel_id').prop("checked", false);
@@ -217,7 +218,7 @@
 
 
 
-  function anadir_estandar(){
+  function anadir_estandar(event){
     aud_id = $('#modal_asociar_estandar_auditoria_id').val();
     $('.modal_asociar_estandar_nivel_id:checked').each(function(index, elem){
       nivel_id = elem.value;
@@ -238,13 +239,14 @@
     $('.auditoria-row[data-id="'+aud_id+'"] .auditoria-niveles .auditoria-nivel-row').each(function(index, elem){
       nivel_id = $(elem).data("id");
       if(!$('input[name="modal_asociar_estandar['+nivel_id+'][id]"]').prop("checked")){
-        remover_auditoria_nivel(aud_id, nivel_id);
+        remover_auditoria_nivel(aud_id, nivel_id, event);
       }
     });
     $('#modal-asociar-estandar').modal("hide");
   }
 
-  function remover_auditoria_nivel(aud_id, id){
+  function remover_auditoria_nivel(aud_id, id, event){
+    if (event) event.preventDefault();
     $(".auditoria-row[data-id='"+aud_id+"'] .auditoria-nivel-row[data-id='"+id+"']").remove();
   }
 

@@ -15,7 +15,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
-    :enviar_observaciones_admisibilidad_tecnica]
+    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -557,6 +557,7 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
       set_plan_actividades
       set_costos
+      check_documentos_juridicos = @fondo_produccion_limpia.check_documentos_juridicos
 
       @tipo = 0
       if count_user_persona > 0 
@@ -568,6 +569,14 @@ class FondoProduccionLimpiasController < ApplicationController
           @tipo = 2
         else 
           @tipo = 0
+        end
+      end
+    
+      if check_documentos_juridicos
+        if count_user_empresa > 0 
+          @tipo = 3
+        else 
+          @tipo = 4
         end
       end
      
@@ -744,7 +753,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @filtro_utilizado = "Rut: #{rut}"
       end
       if nombre.present?
-        @usuarios = @usuarios.where("nombre_completo ILIKE '%#{nombre}%'")
+        @usuarios = @usuarios.where("unaccent(nombre_completo) ILIKE unaccent(?)","%#{nombre}%")
         filtro = "Nombre: #{nombre}"
         if @filtro_utilizado.blank?
           @filtro_utilizado = filtro
@@ -1400,7 +1409,9 @@ class FondoProduccionLimpiasController < ApplicationController
     def insert_modal_contribuyente
       tarea = Tarea.where(codigo: Tarea::COD_FPL_01).first #Tarea::COD_FPL_01
       @tarea_pendiente = TareaPendiente.find_by(tarea_id: tarea.id, flujo_id: params[:flujo_id])
-     
+      fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: params[:flujo_id]).first
+      @check_documentos_juridicos = fondo_produccion_limpia.check_documentos_juridicos
+
       #SETEO PARAMETROS EQUIPO
       custom_params_empresa = {
         equipo_empresa: {
@@ -1423,8 +1434,11 @@ class FondoProduccionLimpiasController < ApplicationController
               set_descargables
 
               #flash[:success] = 'Contribuyente creado exitosamente.'
-              format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal, descargables_ejecutor: @descargables_ejecutor} }
-        end    
+              #format.js { render 'insert_modal_contribuyente', locals: { contribuyente: @contribuyente, tarea_pendiente: @tarea_pendiente, empresa_temporal: @empresa_temporal, descargables_ejecutor: @descargables_ejecutor, check: @check_documentos_juridicos} }
+              flash[:success] = 'Institución correctamente creada.'
+              format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+              format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
+          end    
       end
     end
 
@@ -1468,7 +1482,20 @@ class FondoProduccionLimpiasController < ApplicationController
           end
           respond_to do |format|
             #flash[:success] = 'Contribuyente eliminado exitosamente.'
-            format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
+            #format.js { render 'eliminar_empresa', locals: { user: equipo_empresa.id } }
+
+            custom_params = {
+              fondo_produccion_limpia: {
+                check_documentos_juridicos: false
+              }
+            }
+   
+            @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: equipo_empresa.flujo_id).first
+            @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+            flash[:success] = 'Institución correctamente eliminada.'
+            format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}?tabs=equipo-trabajo'" }
+            format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
           end 
       else
         flash[:error] = 'Hubo un problema al eliminar al contribuyente.'
@@ -2285,7 +2312,7 @@ class FondoProduccionLimpiasController < ApplicationController
     
       if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
         respond_to do |format|
-          format.json { render json: { success: true, message: 'Archivo subido correctamente.' } }
+          format.json { render json: { success: true, message: 'Archivo subido correctamente.', url: @fondo_produccion_limpia.send(nombre_campo).url } }
         end
       else
         respond_to do |format|
@@ -4201,6 +4228,21 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    def seleccionar_documentos_juridicos
+      custom_params = {
+        fondo_produccion_limpia: {
+          check_documentos_juridicos: params[:check_documentos_juridicos]
+        }
+      }
+      @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+
+      respond_to do |format|
+        flash[:success] = 'Datos guardados correctamente'
+        format.js { render js: "window.location='#{edit_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+        format.html { redirect_to edit_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success } 
+      end
+    end
+
     def lista_usuarios_carga_datos
       manif_de_interes = TareaPendiente.find(params[:tarea_pendiente_id]).flujo.manifestacion_de_interes
       tipo_instrumento = manif_de_interes.tipo_instrumento_id.nil? ? TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA : manif_de_interes.tipo_instrumento_id
@@ -5211,7 +5253,7 @@ class FondoProduccionLimpiasController < ApplicationController
       def set_equipo_empresa
         @count_empresa_equipo = EquipoEmpresa.where(flujo_id: @tarea_pendiente.flujo_id).count
         @count_user_empresa = EquipoTrabajo.where(flujo_id: @tarea_pendiente.flujo_id, tipo_equipo: 2).count
-     
+        @option_select_value = @count_empresa_equipo.to_i == 1 ? 3 : 0
         @empresa_equipo = Contribuyente
         .unscoped
         .joins(:equipo_empresas)
@@ -5537,12 +5579,14 @@ class FondoProduccionLimpiasController < ApplicationController
       
       def normalize_string(string)
         return string unless string.is_a?(String)  # Verifica que sea un string
-        string.gsub(/\n+/, ' ').strip  # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+        string
+          .gsub(/\n+/, ' ')   # Reemplaza saltos de línea por un espacio y elimina espacios en exceso
+          .gsub('"', '')      # Elimina comillas dobles
+          .strip              # Elimina espacios al inicio y final
       end
 
       def valid_extensions?(archivo)
-        return true if archivo.nil? # Si no hay archivo, considera válido
-      
+        return true unless archivo.is_a?(ActionDispatch::Http::UploadedFile)
         # Extensiones permitidas
         extension = File.extname(archivo.original_filename).delete('.').downcase
         extensiones_permitidas = %w[pdf jpg png tiff zip rar doc docx]

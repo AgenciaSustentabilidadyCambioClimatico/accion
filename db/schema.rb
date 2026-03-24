@@ -10,10 +10,11 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_01_22_193628) do
+ActiveRecord::Schema.define(version: 2026_03_06_122900) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+  enable_extension "unaccent"
 
   create_table "accion_clasificaciones", force: :cascade do |t|
     t.integer "accion_id", null: false
@@ -973,6 +974,7 @@ ActiveRecord::Schema.define(version: 2026_01_22_193628) do
     t.string "empresas_adheridas"
     t.string "solicitud_cofinanciamiento"
     t.string "copia_cedula_representantes_legales_ejecutor"
+    t.boolean "check_documentos_juridicos", default: false
     t.index ["flujo_id"], name: "index_fondo_produccion_limpia_on_flujo_id"
     t.index ["linea_id"], name: "index_fondo_produccion_limpia_on_linea_id"
     t.index ["sub_linea_id"], name: "index_fondo_produccion_limpia_on_sub_linea_id"
@@ -1083,6 +1085,7 @@ ActiveRecord::Schema.define(version: 2026_01_22_193628) do
     t.text "vigencia_certificacion"
     t.integer "vigencia_certificacion_final"
     t.text "respuesta_observaciones"
+    t.string "archivo_informe"
     t.index ["manifestacion_de_interes_id"], name: "index_informe_acuerdos_on_manifestacion_de_interes_id"
   end
 

@@ -339,7 +339,7 @@ module ApplicationHelper
         else
           url = ext_descargable_tarea_url(*descargables[codigo][:args])
         end
-        haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if carta_interes.blank?
+        haml_tag :label, titulo.blank? ? descargables[codigo][:nombre] : titulo, class: 'control-label string' if nombre.present? && carta_interes.blank?
         haml_tag :a, href: url, class: 'btn btn-sm btn-descargar btn-block', id: id_descarga do
           haml_tag :i, class: 'fa fa-download'
           haml_concat boton_label

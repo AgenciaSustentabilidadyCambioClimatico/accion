@@ -42,6 +42,8 @@ class InformeAcuerdo < ApplicationRecord
   has_many :comentarios_informe_acuerdos, dependent: :destroy
 	accepts_nested_attributes_for :comentarios_informe_acuerdos, allow_destroy: true
 
+  mount_uploader :archivo_informe, ArchivoInformeUploader
+
   # def agrega_id_archivos_anexos
   #   unless self.archivo_anexos.blank?
   #     self.archivo_anexos.each_with_index do |ae, indice|
