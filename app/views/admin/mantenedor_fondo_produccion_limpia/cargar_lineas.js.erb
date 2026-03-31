@@ -28,7 +28,8 @@ $("#tipo_linea_seleccionada_1_1").empty();  // Limpiar el combo actual
         $("#tipo_linea_seleccionada_1_1").append("<option value=''>No se encontraron líneas</option>");
         $("#tipo_linea_seleccionada_1_1").prop("disabled", false);  // Habilitar el combo si no hay líneas
     <% end %>
-    $("#tipo_linea_seleccionada_1_1").trigger("chosen:updated");
+    $("#tipo_linea_seleccionada_1_1").chosen("destroy");
+    $("#tipo_linea_seleccionada_1_1").chosen();
 <% else %>
     $("#tipo_linea_seleccionada_1_1").append("<option value=''>Tarea APL-005 no está disponible");
     $("#tipo_linea_seleccionada_1_1").prop("disabled", true); 
@@ -63,7 +64,8 @@ $("#tipo_linea_seleccionada_1_2_1").empty();  // Limpiar el combo actual
         ("#tipo_linea_seleccionada_1_2_1").append("<option value=''>No se encontraron líneas</option>");
         $("#tipo_linea_seleccionada_1_2_1").prop("disabled", false);  // Habilitar el combo si no hay líneas
     <% end %>
-    $("#tipo_linea_seleccionada_1_2_1").trigger("chosen:updated");
+    $("#tipo_linea_seleccionada_1_2_1").chosen("destroy");
+    $("#tipo_linea_seleccionada_1_2_1").chosen();
 <% else %>
     $("#tipo_linea_seleccionada_1_2_1").append("<option value=''>Tarea APL-022 no está disponible");
     $("#tipo_linea_seleccionada_1_2_1").prop("disabled", true); 
@@ -95,7 +97,8 @@ $("#tipo_linea_seleccionada_1_3").empty();  // Limpiar el combo actual
             //$("#tipo_linea_seleccionada_1_2_2").val('<%= @lineas_fpl_1_2_2.first.id %>');
             $("#tipo_linea_seleccionada_1_2_2").prop("disabled", false);  // Habilitar el combo si no hay selección
         <% end %>
-        $("#tipo_linea_seleccionada_1_2_2").trigger("chosen:updated");
+        $("#tipo_linea_seleccionada_1_2_2").chosen("destroy");
+        $("#tipo_linea_seleccionada_1_2_2").chosen();
     <% else %>
         $("#tipo_linea_seleccionada_1_2_2").append("<option value=''>No se encontraron líneas</option>");
         $("#tipo_linea_seleccionada_1_2_2").prop("disabled", false);  // Habilitar el combo si no hay líneas
@@ -127,7 +130,8 @@ $("#tipo_linea_seleccionada_1_3").empty();  // Limpiar el combo actual
         $("#tipo_linea_seleccionada_1_3").append("<option value=''>No se encontraron líneas</option>");
         $("#tipo_linea_seleccionada_1_3").prop("disabled", false);  // Habilitar el combo si no hay líneas
     <% end %>
-    $("#tipo_linea_seleccionada_1_3").trigger("chosen:updated");
+    $("#tipo_linea_seleccionada_1_3").chosen("destroy");
+    $("#tipo_linea_seleccionada_1_3").chosen();
 <% else %>
     $("#tipo_linea_seleccionada_1_2_2").append("<option value=''>Tarea APL-023 no está disponible");
     $("#tipo_linea_seleccionada_1_2_2").prop("disabled", true); 
