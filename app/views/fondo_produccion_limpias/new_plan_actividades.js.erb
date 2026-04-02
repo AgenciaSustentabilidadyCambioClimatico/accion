@@ -11,6 +11,7 @@ $('#div_plan_recursos_propios table tbody').empty();
 $('#div_plan_recursos_externos table tbody').empty();
 
 $('#nombre_actividad').prop('disabled', false); 
+$('#correlativo').val('');
 $('#nombre_actividad').val('');
 $('#objetivos_especifico_id').val('');
 $('#plan_id').val('0');
@@ -44,3 +45,13 @@ var htmlContent = "<td class='contenido-popup-form'>" +
                     "<%= j select_tag :tipo_actividad, options_for_select([['Tipo A', 0], ['Tipo B', 1]], include_blank: 'Seleccione una opción'), include_blank: 'Seleccione una opción', class: 'required-field', id: 'tipo_actividad', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;' %>" + 
                   "</td>";
 $('#tr_tipo_actividad').append(htmlContent);
+
+$('#tr_id_correlativo').empty();
+
+var htmlContent = "<td class='contenido-popup-form'>" +
+                    "<%= j t(:correlativo) %></td>" +
+                  "<td class='contenido-popup-form'>" +
+                    "<%= j text_field_tag :correlativo, @correlativo, class: 'required-field', id: 'correlativo', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;', disabled: true %>" + 
+                  "</td>";
+
+$('#tr_id_correlativo').html(htmlContent).hide();

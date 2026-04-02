@@ -1542,6 +1542,7 @@ class FondoProduccionLimpiasController < ApplicationController
     def get_plan_actividades
       @plan_actividades = PlanActividad.includes(:actividad).find_by(flujo_id: @tarea_pendiente.flujo_id, actividad_id: params['plan_id'])
       @duracion_general = FondoProduccionLimpia.where(flujo_id: @tarea_pendiente.flujo_id).first
+      @correlativo = nil
       arreglo = []
       @existe_plan = nil
       @tipo_permiso = 0
@@ -1573,6 +1574,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
         @duracion = newRowDuracion
       else
+        @correlativo = @plan_actividades.correlativo if @plan_actividades&.correlativo.present?  
         @nombre_actividad = @plan_actividades.actividad.nombre if @plan_actividades&.actividad.present?  
         @objetivos_especifico_id = @plan_actividades.objetivos_especifico_id if @plan_actividades.objetivos_especifico_id.present?
         @tipo_act = @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad if @plan_actividades.actividad.actividad_por_lineas.first&.tipo_actividad?
@@ -1651,7 +1653,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end  
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso, solo_lectura: @solo_lectura  } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso, solo_lectura: @solo_lectura, correlativo: @correlativo  } } 
       end
     end
 
@@ -2031,7 +2033,24 @@ class FondoProduccionLimpiasController < ApplicationController
     
         @correlativo_final = "#{correlativo_objetivo}.#{siguiente}"
       else
-        @correlativo_final = @plan_actividades.correlativo
+        if @plan_actividades.correlativo == params['correlativo']
+          @correlativo_final = @plan_actividades.correlativo
+        else
+          existe_correlativo = PlanActividad.exists?(
+            flujo_id: params[:flujo_id],
+            correlativo: params[:correlativo].to_s
+          )
+  
+          if !existe_correlativo
+            @correlativo_final = params['correlativo']
+          else
+            @error = 'El correlativo ya se encuentra asignado a otra actividad'
+            respond_to do |format|
+              format.js { render :error_plan_actividad }
+            end
+            return
+          end  
+        end 
       end
 
       arreglo = []
@@ -2086,7 +2105,7 @@ class FondoProduccionLimpiasController < ApplicationController
     def new_plan_actividades
       @fondo_produccion_limpia = FondoProduccionLimpia.where(flujo_id: params['flujo_id']).first
       arreglo = []
-
+      @correlativo = nil
       if params['opcion'] == 'create'
 
         maximo = @fondo_produccion_limpia.duracion
@@ -2101,7 +2120,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
         @duracion = newRowDuracion
         respond_to do |format|
-          format.js { render 'new_plan_actividades', locals: { duracion: @duracion, plan_id: params['plan_id'] } }
+          format.js { render 'new_plan_actividades', locals: { duracion: @duracion, plan_id: params['plan_id'], correlativo: @correlativo } }
         end
       else
         maximo = @fondo_produccion_limpia.duracion
