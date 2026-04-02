@@ -101,6 +101,8 @@ $('#div_plan_recursos_externos table tbody').empty();
 
 document.getElementById('plan_id').value = <%= plan_id %>;
 
+$('#correlativo').val('<%= @correlativo %>');
+
 <% if @nombre_actividad.present? %>
   $('#nombre_actividad').val('<%= @nombre_actividad %>');
 <% end %>
@@ -187,3 +189,36 @@ $('#agregar_gas_ope').attr('href', '#-1').css('pointer-events', '').css('color',
 $('#agregar_gas_adm').attr('href', '#-1').css('pointer-events', '').css('color', '#5d759e');
 
 $('#tr_tipo_actividad').empty();
+
+$('#tr_id_correlativo').empty();
+
+var objetivoId = "<%= @objetivos_especifico_id %>";
+
+var htmlContent = "<td class='contenido-popup-form'>" +
+                    "<%= j t(:correlativo) %></td>" +
+                  "<td class='contenido-popup-form'>" +
+                    "<%= j text_field_tag :correlativo, @correlativo, inputmode: 'decimal', class: 'required-field', id: 'correlativo', style: 'border: 1px solid #ced4da; border-radius: 0.25rem; width: 100%;  color: #888;' %>" +                                                                                         
+                  "</td>";
+
+$('#tr_id_correlativo').html(htmlContent);
+
+$(document).on('input', '#correlativo', function () {
+  let value = this.value;
+
+  // eliminar caracteres inválidos
+  value = value.replace(/[^0-9.,]/g, '');
+
+  // evitar múltiples puntos seguidos
+  value = value.replace(/\.{2,}/g, '.');
+
+  // evitar múltiples comas seguidas
+  value = value.replace(/,{2,}/g, ',');
+
+  this.value = value;
+});
+
+if (objetivoId && objetivoId !== "") {
+  $('#tr_id_correlativo').show();
+} else {
+  $('#tr_id_correlativo').hide();
+}

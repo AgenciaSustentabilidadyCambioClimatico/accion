@@ -1,0 +1,32 @@
+var mensaje = `
+<div class="alert fade show text-center messages-content alert-danger alert-dismissible"
+    role="alert"
+    style="font-size: 18px;">
+    
+<button aria-label="Close" class="close" data-dismiss="alert" type="button">
+    <span aria-hidden="true">×</span>
+</button>
+
+<div>
+    <i class="fa fa-2x fa-times-circle"></i>
+    <p class="no-margin"><%= j @error %></p>
+</div>
+</div>
+`;
+
+var $error = $("#error-plan-actividad");
+
+$error.stop(true, true)
+  .html(mensaje)
+  .fadeIn();
+
+$('#modal_create_plan_actividades-form .modal-body').animate({ scrollTop: 0 }, 300);
+
+document.getElementById("error-plan-actividad").scrollIntoView({
+  behavior: "smooth",
+  block: "start"
+});
+
+setTimeout(function() {
+  $error.fadeOut();
+}, 5000);
