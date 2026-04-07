@@ -2389,6 +2389,7 @@ es:
     - vie
     - sáb
     abbr_month_names:
+    -
     - ene
     - feb
     - mar
@@ -2416,6 +2417,7 @@ es:
       short_year: "%d %b de %Y"
       datepicker: '%d-%m-%Y'
     month_names:
+    -
     - enero
     - febrero
     - marzo
