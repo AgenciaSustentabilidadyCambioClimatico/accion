@@ -13,7 +13,33 @@
 		document.getElementById('tipo_instrumento_id').value = valorSeleccionado;
 	}
 
+	function resetSelect(id) {
+		const $select = $(id);
+
+		$select
+		.val('')
+		.empty()
+		.append("<option value=''>Seleccione una Línea</option>")
+		.prop('disabled', true);
+
+		if ($select.data('chosen')) {
+		$select.trigger("chosen:updated");
+		}
+	}
+
+	function limpiarCombos() {
+		[
+		'#tipo_linea_seleccionada_1_1',
+		'#tipo_linea_seleccionada_1_2_1',
+		'#tipo_linea_seleccionada_1_2_2',
+		'#tipo_linea_seleccionada_1_3'
+		].forEach(resetSelect);
+	}
+
 	function cargarLineas(aplId) {
+		
+		limpiarCombos();
+	
 		$('#columna_linea_1_1').show();
 		$('#columna_linea_1_2_1').show();
 		$('#columna_linea_1_2_2').show();
@@ -56,50 +82,6 @@
 		}
 		$("#guardarFlujo").prop("disabled", false);
 	}
-
-	/*function guardarFlujo(){
-		if(confirm("¿Está seguro que desea crar la postulación del fondo de producción limpia?")){
-			$('.loading-data').show();
-			var apl = document.getElementById('apl').value;
-			var tipo_instrumento_id = document.getElementById('tipo_instrumento_id').value;
-			var user_id = document.getElementById('user_id').value;
-
-			$.ajax({
-			url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
-			data: { tipo_instrumento_id : tipo_instrumento_id, apl: apl, user_id: user_id },
-			method: "POST",
-			success: function(response) {
-				$('.loading-data').hide();
-			},
-			error: function(error) {
-				console.error("Error al llamar al método del controlador", error);
-				$('.loading-data').hide();
-			}
-			});
-		}
-	}*/
-
-	/*function guardarFlujo() {
-		if (confirm("¿Está seguro que desea crear la postulación del fondo de producción limpia?")) {
-			$('.loading-data').show();
-			var apl = document.getElementById('apl').value;
-			var tipo_instrumento_id = document.getElementById('tipo_instrumento_id').value;
-			var user_id = document.getElementById('user_id').value;
-
-			$.ajax({
-			url: "#{admin_mantenedor_fondo_produccion_limpia_path}",
-			data: { tipo_instrumento_id: tipo_instrumento_id, apl: apl, user_id: user_id },
-			method: "POST",
-			success: function (response) {
-				$('.loading-data').hide();
-			},
-			error: function (error) {
-				console.error("Error al llamar al método del controlador", error);
-				$('.loading-data').hide();
-			}
-			});
-		}
-	}*/
 
 	function guardarFlujo() {
 		// Obtener los elementos del DOM
