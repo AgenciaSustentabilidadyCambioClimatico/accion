@@ -63,9 +63,9 @@ class Admin::MantenedorFondoProduccionLimpiaController < ApplicationController
     end
   
     # Verificar la existencia de las tareas
-    @existe_apl_005 = tarea_existente?(Tarea::COD_APL_005)
-    @existe_apl_022 = tarea_existente?(Tarea::COD_APL_022)
-    @existe_apl_023 = tarea_existente?(Tarea::COD_APL_023)
+    @existe_apl_005 = !!tarea_existente?(Tarea::COD_APL_005)
+    @existe_apl_022 = !!tarea_existente?(Tarea::COD_APL_022)
+    @existe_apl_023 = !!tarea_existente?(Tarea::COD_APL_023)  
   
     # Responder con un fragmento HTML que renderice el nuevo select
     respond_to do |format|
