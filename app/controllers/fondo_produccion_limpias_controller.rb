@@ -2005,7 +2005,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #obtiene el correlativo del objetivo especifico
       objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
-
+      correlativo = params['correlativo']&.strip&.tr(',', '.')
       if @plan_actividades.blank? ||
         @plan_actividades.objetivos_especifico&.correlativo != objetivo.correlativo ||
         @plan_actividades.correlativo.nil?
@@ -2033,16 +2033,16 @@ class FondoProduccionLimpiasController < ApplicationController
     
         @correlativo_final = "#{correlativo_objetivo}.#{siguiente}"
       else
-        if @plan_actividades.correlativo == params['correlativo']
+        if @plan_actividades.correlativo == correlativo
           @correlativo_final = @plan_actividades.correlativo
         else
           existe_correlativo = PlanActividad.exists?(
             flujo_id: params[:flujo_id],
-            correlativo: params[:correlativo].to_s
+            correlativo: correlativo.to_s
           )
   
           if !existe_correlativo
-            @correlativo_final = params['correlativo']
+            @correlativo_final = correlativo
           else
             @error = 'El correlativo ya se encuentra asignado a otra actividad'
             respond_to do |format|
