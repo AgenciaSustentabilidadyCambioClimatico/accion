@@ -203,12 +203,7 @@
                     - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
                       .col-12.my-2
                         = f.label t(:descarga_acuerdo)
-                        = link_to obtener_archivo_apl_022_path(@tarea_pendiente, @flujo), download: '', class: 'btn btn-sm btn-outline-secondary btn-block' do
-                          %i.fa.fa-download
-                        - if hay_archivos_anexos
-                          %br
-                          = f.label t(:descargar_archivos_anexos)
-                          = __descargar_archivo(@informe_de_acuerdo.archivos_anexos,@informe_de_acuerdo, false)
+                        = __descargar_archivo(@informe_de_acuerdo.archivo_informe, @informe_de_acuerdo, false)
                     .col-12.col-lg-10
                       -#DZC se prefiere la tarea de la convocatoria para el caso de que se acceda a la minuta desde el mantenedor de convocatorias                  
                       - if @convocatoria.tarea_codigo == Tarea::COD_APL_021
