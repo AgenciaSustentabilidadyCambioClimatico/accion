@@ -16,7 +16,7 @@
                 %td=acuerdo[:nombre_acuerdo]
                 %td=acuerdo[:estado_acuerdo]
                 %td
-                  =link_to evaluacion_negociacion_manifestacion_de_interes_path(acuerdo[:tarea_pendiente_id], acuerdo[:manifestacion_de_interes_id], acuerdo[:encuesta_id],consulta_publica: 1), class: "btn btn-tabla" do
+                  =link_to evaluacion_negociacion_manifestacion_de_interes_path(acuerdo[:tarea_pendiente], acuerdo[:manifestacion_de_interes], acuerdo[:encuesta],consulta_publica: 1), class: "btn btn-tabla" do                    
                     -if acuerdo[:disponible]
                       =fa_icon 'edit'
                       Responder consulta

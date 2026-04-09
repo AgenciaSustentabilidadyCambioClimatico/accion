@@ -36,9 +36,9 @@ class HomeController < ApplicationController
       disponible = false if !tarea_20.nil? && tarea_20.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA && tp.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA
 
       @acuerdos << {
-        tarea_pendiente_id: tp.id,
-        manifestacion_de_interes_id: manifestacion_de_interes.id,
-        encuesta_id: tp.tarea.encuesta_id,
+        tarea_pendiente: tp,
+        manifestacion_de_interes: manifestacion_de_interes,
+        encuesta: tp.tarea&.encuesta,
         nombre_acuerdo: manifestacion_de_interes.nombre_acuerdo,
         disponible: disponible,
         estado_acuerdo: manifestacion_de_interes.estado_acuerdo
