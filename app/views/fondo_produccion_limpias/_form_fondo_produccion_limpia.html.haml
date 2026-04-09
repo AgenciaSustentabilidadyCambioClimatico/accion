@@ -618,6 +618,7 @@
     });
 
     var duracion = checkboxesSeleccionados;
+    var correlativo = document.getElementById('correlativo').value;
     var objetivos_especifico_id = document.getElementById('objetivos_especifico_id').value;
     var nombre_actividad = document.getElementById('nombre_actividad').value;
     var alertaMostrada = false;
@@ -689,6 +690,7 @@
                 nombre_actividad: nombre_actividad, 
                 plan_id: plan_id, 
                 duracion: duracion, 
+                correlativo: correlativo,
                 objetivos_especifico_id: objetivos_especifico_id},
         method: "POST",
         success: function(response) {
@@ -3840,7 +3842,7 @@
                             %i.fa.fa-edit
                     
               %tr
-                %td.contenido-form{style: 'font-weight: bold;', colspan: 1 + @duracion} Total
+                %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + @duracion} Total
                 %td.contenido-form{id: "total_valor_hh_tipo_3", colspan: 1}= number_to_currency(total_valor_hh_tipo_3)
                 %td.contenido-form{id: "total_valor_hh_tipos_1_2", colspan: 1}= number_to_currency(total_valor_hh_tipos_1_2)
                 %td.contenido-form{id: "total_total_gastos_tipo_1", colspan: 1}= number_to_currency(total_total_gastos_tipo_1)
@@ -4675,8 +4677,10 @@
     .modal-dialog#modal-dialog-plan
       .modal-content
         .modal-body
-          = form_with(model: @plan_actividades, url: new_objetivo_especifico_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
+          = form_with(model: @plan_actividades, url: new_equipo_trabajo_fondo_produccion_limpia_path, method: :get, remote: true, html: { class: 'ajax-form' }) do |f|
             .row
+              .col-12
+                %div#error-plan-actividad{style: "display:none;"}
               .col-12
                 .card
                   .card-header
@@ -4688,6 +4692,7 @@
                         = hidden_field_tag 'flujo_id', @tarea_pendiente.id, id: 'flujo_id'
                         = hidden_field_tag 'plan_id', id: 'plan_id'
                         = hidden_field_tag 'flag', '', id: 'flag'
+                        %tr#tr_id_correlativo
                         %tr
                           %td.contenido-popup-form=t(:nombre_actividades)
                           %td.contenido-popup-form 
