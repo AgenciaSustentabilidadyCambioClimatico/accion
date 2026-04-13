@@ -2,25 +2,28 @@
 
   function normalizeText(text) {
     return text
-      ? text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()
+      ? text
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "") // Elimina tildes
+          .replace(/\s+/g, " ")            // Mantiene un solo espacio entre palabras
+          .trim()
+          .toLowerCase()
       : "";
   }
 
   function patchChosen() {
     if (!$.fn.chosen) return;
 
-    // Evita parchear más de una vez
+    // Evita aplicar el parche más de una vez
     if ($.fn.chosen.__accentPatchApplied) return;
     $.fn.chosen.__accentPatchApplied = true;
 
     const originalChosen = $.fn.chosen;
 
     $.fn.chosen = function (options) {
-
       const result = originalChosen.apply(this, arguments);
 
       this.each(function () {
-
         const chosen = $(this).data("chosen");
         if (!chosen) return;
 
@@ -30,29 +33,30 @@
         const originalWinnow = chosen.winnow_results;
 
         chosen.winnow_results = function () {
+          // Mantiene el texto original del usuario
+          const originalSearchText = this.get_search_text();
+          const normalizedSearchText = normalizeText(originalSearchText);
 
-          const searchText = normalizeText(this.get_search_text());
-
+          // Normaliza los textos para la comparación
           this.results_data.forEach(result => {
             if (result.text) {
-              result._original_text = result.text;
-              result.text = normalizeText(result.text);
+              result._normalized_text = normalizeText(result.text);
             }
           });
 
-          this.search_field.val(searchText);
+          // Sobrescribe temporalmente el método de búsqueda
+          const originalGetSearchText = this.get_search_text;
+          this.get_search_text = function () {
+            return normalizedSearchText;
+          };
 
           const response = originalWinnow.apply(this, arguments);
 
-          this.results_data.forEach(result => {
-            if (result._original_text) {
-              result.text = result._original_text;
-            }
-          });
+          // Restaura el método original
+          this.get_search_text = originalGetSearchText;
 
           return response;
         };
-
       });
 
       return result;
