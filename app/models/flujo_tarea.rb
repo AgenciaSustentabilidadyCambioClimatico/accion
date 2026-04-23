@@ -215,6 +215,31 @@ class FlujoTarea < ApplicationRecord
 					end
 				end
 			end
+		else	
+			roles_ids = self.rol_destinatarios
+			MapaDeActor.where(flujo_id: flujo_id).where(rol_id: roles_ids).each do |actor|
+				unless actor.nil?	
+					rgc = RegistroAperturaCorreo.create(user_id: actor.persona.user.id, flujo_tarea_id: self.id, fecha_envio_correo: DateTime.now, flujo_id: flujo_id)				
+					begin
+						mdi = flujo.manifestacion_de_interes
+						fpl = flujo.fondo_produccion_limpia
+						if fpl.present?
+							flujo_mdi = Flujo.find_by(id: fpl.flujo_apl_id)
+							mdi = flujo_mdi&.manifestacion_de_interes
+						end
+					rescue
+						mdi = nil
+						fpl = nil
+					end
+					puts 'enviado mail sin salida'
+
+					FlujoMailer.enviar(
+						self.asunto_format(actor.persona.user, mdi, fpl), 
+						self.cuerpo_format(actor.persona.user, mdi, fpl), 
+						actor.persona.email_institucional, 
+					rgc.id).deliver_now
+				end
+			end  
 		end
 	end
 

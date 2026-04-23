@@ -22,13 +22,13 @@
       -if current_user.is_admin? || current_user.is_ascc?
         .card-body.pb-0        
           .row.justify-content-left       
-            .col-md-3
+            .col-md-6
               = select_tag :apl, options_from_collection_for_select(@apls, "id", "nombre_para_raa", :selected=>@apl), { class: 'form-control',:prompt => 'Seleccione un Acuerdo de Producción Limpia' }
-            .col-md-3
-              = select_tag :ppf, options_from_collection_for_select(@ppfs, "id", "nombre_para_raa", :selected=>@ppf), { class: 'form-control',:prompt => 'Seleccione un Programa y/o Proyecto de Financiamiento' }  
-            .col-md-3
-              = select_tag :ppl, options_from_collection_for_select(@ppls, "id", "nombre_para_raa", :selected=>@ppl), { class: 'form-control',:prompt => 'Seleccione una Rendición / Seguimiento' }         
-            .col-md-3
+            -#.col-md-3
+            -#  = select_tag :ppf, options_from_collection_for_select(@ppfs, "id", "nombre_para_raa", :selected=>@ppf), { class: 'form-control',:prompt => 'Seleccione un Programa y/o Proyecto de Financiamiento' }  
+            -#.col-md-3
+            -#  = select_tag :ppl, options_from_collection_for_select(@ppls, "id", "nombre_para_raa", :selected=>@ppl), { class: 'form-control',:prompt => 'Seleccione una Rendición / Seguimiento' }         
+            .col-md-6
               = select_tag :fpl, options_from_collection_for_select(@fpls, "id", "nombre_para_raa", :selected=>@fpl), { class: 'form-control',:prompt => 'Seleccione un Fondo de Producción Limpia' }  
       .card-body.p-0
         .table-responsive.mis-instrumentos
