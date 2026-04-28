@@ -2,7 +2,7 @@ class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
   before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
   before_action :datos_header_no_signed
-  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut, :descargar_documentos_proveedores_filtrados]
+  before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut, :descargar_documentos_proveedores_filtrados, :validar_tipo_proveedor]
   before_action :get_apl, only: [:get_apl]
 
   # PRO-002
@@ -699,6 +699,16 @@ class RegistroProveedoresController < ApplicationController
     archivo = params[:archivo]    # #<UploadedFile ...>
     registro.update(campo => archivo)
     render json: { ok: true, mensaje: "Archivo guardado" }
+  end
+
+  def validar_tipo_proveedor
+    registros = RegistroProveedor.where(
+      rut: params[:rut],
+      tipo_proveedor_id: params[:tipo_proveedor_id]
+    )
+
+    existe = registros.where.not(estado: "rechazado_definitivo").exists?
+    render json: { existe: existe }
   end
 
   private
