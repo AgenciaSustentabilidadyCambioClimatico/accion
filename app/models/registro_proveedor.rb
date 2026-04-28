@@ -21,7 +21,7 @@ class RegistroProveedor < ApplicationRecord
   mount_uploader :carta_compromiso, ArchivoCertificadoProveedorUploader
 
   validates :rut, presence: true
-  validates :rut, uniqueness: true
+  #validates :rut, uniqueness: true
   validates :nombre, presence: true
   validates :apellido, presence: true
   validates :profesion, presence: true
