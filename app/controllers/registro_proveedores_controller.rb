@@ -708,7 +708,6 @@ class RegistroProveedoresController < ApplicationController
     )
 
     existe = registros.where.not(estado: "rechazado_definitivo").exists?
-    binding.pry
     render json: { existe: existe }
   end
 
