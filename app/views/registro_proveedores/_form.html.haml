@@ -303,7 +303,11 @@
       },
       success: function(response) {
         if (response.existe) {
-          alert('Ya existe una postulación con este RUT para el tipo proveedor');
+          const tipo = response.registro.tipo_proveedor;
+          const estado = response.registro.estado;
+
+          alert(`Aún tiene una postulación activa para ${tipo} con estado ${estado}`);
+
           $('#registro_proveedor_tipo_proveedor_id').val(null).trigger('change');
         }
       }

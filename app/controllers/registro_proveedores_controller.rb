@@ -702,14 +702,25 @@ class RegistroProveedoresController < ApplicationController
   end
 
   def validar_tipo_proveedor
-    registros = RegistroProveedor.where(
-      rut: params[:rut],
-      tipo_proveedor_id: params[:tipo_proveedor_id]
-    )
+  registros = RegistroProveedor.where(
+    rut: params[:rut],
+    tipo_proveedor_id: params[:tipo_proveedor_id]
+  )
 
-    existe = registros.where.not(estado: "rechazado_definitivo").exists?
-    render json: { existe: existe }
+  registro = registros.where.not(estado: "rechazado_definitivo").first
+
+  if registro
+    render json: {
+      existe: true,
+      registro: {
+        tipo_proveedor: registro.tipo_proveedor.nombre,
+        estado: registro.estado
+      }
+    }
+  else
+    render json: { existe: false }
   end
+end
 
   private
 
