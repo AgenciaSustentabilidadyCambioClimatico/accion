@@ -285,3 +285,31 @@
       contribuyente.style.display = "none";
     }
   }
+
+  $('#registro_proveedor_tipo_proveedor_id').on('change', function() {
+    const tipoProveedorId = $(this).val();
+    let rut = $('#registro_proveedor_rut').val();
+
+    rut = rut.replace(/\./g, '');
+
+    if (!rut || !tipoProveedorId) return;
+
+    $.ajax({
+      url: '/validar_tipo_proveedor',
+      method: 'GET',
+      data: {
+        rut: rut,
+        tipo_proveedor_id: tipoProveedorId
+      },
+      success: function(response) {
+        if (response.existe) {
+          const tipo = response.registro.tipo_proveedor;
+          const estado = response.registro.estado;
+
+          alert(`Aún tiene una postulación activa para ${tipo} con estado ${estado}`);
+
+          $('#registro_proveedor_tipo_proveedor_id').val(null).trigger('change');
+        }
+      }
+    });
+  });

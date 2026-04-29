@@ -58,7 +58,8 @@ Rails.application.routes.draw do
 
   get 'registro_get_comunas', to: "registro_proveedores#registro_get_comunas", as: :registro_get_comunas
   get 'registro_get_comunas_casa_matriz', to: "registro_proveedores#registro_get_comunas_casa_matriz", as: :registro_get_comunas_casa_matriz
-
+  get 'validar_tipo_proveedor', to: 'registro_proveedores#validar_tipo_proveedor'
+  
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
 
