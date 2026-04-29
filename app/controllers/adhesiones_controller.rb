@@ -240,22 +240,22 @@ class AdhesionesController < ApplicationController
       if params[:aid].blank?
         @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
         @adhesiones_todas.each do |adhesion|
+          next if adhesion.archivos_adhesion_y_documentacion.blank?
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            if !archivo.url.nil?
-              #nombre = archivo.file.identifier
-              url = archivo.url
-              nombre = File.basename(URI.parse(url).path)
-              # if adhesion.externa
-              #   nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-              # else
-              #   c = adhesion.flujo.manifestacion_de_interes.contribuyente
-              #   nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
-              # end
-              # rename the file
+
+            next if archivo.blank? || archivo.url.blank?
+            url = archivo.url
+
+            # 🔥 nombre único (clave)
+            nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
+
+            begin
               URI.open(url) do |file_data|
                 stream.put_next_entry(nombre)
                 stream.write file_data.read
               end
+            rescue => e
+              Rails.logger.error "Error descargando archivo #{url}: #{e.message}"
             end
           end
         end
@@ -265,19 +265,13 @@ class AdhesionesController < ApplicationController
           adhesion.archivos_adhesion_y_documentacion.each do |archivo|
             unless archivo.url.nil?
               if params[:nombre_archivo] == archivo.file.path.split('/').last
-                #nombre = archivo.file.identifier
-                url = archivo.url
-                nombre = File.basename(URI.parse(url).path)
-                # if adhesion.externa
-                #   nombre = "#{adhesion.rut_institucion_adherente} - #{adhesion.nombre_institucion_adherente} - #{archivo.file.identifier}"
-                # else
-                #   c = adhesion.flujo.manifestacion_de_interes.contribuyente
-                #   nombre = "#{c.rut}-#{c.dv} - #{c.razon_social} - #{archivo.file.identifier}"
-                # end
-                # rename the file
-                URI.open(url) do |file_data|
-                  stream.put_next_entry(nombre)
-                  stream.write file_data.read
+                if archivo.model.id == params[:aid].to_i
+                  url = archivo.url
+                  nombre = File.basename(URI.parse(url).path)
+                  URI.open(url) do |file_data|
+                    stream.put_next_entry(nombre)
+                    stream.write file_data.read
+                  end
                 end
               end
             end
