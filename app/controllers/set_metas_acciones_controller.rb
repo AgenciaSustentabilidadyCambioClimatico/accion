@@ -337,28 +337,39 @@ class SetMetasAccionesController < ApplicationController
   end
 
   def pdf_set_metas
-    #filename = "public/SetMetasAcciones.pdf"
     pdf = Prawn::Document.new
+
+    pdf.font_families.update(
+      "DejaVuSans" => {
+        normal: Rails.root.join("app/assets/fonts/DejaVuSans.ttf")
+      }
+    )
+    pdf.font "DejaVuSans"
     pdf.text('Metas, acciones y plazos de cumplimiento:')
-    set_metas = @set_metas_acciones.includes('meta').group_by{|p| p.meta['nombre'] }
-    set_metas.each_with_index do  |(key, value), posicion|
-    pdf.text("Meta #{ posicion+1 }: #{key} ", indent_paragraphs: 20)
-      value.each_with_index do  |val, pos|
+
+    set_metas = @set_metas_acciones.includes('meta').group_by { |p| p.meta['nombre'] }
+
+    set_metas.each_with_index do |(key, value), posicion|
+      pdf.text("Meta #{posicion+1}: #{key}", indent_paragraphs: 20)
+
+      value.each_with_index do |val, pos|
         if val.plazo_unidad_tiempo_before_type_cast == 1
           medida_singular = 'mes'
-          medida_plural = 'meses'
+          medida_plural   = 'meses'
         else
           medida_singular = 'año'
-          medida_plural = 'años'
+          medida_plural   = 'años'
         end
+
         plazo = val.plazo_valor.present? ? helpers.pluralize(val.plazo_valor, medida_singular, medida_plural) : 0
-        pdf.text("Acción  #{(posicion+1).to_s} . #{(pos+1).to_s}:  #{val.descripcion_accion}", indent_paragraphs: 40)
-        pdf.text("Plazo:  #{plazo}", indent_paragraphs: 40)
-        pdf.text("Método de verificación:  #{val.detalle_medio_verificacion}", indent_paragraphs: 40)
+
+        pdf.text("Acción #{posicion+1}.#{pos+1}: #{val.descripcion_accion}", indent_paragraphs: 40)
+        pdf.text("Plazo: #{plazo}", indent_paragraphs: 40)
+        pdf.text("Método de verificación: #{val.detalle_medio_verificacion}", indent_paragraphs: 40)
       end
     end
-    #pdf.render_file(filename)
-    send_data(pdf.render, :type => "application/pdf", :filename => "SetMetasAcciones.pdf")
+
+    send_data(pdf.render, type: "application/pdf", filename: "SetMetasAcciones.pdf")
   end
 
   def metas_acciones_tipo_meta
