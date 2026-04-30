@@ -7,12 +7,14 @@
   var ubicacionEntidadCogestoraMap;
   var representacionSeleccionTerritorioMap;
   var document_ready = false;
+  var google_ready = false;
 
   var coords = [];
   var places = [];
   var markers = [];
 
   function mapLoaded(){
+    google_ready = true;
     if(document_ready){
       initializeRepresentacionSeleccionTerritorioMap(-30.0000000, -71.0000000);
       setAllMarkers(#{raw json_escape @manifestacion_de_interes.coordernadas_territorios.blank? ? [] :  @manifestacion_de_interes.coordernadas_territorios},representacionSeleccionTerritorioMap);
@@ -64,6 +66,15 @@
   }
 
   function setCoordinates(lugares) {
+
+    if (!google_ready || typeof google === 'undefined' || !google.maps) {
+      console.warn("Google no listo, reintentando...");
+      setTimeout(function(){
+        setCoordinates(lugares);
+      }, 500);
+      return;
+    }
+
     removeAllMarkers();
 
     if (lugares.length > 0) {
@@ -72,6 +83,7 @@
       coords = [];
 
       lugares.forEach(function(lugar) {
+        lugar = lugar.replace(/\s+/g, ' ').trim().split(" ").join(", ");
         geocoder.geocode({ address: lugar }, function(results, status) {
           if (status === "OK") {
             const location = results[0].geometry.location;
@@ -89,7 +101,7 @@
               .trigger("change");
 
           } else {
-            console.error("No se pudo geocodificar:", lugar, status);
+            console.error("Error geocoding:", lugar, status);
           }
         });
       });
