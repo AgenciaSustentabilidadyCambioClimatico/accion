@@ -65,22 +65,39 @@
 
   function setCoordinates(lugares) {
     removeAllMarkers();
-    if ( lugares.length > 0 ) {
 
-      $.post("#{geo_localization_coordinates_path}", { geo_localization: { place: JSON.stringify(lugares) }}, function(data){
-        coords = [];
-        $.each(data.response,function(k,v){
-          latLngLocation = { lat: v.latitud, lng: v.longitud };
-          coords.push( latLngLocation );
-          addMarker(representacionSeleccionTerritorioMap,latLngLocation);
+    if (lugares.length > 0) {
+
+      const geocoder = new google.maps.Geocoder();
+      coords = [];
+
+      lugares.forEach(function(lugar) {
+        geocoder.geocode({ address: lugar }, function(results, status) {
+          if (status === "OK") {
+            const location = results[0].geometry.location;
+
+            const latLng = {
+              lat: location.lat(),
+              lng: location.lng()
+            };
+
+            coords.push(latLng);
+            addMarker(representacionSeleccionTerritorioMap, latLng);
+
+            $('#manifestacion_de_interes_coordernadas_territorios')
+              .val(JSON.stringify(coords))
+              .trigger("change");
+
+          } else {
+            console.error("No se pudo geocodificar:", lugar, status);
+          }
         });
-      }).done(function() {
-        $('#manifestacion_de_interes_coordernadas_territorios').val(JSON.stringify(coords));
-        $('#manifestacion_de_interes_coordernadas_territorios').trigger("change");
       });
-    }else{
-      $('#manifestacion_de_interes_coordernadas_territorios').val("");
-      $('#manifestacion_de_interes_coordernadas_territorios').trigger("change");
+
+    } else {
+      $('#manifestacion_de_interes_coordernadas_territorios')
+        .val("")
+        .trigger("change");
     }
   }
 
