@@ -164,9 +164,47 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.seleccion_de_radios
     @mantener_temporal = 'true'
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
 
   end
@@ -184,9 +222,39 @@ class ManifestacionDeInteresController < ApplicationController
         format.html { redirect_to root_path, notice: success }
       end
     else
-      procesar_contribuyentes_temporales
-      procesar_representantes_temporales
+      unless @manifestacion_de_interes.contribuyente_id.nil?
+        @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+        if @contribuyente_temporal.contribuyente_id.nil?
+          @contribuyente_nuevo = @contribuyente_temporal
+          @contribuyente_editado = Contribuyente.new
+        else
+          @contribuyente_nuevo = Contribuyente.new
+          @contribuyente_editado = @contribuyente_temporal
+        end
+      else
+        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+      end
+      @contribuyente_nuevo.temporal = true
+      @contribuyente_editado.temporal = true
+      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+      unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+        if @usuario_temporal.user_id.nil?
+          @usuario_nuevo = @usuario_temporal
+          @usuario_editado = User.new
+        else
+          @usuario_nuevo = User.new
+          @usuario_editado = @usuario_temporal
+        end
+      else
+        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+      end
+      @usuario_nuevo.temporal = true
+      @usuario_editado.temporal = true
+      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
       @manifestacion_de_interes.assign_attributes(manifestacion_params)
       @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_params[:carta_de_apoyo_y_compromiso] if manifestacion_params[:carta_de_apoyo_y_compromiso].present?
@@ -241,8 +309,46 @@ class ManifestacionDeInteresController < ApplicationController
             @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
             @flujo.save
 
-            procesar_contribuyentes_temporales
-            procesar_representantes_temporales
+            unless @manifestacion_de_interes.contribuyente_id.nil?
+              #Elimino todos los que no sean el id guardado
+              Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+              #Ahora segun si tiene contribuyente_id lo paso a variable
+              @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+              if @contribuyente_temporal.contribuyente_id.nil?
+                @contribuyente_nuevo = @contribuyente_temporal
+                @contribuyente_editado = Contribuyente.new
+              else
+                @contribuyente_nuevo = Contribuyente.new
+                @contribuyente_editado = @contribuyente_temporal
+              end
+            else
+              @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+            end
+            @contribuyente_nuevo.temporal = true
+            @contribuyente_editado.temporal = true
+            @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+            @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+            unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+              #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+              @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+              if @usuario_temporal.user_id.nil?
+                @usuario_nuevo = @usuario_temporal
+                @usuario_editado = User.new
+              else
+                @usuario_nuevo = User.new
+                @usuario_editado = @usuario_temporal
+              end
+            else
+              User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+              @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+            end
+
+            @usuario_nuevo.temporal = true
+            @usuario_editado.temporal = true
+            @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+            @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
             
             @manifestacion_de_interes.flujo.reload
             carga_de_representantes
@@ -337,9 +443,47 @@ class ManifestacionDeInteresController < ApplicationController
 
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
@@ -382,9 +526,47 @@ class ManifestacionDeInteresController < ApplicationController
 
         @revisores_juridicos = Responsable.__personas_responsables(Rol::REVISOR_JURIDICO, TipoInstrumento.find_by(nombre: 'Acuerdo de Producción Limpia').id)
 
-        procesar_contribuyentes_temporales
-        procesar_representantes_temporales
+        unless @manifestacion_de_interes.contribuyente_id.nil?
+          #Elimino todos los que no sean el id guardado
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+          #Ahora segun si tiene contribuyente_id lo paso a variable
+          @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+          if @contribuyente_temporal.contribuyente_id.nil?
+            @contribuyente_nuevo = @contribuyente_temporal
+            @contribuyente_editado = Contribuyente.new
+          else
+            @contribuyente_nuevo = Contribuyente.new
+            @contribuyente_editado = @contribuyente_temporal
+          end
+        else
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+        end
+        @contribuyente_nuevo.temporal = true
+        @contribuyente_editado.temporal = true
+        @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+        unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+          #Elimino todos los que no sean el id guardado
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+          #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+          @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+          if @usuario_temporal.user_id.nil?
+            @usuario_nuevo = @usuario_temporal
+            @usuario_editado = User.new
+          else
+            @usuario_nuevo = User.new
+            @usuario_editado = @usuario_temporal
+          end
+        else
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+        end
+        @usuario_nuevo.temporal = true
+        @usuario_editado.temporal = true
+        @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
         carga_de_representantes
 
         format.js { }
@@ -399,9 +581,47 @@ class ManifestacionDeInteresController < ApplicationController
     @manifestacion_de_interes.temp_siguientes = "true"
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
@@ -451,9 +671,47 @@ class ManifestacionDeInteresController < ApplicationController
 
         @manifestacion_de_interes.seleccion_de_radios
 
-        procesar_contribuyentes_temporales
-        procesar_representantes_temporales
+        unless @manifestacion_de_interes.contribuyente_id.nil?
+          #Elimino todos los que no sean el id guardado
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+          #Ahora segun si tiene contribuyente_id lo paso a variable
+          @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+          if @contribuyente_temporal.contribuyente_id.nil?
+            @contribuyente_nuevo = @contribuyente_temporal
+            @contribuyente_editado = Contribuyente.new
+          else
+            @contribuyente_nuevo = Contribuyente.new
+            @contribuyente_editado = @contribuyente_temporal
+          end
+        else
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+        end
+        @contribuyente_nuevo.temporal = true
+        @contribuyente_editado.temporal = true
+        @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+        unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+          #Elimino todos los que no sean el id guardado
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+          #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+          @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+          if @usuario_temporal.user_id.nil?
+            @usuario_nuevo = @usuario_temporal
+            @usuario_editado = User.new
+          else
+            @usuario_nuevo = User.new
+            @usuario_editado = @usuario_temporal
+          end
+        else
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+        end
+        @usuario_nuevo.temporal = true
+        @usuario_editado.temporal = true
+        @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
         carga_de_representantes
 
         format.js { }
@@ -467,9 +725,47 @@ class ManifestacionDeInteresController < ApplicationController
 
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
@@ -519,9 +815,47 @@ class ManifestacionDeInteresController < ApplicationController
 
         @manifestacion_de_interes.seleccion_de_radios
 
-        procesar_contribuyentes_temporales
-        procesar_representantes_temporales
+        unless @manifestacion_de_interes.contribuyente_id.nil?
+          #Elimino todos los que no sean el id guardado
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+          #Ahora segun si tiene contribuyente_id lo paso a variable
+          @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+          if @contribuyente_temporal.contribuyente_id.nil?
+            @contribuyente_nuevo = @contribuyente_temporal
+            @contribuyente_editado = Contribuyente.new
+          else
+            @contribuyente_nuevo = Contribuyente.new
+            @contribuyente_editado = @contribuyente_temporal
+          end
+        else
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+        end
+        @contribuyente_nuevo.temporal = true
+        @contribuyente_editado.temporal = true
+        @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+        unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+          #Elimino todos los que no sean el id guardado
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+          #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+          @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+          if @usuario_temporal.user_id.nil?
+            @usuario_nuevo = @usuario_temporal
+            @usuario_editado = User.new
+          else
+            @usuario_nuevo = User.new
+            @usuario_editado = @usuario_temporal
+          end
+        else
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+        end
+        @usuario_nuevo.temporal = true
+        @usuario_editado.temporal = true
+        @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
         carga_de_representantes
 
         format.js { }
@@ -539,16 +873,85 @@ class ManifestacionDeInteresController < ApplicationController
 
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
   def resolver_observaciones_admisibilidad #DZC TAREA APL-004
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
     @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_params)
     @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_obs_admisibilidad_params[:carta_de_apoyo_y_compromiso] if manifestacion_obs_admisibilidad_params[:carta_de_apoyo_y_compromiso].present?
@@ -605,8 +1008,46 @@ class ManifestacionDeInteresController < ApplicationController
           @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
           @flujo.save
 
-          procesar_contribuyentes_temporales
-          procesar_representantes_temporales
+          unless @manifestacion_de_interes.contribuyente_id.nil?
+            #Elimino todos los que no sean el id guardado
+            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+            #Ahora segun si tiene contribuyente_id lo paso a variable
+            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+            if @contribuyente_temporal.contribuyente_id.nil?
+              @contribuyente_nuevo = @contribuyente_temporal
+              @contribuyente_editado = Contribuyente.new
+            else
+              @contribuyente_nuevo = Contribuyente.new
+              @contribuyente_editado = @contribuyente_temporal
+            end
+          else
+            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+          end
+          @contribuyente_nuevo.temporal = true
+          @contribuyente_editado.temporal = true
+          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+            if @usuario_temporal.user_id.nil?
+              @usuario_nuevo = @usuario_temporal
+              @usuario_editado = User.new
+            else
+              @usuario_nuevo = User.new
+              @usuario_editado = @usuario_temporal
+            end
+          else
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+          end
+
+          @usuario_nuevo.temporal = true
+          @usuario_editado.temporal = true
+          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
           
           @manifestacion_de_interes.flujo.reload
           carga_de_representantes
@@ -668,16 +1109,85 @@ class ManifestacionDeInteresController < ApplicationController
 
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
   def resolver_observaciones_admisibilidad_juridica #DZC TAREA APL-004.2
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
     @manifestacion_de_interes.assign_attributes(manifestacion_obs_admisibilidad_juridica_params)
     @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_obs_admisibilidad_juridica_params[:carta_de_apoyo_y_compromiso] if manifestacion_obs_admisibilidad_juridica_params[:carta_de_apoyo_y_compromiso].present?
@@ -734,8 +1244,46 @@ class ManifestacionDeInteresController < ApplicationController
           @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
           @flujo.save
 
-          procesar_contribuyentes_temporales
-          procesar_representantes_temporales
+          unless @manifestacion_de_interes.contribuyente_id.nil?
+            #Elimino todos los que no sean el id guardado
+            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+            #Ahora segun si tiene contribuyente_id lo paso a variable
+            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+            if @contribuyente_temporal.contribuyente_id.nil?
+              @contribuyente_nuevo = @contribuyente_temporal
+              @contribuyente_editado = Contribuyente.new
+            else
+              @contribuyente_nuevo = Contribuyente.new
+              @contribuyente_editado = @contribuyente_temporal
+            end
+          else
+            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+          end
+          @contribuyente_nuevo.temporal = true
+          @contribuyente_editado.temporal = true
+          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+            if @usuario_temporal.user_id.nil?
+              @usuario_nuevo = @usuario_temporal
+              @usuario_editado = User.new
+            else
+              @usuario_nuevo = User.new
+              @usuario_editado = @usuario_temporal
+            end
+          else
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+          end
+
+          @usuario_nuevo.temporal = true
+          @usuario_editado.temporal = true
+          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
           
           @manifestacion_de_interes.flujo.reload
           carga_de_representantes
@@ -803,8 +1351,47 @@ class ManifestacionDeInteresController < ApplicationController
       @instrumento_seleccionado = Flujo.where(id: @flujos_con_tipo_instrumento).pluck(:tipo_instrumento_id) 
     end
  
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
 
   end
@@ -918,9 +1505,47 @@ class ManifestacionDeInteresController < ApplicationController
 
         @manifestacion_de_interes.seleccion_de_radios
 
-        procesar_contribuyentes_temporales
-        procesar_representantes_temporales
+        unless @manifestacion_de_interes.contribuyente_id.nil?
+          #Elimino todos los que no sean el id guardado
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+          #Ahora segun si tiene contribuyente_id lo paso a variable
+          @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+          if @contribuyente_temporal.contribuyente_id.nil?
+            @contribuyente_nuevo = @contribuyente_temporal
+            @contribuyente_editado = Contribuyente.new
+          else
+            @contribuyente_nuevo = Contribuyente.new
+            @contribuyente_editado = @contribuyente_temporal
+          end
+        else
+          Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+        end
+        @contribuyente_nuevo.temporal = true
+        @contribuyente_editado.temporal = true
+        @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+        unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+          #Elimino todos los que no sean el id guardado
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+          #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+          @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+          if @usuario_temporal.user_id.nil?
+            @usuario_nuevo = @usuario_temporal
+            @usuario_editado = User.new
+          else
+            @usuario_nuevo = User.new
+            @usuario_editado = @usuario_temporal
+          end
+        else
+          User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+          @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+        end
+        @usuario_nuevo.temporal = true
+        @usuario_editado.temporal = true
+        @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+        @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
         carga_de_representantes
 
         format.js { }
@@ -936,16 +1561,85 @@ class ManifestacionDeInteresController < ApplicationController
     end
     @manifestacion_de_interes.seleccion_de_radios
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      #Elimino todos los que no sean el id guardado
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+      #Ahora segun si tiene contribuyente_id lo paso a variable
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      #Elimino todos los que no sean el id guardado
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+      #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
     carga_de_representantes
   end
 
   def responder_cond_obs_pertinencia_factibilidad #DZC APL-006
 
-    procesar_contribuyentes_temporales
-    procesar_representantes_temporales
+    unless @manifestacion_de_interes.contribuyente_id.nil?
+      @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+      if @contribuyente_temporal.contribuyente_id.nil?
+        @contribuyente_nuevo = @contribuyente_temporal
+        @contribuyente_editado = Contribuyente.new
+      else
+        @contribuyente_nuevo = Contribuyente.new
+        @contribuyente_editado = @contribuyente_temporal
+      end
+    else
+      @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+    end
+    @contribuyente_nuevo.temporal = true
+    @contribuyente_editado.temporal = true
+    @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+    unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+      @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+      if @usuario_temporal.user_id.nil?
+        @usuario_nuevo = @usuario_temporal
+        @usuario_editado = User.new
+      else
+        @usuario_nuevo = User.new
+        @usuario_editado = @usuario_temporal
+      end
+    else
+      @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+    end
+    @usuario_nuevo.temporal = true
+    @usuario_editado.temporal = true
+    @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+    @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
 
     @manifestacion_de_interes.assign_attributes(manifestacion_responder_pertinencia_params)
     @manifestacion_de_interes[:carta_de_apoyo_y_compromiso] = manifestacion_responder_pertinencia_params[:carta_de_apoyo_y_compromiso] if manifestacion_responder_pertinencia_params[:carta_de_apoyo_y_compromiso].present?
@@ -1001,8 +1695,46 @@ class ManifestacionDeInteresController < ApplicationController
           @flujo.contribuyente_id = @manifestacion_de_interes.contribuyente_id if !@manifestacion_de_interes.contribuyente_id.blank?
           @flujo.save
 
-          procesar_contribuyentes_temporales
-          procesar_representantes_temporales
+          unless @manifestacion_de_interes.contribuyente_id.nil?
+            #Elimino todos los que no sean el id guardado
+            Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.contribuyente_id).destroy_all
+            #Ahora segun si tiene contribuyente_id lo paso a variable
+            @contribuyente_temporal = Contribuyente.unscoped.find(@manifestacion_de_interes.contribuyente_id)
+            if @contribuyente_temporal.contribuyente_id.nil?
+              @contribuyente_nuevo = @contribuyente_temporal
+              @contribuyente_editado = Contribuyente.new
+            else
+              @contribuyente_nuevo = Contribuyente.new
+              @contribuyente_editado = @contribuyente_temporal
+            end
+          else
+            @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
+          end
+          @contribuyente_nuevo.temporal = true
+          @contribuyente_editado.temporal = true
+          @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
+
+          unless @manifestacion_de_interes.representante_institucion_para_solicitud_id.nil?
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id).destroy_all
+            #Ahora segun si tiene representante_institucion_para_solicitud_id lo paso a variable
+            @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
+            if @usuario_temporal.user_id.nil?
+              @usuario_nuevo = @usuario_temporal
+              @usuario_editado = User.new
+            else
+              @usuario_nuevo = User.new
+              @usuario_editado = @usuario_temporal
+            end
+          else
+            User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).destroy_all
+            @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
+          end
+
+          @usuario_nuevo.temporal = true
+          @usuario_editado.temporal = true
+          @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
+          @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
           
           @manifestacion_de_interes.flujo.reload
           carga_de_representantes
@@ -1726,63 +2458,6 @@ class ManifestacionDeInteresController < ApplicationController
   end
 
   private
-
-    # Nuevo método unificado
-    def procesar_contribuyentes_temporales
-      if @manifestacion_de_interes.contribuyente_id.present?
-        # Usamos delete_all en lugar de destroy_all si no necesitas los callbacks, es muchísimo más rápido (1 sola consulta SQL)
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id)
-                              .where.not(id: @manifestacion_de_interes.contribuyente_id)
-                              .delete_all 
-        
-        # Hacemos includes de las tablas que sabemos que causan N+1 en las vistas
-        @contribuyente_temporal = Contribuyente.unscoped
-                                              .includes(:establecimiento_contribuyentes, :dato_anual_contribuyentes)
-                                              .find(@manifestacion_de_interes.contribuyente_id)
-                                              
-        if @contribuyente_temporal.contribuyente_id.nil?
-          @contribuyente_nuevo = @contribuyente_temporal
-          @contribuyente_editado = Contribuyente.new
-        else
-          @contribuyente_nuevo = Contribuyente.new
-          @contribuyente_editado = @contribuyente_temporal
-        end
-      else
-        Contribuyente.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).delete_all
-        @contribuyente_temporal = @contribuyente_nuevo = @contribuyente_editado = Contribuyente.new
-      end
-
-      @contribuyente_nuevo.temporal = true
-      @contribuyente_editado.temporal = true
-      @contribuyente_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @contribuyente_editado.flujo_id = @manifestacion_de_interes.flujo.id
-    end
-
-    def procesar_representantes_temporales
-      if @manifestacion_de_interes.representante_institucion_para_solicitud_id.present?
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id)
-                    .where.not(id: @manifestacion_de_interes.representante_institucion_para_solicitud_id)
-                    .delete_all
-
-        @usuario_temporal = User.unscoped.find(@manifestacion_de_interes.representante_institucion_para_solicitud_id)
-        
-        if @usuario_temporal.user_id.nil?
-          @usuario_nuevo = @usuario_temporal
-          @usuario_editado = User.new
-        else
-          @usuario_nuevo = User.new
-          @usuario_editado = @usuario_temporal
-        end
-      else
-        User.unscoped.where(flujo_id: @manifestacion_de_interes.flujo.id).delete_all
-        @usuario_temporal = @usuario_nuevo = @usuario_editado = User.new
-      end
-
-      @usuario_nuevo.temporal = true
-      @usuario_editado.temporal = true
-      @usuario_nuevo.flujo_id = @manifestacion_de_interes.flujo.id
-      @usuario_editado.flujo_id = @manifestacion_de_interes.flujo.id
-    end
 
     def set_tarea_pendiente
       @tarea_pendiente = TareaPendiente.includes([:flujo]).find(params[:tarea_pendiente_id])
