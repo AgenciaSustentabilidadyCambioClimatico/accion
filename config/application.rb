@@ -25,6 +25,7 @@ module Ascc
     # end
     if Rails.env.production?
       config.hosts << /.*\.ascc\.cl/
+      config.hosts << 'ascc1.corfo.cl'
     end
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
