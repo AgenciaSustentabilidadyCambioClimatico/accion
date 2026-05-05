@@ -3720,7 +3720,7 @@
                         %td.contenido-form= auditor.telefono
                         %td.contenido-form= auditor.email
                         %td.contenido-form= auditor.profesion
-                        %td.contenido-form{id: "td-auditores-valor-hh-#{auditor.id}"}= valor_hh
+                        %td.contenido-form{id: "td-auditores-valor-hh-#{auditor.id}"}= number_to_currency valor_hh
                         - if !solo_lectura
                           %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{auditor.id}"}
                             - if recurso_humano_existente?(equipo_trabajo_id, @tarea_pendiente.flujo_id)

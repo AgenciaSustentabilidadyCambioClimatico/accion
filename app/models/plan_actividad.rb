@@ -620,14 +620,14 @@ class PlanActividad < ApplicationRecord
            =============================== */
         SELECT
           'RRHH Externo' AS item_gasto,
-          u.nombre_completo AS nombre_item,
+          COALESCE(rp.nombre || ' ' || rp.apellido || ' (Auditor)', u.nombre_completo) AS nombre_item,
           rh.hh AS cantidad,
           'HH' AS unidad,
           CASE ta.id
-            WHEN 1 THEN 'Propio Valorado'
-            WHEN 2 THEN 'Propio Líquido'
-            WHEN 3 THEN 'Solicitado al Fondo'
-            ELSE 'Otro'
+          WHEN 1 THEN 'Propio Valorado'
+          WHEN 2 THEN 'Propio Líquido'
+          WHEN 3 THEN 'Solicitado al Fondo'
+          ELSE 'Otro'
           END AS tipo_aporte,
           et.valor_hh AS valor,
           (rh.hh * et.valor_hh) AS total
@@ -636,8 +636,10 @@ class PlanActividad < ApplicationRecord
           ON rh.plan_actividad_id = pa.id
         JOIN equipo_trabajos et
           ON et.id = rh.equipo_trabajo_id
-        JOIN users u
+        LEFT JOIN users u
           ON u.id = et.user_id
+        LEFT JOIN registro_proveedores rp
+          ON rp.id = et.registro_proveedores_id
         JOIN tipo_aportes ta
           ON ta.id = rh.tipo_aporte_id
         WHERE rh.flujo_id = :flujo_id

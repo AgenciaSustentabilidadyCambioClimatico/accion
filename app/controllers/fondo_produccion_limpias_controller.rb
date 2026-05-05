@@ -4130,6 +4130,23 @@ class FondoProduccionLimpiasController < ApplicationController
       objetivo_especificos = ObjetivosEspecifico.where(flujo_id: @flujo.id).all
       postulantes = EquipoTrabajo.where(flujo_id: @flujo.id, tipo_equipo: 3)
       consultores = EquipoTrabajo.where(flujo_id: @flujo.id, tipo_equipo:[1,2])
+      
+      # Obtener los equipos de trabajo que coinciden
+      equipo_trabajos = EquipoTrabajo.where(flujo_id: @flujo.id, tipo_equipo: 4)
+      # Crear un hash para acceder rápidamente a los IDs de EquipoTrabajo por registro_proveedores_id
+      equipo_trabajo_hash = equipo_trabajos.group_by(&:registro_proveedores_id)
+
+      auditor_all = RegistroProveedor.where(id: equipo_trabajo_hash.keys)
+
+      # Ahora iteramos sobre @auditores y obtenemos los IDs de EquipoTrabajo
+      auditores = auditor_all.map do |auditor|
+        {
+          auditor: auditor,
+          equipo_trabajo_ids: equipo_trabajo_hash[auditor.id].map(&:id), # Obtener los IDs de EquipoTrabajo
+          valor_hh: equipo_trabajo_hash[auditor.id].map(&:valor_hh) # Obtener el valor_hh
+        }
+      end
+
       empresas = EquipoEmpresa.where(flujo_id: @flujo.id)
       actividades = PlanActividad.actividad_detalle(@flujo.id)
       costos = PlanActividad.costos(@flujo.id)
@@ -4176,7 +4193,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl)
+                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores)
         
       # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
