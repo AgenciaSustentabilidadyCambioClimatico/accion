@@ -337,7 +337,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
   def generar_formulario_fpl(objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
                   costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
-                  comentarios = nil, adheridas = nil)
+                  comentarios = nil, adheridas = nil, auditor = nil)
     require 'stringio'
 
     pdf = Prawn::Document.new
@@ -482,6 +482,13 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
       self.pdf_tabla_equipo_trabajo(pdf, consultores)
       self.pdf_separador(pdf, 20)
+
+      if tipo_instrumento == TipoInstrumento::FPL_LINEA_1_3 || tipo_instrumento == TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_EVALUACION 
+        self.pdf_sub_titulo_formato(pdf, "Auditor")
+        self.pdf_tabla_auditor(pdf, auditor)
+        self.pdf_separador(pdf, 20)
+      end
+
       self.pdf_sub_titulo_formato(pdf, "Indicar fortalezas del o los consultores")
       self.pdf_contenido_formato(pdf, self.fortalezas_consultores)
       self.pdf_separador(pdf, 20)
@@ -726,6 +733,43 @@ class FondoProduccionLimpia < ApplicationRecord
       end
 
       pdf.table(data, header: true, column_widths: [75, 75, 75, 75, 75, 75, 75], cell_style: { size: 9, padding: [4, 8] }) do |table|
+        # Sin estilos adicionales por ahora
+      end
+
+      pdf.move_down 10 # Espacio después de la tabla
+
+    rescue => e
+      #c
+      Rails.logger.error "Error creando la tabla en el PDF: #{e.message}"
+      puts "Error creando la tabla en el PDF: #{e.message}"
+    end
+  end
+
+  def pdf_tabla_auditor(pdf, auditores)
+    begin
+      # Encabezados de la tabla
+      headers = ["Nombre Completo", "RUT", "Teléfono", "E-mail", "Profesión", "Valor HH"]
+
+      # Datos de la tabla
+      data = [headers] # Comienza con los encabezados
+
+      # Agregar cada objetivo específico a la tabla
+      auditores.each do |item|
+        auditor = item[:auditor]
+        valor_hh  = item[:valor_hh]&.first.to_f
+
+        fila = [
+          "#{auditor.nombre} #{auditor.apellido}".to_s,
+          auditor.rut.to_s,
+          auditor.telefono.to_s,
+          auditor.email.to_s,
+          auditor.profesion.to_s,
+          sprintf("$%<valor_hh>.0f", valor_hh: valor_hh).gsub(/(\d)(?=(\d{3})+(?!\d))/, "\\1.")
+        ]
+        data << fila
+      end
+
+      pdf.table(data, header: true, column_widths: [88, 87, 87, 88, 88, 87], cell_style: { size: 9, padding: [4, 8] }) do |table|
         # Sin estilos adicionales por ahora
       end
 
