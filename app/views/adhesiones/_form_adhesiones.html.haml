@@ -92,24 +92,18 @@
                   .col-12.col-lg-2.mt-4
                     = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', flujo_id: (@flujo.present? ? @flujo.id : nil), id: 'usuario_representante' do
                       %i.fa.fa-search-plus
-                      Buscar actor 
+                      Buscar usuario 
                 .row
                   = f.input :user_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'usuario_id_mapa_actores', class: 'form-control' } 
-                  = f.input :rol_en_acuerdo_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'rol_id_usuario_mapa_actores', class: 'form-control' } 
-                  = f.input :cargo_institucion_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'cargo_id_usuario_mapa_actores', class: 'form-control' } 
                   = f.input :direccion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_usuario_mapa_actores', class: 'form-control' } 
                   
-                  .col-12.col-lg-2.mt-2  
-                    = f.input :rol_en_acuerdo, input_html: { id: 'rol_usuario_mapa_actores', class: 'form-control', readonly: true }
-                  .col-12.col-lg-2.mt-2
+                  .col-12.col-lg-3.mt-2
                     = f.input :nombre, input_html: { id: 'nombre_usuario_mapa_actores', class: 'form-control', readonly: true }
-                  .col-12.col-lg-2.mt-2
+                  .col-12.col-lg-3.mt-2
                     = f.input :rut, input_html: { id: 'rut_usuario_mapa_actores', class: 'form-control', readonly: true }
-                  .col-12.col-lg-2.mt-2
-                    = f.input :cargo_institucion, label: 'Cargo institución', input_html: { id: 'cargo_usuario_mapa_actores', class: 'form-control', readonly: true }
-                  .col-12.col-lg-2.mt-2
+                  .col-12.col-lg-3.mt-2
                     = f.input :email_institucional, input_html: { id: 'email_usuario_mapa_actores', class: 'form-contro', readonly: true }
-                  .col-12.col-lg-2.mt-2   
+                  .col-12.col-lg-3.mt-2   
                     = f.input :telefono_institucional, input_html: { id: 'telefono_usuario_mapa_actores', class: 'form-control', readonly: true }               
                 .row
                   .col-12.col-lg-2.mt-4    

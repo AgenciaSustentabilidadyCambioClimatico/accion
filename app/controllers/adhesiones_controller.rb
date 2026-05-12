@@ -563,7 +563,7 @@ class AdhesionesController < ApplicationController
     end
 
     def set_usuario_actor
-      @usuario_actor = User.new
+      @usuario_adhesion = User.new
     end
 
     def set_actores

@@ -160,6 +160,18 @@ class Admin::UsersController < ApplicationController
     render layout: false
   end
 
+  def edit_adhesion_modal
+    if params[:id].blank?
+      @usuario_adhesion = User.new
+    else
+      @usuario_adhesion = User.unscoped.find_by(user_id: params[:id], flujo_id: params[:flujo_id]) || User.unscoped.find(params[:id])
+    end
+    @usuario_adhesion.temporal = true
+    @usuario_adhesion.flujo_id = params[:flujo_id]
+    @usuario_adhesion.user_id = params[:user_id] unless params[:user_id].blank?
+    render layout: false
+  end
+
   def recarga_contribuyente
 	@personas = ::Persona.where(user_id: params[:user_id])
 	@contribuyente = Contribuyente.new
