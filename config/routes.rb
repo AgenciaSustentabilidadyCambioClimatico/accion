@@ -1014,6 +1014,9 @@ Rails.application.routes.draw do
   get ':tarea_pendiente_id/adhesion/descargar_compilado_four', to: "adhesiones#descargar_compilado_four", as: :descargar_compilado_adhesion_four
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos
+  patch ':tarea_pendiente_id/adhesion/crear_adhesion', to: "adhesiones#crear_adhesion", as: :crear_adhesion
+  get ':tarea_pendiente_id/listado-adhesiones-temporal', to: "adhesiones#listado_adhesiones_temporal", as: :listado_adhesiones_temporal
+
 
   if Rails.env.production?
     match '*a' => redirect("/"), via: :all

@@ -4,6 +4,9 @@ class AdhesionesController < ApplicationController
   before_action :set_flujo
 	before_action :set_datos
   before_action :set_crea_archivo, only: [:descargar]
+  before_action :set_contribuyentes
+  before_action :set_usuario_actor
+  before_action :set_actores, only: [:actualizar]
 
 	def actualizar #DZC ACCESO A APL-025 PPF-016
 	end
@@ -428,6 +431,10 @@ class AdhesionesController < ApplicationController
     end    
   end
 
+  def crear_adhesion
+    @listado_adhesiones = ListadoAdhesionesTemporal.new
+  end
+
 	private
 	
     #asigna valor de id de tarea pendiente, leyendolo desde la URL (esto es neceario por que no se traspasa desde la jerarquia superior)
@@ -549,4 +556,19 @@ class AdhesionesController < ApplicationController
       @archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "Adhesiones" )
     end
 
+    def set_contribuyentes
+      @contribuyente = Contribuyente.new
+      @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+      @contribuyente_actor = Contribuyente.new
+    end
+
+    def set_usuario_actor
+      @usuario_actor = User.new
+    end
+
+    def set_actores
+      @listado_adhesiones = ListadoAdhesionesTemporal.new
+      @listado_adhesiones = ListadoAdhesionesTemporal.where(flujo_id: params[:id])
+      @listado_adhesion = ListadoAdhesionesTemporal.new
+    end
 end

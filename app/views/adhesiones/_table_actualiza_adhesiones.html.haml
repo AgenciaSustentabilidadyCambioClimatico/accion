@@ -1,0 +1,73 @@
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin= t(:agregar_adhesiones_formulario)
+      .card-body
+        .table-responsive
+          %div#div_mapa_actores.table-responsive  
+            %table.table.table-striped
+              %thead
+                %tr
+                  %th='Fecha Ingreso'
+                  %th=t(:rut_institucion)
+                  %th=t(:nombre_institución)
+                  %th=t(:alcance)
+                  %th=t(:nombre_elemento)
+                  %th=t(:comuna_elemento)
+                  %th=t(:direccion_elemento)
+                  %th=t(:datos_encargado)
+                  %th=t(:observaciones)
+                  %th=t(:estado)
+              %tbody
+                - if @listado_adhesiones.present?
+                  - correlativo = 1
+                  - @listado_adhesiones.each do |listado|
+                    %tr{"data-id" => listado['id']} 
+                      %td= correlativo
+                      %td=listado[:rol_en_acuerdo]
+                      %td=listado[:nombre_actor]
+                      %td=listado[:rut_actor]
+                      %td=listado[:cargo_institucion]
+                      %td=listado[:email_institucional]
+                      %td=listado[:telefono_institucional]
+                      %td=listado[:razon_social_institucion]
+                      %td=listado[:rut_institucion]
+                      %td=listado[:tipo_institucion]
+                      %td=listado[:comuna_institucion]
+                      %td.contenido-form.dos.iconos-acciones
+                        %a{
+                          "data-actor-id" => listado['id'],
+                          "data-confirm" => "¿Está seguro que desea borrar a este Actor?",
+                          "class" => "eliminar-actor",
+                          "id" => "eliminar-actor-#{listado['id']}",
+                          "data-remote" => "true",
+                          "rel" => "nofollow",
+                          "data-method" => "delete",
+                          "href" => "/manifestacion-de-interes/#{@manifestacion_de_interes.id}/#{listado['id']}/eliminar-actor",
+                          "data-original-title" => "Eliminar Actor"
+                        }
+                          %i.fa.fa-trash{title: "Eliminar"}
+                    - correlativo += 1
+                - else
+                  %tr
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles                   
+        - disabled_button = @listado_adhesiones.empty? ? 'btn-disabled' : ''
+        - button_disabled = @listado_adhesiones.empty? ? :disabled : nil
+
+        .float-right.mr-3.mb-3
+          = button_tag t(:save),
+            id: 'actualizar-mapa-de-actores-listado-button',
+            'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+            class: "actualizar-mapa-de-actores-listado-button btn btn-sm btn-primary btn-disabled",
+            disabled: @listado_adhesiones.blank?
+
+:javascript
+  $(document).ready(function(){
+    $(document).on('click', '.actualizar-mapa-de-actores-listado-button', function(e) {
+      var button = $(this);
+      button.prop("disabled", true);
+      button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
+      
+    });
+  });

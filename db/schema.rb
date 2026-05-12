@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_04_195550) do
+ActiveRecord::Schema.define(version: 2026_05_08_184616) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1150,6 +1150,35 @@ ActiveRecord::Schema.define(version: 2026_05_04_195550) do
     t.string "direccion"
     t.string "codigo_ciiuv4"
     t.index ["manifestacion_de_interes_id"], name: "index_listado_actores_temporals_on_manifestacion_de_interes_id"
+  end
+
+  create_table "listado_adhesiones_temporals", force: :cascade do |t|
+    t.string "fecha_adhesion"
+    t.string "rut_institucion"
+    t.string "nombre_institucion"
+    t.string "sector_productivo"
+    t.string "tipo_institucion"
+    t.string "tamano_empresa"
+    t.string "direccion_casa_matriz"
+    t.string "comuna_casa_matriz"
+    t.string "rut_encargado"
+    t.string "nombre_encargado"
+    t.string "cargo_encargado"
+    t.string "fono_encargado"
+    t.string "email_encargado"
+    t.string "alcance"
+    t.string "nombre_instalacion"
+    t.string "direccion_instalacion"
+    t.string "comuna_instalacion"
+    t.string "tipo_elemento"
+    t.string "identificador"
+    t.string "patente"
+    t.string "nombre_elemento"
+    t.string "nombre_archivo"
+    t.integer "flujo_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["flujo_id"], name: "index_listado_adhesiones_temporals_on_flujo_id"
   end
 
   create_table "lugar_coordenadas", force: :cascade do |t|
