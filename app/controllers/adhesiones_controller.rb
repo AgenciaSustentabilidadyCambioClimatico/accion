@@ -559,7 +559,7 @@ class AdhesionesController < ApplicationController
     def set_contribuyentes
       @contribuyente = Contribuyente.new
       @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
-      @contribuyente_actor = Contribuyente.new
+      @contribuyente_adhesion = Contribuyente.new
     end
 
     def set_usuario_actor

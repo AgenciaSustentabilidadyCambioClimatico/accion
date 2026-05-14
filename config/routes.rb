@@ -452,6 +452,7 @@ Rails.application.routes.draw do
         get :region_comunas 
         get :edit_modal
         get :edit_actor_modal
+        get :edit_adhesion_modal
       end
     end
 
