@@ -506,13 +506,13 @@ class MapaDeActor < ApplicationRecord
 				# con el mismo email.
         apl = flujo.manifestacion_de_interes.nombre_acuerdo
 				begin
-					usuario = User.invite!(
-						rut: rut_persona,
-						nombre_completo: fila[:nombre_completo_persona].to_s,
-						telefono: fila[:telefono_institucional].to_s,
-						email: fila[:email_institucional].to_s,
-            web_o_red_social_1: apl
-					)
+					#usuario = User.invite!(
+					#	rut: rut_persona,
+					#	nombre_completo: fila[:nombre_completo_persona].to_s,
+					#	telefono: fila[:telefono_institucional].to_s,
+					#	email: fila[:email_institucional].to_s,
+            		#   web_o_red_social_1: apl
+					#)
 					# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
 					usuario.save(validate: false)
 				rescue Exception => e
