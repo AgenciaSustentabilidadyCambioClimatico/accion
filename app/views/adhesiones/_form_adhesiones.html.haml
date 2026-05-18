@@ -1,82 +1,132 @@
 :javascript
   $(document).ready(function() {
-    $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+    $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
 
     $('#formulario-agregar-adhesion input').on('input change', function() {
-      agregar_usuario_actor_validaciones();
+      agregar_usuario_adhesiones_validaciones();
     });
     $('#formulario-agregar-adhesion select').on('change', function() {
-      agregar_usuario_actor_validaciones();
+      agregar_usuario_adhesiones_validaciones();
     });
 
-    //agregar_usuario_actor_validaciones();
+    agregar_usuario_adhesiones_validaciones();
 
     $('#formulario-agregar-adhesion').on('ajax:beforeSend', function() {
-      $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+      $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
     });
 
     $('#formulario-agregar-adhesion').on('ajax:success', function(event, data, status, xhr) {
       limpiarFormulario(); 
 
       setTimeout(function() {
-        $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+        $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
       }, 0); 
     });
 
     $('#formulario-agregar-adhesion').on('ajax:error', function(event, xhr, status, error) {
-      $('.agregar-usuario-actor-button').removeAttr("disabled");
-      alert("Error al agregar actor. Por favor, inténtelo de nuevo.");
+      $('.agregar-usuario-adhesion-button').removeAttr("disabled");
+      alert("Error al agregar adhesion. Por favor, inténtelo de nuevo.");
     });
 
     verificarModal();
   });
 
-  function limpiarFormulario() {
-    $('#formulario-agregar-adhesion')[0].reset();
-
-    $('#rol_usuario_mapa_actores').val('');
-    $('#nombre_usuario_mapa_actores').val('');
-    $('#rut_usuario_mapa_actores').val('');
-    $('#cargo_usuario_mapa_actores').val('');
-    $('#email_institucional').val('');
-    $('#telefono_institucional').val('');
-    $('#razon_social_contribuyente_mapa_actores').val('');
-    $('#rut_contribuyente_mapa_actores').val('');
-    $('#tipo_institucion_mapa_actores').val('');
-    $('#comuna_institucion_mapa_actores').val('');
-
-    $('#usuario_id_mapa_actores').val('');
-    $('#rol_id_usuario_mapa_actores').val('');
-    $('#cargo_id_usuario_mapa_actores').val('');
-    $('#direccion_usuario_mapa_actores').val('');
-    $('#contribuyente_id_mapa_actores').val('');
-    $('#tipo_institucion_id_mapa_actores').val('');
-    $('#codigo_ciiuv4_contribuyente_mapa_actores').val('');
+  function limpiarFormulario() {    
+    $('#nombre_encargado_adhesiones').val(''),
+    $('#rut_encargado_adhesiones').val(''),
+    $('#email_encargado_adhesiones').val(''),
+    $('#telefono_encargado_adhesiones').val(''),
+    $('#cargo_encargado_adhesiones').val(''),
+    $('#contribuyente_razon_social').val(''),
+    $('#nombre_institucion_adhesiones').val('');
+    $('#rut_institucion_adhesiones').val(''),
+    $('#tipo_institucion_adhesiones').val(''),
+    $('#comuna_institucion_adhesiones').val(''),
+    $('#fecha_adhesion').val(''),
+    $('#sector_productivo_adhesiones').val(''),
+    $('#tamano_empresa_adhesiones').val(''),
+    $('#direccion_casa_matriz_adhesiones').val(''),
+    $('#comuna_casa_matriz_adhesiones').val(''),
+    $('#alcance_adhesiones').val(''),
+    $('#nombre_instalacion_adhesiones').val(''),
+    $('#direccion_instalacion_adhesiones').val(''),
+    $('#comuna_instalacion_adhesiones').val(''),
+    $('#tipo_elemento_adhesiones').val(''),
+    $('#identificador_adhesiones').val(''),
+    $('#patente_adhesiones').val(''),
+    $('#nombre_elemento_adhesiones').val(''),
+    $('#nombre_archivo_adhesiones').val('')
   }
 
-  function agregar_usuario_actor_validaciones() {
-    var rol_en_acuerdo = $('#rol_usuario_mapa_actores').val().trim() !== "";
-    var nombre_actor = $('#nombre_usuario_mapa_actores').val().trim() !== "";
-    var rut_actor = $('#rut_usuario_mapa_actores').val().trim() !== "";
-    var cargo_institucion = $('#cargo_usuario_mapa_actores').val().trim() !== "";
-    var email_institucional = $('#email_usuario_mapa_actores').val().trim() !== "";
-    var telefono_institucional = $('#telefono_usuario_mapa_actores').val().trim() !== "";
-    var razon_social_institucion = $('#razon_social_contribuyente_mapa_actores').val().trim() !== "";
-    var rut_institucion = $('#rut_contribuyente_mapa_actores').val().trim() !== "";
-    var tipo_institucion = $('#tipo_institucion_mapa_actores').val().trim() !== "";
-    var comuna_institucion = $('#comuna_institucion_mapa_actores').val().trim() !== "";
+  function agregar_usuario_adhesiones_validaciones() {
+    var nombre_usuario = $('#nombre_encargado_adhesiones').val().trim() !== "";
+    var rut_usuario = $('#rut_encargado_adhesiones').val().trim() !== "";
+    //var cargo_institucion = $('#cargo_encargado_adhesiones').val().trim() !== "";
+    var email_institucional = $('#email_encargado_adhesiones').val().trim() !== "";
+    var telefono_institucional = $('#telefono_encargado_adhesiones').val().trim() !== "";
 
-    if (rol_en_acuerdo && nombre_actor && rut_actor && cargo_institucion && email_institucional && telefono_institucional && razon_social_institucion && rut_institucion && tipo_institucion && comuna_institucion) {
-      $('.agregar-usuario-actor-button').removeAttr("disabled");
+    var razon_social_institucion = $('#nombre_institucion_adhesiones').val().trim() !== "";
+    var rut_institucion = $('#rut_institucion_adhesiones').val().trim() !== "";
+    var tipo_institucion = $('#tipo_institucion_adhesiones').val().trim() !== "";
+    var comuna_institucion = $('#comuna_institucion_adhesiones').val().trim() !== "";
+
+    if (nombre_usuario && rut_usuario && email_institucional && telefono_institucional && razon_social_institucion && rut_institucion && tipo_institucion && comuna_institucion) {
+      $('.agregar-usuario-adhesion-button').removeAttr("disabled");
     } else {
-      $('.agregar-usuario-actor-button').attr("disabled", "disabled");
+      $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
     }
   }
 
-- if @manifestacion_de_interes.accion_en_mapa_de_actores == :actualizacion || @manifestacion_de_interes.accion_en_mapa_de_actores == :revision
-  - url = actualizacion_actor_mapa_de_actores_manifestacion_de_interes_path(@tarea_pendiente,@manifestacion_de_interes)
-- else
-  - url = crear_adhesion_path(@tarea_pendiente)
+  function confirmarGuardar(event) {
+    event.preventDefault();
+
+    const datos = {
+      listado_adhesiones_temporal: {
+        nombre_encargado: $('#nombre_encargado_adhesiones').val(),
+        rut_encargado: $('#rut_encargado_adhesiones').val(),
+        email_encargado: $('#email_encargado_adhesiones').val(),
+        fono_encargado: $('#telefono_encargado_adhesiones').val(),
+        cargo_encargado: $('#cargo_encargado_adhesiones').val(),
+        nombre_institucion: $('#contribuyente_razon_social').val(),
+        rut_institucion: $('#rut_institucion_adhesiones').val(),
+        tipo_institucion: $('#tipo_institucion_adhesiones').val(),
+        comuna_institucion: $('#comuna_institucion_adhesiones').val(),
+        fecha_adhesion: $('#fecha_adhesion').val(),
+        sector_productivo: $('#sector_productivo_adhesiones').val(),
+        tamano_empresa: $('#tamano_empresa_adhesiones').val(),
+        direccion_casa_matriz: $('#direccion_casa_matriz_adhesiones').val(),
+        comuna_casa_matriz: $('#comuna_casa_matriz_adhesiones').val(),
+        alcance: $('#alcance_adhesiones').val(),
+        nombre_instalacion: $('#nombre_instalacion_adhesiones').val(),
+        direccion_instalacion: $('#direccion_instalacion_adhesiones').val(),
+        comuna_instalacion: $('#comuna_instalacion_adhesiones').val(),
+        tipo_elemento: $('#tipo_elemento_adhesiones').val(),
+        identificador: $('#identificador_adhesiones').val(),
+        patente: $('#patente_adhesiones').val(),
+        nombre_elemento: $('#nombre_elemento_adhesiones').val(),
+        nombre_archivo: $('#nombre_archivo_adhesiones').val()
+      }
+    };
+
+    console.log(datos);
+
+    $.ajax({
+      url: "#{crear_adhesion_path(@tarea_pendiente)}",
+      method: 'PATCH',
+      data: datos,
+      dataType: 'script',
+      success: function(response) {
+        console.log('Guardado OK');
+        limpiarFormulario();
+      },
+      error: function(xhr) {
+        console.error(xhr.responseText);
+      }
+    });
+  }
+
+
+- url = crear_adhesion_path(@tarea_pendiente)
   
 .card.m-0
   .card-header
@@ -94,17 +144,31 @@
                       %i.fa.fa-search-plus
                       Buscar usuario 
                 .row
-                  = f.input :user_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'usuario_id_mapa_actores', class: 'form-control' } 
-                  = f.input :direccion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_usuario_mapa_actores', class: 'form-control' } 
-                  
+                  = f.input :fecha_adhesion, as: :hidden, wrapper: false, label: false, input_html: { id: 'fecha_adhesion', class: 'form-control' } 
+                  = f.input :sector_productivo, as: :hidden, wrapper: false, label: false, input_html: { id: 'sector_productivo_adhesiones', class: 'form-control' } 
+                  = f.input :tamano_empresa, as: :hidden, wrapper: false, label: false, input_html: { id: 'tamano_empresa_adhesiones', class: 'form-control' } 
+                  = f.input :direccion_casa_matriz, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_casa_matriz_adhesiones', class: 'form-control' } 
+                  = f.input :comuna_casa_matriz, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_casa_matriz_adhesiones', class: 'form-control' } 
+                  = f.input :alcance, as: :hidden, wrapper: false, label: false, input_html: { id: 'alcance_adhesiones', class: 'form-control' } 
+                  = f.input :nombre_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_instalacion_adhesiones', class: 'form-control' } 
+                  = f.input :direccion_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_instalacion_adhesiones', class: 'form-control' } 
+                  = f.input :comuna_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_instalacion_adhesiones', class: 'form-control' }                  
+                  = f.input :tipo_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_elemento_adhesiones', class: 'form-control' } 
+                  = f.input :identificador, as: :hidden, wrapper: false, label: false, input_html: { id: 'identificador_adhesiones', class: 'form-control' } 
+                  = f.input :patente, as: :hidden, wrapper: false, label: false, input_html: { id: 'patente_adhesiones', class: 'form-control' } 
+                  = f.input :nombre_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_elemento_adhesiones', class: 'form-control' }   
+                  = f.input :nombre_archivo, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_archivo_adhesiones', class: 'form-control' } 
+                  = f.input :cargo_encargado, as: :hidden, wrapper: false, label: false, input_html: { id: 'cargo_encargado_adhesiones', class: 'form-control' } 
+                 
                   .col-12.col-lg-3.mt-2
-                    = f.input :nombre, input_html: { id: 'nombre_usuario_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :nombre_encargado, input_html: { id: 'nombre_encargado_adhesiones', class: 'form-control', readonly: true }
+                    -#= text_field_tag('listado_adhesiones_temporal[nombre_encargado]', nil,id: 'nombre_encargado_adhesiones',class: 'form-control',readonly: true)
                   .col-12.col-lg-3.mt-2
-                    = f.input :rut, input_html: { id: 'rut_usuario_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :rut_encargado, input_html: { id: 'rut_encargado_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :email_institucional, input_html: { id: 'email_usuario_mapa_actores', class: 'form-contro', readonly: true }
+                    = f.input :email_encargado, input_html: { id: 'email_encargado_adhesiones', class: 'form-contro', readonly: true }
                   .col-12.col-lg-3.mt-2   
-                    = f.input :telefono_institucional, input_html: { id: 'telefono_usuario_mapa_actores', class: 'form-control', readonly: true }               
+                    = f.input :fono_encargado, input_html: { id: 'telefono_encargado_adhesiones', class: 'form-control', readonly: true }               
                 .row
                   .col-12.col-lg-2.mt-4    
                     = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', id: "intitucion_cogestora" do
@@ -112,18 +176,15 @@
                       Buscar institución
                 
                 .row
-                  = f.input :contribuyente_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'contribuyente_id_mapa_actores', class: 'form-control' }
-                  = f.input :tipo_institucion_id, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_institucion_id_mapa_actores', class: 'form-control' }
-                  = f.input :codigo_ciiuv4, as: :hidden, wrapper: false, label: false, input_html: { id: 'codigo_ciiuv4_contribuyente_mapa_actores', class: 'form-control' } 
-
                   .col-12.col-lg-3.mt-2
-                    = f.input :razon_social_institucion, label: 'Razón social institución', input_html: { id: 'razon_social_contribuyente_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :nombre_institucion, label: 'Razón social institución', input_html: { id: 'nombre_institucion_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :rut_institucion, label: 'Rut institución', input_html: { id: 'rut_contribuyente_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :rut_institucion, label: 'Rut institución', input_html: { id: 'rut_institucion_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :tipo_institucion, label: 'Tipo institución', input_html: { id: 'tipo_institucion_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :tipo_institucion, label: 'Tipo institución', input_html: { id: 'tipo_institucion_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
-                    = f.input :comuna_institucion, label: 'Comuna institución', input_html: { id: 'comuna_institucion_mapa_actores', class: 'form-control', readonly: true }
+                    = f.input :comuna_casa_matriz, label: 'Comuna institución', input_html: { id: 'comuna_institucion_adhesiones', class: 'form-control', readonly: true }
       .float-right.mr-3.mb-3
-        = f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-actor-button', id: 'agregar-usuario-actor-button'
+        -#= f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button'
+        = button_tag 'Agregar', type: 'button', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button', onclick: 'confirmarGuardar(event); return false;'
 %br

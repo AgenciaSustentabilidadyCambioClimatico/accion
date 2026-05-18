@@ -7,6 +7,7 @@ class AdhesionesController < ApplicationController
   before_action :set_contribuyentes
   before_action :set_usuario_actor
   before_action :set_actores, only: [:actualizar]
+  before_action :set_listado_adhesiones_temporal
 
 	def actualizar #DZC ACCESO A APL-025 PPF-016
 	end
@@ -433,6 +434,34 @@ class AdhesionesController < ApplicationController
 
   def crear_adhesion
     @listado_adhesiones = ListadoAdhesionesTemporal.new
+    datos = sanitize_rut(listado_adhesiones_temporal_params.to_h)
+    @listado_adhesiones.assign_attributes(datos)
+    @listado_adhesiones.flujo_id = @flujo.id
+    @listado_adhesiones.save
+    
+    listado_adhesiones_temporal
+  end
+
+  def eliminar_adhesion
+    adhesion = ListadoAdhesionesTemporal.find(params[:adhesion_id])
+
+    if adhesion.destroy
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: adhesion.flujo_id, estado: 0)
+      @tarea_pendiente = TareaPendiente.find_by(flujo_id: adhesion.flujo_id)
+
+      respond_to do |format|
+        format.js { render 'adhesiones/eliminar_adhesion', locals: { adhesion: adhesion.id } }
+      end
+    else
+      flash[:error] = 'Hubo un problema al eliminar al adhesion.'
+    end
+  end
+
+  def listado_adhesiones_temporal
+    @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'adhesiones/listado_adhesiones_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
+    end
   end
 
 	private
@@ -571,4 +600,41 @@ class AdhesionesController < ApplicationController
       @listado_adhesiones = ListadoAdhesionesTemporal.where(flujo_id: params[:id])
       @listado_adhesion = ListadoAdhesionesTemporal.new
     end
+
+    def set_listado_adhesiones_temporal
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id:  @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    end
+
+    def listado_adhesiones_temporal_params
+    params.require(:listado_adhesiones_temporal).permit(
+      :fecha_adhesion,
+      :rut_institucion,
+      :nombre_institucion,
+      :sector_productivo,
+      :tipo_institucion,
+      :tamano_empresa,
+      :direccion_casa_matriz,
+      :comuna_casa_matriz,
+      :rut_encargado,
+      :nombre_encargado,
+      :cargo_encargado,
+      :fono_encargado,
+      :email_encargado,
+      :alcance,
+      :nombre_instalacion,
+      :direccion_instalacion,
+      :comuna_instalacion,
+      :tipo_elemento,
+      :identificador,
+      :patente,
+      :nombre_elemento,
+      :nombre_archivo,
+      :flujo_id)
+  end
+
+  def sanitize_rut(params)
+    params["rut_encargado"]&.gsub!('.', '')
+    params["rut_institucion"]&.gsub!('.', '')
+    params
+  end
 end

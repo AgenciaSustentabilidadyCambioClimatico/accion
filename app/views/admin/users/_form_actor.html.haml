@@ -109,7 +109,7 @@
       $.ajax({
         url: "#{recarga_contribuyente_admin_users_path}",
         type: "GET",
-        data: { user_id: user_id },
+        data: { user_id: user_id, origen: 'actor' },
         dataType: "html",
         beforeSend: function () {
           $('.loading-data').show();

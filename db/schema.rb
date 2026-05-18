@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_08_184616) do
+ActiveRecord::Schema.define(version: 2026_05_18_142346) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1178,6 +1178,7 @@ ActiveRecord::Schema.define(version: 2026_05_08_184616) do
     t.integer "flujo_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "estado", default: 0, null: false
     t.index ["flujo_id"], name: "index_listado_adhesiones_temporals_on_flujo_id"
   end
 

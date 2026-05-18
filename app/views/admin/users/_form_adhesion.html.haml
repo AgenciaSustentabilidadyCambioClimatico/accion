@@ -78,13 +78,13 @@
         email = "no";
       }
 
-      $("#rut_usuario_mapa_actores").val(rut);
-      $("#nombre_usuario_mapa_actores").val(nombreCompleto);   
-      $("#email_usuario_mapa_actores").val(email);   
-      $("#telefono_usuario_mapa_actores").val(telefono); 
+      $("#rut_encargado_adhesiones").val(rut);
+      $("#nombre_encargado_adhesiones").val(nombreCompleto);   
+      $("#email_encargado_adhesiones").val(email);   
+      $("#telefono_encargado_adhesiones").val(telefono); 
      
       $('#buscar-usuario').modal("hide");
-      agregar_usuario_actor_validaciones();
+      agregar_usuario_adhesiones_validaciones();
       recargarContribuyentes(user_id);
 
     });
@@ -93,7 +93,7 @@
       $.ajax({
         url: "#{recarga_contribuyente_admin_users_path}",
         type: "GET",
-        data: { user_id: user_id },
+        data: { user_id: user_id, origen: 'adhesion' },
         dataType: "html",
         beforeSend: function () {
           $('.loading-data').show();

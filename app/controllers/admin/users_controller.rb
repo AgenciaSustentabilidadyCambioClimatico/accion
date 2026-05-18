@@ -175,7 +175,14 @@ class Admin::UsersController < ApplicationController
   def recarga_contribuyente
 	@personas = ::Persona.where(user_id: params[:user_id])
 	@contribuyente = Contribuyente.new
-	@contribuyente_actor = Contribuyente.new
+
+	case params[:origen]
+	when 'actor'
+		@contribuyente_actor = Contribuyente.new
+	when 'adhesion'
+		@contribuyente_adhesion = Contribuyente.new	
+	end
+
     @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
 	@es_para_seleccion = "true"
 
