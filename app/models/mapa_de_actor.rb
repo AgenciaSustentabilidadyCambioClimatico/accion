@@ -514,7 +514,7 @@ class MapaDeActor < ApplicationRecord
             		#   web_o_red_social_1: apl
 					#)
 					# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
-					usuario.save(validate: false)
+					#usuario.save(validate: false)
 				rescue Exception => e
 					puts("Se produjo el error #{e} en la creación de un nuevo usuario por mapa de actores#{flujo.present? ? ' para el flujo '+flujo.id: ''}#{tarea_pendiente.present? ? ' tarea_pendiente '+tarea_pendiente.id : ''}") rescue nil
 				end
