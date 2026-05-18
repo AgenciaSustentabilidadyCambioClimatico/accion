@@ -2005,7 +2005,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       #obtiene el correlativo del objetivo especifico
       objetivo = ObjetivosEspecifico.find(params['objetivos_especifico_id'])
-      correlativo = params['correlativo']&.strip&.tr(',', '.')
+      correlativo = params['correlativo']&.strip&.tr(',', '.')&.sub(/\.$/, '')
+
       if @plan_actividades.blank? ||
         @plan_actividades.objetivos_especifico&.correlativo != objetivo.correlativo ||
         @plan_actividades.correlativo.nil?
