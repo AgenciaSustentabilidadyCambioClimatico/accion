@@ -637,12 +637,12 @@ class Adhesion < ApplicationRecord
 		if usuario.blank?
       apl = flujo.manifestacion_de_interes.nombre_acuerdo
 			# Crea un usuario sin password y le envia la invitación al email
-			usuario = User.invite!(
-				rut: rut_encargado,
-				nombre_completo: fila[:nombre_encargado].to_s,
-				telefono: fila[:fono_encargado].to_s,
-				email: fila[:email_encargado].to_s,
-        web_o_red_social_1: apl)
+			#usuario = User.invite!(
+			#	rut: rut_encargado,
+			#	nombre_completo: fila[:nombre_encargado].to_s,
+			#	telefono: fila[:fono_encargado].to_s,
+			#	email: fila[:email_encargado].to_s,
+        	# 	#web_o_red_social_1: apl)
 		end
 		persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
 		if persona.nil?
