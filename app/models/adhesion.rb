@@ -644,7 +644,13 @@ class Adhesion < ApplicationRecord
 			#	email: fila[:email_encargado].to_s,
         	# 	#web_o_red_social_1: apl)
 		end
-		persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
+		
+		# Si el usuario no existe, evitamos que rompa el código
+		return false if usuario.nil?
+		if usuario.present?
+			persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
+		end
+	
 		if persona.nil?
 			persona = Persona.new(
 				user_id: usuario.id,
