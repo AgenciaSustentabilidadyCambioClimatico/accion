@@ -506,15 +506,20 @@ class MapaDeActor < ApplicationRecord
 				# con el mismo email.
         apl = flujo.manifestacion_de_interes.nombre_acuerdo
 				begin
-					#usuario = User.invite!(
-					#	rut: rut_persona,
-					#	nombre_completo: fila[:nombre_completo_persona].to_s,
-					#	telefono: fila[:telefono_institucional].to_s,
-					#	email: fila[:email_institucional].to_s,
-            		#   web_o_red_social_1: apl
-					#)
-					# DZC 2018-10-03 12:08:26 Se corrige error que transformaba la variable usuario a boolean
-					#usuario.save(validate: false)
+	  				# 1. Generamos una contraseña segura y aleatoria de 20 caracteres
+					password_temporal = SecureRandom.hex(10)
+
+					# 2. Creamos al usuario directamente en la base de datos
+					usuario = User.create(
+						rut: rut_persona,
+						nombre_completo: fila[:nombre_completo_persona].to_s,
+						telefono: fila[:telefono_institucional].to_s,
+					 	email: fila[:email_institucional].to_s,
+            		    web_o_red_social_1: apl,
+						password: password_temporal,
+						password_confirmation: password_temporal
+					)
+					usuario.save(validate: false)
 				rescue Exception => e
 					puts("Se produjo el error #{e} en la creación de un nuevo usuario por mapa de actores#{flujo.present? ? ' para el flujo '+flujo.id: ''}#{tarea_pendiente.present? ? ' tarea_pendiente '+tarea_pendiente.id : ''}") rescue nil
 				end
