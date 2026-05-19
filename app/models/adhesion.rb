@@ -645,6 +645,7 @@ class Adhesion < ApplicationRecord
         web_o_red_social_1: apl)
 		end
 		persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
+		if persona.nil?
 			persona = Persona.new(
 				user_id: usuario.id,
 				contribuyente_id: contribuyente.id,
