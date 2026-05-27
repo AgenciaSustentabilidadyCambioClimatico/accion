@@ -12,27 +12,57 @@ class AdhesionesController < ApplicationController
 	def actualizar #DZC ACCESO A APL-025 PPF-016
 	end
 
-	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
-    @adhesion_new = Adhesion.new
-    @adhesion_new.flujo_id = @flujo.id
-    @adhesion_new.is_ppf = @ppp.present?
-    @adhesion.tarea_id = @tarea.id if @tarea.present?
-    @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
-    @adhesion_new.save!
-    @adhesion.assign_attributes(adhesion_params)
+  def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
+    
+    # 1. Detectamos el tipo de flujo de forma segura
+    es_flujo_excel = params.dig(:adhesion, :archivo_elementos).present?
+    tiene_parametros_adhesion = params[:adhesion].present?
 
-		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
+    if !es_flujo_excel
+      # ─── FLUJO FORMULARIO MANUAL ──────────────────────────────────────
+      @adhesion.listado_adhesiones = true
+      # Aquí puedes cargar o inicializar las variables que tus partials manuales necesitan, por ejemplo:
+      # @listado_adhesion = ListadoAdhesion.new
+    else
+      # ─── FLUJO EXCEL ──────────────────────────────────────────────────
+      # (Tu lógica específica de excel si la hay)
+    end 
+
+    # 2. Procesamos el duplicado de archivos SOLO si la clave :adhesion está presente
+    if tiene_parametros_adhesion
+      @adhesion_new = Adhesion.new
+      @adhesion_new.flujo_id = @flujo.id
+      @adhesion_new.is_ppf = @ppp.present?
+      @adhesion.tarea_id = @tarea.id if @tarea.present?
+      @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
+      @adhesion_new.save!
+      
+      # Solo asignamos si pasó el filtro del require
+      @adhesion.assign_attributes(adhesion_params)
+    end
+
+    # 3. Seteos transversales antes de guardar
     @adhesion.flujo_id = @flujo.id
     @adhesion.is_ppf = @ppp.present?
+
     respond_to do |format|
       if @adhesion.save
+        
         @rechazadas = []
         continua_flujo_segun_tipo_tarea
+
         if @tarea.codigo == Tarea::COD_PPF_016 || @tarea.codigo == Tarea::COD_PPF_017
-          format.js { flash[:success] = "Adhesión solicitada correctamente"
+          
+          format.js { 
+            flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{root_url}'" 
           }
         elsif @tarea.codigo == Tarea::COD_APL_025
+          
+          if !es_flujo_excel
+            ListadoAdhesionesTemporal.actualiza_estado_listado_adhesiones(@flujo.id)  
+          end
+          
           format.js { 
             flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{actualizar_adhesion_path(@tarea_pendiente)}'" 
@@ -41,11 +71,14 @@ class AdhesionesController < ApplicationController
           format.js { flash[:success] = "Adhesión solicitada correctamente" }
         end
       else
-      	# ap @adhesion.errors.messages
-        format.js { flash.now[:error] = @adhesion.errors.messages}
+        # 🚨 SI EL GUARDADO FALLA: Para evitar el 'model_name for nil:NilClass',
+        # debemos re-inicializar AQUÍ todas las variables que usan tus sub-formularios renderizados
+        @listado_adhesion = ListadoAdhesionesTemporal.new 
+        
+        format.js { flash.now[:error] = @adhesion.errors.messages }
       end
     end
-	end
+  end
 
   def revisar #DZC APL-028
     respond_to do |format|
@@ -434,12 +467,41 @@ class AdhesionesController < ApplicationController
 
   def crear_adhesion
     @listado_adhesiones = ListadoAdhesionesTemporal.new
-    datos = sanitize_rut(listado_adhesiones_temporal_params.to_h)
+    
+    # 1. Convertimos a Hash asegurando "with_indifferent_access" 
+    # Esto permite buscar tanto con datos[:rut] como con datos['rut'] sin errores
+    datos = sanitize_rut(listado_adhesiones_temporal_params.to_h).with_indifferent_access
     @listado_adhesiones.assign_attributes(datos)
     @listado_adhesiones.flujo_id = @flujo.id
-    @listado_adhesiones.save
+    @listado_adhesiones.fecha_adhesion = Time.now.strftime("%d/%m/%Y")
+
+    # 2. Ahora 'datos[:rut_institucion]' funcionará de forma segura
+    contribuyente = Contribuyente.find_by(rut: datos[:rut_institucion])
     
-    listado_adhesiones_temporal
+    if contribuyente.present?
+      # Usamos &. para navegación segura por si un contribuyente no tiene establecimientos
+      casa_matriz = contribuyente.establecimiento_contribuyentes.find_by(casa_matriz: true)
+      
+      @listado_adhesiones.direccion_casa_matriz = casa_matriz&.direccion || ''
+      @listado_adhesiones.comuna_casa_matriz    = casa_matriz&.comuna.nombre || ''
+    else
+      @listado_adhesiones.direccion_casa_matriz = ''
+      @listado_adhesiones.comuna_casa_matriz    = ''
+    end
+
+    @listado_adhesiones.identificador  = ""
+    @listado_adhesiones.patente        = ""
+    @listado_adhesiones.nombre_elemento = ""
+    
+    # 3. 🚀 Usamos .save! (con signo de exclamación) en ambiente de desarrollo/debug
+    # Si algo falla, romperá la ejecución y te dirá EXACTAMENTE qué validación falló.
+    if @listado_adhesiones.save
+      # Si guardó con éxito, redirige o procesa
+      listado_adhesiones_temporal
+    else
+      # Si no guardó, puedes poner un binding.pry aquí para revisar: @listado_adhesiones.errors.full_messages
+      render :new # o la acción que corresponda si falla
+    end
   end
 
   def eliminar_adhesion

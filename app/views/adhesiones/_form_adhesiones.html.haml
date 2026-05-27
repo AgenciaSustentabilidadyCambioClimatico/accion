@@ -80,31 +80,33 @@
   function confirmarGuardar(event) {
     event.preventDefault();
 
+      const nombreArchivo = $('#list_files li')
+        .clone()                // clonar el li
+        .children('a')          // seleccionar el enlace
+        .remove()               // eliminarlo
+        .end()                  // volver al li
+        .text()                 // obtener el texto
+        .trim();                // limpiar espacios
+
     const datos = {
       listado_adhesiones_temporal: {
         nombre_encargado: $('#nombre_encargado_adhesiones').val(),
         rut_encargado: $('#rut_encargado_adhesiones').val(),
         email_encargado: $('#email_encargado_adhesiones').val(),
         fono_encargado: $('#telefono_encargado_adhesiones').val(),
-        cargo_encargado: $('#cargo_encargado_adhesiones').val(),
+        cargo_encargado: "Encargado(a) Establecimiento",
         nombre_institucion: $('#contribuyente_razon_social').val(),
         rut_institucion: $('#rut_institucion_adhesiones').val(),
         tipo_institucion: $('#tipo_institucion_adhesiones').val(),
         comuna_institucion: $('#comuna_institucion_adhesiones').val(),
-        fecha_adhesion: $('#fecha_adhesion').val(),
         sector_productivo: $('#sector_productivo_adhesiones').val(),
         tamano_empresa: $('#tamano_empresa_adhesiones').val(),
-        direccion_casa_matriz: $('#direccion_casa_matriz_adhesiones').val(),
-        comuna_casa_matriz: $('#comuna_casa_matriz_adhesiones').val(),
         alcance: $('#alcance_adhesiones').val(),
         nombre_instalacion: $('#nombre_instalacion_adhesiones').val(),
         direccion_instalacion: $('#direccion_instalacion_adhesiones').val(),
         comuna_instalacion: $('#comuna_instalacion_adhesiones').val(),
         tipo_elemento: $('#tipo_elemento_adhesiones').val(),
-        identificador: $('#identificador_adhesiones').val(),
-        patente: $('#patente_adhesiones').val(),
-        nombre_elemento: $('#nombre_elemento_adhesiones').val(),
-        nombre_archivo: $('#nombre_archivo_adhesiones').val()
+        nombre_archivo: nombreArchivo
       }
     };
 
@@ -144,25 +146,16 @@
                       %i.fa.fa-search-plus
                       Buscar usuario 
                 .row
-                  = f.input :fecha_adhesion, as: :hidden, wrapper: false, label: false, input_html: { id: 'fecha_adhesion', class: 'form-control' } 
                   = f.input :sector_productivo, as: :hidden, wrapper: false, label: false, input_html: { id: 'sector_productivo_adhesiones', class: 'form-control' } 
                   = f.input :tamano_empresa, as: :hidden, wrapper: false, label: false, input_html: { id: 'tamano_empresa_adhesiones', class: 'form-control' } 
-                  = f.input :direccion_casa_matriz, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_casa_matriz_adhesiones', class: 'form-control' } 
-                  = f.input :comuna_casa_matriz, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_casa_matriz_adhesiones', class: 'form-control' } 
                   = f.input :alcance, as: :hidden, wrapper: false, label: false, input_html: { id: 'alcance_adhesiones', class: 'form-control' } 
                   = f.input :nombre_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_instalacion_adhesiones', class: 'form-control' } 
                   = f.input :direccion_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_instalacion_adhesiones', class: 'form-control' } 
                   = f.input :comuna_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_instalacion_adhesiones', class: 'form-control' }                  
                   = f.input :tipo_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_elemento_adhesiones', class: 'form-control' } 
-                  = f.input :identificador, as: :hidden, wrapper: false, label: false, input_html: { id: 'identificador_adhesiones', class: 'form-control' } 
-                  = f.input :patente, as: :hidden, wrapper: false, label: false, input_html: { id: 'patente_adhesiones', class: 'form-control' } 
-                  = f.input :nombre_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_elemento_adhesiones', class: 'form-control' }   
-                  = f.input :nombre_archivo, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_archivo_adhesiones', class: 'form-control' } 
-                  = f.input :cargo_encargado, as: :hidden, wrapper: false, label: false, input_html: { id: 'cargo_encargado_adhesiones', class: 'form-control' } 
-                 
+ 
                   .col-12.col-lg-3.mt-2
                     = f.input :nombre_encargado, input_html: { id: 'nombre_encargado_adhesiones', class: 'form-control', readonly: true }
-                    -#= text_field_tag('listado_adhesiones_temporal[nombre_encargado]', nil,id: 'nombre_encargado_adhesiones',class: 'form-control',readonly: true)
                   .col-12.col-lg-3.mt-2
                     = f.input :rut_encargado, input_html: { id: 'rut_encargado_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2

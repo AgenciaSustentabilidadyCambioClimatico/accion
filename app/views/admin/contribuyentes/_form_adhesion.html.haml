@@ -91,7 +91,6 @@
                         %abbr{title: :required}*
                         Alcance    
                       = f.input :alcance, collection: Alcance::__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione alcance" }, label: false, wrapper_html: { class: 'mb-0'}
-
                     .col-12.col-lg-6.mt-2
                       %label.string.control-label
                         %abbr{title: :required}*
@@ -142,7 +141,8 @@
       var contribuyente_id = $('#contribuyente_id').val();
       var rut = $('#contribuyente_rut').val() + '-' + $('#contribuyente_dv').val();
       var razon_social = $('#contribuyente_razon_social').val();
-      //var codigo_ciiuv4 = $('#contribuyente_codigo_ciiuv4 option:selected').text();
+      var tamano_empresa = $('#tamano_contribuyente_input').val(); 
+      var sector_productivo = $('#codigo_ciiuv4_input').val();
       var tipo_institucion = $('#contribuyente_tipo_institucion option:selected').text();
       var comuna = $('#registro_proveedor_comuna option:selected').text();
       var direccion = $('#direccion_select option:selected').text();
@@ -150,7 +150,8 @@
       var tipo_elemento = $('#tipo_elemento_input').val();
       var alcance = $('#contribuyente_alcance option:selected').text();
       var partes = direccion.split("-");
-      
+      var sec_prod_partes = sector_productivo.split("-");
+
       if ($('#direccion_input').val()) {
         direccion = $('#direccion_input').val();
       }else{
@@ -172,18 +173,8 @@
       $("#nombre_instalacion_adhesiones").val(nombre_instalacion);
       $("#tipo_elemento_adhesiones").val(tipo_elemento);
       $("#alcance_adhesiones").val(alcance);
-
-      $("#fecha_adhesion").val("fecha");
-      $("#sector_productivo_adhesiones").val("sector_productivo");
-      $("#tamano_empresa_adhesiones").val("tamano_empresa");
-      $("#direccion_casa_matriz_adhesiones").val("direccion_casa_matriz");
-      $("#comuna_casa_matriz_adhesiones").val("comuna_casa_matriz");
-      $("#identificador_adhesiones").val("identificador");
-      $("#patente_adhesiones").val("patente");
-      $("#nombre_elemento_adhesiones").val("nombre_elemento");
-      $("#nombre_archivo_adhesiones").val("nombre_archivo");
-      //$("#flujo_id_adhesiones").val("flujo_id_");
-      $("#cargo_encargado_adhesiones").val("cargo_encargado");
+      $("#sector_productivo_adhesiones").val(sec_prod_partes[0].trim());
+      $("#tamano_empresa_adhesiones").val(tamano_empresa);
 
       
       $('#buscar-contribuyente').modal("hide");
