@@ -4101,19 +4101,14 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/pdf/fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-   
-      # Crear el recurso S3
-      s3 = Aws::S3::Client.new
-   
+
       begin
-        # Descargar el archivo desde S3
-        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
-        # Enviar el archivo como una descarga
-        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      rescue Aws::S3::Errors::NoSuchKey
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
+        body = AzureBlobStorage.download(pdf_file_name)
+        send_data body, type: "application/pdf", disposition: "attachment",
+                  filename: "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      rescue AzureBlobStorage::BlobNotFound
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
         redirect_to request.referer || root_path
       end
     end
@@ -4196,18 +4191,14 @@ class FondoProduccionLimpiasController < ApplicationController
       pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
                                                  costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores)
         
-      # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
-      # Crear el recurso S3
-      s3 = Aws::S3::Client.new
 
       begin
-        # Descargar el archivo desde S3
-        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
-        # Enviar el archivo como una descarga
-        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
-      rescue Aws::S3::Errors::NoSuchKey
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
+        body = AzureBlobStorage.download(pdf_file_name)
+        send_data body, type: "application/pdf", disposition: "attachment",
+                  filename: "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
+      rescue AzureBlobStorage::BlobNotFound
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
         redirect_to request.referer || root_path
       end
     end    
@@ -4220,7 +4211,6 @@ class FondoProduccionLimpiasController < ApplicationController
       archivo_contrato_url = @fondo_produccion_limpia.archivo_contrato.url
 
       if archivo_contrato_url.present?
-        # Redirect to the S3 URL to initiate the download
         redirect_to archivo_contrato_url
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
@@ -4235,7 +4225,6 @@ class FondoProduccionLimpiasController < ApplicationController
       archivo_resolucion_url = @fondo_produccion_limpia.archivo_resolucion.url
 
       if archivo_resolucion_url.present?
-        # Redirect to the S3 URL to initiate the download
         redirect_to archivo_resolucion_url
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
@@ -4248,19 +4237,14 @@ class FondoProduccionLimpiasController < ApplicationController
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      # Nombre del archivo en S3
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-  
-      # Crear el recurso S3
-      s3 = Aws::S3::Client.new
 
       begin
-        # Descargar el archivo desde S3
-        response = s3.get_object(bucket: ENV['S3_BUCKET_NAME'], key: pdf_file_name)
-        # Enviar el archivo como una descarga
-        send_data response.body.read, type: 'application/pdf', disposition: 'attachment', filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      rescue Aws::S3::Errors::NoSuchKey
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en S3."
+        body = AzureBlobStorage.download(pdf_file_name)
+        send_data body, type: "application/pdf", disposition: "attachment",
+                  filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      rescue AzureBlobStorage::BlobNotFound
+        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
         redirect_to request.referer || root_path
       end
     end

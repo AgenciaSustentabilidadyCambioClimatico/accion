@@ -73,8 +73,13 @@ gem 'will_paginate-bootstrap4'
 gem 'rollbar'
 gem 'ruby-graphviz'
 gem "carrierwave", "~> 2.0"
-gem 'carrierwave-aws'
-gem 'aws-sdk', '~> 3'
+gem "fog-core", "~> 2.3"
+gem "gitlab-fog-azure-rm", "~> 2.0"
+# Transitorias del vendor azure-storage-ruby dentro de gitlab-fog-azure-rm 2.0.x (no listadas en el gemspec)
+gem "faraday", "~> 2.0"
+gem "faraday-follow_redirects", "~> 0.3"
+gem "faraday-net_http_persistent", "~> 2.0"
+gem "net-http-persistent", "~> 4.0"
 gem "rack-attack"
 gem "ffi", "< 1.17.0"
 group :development, :test do
