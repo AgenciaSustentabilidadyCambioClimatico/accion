@@ -45,8 +45,10 @@
 
       if ($("#subir-documentos-form").hasClass("d-none")) {
         $(this).text("Agregar Adhesiones vía excel");
+        $('#columna-comentarios').removeClass('col-lg-6').addClass('col-lg-12');
       } else {
         $(this).text("Agregar Adhesiones formulario");
+        $('#columna-comentarios').removeClass('col-lg-12').addClass('col-lg-6');
       }
       validar_boton_guardar(); // Revalida al cambiar de modo
     });
@@ -244,7 +246,7 @@
           = render 'adhesiones/table_actualiza_adhesiones', externo: true
     .row
       -if @flujo.apl? && @tarea_pendiente.data.has_key?(:observacion_tarea_anterior) && @tarea_pendiente.data[:observacion_tarea_anterior].has_key?(Rol::RESPONSABLE_ENTREGABLES)
-        .col-12.col-lg-6
+        #columna-comentarios.col-12.col-lg-12
           .card
             .card-header
             .card-body

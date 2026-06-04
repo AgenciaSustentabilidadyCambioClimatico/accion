@@ -86,6 +86,76 @@
     }
   });
 
+  // Escucha el cambio en el input de archivos normales para llenar la lista y HABILITAR EL BOTÓN
+  $(document).on('change', '#listado_adhesiones_temporal_nombre_archivo', function(e){
+    
+    // Limpiamos el dt primero para que no se dupliquen si el usuario se equivoca y vuelve a subir
+    dt.items.clear(); 
+    
+    if (this.files && this.files.length > 0) {
+      for (let file of this.files) {
+        dt.items.add(file);
+      }
+    }
+    
+    // Actualizamos el input
+    this.files = dt.files;
+    
+    // Renderizamos visualmente si tienes la función
+    if (typeof render_files === "function") {
+      render_files();
+    }
+    
+    // 🚀 ESTA ES LA LÍNEA MÁGICA QUE ENCIENDE EL BOTÓN
+    validar_boton_guardar(); 
+  });
+
+  function validar_boton_guardar() {
+    // Verificamos si hay archivos en nuestro DataTransfer
+    let tiene_archivos = dt.files.length > 0;
+    
+    // Verificamos si el formulario de Excel está visible y si tiene archivo
+    let excel_visible = !$("#subir-documentos-form").hasClass("d-none");
+    let tiene_excel = $('#adhesion_archivo_elementos').val() !== '';
+
+    // Si el modo excel está activo, exige ambos. Si no, solo los documentos individuales.
+    let registrar_valido = excel_visible ? (tiene_archivos && tiene_excel) : tiene_archivos;
+
+    if (registrar_valido) {
+      // Habilitamos el botón
+      $('#consultar-button').prop('disabled', false).removeClass('btn-disabled');
+    } else {
+      // Mantenemos deshabilitado
+      $('#consultar-button').prop('disabled', true).addClass('btn-disabled');
+    }
+  }
+
+  // Al eliminar un archivo de la lista con el basurero
+  $(document).on('click', '.remove-file', function(e){
+    e.preventDefault();
+    
+    // 1. Removemos visualmente el elemento
+    $(this).parents('.list-group-item').remove();
+    
+    // 2. Lo borramos de la memoria interna (DataTransfer)
+    let index = parseInt($(this).attr("href"));
+    dt.items.remove(index);
+    
+    // 3. 🚀 Actualizamos el input usando el ID NUEVO y CORRECTO
+    let inputElement = $('#listado_adhesiones_temporal_nombre_archivo')[0];
+    if (inputElement) {
+      inputElement.files = dt.files;
+    }
+    
+    // 4. Volvemos a dibujar la lista para que los índices (href) se reordenen
+    if (typeof render_files === "function") {
+      render_files();
+    }
+    
+    // 5. 🚀 Volvemos a validar. Como ahora dt está vacío, apagará el botón.
+    validar_boton_guardar(); 
+  });
+
   function confirmarGuardar(event) {
     event.preventDefault();
 
