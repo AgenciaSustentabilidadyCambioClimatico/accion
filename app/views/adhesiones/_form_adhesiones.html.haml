@@ -31,37 +31,38 @@
     verificarModal();
   });
 
-  function limpiarFormulario() {    
-    $('#nombre_encargado_adhesiones').val(''),
-    $('#rut_encargado_adhesiones').val(''),
-    $('#email_encargado_adhesiones').val(''),
-    $('#telefono_encargado_adhesiones').val(''),
-    $('#cargo_encargado_adhesiones').val(''),
-    $('#contribuyente_razon_social').val(''),
+  function limpiarFormulario() {  
+    $('#nombre_encargado_adhesiones').val('');
+    $('#rut_encargado_adhesiones').val('');
+    $('#email_encargado_adhesiones').val('');
+    $('#telefono_encargado_adhesiones').val('');
+    $('#cargo_encargado_adhesiones').val('');
+    $('#contribuyente_razon_social').val('');
     $('#nombre_institucion_adhesiones').val('');
-    $('#rut_institucion_adhesiones').val(''),
-    $('#tipo_institucion_adhesiones').val(''),
-    $('#comuna_institucion_adhesiones').val(''),
-    $('#fecha_adhesion').val(''),
-    $('#sector_productivo_adhesiones').val(''),
-    $('#tamano_empresa_adhesiones').val(''),
-    $('#direccion_casa_matriz_adhesiones').val(''),
-    $('#comuna_casa_matriz_adhesiones').val(''),
-    $('#alcance_adhesiones').val(''),
-    $('#nombre_instalacion_adhesiones').val(''),
-    $('#direccion_instalacion_adhesiones').val(''),
-    $('#comuna_instalacion_adhesiones').val(''),
-    $('#tipo_elemento_adhesiones').val(''),
-    $('#identificador_adhesiones').val(''),
-    $('#patente_adhesiones').val(''),
-    $('#nombre_elemento_adhesiones').val(''),
-    $('#nombre_archivo_adhesiones').val('')
+    $('#rut_institucion_adhesiones').val('');
+    $('#tipo_institucion_adhesiones').val('');
+    $('#comuna_institucion_adhesiones').val('');
+    $('#fecha_adhesion').val('');
+    $('#sector_productivo_adhesiones').val('');
+    $('#tamano_empresa_adhesiones').val('');
+    $('#direccion_casa_matriz_adhesiones').val('');
+    $('#comuna_casa_matriz_adhesiones').val('');
+    $('#alcance_adhesiones').val('');
+    $('#nombre_instalacion_adhesiones').val('');
+    $('#direccion_instalacion_adhesiones').val('');
+    $('#comuna_instalacion_adhesiones').val('');
+    $('#tipo_elemento_adhesiones').val('');
+    $('#identificador_adhesiones').val('');
+    $('#patente_adhesiones').val('');
+    $('#nombre_elemento_adhesiones').val('');
+    
+    $('#listado_adhesiones_temporal_nombre_archivo').val('');
+    $('#listado_adhesiones_temporal_nombre_archivo').css('border', '');
   }
 
   function agregar_usuario_adhesiones_validaciones() {
     var nombre_usuario = $('#nombre_encargado_adhesiones').val().trim() !== "";
     var rut_usuario = $('#rut_encargado_adhesiones').val().trim() !== "";
-    //var cargo_institucion = $('#cargo_encargado_adhesiones').val().trim() !== "";
     var email_institucional = $('#email_encargado_adhesiones').val().trim() !== "";
     var telefono_institucional = $('#telefono_encargado_adhesiones').val().trim() !== "";
 
@@ -77,16 +78,33 @@
     }
   }
 
+  $(document).on('change', '#nombre_archivo', function() {
+    if ($(this).val() !== "") {
+      // Removemos el borde rojo volviéndolo a su estado original
+      $(this).css('border', ''); 
+      // $(this).removeClass('is-invalid'); // Si usaste la clase de Bootstrap
+    }
+  });
+
   function confirmarGuardar(event) {
     event.preventDefault();
 
-      const nombreArchivo = $('#list_files li')
-        .clone()                // clonar el li
-        .children('a')          // seleccionar el enlace
-        .remove()               // eliminarlo
-        .end()                  // volver al li
-        .text()                 // obtener el texto
-        .trim();                // limpiar espacios
+    // 1. Obtenemos el elemento DOM real (agregando [0] a jQuery)
+    const inputElement = $('#listado_adhesiones_temporal_nombre_archivo')[0];
+    
+    let nombreArchivo = "";
+    
+    // 2. Verificamos si realmente hay algún archivo seleccionado
+    if (inputElement.files && inputElement.files.length > 0) {
+        // 3. Extraemos SOLO el nombre limpio del primer archivo (ej: "documento.pdf")
+        nombreArchivo = inputElement.files[0].name; 
+    }
+
+    if (!nombreArchivo) {
+        $('#listado_adhesiones_temporal_nombre_archivo').css('border', '2px solid #dc3545');
+        alert("Por favor, asegúrese de cargar los Archivos de Adhesión y documentación requeridos antes de guardar.");
+        return; 
+    }
 
     const datos = {
       listado_adhesiones_temporal: {
@@ -95,7 +113,7 @@
         email_encargado: $('#email_encargado_adhesiones').val(),
         fono_encargado: $('#telefono_encargado_adhesiones').val(),
         cargo_encargado: "Encargado(a) Establecimiento",
-        nombre_institucion: $('#contribuyente_razon_social').val(),
+        nombre_institucion: $('#nombre_institucion_adhesiones').val(),
         rut_institucion: $('#rut_institucion_adhesiones').val(),
         tipo_institucion: $('#tipo_institucion_adhesiones').val(),
         comuna_institucion: $('#comuna_institucion_adhesiones').val(),
@@ -106,6 +124,9 @@
         direccion_instalacion: $('#direccion_instalacion_adhesiones').val(),
         comuna_instalacion: $('#comuna_instalacion_adhesiones').val(),
         tipo_elemento: $('#tipo_elemento_adhesiones').val(),
+        identificador: $('#identificador_adhesiones').val(),
+        patente: $('#patente_adhesiones').val(),
+        nombre_elemento: $('#nombre_elemento_adhesiones').val(),
         nombre_archivo: nombreArchivo
       }
     };
@@ -153,6 +174,9 @@
                   = f.input :direccion_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_instalacion_adhesiones', class: 'form-control' } 
                   = f.input :comuna_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_instalacion_adhesiones', class: 'form-control' }                  
                   = f.input :tipo_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_elemento_adhesiones', class: 'form-control' } 
+                  = f.input :identificador, as: :hidden, wrapper: false, label: false, input_html: { id: 'identificador_adhesiones', class: 'form-control' } 
+                  = f.input :patente, as: :hidden, wrapper: false, label: false, input_html: { id: 'patente_adhesiones', class: 'form-control' } 
+                  = f.input :nombre_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_elemento_adhesiones', class: 'form-control' } 
  
                   .col-12.col-lg-3.mt-2
                     = f.input :nombre_encargado, input_html: { id: 'nombre_encargado_adhesiones', class: 'form-control', readonly: true }
@@ -177,6 +201,11 @@
                     = f.input :tipo_institucion, label: 'Tipo institución', input_html: { id: 'tipo_institucion_adhesiones', class: 'form-control', readonly: true }
                   .col-12.col-lg-3.mt-2
                     = f.input :comuna_casa_matriz, label: 'Comuna institución', input_html: { id: 'comuna_institucion_adhesiones', class: 'form-control', readonly: true }
+                
+                .row  
+                  .col-12.col-lg-12.mt-2 
+                    = f.input :nombre_archivo, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
+
       .float-right.mr-3.mb-3
         -#= f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button'
         = button_tag 'Agregar', type: 'button', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button', onclick: 'confirmarGuardar(event); return false;'

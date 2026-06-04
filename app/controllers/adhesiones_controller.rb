@@ -488,11 +488,7 @@ class AdhesionesController < ApplicationController
       @listado_adhesiones.direccion_casa_matriz = ''
       @listado_adhesiones.comuna_casa_matriz    = ''
     end
-
-    @listado_adhesiones.identificador  = ""
-    @listado_adhesiones.patente        = ""
-    @listado_adhesiones.nombre_elemento = ""
-    
+       
     # 3. 🚀 Usamos .save! (con signo de exclamación) en ambiente de desarrollo/debug
     # Si algo falla, romperá la ejecución y te dirá EXACTAMENTE qué validación falló.
     if @listado_adhesiones.save

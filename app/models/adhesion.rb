@@ -666,9 +666,13 @@ class Adhesion < ApplicationRecord
 		# DZC 2019-05-20 12:25:19 se modifica para evitar búsquedas case sensitive
 		# tipo_contribuyente = TipoContribuyente.find_by(nombre: fila[:tipo_institucion].to_s)
 		tipo_contribuyente = TipoContribuyente.find_by('nombre ILIKE ?', fila[:tipo_institucion].to_s)
+		
+		# 1. Buscamos el valor de forma segura en la fila del Excel (soportando 'ñ' o 'n')
+		tamano_empresa_crudo = fila[:tamano_empresa].presence || fila[:tamaño_empresa].presence
 
-		tamano_empresa_split = fila[:tamaño_empresa].split('-')
-
+		# 2. Convertimos a string de forma segura antes de aplicar el split para que nunca dé error si viene vacío
+		tamano_empresa_split = tamano_empresa_crudo.to_s.split('-')
+	
 		# DZC 2019-05-20 12:34:43 se modifica para evitar búsquedas case sensitive
 		# rango_venta_contribuyente = RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last)
 		rango_venta_contribuyente = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano_empresa_split.last)

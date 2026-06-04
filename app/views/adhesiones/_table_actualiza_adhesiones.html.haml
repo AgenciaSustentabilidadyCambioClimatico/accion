@@ -49,16 +49,16 @@
                     - correlativo += 1
                 - else
                   %tr
-                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles                   
-        - disabled_button = @listado_adhesiones_temporal.empty? ? 'btn-disabled' : ''
-        - button_disabled = @listado_adhesiones_temporal.empty? ? :disabled : nil
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles                  
+        -#- disabled_button = @listado_adhesiones_temporal.empty? ? 'btn-disabled' : ''
+        -#- button_disabled = @listado_adhesiones_temporal.empty? ? :disabled : nil
 
-        .float-right.mr-3.mb-3
-          = button_tag t(:save),
-            id: 'actualizar-adhesion-listado-button',
-            'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
-            class: "actualizar-adhesion-listado-button btn btn-sm btn-primary btn-disabled",
-            disabled: @listado_adhesiones_temporal.blank?
+        -#.float-right.mr-3.mb-3
+        -#  = button_tag t(:save),
+        -#    id: 'actualizar-adhesion-listado-button',
+        -#    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+        -#    class: "actualizar-adhesion-listado-button btn btn-sm btn-primary btn-disabled",
+        -#    disabled: @listado_adhesiones_temporal.blank?
 
 :javascript
   $(document).ready(function(){

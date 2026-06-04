@@ -34,7 +34,7 @@ class Contribuyente < ApplicationRecord
 	default_scope { where(temporal: false) }
 
 	#validates :tipo_institucion ,presence: true
-	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl
+	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl, :identificador, :patente, :nombre_elemento, :nombre_archivo
 
 	def rut_unico
 		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first

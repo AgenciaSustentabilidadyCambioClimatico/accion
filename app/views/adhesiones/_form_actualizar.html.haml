@@ -38,6 +38,7 @@
 
     $("#toggle-adhesiones-form").click(function () {
       $("#subir-documentos-form").toggleClass("d-none");
+      $("#descargar-archivos_adhesion").toggleClass("d-none");
       $("#descargar-archivos_formatos").toggleClass("d-none");
       $("#mostrar-descargables").toggleClass("d-none");
       $("#formulario-adhesiones-form").toggleClass("d-none");
@@ -253,7 +254,7 @@
                     %label.control-label=t(:comentarios_del_coordinador_del_acuerdo)
                     %textarea.form-control{disabled: true, rows: 4}=@tarea_pendiente.data[:observacion_tarea_anterior][Rol::RESPONSABLE_ENTREGABLES]
 
-      .col-12.col-lg-6
+      #subir-documentos-form.col-12.col-lg-6.d-none
         .card
           .card-header
             %h5.no-margin=t(:subir_documentacion_adhesiones)
@@ -264,7 +265,7 @@
                 = f.hidden_field :archivos_adhesion_y_documentacion_cache
               .col-12
                 %ul.list-group#list_files
-              .col-12.d-none#subir-documentos-form
+              .col-12
                 = f.input :archivo_elementos, label: t(:archivo_elementos_adheridos), as: :file, required: true, input_html: {class: "required-field form-control auto-save "}
                 = f.hidden_field :archivo_elementos_cache
       #descargar-archivos_formatos.col-12.col-lg-6.d-none
