@@ -713,14 +713,21 @@ class Adhesion < ApplicationRecord
 		rut_encargado = fila[:rut_encargado]
 		usuario = User.find_by(rut: rut_encargado, email: fila[:email_encargado].to_s)
 		if usuario.blank?
-      apl = flujo.manifestacion_de_interes.nombre_acuerdo
-			# Crea un usuario sin password y le envia la invitación al email
-			usuario = User.invite!(
+      		apl = flujo.manifestacion_de_interes.nombre_acuerdo
+			# 1. Generamos una contraseña segura y aleatoria de 20 caracteres
+			password_temporal = SecureRandom.hex(10)
+
+			# 2. Creamos al usuario directamente en la base de datos
+			usuario = User.create(
 				rut: rut_encargado,
 				nombre_completo: fila[:nombre_encargado].to_s,
 				telefono: fila[:fono_encargado].to_s,
 				email: fila[:email_encargado].to_s,
-        web_o_red_social_1: apl)
+				web_o_red_social_1: apl,
+				password: password_temporal,
+				password_confirmation: password_temporal
+			)
+			usuario.save(validate: false)
 		end
 		persona = usuario.personas.where(contribuyente_id: contribuyente.id).first
 		if persona.nil?

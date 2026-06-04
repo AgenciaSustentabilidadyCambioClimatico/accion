@@ -139,7 +139,7 @@
           %th=t(:acuerdo_o_proyecto_o_programa)
           %th{class: 'd-none'} =t(:tarea)
           %th Estado del acuerdo
-          %th.dos.iconos-acciones=t(:acciones)
+          %th.dos.iconos-acciones=t(:etapa)
       %tbody
         - unless pendientes.size == 0
           - pendientes.each_with_index do |pendiente, index|
@@ -182,7 +182,11 @@
                   - unless pendiente.determina_auditoria.blank?
                     -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
                 =tarea_nombre
-                %td{class: 'estado-tarea-entrada'}=manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
+                %td{class: 'estado-tarea-entrada'}
+                  - if fondo_produccion_limpia.present?
+                    = 'Postulación'
+                  - else
+                    = manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
               %td.dos.iconos-acciones{class: 'icono-tarea-entrada'}
                 -#Enlaces segun cod tarea
                 -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
