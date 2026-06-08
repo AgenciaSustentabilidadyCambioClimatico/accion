@@ -87,9 +87,14 @@
   });
 
   // Escucha el cambio en el input de archivos normales para llenar la lista y HABILITAR EL BOTÓN
+  let actualizandoArchivos = false;
+
   $(document).on('change', '#listado_adhesiones_temporal_nombre_archivo', function(e){
+
+    if (actualizandoArchivos) return;
+
+    actualizandoArchivos = true;
     
-    // Limpiamos el dt primero para que no se dupliquen si el usuario se equivoca y vuelve a subir
     dt.items.clear(); 
     
     if (this.files && this.files.length > 0) {
@@ -98,16 +103,25 @@
       }
     }
     
-    // Actualizamos el input
     this.files = dt.files;
+
+    // 🚀 COPIA AL SEGUNDO INPUT
+    const inputDestino = document.getElementById('adhesion_archivos_adhesion_y_documentacion');
+    if (inputDestino) {
+      const dtCopy = new DataTransfer();
+      for (let i = 0; i < dt.files.length; i++) {
+        dtCopy.items.add(dt.files[i]);
+      }
+      inputDestino.files = dtCopy.files;
+    }
     
-    // Renderizamos visualmente si tienes la función
     if (typeof render_files === "function") {
       render_files();
     }
     
-    // 🚀 ESTA ES LA LÍNEA MÁGICA QUE ENCIENDE EL BOTÓN
-    validar_boton_guardar(); 
+    validar_boton_guardar();
+
+    actualizandoArchivos = false;
   });
 
   function validar_boton_guardar() {
@@ -275,7 +289,8 @@
                 .row  
                   .col-12.col-lg-12.mt-2 
                     = f.input :nombre_archivo, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
-
+                  .col-12
+                    %ul.list-group#list_files
       .float-right.mr-3.mb-3
         -#= f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button'
         = button_tag 'Agregar', type: 'button', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button', onclick: 'confirmarGuardar(event); return false;'

@@ -92,6 +92,24 @@
     }
   }
 
+  // Escuchar cambios en el nuevo input
+  $('#adhesion_nombre_archivo').on('change', function(e) {
+    let files = e.target.files;
+    let originalInput = $('#adhesion_archivos_adhesion_y_documentacion')[0];
+
+    // Crear un DataTransfer para copiar los archivos
+    let dt = new DataTransfer();
+    for (let i = 0; i < files.length; i++) {
+      dt.items.add(files[i]);
+    }
+
+    // Asignar los archivos al input original
+    originalInput.files = dt.files;
+
+    console.log("Archivos copiados al input original:", originalInput.files);
+  });
+
+
   function guarda_adhesion(tarea_pendiente, adhesion) {
     // 1. Construir la URL con los reemplazos correspondientes
     let urlBase = "#{guardar_actualizar_adhesion_path('TAREA_ID', adhesion_externa_id: 'ADHESION_ID')}";
