@@ -5,10 +5,11 @@ class DocumentacionLegal < ApplicationRecord
         select("documentacion_legals.id AS id, 
                 descargable_tareas.codigo AS codigo, 
                 descargable_tareas.nombre AS nombre, 
-                documentacion_legals.nombre_campo AS nombre_campo")
+                documentacion_legals.nombre_campo AS nombre_campo,
+                documentacion_legals.descargable_tareas_id")
         .joins("LEFT JOIN descargable_tareas ON descargable_tareas.id = documentacion_legals.descargable_tareas_id")
         .where("tipo_contribuyentes_id = ? AND tipo_descargable = ? AND estado = ?", tipo_contribuyente_id, 1, 1)
-        .order("documentacion_legals.id")
+        .order("documentacion_legals.orden")
 
     end
 
@@ -16,10 +17,11 @@ class DocumentacionLegal < ApplicationRecord
         select("documentacion_legals.id AS id, 
                 descargable_tareas.codigo AS codigo, 
                 descargable_tareas.nombre AS nombre, 
-                documentacion_legals.nombre_campo AS nombre_campo")
+                documentacion_legals.nombre_campo AS nombre_campo,
+                documentacion_legals.descargable_tareas_id")
         .joins("LEFT JOIN descargable_tareas ON descargable_tareas.id = documentacion_legals.descargable_tareas_id")
         .where("tipo_contribuyentes_id = ? AND tipo_descargable = ? AND estado = ?", tipo_contribuyente_id, 2, 1)
-        .order("documentacion_legals.id")
+        .order("documentacion_legals.orden")
 
     end
 
@@ -67,9 +69,10 @@ class DocumentacionLegal < ApplicationRecord
             .select("documentacion_legals.id AS id,
                     descargable_tareas.codigo AS codigo,
                     descargable_tareas.nombre AS nombre,
-                    documentacion_legals.nombre_campo AS nombre_campo")
+                    documentacion_legals.nombre_campo AS nombre_campo,
+                    documentacion_legals.descargable_tareas_id")
             .joins(joins_clause)
             .where(where_clause)
-            .order("documentacion_legals.id")
+            .order("documentacion_legals.orden")
         end
 end
