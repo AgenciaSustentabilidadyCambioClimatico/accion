@@ -29,8 +29,11 @@
         %div{id: "contribuyentes-remote-table#{custom_id}"}
           = render 'admin/contribuyentes/table', data_table: data_table, es_para_seleccion: es_para_seleccion, resultado_mostrados: resultado_mostrados, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento, lista_contribuyentes: lista_contribuyentes, custom_id: custom_id
   .col-12.mt-2.text-right
-    -unless @contribuyente_actor.nil?
+    -if @contribuyente_actor.present?
       %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-actor-button{type: :button, disabled: :disabled }
+        Seleccionar
+    -elsif @contribuyente_adhesion.present?
+      %button.btn.btn-primary.seleccionar-y-actualizar-contribuyente-adhesion-button{type: :button, disabled: :disabled }
         Seleccionar
     -else
       -if @contribuyente_temporal.nil? || es_fpl == false

@@ -1,0 +1,65 @@
+$('#div_adhesiones table tbody').empty();
+
+<% correlativo = 1 %>
+
+<% @listado_adhesiones_temporal.each do |adhesion| %>
+  var adhesion_id = '<%= adhesion.id %>';
+  var fecha = '<%= adhesion.fecha_adhesion %>';
+  var nombre = '<%= j adhesion.nombre_institucion.to_s %>';
+  var rut = '<%= format_rut(adhesion.rut_institucion) %>';
+  var alcance = '<%= j adhesion.alcance.to_s %>';
+  var nombre_instalacion = '<%= j adhesion.nombre_instalacion.to_s %>';
+  var comuna_instalacion = '<%= j adhesion.comuna_instalacion.to_s %>';
+  var direccion_instalacion = '<%= j adhesion.direccion_instalacion.to_s %>';
+
+  // ESTAS FALTABAN
+  var nombre_encargado = '<%= j adhesion.nombre_encargado.to_s %>';
+  var fono_encargado = '<%= j adhesion.fono_encargado.to_s %>';
+  var email_encargado = '<%= j adhesion.email_encargado.to_s %>';
+
+  var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
+  var correlativo = '<%= correlativo %>';
+
+  var newRow = "<tr>" +
+    "<td class='contenido-form'>" + correlativo + "</td>" +
+    "<td class='contenido-form'>" + fecha + "</td>" +
+    "<td class='contenido-form'>" + nombre + "</td>" +
+    "<td class='contenido-form'>" + rut + "</td>" +
+    "<td class='contenido-form'>" + alcance + "</td>" +
+    "<td class='contenido-form'>" + nombre_instalacion + "</td>" +
+    "<td class='contenido-form'>" + comuna_instalacion + "</td>" +
+    "<td class='contenido-form'>" + direccion_instalacion + "</td>" +
+    "<td class='contenido-form'>" +
+      nombre_encargado + "<br>" +
+      fono_encargado + "<br>" +
+      email_encargado +
+    "</td>" +
+    "<td class='contenido-form dos iconos-acciones'>" +
+      "<a data-adhesion-id='" + adhesion_id +
+      "' data-confirm='¿Está seguro que desea borrar a esta Adhesión?' class='eliminar-adhesion' id='eliminar-adhesion-" + adhesion_id +
+      "' data-remote='true' rel='nofollow' data-method='delete' href='/" + tarea_pendiente_id + "/" + adhesion_id + "/eliminar-adhesion' data-original-title='Eliminar Adhesión'>" +
+        "<i class='fa fa-trash' title='Eliminar'></i>" +
+      "</a>" +
+    "</td>" +
+  "</tr>";
+
+  $('#div_adhesiones table tbody').append(newRow);
+
+  <% correlativo += 1 %>
+<% end %>
+
+// Deshabilitar el botón después de agregar los adhesiones
+$('.agregar-usuario-adhesion-button').prop('disabled', true);  // Esto deshabilita el botón
+
+<% if @listado_adhesiones_temporal.count == 0 %>
+  $('.actualizar-adhesion-listado-button').prop('disabled', true); 
+  $('.actualizar-adhesion-listado-button').text('Guardar'); 
+  
+  var newRow = "<tr><td colspan='12' class='text-center'> No hay adhesiones disponibles </td></tr>";    
+  $('#div_adhesiones table tbody').append(newRow); 
+
+<% else %>
+  $('.actualizar-adhesion-listado-button').prop('disabled', false); 
+  $('.actualizar-adhesion-listado-button').text('Guardar');
+<% end %>
+

@@ -4,31 +4,65 @@ class AdhesionesController < ApplicationController
   before_action :set_flujo
 	before_action :set_datos
   before_action :set_crea_archivo, only: [:descargar]
+  before_action :set_contribuyentes
+  before_action :set_usuario_actor
+  before_action :set_actores, only: [:actualizar]
+  before_action :set_listado_adhesiones_temporal
 
 	def actualizar #DZC ACCESO A APL-025 PPF-016
 	end
 
-	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
-    @adhesion_new = Adhesion.new
-    @adhesion_new.flujo_id = @flujo.id
-    @adhesion_new.is_ppf = @ppp.present?
-    @adhesion.tarea_id = @tarea.id if @tarea.present?
-    @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
-    @adhesion_new.save!
-    @adhesion.assign_attributes(adhesion_params)
+  def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
+    
+    # 1. Detectamos el tipo de flujo de forma segura
+    es_flujo_excel = params.dig(:adhesion, :archivo_elementos).present?
+    tiene_parametros_adhesion = params[:adhesion].present?
 
-		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
+    if !es_flujo_excel
+      # ─── FLUJO FORMULARIO MANUAL ──────────────────────────────────────
+      @adhesion.listado_adhesiones = true
+      # Aquí puedes cargar o inicializar las variables que tus partials manuales necesitan, por ejemplo:
+      # @listado_adhesion = ListadoAdhesion.new
+    else
+      # ─── FLUJO EXCEL ──────────────────────────────────────────────────
+      # (Tu lógica específica de excel si la hay)
+    end 
+
+    # 2. Procesamos el duplicado de archivos SOLO si la clave :adhesion está presente
+    if tiene_parametros_adhesion
+      @adhesion_new = Adhesion.new
+      @adhesion_new.flujo_id = @flujo.id
+      @adhesion_new.is_ppf = @ppp.present?
+      @adhesion.tarea_id = @tarea.id if @tarea.present?
+      @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
+      @adhesion_new.save!
+      
+      # Solo asignamos si pasó el filtro del require
+      @adhesion.assign_attributes(adhesion_params)
+    end
+
+    # 3. Seteos transversales antes de guardar
     @adhesion.flujo_id = @flujo.id
     @adhesion.is_ppf = @ppp.present?
+
     respond_to do |format|
       if @adhesion.save
+        
         @rechazadas = []
         continua_flujo_segun_tipo_tarea
+
         if @tarea.codigo == Tarea::COD_PPF_016 || @tarea.codigo == Tarea::COD_PPF_017
-          format.js { flash[:success] = "Adhesión solicitada correctamente"
+          
+          format.js { 
+            flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{root_url}'" 
           }
         elsif @tarea.codigo == Tarea::COD_APL_025
+          
+          if !es_flujo_excel
+            ListadoAdhesionesTemporal.actualiza_estado_listado_adhesiones(@flujo.id)  
+          end
+          
           format.js { 
             flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{actualizar_adhesion_path(@tarea_pendiente)}'" 
@@ -37,11 +71,14 @@ class AdhesionesController < ApplicationController
           format.js { flash[:success] = "Adhesión solicitada correctamente" }
         end
       else
-      	# ap @adhesion.errors.messages
-        format.js { flash.now[:error] = @adhesion.errors.messages}
+        # 🚨 SI EL GUARDADO FALLA: Para evitar el 'model_name for nil:NilClass',
+        # debemos re-inicializar AQUÍ todas las variables que usan tus sub-formularios renderizados
+        @listado_adhesion = ListadoAdhesionesTemporal.new 
+        
+        format.js { flash.now[:error] = @adhesion.errors.messages }
       end
     end
-	end
+  end
 
   def revisar #DZC APL-028
     respond_to do |format|
@@ -428,6 +465,63 @@ class AdhesionesController < ApplicationController
     end    
   end
 
+  def crear_adhesion
+    @listado_adhesiones = ListadoAdhesionesTemporal.new
+    
+    # 1. Convertimos a Hash asegurando "with_indifferent_access" 
+    # Esto permite buscar tanto con datos[:rut] como con datos['rut'] sin errores
+    datos = sanitize_rut(listado_adhesiones_temporal_params.to_h).with_indifferent_access
+    @listado_adhesiones.assign_attributes(datos)
+    @listado_adhesiones.flujo_id = @flujo.id
+    @listado_adhesiones.fecha_adhesion = Time.now.strftime("%d/%m/%Y")
+
+    # 2. Ahora 'datos[:rut_institucion]' funcionará de forma segura
+    contribuyente = Contribuyente.find_by(rut: datos[:rut_institucion])
+    
+    if contribuyente.present?
+      # Usamos &. para navegación segura por si un contribuyente no tiene establecimientos
+      casa_matriz = contribuyente.establecimiento_contribuyentes.find_by(casa_matriz: true)
+      
+      @listado_adhesiones.direccion_casa_matriz = casa_matriz&.direccion || ''
+      @listado_adhesiones.comuna_casa_matriz    = casa_matriz&.comuna.nombre || ''
+    else
+      @listado_adhesiones.direccion_casa_matriz = ''
+      @listado_adhesiones.comuna_casa_matriz    = ''
+    end
+       
+    # 3. 🚀 Usamos .save! (con signo de exclamación) en ambiente de desarrollo/debug
+    # Si algo falla, romperá la ejecución y te dirá EXACTAMENTE qué validación falló.
+    if @listado_adhesiones.save
+      # Si guardó con éxito, redirige o procesa
+      listado_adhesiones_temporal
+    else
+      # Si no guardó, puedes poner un binding.pry aquí para revisar: @listado_adhesiones.errors.full_messages
+      render :new # o la acción que corresponda si falla
+    end
+  end
+
+  def eliminar_adhesion
+    adhesion = ListadoAdhesionesTemporal.find(params[:adhesion_id])
+
+    if adhesion.destroy
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: adhesion.flujo_id, estado: 0)
+      @tarea_pendiente = TareaPendiente.find_by(flujo_id: adhesion.flujo_id)
+
+      respond_to do |format|
+        format.js { render 'adhesiones/eliminar_adhesion', locals: { adhesion: adhesion.id } }
+      end
+    else
+      flash[:error] = 'Hubo un problema al eliminar al adhesion.'
+    end
+  end
+
+  def listado_adhesiones_temporal
+    @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'adhesiones/listado_adhesiones_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
+    end
+  end
+
 	private
 	
     #asigna valor de id de tarea pendiente, leyendolo desde la URL (esto es neceario por que no se traspasa desde la jerarquia superior)
@@ -549,4 +643,56 @@ class AdhesionesController < ApplicationController
       @archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "Adhesiones" )
     end
 
+    def set_contribuyentes
+      @contribuyente = Contribuyente.new
+      @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+      @contribuyente_adhesion = Contribuyente.new
+    end
+
+    def set_usuario_actor
+      @usuario_adhesion = User.new
+    end
+
+    def set_actores
+      @listado_adhesiones = ListadoAdhesionesTemporal.new
+      @listado_adhesiones = ListadoAdhesionesTemporal.where(flujo_id: params[:id])
+      @listado_adhesion = ListadoAdhesionesTemporal.new
+    end
+
+    def set_listado_adhesiones_temporal
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id:  @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    end
+
+    def listado_adhesiones_temporal_params
+    params.require(:listado_adhesiones_temporal).permit(
+      :fecha_adhesion,
+      :rut_institucion,
+      :nombre_institucion,
+      :sector_productivo,
+      :tipo_institucion,
+      :tamano_empresa,
+      :direccion_casa_matriz,
+      :comuna_casa_matriz,
+      :rut_encargado,
+      :nombre_encargado,
+      :cargo_encargado,
+      :fono_encargado,
+      :email_encargado,
+      :alcance,
+      :nombre_instalacion,
+      :direccion_instalacion,
+      :comuna_instalacion,
+      :tipo_elemento,
+      :identificador,
+      :patente,
+      :nombre_elemento,
+      :nombre_archivo,
+      :flujo_id)
+  end
+
+  def sanitize_rut(params)
+    params["rut_encargado"]&.gsub!('.', '')
+    params["rut_institucion"]&.gsub!('.', '')
+    params
+  end
 end

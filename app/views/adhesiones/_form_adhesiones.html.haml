@@ -1,0 +1,297 @@
+:javascript
+  $(document).ready(function() {
+    $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
+
+    $('#formulario-agregar-adhesion input').on('input change', function() {
+      agregar_usuario_adhesiones_validaciones();
+    });
+    $('#formulario-agregar-adhesion select').on('change', function() {
+      agregar_usuario_adhesiones_validaciones();
+    });
+
+    agregar_usuario_adhesiones_validaciones();
+
+    $('#formulario-agregar-adhesion').on('ajax:beforeSend', function() {
+      $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
+    });
+
+    $('#formulario-agregar-adhesion').on('ajax:success', function(event, data, status, xhr) {
+      limpiarFormulario(); 
+
+      setTimeout(function() {
+        $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
+      }, 0); 
+    });
+
+    $('#formulario-agregar-adhesion').on('ajax:error', function(event, xhr, status, error) {
+      $('.agregar-usuario-adhesion-button').removeAttr("disabled");
+      alert("Error al agregar adhesion. Por favor, inténtelo de nuevo.");
+    });
+
+    verificarModal();
+  });
+
+  function limpiarFormulario() {  
+    $('#nombre_encargado_adhesiones').val('');
+    $('#rut_encargado_adhesiones').val('');
+    $('#email_encargado_adhesiones').val('');
+    $('#telefono_encargado_adhesiones').val('');
+    $('#cargo_encargado_adhesiones').val('');
+    $('#contribuyente_razon_social').val('');
+    $('#nombre_institucion_adhesiones').val('');
+    $('#rut_institucion_adhesiones').val('');
+    $('#tipo_institucion_adhesiones').val('');
+    $('#comuna_institucion_adhesiones').val('');
+    $('#fecha_adhesion').val('');
+    $('#sector_productivo_adhesiones').val('');
+    $('#tamano_empresa_adhesiones').val('');
+    $('#direccion_casa_matriz_adhesiones').val('');
+    $('#comuna_casa_matriz_adhesiones').val('');
+    $('#alcance_adhesiones').val('');
+    $('#nombre_instalacion_adhesiones').val('');
+    $('#direccion_instalacion_adhesiones').val('');
+    $('#comuna_instalacion_adhesiones').val('');
+    $('#tipo_elemento_adhesiones').val('');
+    $('#identificador_adhesiones').val('');
+    $('#patente_adhesiones').val('');
+    $('#nombre_elemento_adhesiones').val('');
+    
+    $('#listado_adhesiones_temporal_nombre_archivo').val('');
+    $('#listado_adhesiones_temporal_nombre_archivo').css('border', '');
+  }
+
+  function agregar_usuario_adhesiones_validaciones() {
+    var nombre_usuario = $('#nombre_encargado_adhesiones').val().trim() !== "";
+    var rut_usuario = $('#rut_encargado_adhesiones').val().trim() !== "";
+    var email_institucional = $('#email_encargado_adhesiones').val().trim() !== "";
+    var telefono_institucional = $('#telefono_encargado_adhesiones').val().trim() !== "";
+
+    var razon_social_institucion = $('#nombre_institucion_adhesiones').val().trim() !== "";
+    var rut_institucion = $('#rut_institucion_adhesiones').val().trim() !== "";
+    var tipo_institucion = $('#tipo_institucion_adhesiones').val().trim() !== "";
+    var comuna_institucion = $('#comuna_institucion_adhesiones').val().trim() !== "";
+
+    if (nombre_usuario && rut_usuario && email_institucional && telefono_institucional && razon_social_institucion && rut_institucion && tipo_institucion && comuna_institucion) {
+      $('.agregar-usuario-adhesion-button').removeAttr("disabled");
+    } else {
+      $('.agregar-usuario-adhesion-button').attr("disabled", "disabled");
+    }
+  }
+
+  $(document).on('change', '#nombre_archivo', function() {
+    if ($(this).val() !== "") {
+      // Removemos el borde rojo volviéndolo a su estado original
+      $(this).css('border', ''); 
+      // $(this).removeClass('is-invalid'); // Si usaste la clase de Bootstrap
+    }
+  });
+
+  // Escucha el cambio en el input de archivos normales para llenar la lista y HABILITAR EL BOTÓN
+  let actualizandoArchivos = false;
+
+  $(document).on('change', '#listado_adhesiones_temporal_nombre_archivo', function(e){
+
+    if (actualizandoArchivos) return;
+
+    actualizandoArchivos = true;
+    
+    dt.items.clear(); 
+    
+    if (this.files && this.files.length > 0) {
+      for (let file of this.files) {
+        dt.items.add(file);
+      }
+    }
+    
+    this.files = dt.files;
+
+    // 🚀 COPIA AL SEGUNDO INPUT
+    const inputDestino = document.getElementById('adhesion_archivos_adhesion_y_documentacion');
+    if (inputDestino) {
+      const dtCopy = new DataTransfer();
+      for (let i = 0; i < dt.files.length; i++) {
+        dtCopy.items.add(dt.files[i]);
+      }
+      inputDestino.files = dtCopy.files;
+    }
+    
+    if (typeof render_files === "function") {
+      render_files();
+    }
+    
+    validar_boton_guardar();
+
+    actualizandoArchivos = false;
+  });
+
+  function validar_boton_guardar() {
+    // Verificamos si hay archivos en nuestro DataTransfer
+    let tiene_archivos = dt.files.length > 0;
+    
+    // Verificamos si el formulario de Excel está visible y si tiene archivo
+    let excel_visible = !$("#subir-documentos-form").hasClass("d-none");
+    let tiene_excel = $('#adhesion_archivo_elementos').val() !== '';
+
+    // Si el modo excel está activo, exige ambos. Si no, solo los documentos individuales.
+    let registrar_valido = excel_visible ? (tiene_archivos && tiene_excel) : tiene_archivos;
+
+    if (registrar_valido) {
+      // Habilitamos el botón
+      $('#consultar-button').prop('disabled', false).removeClass('btn-disabled');
+    } else {
+      // Mantenemos deshabilitado
+      $('#consultar-button').prop('disabled', true).addClass('btn-disabled');
+    }
+  }
+
+  // Al eliminar un archivo de la lista con el basurero
+  $(document).on('click', '.remove-file', function(e){
+    e.preventDefault();
+    
+    // 1. Removemos visualmente el elemento
+    $(this).parents('.list-group-item').remove();
+    
+    // 2. Lo borramos de la memoria interna (DataTransfer)
+    let index = parseInt($(this).attr("href"));
+    dt.items.remove(index);
+    
+    // 3. 🚀 Actualizamos el input usando el ID NUEVO y CORRECTO
+    let inputElement = $('#listado_adhesiones_temporal_nombre_archivo')[0];
+    if (inputElement) {
+      inputElement.files = dt.files;
+    }
+    
+    // 4. Volvemos a dibujar la lista para que los índices (href) se reordenen
+    if (typeof render_files === "function") {
+      render_files();
+    }
+    
+    // 5. 🚀 Volvemos a validar. Como ahora dt está vacío, apagará el botón.
+    validar_boton_guardar(); 
+  });
+
+  function confirmarGuardar(event) {
+    event.preventDefault();
+
+    // 1. Obtenemos el elemento DOM real (agregando [0] a jQuery)
+    const inputElement = $('#listado_adhesiones_temporal_nombre_archivo')[0];
+    
+    let nombreArchivo = "";
+    
+    // 2. Verificamos si realmente hay algún archivo seleccionado
+    if (inputElement.files && inputElement.files.length > 0) {
+        // 3. Extraemos SOLO el nombre limpio del primer archivo (ej: "documento.pdf")
+        nombreArchivo = inputElement.files[0].name; 
+    }
+
+    if (!nombreArchivo) {
+        $('#listado_adhesiones_temporal_nombre_archivo').css('border', '2px solid #dc3545');
+        alert("Por favor, asegúrese de cargar los Archivos de Adhesión y documentación requeridos antes de guardar.");
+        return; 
+    }
+
+    const datos = {
+      listado_adhesiones_temporal: {
+        nombre_encargado: $('#nombre_encargado_adhesiones').val(),
+        rut_encargado: $('#rut_encargado_adhesiones').val(),
+        email_encargado: $('#email_encargado_adhesiones').val(),
+        fono_encargado: $('#telefono_encargado_adhesiones').val(),
+        cargo_encargado: "Encargado(a) Establecimiento",
+        nombre_institucion: $('#nombre_institucion_adhesiones').val(),
+        rut_institucion: $('#rut_institucion_adhesiones').val(),
+        tipo_institucion: $('#tipo_institucion_adhesiones').val(),
+        comuna_institucion: $('#comuna_institucion_adhesiones').val(),
+        sector_productivo: $('#sector_productivo_adhesiones').val(),
+        tamano_empresa: $('#tamano_empresa_adhesiones').val(),
+        alcance: $('#alcance_adhesiones').val(),
+        nombre_instalacion: $('#nombre_instalacion_adhesiones').val(),
+        direccion_instalacion: $('#direccion_instalacion_adhesiones').val(),
+        comuna_instalacion: $('#comuna_instalacion_adhesiones').val(),
+        tipo_elemento: $('#tipo_elemento_adhesiones').val(),
+        identificador: $('#identificador_adhesiones').val(),
+        patente: $('#patente_adhesiones').val(),
+        nombre_elemento: $('#nombre_elemento_adhesiones').val(),
+        nombre_archivo: nombreArchivo
+      }
+    };
+
+    console.log(datos);
+
+    $.ajax({
+      url: "#{crear_adhesion_path(@tarea_pendiente)}",
+      method: 'PATCH',
+      data: datos,
+      dataType: 'script',
+      success: function(response) {
+        console.log('Guardado OK');
+        limpiarFormulario();
+      },
+      error: function(xhr) {
+        console.error(xhr.responseText);
+      }
+    });
+  }
+
+
+- url = crear_adhesion_path(@tarea_pendiente)
+  
+.card.m-0
+  .card-header
+    %h5.no-margin= t(:agregar_adhesiones)
+  .card-body
+    = simple_form_for @listado_adhesion, url: url, remote: true, method: :patch, html: { id: 'formulario-agregar-adhesion' }  do |f|
+      .row
+        .col-12.mt-3
+          .col-12
+            .card
+              .card-body
+                .row
+                  .col-12.col-lg-2.mt-4
+                    = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', flujo_id: (@flujo.present? ? @flujo.id : nil), id: 'usuario_representante' do
+                      %i.fa.fa-search-plus
+                      Buscar usuario 
+                .row
+                  = f.input :sector_productivo, as: :hidden, wrapper: false, label: false, input_html: { id: 'sector_productivo_adhesiones', class: 'form-control' } 
+                  = f.input :tamano_empresa, as: :hidden, wrapper: false, label: false, input_html: { id: 'tamano_empresa_adhesiones', class: 'form-control' } 
+                  = f.input :alcance, as: :hidden, wrapper: false, label: false, input_html: { id: 'alcance_adhesiones', class: 'form-control' } 
+                  = f.input :nombre_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_instalacion_adhesiones', class: 'form-control' } 
+                  = f.input :direccion_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'direccion_instalacion_adhesiones', class: 'form-control' } 
+                  = f.input :comuna_instalacion, as: :hidden, wrapper: false, label: false, input_html: { id: 'comuna_instalacion_adhesiones', class: 'form-control' }                  
+                  = f.input :tipo_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'tipo_elemento_adhesiones', class: 'form-control' } 
+                  = f.input :identificador, as: :hidden, wrapper: false, label: false, input_html: { id: 'identificador_adhesiones', class: 'form-control' } 
+                  = f.input :patente, as: :hidden, wrapper: false, label: false, input_html: { id: 'patente_adhesiones', class: 'form-control' } 
+                  = f.input :nombre_elemento, as: :hidden, wrapper: false, label: false, input_html: { id: 'nombre_elemento_adhesiones', class: 'form-control' } 
+ 
+                  .col-12.col-lg-3.mt-2
+                    = f.input :nombre_encargado, input_html: { id: 'nombre_encargado_adhesiones', class: 'form-control', readonly: true }
+                  .col-12.col-lg-3.mt-2
+                    = f.input :rut_encargado, input_html: { id: 'rut_encargado_adhesiones', class: 'form-control', readonly: true }
+                  .col-12.col-lg-3.mt-2
+                    = f.input :email_encargado, input_html: { id: 'email_encargado_adhesiones', class: 'form-contro', readonly: true }
+                  .col-12.col-lg-3.mt-2   
+                    = f.input :fono_encargado, input_html: { id: 'telefono_encargado_adhesiones', class: 'form-control', readonly: true }               
+                .row
+                  .col-12.col-lg-2.mt-4    
+                    = link_to '#', class: 'form-control btn btn-primary btn-sm tooltip-block', id: "intitucion_cogestora" do
+                      %i.fa.fa-search-plus
+                      Buscar institución
+                
+                .row
+                  .col-12.col-lg-3.mt-2
+                    = f.input :nombre_institucion, label: 'Razón social institución', input_html: { id: 'nombre_institucion_adhesiones', class: 'form-control', readonly: true }
+                  .col-12.col-lg-3.mt-2
+                    = f.input :rut_institucion, label: 'Rut institución', input_html: { id: 'rut_institucion_adhesiones', class: 'form-control', readonly: true }
+                  .col-12.col-lg-3.mt-2
+                    = f.input :tipo_institucion, label: 'Tipo institución', input_html: { id: 'tipo_institucion_adhesiones', class: 'form-control', readonly: true }
+                  .col-12.col-lg-3.mt-2
+                    = f.input :comuna_casa_matriz, label: 'Comuna institución', input_html: { id: 'comuna_institucion_adhesiones', class: 'form-control', readonly: true }
+                
+                .row  
+                  .col-12.col-lg-12.mt-2 
+                    = f.input :nombre_archivo, label: t(:archivos_adhesion_documentacion), as: :file, input_html: {class: "required-field form-control auto-save ", multiple: true}, required: true
+                  .col-12
+                    %ul.list-group#list_files
+      .float-right.mr-3.mb-3
+        -#= f.submit 'Agregar', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button'
+        = button_tag 'Agregar', type: 'button', class: 'btn btn-sm btn-primary agregar-usuario-adhesion-button', id: 'agregar-usuario-adhesion-button', onclick: 'confirmarGuardar(event); return false;'
+%br

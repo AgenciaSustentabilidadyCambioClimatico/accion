@@ -1,0 +1,71 @@
+.row
+  .col-12
+    .card
+      .card-header
+        %h5.no-margin= t(:agregar_adhesiones_formulario)
+      .card-body
+        .table-responsive
+          %div#div_adhesiones.table-responsive  
+            %table.table.table-striped
+              %thead
+                %tr
+                  %th=t(:n°)
+                  %th=t(:fecha_ingreso)
+                  %th=t(:rut_institucion)
+                  %th=t(:nombre_institución)
+                  %th=t(:alcance)
+                  %th=t(:nombre_elemento)
+                  %th=t(:comuna_elemento)
+                  %th=t(:direccion_elemento)
+                  %th=t(:datos_encargado)
+                  %th=t(:estado)
+              %tbody
+                - if @listado_adhesiones_temporal.present?
+                  - correlativo = 1
+                  - @listado_adhesiones_temporal.each do |listado|
+                    %tr{"data-id" => listado['id']} 
+                      %td= correlativo
+                      %td=listado[:fecha_adhesion]
+                      %td=listado[:rut_institucion]
+                      %td=listado[:nombre_institucion]
+                      %td=listado[:alcance]
+                      %td=listado[:nombre_elemento]
+                      %td=listado[:comuna_instalacion]
+                      %td=listado[:direccion_instalacion]
+                      %td= [listado[:nombre_encargado], listado[:fono_encargado], listado[:email_encargado]].compact.join('<br>').html_safe
+                      %td.contenido-form.dos.iconos-acciones
+                        %a{
+                          "data-adhesion-id" => listado['id'],
+                          "data-confirm" => "¿Está seguro que desea borrar esta Adhesión?",
+                          "class" => "eliminar-adhesion",
+                          "id" => "eliminar-adhesion-#{listado['id']}",
+                          "data-remote" => "true",
+                          "rel" => "nofollow",
+                          "data-method" => "delete",
+                          "href" => eliminar_adhesion_path(tarea_pendiente_id: @tarea_pendiente.id, adhesion_id: listado['id']),
+                          "data-original-title" => "Eliminar Adhesión"
+                        }
+                          %i.fa.fa-trash{ title: "Eliminar" }
+                    - correlativo += 1
+                - else
+                  %tr
+                    %td{ colspan: '12', class: 'text-center' } No hay actores disponibles                  
+        -#- disabled_button = @listado_adhesiones_temporal.empty? ? 'btn-disabled' : ''
+        -#- button_disabled = @listado_adhesiones_temporal.empty? ? :disabled : nil
+
+        -#.float-right.mr-3.mb-3
+        -#  = button_tag t(:save),
+        -#    id: 'actualizar-adhesion-listado-button',
+        -#    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
+        -#    class: "actualizar-adhesion-listado-button btn btn-sm btn-primary btn-disabled",
+        -#    disabled: @listado_adhesiones_temporal.blank?
+
+:javascript
+  $(document).ready(function(){
+    $(document).on('click', '.actualizar-adhesion-listado-button', function(e) {
+      var button = $(this);
+      button.prop("disabled", true);
+      button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
+      
+    });
+  });
