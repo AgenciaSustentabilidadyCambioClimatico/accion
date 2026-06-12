@@ -1019,7 +1019,7 @@ Rails.application.routes.draw do
   patch ':tarea_pendiente_id/adhesion/crear_adhesion', to: "adhesiones#crear_adhesion", as: :crear_adhesion
   get ':tarea_pendiente_id/listado-adhesiones-temporal', to: "adhesiones#listado_adhesiones_temporal", as: :listado_adhesiones_temporal
   delete '/:tarea_pendiente_id/:adhesion_id/eliminar-adhesion', to: 'adhesiones#eliminar_adhesion', as: :eliminar_adhesion
-
+  patch '/:tarea_pendiente_id/:id/actualizar-documento-temporal', to: 'adhesiones#actualizar_documento_temporal', as: :actualizar_documento_temporal
 
   if Rails.env.production?
     match '*a' => redirect("/"), via: :all

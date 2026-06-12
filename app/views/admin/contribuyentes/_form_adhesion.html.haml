@@ -376,29 +376,49 @@
       nuevo_institucion_adhesion_validaciones();
     });
 
-    // 🚀 AQUÍ PEGAS LA SOLUCIÓN DEFINITIVA (BYPASS DE JQUERY)
-    // Usamos JavaScript puro en la fase de 'Captura' (notar el 'true' al final)
     document.addEventListener('change', function(e) {
       if (e.target && e.target.id === 'listado_adhesiones_temporal_nombre_archivo') {
         var input = e.target;
-        var tieneEspacios = false;
-        var archivosMalos = [];
 
         if (input.files && input.files.length > 0) {
+          // Creamos un contenedor temporal DataTransfer para reasignar los archivos sanitizados
+          var contenedorLimpio = new DataTransfer();
+
           for (var i = 0; i < input.files.length; i++) {
-            if (/\s/.test(input.files[i].name)) {
-              tieneEspacios = true;
-              archivosMalos.push(input.files[i].name);
+            var archivoOriginal = input.files[i];
+            
+            // 1. Eliminar tildes, diéresis y normalizar caracteres (Ej: á->a, ñ->n)
+            var nombreSinTildes = archivoOriginal.name
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+            
+            // 2. Reemplazar espacios en blanco (uno o más continuos) por un único guion bajo
+            var nombreSanitizado = nombreSinTildes.replace(/\s+/g, '_');
+
+            // 3. Recreamos el archivo con el nuevo nombre limpio manteniendo su contenido y tipo original
+            var archivoLimpio = new File([archivoOriginal], nombreSanitizado, { 
+              type: archivoOriginal.type 
+            });
+            
+            contenedorLimpio.items.add(archivoLimpio);
+          }
+
+          // 4. Reasignamos los archivos limpios al input para que FormData los capture perfectos
+          input.files = contenedorLimpio.files;
+
+          // 5. Sincronizamos con tu acumulador 'dt' global (si existe en tu vista)
+          if (typeof dt !== 'undefined') {
+            dt.items.clear();
+            for (var j = 0; j < input.files.length; j++) {
+              dt.items.add(input.files[j]);
             }
           }
 
-          if (tieneEspacios) {
-            e.preventDefault();
-            e.stopPropagation();
-            alert("Error: El archivo tiene espacios en blanco.\n\nArchivo(s): " + archivosMalos.join(", ") + "\n\nPor favor, quítele los espacios en su computadora y vuelva a seleccionarlo.");
-            input.value = '';
-          }
+          // 6. Gatillamos tus validaciones visuales del formulario
+          if (typeof render_files === "function") { render_files(); }
+          if (typeof validar_boton_guardar === "function") { validar_boton_guardar(); }
         }
       }
     }, true);
+
   });

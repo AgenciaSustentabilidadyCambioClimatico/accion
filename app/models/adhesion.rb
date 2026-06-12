@@ -172,7 +172,7 @@ class Adhesion < ApplicationRecord
 			identificador = l[:identificador]
 			patente = l[:patente]
 			nombre_elemento = l[:nombre_elemento]
-			nombre_archivo = l[:nombre_archivo]
+			nombre_archivo = l.nombre_archivo_identifier
 
 			data << {
 				fecha_adhesion: fecha_adhesion,
@@ -447,27 +447,41 @@ class Adhesion < ApplicationRecord
 							end
 						end
 					end
-
+					
 					if fila[:nombre_archivo].blank?
-						unless instituciones_con_archivo.include?(rut_institucion)
-							unless contribuyente.blank?
-								personas = Persona.where(contribuyente_id: contribuyente.id).pluck(:id)
-								if AdhesionElemento.where(persona_id: personas).where.not(archivo_respaldo: nil).size == 0
-									errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
+                        # Si la fila no tiene archivo, verificamos si optó por un archivo global único en el listado manual
+                        if self.listado_adhesiones && self.archivos_adhesion_y_documentacion.present?
+                            instituciones_con_archivo << rut_institucion
+							unless instituciones_con_archivo.include?(rut_institucion)
+								unless contribuyente.blank?
+									personas = Persona.where(contribuyente_id: contribuyente.id).pluck(:id)
+									if AdhesionElemento.where(persona_id: personas).where.not(archivo_respaldo: nil).size == 0
+										errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
+									else
+										instituciones_con_archivo << rut_institucion
+									end
 								else
-									instituciones_con_archivo << rut_institucion
+									errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
 								end
-							else
-								errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
 							end
 						end
-					else
-						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}.include? fila[:nombre_archivo]
-							errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
-						else
-							instituciones_con_archivo << rut_institucion
-						end
-					end
+                    else
+                        # Si la fila SI tiene un archivo asignado...
+                        if self.listado_adhesiones
+                            # 📁 MODO MANUAL: El archivo ya se cargó de forma independiente en la fila temporal, es 100% válido
+                            instituciones_con_archivo << rut_institucion
+                        else
+                            # 📊 MODO EXCEL: El archivo debe existir dentro del cargador global del formulario
+                            archivos_globales = self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}
+                            
+                            if !archivos_globales.include?(fila[:nombre_archivo])
+                                errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
+                            else
+                                instituciones_con_archivo << rut_institucion
+                            end
+                        end
+                    end
+                    # ─────────────────────────────────────────────────────────────────
 				end
 			end
 			#DZC 2018-10-20 19:58:54 se verifica que no hayan eMails repetidos en el archivo
