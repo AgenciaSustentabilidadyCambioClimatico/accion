@@ -56,7 +56,7 @@
     $('#patente_adhesiones').val('');
     $('#nombre_elemento_adhesiones').val('');
     
-    //$('#listado_adhesiones_temporal_nombre_archivo').val('');
+    $('#listado_adhesiones_temporal_nombre_archivo').val('');
     $('#listado_adhesiones_temporal_nombre_archivo').css('border', '');
   }
 
@@ -190,38 +190,39 @@
         return; 
     }
 
-    const datos = {
-      listado_adhesiones_temporal: {
-        nombre_encargado: $('#nombre_encargado_adhesiones').val(),
-        rut_encargado: $('#rut_encargado_adhesiones').val(),
-        email_encargado: $('#email_encargado_adhesiones').val(),
-        fono_encargado: $('#telefono_encargado_adhesiones').val(),
-        cargo_encargado: "Encargado(a) Establecimiento",
-        nombre_institucion: $('#nombre_institucion_adhesiones').val(),
-        rut_institucion: $('#rut_institucion_adhesiones').val(),
-        tipo_institucion: $('#tipo_institucion_adhesiones').val(),
-        comuna_institucion: $('#comuna_institucion_adhesiones').val(),
-        sector_productivo: $('#sector_productivo_adhesiones').val(),
-        tamano_empresa: $('#tamano_empresa_adhesiones').val(),
-        alcance: $('#alcance_adhesiones').val(),
-        nombre_instalacion: $('#nombre_instalacion_adhesiones').val(),
-        direccion_instalacion: $('#direccion_instalacion_adhesiones').val(),
-        comuna_instalacion: $('#comuna_instalacion_adhesiones').val(),
-        tipo_elemento: $('#tipo_elemento_adhesiones').val(),
-        identificador: $('#identificador_adhesiones').val(),
-        patente: $('#patente_adhesiones').val(),
-        nombre_elemento: $('#nombre_elemento_adhesiones').val(),
-        nombre_archivo: nombreArchivo
-      }
-    };
-
-    console.log(datos);
+    const datos = new FormData();
+    datos.append('listado_adhesiones_temporal[nombre_encargado]', $('#nombre_encargado_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[rut_encargado]', $('#rut_encargado_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[email_encargado]', $('#email_encargado_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[fono_encargado]', $('#telefono_encargado_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[cargo_encargado]', "Encargado(a) Establecimiento");
+    datos.append('listado_adhesiones_temporal[nombre_institucion]', $('#nombre_institucion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[rut_institucion]', $('#rut_institucion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[tipo_institucion]', $('#tipo_institucion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[comuna_institucion]', $('#comuna_institucion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[sector_productivo]', $('#sector_productivo_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[tamano_empresa]', $('#tamano_empresa_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[alcance]', $('#alcance_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[nombre_instalacion]', $('#nombre_instalacion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[direccion_instalacion]', $('#direccion_instalacion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[comuna_instalacion]', $('#comuna_instalacion_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[tipo_elemento]', $('#tipo_elemento_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[identificador]', $('#identificador_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[patente]', $('#patente_adhesiones').val());
+    datos.append('listado_adhesiones_temporal[nombre_elemento]', $('#nombre_elemento_adhesiones').val());
+    
+    if (inputElement.files && inputElement.files.length > 0) {
+        datos.append('listado_adhesiones_temporal[nombre_archivo]', inputElement.files[0]);
+    }
+    console.log("Datos empaquetados listos para enviar...");
 
     $.ajax({
       url: "#{crear_adhesion_path(@tarea_pendiente)}",
       method: 'PATCH',
       data: datos,
       dataType: 'script',
+      processData: false, 
+      contentType: false, 
       success: function(response) {
         console.log('Guardado OK');
         limpiarFormulario();

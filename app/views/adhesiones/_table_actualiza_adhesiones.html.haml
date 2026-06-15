@@ -18,6 +18,7 @@
                   %th=t(:comuna_elemento)
                   %th=t(:direccion_elemento)
                   %th=t(:datos_encargado)
+                  %th=t(:nombre_documento)
                   %th=t(:estado)
               %tbody
                 - if @listado_adhesiones_temporal.present?
@@ -33,33 +34,24 @@
                       %td=listado[:comuna_instalacion]
                       %td=listado[:direccion_instalacion]
                       %td= [listado[:nombre_encargado], listado[:fono_encargado], listado[:email_encargado]].compact.join('<br>').html_safe
+                      %td=listado[:nombre_archivo]
                       %td.contenido-form.dos.iconos-acciones
-                        %a{
-                          "data-adhesion-id" => listado['id'],
-                          "data-confirm" => "¿Está seguro que desea borrar esta Adhesión?",
-                          "class" => "eliminar-adhesion",
-                          "id" => "eliminar-adhesion-#{listado['id']}",
-                          "data-remote" => "true",
-                          "rel" => "nofollow",
-                          "data-method" => "delete",
-                          "href" => eliminar_adhesion_path(tarea_pendiente_id: @tarea_pendiente.id, adhesion_id: listado['id']),
-                          "data-original-title" => "Eliminar Adhesión"
-                        }
+                        -# 🚀 Clip inteligente: Si ya tiene archivo se destaca visualmente para edición
+                        - tiene_doc = listado[:nombre_archivo].present?
+                        %a{ "data-adhesion-id" => listado['id'], "class" => "adjuntar-archivo-btn", "id" => "adjuntar-archivo-#{listado['id']}", "href" => "#", "title" => tiene_doc ? "Cambiar/Editar Documento" : "Adjuntar Archivo", style: "position: relative; margin-right: 8px; #{tiene_doc ? 'color: #007bff;' : ''}" }
+                          %i.fa.fa-paperclip{ title: "Editar Archivo" }
+                          %span.badge.badge-success.file-counter-indicator{ id: "badge-#{listado['id']}", style: "display: none; position: absolute; top: -10px; right: -10px; font-size: 9px; padding: 3px 5px; border-radius: 50%;" } 0
+
+                        -# 🚀 Input oculto por fila con el atributo action dinámico hacia el controlador
+                        %input.adhesion-row-file-input{ type: "file", id: "file-input-#{listado['id']}", data: { id: listado['id'], url: "/#{ @tarea_pendiente.id }/#{ listado['id'] }/actualizar-documento-temporal" }, style: "display: none;" }
+                        
+                        -# Botón de eliminación tradicional
+                        %a{ "data-adhesion-id" => listado['id'], "data-confirm" => "¿Está seguro que desea borrar esta Adhesión?", "class" => "eliminar-adhesion", "id" => "eliminar-adhesion-#{listado['id']}", "data-remote" => "true", "rel" => "nofollow", "data-method" => "delete", "href" => eliminar_adhesion_path(tarea_pendiente_id: @tarea_pendiente.id, adhesion_id: listado['id']), "data-original-title" => "Eliminar Adhesión" }
                           %i.fa.fa-trash{ title: "Eliminar" }
                     - correlativo += 1
                 - else
                   %tr
                     %td{ colspan: '12', class: 'text-center' } No hay actores disponibles                  
-        -#- disabled_button = @listado_adhesiones_temporal.empty? ? 'btn-disabled' : ''
-        -#- button_disabled = @listado_adhesiones_temporal.empty? ? :disabled : nil
-
-        -#.float-right.mr-3.mb-3
-        -#  = button_tag t(:save),
-        -#    id: 'actualizar-adhesion-listado-button',
-        -#    'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe,
-        -#    class: "actualizar-adhesion-listado-button btn btn-sm btn-primary btn-disabled",
-        -#    disabled: @listado_adhesiones_temporal.blank?
-
 :javascript
   $(document).ready(function(){
     $(document).on('click', '.actualizar-adhesion-listado-button', function(e) {
@@ -68,4 +60,56 @@
       button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
       
     });
+
+    $(document).on('click', '.adjuntar-archivo-btn', function(e) {
+      e.preventDefault();
+      var id = $(this).data('adhesion-id');
+      $('#file-input-' + id).click();
+    });
+
+    // 2. 🚀 DETECTOR DE CAMBIO (EDICIÓN EN TIEMPO REAL):
+    $(document).on('change', '.adhesion-row-file-input', function() {
+      var id = $(this).data('id');
+      var fileInput = this;
+      var $btnClip = $('#adjuntar-archivo-' + id);
+      
+      // ... tu lógica anterior del change se mantiene exactamente igual ...
+      if (fileInput.files && fileInput.files.length > 0) {
+          var archivoSeleccionado = fileInput.files[0];
+          
+          var formData = new FormData();
+          formData.append('id', id);
+          formData.append('listado_adhesiones_temporal[nombre_archivo]', archivoSeleccionado);
+          formData.append('listado_adhesiones_temporal[flujo_id]', '#{ @flujo.id }');
+
+          var iconoOriginal = $btnClip.html();
+          $btnClip.html("<i class='fa fa-spinner fa-spin'></i>");
+
+          $.ajax({
+            // 🚀 CAMBIO QUIRÚRGICO: Lee la URL directa asignada a la fila en el HAML
+            url: $(fileInput).data('url'), 
+            method: "PATCH", 
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: "script", 
+            success: function() {
+              console.log("Documento temporal " + id + " actualizado con éxito.");
+            },
+            error: function(xhr) {
+              $btnClip.html(iconoOriginal);
+              console.error(xhr.responseText);
+              alert("No se pudo actualizar el documento. Inténtelo nuevamente.");
+            }
+          });
+      }
+    });
+
+    // Tu listener antiguo del botón guardar...
+    $(document).on('click', '.actualizar-adhesion-listado-button', function(e) {
+      var button = $(this);
+      button.prop("disabled", true);
+      button.html("<i class='fa fa-spinner fa-spin'></i> Guardando...");
+    });
+    
   });

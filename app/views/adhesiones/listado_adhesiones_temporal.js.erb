@@ -11,14 +11,17 @@ $('#div_adhesiones table tbody').empty();
   var nombre_instalacion = '<%= j adhesion.nombre_instalacion.to_s %>';
   var comuna_instalacion = '<%= j adhesion.comuna_instalacion.to_s %>';
   var direccion_instalacion = '<%= j adhesion.direccion_instalacion.to_s %>';
-
-  // ESTAS FALTABAN
+  var nombre_archivo = '<%= j adhesion.nombre_archivo_identifier.to_s %>';
   var nombre_encargado = '<%= j adhesion.nombre_encargado.to_s %>';
   var fono_encargado = '<%= j adhesion.fono_encargado.to_s %>';
   var email_encargado = '<%= j adhesion.email_encargado.to_s %>';
 
   var tarea_pendiente_id = '<%= @tarea_pendiente.id %>';
   var correlativo = '<%= correlativo %>';
+
+  var tiene_doc = nombre_archivo && nombre_archivo.trim() !== "";
+  var title_text = tiene_doc ? "Cambiar/Editar Documento" : "Adjuntar Archivo";
+  var style_color = tiene_doc ? "color: #007bff;" : "";
 
   var newRow = "<tr>" +
     "<td class='contenido-form'>" + correlativo + "</td>" +
@@ -34,7 +37,13 @@ $('#div_adhesiones table tbody').empty();
       fono_encargado + "<br>" +
       email_encargado +
     "</td>" +
+    "<td class='contenido-form'>" + nombre_archivo + "</td>" +
     "<td class='contenido-form dos iconos-acciones'>" +
+      "<a data-adhesion-id='" + adhesion_id + "' class='adjuntar-archivo-btn' id='adjuntar-archivo-" + adhesion_id + "' href='#' title='" + title_text + "' style='position: relative; margin-right: 8px; " + style_color + "'>" +
+      "<i class='fa fa-paperclip' title='Editar Archivo'></i>" +
+      "<span class='badge badge-success file-counter-indicator' id='badge-" + adhesion_id + "' style='display: none; position: absolute; top: -10px; right: -10px; font-size: 9px; padding: 3px 5px; border-radius: 50%;'>0</span>" +
+      "</a>" +
+      "<input class='adhesion-row-file-input' type='file' id='file-input-" + adhesion_id + "' data-id='" + adhesion_id + "' data-url='/" + tarea_pendiente_id + "/" + adhesion_id + "/actualizar-documento-temporal' style='display: none;'>" +
       "<a data-adhesion-id='" + adhesion_id +
       "' data-confirm='¿Está seguro que desea borrar a esta Adhesión?' class='eliminar-adhesion' id='eliminar-adhesion-" + adhesion_id +
       "' data-remote='true' rel='nofollow' data-method='delete' href='/" + tarea_pendiente_id + "/" + adhesion_id + "/eliminar-adhesion' data-original-title='Eliminar Adhesión'>" +

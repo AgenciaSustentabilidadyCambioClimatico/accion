@@ -21,8 +21,17 @@ class AdhesionesController < ApplicationController
     if !es_flujo_excel
       # ─── FLUJO FORMULARIO MANUAL ──────────────────────────────────────
       @adhesion.listado_adhesiones = true
-      # Aquí puedes cargar o inicializar las variables que tus partials manuales necesitan, por ejemplo:
-      # @listado_adhesion = ListadoAdhesion.new
+      
+      # 🚀 RECOLECCIÓN EN LOTE:
+      # Buscamos todas las empresas guardadas en el listado temporal de este flujo
+      temporales = ListadoAdhesionesTemporal.where(flujo_id: @flujo.id, estado: 0)
+      
+      # Extraemos los archivos físicos reales subidos a AWS de cada una de las filas
+      archivos_manuales = temporales.map { |t| t.nombre_archivo.file }.compact
+      
+      # 📦 Los metemos todos juntos en la bolsa global de la adhesión principal
+      # Esto alimenta la lógica antigua para que los encuentre por nombre al procesar el lote
+      @adhesion.archivos_adhesion_y_documentacion = archivos_manuales if archivos_manuales.present?
     else
       # ─── FLUJO EXCEL ──────────────────────────────────────────────────
       # (Tu lógica específica de excel si la hay)
@@ -271,56 +280,99 @@ class AdhesionesController < ApplicationController
   end
 
   def descargar_compilado
-    require 'zip'
-    require 'open-uri'
-    archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      if params[:aid].blank?
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
-        @adhesiones_todas.each do |adhesion|
-          next if adhesion.archivos_adhesion_y_documentacion.blank?
-          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+  require 'zip'
+  require 'open-uri'
 
-            next if archivo.blank? || archivo.url.blank?
-            url = archivo.url
+  archivo_zip = Zip::OutputStream.write_buffer do |stream|
+    if params[:aid].blank?
+      # ─── CASO 1: DESCARGAR TODO EL COMPILADO GLOBAL ──────────────────
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      
+      @adhesiones_todas.each do |adhesion|
+        next if adhesion.archivos_adhesion_y_documentacion.blank?
+        
+        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+          next if archivo.blank? || archivo.url.blank?
+          url = archivo.url
+          nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
 
-            # 🔥 nombre único (clave)
-            nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
+          begin
+            URI.open(url) do |file_data|
+              stream.put_next_entry(nombre)
+              stream.write file_data.read
+            end
+          rescue => e
+            Rails.logger.error "Error descargando archivo en compilado: #{e.message}"
+          end
+        end
+      end
 
+    elsif params[:elemento] == "true" || params[:elemento] == true
+      # ─── CASO 2: 🚀 NUEVO MUNDO (DESCARGA DESDE FILA INDIVIDUAL) ──────
+      elemento = AdhesionElemento.find_by(id: params[:aid].to_i)
+      
+      if elemento && elemento.fila.present?
+        # 1. Sacamos el nombre real del archivo desde el hash de la fila
+        nombre_buscar = elemento.fila[:nombre_archivo] || elemento.fila['nombre_archivo']
+        
+        # 2. Buscamos la Adhesión padre (usando el adhesion_id que nos dio el pry: 170)
+        adhesion_padre = Adhesion.unscoped.find_by(id: elemento.adhesion_id || elemento.adhesion_externa_id)
+        
+        if adhesion_padre && adhesion_padre.archivos_adhesion_y_documentacion.present?
+          # 3. Buscamos el binario real dentro de la bolsa del padre que haga match con el nombre
+          archivo_fisico = adhesion_padre.archivos_adhesion_y_documentacion.find { |ar| ar.identifier == nombre_buscar }
+          
+          if archivo_fisico && archivo_fisico.url.present?
+            url = archivo_fisico.url
+            nombre = archivo_fisico.identifier
+            
             begin
               URI.open(url) do |file_data|
                 stream.put_next_entry(nombre)
                 stream.write file_data.read
               end
             rescue => e
-              Rails.logger.error "Error descargando archivo #{url}: #{e.message}"
+              Rails.logger.error "Error descargando archivo puente desde Adhesion #{adhesion_padre.id}: #{e.message}"
             end
           end
         end
-      else
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
-        @adhesiones_todas.each do |adhesion|
-          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            unless archivo.url.nil?
-              if params[:nombre_archivo] == archivo.file.path.split('/').last
-                if archivo.model.id == params[:aid].to_i
-                  url = archivo.url
-                  nombre = File.basename(URI.parse(url).path)
-                  URI.open(url) do |file_data|
-                    stream.put_next_entry(nombre)
-                    stream.write file_data.read
-                  end
+      end
+    else
+      # ─── CASO 3: MUNDO ANTIGUO (DESCARGA ESPECÍFICA DE EXCEL) ─────────
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+
+      @adhesiones_todas.each do |adhesion|
+        next if adhesion.archivos_adhesion_y_documentacion.blank?
+
+        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+          next if archivo.blank? || archivo.url.blank?
+
+          if params[:nombre_archivo] == archivo.identifier
+            if archivo.model.id == params[:aid].to_i
+              url = archivo.url
+              nombre = File.basename(URI.parse(url).path)
+              
+              begin
+                URI.open(url) do |file_data|
+                  stream.put_next_entry(nombre)
+                  stream.write file_data.read
                 end
+              rescue => e
+                Rails.logger.error "Error descargando archivo único Excel: #{e.message}"
               end
             end
           end
         end
       end
     end
-    archivo_zip.rewind
-    # archivo_zip.read
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
+
+  # Enviamos el stream binario limpio usando .string sin romper el objeto StringIO
+  send_data archivo_zip.string, 
+            type: 'application/zip', 
+            charset: "iso-8859-1", 
+            filename: "documentacion.zip"
+end
 
   def descargar_compilado_two
     require 'zip'
@@ -521,6 +573,26 @@ class AdhesionesController < ApplicationController
       format.js { render 'adhesiones/listado_adhesiones_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
     end
   end
+
+  def actualizar_documento_temporal
+    # 1. Buscamos el registro temporal específico por el ID que viene desde el JS
+    @registro_temporal = ListadoAdhesionesTemporal.find(params[:id])
+    
+    # 2. Actualizamos únicamente el campo del archivo
+    if @registro_temporal.update(nombre_archivo: params.dig(:listado_adhesiones_temporal, :nombre_archivo))
+      
+      # 3. Recargamos el listado para que tu archivo '-js.erb' vuelva a dibujar la tabla con el nuevo nombre
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: @registro_temporal.flujo_id, estado: 0).order(id: :asc)
+      @tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id]) # Aseguramos la variable para los links de la tabla
+      
+      respond_to do |format|
+        # 🚀 Ejecuta tu archivo listado_adhesiones_temporal-js.erb para refrescar la vista
+        format.js { render :listado_adhesiones_temporal } 
+      end
+    else
+      render json: { errors: @registro_temporal.errors.full_messages }, status: :unprocessable_entity
+    end
+end
 
 	private
 	
