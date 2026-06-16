@@ -1919,7 +1919,7 @@ GEM
     quilljs-rails (0.0.4)
     raabro (1.4.0)
     racc (1.8.1)
-    rack (2.2.10)
+    rack (2.2.23)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-test (2.1.0)
