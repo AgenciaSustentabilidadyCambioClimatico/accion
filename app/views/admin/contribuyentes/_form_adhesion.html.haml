@@ -1,0 +1,424 @@
+-# Variable para verificar si es una edicion desde mis instituciones
+= simple_form_for [:admin,contribuyente_adhesion], remote: true, html: { autocomplete: :off } do |f|
+  = f.input :temporal, as: :hidden, wrapper: false
+  = f.input :flujo_id, as: :hidden, wrapper: false
+  = f.input :contribuyente_id, as: :hidden, wrapper: false, input_html: { id: 'contribuyente_id' }
+
+  = simple_nested_form_for [:admin,contribuyente_adhesion] do |snf|
+    .row
+      -unless @error_extra.blank?
+        .col-12.mt-2
+          .alert.alert-danger
+            =@error_extra
+      .col-12.mt-2
+        .card
+          .card-header
+            %h5.no-margin
+              = t(:agregar_nueva_institucion)
+          .card-body{style: 'background-color: #e9ecef; padding: 0.25rem 9px 0.5rem'}
+            .col-12.mt-2
+              .card
+                .card-header
+                  %h5.no-margin
+                    = t(:institucion) 
+                .card-body
+                  - contribuyente_id = contribuyente_adhesion.contribuyente_id
+                  .row
+                    .col-l-6.col-xl-3
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        =t(:rut)
+                      .row
+                        .col-lg-8.desactivado
+                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion numero', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
+                        .col-lg-4.desactivado
+                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion dv', readonly: !contribuyente_adhesion.contribuyente_id.nil? }
+                        .col-lg-9.col-md-8.desactivado
+                          = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
+                  .row
+                    .col-12.col-lg-12.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Actividad Económica
+                      - if contribuyente_id.nil?  
+                        = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
+                      - else
+                        - acteco = contribuyente_adhesion.actividad_economica_contribuyentes.first.actividad_economica
+                        - codigo_ciiuv4 = "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}"
+                        = f.input :codigo_ciiuv4, as: :string, 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "codigo_ciiuv4_input", value: codigo_ciiuv4 }, 
+                          label: false
+                  .row
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Tipo institución
+                      - if contribuyente_id.nil?
+                        = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                      - else
+                        - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
+                        - tipo_institucion = dato_anual.tipo_contribuyente.nombre
+                        = f.input :tipo_institucion, as: :string, 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, 
+                          label: false
+                    .col-12.col-lg-6.mt-2
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Tamaño
+                      - if contribuyente_id.nil?
+                        = f.input :tamano_contribuyente, collection: RangoVentaContribuyente::__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tamaño institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                      - else
+                        - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
+                        - tamano_contribuyente = [ dato_anual.rango_venta_contribuyente&.rango, dato_anual.rango_venta_contribuyente&.tamano_contribuyente&.nombre, dato_anual.rango_venta_contribuyente&.venta_anual_en_uf ].compact.join('-')
+                        = f.input :tamano_contribuyente, as: :string, 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tamano_contribuyente_input", value: tamano_contribuyente }, 
+                          label: false
+                  .row
+                    .col-12.col-lg-6.mt-2
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Tipo elemento
+                      = f.input :tipo_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "tipo_elemento_input" }, label: false
+                  .row              
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Alcance    
+                      = f.input :alcance, collection: Alcance::__select, input_html: { id: 'alcance_adhesiones', class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', "data-placeholder"=>"Seleccione alcance" }, label: false, wrapper_html: { class: 'mb-0'}
+                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-identificador"}
+                      %label.string.control-label 
+                        %abbr{title: :required}*
+                        Identificador
+                      = f.input :identificador, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "identificador_input" }, label: false  
+                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-instalacion"}
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Nombre instalación
+                      = f.input :nombre_instalacion, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_instalacion_input" }, label: false   
+                  .row
+                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-patente"}
+                      %label.string.control-label 
+                        %abbr{title: :required}*
+                        Patente
+                      = f.input :patente, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "patente_input" }, label: false
+                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-elemento"}  
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Nombre elemento
+                      = f.input :nombre_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_elemento_input" }, label: false  
+                  .row  
+                    .col-12.col-lg-6.mt-2
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Dirección
+                      - if contribuyente_id.nil?
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input" }, 
+                          label: false
+                      - else
+                        = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Cargando...", disabled: true }, 
+                          label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
+                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
+                          label: false
+                        = check_box_tag :seleccionar, '1', false, class: "form-temporal-boton-guardar-adhesion-institucion not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
+                        %label{ for: "sin_direccion_checkbox" } Nueva Dirección
+                  .row
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Región
+                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, style: 'width: 100%', id: 'region_select', "data-placeholder"=>"Seleccione una región"
+                    .col-12.col-lg-6.mt-2 
+                      %label.string.control-label
+                        %abbr{title: :required}*
+                        Comuna
+                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, id: 'registro_proveedor_comuna', "data-placeholder"=>"Seleccione una comuna"
+        .col-12.mt-2.text-right
+          %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
+            =t(:volver_a_lista)
+          %button.btn.btn-primary.guarda-contribuyente-adhesion-button{type: :submit, disabled: :disabled, 'data-disable-with' => '<i class="fa fa-spinner fa-spin"></i> Guardando...'.html_safe}
+            Agregar
+
+:javascript
+  $(document).ready(function(){
+    __chosen_contribuyentes();
+    iniciarAutoNumeric();
+    iniciarDigitoVerificador();
+    htmlErrorToTooltip('top');
+    nuevo_contribuyente_temporal_validaciones();
+
+    $(document).on('click', '.guarda-contribuyente-adhesion-button', function(e) {
+      
+      e.preventDefault();
+
+      var contribuyente_id = $('#contribuyente_id').val();
+      var rut = $('#contribuyente_rut').val() + '-' + $('#contribuyente_dv').val();
+      var razon_social = $('#contribuyente_razon_social').val();
+      var tamano_empresa = $('#tamano_contribuyente_input').val(); 
+      var sector_productivo = $('#codigo_ciiuv4_input').val();
+      var tipo_institucion = $('#contribuyente_tipo_institucion option:selected').text();
+      var comuna = $('#registro_proveedor_comuna option:selected').text();
+      var direccion = $('#direccion_select option:selected').text();
+      var nombre_instalacion = $('#nombre_instalacion_input').val();
+      var nombre_elemento = $('#nombre_elemento_input').val();
+      var tipo_elemento = $('#tipo_elemento_input').val();
+
+
+      // 🚀 CAPTURA SEGURA: Leemos directamente del select nativo mapeando el texto por el valor actual
+      var alcance_id = $('#alcance_adhesiones').val();
+      var alcance = $('#alcance_adhesiones option[value="' + alcance_id + '"]').text().trim();
+      
+      // Respaldo directo desde la capa visual de Chosen si falla el primero
+      if (!alcance) {
+        alcance = $('#alcance_adhesiones_chosen .chosen-single span').text().trim();
+      }
+
+      if (alcance === "Maquinaria") {
+        nombre_instalacion = $('#nombre_elemento_input').val();
+      }
+
+      if (alcance === "Establecimiento") {
+        nombre_elemento = $('#nombre_instalacion_input').val();
+      }
+
+      var partes = direccion.split("-");
+      var sec_prod_partes = sector_productivo.split("-");
+
+      var identificador = $('#identificador_input').val();
+      var patente = $('#patente_input').val();
+
+      if ($('#direccion_input').val()) {
+        direccion = $('#direccion_input').val();
+      } else {
+        direccion = partes[0].trim(); 
+        comuna = partes[1].trim(); 
+      }
+
+      if ($('#tipo_institucion_input').val()) {
+        tipo_institucion = $('#tipo_institucion_input').val();
+      }
+
+      $("#rut_institucion_adhesiones").val(rut);
+      $("#nombre_institucion_adhesiones").val(razon_social);
+      $("#comuna_institucion_adhesiones").val(comuna);
+      $("#tipo_institucion_adhesiones").val(tipo_institucion);
+      $("#direccion_instalacion_adhesiones").val(direccion);
+      $("#comuna_instalacion_adhesiones").val(comuna);
+      $("#nombre_instalacion_adhesiones").val(nombre_instalacion);
+      $("#tipo_elemento_adhesiones").val(tipo_elemento);
+      $("#alcance_adhesiones").val(alcance);
+      $("#sector_productivo_adhesiones").val(sec_prod_partes[0].trim());
+      $("#tamano_empresa_adhesiones").val(tamano_empresa);
+      $("#nombre_elemento_adhesiones").val(nombre_elemento);
+
+      // 🚀 ASIGNACIÓN: Traspasamos los campos si el texto o el ID corresponden a Maquinaria
+      if (alcance === "Maquinaria" || alcance_id === "3") {
+        $("#identificador_adhesiones").val(identificador);
+        $("#patente_adhesiones").val(patente);
+      }
+
+      $('#buscar-contribuyente').modal("hide");
+      agregar_usuario_adhesiones_validaciones();
+    });
+
+    $('#region_select').on('change', function() {
+      var regionId = $(this).val();
+      $.ajax({
+        url: "#{registro_get_comunas_path}",
+        method: 'get',
+        data: { id: regionId },
+        success: function(response) {
+          // Lógica de comunas
+        }
+      });
+    });
+
+    function toggleDireccionFields() {
+      let contribuyenteId = $('#contribuyente_id').val();
+      let sinDireccionChecked = $('#sin_direccion_checkbox').is(':checked');
+
+      if (sinDireccionChecked || contribuyenteId === '' || contribuyenteId === null) {
+        $('#direccion_input').show().prop('readonly', false);
+        $('#direccion_select').hide();
+      } else {
+        $('#direccion_input').hide();
+        $('#direccion_select').show();
+      }
+    }
+
+    toggleDireccionFields();
+    $('#contribuyente_id, #sin_direccion_checkbox').on('change', toggleDireccionFields);
+
+    function toggleRegionComuna() {
+      let contribuyenteId = $('#contribuyente_id').val();
+      let sinDireccionChecked = $('#sin_direccion_checkbox').is(':checked');
+
+      if (sinDireccionChecked || contribuyenteId === '' || contribuyenteId === null) {
+        $('#region_select, #registro_proveedor_comuna').closest('.col-12.col-lg-6.mt-2').show();
+      } else {
+        $('#region_select, #registro_proveedor_comuna').closest('.col-12.col-lg-6.mt-2').hide();
+      }
+    }
+
+    toggleRegionComuna();
+    $('#contribuyente_id, #sin_direccion_checkbox').on('change', toggleRegionComuna);
+
+    function nuevo_institucion_adhesion_validaciones(){
+      var sinDireccion = $('#sin_direccion_checkbox').prop('checked');
+      var contribuyenteId = $('#contribuyente_id').val();
+      var rut = $('#contribuyente_rut').val() != "";
+      var dv = $('#contribuyente_dv').val() != "";
+      var nombre_completo = $('#contribuyente_razon_social').val() != "";
+      var tipo_institucion = $('#tipo_institucion_input').val() != "";
+      var direccion_select = $('#contribuyente_direccion').val() != "";
+      var direccion_input = $('#direccion_input').val() != "";
+      var region = $('#region_select').val() != "";
+      var comuna = $('#registro_proveedor_comuna').val() != "";
+      var codigo_ciiuv4_select = $('#contribuyente_codigo_ciiuv4').val() != "";
+      var codigo_ciiuv4_input = $('#codigo_ciiuv4_input').val() != "";
+
+      // 🚀 CAPTURA SEGURA PARA CHOSEN (ID Y TEXTO)
+      var alcance_id = $('#alcance_adhesiones').val() || "";
+      var alcance_texto = $('#alcance_adhesiones option:selected').text().trim();
+
+      // Si por alguna razón Chosen no actualizó el select nativo, lo rescatamos de su capa visual
+      if (!alcance_texto) {
+        alcance_texto = $('#alcance_adhesiones_chosen .chosen-single span').text().trim();
+      }
+
+      // 🚀 LÓGICA DE VALIDACIÓN EXTRA 
+      var valida = true;
+      if (alcance_texto === "Maquinaria") {
+        var ident = $('#identificador_input').val().trim() !== "";
+        var pat = $('#patente_input').val().trim() !== "";
+        var elem = $('#nombre_elemento_input').val().trim() !== "";
+        
+        // Exige que al menos uno de los tres tenga texto real
+        valida = (ident && pat && elem);
+      }
+
+      if (alcance_texto === "Establecimiento") {
+        valida = ($('#nombre_instalacion_input').val() != "" );
+      }
+
+      if (sinDireccion || contribuyenteId === '') {
+        if (rut && dv && nombre_completo && codigo_ciiuv4_select && tipo_institucion && direccion_input && region && comuna && valida) {
+            $('.guarda-contribuyente-adhesion-button').removeAttr("disabled");
+        } else {
+            $('.guarda-contribuyente-adhesion-button').attr("disabled", true);
+        }
+      } else {
+        if (rut && dv && nombre_completo && codigo_ciiuv4_input && tipo_institucion && direccion_select && valida) {
+            $('.guarda-contribuyente-adhesion-button').removeAttr("disabled");
+        } else {
+            $('.guarda-contribuyente-adhesion-button').attr("disabled", true);
+        }
+      }
+    }
+
+    $('.guarda-contribuyente-adhesion-button').attr("disabled", true);
+
+    $(document).on('change keyup', '.form-temporal-boton-guardar-adhesion-institucion', function(){
+        nuevo_institucion_adhesion_validaciones();
+    });
+
+    function __chosen_contribuyentes() {
+      $('.contribuyentes_select').chosen({
+        allow_single_deselect: true,
+        no_results_text: 'No se encontraron resultados',
+        width: '100%',
+        search_contains: true
+      });
+    }
+
+    // Manejador del cambio de Alcance para Chosen
+    $(document).on('change', '#alcance_adhesiones', function() {
+      const valorSeleccionado = $(this).val(); 
+      
+      if (valorSeleccionado === "2") {
+        // CORREGIDO: Se agregó el '#' al selector
+        $('#bloque-nombre-instalacion').removeClass('d-none').hide().slideDown();
+        
+        // Ocultamos los bloques de maquinaria si cambian de 3 a 2
+        $('#bloque-identificador, #bloque-patente, #bloque-nombre-elemento').slideUp(function() {
+          $(this).addClass('d-none');
+          $('#identificador_input').val('');
+          $('#patente_input').val('');
+          $('#nombre_elemento_input').val('');
+        });
+
+      } else if (valorSeleccionado === "3") {
+        // Mostramos bloques de maquinaria
+        $('#bloque-identificador, #bloque-patente, #bloque-nombre-elemento').removeClass('d-none').hide().slideDown();
+        
+        // Ocultamos el bloque de instalación si cambian de 2 a 3
+        $('#bloque-nombre-instalacion').slideUp(function() {
+          $(this).addClass('d-none');
+          $('#nombre_instalacion_input').val('');
+        });
+
+      } else {
+        // Si no es ni 2 ni 3, ocultamos absolutamente todo
+        $('#bloque-identificador, #bloque-patente, #bloque-nombre-elemento').slideUp(function() {
+          $(this).addClass('d-none');
+          $('#identificador_input').val('');
+          $('#patente_input').val('');
+          $('#nombre_elemento_input').val('');
+        });
+
+        $('#bloque-nombre-instalacion').slideUp(function() {
+          $(this).addClass('d-none');
+          $('#nombre_instalacion_input').val('');
+        });
+      }
+      nuevo_institucion_adhesion_validaciones();
+    });
+
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'listado_adhesiones_temporal_nombre_archivo') {
+        var input = e.target;
+
+        if (input.files && input.files.length > 0) {
+          // Creamos un contenedor temporal DataTransfer para reasignar los archivos sanitizados
+          var contenedorLimpio = new DataTransfer();
+
+          for (var i = 0; i < input.files.length; i++) {
+            var archivoOriginal = input.files[i];
+            
+            // 1. Eliminar tildes, diéresis y normalizar caracteres (Ej: á->a, ñ->n)
+            var nombreSinTildes = archivoOriginal.name
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "");
+            
+            // 2. Reemplazar espacios en blanco (uno o más continuos) por un único guion bajo
+            var nombreSanitizado = nombreSinTildes.replace(/\s+/g, '_');
+
+            // 3. Recreamos el archivo con el nuevo nombre limpio manteniendo su contenido y tipo original
+            var archivoLimpio = new File([archivoOriginal], nombreSanitizado, { 
+              type: archivoOriginal.type 
+            });
+            
+            contenedorLimpio.items.add(archivoLimpio);
+          }
+
+          // 4. Reasignamos los archivos limpios al input para que FormData los capture perfectos
+          input.files = contenedorLimpio.files;
+
+          // 5. Sincronizamos con tu acumulador 'dt' global (si existe en tu vista)
+          if (typeof dt !== 'undefined') {
+            dt.items.clear();
+            for (var j = 0; j < input.files.length; j++) {
+              dt.items.add(input.files[j]);
+            }
+          }
+
+          // 6. Gatillamos tus validaciones visuales del formulario
+          if (typeof render_files === "function") { render_files(); }
+          if (typeof validar_boton_guardar === "function") { validar_boton_guardar(); }
+        }
+      }
+    }, true);
+
+  });
