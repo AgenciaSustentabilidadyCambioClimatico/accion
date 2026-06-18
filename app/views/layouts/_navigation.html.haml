@@ -91,14 +91,15 @@
                             -#%li= link_to 'Flujo Fondo Producción Limpia', admin_fondo_produccion_limpia_mensajes_path, class: 'dropdown-item'
                           %li= link_to 'Cambiar nombre Flujo', nombres_apl_path, class: 'dropdown-item'
                       %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:diccionario_de_acciones)
-                        %ul.dropdown-menu
-                          %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
-                          %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
-                          %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
-                          %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
-                          %li= link_to t(:estándares_de_certificación), admin_estandar_homologaciones_path, class: 'dropdown-item'
+                        - if current_user.is_admin?
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:diccionario_de_acciones)
+                          %ul.dropdown-menu
+                            %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
+                            %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
+                            %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
+                            %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
+                            %li= link_to t(:estándares_de_certificación), admin_estandar_homologaciones_path, class: 'dropdown-item'
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
                           = t(:proveedores)
