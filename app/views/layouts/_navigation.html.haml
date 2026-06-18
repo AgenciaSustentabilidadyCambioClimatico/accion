@@ -162,6 +162,8 @@
                       %li= link_to t(:historial_logs), '#', class: 'dropdown-item disable'
                     %li= link_to t(:comentarios), comentarios_path, class: 'dropdown-item'
                     %li= link_to t(:prensa), admin_hitos_de_prensa_path, class: 'dropdown-item'
+                    %li= link_to t(:prueba_envio_correos), admin_test_correos_path, method: :post, class: 'dropdown-item', data: { confirm: "¿Enviar correos de prueba a los administradores?" }
+            - if true
               %li.nav-item.dropdown
                 %a#dropdown-tareas-pendientes.nav-link.dropdown-toggle{"aria-expanded" => :false, "aria-haspopup" => :true, "data-toggle" => :dropdown, :href => "#"}
                   = t(:tareas_pendientes)

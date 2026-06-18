@@ -436,6 +436,7 @@ Rails.application.routes.draw do
         get :buscador
         get :edit_modal
         get :edit_actor_modal
+        get :edit_adhesion_modal
         get :recarga_contribuyente
       end
     end
@@ -451,6 +452,7 @@ Rails.application.routes.draw do
         get :region_comunas 
         get :edit_modal
         get :edit_actor_modal
+        get :edit_adhesion_modal
       end
     end
 
@@ -624,6 +626,7 @@ Rails.application.routes.draw do
     get '/reporte_sustentabilidad/edit', to: "reporte_sustentabilidad#edit", as: :edit_reporte_sustentabilidad
     match '/reporte_sustentabilidad', to: "reporte_sustentabilidad#update", as: :reporte_sustentabilidad, via: [:patch, :put]
 
+    resources :test_correos, only: [:create]
   end
   #end namespace admin
 
@@ -1014,6 +1017,10 @@ Rails.application.routes.draw do
   get ':tarea_pendiente_id/adhesion/descargar_compilado_four', to: "adhesiones#descargar_compilado_four", as: :descargar_compilado_adhesion_four
   # DZC 2018-11-05 13:24:14 Errores varios en bandeja de entrada
   get ':tarea_pendiente_id/error', to: "tarea_pendientes#auditoria_sin_elementos_adheridos", as: :tarea_pendiente_auditoria_sin_elementos_adheridos
+  patch ':tarea_pendiente_id/adhesion/crear_adhesion', to: "adhesiones#crear_adhesion", as: :crear_adhesion
+  get ':tarea_pendiente_id/listado-adhesiones-temporal', to: "adhesiones#listado_adhesiones_temporal", as: :listado_adhesiones_temporal
+  delete '/:tarea_pendiente_id/:adhesion_id/eliminar-adhesion', to: 'adhesiones#eliminar_adhesion', as: :eliminar_adhesion
+  patch '/:tarea_pendiente_id/:id/actualizar-documento-temporal', to: 'adhesiones#actualizar_documento_temporal', as: :actualizar_documento_temporal
 
   if Rails.env.production?
     match '*a' => redirect("/"), via: :all

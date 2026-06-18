@@ -4,31 +4,74 @@ class AdhesionesController < ApplicationController
   before_action :set_flujo
 	before_action :set_datos
   before_action :set_crea_archivo, only: [:descargar]
+  before_action :set_contribuyentes
+  before_action :set_usuario_actor
+  before_action :set_actores, only: [:actualizar]
+  before_action :set_listado_adhesiones_temporal
 
 	def actualizar #DZC ACCESO A APL-025 PPF-016
 	end
 
-	def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
-    @adhesion_new = Adhesion.new
-    @adhesion_new.flujo_id = @flujo.id
-    @adhesion_new.is_ppf = @ppp.present?
-    @adhesion.tarea_id = @tarea.id if @tarea.present?
-    @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
-    @adhesion_new.save!
-    @adhesion.assign_attributes(adhesion_params)
+  def actualizar_guardar #DZC TAREA APL-025 PPF-016 TERMINO
+    
+    # 1. Detectamos el tipo de flujo de forma segura
+    es_flujo_excel = params.dig(:adhesion, :archivo_elementos).present?
+    tiene_parametros_adhesion = params[:adhesion].present?
 
-		# @adhesion.manifestacion_de_interes_id = @manifestacion_de_interes.id
+    if !es_flujo_excel
+      # ─── FLUJO FORMULARIO MANUAL ──────────────────────────────────────
+      @adhesion.listado_adhesiones = true
+      
+      # 🚀 RECOLECCIÓN EN LOTE:
+      # Buscamos todas las empresas guardadas en el listado temporal de este flujo
+      temporales = ListadoAdhesionesTemporal.where(flujo_id: @flujo.id, estado: 0)
+      
+      # Extraemos los archivos físicos reales subidos a AWS de cada una de las filas
+      archivos_manuales = temporales.map { |t| t.nombre_archivo.file }.compact
+      
+      # 📦 Los metemos todos juntos en la bolsa global de la adhesión principal
+      # Esto alimenta la lógica antigua para que los encuentre por nombre al procesar el lote
+      @adhesion.archivos_adhesion_y_documentacion = archivos_manuales if archivos_manuales.present?
+    else
+      # ─── FLUJO EXCEL ──────────────────────────────────────────────────
+      # (Tu lógica específica de excel si la hay)
+    end 
+
+    # 2. Procesamos el duplicado de archivos SOLO si la clave :adhesion está presente
+    if tiene_parametros_adhesion
+      @adhesion_new = Adhesion.new
+      @adhesion_new.flujo_id = @flujo.id
+      @adhesion_new.is_ppf = @ppp.present?
+      @adhesion.tarea_id = @tarea.id if @tarea.present?
+      @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
+      @adhesion_new.save!
+      
+      # Solo asignamos si pasó el filtro del require
+      @adhesion.assign_attributes(adhesion_params)
+    end
+
+    # 3. Seteos transversales antes de guardar
     @adhesion.flujo_id = @flujo.id
     @adhesion.is_ppf = @ppp.present?
+
     respond_to do |format|
       if @adhesion.save
+        
         @rechazadas = []
         continua_flujo_segun_tipo_tarea
+
         if @tarea.codigo == Tarea::COD_PPF_016 || @tarea.codigo == Tarea::COD_PPF_017
-          format.js { flash[:success] = "Adhesión solicitada correctamente"
+          
+          format.js { 
+            flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{root_url}'" 
           }
         elsif @tarea.codigo == Tarea::COD_APL_025
+          
+          if !es_flujo_excel
+            ListadoAdhesionesTemporal.actualiza_estado_listado_adhesiones(@flujo.id)  
+          end
+          
           format.js { 
             flash[:success] = "Adhesión solicitada correctamente"
             render js: "window.location='#{actualizar_adhesion_path(@tarea_pendiente)}'" 
@@ -37,11 +80,14 @@ class AdhesionesController < ApplicationController
           format.js { flash[:success] = "Adhesión solicitada correctamente" }
         end
       else
-      	# ap @adhesion.errors.messages
-        format.js { flash.now[:error] = @adhesion.errors.messages}
+        # 🚨 SI EL GUARDADO FALLA: Para evitar el 'model_name for nil:NilClass',
+        # debemos re-inicializar AQUÍ todas las variables que usan tus sub-formularios renderizados
+        @listado_adhesion = ListadoAdhesionesTemporal.new 
+        
+        format.js { flash.now[:error] = @adhesion.errors.messages }
       end
     end
-	end
+  end
 
   def revisar #DZC APL-028
     respond_to do |format|
@@ -234,56 +280,99 @@ class AdhesionesController < ApplicationController
   end
 
   def descargar_compilado
-    require 'zip'
-    require 'open-uri'
-    archivo_zip = Zip::OutputStream.write_buffer do |stream|
-      if params[:aid].blank?
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
-        @adhesiones_todas.each do |adhesion|
-          next if adhesion.archivos_adhesion_y_documentacion.blank?
-          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+  require 'zip'
+  require 'open-uri'
 
-            next if archivo.blank? || archivo.url.blank?
-            url = archivo.url
+  archivo_zip = Zip::OutputStream.write_buffer do |stream|
+    if params[:aid].blank?
+      # ─── CASO 1: DESCARGAR TODO EL COMPILADO GLOBAL ──────────────────
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+      
+      @adhesiones_todas.each do |adhesion|
+        next if adhesion.archivos_adhesion_y_documentacion.blank?
+        
+        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+          next if archivo.blank? || archivo.url.blank?
+          url = archivo.url
+          nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
 
-            # 🔥 nombre único (clave)
-            nombre = "adhesion_#{adhesion.id}_#{archivo.identifier}"
+          begin
+            URI.open(url) do |file_data|
+              stream.put_next_entry(nombre)
+              stream.write file_data.read
+            end
+          rescue => e
+            Rails.logger.error "Error descargando archivo en compilado: #{e.message}"
+          end
+        end
+      end
 
+    elsif params[:elemento] == "true" || params[:elemento] == true
+      # ─── CASO 2: 🚀 NUEVO MUNDO (DESCARGA DESDE FILA INDIVIDUAL) ──────
+      elemento = AdhesionElemento.find_by(id: params[:aid].to_i)
+      
+      if elemento && elemento.fila.present?
+        # 1. Sacamos el nombre real del archivo desde el hash de la fila
+        nombre_buscar = elemento.fila[:nombre_archivo] || elemento.fila['nombre_archivo']
+        
+        # 2. Buscamos la Adhesión padre (usando el adhesion_id que nos dio el pry: 170)
+        adhesion_padre = Adhesion.unscoped.find_by(id: elemento.adhesion_id || elemento.adhesion_externa_id)
+        
+        if adhesion_padre && adhesion_padre.archivos_adhesion_y_documentacion.present?
+          # 3. Buscamos el binario real dentro de la bolsa del padre que haga match con el nombre
+          archivo_fisico = adhesion_padre.archivos_adhesion_y_documentacion.find { |ar| ar.identifier == nombre_buscar }
+          
+          if archivo_fisico && archivo_fisico.url.present?
+            url = archivo_fisico.url
+            nombre = archivo_fisico.identifier
+            
             begin
               URI.open(url) do |file_data|
                 stream.put_next_entry(nombre)
                 stream.write file_data.read
               end
             rescue => e
-              Rails.logger.error "Error descargando archivo #{url}: #{e.message}"
+              Rails.logger.error "Error descargando archivo puente desde Adhesion #{adhesion_padre.id}: #{e.message}"
             end
           end
         end
-      else
-        @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
-        @adhesiones_todas.each do |adhesion|
-          adhesion.archivos_adhesion_y_documentacion.each do |archivo|
-            unless archivo.url.nil?
-              if params[:nombre_archivo] == archivo.file.path.split('/').last
-                if archivo.model.id == params[:aid].to_i
-                  url = archivo.url
-                  nombre = File.basename(URI.parse(url).path)
-                  URI.open(url) do |file_data|
-                    stream.put_next_entry(nombre)
-                    stream.write file_data.read
-                  end
+      end
+    else
+      # ─── CASO 3: MUNDO ANTIGUO (DESCARGA ESPECÍFICA DE EXCEL) ─────────
+      @adhesiones_todas = Adhesion.unscoped.where(flujo_id: @flujo.id)
+
+      @adhesiones_todas.each do |adhesion|
+        next if adhesion.archivos_adhesion_y_documentacion.blank?
+
+        adhesion.archivos_adhesion_y_documentacion.each do |archivo|
+          next if archivo.blank? || archivo.url.blank?
+
+          if params[:nombre_archivo] == archivo.identifier
+            if archivo.model.id == params[:aid].to_i
+              url = archivo.url
+              nombre = File.basename(URI.parse(url).path)
+              
+              begin
+                URI.open(url) do |file_data|
+                  stream.put_next_entry(nombre)
+                  stream.write file_data.read
                 end
+              rescue => e
+                Rails.logger.error "Error descargando archivo único Excel: #{e.message}"
               end
             end
           end
         end
       end
     end
-    archivo_zip.rewind
-    # archivo_zip.read
-    #enviamos el archivo para ser descargado
-    send_data archivo_zip.sysread, type: 'application/zip', charset: "iso-8859-1", filename: "documentacion.zip"
   end
+
+  # Enviamos el stream binario limpio usando .string sin romper el objeto StringIO
+  send_data archivo_zip.string, 
+            type: 'application/zip', 
+            charset: "iso-8859-1", 
+            filename: "documentacion.zip"
+end
 
   def descargar_compilado_two
     require 'zip'
@@ -428,6 +517,83 @@ class AdhesionesController < ApplicationController
     end    
   end
 
+  def crear_adhesion
+    @listado_adhesiones = ListadoAdhesionesTemporal.new
+    
+    # 1. Convertimos a Hash asegurando "with_indifferent_access" 
+    # Esto permite buscar tanto con datos[:rut] como con datos['rut'] sin errores
+    datos = sanitize_rut(listado_adhesiones_temporal_params.to_h).with_indifferent_access
+    @listado_adhesiones.assign_attributes(datos)
+    @listado_adhesiones.flujo_id = @flujo.id
+    @listado_adhesiones.fecha_adhesion = Time.now.strftime("%d/%m/%Y")
+
+    # 2. Ahora 'datos[:rut_institucion]' funcionará de forma segura
+    contribuyente = Contribuyente.find_by(rut: datos[:rut_institucion])
+    
+    if contribuyente.present?
+      # Usamos &. para navegación segura por si un contribuyente no tiene establecimientos
+      casa_matriz = contribuyente.establecimiento_contribuyentes.find_by(casa_matriz: true)
+      
+      @listado_adhesiones.direccion_casa_matriz = casa_matriz&.direccion || ''
+      @listado_adhesiones.comuna_casa_matriz    = casa_matriz&.comuna.nombre || ''
+    else
+      @listado_adhesiones.direccion_casa_matriz = ''
+      @listado_adhesiones.comuna_casa_matriz    = ''
+    end
+       
+    # 3. 🚀 Usamos .save! (con signo de exclamación) en ambiente de desarrollo/debug
+    # Si algo falla, romperá la ejecución y te dirá EXACTAMENTE qué validación falló.
+    if @listado_adhesiones.save
+      # Si guardó con éxito, redirige o procesa
+      listado_adhesiones_temporal
+    else
+      # Si no guardó, puedes poner un binding.pry aquí para revisar: @listado_adhesiones.errors.full_messages
+      render :new # o la acción que corresponda si falla
+    end
+  end
+
+  def eliminar_adhesion
+    adhesion = ListadoAdhesionesTemporal.find(params[:adhesion_id])
+
+    if adhesion.destroy
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: adhesion.flujo_id, estado: 0)
+      @tarea_pendiente = TareaPendiente.find_by(flujo_id: adhesion.flujo_id)
+
+      respond_to do |format|
+        format.js { render 'adhesiones/eliminar_adhesion', locals: { adhesion: adhesion.id } }
+      end
+    else
+      flash[:error] = 'Hubo un problema al eliminar al adhesion.'
+    end
+  end
+
+  def listado_adhesiones_temporal
+    @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    respond_to do |format|
+      format.js { render 'adhesiones/listado_adhesiones_temporal', locals: { manifestacion_de_interes_id: @tarea_pendiente.flujo.manifestacion_de_interes_id } }
+    end
+  end
+
+  def actualizar_documento_temporal
+    # 1. Buscamos el registro temporal específico por el ID que viene desde el JS
+    @registro_temporal = ListadoAdhesionesTemporal.find(params[:id])
+    
+    # 2. Actualizamos únicamente el campo del archivo
+    if @registro_temporal.update(nombre_archivo: params.dig(:listado_adhesiones_temporal, :nombre_archivo))
+      
+      # 3. Recargamos el listado para que tu archivo '-js.erb' vuelva a dibujar la tabla con el nuevo nombre
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id: @registro_temporal.flujo_id, estado: 0).order(id: :asc)
+      @tarea_pendiente = TareaPendiente.find(params[:tarea_pendiente_id]) # Aseguramos la variable para los links de la tabla
+      
+      respond_to do |format|
+        # 🚀 Ejecuta tu archivo listado_adhesiones_temporal-js.erb para refrescar la vista
+        format.js { render :listado_adhesiones_temporal } 
+      end
+    else
+      render json: { errors: @registro_temporal.errors.full_messages }, status: :unprocessable_entity
+    end
+end
+
 	private
 	
     #asigna valor de id de tarea pendiente, leyendolo desde la URL (esto es neceario por que no se traspasa desde la jerarquia superior)
@@ -549,4 +715,56 @@ class AdhesionesController < ApplicationController
       @archivo = ExportaExcel.formato(nil, titulos, dominios, datos, "Adhesiones" )
     end
 
+    def set_contribuyentes
+      @contribuyente = Contribuyente.new
+      @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+      @contribuyente_adhesion = Contribuyente.new
+    end
+
+    def set_usuario_actor
+      @usuario_adhesion = User.new
+    end
+
+    def set_actores
+      @listado_adhesiones = ListadoAdhesionesTemporal.new
+      @listado_adhesiones = ListadoAdhesionesTemporal.where(flujo_id: params[:id])
+      @listado_adhesion = ListadoAdhesionesTemporal.new
+    end
+
+    def set_listado_adhesiones_temporal
+      @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id:  @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    end
+
+    def listado_adhesiones_temporal_params
+    params.require(:listado_adhesiones_temporal).permit(
+      :fecha_adhesion,
+      :rut_institucion,
+      :nombre_institucion,
+      :sector_productivo,
+      :tipo_institucion,
+      :tamano_empresa,
+      :direccion_casa_matriz,
+      :comuna_casa_matriz,
+      :rut_encargado,
+      :nombre_encargado,
+      :cargo_encargado,
+      :fono_encargado,
+      :email_encargado,
+      :alcance,
+      :nombre_instalacion,
+      :direccion_instalacion,
+      :comuna_instalacion,
+      :tipo_elemento,
+      :identificador,
+      :patente,
+      :nombre_elemento,
+      :nombre_archivo,
+      :flujo_id)
+  end
+
+  def sanitize_rut(params)
+    params["rut_encargado"]&.gsub!('.', '')
+    params["rut_institucion"]&.gsub!('.', '')
+    params
+  end
 end

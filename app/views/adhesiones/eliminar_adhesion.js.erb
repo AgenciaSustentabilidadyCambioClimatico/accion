@@ -1,0 +1,11 @@
+$('.loading-data').hide();
+$("#eliminar-adhesion-<%= adhesion %>").closest('tr').remove();
+
+<% if @listado_adhesiones_temporal.count == 0 %>
+  $('.actualizar-adhesiones-listado-button').prop('disabled', true); 
+  var newRow = "<tr><td colspan='12' class='text-center'> No hay adhesiones disponibles </td></tr>";    
+  $('#div_adhesiones table tbody').append(newRow); 
+<% else %>
+  $('.actualizar-adhesiones-listado-button').prop('disabled', false); 
+<% end %>
+

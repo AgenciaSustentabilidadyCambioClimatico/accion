@@ -1,6 +1,6 @@
 class Contribuyente < ApplicationRecord
 	attr_accessor :filter_mode, :es_para_seleccion, :buscar_por_actividad_economica, :actividad_economica_id, :resultado_mostrados, :nombre_de_establecimiento, :tipo_de_establecimiento, :from_establecimientos, :custom_id, :data_table, :nombre_maquinaria, :numero_serie, :patente, :es_maquinaria, :seleccion_basica, :tipo_instrumento
-
+	attr_accessor :alcance, :nombre_instalacion, :tipo_elemento
 	has_many :dato_anual_contribuyentes, foreign_key: :contribuyente_id, dependent: :destroy
 	has_many :establecimiento_contribuyentes, foreign_key: :contribuyente_id, inverse_of: :contribuyente, dependent: :destroy
 	has_many :actividad_economica_contribuyentes, foreign_key: :contribuyente_id, dependent: :destroy
@@ -34,7 +34,7 @@ class Contribuyente < ApplicationRecord
 	default_scope { where(temporal: false) }
 
 	#validates :tipo_institucion ,presence: true
-	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl
+	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl, :identificador, :patente, :nombre_elemento, :nombre_archivo
 
 	def rut_unico
 		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first
