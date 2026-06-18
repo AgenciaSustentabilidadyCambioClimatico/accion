@@ -165,8 +165,8 @@
                   = t(:tareas_pendientes)
                 %ul.dropdown-menu{"aria-labelledby" => "dropdown-tareas-pendientes"}
                   %li= link_to t(:acuerdos), acuerdos_tarea_pendientes_path, class: 'dropdown-item'
-                  %li= link_to t(:programa_regional), proyectos_ppf_tarea_pendientes_path, class: 'dropdown-item'
-                  %li= link_to t(:seguimiento_fpl), seguimientos_fpl_tarea_pendientes_path, class: 'dropdown-item'
+                  -#%li= link_to t(:programa_regional), proyectos_ppf_tarea_pendientes_path, class: 'dropdown-item'
+                  -#%li= link_to t(:seguimiento_fpl), seguimientos_fpl_tarea_pendientes_path, class: 'dropdown-item'
 
             - if puede_crear_manifestacion || puede_crear_programa_regional || puede_crear_seguimiento_fpl
               %li.nav-item.dropdown
@@ -175,10 +175,10 @@
                 %ul.dropdown-menu{"aria-labelledby" => "dropdown-iniciar-proceso"}
                   - if puede_crear_manifestacion
                     %li.dropdown-item{"data-toggle" => "modal", "data-target" => "#modal_enviar_formulario"} Acuerdos
-                  - if puede_crear_programa_regional
-                    %li= link_to t(:programa_regional), ppf_programa_proyecto_propuestas_path, method: :post, class: 'dropdown-item'
-                  - if puede_crear_seguimiento_fpl
-                    %li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
+                  -#- if puede_crear_programa_regional
+                  -#  %li= link_to t(:programa_regional), ppf_programa_proyecto_propuestas_path, method: :post, class: 'dropdown-item'
+                  -#- if puede_crear_seguimiento_fpl
+                  -#  %li= link_to t(:seguimiento_fpl), seguimiento_fpl_proyectos_path, class: 'dropdown-item'
             .modal.fade#modal_enviar_formulario{tabindex: "-1", role: :dialog, "aria-labelledby": :modal1Label, "aria-hidden": true}
               .modal-dialog.modal-dialog-centered.modal-lg.animated{role: :document}
                 .modal-content

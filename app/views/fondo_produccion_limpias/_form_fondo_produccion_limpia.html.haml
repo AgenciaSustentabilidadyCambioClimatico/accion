@@ -3720,7 +3720,7 @@
                         %td.contenido-form= auditor.telefono
                         %td.contenido-form= auditor.email
                         %td.contenido-form= auditor.profesion
-                        %td.contenido-form{id: "td-auditores-valor-hh-#{auditor.id}"}= valor_hh
+                        %td.contenido-form{id: "td-auditores-valor-hh-#{auditor.id}"}= number_to_currency valor_hh
                         - if !solo_lectura
                           %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{auditor.id}"}
                             - if recurso_humano_existente?(equipo_trabajo_id, @tarea_pendiente.flujo_id)
@@ -3878,6 +3878,8 @@
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
+                      - if descargable.descargable_tareas_id == 23
+                        postulante
                       - if descargable.id != 34
                         (En caso de tratarse de un consorcio, se deberá presentar la documentación correspondiente a todas las empresas que lo integran.)
                     %td.contenido-form   
@@ -3913,6 +3915,8 @@
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
+                      - if descargable.descargable_tareas_id == 23
+                        receptora
                     %td.contenido-form
                       = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
                     %td.contenido-form{id: "archivo_cargado_receptor_#{descargable.id}"} 
@@ -3946,6 +3950,8 @@
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *
                       = descargable.nombre
+                      - if descargable.descargable_tareas_id == 23
+                        ejecutora
                     %td.contenido-form
                       = __mostrar_descargable_sin_titulo(@tarea, "#{descargable.codigo}")
                     %td.contenido-form{id: "archivo_cargado_ejecutor_#{descargable.id}"} 

@@ -43,7 +43,7 @@ gem 'nested_form'
 gem 'pg'
 gem 'prawn', '~>2.4.0'
 gem 'prawn-table', '~> 0.2.2'
-gem 'puma', '~> 4.0'
+gem 'puma', '< 6.0', '>= 5.6.9'
 gem 'pundit'
 gem 'puredocx', '~> 0.0.2'
 gem 'quilljs-rails'
@@ -110,3 +110,4 @@ end
 
 gem "health_check", "~> 3.1"
 gem 'recaptcha', require: 'recaptcha/rails'
+gem 'addressable', '>= 2.9.0'

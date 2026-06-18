@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_03_06_122900) do
+ActiveRecord::Schema.define(version: 2026_06_04_163422) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -46,6 +46,8 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.integer "contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["actividad_economica_id"], name: "idx_aec_actividad"
+    t.index ["contribuyente_id"], name: "idx_aec_contribuyente"
   end
 
   create_table "actividad_economica_flujos", force: :cascade do |t|
@@ -577,6 +579,7 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.bigint "f22c_646"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["contribuyente_id"], name: "index_dato_anual_contribuyentes_on_contribuyente_id"
   end
 
   create_table "dato_levantado_mensuals", force: :cascade do |t|
@@ -646,6 +649,7 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.datetime "updated_at", null: false
     t.integer "tipo_descargable"
     t.string "nombre_campo"
+    t.integer "orden"
     t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
     t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end
@@ -808,6 +812,7 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.datetime "updated_at", null: false
     t.datetime "fecha_eliminacion"
     t.integer "establecimiento_contribuyente_id"
+    t.index ["contribuyente_id"], name: "index_establecimiento_contribuyentes_on_contribuyente_id"
   end
 
   create_table "estado_admisibilidades", force: :cascade do |t|
@@ -912,7 +917,11 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.string "codigo"
     t.integer "registro_proveedor_id"
     t.bigint "fondo_produccion_limpia_id"
+    t.index ["contribuyente_id"], name: "index_flujos_on_contribuyente_id"
     t.index ["fondo_produccion_limpia_id"], name: "index_flujos_on_fondo_produccion_limpia_id"
+    t.index ["manifestacion_de_interes_id"], name: "index_flujos_on_manifestacion_de_interes_id"
+    t.index ["programa_proyecto_propuesta_id"], name: "index_flujos_on_programa_proyecto_propuesta_id"
+    t.index ["proyecto_id"], name: "index_flujos_on_proyecto_id"
   end
 
   create_table "fondo_produccion_limpia", force: :cascade do |t|
@@ -1142,6 +1151,36 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.string "direccion"
     t.string "codigo_ciiuv4"
     t.index ["manifestacion_de_interes_id"], name: "index_listado_actores_temporals_on_manifestacion_de_interes_id"
+  end
+
+  create_table "listado_adhesiones_temporals", force: :cascade do |t|
+    t.string "fecha_adhesion"
+    t.string "rut_institucion"
+    t.string "nombre_institucion"
+    t.string "sector_productivo"
+    t.string "tipo_institucion"
+    t.string "tamano_empresa"
+    t.string "direccion_casa_matriz"
+    t.string "comuna_casa_matriz"
+    t.string "rut_encargado"
+    t.string "nombre_encargado"
+    t.string "cargo_encargado"
+    t.string "fono_encargado"
+    t.string "email_encargado"
+    t.string "alcance"
+    t.string "nombre_instalacion"
+    t.string "direccion_instalacion"
+    t.string "comuna_instalacion"
+    t.string "tipo_elemento"
+    t.string "identificador"
+    t.string "patente"
+    t.string "nombre_elemento"
+    t.string "nombre_archivo"
+    t.integer "flujo_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "estado", default: 0, null: false
+    t.index ["flujo_id"], name: "index_listado_adhesiones_temporals_on_flujo_id"
   end
 
   create_table "lugar_coordenadas", force: :cascade do |t|
@@ -1746,6 +1785,8 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.text "instrumentos_relacionados_historico"
     t.text "sectores_economicos"
     t.text "motivacion_y_objetivos"
+    t.index ["contribuyente_id"], name: "index_proyectos_on_contribuyente_id"
+    t.index ["coordinador_id"], name: "index_proyectos_on_coordinador_id"
     t.index ["tipo_instrumento_id"], name: "index_proyectos_on_tipo_instrumento_id"
   end
 
@@ -1889,6 +1930,7 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.integer "tipo_contribuyente_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["contribuyente_id"], name: "index_responsables_on_contribuyente_id"
   end
 
   create_table "reunion_destinatarios", force: :cascade do |t|
@@ -1985,7 +2027,11 @@ ActiveRecord::Schema.define(version: 2026_03_06_122900) do
     t.datetime "updated_at", default: -> { "now()" }, null: false
     t.boolean "primera_ejecucion", default: true
     t.bigint "persona_id"
+    t.index ["estado_tarea_pendiente_id"], name: "index_tarea_pendientes_on_estado_tarea_pendiente_id"
+    t.index ["flujo_id"], name: "index_tarea_pendientes_on_flujo_id"
     t.index ["persona_id"], name: "index_tarea_pendientes_on_persona_id"
+    t.index ["tarea_id"], name: "index_tarea_pendientes_on_tarea_id"
+    t.index ["user_id"], name: "index_tarea_pendientes_on_user_id"
   end
 
   create_table "tareas", force: :cascade do |t|
