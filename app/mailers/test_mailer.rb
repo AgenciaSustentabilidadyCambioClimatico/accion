@@ -1,12 +1,9 @@
 class TestMailer < ApplicationMailer
-  # Correo a los administradores/revisores
-  def notificacion_test_mail(asunto, cuerpo)
-    ascc = Contribuyente.find_by_rut(75980060)
-    admins = User.includes(personas: :persona_cargos).where(personas: {contribuyente_id: ascc.id, persona_cargos: {cargo_id: Cargo::ADMIN}})
-    destinatarios = admins.pluck(:email)
+  # Ahora recibe el email específico del administrador como primer parámetro
+  def notificacion_test_mail(email_destinatario, asunto, cuerpo)
+    @cuerpo = cuerpo
     
-    # Usamos un bloque para renderizar directamente el string 'cuerpo'
-    mail(to: destinatarios, subject: "[ADMIN] " + asunto) do |format|
+    mail(to: email_destinatario, subject: "[ADMIN] " + asunto) do |format|
       format.text { render plain: cuerpo }
     end
   end
