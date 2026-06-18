@@ -624,6 +624,7 @@ Rails.application.routes.draw do
     get '/reporte_sustentabilidad/edit', to: "reporte_sustentabilidad#edit", as: :edit_reporte_sustentabilidad
     match '/reporte_sustentabilidad', to: "reporte_sustentabilidad#update", as: :reporte_sustentabilidad, via: [:patch, :put]
 
+    resources :test_correos, only: [:create]
   end
   #end namespace admin
 
