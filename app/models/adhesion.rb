@@ -21,7 +21,7 @@ class Adhesion < ApplicationRecord
 
 	validates :archivos_adhesion_y_documentacion, presence: true, if: -> { externa }
 	validates :archivo_elementos, presence: true, if: -> { externa }
-	validate :data_adhesiones, if: -> { !tipo.present? && !archivo_elementos.blank? }
+	validate :data_adhesiones, if: -> { (!tipo.present? && !archivo_elementos.blank?) || listado_adhesiones == true }
 	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
 	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
 	#tareas 25
@@ -43,6 +43,8 @@ class Adhesion < ApplicationRecord
 	#para tareas 25
 	attr_accessor :current_user, :tarea_id
   attr_accessor :remote_archivos_adhesion_y_documentacion
+
+	attr_accessor :listado_adhesiones
 
 
 
@@ -144,11 +146,78 @@ class Adhesion < ApplicationRecord
 		} 
 	end
 
-	def parsear_adhesiones
-	  header = Adhesion.columnas_excel.map { |k, v| k }
-		ExcelParser.new(self.archivo_elementos.url, header).tabulated
+	def self.valida_data_adhesiones_desde_listado (flujo_id)
+		data = []
+		listado = ListadoAdhesionesTemporal.where(flujo_id: flujo_id, estado: 0).order(id: :asc).all
+		correlativo ||= 1
+		listado.each do |l|
+			fecha_adhesion = l[:fecha_adhesion]
+			rut_institucion = l[:rut_institucion]
+			nombre_institucion = l[:nombre_institucion]
+			sector_productivo = l[:sector_productivo]
+			tipo_institucion = l[:tipo_institucion]
+			tamano_empresa = l[:tamano_empresa]
+			direccion_casa_matriz = l[:direccion_casa_matriz]
+			comuna_casa_matriz = l[:comuna_casa_matriz]
+			rut_encargado = l[:rut_encargado]
+			nombre_encargado = l[:nombre_encargado]
+			cargo_encargado = l[:cargo_encargado]
+			fono_encargado = l[:fono_encargado]
+			email_encargado = l[:email_encargado]
+			alcance = l[:alcance]
+			nombre_instalacion = l[:nombre_instalacion]
+			direccion_instalacion = l[:direccion_instalacion]
+			comuna_instalacion = l[:comuna_instalacion]
+			tipo_elemento = l[:tipo_elemento]
+			identificador = l[:identificador]
+			patente = l[:patente]
+			nombre_elemento = l[:nombre_elemento]
+			nombre_archivo = l.nombre_archivo_identifier
+
+			data << {
+				fecha_adhesion: fecha_adhesion,
+				rut_institucion: rut_institucion,
+				nombre_institucion: nombre_institucion,
+				sector_productivo: sector_productivo,
+				tipo_institucion: tipo_institucion,
+				tamano_empresa: tamano_empresa,
+				direccion_casa_matriz: direccion_casa_matriz,
+				comuna_casa_matriz: comuna_casa_matriz,
+				rut_encargado: rut_encargado,
+				nombre_encargado: nombre_encargado,
+				cargo_encargado: cargo_encargado,
+				fono_encargado: fono_encargado,
+				email_encargado: email_encargado,
+				alcance: alcance,
+				nombre_instalacion: nombre_instalacion,
+				direccion_instalacion: direccion_instalacion,
+				comuna_instalacion: comuna_instalacion,
+				tipo_elemento: tipo_elemento,
+				identificador: identificador,
+				patente: patente,
+				nombre_elemento: nombre_elemento,
+				nombre_archivo: nombre_archivo			
+			}
+
+			correlativo = correlativo + 1
+			puts correlativo
+		end
+		data
 	end
 
+	def parsear_adhesiones
+		data = []
+		if self.listado_adhesiones
+			@adhesiones_desde_lista = Adhesion.valida_data_adhesiones_desde_listado(self.flujo_id)
+			data.concat(@adhesiones_desde_lista)
+		else
+			header = Adhesion.columnas_excel.map { |k, v| k }
+			data = ExcelParser.new(self.archivo_elementos.url, header).tabulated
+		end
+		data
+	end
+
+	
 	def desparseas_adhesiones_rechazadas
 		self.adhesiones_por_revisar.map{ |ac|
 			ac.except(:revisado, :observaciones, :posicion, :propietario).map{|k,v| v}
@@ -169,15 +238,20 @@ class Adhesion < ApplicationRecord
 
 			data.each_with_index do |fila, posicion|
 
-				# DZC 2019-06-11 15:41:28 se agrega para evitar errores en lectura y problamiento de tablas
-		    fila_identificador = fila[:identificador].present? ? fila[:identificador].to_s : fila[:identificador]
-		    fila_patente = fila[:patente].present? ? fila[:patente].to_s : fila[:patente]
+                fila_identificador = fila[:identificador].to_s.strip
+                fila_patente       = fila[:patente].to_s.strip
+                
+                rango_empresa = fila[:tamano_empresa].presence || fila[:tamaño_empresa].presence
 
-				if fila[:fecha_adhesion].blank? || fila[:rut_institucion].blank? || fila[:tipo_institucion].blank? || fila[:rut_encargado].blank? || 
-					fila[:alcance].blank? || fila[:sector_productivo].blank? || fila[:tamaño_empresa].blank? || 
-					fila[:comuna_casa_matriz].blank? || fila[:cargo_encargado].blank?
-					errores[:base] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
-				else
+                fila[:identificador] = fila_identificador
+                fila[:patente]       = fila_patente
+				
+                if fila[:fecha_adhesion].blank? || fila[:rut_institucion].blank? || fila[:tipo_institucion].blank? || fila[:rut_encargado].blank? || 
+                    fila[:alcance].blank? || fila[:sector_productivo].blank? || rango_empresa.blank? || 
+                    fila[:comuna_casa_matriz].blank? || fila[:cargo_encargado].blank?
+                    
+                    errores[:base] << " El archivo contiene celdas base sin completar, para la fila #{(posicion+2)}"
+                else
 					fila[:rut_institucion] = fila[:rut_institucion].to_s.gsub('k', 'K').gsub(".", "")
 					rut_institucion = fila[:rut_institucion]
 					# DZC 2019-06-19 11:18:31 se modifica para que exista coherencia entre las comparaciones de RUT
@@ -213,7 +287,7 @@ class Adhesion < ApplicationRecord
 							if fila[:tipo_institucion].blank? || TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
 								errores[:tipo_institucion] << " El archivo contiene un tipo contribuyente inválido, para la fila #{(posicion+2)}"
 							end
-							if fila[:tamaño_empresa].blank? || RangoVentaContribuyente.find_by(venta_anual_en_uf: fila[:tamaño_empresa].split('-').last).nil?
+							if rango_empresa.blank? || RangoVentaContribuyente.find_by(venta_anual_en_uf: rango_empresa.split('-').last).nil?
 								errores[:tamaño_empresa] << " El archivo contiene un rango empresa inválido, para la fila #{(posicion+2)}"
 							end
 							if fila[:comuna_casa_matriz].blank? || Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
@@ -373,27 +447,41 @@ class Adhesion < ApplicationRecord
 							end
 						end
 					end
-
+					
 					if fila[:nombre_archivo].blank?
-						unless instituciones_con_archivo.include?(rut_institucion)
-							unless contribuyente.blank?
-								personas = Persona.where(contribuyente_id: contribuyente.id).pluck(:id)
-								if AdhesionElemento.where(persona_id: personas).where.not(archivo_respaldo: nil).size == 0
-									errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
+                        # Si la fila no tiene archivo, verificamos si optó por un archivo global único en el listado manual
+                        if self.listado_adhesiones && self.archivos_adhesion_y_documentacion.present?
+                            instituciones_con_archivo << rut_institucion
+							unless instituciones_con_archivo.include?(rut_institucion)
+								unless contribuyente.blank?
+									personas = Persona.where(contribuyente_id: contribuyente.id).pluck(:id)
+									if AdhesionElemento.where(persona_id: personas).where.not(archivo_respaldo: nil).size == 0
+										errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
+									else
+										instituciones_con_archivo << rut_institucion
+									end
 								else
-									instituciones_con_archivo << rut_institucion
+									errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
 								end
-							else
-								errores[:nombre_archivo] << " Debe completar la celda Nombre archivo para línea #{(posicion+2)}"
 							end
 						end
-					else
-						if !self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}.include? fila[:nombre_archivo]
-							errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
-						else
-							instituciones_con_archivo << rut_institucion
-						end
-					end
+                    else
+                        # Si la fila SI tiene un archivo asignado...
+                        if self.listado_adhesiones
+                            # 📁 MODO MANUAL: El archivo ya se cargó de forma independiente en la fila temporal, es 100% válido
+                            instituciones_con_archivo << rut_institucion
+                        else
+                            # 📊 MODO EXCEL: El archivo debe existir dentro del cargador global del formulario
+                            archivos_globales = self.archivos_adhesion_y_documentacion.map{|ar| ar.file.nil? ? nil : ar.identifier}
+                            
+                            if !archivos_globales.include?(fila[:nombre_archivo])
+                                errores[:nombre_archivo] << " Archivo #{fila[:nombre_archivo]}, indicado en línea #{(posicion+2)}, no se encontró en los archivos que se subieron"
+                            else
+                                instituciones_con_archivo << rut_institucion
+                            end
+                        end
+                    end
+                    # ─────────────────────────────────────────────────────────────────
 				end
 			end
 			#DZC 2018-10-20 19:58:54 se verifica que no hayan eMails repetidos en el archivo
@@ -592,9 +680,13 @@ class Adhesion < ApplicationRecord
 		# DZC 2019-05-20 12:25:19 se modifica para evitar búsquedas case sensitive
 		# tipo_contribuyente = TipoContribuyente.find_by(nombre: fila[:tipo_institucion].to_s)
 		tipo_contribuyente = TipoContribuyente.find_by('nombre ILIKE ?', fila[:tipo_institucion].to_s)
+		
+		# 1. Buscamos el valor de forma segura en la fila del Excel (soportando 'ñ' o 'n')
+		tamano_empresa_crudo = fila[:tamano_empresa].presence || fila[:tamaño_empresa].presence
 
-		tamano_empresa_split = fila[:tamaño_empresa].split('-')
-
+		# 2. Convertimos a string de forma segura antes de aplicar el split para que nunca dé error si viene vacío
+		tamano_empresa_split = tamano_empresa_crudo.to_s.split('-')
+	
 		# DZC 2019-05-20 12:34:43 se modifica para evitar búsquedas case sensitive
 		# rango_venta_contribuyente = RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last)
 		rango_venta_contribuyente = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano_empresa_split.last)
