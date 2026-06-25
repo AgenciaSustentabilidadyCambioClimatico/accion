@@ -114,6 +114,13 @@
                           - if ins[:nombre_tarea] == 'APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés'
                             - vacio = ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.blank? || ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.nil?
                             = vacio ?  "Sin documentos aún" : __descargar_archivo(ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad,ins[:manifestacion_de_interes], true,true,nil, "Ficha de Manifestacion",false,true) 
+                    -elsif @personas.present? && @personas.map(&:user_id).include?(current_user.id)
+                      - if %w[FPL-01].include?(ins[:tarea][:codigo])
+                        = link_to descargar_formulario_fpl_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                          = fa_icon 'file-pdf-o'
+                          = "Última versión postulación"
+                      -else
+                        Sin documentos autorizados adicionales
                     -else
                       Sin documentos asociados
                   %td
