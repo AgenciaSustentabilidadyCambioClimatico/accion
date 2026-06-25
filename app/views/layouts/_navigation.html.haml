@@ -66,74 +66,80 @@
                         %li= link_to t(:otros), admin_otros_path, class: 'dropdown-item'
                     - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
                       %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:descriptores)
-                        %ul.dropdown-menu
-                          %li= link_to t(:cargos), admin_cargos_path, class: 'dropdown-item'
-                          %li= link_to t(:tipos_contribuyentes), admin_tipos_contribuyentes_path, class: 'dropdown-item'
-                          %li= link_to t(:actividades_económicas), admin_actividades_economicas_path, class: 'dropdown-item'
-                          %li= link_to t(:lugares), admin_lugares_path, class: 'dropdown-item'
-                          %li= link_to t(:cuencas_subcuencas), admin_cuencas_path, class: 'dropdown-item'
-                          %li= link_to t(:tipos_documento_diagnostico), admin_tipo_documento_diagnosticos_path, class: 'dropdown-item'
+                        - if current_user.is_admin?
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:descriptores)
+                          %ul.dropdown-menu
+                            %li= link_to t(:cargos), admin_cargos_path, class: 'dropdown-item'
+                            %li= link_to t(:tipos_contribuyentes), admin_tipos_contribuyentes_path, class: 'dropdown-item'
+                            %li= link_to t(:actividades_económicas), admin_actividades_economicas_path, class: 'dropdown-item'
+                            %li= link_to t(:lugares), admin_lugares_path, class: 'dropdown-item'
+                            %li= link_to t(:cuencas_subcuencas), admin_cuencas_path, class: 'dropdown-item'
+                            %li= link_to t(:tipos_documento_diagnostico), admin_tipo_documento_diagnosticos_path, class: 'dropdown-item'
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
                           = t(:configuración_tipo_instrumento)
                         %ul.dropdown-menu
-                          %li= link_to t(:tipos_intrumentos), admin_tipos_instrumentos_path, class: 'dropdown-item'
-                          %li= link_to t(:tareas), admin_tareas_path, class: 'dropdown-item'
-                          %li= link_to t(:flujo_tareas), admin_flujo_tareas_path, class: 'dropdown-item'
-                          %li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
-                          %li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
-                          %li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
-                          %li= link_to 'Flujo Proveedores', admin_registro_proveedor_mensajes_path, class: 'dropdown-item'
-                          -#%li= link_to 'Flujo Fondo Producción Limpia', admin_fondo_produccion_limpia_mensajes_path, class: 'dropdown-item'
+                          - if current_user.is_admin?
+                            %li= link_to t(:tipos_intrumentos), admin_tipos_instrumentos_path, class: 'dropdown-item'
+                            %li= link_to t(:tareas), admin_tareas_path, class: 'dropdown-item'
+                            %li= link_to t(:flujo_tareas), admin_flujo_tareas_path, class: 'dropdown-item'
+                            %li= link_to t(:roles), admin_roles_path, class: 'dropdown-item'
+                            %li= link_to t(:responsables), admin_responsables_path, class: 'dropdown-item'
+                            %li= link_to t(:mantenedor_de_campos), admin_campos_path, class: 'dropdown-item'
+                            %li= link_to 'Flujo Proveedores', admin_registro_proveedor_mensajes_path, class: 'dropdown-item'
+                            -#%li= link_to 'Flujo Fondo Producción Limpia', admin_fondo_produccion_limpia_mensajes_path, class: 'dropdown-item'
                           %li= link_to 'Cambiar nombre Flujo', nombres_apl_path, class: 'dropdown-item'
                       %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:diccionario_de_acciones)
-                        %ul.dropdown-menu
-                          %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
-                          %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
-                          %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
-                          %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
-                          %li= link_to t(:estándares_de_certificación), admin_estandar_homologaciones_path, class: 'dropdown-item'
+                        - if current_user.is_admin?
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:diccionario_de_acciones)
+                          %ul.dropdown-menu
+                            %li= link_to t(:acciones), admin_acciones_path, class: 'dropdown-item'
+                            %li= link_to t(:materias_sustancias), admin_materia_sustancias_path, class: 'dropdown-item'
+                            %li= link_to t(:clasificaciones), admin_clasificaciones_path, class: 'dropdown-item'
+                            %li= link_to t(:alcances), admin_alcances_path, class: 'dropdown-item'
+                            %li= link_to t(:estándares_de_certificación), admin_estandar_homologaciones_path, class: 'dropdown-item'
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
                           = t(:proveedores)
                         %ul.dropdown-menu
                           %li= link_to t(:proveedores), admin_proveedores_path, class: 'dropdown-item'
-                          %li= link_to t(:tipos_proveedores), admin_tipos_proveedores_path, class: 'dropdown-item'
-                          %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
-                      %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:presupuesto)
-                        %ul.dropdown-menu
-                          %li= link_to t(:centro_de_costo), admin_centro_de_costos_path, class: 'dropdown-item'
-                      %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:actividades_fpl)
-                        %ul.dropdown-menu
-                          %li= link_to t(:actividades), admin_actividades_path, class: 'dropdown-item'
-                          %li= link_to t(:actividades_por_líneas), admin_actividades_por_lineas_path, class: 'dropdown-item'
-                          %li= link_to t(:tipos_aportes), admin_tipo_aportes_path, class: 'dropdown-item'
-                          %li= link_to t(:iniciar_flujo_fpl), admin_mantenedor_fondo_produccion_limpia_path, class: 'dropdown-item'
-                      %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:evaluación)
-                        %ul.dropdown-menu
-                          %li= link_to t(:encuestas), admin_encuestas_path, class: 'dropdown-item'
-                          %li= link_to t(:preguntas), admin_preguntas_path, class: 'dropdown-item'
-                      %li.dropdown-submenu
-                        %a.dropdown-item.dropdown-toggle
-                          = t(:configuracion_datos_productivos)
-                        %ul.dropdown-menu
-                          %li= link_to t(:propiedades_datos), admin_dato_recolectados_path, class: 'dropdown-item'
-                          %li= link_to t(:dato_levantar), admin_materia_rubro_relacions_path, class: 'dropdown-item'
-                      %li= link_to t(:mantenedor_mapa_actores), admin_mantenedor_mapa_actores_path, class: 'dropdown-item'
-                      %li= link_to t(:configuracion_datos_publicos), admin_edit_datos_publico_path, class: 'dropdown-item'
-                      %li= link_to t(:config_reporte_sustentabilidad), admin_edit_reporte_sustentabilidad_path, class: 'dropdown-item'
-                      %li= link_to t(:descargar_reporte_sustentabilidad), descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
-                      %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
+                          - if current_user.is_admin?
+                            %li= link_to t(:tipos_proveedores), admin_tipos_proveedores_path, class: 'dropdown-item'
+                          - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                            %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
+                      - if current_user.is_admin?
+                        %li.dropdown-submenu
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:presupuesto)
+                          %ul.dropdown-menu
+                            %li= link_to t(:centro_de_costo), admin_centro_de_costos_path, class: 'dropdown-item'
+                        %li.dropdown-submenu
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:actividades_fpl)
+                          %ul.dropdown-menu
+                            %li= link_to t(:actividades), admin_actividades_path, class: 'dropdown-item'
+                            %li= link_to t(:actividades_por_líneas), admin_actividades_por_lineas_path, class: 'dropdown-item'
+                            %li= link_to t(:tipos_aportes), admin_tipo_aportes_path, class: 'dropdown-item'
+                            %li= link_to t(:iniciar_flujo_fpl), admin_mantenedor_fondo_produccion_limpia_path, class: 'dropdown-item'
+                        %li.dropdown-submenu
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:evaluación)
+                          %ul.dropdown-menu
+                            %li= link_to t(:encuestas), admin_encuestas_path, class: 'dropdown-item'
+                            %li= link_to t(:preguntas), admin_preguntas_path, class: 'dropdown-item'
+                        %li.dropdown-submenu
+                          %a.dropdown-item.dropdown-toggle
+                            = t(:configuracion_datos_productivos)
+                          %ul.dropdown-menu
+                            %li= link_to t(:propiedades_datos), admin_dato_recolectados_path, class: 'dropdown-item'
+                            %li= link_to t(:dato_levantar), admin_materia_rubro_relacions_path, class: 'dropdown-item'
+                        %li= link_to t(:mantenedor_mapa_actores), admin_mantenedor_mapa_actores_path, class: 'dropdown-item'
+                        %li= link_to t(:configuracion_datos_publicos), admin_edit_datos_publico_path, class: 'dropdown-item'
+                        %li= link_to t(:config_reporte_sustentabilidad), admin_edit_reporte_sustentabilidad_path, class: 'dropdown-item'
+                        %li= link_to t(:descargar_reporte_sustentabilidad), descargar_reporte_sustentabilidad_admin_gestionar_mis_instrumentos_path, class: 'dropdown-item'
+                        %li= link_to t(:reporte_automatizado_de_avances), admin_reporte_automatizado_avances_path, class: 'dropdown-item'
                     - elsif current_user.is_ascc?
                       %li.dropdown-submenu
                         %a.dropdown-item.dropdown-toggle
@@ -150,9 +156,8 @@
                         - if current_user.is_ascc?
                           %li= link_to t(:pendientes), admin_proveedores_pendientes_path, class: 'dropdown-item'
                   %li= link_to t(:historial_instrumentos), admin_historial_instrumentos_path, class: 'dropdown-item'
-                  - if current_user.is_ascc?
-                    %li= link_to 'Estado APL', estado_apl_path, class: 'dropdown-item'
-                  - if current_user.is_admin? || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+                  %li= link_to 'Estado APL', estado_apl_path, class: 'dropdown-item'
+                  - if current_user.is_admin?
                     %li= link_to t(:carga_datos_históricos), admin_cargas_historicas_index_path, class: 'dropdown-item'
                     -#
                       %li= link_to t(:historial_logs), '#', class: 'dropdown-item disable'
