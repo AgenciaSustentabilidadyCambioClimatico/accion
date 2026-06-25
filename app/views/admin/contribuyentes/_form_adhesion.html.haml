@@ -15,126 +15,123 @@
           .card-header
             %h5.no-margin
               = t(:agregar_nueva_institucion)
-          .card-body{style: 'background-color: #e9ecef; padding: 0.25rem 9px 0.5rem'}
-            .col-12.mt-2
-              .card
-                .card-header
-                  %h5.no-margin
-                    = t(:institucion) 
-                .card-body
-                  - contribuyente_id = contribuyente_adhesion.contribuyente_id
-                  .row
-                    .col-l-6.col-xl-3
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        =t(:rut)
-                      .row
-                        .col-lg-8.desactivado
-                          = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion numero', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
-                        .col-lg-4.desactivado
-                          = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion dv', readonly: !contribuyente_adhesion.contribuyente_id.nil? }
-                        .col-lg-9.col-md-8.desactivado
-                          = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
-                  .row
-                    .col-12.col-lg-12.mt-2 
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Actividad Económica
-                      - if contribuyente_id.nil?  
-                        = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
-                      - else
-                        - acteco = contribuyente_adhesion.actividad_economica_contribuyentes.first.actividad_economica
-                        - codigo_ciiuv4 = "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}"
-                        = f.input :codigo_ciiuv4, as: :string, 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "codigo_ciiuv4_input", value: codigo_ciiuv4 }, 
-                          label: false
-                  .row
-                    .col-12.col-lg-6.mt-2 
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Tipo institución
-                      - if contribuyente_id.nil?
-                        = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
-                      - else
-                        - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
-                        - tipo_institucion = dato_anual.tipo_contribuyente.nombre
-                        = f.input :tipo_institucion, as: :string, 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, 
-                          label: false
-                    .col-12.col-lg-6.mt-2
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Tamaño
-                      - if contribuyente_id.nil?
-                        = f.input :tamano_contribuyente, collection: RangoVentaContribuyente::__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tamaño institución" }, label: false, wrapper_html: { class: 'mb-0'}
-                      - else
-                        - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
-                        - tamano_contribuyente = [ dato_anual.rango_venta_contribuyente&.rango, dato_anual.rango_venta_contribuyente&.tamano_contribuyente&.nombre, dato_anual.rango_venta_contribuyente&.venta_anual_en_uf ].compact.join('-')
-                        = f.input :tamano_contribuyente, as: :string, 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tamano_contribuyente_input", value: tamano_contribuyente }, 
-                          label: false
-                  .row
-                    .col-12.col-lg-6.mt-2
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Tipo elemento
-                      = f.input :tipo_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "tipo_elemento_input" }, label: false
-                  .row              
-                    .col-12.col-lg-6.mt-2 
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Alcance    
-                      = f.input :alcance, collection: Alcance::__select, input_html: { id: 'alcance_adhesiones', class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', "data-placeholder"=>"Seleccione alcance" }, label: false, wrapper_html: { class: 'mb-0'}
-                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-identificador"}
-                      %label.string.control-label 
-                        %abbr{title: :required}*
-                        Identificador
-                      = f.input :identificador, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "identificador_input" }, label: false  
-                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-instalacion"}
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Nombre instalación
-                      = f.input :nombre_instalacion, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_instalacion_input" }, label: false   
-                  .row
-                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-patente"}
-                      %label.string.control-label 
-                        %abbr{title: :required}*
-                        Patente
-                      = f.input :patente, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "patente_input" }, label: false
-                    .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-elemento"}  
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Nombre elemento
-                      = f.input :nombre_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_elemento_input" }, label: false  
-                  .row  
-                    .col-12.col-lg-6.mt-2
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Dirección
-                      - if contribuyente_id.nil?
-                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input" }, 
-                          label: false
-                      - else
-                        = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Cargando...", disabled: true }, 
-                          label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
-                        = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
-                          input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
-                          label: false
-                        = check_box_tag :seleccionar, '1', false, class: "form-temporal-boton-guardar-adhesion-institucion not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
-                        %label{ for: "sin_direccion_checkbox" } Nueva Dirección
-                  .row
-                    .col-12.col-lg-6.mt-2 
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Región
-                      = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, style: 'width: 100%', id: 'region_select', "data-placeholder"=>"Seleccione una región"
-                    .col-12.col-lg-6.mt-2 
-                      %label.string.control-label
-                        %abbr{title: :required}*
-                        Comuna
-                      = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, id: 'registro_proveedor_comuna', "data-placeholder"=>"Seleccione una comuna"
+          .card-body
+            - contribuyente_id = contribuyente_adhesion.contribuyente_id
+            .row
+              -# Columna Izquierda: Bloque del RUT (ocupa 4 de 12 espacios)
+              .col-lg-4.col-md-5
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  = t(:rut)
+                .row
+                  .col-8.desactivado
+                    = f.input :rut, label: false, required: true, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion numero', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
+                  .col-4.desactivado
+                    = f.input :dv, label: false, required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion dv', readonly: !contribuyente_adhesion.contribuyente_id.nil? }
+
+              -# Columna Derecha: Razón Social (ocupa los 8 espacios restantes)
+              .col-lg-8.col-md-7.desactivado
+                = f.input :razon_social, label: t(:razón_social), required: true, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?}
+            .row
+              .col-12.col-lg-12.mt-2 
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Actividad Económica
+                - if contribuyente_id.nil?  
+                  = f.input :codigo_ciiuv4, collection: ActividadEconomica.__select2.map{|ae| [ae.first.html_safe, ae.last]}, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione una actividad económica" }, label: false, wrapper_html: { class: 'mb-0'}
+                - else
+                  - acteco = contribuyente_adhesion.actividad_economica_contribuyentes.first.actividad_economica
+                  - codigo_ciiuv4 = "#{acteco.codigo_ciiuv4} - #{acteco.descripcion_ciiuv4}"
+                  = f.input :codigo_ciiuv4, as: :string, 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "codigo_ciiuv4_input", value: codigo_ciiuv4 }, 
+                    label: false
+            .row
+              .col-12.col-lg-6.mt-2 
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Tipo institución
+                - if contribuyente_id.nil?
+                  = f.input :tipo_institucion, collection: TipoContribuyente.__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tipo institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                - else
+                  - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
+                  - tipo_institucion = dato_anual.tipo_contribuyente.nombre
+                  = f.input :tipo_institucion, as: :string, 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tipo_institucion_input", value: tipo_institucion }, 
+                    label: false
+              .col-12.col-lg-6.mt-2
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Tamaño
+                - if contribuyente_id.nil?
+                  = f.input :tamano_contribuyente, collection: RangoVentaContribuyente::__select, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Seleccione tamaño institución" }, label: false, wrapper_html: { class: 'mb-0'}
+                - else
+                  - dato_anual = contribuyente_adhesion.dato_anual_contribuyentes.where.not(tipo_contribuyente_id: nil).order(periodo: :desc).first
+                  - tamano_contribuyente = [ dato_anual.rango_venta_contribuyente&.rango, dato_anual.rango_venta_contribuyente&.tamano_contribuyente&.nombre, dato_anual.rango_venta_contribuyente&.venta_anual_en_uf ].compact.join('-')
+                  = f.input :tamano_contribuyente, as: :string, 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: !contribuyente_adhesion.contribuyente_id.nil?, id: "tamano_contribuyente_input", value: tamano_contribuyente }, 
+                    label: false
+            .row
+              .col-12.col-lg-6.mt-2
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Tipo elemento
+                = f.input :tipo_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "tipo_elemento_input" }, label: false
+            .row              
+              .col-12.col-lg-6.mt-2 
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Alcance    
+                = f.input :alcance, collection: Alcance::__select, input_html: { id: 'alcance_adhesiones', class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', "data-placeholder"=>"Seleccione alcance" }, label: false, wrapper_html: { class: 'mb-0'}
+              .col-12.col-lg-6.mt-2.d-none{id: "bloque-identificador"}
+                %label.string.control-label 
+                  %abbr{title: :required}*
+                  Identificador
+                = f.input :identificador, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "identificador_input" }, label: false  
+              .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-instalacion"}
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Nombre instalación
+                = f.input :nombre_instalacion, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_instalacion_input" }, label: false   
+            .row
+              .col-12.col-lg-6.mt-2.d-none{id: "bloque-patente"}
+                %label.string.control-label 
+                  %abbr{title: :required}*
+                  Patente
+                = f.input :patente, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion form-control', id: "patente_input" }, label: false
+              .col-12.col-lg-6.mt-2.d-none{id: "bloque-nombre-elemento"}  
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Nombre elemento
+                = f.input :nombre_elemento, as: :string, input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', id: "nombre_elemento_input" }, label: false  
+            .row  
+              .col-12.col-lg-6.mt-2
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Dirección
+                - if contribuyente_id.nil?
+                  = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input" }, 
+                    label: false
+                - else
+                  = f.input :direccion, collection: EstablecimientoContribuyente.__select(contribuyente_id), 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion contribuyentes_select', type: :string, "data-placeholder"=>"Cargando...", disabled: true }, 
+                    label: false, wrapper_html: { class: 'mb-0', id: 'direccion_select', style: 'display: block;'}
+                  = f.input :direccion, as: :string, placeholder: "Ingrese dirección", 
+                    input_html: { class: 'form-temporal-boton-guardar-adhesion-institucion', readonly: false, id: "direccion_input", style: 'display: none;' }, 
+                    label: false
+                  = check_box_tag :seleccionar, '1', false, class: "form-temporal-boton-guardar-adhesion-institucion not-required-if-other-like-me-is-present", id: "sin_direccion_checkbox"
+                  %label{ for: "sin_direccion_checkbox" } Nueva Dirección
+            .row
+              .col-12.col-lg-6.mt-2 
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Región
+                = f.input_field :region, collection: Region.all, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, style: 'width: 100%', id: 'region_select', "data-placeholder"=>"Seleccione una región"
+              .col-12.col-lg-6.mt-2 
+                %label.string.control-label
+                  %abbr{title: :required}*
+                  Comuna
+                = f.input_field :comuna, collection: {}, label_method: lambda { |p| p.nombre }, value_method: :id, required: true, wrapper: false, class: "form-temporal-boton-guardar-adhesion-institucion form-control select2 contribuyentes_select", label: false, id: 'registro_proveedor_comuna', "data-placeholder"=>"Seleccione una comuna"
         .col-12.mt-2.text-right
           %button.btn.btn-primary#deshacer-contribuyente-button{type: :button, 'data-disable-with' => t(:volver_a_lista)}
             =t(:volver_a_lista)

@@ -5,7 +5,7 @@ class AdhesionesController < ApplicationController
 	before_action :set_datos
   before_action :set_crea_archivo, only: [:descargar]
   before_action :set_contribuyentes
-  before_action :set_usuario_actor
+  before_action :set_usuario_adhesion
   before_action :set_actores, only: [:actualizar]
   before_action :set_listado_adhesiones_temporal
 
@@ -721,8 +721,9 @@ end
       @contribuyente_adhesion = Contribuyente.new
     end
 
-    def set_usuario_actor
+    def set_usuario_adhesion
       @usuario_adhesion = User.new
+      @usuarios = User.where(id: current_user.id)
     end
 
     def set_actores

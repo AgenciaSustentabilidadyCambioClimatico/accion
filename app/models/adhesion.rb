@@ -20,14 +20,14 @@ class Adhesion < ApplicationRecord
 	before_validation :load_contribuyente, if: -> { !contribuyente_id.blank? }
 
 	validates :archivos_adhesion_y_documentacion, presence: true, if: -> { externa }
-	validates :archivo_elementos, presence: true, if: -> { externa }
+	validates :archivo_elementos, presence: true, if: -> { externa  && listado_adhesiones == false }
 	validate :data_adhesiones, if: -> { (!tipo.present? && !archivo_elementos.blank?) || listado_adhesiones == true }
 	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
 	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
 	#tareas 25
 	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
 	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
-	validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
+	#validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
 	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :nombre_representante_legal,:fono_representante_legal, presence: true, if: -> { externa && !tipo.present? && current_user.nil?}
 	validates :email_representante_legal, presence: true, format: { with: /\A([\w\.%\+\-]+)@([\w\-]+\.)+([\w]{2,})\z/i }, if: -> { externa && !tipo.present? && current_user.nil?}
@@ -264,9 +264,9 @@ class Adhesion < ApplicationRecord
 					if !rut_institucion.rut_valid?
 						errores[:rut_institucion] << " El archivo contiene un formato de RUT invalido, para la fila #{(posicion+2)}"
 					else
-						if externa && rut_institucion_adherente.to_s.gsub('k', 'K').gsub(".", "") != rut_institucion
-							errores[:rut_institucion] << " Sólo puede solicitar adhesiones para institución señalada, por favor corregir RUT institución en archivo Excel, para la fila #{(posicion+2)}"
-						else
+						#if externa && rut_institucion_adherente.to_s.gsub('k', 'K').gsub(".", "") != rut_institucion
+						#	errores[:rut_institucion] << " Sólo puede solicitar adhesiones para institución señalada, por favor corregir RUT institución en archivo Excel, para la fila #{(posicion+2)}"
+						#else
 							contribuyente = Contribuyente.find_by(rut: rut_institucion.split('-')[0])
 							if contribuyente.nil?
 								if fila[:direccion_casa_matriz].blank?
@@ -293,7 +293,7 @@ class Adhesion < ApplicationRecord
 							if fila[:comuna_casa_matriz].blank? || Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
 								errores[:comuna_casa_matriz] << " El archivo contiene una comuna casa matriz inválida, para la fila #{(posicion+2)}"
 							end
-						end
+						#end
 					end
 
 					user = nil		
@@ -321,8 +321,8 @@ class Adhesion < ApplicationRecord
 						# errores[:rut_encargado] << fila[:rut_encargado]
 						# errors.add(:archivo_elementos, "El RUT del encargado para la línea #{(posicion+2)} es inválido")
 						errores[:rut_encargado] << "El RUT del encargado para la línea #{(posicion+2)} es inválido"
-					elsif externa && rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "") != rut_encargado
-						errores[:rut_encargado] << " Sólo puede solicitar adhesiones para representante señalado, por favor corregir RUT representante en archivo Excel, para la fila #{(posicion+2)}"
+					#elsif externa && rut_representante_legal.to_s.gsub('k', 'K').gsub(".", "") != rut_encargado
+					#	errores[:rut_encargado] << " Sólo puede solicitar adhesiones para representante señalado, por favor corregir RUT representante en archivo Excel, para la fila #{(posicion+2)}"
 					else 
 						user = User.find_by(rut: rut_encargado, email: fila[:email_encargado].to_s)
 						if user.blank?

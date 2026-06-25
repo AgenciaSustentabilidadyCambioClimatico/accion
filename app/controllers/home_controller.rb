@@ -1,8 +1,11 @@
 class HomeController < ApplicationController
-  before_action :authenticate_user!, only: [:estado_apl]
+  before_action :authenticate_user!, only: [:estado_apl, :solicitar_adhesion]
   before_action :set_datos_publicos, only: [:acuerdos_firmados, :empresas_y_elementos_adheridos, :empresas_y_elementos_certificados]
   before_action :datos_header_no_signed, except: [:get_comunas, :solicitar_adhesion_guardar]
   before_action :set_manif_de_interes, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
+  before_action :set_contribuyentes, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
+  before_action :set_usuario_adhesion, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
+  before_action :set_listado_adhesiones_temporal, only: [:solicitar_adhesion, :solicitar_adhesion_guardar]
   def index
     if user_signed_in?
       include_models    = [:tipo_instrumento,:contribuyente,:estado_manifestacion,:persona]
@@ -52,9 +55,8 @@ class HomeController < ApplicationController
   end
 
   def solicitar_adhesion
-    
   end
-
+    
   def registro_proveedores
   end
 
@@ -68,29 +70,83 @@ class HomeController < ApplicationController
   end
 
   def solicitar_adhesion_guardar
-    @adhesion.assign_attributes(adhesion_params)
+    # ─── ETAPA 1: DETECCIÓN Y CONSOLIDACIÓN DE ARCHIVOS EN LOTE ────────────────
+    es_flujo_excel = params.dig(:adhesion, :archivo_elementos).present?
+    tiene_parametros_adhesion = params[:adhesion].present?
+    if !es_flujo_excel
+      # Flujo Manual: Forzamos la marca de listado y recolectamos los archivos
+      @adhesion.listado_adhesiones = true
+      
+      # Buscamos todas las empresas guardadas en el listado temporal de este flujo
+      temporales = ListadoAdhesionesTemporal.where(flujo_id: @flujo.id, estado: 0)
+      
+      # Extraemos los archivos físicos reales subidos a AWS de cada una de las filas
+      archivos_manuales = temporales.map { |t| t.nombre_archivo.file }.compact
+      
+      # Los metemos juntos en la bolsa global de la adhesión principal
+      @adhesion.archivos_adhesion_y_documentacion = archivos_manuales if archivos_manuales.present?
+    else
+      # Flujo Excel: Espacio reservado para lógica específica de carga masiva si la requieres
+    end
+
+    # ─── ETAPA 2: ASIGNACIÓN DE ATRIBUTOS Y COPIA DE RESPALDO ─────────────────
+    if tiene_parametros_adhesion
+      @adhesion_new = Adhesion.new
+      @adhesion_new.flujo_id = @flujo.id
+      @adhesion_new.is_ppf = @ppp.present?
+      @adhesion_new.archivos_adhesion_y_documentacion = @adhesion.archivos_adhesion_y_documentacion
+      @adhesion_new.save!
+      
+      # Asignamos los parámetros del formulario a la adhesión principal
+      @adhesion.assign_attributes(adhesion_params)
+    end
+    # Seteos estructurales transversales requeridos por ambos flujos
     @adhesion.current_user = current_user
-    @adhesion.tarea_id = @tarea.id
+    @adhesion.tarea_id     = @tarea.id if @tarea.present?
+    @adhesion.flujo_id     = @flujo.id
+    @adhesion.is_ppf       = @ppp.present?
+
+    # ─── ETAPA 3: GUARDADO, NOTIFICACIONES Y CAMBIO DE ESTADO ──────────────────
     respond_to do |format|
       if @adhesion.save
-        #no tiene usuario
-        #flujo tarea 169 es de la 25 a la 28 pero en general
-        rac = RegistroAperturaCorreo.create(user_id: nil, flujo_tarea_id: 169, fecha_envio_correo: DateTime.now, flujo_id: @flujo.id)
+        
+        # 📧 LOGICA DE CORREO (De tu función OLD)
+        # Flujo tarea 169 es el mapeado transversal del correo de confirmación
+        rac = RegistroAperturaCorreo.create(
+          user_id: nil, 
+          flujo_tarea_id: 169, 
+          fecha_envio_correo: DateTime.now, 
+          flujo_id: @flujo.id
+        )
+        
         asunto = "Solicitud de adhesión a #{@manifestacion_de_interes.nombre_acuerdo} recibida"
-        cuerpo = "Solicitud de adhesión de empresa #{@adhesion.nombre_institucion_adherente} para #{@manifestacion_de_interes.nombre_acuerdo} recibida con fecha #{DateTime.now.strftime("%F %T")}. <br> ID de solicitud #{@adhesion.id}"
-        FlujoMailer.enviar(
-                      asunto, 
-                      cuerpo, 
-                      @adhesion.email_representante_legal, 
-                      rac.id).deliver_later
-        #abro tarea 28 si esque no esta abierta
-        @tarea_pendiente.pasar_a_siguiente_tarea ['A'], {}, false
-        @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.rol_id)
-        format.js{
-          flash.now[:success] = "Adhesion enviada correctamente"
+        cuerpo = "Solicitud de adhesión de empresa #{@adhesion.nombre_institucion_adherente} para #{@manifestacion_de_interes.nombre_acuerdo} recibida con fecha #{DateTime.now.strftime('%F %T')}. <br> ID de solicitud #{@adhesion.id}"
+        
+        FlujoMailer.enviar(asunto, cuerpo, @adhesion.email_representante_legal, rac.id).deliver_later
+
+        # 🔄 MOVIMIENTO DEL FLUJO
+        # Pasamos a la siguiente tarea en el árbol de decisiones del sistema
+        @tarea_pendiente.pasar_a_siguiente_tarea(['A'], {}, false)
+        
+        # Actualizamos los estados en lote si corresponde al código APL_025
+        if @tarea.present? && !es_flujo_excel
+          ListadoAdhesionesTemporal.actualiza_estado_listado_adhesiones(@flujo.id)
+        end
+
+        # Reinicializamos el objeto para limpiar los formularios parciales heredados en la vista
+        @adhesion = Adhesion.new(flujo_id: @flujo.id, externa: true, rol_id: @tarea.try(:rol_id))
+        
+        # Redireccionamos limpiamente mediante JS para limpiar tablas y refrescar la vista completa
+        format.js {
+          flash[:success] = "Adhesion enviada correctamente"
         }
       else
-        format.js
+        # 🚨 MANEJO DE ERRORES: Previene caídas por NilClass en sub-formularios compartidos
+        @listado_adhesion = ListadoAdhesionesTemporal.new 
+        
+        format.js { 
+          flash.now[:error] = @adhesion.errors.full_messages.join(", ")
+        }
       end
     end
   end
@@ -313,14 +369,27 @@ class HomeController < ApplicationController
 
   def adhesion_params
     params.require(:adhesion).permit(
-      :rut_institucion_adherente, :nombre_institucion_adherente, :matriz_direccion, :matriz_region_id, :matriz_comuna_id,:tipo_contribuyente_id,
-      :contribuyente_id,
-      :rut_representante_legal, :nombre_representante_legal, :fono_representante_legal, :email_representante_legal,
       :archivo_elementos,
       :archivo_elementos_cache,
       :archivos_adhesion_y_documentacion_cache,
       archivos_adhesion_y_documentacion: []
     )
+  end
+
+  def set_contribuyentes
+    @contribuyente = Contribuyente.new
+    @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    @contribuyente_adhesion = Contribuyente.new
+  end
+  
+  def set_listado_adhesiones_temporal
+    @listado_adhesiones_temporal = ListadoAdhesionesTemporal.where(flujo_id:  @tarea_pendiente.flujo_id, estado: 0).order(id: :asc).all
+    @listado_adhesion = ListadoAdhesionesTemporal.new 
+  end
+
+  def set_usuario_adhesion
+    @usuario_adhesion = User.where(id: current_user.id)
+    @usuarios = User.where(id: current_user.id)
   end
 
 end

@@ -2,109 +2,116 @@
 -if user_signed_in?
   - titulo t(:solicitud_de_adhesiones)
 = simple_form_for @adhesion, url: solicitar_adhesion_guardar_path(@manifestacion_de_interes.id), method: :post, remote: true do |f|
-  .row
-    -if !user_signed_in?
-      .col-12.mt-3
-        %h1.titulo=t(:solicitud_de_adhesiones)
-    -if !@contribuyentes.blank?
+  -#  
+    .row
+      -if !user_signed_in?
+        .col-12.mt-3
+          %h1.titulo=t(:solicitud_de_adhesiones)
+      -if !@contribuyentes.blank?
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin
+                %b Acuerdo de Producción Limpia
+              %h5.no-margin=titulo_acuerdo.html_safe
+            .card-header
+              %h5.no-margin
+                %b
+                = t(:instituciones)
+            .card-body
+              .row
+                .col-12
+                  =f.input :rut_institucion_adherente, as: :hidden, wrapper: false, input_html: {class: "check-boton-llenado"}
+                  =f.input :nombre_institucion_adherente, as: :hidden, wrapper: false
+                  =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [tc.nombre, tc.id] }, wrapper: false, input_html: {class: "d-none"}
+                  =f.input :matriz_direccion, as: :hidden, wrapper: false
+                  =f.input :matriz_region_id, collection: @regiones.map{|r| [r.nombre, r.id]}, wrapper: false, input_html: {class: "d-none"}
+                  =f.input :matriz_comuna_id, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false, input_html: {class: "d-none"}
+                  =f.input :contribuyente_id, collection: @contribuyentes, input_html: {class: "form-control chosen-control validado", "data-placeholder" => "Seleccione una institución"}
       .col-12
         .card
-          .card-header
-            %h5.no-margin
-              %b Acuerdo de Producción Limpia
-            %h5.no-margin=titulo_acuerdo.html_safe
+          -if @contribuyentes.blank?
+            .card-header
+              %h5.no-margin
+                %b Acuerdo de Producción Limpia
+              %h5.no-margin=titulo_acuerdo.html_safe
           .card-header
             %h5.no-margin
               %b
-              = t(:instituciones)
+              = t(:datos_solicitante)
           .card-body
-            .row
-              .col-12
-                =f.input :rut_institucion_adherente, as: :hidden, wrapper: false, input_html: {class: "check-boton-llenado"}
-                =f.input :nombre_institucion_adherente, as: :hidden, wrapper: false
-                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [tc.nombre, tc.id] }, wrapper: false, input_html: {class: "d-none"}
-                =f.input :matriz_direccion, as: :hidden, wrapper: false
-                =f.input :matriz_region_id, collection: @regiones.map{|r| [r.nombre, r.id]}, wrapper: false, input_html: {class: "d-none"}
-                =f.input :matriz_comuna_id, collection: Comuna.all.map{|c| [c.nombre, c.id]}, wrapper: false, input_html: {class: "d-none"}
-                =f.input :contribuyente_id, collection: @contribuyentes, input_html: {class: "form-control chosen-control validado", "data-placeholder" => "Seleccione una institución"}
-    .col-12
-      .card
-        -if @contribuyentes.blank?
-          .card-header
-            %h5.no-margin
-              %b Acuerdo de Producción Limpia
-            %h5.no-margin=titulo_acuerdo.html_safe
-        .card-header
-          %h5.no-margin
-            %b
-            = t(:datos_solicitante)
-        .card-body
-          -if @contribuyentes.blank?
+            -if @contribuyentes.blank?
+              .row
+                .col-12
+                  %label.string
+                    %b Datos institución
+                .col-12.col-lg
+                  =f.input :rut_institucion_adherente, input_html: {class: 'validado check-boton-llenado identificacion'}
+                .col-12.col-lg-5
+                  =f.input :nombre_institucion_adherente, as: :string, input_html: {class: 'validado check-boton-llenado'}
+                .col-12.col-lg
+                  =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [tc.nombre, tc.id] }, input_html: {class: 'validado chosen-control check-boton-llenado'}
+              .row
+                .col-12.col-lg-6
+                  =f.input :matriz_direccion, as: :string, input_html: {class: 'validado check-boton-llenado'}
+                .col-12.col-lg
+                  =f.input :matriz_region_id, collection: @regiones.map{|r| [r.nombre, r.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
+                .col-12.col-lg
+                  =f.input :matriz_comuna_id, collection: f.object.matriz_region.nil? ? [] : f.object.matriz_region.comunas.map{|c| [c.nombre, c.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
             .row
               .col-12
                 %label.string
-                  %b Datos institución
+                  %b Datos Encargado APL
               .col-12.col-lg
-                =f.input :rut_institucion_adherente, input_html: {class: 'validado check-boton-llenado identificacion'}
-              .col-12.col-lg-5
-                =f.input :nombre_institucion_adherente, as: :string, input_html: {class: 'validado check-boton-llenado'}
+                =f.input :rut_representante_legal, input_html: {class: 'validado check-boton-llenado identificacion', value: (user_signed_in? ? current_user.rut : '')}, readonly: user_signed_in?, label: t(:rut_representante_legal)
+              .col-12.col-lg-4
+                =f.input :nombre_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.nombre_completo : '')}, readonly: user_signed_in?, label: t(:nombre_representante_legal)
               .col-12.col-lg
-                =f.input :tipo_contribuyente_id, collection: TipoContribuyente.all.map{|tc| [tc.nombre, tc.id] }, input_html: {class: 'validado chosen-control check-boton-llenado'}
-            .row
-              .col-12.col-lg-6
-                =f.input :matriz_direccion, as: :string, input_html: {class: 'validado check-boton-llenado'}
+                =f.input :fono_representante_legal, as: :string, input_html: {class: 'validado numero check-boton-llenado', value: (user_signed_in? ? current_user.telefono : '')}, label: t(:fono_representante_legal)
               .col-12.col-lg
-                =f.input :matriz_region_id, collection: @regiones.map{|r| [r.nombre, r.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
-              .col-12.col-lg
-                =f.input :matriz_comuna_id, collection: f.object.matriz_region.nil? ? [] : f.object.matriz_region.comunas.map{|c| [c.nombre, c.id]}, input_html: {class: 'validado chosen-control check-boton-llenado'}
-          .row
-            .col-12
-              %label.string
-                %b Datos Encargado APL
-            .col-12.col-lg
-              =f.input :rut_representante_legal, input_html: {class: 'validado check-boton-llenado identificacion', value: (user_signed_in? ? current_user.rut : '')}, readonly: user_signed_in?, label: t(:rut_representante_legal)
-            .col-12.col-lg-4
-              =f.input :nombre_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.nombre_completo : '')}, readonly: user_signed_in?, label: t(:nombre_representante_legal)
-            .col-12.col-lg
-              =f.input :fono_representante_legal, as: :string, input_html: {class: 'validado numero check-boton-llenado', value: (user_signed_in? ? current_user.telefono : '')}, label: t(:fono_representante_legal)
-            .col-12.col-lg
-              =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.email : '')}, label: t(:email_representante_legal)
+                =f.input :email_representante_legal, as: :string, input_html: {class: 'validado check-boton-llenado', value: (user_signed_in? ? current_user.email : '')}, label: t(:email_representante_legal)
 
-    -#
-      .col-12
-        .card
-          .card-header
-            %h5.no-margin
-              %b
-              = t(:adhesiones)
-          .card-body
-            %table.table.table-striped#adhesiones_rechazadas
-              %thead
-                %tr
-                  %th=t(:alcance)
-                  %th=t(:nombre_elemento)
-                  %th=t(:comuna_del_elemento)
-                  %th=t(:direccion_del_elemento)
-                  %th=t(:datos_encargado)
-                  %th=t(:observaciones)
-                  %th=t(:estado)
-              %tbody
-                - @todas.each do |k,v|
-                  - v.each do |fila|
-                    %tr
-                      %td=fila[:alcance]
-                      %td=fila[:nombre_elemento]
-                      %td=fila[:comuna_instalacion]
-                      %td=fila[:direccion_instalacion]
-                      %td
-                        %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
-                        %div{style: "white-space: nowrap"}=fila[:fono_encargado]
-                        %div{style: "white-space: nowrap"}=fila[:email_encargado]
-                      %td=fila[:observaciones]
-                      %td=k.upcase
+      -#
+        .col-12
+          .card
+            .card-header
+              %h5.no-margin
+                %b
+                = t(:adhesiones)
+            .card-body
+              %table.table.table-striped#adhesiones_rechazadas
+                %thead
+                  %tr
+                    %th=t(:alcance)
+                    %th=t(:nombre_elemento)
+                    %th=t(:comuna_del_elemento)
+                    %th=t(:direccion_del_elemento)
+                    %th=t(:datos_encargado)
+                    %th=t(:observaciones)
+                    %th=t(:estado)
+                %tbody
+                  - @todas.each do |k,v|
+                    - v.each do |fila|
+                      %tr
+                        %td=fila[:alcance]
+                        %td=fila[:nombre_elemento]
+                        %td=fila[:comuna_instalacion]
+                        %td=fila[:direccion_instalacion]
+                        %td
+                          %div{style: "white-space: nowrap"}=fila[:nombre_encargado]
+                          %div{style: "white-space: nowrap"}=fila[:fono_encargado]
+                          %div{style: "white-space: nowrap"}=fila[:email_encargado]
+                        %td=fila[:observaciones]
+                        %td=k.upcase
+
+  .row
+    .col-12
+      #formulario-adhesiones-form
+        = render 'adhesiones/form_adhesiones', externo: true
+        = render 'adhesiones/table_actualiza_adhesiones', externo: true  
   
   .row
-    .col-12.col-lg-6
+    #descargar-archivos_formatos.col-12.col-lg-6.d-none
       .card
         .card-header
           %h5.m-0
@@ -122,7 +129,8 @@
                   = t(:descargar)
                 %button.btn.btn-sm.btn-descargar.btn-block.tooltip-block.boton-llenado-ban.mt-0{title: "Debe llenar los datos solicitante para descargar archivo"}
                   %i.fa.fa-ban
-    .col-12.col-lg-6
+    
+    #subir-documentos-form.col-12.col-lg-6.d-none
       .card
         .card-header
           %h5.no-margin=t(:subir_documentacion_adhesiones)
@@ -136,7 +144,8 @@
             .col-12
               = f.input :archivo_elementos, label: t(:consolidado_de_adhesiones_formato_excel), as: :file, required: true, input_html: {class: "validado form-control auto-save "}
               = f.hidden_field :archivo_elementos_cache
-    .col-12.col-lg-6.offset-lg-6
+    
+    #instrucciones-llenado-form.col-12.col-lg-6.offset-lg-6.d-none
       .card
         .card-header
           %h5.no-margin=t(:instrucciones_de_llenado)
@@ -145,20 +154,32 @@
             .col-12
               =__mostrar_descargable_simple(@tarea,"#{@tarea.codigo}-DES-002",t(:instrucciones_de_llenado_excel_consolidado_de_adhesiones))
 
+  %br
+  %button#toggle-solicitar-adhesiones-form.btn.btn-success.btn-sm{ style: "margin-left: 20px;" } Agregar Adhesiones vía excel 
   .float-right
     = link_to t(:back), adherir_a_un_acuerdo_path, class: 'btn btn-warning btn-sm'
-    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary button-send"
+    = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, id: 'guardar-solicitar-adhesion', class: "btn btn-sm btn-primary button-send", onclick: "guarda_solicitud_adhesion()"
+
+= render 'admin/users/buscador'
+- tipo_instrumento = @manifestacion_de_interes.tipo_instrumento_id.present? ? @manifestacion_de_interes.tipo_instrumento_id  : TipoInstrumento::ACUERDO_DE_PRODUCCION_LIMPIA
+= render 'admin/contribuyentes/buscador', es_para_seleccion: true, tipo_instrumento: tipo_instrumento
 
 :javascript
   const dt = new DataTransfer();
   $(document).ready(function(){
-
+    validar_boton_guardar();
     $('#adhesion_archivos_adhesion_y_documentacion').change(function(e){
       for (let file of this.files) {
         dt.items.add(file);
       }
       this.files = dt.files;
       render_files();
+      validar_boton_guardar(); // Evalúa si habilitar el botón
+    });
+
+    // Escucha el cambio en el input del archivo Excel
+    $(document).on('change', '#adhesion_archivo_elementos', function(){
+      validar_boton_guardar(); // Evalúa si habilitar el botón
     });
     
     $("#adhesiones_rechazadas").DataTable({
@@ -256,6 +277,23 @@
       $('#adhesion_rut_representante_legal').trigger("keyup");
     }
 
+    $("#toggle-solicitar-adhesiones-form").click(function () {
+      $("#subir-documentos-form").toggleClass("d-none");
+      $("#instrucciones-llenado-form").toggleClass("d-none");
+      $("#descargar-archivos_adhesion").toggleClass("d-none");
+      $("#descargar-archivos_formatos").toggleClass("d-none");
+      $("#mostrar-descargables").toggleClass("d-none");
+      $("#formulario-adhesiones-form").toggleClass("d-none");
+
+      if ($("#subir-documentos-form").hasClass("d-none")) {
+        $(this).text("Agregar Adhesiones vía excel");
+        $('#columna-comentarios').removeClass('col-lg-6').addClass('col-lg-12');
+      } else {
+        $(this).text("Agregar Adhesiones formulario");
+        $('#columna-comentarios').removeClass('col-lg-12').addClass('col-lg-6');
+      }
+      validar_boton_guardar(); // Revalida al cambiar de modo
+    });
   });
 
   $(document).on('click', '.remove-file', function(e){
@@ -264,6 +302,16 @@
     dt.items.remove(parseInt($(this).attr("href")));
     $('#adhesion_archivos_adhesion_y_documentacion')[0].files = dt.files;
     render_files();
+  });
+
+  // Al eliminar un archivo de la lista
+  $(document).on('click', '.remove-file', function(e){
+    e.preventDefault();
+    $(this).parents('.list-group-item').remove();
+    dt.items.remove(parseInt($(this).attr("href")));
+    $('#adhesion_archivos_adhesion_y_documentacion')[0].files = dt.files;
+    render_files();
+    validar_boton_guardar(); // Evalúa si debe deshabilitarse
   });
 
   function render_files(){
@@ -275,5 +323,104 @@
       li += '<a href="'+index+'" class="remove-file"><i class="fa fa-trash"></i></a>';
       li += '</li>';
       $('#list_files').append(li);
+    });
+  }
+
+  // 1. 🚀 FUNCIÓN DE VALIDACIÓN BASADA EN COLSPAN (Inmune a fallos)
+  function validar_boton_guardar() {
+    try {
+      // 🔍 EL DETECTOR PERFECTO: Si el HTML tiene un td con colspan="12", está vacía.
+      let tabla_esta_vacia = $('#div_adhesiones td[colspan="12"]').length > 0;
+      let tiene_tabla_valores = !tabla_esta_vacia;
+
+      // Validación de archivos en segundo plano
+      let tiene_archivos = (typeof dt !== 'undefined' && dt.files) ? dt.files.length > 0 : false;
+      let excel_visible = !$("#subir-documentos-form").hasClass("d-none");
+      let tiene_excel = $('#adhesion_archivo_elementos').val() !== '';
+      let archivos_validos = excel_visible ? (tiene_archivos && tiene_excel) : tiene_archivos;
+
+      let $boton = $('#guardar-solicitar-adhesion');
+
+      // CONDICIÓN FINAL
+      if (tiene_tabla_valores || archivos_validos) {
+        // Habilitar por completo
+        $boton.prop('disabled', false)
+              .removeAttr('disabled')
+              .removeClass('btn-disabled')
+              .css({ 'pointer-events': 'auto', 'opacity': '1' });
+      } else {
+        // Bloqueo absoluto (Lógico, HTML y CSS)
+        $boton.prop('disabled', true)
+              .attr('disabled', 'disabled')
+              .addClass('btn-disabled')
+              .css({ 'pointer-events': 'none', 'opacity': '0.5' });
+      }
+    } catch (error) {
+      console.log("Error controlado en validación:", error);
+    }
+  }
+
+  // 2. 🚀 DETECTOR EN SEGUNDO PLANO (Ponlo justo aquí, al final del $(document).ready)
+  setInterval(function() {
+    validar_boton_guardar();
+  }, 400);
+
+  function guarda_solicitud_adhesion() {
+    // 1. Encontrar el formulario principal solo para extraer la URL de destino
+    let formElement = $('form[id^="edit_adhesion"], form[id^="new_adhesion"], form.simple_form')[0];
+    
+    if (!formElement) {
+      console.error("No se encontró el formulario principal.");
+      alert("Error interno: No se pudo localizar el destino del envío.");
+      return false;
+    }
+
+    let $form = $(formElement);
+    let urlFinal = $form.attr('action'); 
+    let metodoFinal = $form.attr('method') || 'POST';
+
+    // 2. 🚀 CONSTRUCCIÓN MANUAL DE FORMDATA (Evita el quiebre por formularios anidados)
+    let formData = new FormData();
+
+    // A) Inyectamos el Token de Seguridad (CSRF) obligatorio de Rails
+    let csrfToken = $('meta[name="csrf-token"]').attr('content');
+    if (csrfToken) {
+      formData.append('authenticity_token', csrfToken);
+    }
+
+    // B) Recolectamos de forma global todos los inputs/selects destinados a "adhesion"
+    $('input[name^="adhesion["], select[name^="adhesion["], textarea[name^="adhesion["]').each(function() {
+      if (this.type === 'file') return; // Los archivos van por separado abajo
+      if ((this.type === 'checkbox' || this.type === 'radio') && !this.checked) return; // Saltamos no marcados
+      
+      formData.append(this.name, $(this).val());
+    });
+
+    // 3. Inyección de los archivos físicos desde el DataTransfer (Modo manual)
+    if (dt.files.length > 0) {
+      for (let i = 0; i < dt.files.length; i++) {
+        formData.append('adhesion[archivos_adhesion_y_documentacion][]', dt.files[i]);
+      }
+    }
+
+    // 4. Inyección del archivo Excel (Modo Excel)
+    let excelInput = $('#adhesion_archivo_elementos')[0];
+    if (excelInput && excelInput.files.length > 0) {
+      formData.append('adhesion[archivo_elementos]', excelInput.files[0]);
+    }
+
+    // 5. Ejecutar la llamada AJAX remota limpia y unificada
+    $.ajax({
+      url: urlFinal,
+      method: metodoFinal.toUpperCase(),
+      data: formData,
+      processData: false, 
+      contentType: false, 
+      success: function(response) {
+        console.log("Datos enviados de forma exitosa", response);
+      },
+      error: function(error) {
+        console.error("Error crítico al procesar la solicitud en el controlador", error);
+      }
     });
   }
