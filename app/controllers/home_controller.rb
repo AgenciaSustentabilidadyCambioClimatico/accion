@@ -73,13 +73,43 @@ class HomeController < ApplicationController
     # ─── ETAPA 1: DETECCIÓN Y CONSOLIDACIÓN DE ARCHIVOS EN LOTE ────────────────
     es_flujo_excel = params.dig(:adhesion, :archivo_elementos).present?
     tiene_parametros_adhesion = params[:adhesion].present?
+    
     if !es_flujo_excel
       # Flujo Manual: Forzamos la marca de listado y recolectamos los archivos
       @adhesion.listado_adhesiones = true
       
       # Buscamos todas las empresas guardadas en el listado temporal de este flujo
       temporales = ListadoAdhesionesTemporal.where(flujo_id: @flujo.id, estado: 0)
-      
+      # 🚀 PASO CLAVE 1: Extraemos el primer registro de la colección temporal
+      primer_temporal = temporales.first
+
+      if primer_temporal.present?
+        # Agregamos `.first` al final para que sea un objeto individual, NO una relación
+        comuna_objeto = Comuna.where("nombre ILIKE ?", "%#{primer_temporal.comuna_casa_matriz}%").where(vigente: true).first
+        tipo_contribuyente_objeto =  TipoContribuyente.where("nombre ILIKE ?", "%#{primer_temporal.tipo_institucion}%").first
+  
+        # Asignamos los datos principales desde el registro individualizado
+        @adhesion.rut_institucion_adherente    = primer_temporal.rut_institucion
+        @adhesion.nombre_institucion_adherente = primer_temporal.nombre_institucion
+        @adhesion.matriz_direccion             = primer_temporal.direccion_casa_matriz
+        
+        @adhesion.rut_representante_legal      = primer_temporal.rut_encargado
+        @adhesion.nombre_representante_legal   = primer_temporal.nombre_encargado
+        @adhesion.fono_representante_legal     = primer_temporal.fono_encargado
+        @adhesion.email_representante_legal    = primer_temporal.email_encargado
+
+        # Si la consulta de la comuna devolvió un registro válido, asignamos sus IDs
+        if comuna_objeto.present?
+          @adhesion.matriz_comuna_id = comuna_objeto.id # 🚀 Solución a la línea 93: ya no arrojará NoMethodError
+          @adhesion.matriz_region_id = comuna_objeto.provincia&.region_id
+        end
+
+        if tipo_contribuyente_objeto.present?
+          @adhesion.tipo_contribuyente_id = tipo_contribuyente_objeto.id
+        end
+
+      end
+
       # Extraemos los archivos físicos reales subidos a AWS de cada una de las filas
       archivos_manuales = temporales.map { |t| t.nombre_archivo.file }.compact
       
@@ -98,7 +128,11 @@ class HomeController < ApplicationController
       @adhesion_new.save!
       
       # Asignamos los parámetros del formulario a la adhesión principal
-      @adhesion.assign_attributes(adhesion_params)
+      if es_flujo_excel
+        @adhesion.assign_attributes(adhesion_params)
+      else
+        @adhesion.assign_attributes(adhesion_params_listado)
+      end
     end
     # Seteos estructurales transversales requeridos por ambos flujos
     @adhesion.current_user = current_user
@@ -344,11 +378,13 @@ class HomeController < ApplicationController
       @tarea = Tarea.find(Tarea::ID_APL_025_2)
     else
       @tarea = Tarea.find(Tarea::ID_APL_025_3)
-      @contribuyentes = []
+      @contribuyentes_for_select = [] 
+      
       Contribuyente.includes(:personas).where(personas: {user_id: current_user.id}).each do |c|
         casa_matriz = c.establecimiento_contribuyentes.where(casa_matriz: true).first
         dato_anual = c.dato_anual_contribuyentes.first
-        @contribuyentes << [
+
+        @contribuyentes_for_select << [
           "#{c.rut}-#{c.dv} | #{c.razon_social}",
           c.id,
           {
@@ -369,6 +405,18 @@ class HomeController < ApplicationController
 
   def adhesion_params
     params.require(:adhesion).permit(
+      :rut_institucion_adherente, :nombre_institucion_adherente, :matriz_direccion, :matriz_region_id, :matriz_comuna_id,:tipo_contribuyente_id,
+      :contribuyente_id,
+      :rut_representante_legal, :nombre_representante_legal, :fono_representante_legal, :email_representante_legal,
+      :archivo_elementos,
+      :archivo_elementos_cache,
+      :archivos_adhesion_y_documentacion_cache,
+      archivos_adhesion_y_documentacion: []
+    )
+  end
+
+  def adhesion_params_listado
+    params.require(:adhesion).permit(
       :archivo_elementos,
       :archivo_elementos_cache,
       :archivos_adhesion_y_documentacion_cache,
@@ -378,7 +426,8 @@ class HomeController < ApplicationController
 
   def set_contribuyentes
     @contribuyente = Contribuyente.new
-    @contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    #@contribuyentes = Contribuyente.where(id: @personas.map{|m|m[:contribuyente_id]}).all
+    @contribuyentes = Contribuyente.none
     @contribuyente_adhesion = Contribuyente.new
   end
   

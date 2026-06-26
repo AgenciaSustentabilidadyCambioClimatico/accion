@@ -315,9 +315,14 @@ class AdhesionesController < ApplicationController
         # 1. Sacamos el nombre real del archivo desde el hash de la fila
         nombre_buscar = elemento.fila[:nombre_archivo] || elemento.fila['nombre_archivo']
         
-        # 2. Buscamos la Adhesión padre (usando el adhesion_id que nos dio el pry: 170)
-        adhesion_padre = Adhesion.unscoped.find_by(id: elemento.adhesion_id || elemento.adhesion_externa_id)
-        
+        # 2. Buscamos la Adhesión padre (usando el adhesion_id que nos dio el pry: 170) si esigual
+        # es interna y si no es externa
+        if elemento.adhesion_id == elemento.adhesion_externa_id
+          adhesion_padre = Adhesion.unscoped.find_by(id: elemento.adhesion_id)
+        else
+          adhesion_padre = Adhesion.unscoped.find_by(id: elemento.adhesion_externa_id)
+        end
+
         if adhesion_padre && adhesion_padre.archivos_adhesion_y_documentacion.present?
           # 3. Buscamos el binario real dentro de la bolsa del padre que haga match con el nombre
           archivo_fisico = adhesion_padre.archivos_adhesion_y_documentacion.find { |ar| ar.identifier == nombre_buscar }
@@ -325,7 +330,7 @@ class AdhesionesController < ApplicationController
           if archivo_fisico && archivo_fisico.url.present?
             url = archivo_fisico.url
             nombre = archivo_fisico.identifier
-            
+    
             begin
               URI.open(url) do |file_data|
                 stream.put_next_entry(nombre)
