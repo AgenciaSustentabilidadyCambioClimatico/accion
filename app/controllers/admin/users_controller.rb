@@ -7,16 +7,18 @@ class Admin::UsersController < ApplicationController
   before_action :posee_permisos_administracion_admin, except: [:edit_modal]
 
 	def index
-		# binding
-		# @users = User.where('id NOT IN (?)', User::ROOT).order(nombres: :asc, apellido_paterno: :asc, apellido_materno: :asc).all		
-		if @acceso == :admin || current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO) || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA) #DZC 2018-10-20 15:24:38
-	      @users = User.where('id NOT IN (?)', User::ROOT).order(nombre_completo: :asc).all
-	    else
-	      #obtengo todas las personas asociadas a los contribuyentes, en donde posee el cargo.-
-	      personas_empresas = Persona.where(contribuyente_id: current_user.instituciones_donde_es_admin)
-	      @users = User.where('id NOT IN (?)', User::ROOT).where(id: personas_empresas.distinct.pluck('user_id')).order(nombre_completo: :asc).all
-	    end
-	end
+        if @acceso == :admin || current_user.posee_rol_ascc?(Rol::REVISOR_TECNICO) || current_user.posee_rol_ascc?(Rol::JEFE_DE_LINEA)
+          @users = User.where.not(id: User::ROOT)
+                       .includes(:tarea_pendientes, mapa_de_actores: :flujo) # <--- AQUÍ PRECARGAMOS TODO
+                       .order(nombre_completo: :asc)
+        else
+          personas_empresas = Persona.select(:user_id).where(contribuyente_id: current_user.instituciones_donde_es_admin)
+          @users = User.where.not(id: User::ROOT)
+                       .where(id: personas_empresas)
+                       .includes(:tarea_pendientes, mapa_de_actores: :flujo) # <--- Y AQUÍ TAMBIÉN
+                       .order(nombre_completo: :asc)
+        end
+    end
 
 	def new
 		acceso_permitido
