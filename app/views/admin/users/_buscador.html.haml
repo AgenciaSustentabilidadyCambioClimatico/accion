@@ -21,6 +21,7 @@
     $('##{modal_id} .seleccionar-usuario-button').removeAttr('disabled');
     $('##{modal_id} .seleccionar-y-actualizar-usuario-button').removeAttr('disabled');
     $('##{modal_id} .seleccionar-y-actualizar-usuario-actor-button').removeAttr('disabled');
+    $('##{modal_id} .seleccionar-y-actualizar-usuario-adhesion-button').removeAttr('disabled');
   });
 
   $(document).on('click','#nuevo-usuario-button', function(e){
@@ -105,8 +106,24 @@
     });
   });
 
-
-
+  $(document).on('click', '.seleccionar-y-actualizar-usuario-adhesion-button', function(){
+    data=JSON.parse($('table.usuarios').DataTable().$('.usuario-radio:checked').val());
+    $.ajax({
+      url: "#{edit_adhesion_modal_admin_users_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        user_id: data.id
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('##{modal_id} .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
 
   $(document).ready(function(){
 
@@ -176,4 +193,28 @@
     }
   }
 
+  $(document).on('change keyup', '.form-adhesion-boton-guardar-usuario', function(){
+    nuevo_usuario_adhesion_validaciones();
+  });
+
+  function nuevo_usuario_adhesion_validaciones(){
+    // Verificar si el checkbox "Sin Rut" está marcado
+    var sinRut = $('#sin_rut_checkbox').prop('checked');
+
+    // Verificar si el checkbox "Sin Email" está marcado
+    var sinEmail = $('#sin_email_checkbox').prop('checked');
+    
+    // Validar los campos de entrada
+    var rut = sinRut || $('#user_rut').val() != ""; // Si "Sin Rut" está marcado, el RUT no es necesario
+    var nombre_completo = $('#user_nombre_completo').val() != "";
+    var email = sinEmail || $('#user_email').val() != "";
+    var telefono = $('#user_telefono').val() != "";
+
+    // Si todas las condiciones se cumplen (y el RUT solo se verifica si no está marcado "Sin Rut")
+    if (rut && nombre_completo && email && telefono) {
+      $('.guarda-usuario-adhesion-button').removeAttr("disabled"); // Habilitar el botón
+    } else {
+      $('.guarda-usuario-adhesion-button').attr("disabled", true); // Deshabilitar el botón
+    }
+  }
         

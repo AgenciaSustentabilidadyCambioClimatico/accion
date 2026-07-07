@@ -41,4 +41,8 @@ class Alcance < ApplicationRecord
     excepto_estos = [Alcance::ORGANIZACION, Alcance::ESTABLECIMIENTO, Alcance::MAQUINARIA] # Organización, Establecimiento y Maquinaria
     Alcance.where.not(id: excepto_estos).all.map { | alcance | [alcance.nombre, alcance.id] }
   end  
+
+  def self.__select
+    Alcance.order(nombre: :asc).all.map {|m|[m.nombre,m.id]}
+  end
 end

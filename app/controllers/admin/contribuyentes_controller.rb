@@ -377,6 +377,18 @@ class Admin::ContribuyentesController < ApplicationController
     @contribuyente_actor.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
     render layout: false
   end
+
+  def edit_adhesion_modal
+    if params[:id].blank?
+      @contribuyente_adhesion = Contribuyente.new
+    else
+      @contribuyente_adhesion = Contribuyente.unscoped.find_by(contribuyente_id: params[:id], flujo_id: params[:flujo_id]) || Contribuyente.unscoped.find(params[:id])
+    end
+    @contribuyente_adhesion.temporal = true
+    @contribuyente_adhesion.flujo_id = params[:flujo_id]
+    @contribuyente_adhesion.contribuyente_id = params[:contribuyente_id] unless params[:contribuyente_id].blank?
+    render layout: false
+  end
   
   private
     def set_contribuyente

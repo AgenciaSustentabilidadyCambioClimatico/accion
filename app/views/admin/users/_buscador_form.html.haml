@@ -19,8 +19,11 @@
     .usuarios-remote-table
       = render "admin/users/tabla", modal_id: modal_id, lista_usuarios: lista_usuarios
   .col-12.mt-2.text-right
-    -unless @usuario_actor.nil?
+    -if @usuario_actor.present?
       %button.btn.btn-primary.seleccionar-y-actualizar-usuario-actor-button{type: :button, disabled: :disabled }
+        Seleccionar
+    -elsif @usuario_adhesion.present?
+      %button.btn.btn-primary.seleccionar-y-actualizar-usuario-adhesion-button{type: :button, disabled: :disabled }
         Seleccionar
     -else
       -unless @contribuyente_temporal.nil?

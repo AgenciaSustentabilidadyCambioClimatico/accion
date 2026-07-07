@@ -158,6 +158,26 @@
     });
   });
 
+  $(document).off('click', '.seleccionar-y-actualizar-contribuyente-adhesion-button');
+  $(document).on('click', '.seleccionar-y-actualizar-contribuyente-adhesion-button', function(){
+    data=JSON.parse($('#contribuyentes-remote-table#{custom_id}').find('.contribuyente-radio:checked').val());
+    $.ajax({
+      url: "#{edit_adhesion_modal_admin_contribuyentes_path}",
+      type: "GET",
+      data: {
+        id: data.id,
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}",
+        contribuyente_id: data.id
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('#body-contribuyente-buscador#{custom_id}').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
   $(document).ready(function(){
 
     $('#intitucion_cogestora').off('click').on('click', function(e){

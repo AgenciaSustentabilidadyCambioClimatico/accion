@@ -26,6 +26,8 @@ class Flujo < ApplicationRecord
   has_many :convocatorias
   has_many :contribuyente_temporal, class_name: 'Contribuyente'
   has_many :usuario_temporal, class_name: 'User'
+  
+  has_many :listado_adhesiones_temporals, dependent: :destroy
 
   accepts_nested_attributes_for :manifestacion_de_interes
   accepts_nested_attributes_for :ppp
