@@ -649,19 +649,24 @@ class ManifestacionDeInteres < ApplicationRecord
     no_hay_errores_con_los_dominios = true
 
     if roles_invalidos.size > 0
-      errors.add(:mapa_de_actores_archivo, "Hay Roles inválidos, por favor corregir")
+      errors.add(:mapa_de_actores_archivo, "Hay Roles inválidos, por favor corregir: #{roles_invalidos.join(', ')}")
+      Rails.logger.error "[MAPA_ACTORES_VALIDATION] Roles inválidos detectados: #{roles_invalidos.join(', ')}"
       no_hay_errores_con_los_dominios = false
     elsif cargos_invalidos.size > 0
-      errors.add(:mapa_de_actores_archivo, "Hay Cargos inválidos, por favor corregir")
+      errors.add(:mapa_de_actores_archivo, "Hay Cargos inválidos, por favor corregir: #{cargos_invalidos.join(', ')}")
+      Rails.logger.error "[MAPA_ACTORES_VALIDATION] Cargos inválidos detectados: #{cargos_invalidos.join(', ')}"
       no_hay_errores_con_los_dominios = false
     elsif sectores_invalidos.size > 0
-      errors.add(:mapa_de_actores_archivo, "Hay Sectores inválidos, por favor corregir")
+      errors.add(:mapa_de_actores_archivo, "Hay Sectores inválidos, por favor corregir: #{sectores_invalidos.join(', ')}")
+      Rails.logger.error "[MAPA_ACTORES_VALIDATION] Sectores inválidos detectados: #{sectores_invalidos.join(', ')}"
       no_hay_errores_con_los_dominios = false
     elsif tipo_instituciones_invalidos.size > 0
-      errors.add(:mapa_de_actores_archivo, "Hay Tipo de instituciones inválidos, por favor corregir")
+      errors.add(:mapa_de_actores_archivo, "Hay Tipo de instituciones inválidas, por favor corregir: #{tipo_instituciones_invalidos.join(', ')}")
+      Rails.logger.error "[MAPA_ACTORES_VALIDATION] Tipo de instituciones inválidas detectadas: #{tipo_instituciones_invalidos.join(', ')}"
       no_hay_errores_con_los_dominios = false
     elsif comunas_invalidas.size > 0
-      errors.add(:mapa_de_actores_archivo, "Hay Comunas inválidas, por favor corregir")
+      errors.add(:mapa_de_actores_archivo, "Hay Comunas inválidas, por favor corregir: #{comunas_invalidas.join(', ')}")
+      Rails.logger.error "[MAPA_ACTORES_VALIDATION] Comunas inválidas detectadas: #{comunas_invalidas.join(', ')}"
       no_hay_errores_con_los_dominios = false
     end
 
