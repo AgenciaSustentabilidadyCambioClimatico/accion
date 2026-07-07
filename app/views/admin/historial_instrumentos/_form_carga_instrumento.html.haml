@@ -59,6 +59,10 @@
                   %td
                     -if current_user.is_ascc?
                       -# Botón de descarga de PDF Fondo Producción Limpia
+                      - if %w[FPL-01].include?(ins[:tarea][:codigo])
+                        = link_to descargar_formulario_fpl_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                          = fa_icon 'file-pdf-o'
+                          = "Última versión postulación"
                       - if ins[:tarea][:codigo] == 'FPL-05'
                         - ins[:tarea_fpl_05].each do |revision|
                           = link_to descargar_admisibilidad_juridica_pdf_fondo_produccion_limpia_path(ins[:id_instrumento], revision: revision), class: "btn-tabla-instrumentos" do
@@ -82,6 +86,7 @@
                       -# Se recorre arreglo con los documentos asociados a cada APL.
                       - ins[:documentos_asociados].each do |documento| 
                         - if documento[:url].blank?
+                          - next if %w[FPL-01].include?(ins[:tarea][:codigo]) && documento[:nombre] == "Sin documentos asociados"
                           =documento[:nombre]
                         - else
                           -if documento[:url] == "modal"
@@ -109,6 +114,13 @@
                           - if ins[:nombre_tarea] == 'APL-005-Revisar Pertinencia y Factibilidad Manifestación de Interés'
                             - vacio = ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.blank? || ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad.nil?
                             = vacio ?  "Sin documentos aún" : __descargar_archivo(ins[:manifestacion_de_interes].archivo_pertinencia_factibilidad,ins[:manifestacion_de_interes], true,true,nil, "Ficha de Manifestacion",false,true) 
+                    -elsif @personas.present? && @personas.map(&:user_id).include?(current_user.id)
+                      - if %w[FPL-01].include?(ins[:tarea][:codigo])
+                        = link_to descargar_formulario_fpl_fondo_produccion_limpia_path(ins[:id_instrumento]), class: "btn-tabla-instrumentos" do
+                          = fa_icon 'file-pdf-o'
+                          = "Última versión postulación"
+                      -else
+                        Sin documentos autorizados adicionales
                     -else
                       Sin documentos asociados
                   %td
