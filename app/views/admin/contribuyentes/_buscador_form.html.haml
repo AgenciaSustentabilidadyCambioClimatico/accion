@@ -12,13 +12,17 @@
         .card-body
           %div{id: "contribuyentes-remote-filter#{custom_id}"}
             = render 'admin/contribuyentes/filter_form', es_para_seleccion: es_para_seleccion, buscar_por_actividad_economica: buscar_por_actividad_economica, resultado_mostrados: resultado_mostrados, custom_id: custom_id, data_table: data_table, seleccion_basica: seleccion_basica, tipo_instrumento: tipo_instrumento
-    -unless @contribuyente_temporal.nil?
+    -if @contribuyente_temporal.present?
       .col-12.mt-2.text-right
         %button.btn.btn-primary#nuevo-contribuyente-button{type: :button}
           =t(:nueva_institución)
-    -unless @contribuyente_actor.nil?
+    -elsif @contribuyente_actor.present?
       .col-12.mt-2.text-right
         %button.btn.btn-primary#nuevo-contribuyente-actor-button{type: :button}
+          =t(:nueva_institución)
+    -elsif @contribuyente_adhesion.present?
+      .col-12.mt-2.text-right
+        %button.btn.btn-primary#nuevo-contribuyente-adhesion-button{type: :button}
           =t(:nueva_institución)
   .col-12.mt-2
     .card.no-margin

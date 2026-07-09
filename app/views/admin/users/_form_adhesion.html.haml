@@ -12,18 +12,10 @@
           .row
             .col-12.col-lg-4
               = f.input :rut, required: true, label: t(:rut), placeholder: "Ingresar RUT actor", input_html: { class: 'identificacion form-adhesion-boton-guardar-usuario', readonly: !usuario_adhesion.user_id.nil? }
-              -# Solo mostrar el checkbox si el user_id es nil
-              - if usuario_adhesion.user_id.nil?
-                = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_rut_checkbox"
-                %label{ for: "sin_rut_checkbox" } Sin Rut
             .col-12.col-lg-8
               = f.input :nombre_completo, required: true, label: t(:nombre_completo_persona), placeholder: "Ingresar nombre completo", input_html: { class: 'form-adhesion-boton-guardar-usuario', readonly: !usuario_adhesion.user_id.nil? }
             .col-12.col-lg-6
               = f.input :email, error: true, required: true, label: t(:email), placeholder: "Ingresar email", input_html: {class: "form-adhesion-boton-guardar-usuario help-block email_validator"}
-              -# Solo mostrar el checkbox si el user_id es nil
-              - if usuario_adhesion.user_id.nil?
-                = check_box_tag :seleccionar, '1', false, class: "not-required-if-other-like-me-is-present", id: "sin_email_checkbox"
-                %label{ for: "sin_email_checkbox" } Sin Email
             .col-12.col-lg-6
               = f.input :telefono, required: true, label: t(:teléfono), placeholder: "Ingresar teléfono", input_html: { class: 'numero form-adhesion-boton-guardar-usuario' }
     .col-12.mt-2.text-right
@@ -70,14 +62,6 @@
       var email = $('#user_email').val();
       var telefono = $('#user_telefono').val();
       
-      if ($('#sin_rut_checkbox').prop('checked')) {
-        rut = "no";
-      }
-
-      if ($('#sin_email_checkbox').prop('checked')) {
-        email = "no";
-      }
-
       $("#rut_encargado_adhesiones").val(rut);
       $("#nombre_encargado_adhesiones").val(nombreCompleto);   
       $("#email_encargado_adhesiones").val(email);   

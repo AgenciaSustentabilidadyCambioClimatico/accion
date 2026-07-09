@@ -542,8 +542,9 @@ end
       @listado_adhesiones.direccion_casa_matriz = casa_matriz&.direccion || ''
       @listado_adhesiones.comuna_casa_matriz    = casa_matriz&.comuna.nombre || ''
     else
-      @listado_adhesiones.direccion_casa_matriz = ''
-      @listado_adhesiones.comuna_casa_matriz    = ''
+      @listado_adhesiones.direccion_casa_matriz =  @listado_adhesiones.direccion_instalacion
+      @listado_adhesiones.comuna_casa_matriz    =  @listado_adhesiones.comuna_instalacion
+
     end
        
     # 3. 🚀 Usamos .save! (con signo de exclamación) en ambiente de desarrollo/debug

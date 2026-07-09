@@ -36,6 +36,8 @@ class Contribuyente < ApplicationRecord
 	#validates :tipo_institucion ,presence: true
 	attr_accessor :tipo_institucion, :tipo_institucion_id, :direccion, :region, :comuna, :codigo_ciiuv4,:es_fpl, :identificador, :patente, :nombre_elemento, :nombre_archivo
 
+	attr_accessor :tamano_contribuyente
+
 	def rut_unico
 		busqueda_identico = Contribuyente.where(rut: self.rut, temporal: false).first
 		if !busqueda_identico.blank? && busqueda_identico.id != self.id

@@ -153,8 +153,8 @@
       var contribuyente_id = $('#contribuyente_id').val();
       var rut = $('#contribuyente_rut').val() + '-' + $('#contribuyente_dv').val();
       var razon_social = $('#contribuyente_razon_social').val();
-      var tamano_empresa = $('#tamano_contribuyente_input').val(); 
-      var sector_productivo = $('#codigo_ciiuv4_input').val();
+      var tamano_empresa = $('#contribuyente_tamano_contribuyente option:selected').text();
+      var sector_productivo = $('#contribuyente_codigo_ciiuv4 option:selected').text();
       var tipo_institucion = $('#contribuyente_tipo_institucion option:selected').text();
       var comuna = $('#registro_proveedor_comuna option:selected').text();
       var direccion = $('#direccion_select option:selected').text();
@@ -180,21 +180,35 @@
         nombre_elemento = $('#nombre_instalacion_input').val();
       }
 
-      var partes = direccion.split("-");
-      var sec_prod_partes = sector_productivo.split("-");
+       
+      
+      if ($('#codigo_ciiuv4_input').val()) {
+        codigo_ciiuv4 = $('#codigo_ciiuv4_input').val();
+        sec_prod_partes = codigo_ciiuv4.split("-"); 
+        sector_productivo = sec_prod_partes[0].trim(); 
+      } else {
+        var sec_prod_partes = sector_productivo.split("-");
+        sector_productivo = sec_prod_partes[0].trim(); 
+      }
 
       var identificador = $('#identificador_input').val();
       var patente = $('#patente_input').val();
 
+      
       if ($('#direccion_input').val()) {
         direccion = $('#direccion_input').val();
       } else {
+        var partes = direccion.split("-");
         direccion = partes[0].trim(); 
         comuna = partes[1].trim(); 
       }
-
+      
       if ($('#tipo_institucion_input').val()) {
         tipo_institucion = $('#tipo_institucion_input').val();
+      }
+
+      if ($('#tamano_contribuyente_input').val()) {
+        tamano_empresa = $('#tamano_contribuyente_input').val();
       }
 
       $("#rut_institucion_adhesiones").val(rut);
@@ -206,7 +220,7 @@
       $("#nombre_instalacion_adhesiones").val(nombre_instalacion);
       $("#tipo_elemento_adhesiones").val(tipo_elemento);
       $("#alcance_adhesiones").val(alcance);
-      $("#sector_productivo_adhesiones").val(sec_prod_partes[0].trim());
+      $("#sector_productivo_adhesiones").val(sector_productivo);
       $("#tamano_empresa_adhesiones").val(tamano_empresa);
       $("#nombre_elemento_adhesiones").val(nombre_elemento);
 

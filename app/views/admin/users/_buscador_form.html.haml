@@ -7,14 +7,18 @@
     .col-12
       .usuarios-form-buscar
         = render "admin/users/form_buscar", modal_id: modal_id
-    -unless @usuario_temporal.nil?
+    -if @usuario_temporal.present?
       .col-12.text-right
         %button.btn.btn-primary#nuevo-usuario-button{type: :button}
           =t(:nuevo_representante)
-    -unless @usuario_actor.nil?
+    -elsif @usuario_actor.present?
       .col-12.text-right
         %button.btn.btn-primary#nuevo-actor-button{type: :button}
           =t(:nuevo_actor)
+    -elsif @usuario_adhesion.present?
+      .col-12.text-right
+        %button.btn.btn-primary#nuevo-adhesion-button{type: :button}
+          =t(:nuevo_representante)
   .col-12.mt-2
     .usuarios-remote-table
       = render "admin/users/tabla", modal_id: modal_id, lista_usuarios: lista_usuarios

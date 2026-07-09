@@ -25,7 +25,7 @@ class Adhesion < ApplicationRecord
 	validates :estado_elementos, presence: true, if: -> { validar_clasificar}
 	validates :justificacion_elementos, presence: true, if: -> { estado_elementos == "false" && validar_clasificar}
 	#tareas 25
-	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
+	validates :rut_institucion_adherente, presence: true, rut: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3 || listado_adhesiones == false }
 	validates :nombre_institucion_adherente,:matriz_direccion,:matriz_region_id,:matriz_comuna_id,:tipo_contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id != Tarea::ID_APL_025_3}
 	#validates :contribuyente_id, presence: true, if: -> { externa && !tipo.present? && tarea_id == Tarea::ID_APL_025_3}
 	validates :rut_representante_legal, presence: true, rut: true, if: -> { externa && !tipo.present? && current_user.nil?}
@@ -286,9 +286,17 @@ class Adhesion < ApplicationRecord
 							end
 							if fila[:tipo_institucion].blank? || TipoContribuyente.where(nombre: fila[:tipo_institucion]).first.nil?
 								errores[:tipo_institucion] << " El archivo contiene un tipo contribuyente inválido, para la fila #{(posicion+2)}"
-							end
-							if rango_empresa.blank? || RangoVentaContribuyente.find_by(venta_anual_en_uf: rango_empresa.split('-').last).nil?
-								errores[:tamaño_empresa] << " El archivo contiene un rango empresa inválido, para la fila #{(posicion+2)}"
+							end	
+							if rango_empresa.blank?
+								errores[:tamaño_empresa] << " El archivo contiene un rango empresa inválido, para la fila #{posicion + 2}"
+							else
+								# 🚀 Separamos por el guión, tomamos el último elemento y limpiamos CUALQUIER espacio loco
+								valor_uf = rango_empresa.split('-').last&.strip
+
+								# Usamos .exists? que solo devuelve true/false (es más rápido que traer todo el objeto)
+								unless RangoVentaContribuyente.exists?(venta_anual_en_uf: valor_uf)
+									errores[:tamaño_empresa] << " El archivo contiene un rango empresa inválido, para la fila #{posicion + 2}"
+								end
 							end
 							if fila[:comuna_casa_matriz].blank? || Comuna.find_by(nombre: fila[:comuna_casa_matriz]).nil?
 								errores[:comuna_casa_matriz] << " El archivo contiene una comuna casa matriz inválida, para la fila #{(posicion+2)}"
@@ -511,7 +519,7 @@ class Adhesion < ApplicationRecord
 					archivo_correcto = false
 				end								
 			end
-			
+
 			if @resultado.present?
 				errors.add(:archivo_elementos, @resultado)
 			end
@@ -686,10 +694,10 @@ class Adhesion < ApplicationRecord
 
 		# 2. Convertimos a string de forma segura antes de aplicar el split para que nunca dé error si viene vacío
 		tamano_empresa_split = tamano_empresa_crudo.to_s.split('-')
-	
+
 		# DZC 2019-05-20 12:34:43 se modifica para evitar búsquedas case sensitive
 		# rango_venta_contribuyente = RangoVentaContribuyente.find_by(venta_anual_en_uf: tamano_empresa_split.last)
-		rango_venta_contribuyente = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano_empresa_split.last)
+		rango_venta_contribuyente = RangoVentaContribuyente.find_by('venta_anual_en_uf ILIKE ?', tamano_empresa_split.last&.strip)
 		# 
 		datos_anuales_contribuyente = contribuyente.dato_anual_contribuyentes.where(tipo_contribuyente_id: tipo_contribuyente.id).where(rango_venta_contribuyente_id: rango_venta_contribuyente.id).first
 		if datos_anuales_contribuyente.blank?

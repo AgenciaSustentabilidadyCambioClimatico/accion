@@ -60,6 +60,24 @@
     });
   });
 
+  $(document).on('click','#nuevo-adhesion-button', function(e){
+    e.preventDefault();
+    $.ajax({
+      url: "#{edit_adhesion_modal_admin_users_path}",
+      type: "GET",
+      data: {
+        id: "",
+        flujo_id: "#{@manifestacion_de_interes.nil? ? '' : @manifestacion_de_interes.flujo.id}"
+      }
+    }).fail(function(a, b, c) {
+      alert( "Error: Verifique su conexión a internet y vuelva a intentar" );
+      $('.loading-data').hide();
+    }).success(function(data){
+      $('##{modal_id} .body-usuario-buscador').html(data);
+      $('.loading-data').hide();
+    });
+  });
+
   $(document).on('click','#deshacer-usuario-button', function(e){
     e.preventDefault();    
     $('##{modal_id} .body-usuario-buscador').html("#{j render 'admin/users/buscador_form'}");
@@ -198,16 +216,11 @@
   });
 
   function nuevo_usuario_adhesion_validaciones(){
-    // Verificar si el checkbox "Sin Rut" está marcado
-    var sinRut = $('#sin_rut_checkbox').prop('checked');
-
-    // Verificar si el checkbox "Sin Email" está marcado
-    var sinEmail = $('#sin_email_checkbox').prop('checked');
     
     // Validar los campos de entrada
-    var rut = sinRut || $('#user_rut').val() != ""; // Si "Sin Rut" está marcado, el RUT no es necesario
+    var rut = $('#user_rut').val() != ""; 
     var nombre_completo = $('#user_nombre_completo').val() != "";
-    var email = sinEmail || $('#user_email').val() != "";
+    var email = $('#user_email').val() != "";
     var telefono = $('#user_telefono').val() != "";
 
     // Si todas las condiciones se cumplen (y el RUT solo se verifica si no está marcado "Sin Rut")
