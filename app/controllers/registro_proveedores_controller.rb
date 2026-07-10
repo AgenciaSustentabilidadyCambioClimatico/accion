@@ -387,7 +387,7 @@ class RegistroProveedoresController < ApplicationController
         tarea = Tarea.where(codigo: "PRO-008").first
         user = User.where(rut: @registro_proveedor.rut).first
         TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
-        send_message(tarea, user.id)
+        send_message(tarea, user.user_encargado)
         tarea_previa = Tarea.where(codigo: 'PRO-007').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
         tarea_pendiente.first&.delete
