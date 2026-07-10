@@ -296,11 +296,11 @@ class RegistroProveedoresController < ApplicationController
       value = v
       @registro_proveedor = RegistroProveedor.find(key)
     
-      if @registro_proveedor.tipo_proveedor_id == 1
-        @registro_proveedor.update!(fecha_aprobado: nil)
-      else
-        @registro_proveedor.update!(fecha_aprobado: value)
-      end
+      #if @registro_proveedor.tipo_proveedor_id == 1
+      #  @registro_proveedor.update!(fecha_aprobado: nil)
+      #else
+      @registro_proveedor.update!(fecha_aprobado: value)
+      #end
 
       if @registro_proveedor.estado == 'aprobado'
         RegistroProveedorMailer.aprobado_directiva(@registro_proveedor).deliver_now
