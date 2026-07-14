@@ -1015,7 +1015,7 @@ end
       elsif registro_proveedor.fecha_aprobado + (2.year + 11.month) <= Date.today && registro_proveedor.fecha_aprobado + 3.year >= Date.today 
         data[:url] = actualizar_proveedor_path(registro_proveedor.id)
         data[:icon] = "<i class='fa fa-edit'></i>"
-      elsif registro_proveedor.tipo_proveedor_id == 1 && registro_proveedor.estado == 4
+      elsif registro_proveedor.tipo_proveedor_id == 1
         data[:url] = actualizar_proveedor_path(registro_proveedor.id)
         data[:icon] = "<i class='fa fa-edit'></i>"
       end
