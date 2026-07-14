@@ -372,8 +372,18 @@ class RegistroProveedoresController < ApplicationController
     @registro_proveedor = RegistroProveedor.find(params[:id])
     @registro_proveedor.certificado_proveedor_extras.build
     @registro_proveedor.documento_proveedor_extras.build
-    @region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
-    @comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+    #@region = Region.where(nombre: "#{@registro_proveedor.region}").last.id
+    #@comuna = Comuna.where(nombre: "#{@registro_proveedor.comuna}").last.id
+
+    region = Region.find_by(nombre: @registro_proveedor.region)
+    if region.present?
+      @region = region.id
+      if @registro_proveedor.comuna.present?
+        comuna = Comuna.find_by(nombre: @registro_proveedor.comuna)
+        @comuna = comuna.id if comuna.present?
+      end
+    end
+  
     @tarea = Tarea.find(107)
   end
 
