@@ -37,6 +37,7 @@ class RegistroProveedor < ApplicationRecord
   validates :direccion_casa_matriz, presence: true, if: :asociar_institucion_present?
   validates :ciudad_casa_matriz, presence: true, if: :asociar_institucion_present?
   validate :terms_of_service_value
+  validates :tipo_proveedor_id, presence: true
 
 
   enum estado: [:enviado, :recomendado, :con_observaciones, :rechazado, :aprobado, :rechazado_directiva, :rechazado_definitivo, :actualizar, :vencido, :actualizado, :calificacion_negativa, :actualizar_observado]

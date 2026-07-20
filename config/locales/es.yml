@@ -2518,6 +2518,7 @@ es:
         one: no tiene la longitud correcta (1 caracter exacto)
         other: no tiene la longitud correcta (%{count} caracteres exactos)
       other_than: debe ser distinto de %{count}
+      min_size_error: "es demasiado pequeño (el tamaño mínimo es %{min_size})"
     template:
       body: 'Se encontraron problemas con los siguientes campos:'
       header:
