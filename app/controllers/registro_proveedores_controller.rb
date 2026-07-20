@@ -1,6 +1,6 @@
 class RegistroProveedoresController < ApplicationController
   include ApplicationHelper
-  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor]
+  before_action :set_registro_proveedor, only: [:new, :create, :edit, :update, :edit_proveedor, :actualizar_proveedor, :update_plazo_proveedor]
   before_action :datos_header_no_signed
   before_action :authenticate_user!, except: [:new, :create, :get_contribuyentes, :registro_get_comunas, :registro_get_comunas_casa_matriz, :get_by_rut, :descargar_documentos_proveedores_filtrados, :validar_tipo_proveedor]
   before_action :get_apl, only: [:get_apl]
@@ -30,33 +30,60 @@ class RegistroProveedoresController < ApplicationController
     @descargables_tarea = DescargableTarea.where(tarea_id: 101)
     @registro_proveedor = RegistroProveedor.new
     @registro_proveedor.certificado_proveedores.build
-    2.times { @registro_proveedor.documento_registro_proveedores.build }
+
+    # 🚀 Inicializamos los obligatorios con su nombre real y creamos una fila vacía para "Otros"
+    @registro_proveedor.documento_registro_proveedores.build(description: "Curriculum Vitae")
+    @registro_proveedor.documento_registro_proveedores.build(description: "Copia CI")
+    @registro_proveedor.documento_registro_proveedores.build # Esta es la fila vacía inicial de "Otros"
   end
 
   # PRO-001
   def create
     @tarea = Tarea.find(101)
     @descargables_tarea = DescargableTarea.where(tarea_id: 101)
+    
     @registro_proveedor = RegistroProveedor.new(registro_proveedores_params)
-    if params[:registro_proveedor][:region].present? && params[:registro_proveedor][:comuna].present?
-      @registro_proveedor.region = Region.find(params[:registro_proveedor][:region].to_i).nombre
-      @registro_proveedor.comuna = Comuna.find(params[:registro_proveedor][:comuna].to_i).nombre
+
+    #Rescatamos los IDs originales seleccionados por el usuario antes de sobrescribirlos
+    @region_id = params[:registro_proveedor][:region]
+    @comuna_id = params[:registro_proveedor][:comuna]
+    @region_casa_matriz_id = params[:registro_proveedor][:region_casa_matriz]
+    @comuna_casa_matriz_id = params[:registro_proveedor][:comuna_casa_matriz]
+
+    #Asignamos los nombres de texto a las columnas de la Base de Datos
+    if @region_id.present? && @comuna_id.present?
+      @registro_proveedor.region = Region.find(@region_id.to_i).nombre
+      @registro_proveedor.comuna = Comuna.find(@comuna_id.to_i).nombre
     end
 
-    if params[:registro_proveedor][:region_casa_matriz].present? && params[:registro_proveedor][:comuna_casa_matriz].present?
-      @registro_proveedor.region_casa_matriz = Region.find(params[:registro_proveedor][:region_casa_matriz].to_i).nombre
-      @registro_proveedor.comuna_casa_matriz = Comuna.find(params[:registro_proveedor][:comuna_casa_matriz].to_i).nombre
+    if @region_casa_matriz_id.present? && @comuna_casa_matriz_id.present?
+      @registro_proveedor.region_casa_matriz = Region.find(@region_casa_matriz_id.to_i).nombre
+      @registro_proveedor.comuna_casa_matriz = Comuna.find(@comuna_casa_matriz_id.to_i).nombre
     end
-
+  
     respond_to do |format|
       if @registro_proveedor.save
         RegistroProveedor::CreateService.new(@registro_proveedor, registro_proveedores_params).perform
+        RegistroProveedorMailer.enviar(@registro_proveedor).deliver_now
+        
         format.js {
           render js: "window.location='#{root_path}'"
           flash[:success] = "Registro enviado correctamente"
         }
-        RegistroProveedorMailer.enviar(@registro_proveedor).deliver_now
       else
+        @registro_proveedor.region = @region_id
+        @registro_proveedor.comuna = @comuna_id
+
+        # Si hay una región seleccionada, cargamos sus comunas para la vista
+        if @region_id.present?
+          # Asumiendo relación estándar: Comuna belongs_to Provincia, Provincia belongs_to Region
+          comunas_records = Comuna.joins(provincia: :region).where(provincias: { region_id: @region_id })
+          # Preparamos el array [nombre, id] para el selector
+          @comunas_para_el_form = comunas_records.order(:nombre).map { |c| [c.nombre, c.id] }
+        else
+          @comunas_para_el_form = {}
+        end
+
         format.html { render :new }
         format.js
       end
@@ -213,6 +240,18 @@ class RegistroProveedoresController < ApplicationController
         }
 
       else
+        # PASO CLAVE: Si la validación falla, reconstruimos las variables para la vista
+        
+        # 1. Recuperamos los IDs que el usuario seleccionó en el formulario para que no se pierdan
+        # (Se adapta automáticamente si usas params[:registro_proveedor] o params[:registro_proveedores])
+        proveedor_p = params[:registro_proveedor] || params[:registro_proveedores] || {}
+        @region = proveedor_p[:region]
+        @comuna = proveedor_p[:comuna]
+
+        # 2. Si por alguna razón los params vienen vacíos, intentamos buscarlos por su nombre en BD
+        @region ||= Region.where("nombre ILIKE ?", "%#{@registro_proveedor.region&.strip}%").last&.id
+        @comuna ||= Comuna.where("nombre ILIKE ?", "%#{@registro_proveedor.comuna&.strip}%").last&.id
+
         format.html { render :edit }
         format.js
       end
@@ -400,6 +439,21 @@ class RegistroProveedoresController < ApplicationController
           flash[:success] = "Registro enviado correctamente"
         }
       else
+        # PASO CLAVE: Si la validación falla, reconstruimos las variables para la vista
+        
+        # 1. Recuperamos los IDs que el usuario seleccionó en el formulario para que no se pierdan
+        # (Se adapta automáticamente si usas params[:registro_proveedor] o params[:registro_proveedores])
+        proveedor_p = params[:registro_proveedor] || params[:registro_proveedores] || {}
+        @region = proveedor_p[:region]
+        @comuna = proveedor_p[:comuna]
+
+        # 2. Si por alguna razón los params vienen vacíos, intentamos buscarlos por su nombre en BD
+        @region ||= Region.where("nombre ILIKE ?", "%#{@registro_proveedor.region&.strip}%").last&.id
+        @comuna ||= Comuna.where("nombre ILIKE ?", "%#{@registro_proveedor.comuna&.strip}%").last&.id
+
+        # 3. Volvemos a instanciar las variables estructurales que requiere el HTML
+        @tarea = Tarea.where(codigo: 'PRO-007').first
+        
         format.html { render :edit }
         format.js
       end
@@ -429,9 +483,9 @@ class RegistroProveedoresController < ApplicationController
       if value == 1
         @registro_proveedor.update!(estado: 9)
         flujo = Flujo.where(id: 1000, contribuyente_id: 1000, tipo_instrumento_id: 26).first_or_create
-        tarea = Tarea.where(codigo: "PRO-009").first
-        user = User.where(rut: @registro_proveedor.rut).first
-        TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
+        #tarea = Tarea.where(codigo: "PRO-009").first
+        #user = User.where(rut: @registro_proveedor.rut).first
+        #TareaPendiente.create(flujo_id: flujo.id, tarea_id: tarea.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA, user_id: @registro_proveedor.user_encargado, data: @registro_proveedor.id)
         tarea_previa = Tarea.where(codigo: 'PRO-008').first
         tarea_pendiente = TareaPendiente.where(flujo_id: flujo.id, tarea_id: tarea_previa.id, estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA).where("data LIKE ?", "%#{@registro_proveedor.id}%")
         tarea_pendiente.first&.delete
