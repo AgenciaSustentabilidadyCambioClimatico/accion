@@ -702,11 +702,10 @@ def generar_zip(archivos)
         stream.put_next_entry(nombre)
         stream.write archivo_tecnica[:data] if archivo_tecnica[:data]
       else
-        # Retrieve the S3 URL from CarrierWave uploader
         url = archivo_tecnica.url
         nombre = File.basename(URI.parse(url).path)
 
-        # Open and read the file from S3
+        # Open and read the file from remote storage (Azure Blob vía CarrierWave)
         URI.open(url) do |file_data|
           stream.put_next_entry(nombre)
           stream.write file_data.read

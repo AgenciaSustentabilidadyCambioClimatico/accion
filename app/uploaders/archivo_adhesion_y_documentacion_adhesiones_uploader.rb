@@ -1,5 +1,5 @@
 class ArchivoAdhesionYDocumentacionAdhesionesUploader < CarrierWave::Uploader::Base
-  storage :aws
+# Almacenamiento global en config/initializers/carrierwave.rb (:file en test/dev, :fog Azure en prod).
 
   CarrierWave.configure do |config|
     config.remove_previously_stored_files_after_update = false

@@ -236,18 +236,10 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf_temp = StringIO.new(pdf.render)
     pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Nombre del archivo en S3
     pdf_file_name = "fondo_produccion_limpia_#{self.id}_#{revision}.pdf"
+    blob_key = "accion/public/uploads/fondo_produccion_limpia/pdf/#{pdf_file_name}"
 
-    # Subir a S3 utilizando aws-sdk versión 3
-    s3 = Aws::S3::Resource.new
-
-    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/pdf/#{pdf_file_name}")
-    obj.put(body: pdf_temp)
-
-    # Retorna la URL pública del archivo en S3
-    s3_url = obj.public_url
-    s3_url
+    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
 
     rescue StandardError => e
       Rails.logger.error "Error generando PDF: #{e.message}"
@@ -316,19 +308,10 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf_temp = StringIO.new(pdf.render)
     pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Nombre del archivo en S3
     pdf_file_name = "admisibilidad_juridica_#{self.id}_#{revision}.pdf"
+    blob_key = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{pdf_file_name}"
 
-    # Subir a S3 utilizando aws-sdk versión 3
-    s3 = Aws::S3::Resource.new
-
-    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{pdf_file_name}")
-    obj.put(body: pdf_temp)
-
-    # Retorna la URL pública del archivo en S3
-    s3_url = obj.public_url
-
-    s3_url
+    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
 
     rescue StandardError => e
       Rails.logger.error "Error generando PDF: #{e.message}"
@@ -523,18 +506,10 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf_temp = StringIO.new(pdf.render)
     pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
 
-    # Nombre del archivo en S3
     pdf_file_name = "formulario_fpl_#{self.id}.pdf"
+    blob_key = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{pdf_file_name}"
 
-    # Subir a S3 utilizando aws-sdk versión 3
-    s3 = Aws::S3::Resource.new
-
-    obj = s3.bucket(ENV['S3_BUCKET_NAME']).object("accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{pdf_file_name}")
-    obj.put(body: pdf_temp)
-
-    # Retorna la URL pública del archivo en S3
-    s3_url = obj.public_url
-    s3_url
+    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
     
     rescue StandardError => e
       Rails.logger.error "Error generando PDF: #{e.message}"

@@ -1,33 +1,38 @@
-# DZC 2018-11-16 18:52:22 por si decidimos agregar configuraciones a carrierwave
-# CarrierWave.configure do |config|
-# 	config.ignore_integrity_errors = true
-# 	config.move_to_cache = false
-# 	config.move_to_store = true
-# end
+# frozen_string_literal: true
 
 CarrierWave.configure do |config|
+  config.cache_storage = :file
 
-    config.storage    = :aws
-    config.aws_bucket = ENV["S3_BUCKET_NAME"]
+  azure_in_dev = Rails.env.development? && ActiveModel::Type::Boolean.new.cast(ENV["AZURE_STORAGE_USE_IN_DEV"])
+  use_fog = !Rails.env.test? && (!Rails.env.development? || azure_in_dev)
 
-    config.aws_authenticated_url_expiration = 60 * 30 # 30 minutos
-    config.aws_credentials = {
-      access_key_id:     ENV["AWS_ACCESS_KEY_ID"],
-      secret_access_key: ENV["AWS_SECRET_ACCESS_KEY"],
-      region:            ENV["AWS_REGION"] # Required
-    }
+  unless use_fog
+    config.storage = :file
+    next
+  end
 
-    #sftp en local requiere ssh -L1234:10.10.1.240:22 200.27.19.173 -l ext-rialis
-    # config.storage = :sftp
-    # config.cache_storage = :file
+  unless AzureStorageFog.configured?
+    if use_fog && !Rails.env.development?
+      raise "CarrierWave Azure: defina AZURE_STORAGE_ACCOUNT_NAME, AZURE_STORAGE_ACCESS_KEY y AZURE_STORAGE_CONTAINER"
+    end
 
-    # config.sftp_host = ENV["FTP_HOST"]
-    # config.sftp_user = ENV["FTP_USER"]
-    # config.sftp_folder = ENV["FTP_FOLDER"]
-    # config.sftp_url = ENV["FTP_URL"]
-    # config.sftp_options = {
-    #   :password => ENV["FTP_PASSWD"],
-    #   :port => ENV["FTP_PORT"],
-    # }
-    #
+    config.storage = :file
+    next
+  end
+
+  AzureStorageFog.load_dependencies!
+
+  config.storage = :fog
+  config.fog_credentials = {
+    provider: "AzureRM",
+    azure_storage_account_name: ENV["AZURE_STORAGE_ACCOUNT_NAME"],
+    azure_storage_access_key: ENV["AZURE_STORAGE_ACCESS_KEY"],
+    environment: ENV.fetch("AZURE_STORAGE_ENVIRONMENT", "AzureCloud")
+  }
+  config.fog_directory = ENV["AZURE_STORAGE_CONTAINER"]
+  config.fog_public = AzureStorageFog.public_container?
+  config.fog_authenticated_url_expiration = AzureStorageFog.url_expiry_seconds
+  config.fog_attributes = {
+    "Cache-Control" => "max-age=#{365.days.to_i}"
+  }
 end
