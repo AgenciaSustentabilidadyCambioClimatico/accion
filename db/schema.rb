@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_05_04_195550) do
+ActiveRecord::Schema.define(version: 2026_06_04_163422) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -649,6 +649,7 @@ ActiveRecord::Schema.define(version: 2026_05_04_195550) do
     t.datetime "updated_at", null: false
     t.integer "tipo_descargable"
     t.string "nombre_campo"
+    t.integer "orden"
     t.index ["descargable_tareas_id"], name: "index_documentacion_legals_on_descargable_tareas_id"
     t.index ["tipo_contribuyentes_id"], name: "index_documentacion_legals_on_tipo_contribuyentes_id"
   end

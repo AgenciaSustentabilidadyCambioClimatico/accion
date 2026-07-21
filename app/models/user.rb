@@ -180,9 +180,15 @@ class User < ApplicationRecord
 
   #Determina si el usuario es editable, considerando que no este asociado a un mapa de actores o que no tenga tareas pendientes.-
   def editable?
-    mapas_asociados = Flujo.where(id: self.mapa_de_actores.pluck('flujo_id')).where(terminado: false)
-    tarea_pendientes_asociadas = self.tarea_pendientes.where(estado_tarea_pendiente_id: 1)
-    (mapas_asociados.count == 0 && tarea_pendientes_asociadas.count == 0)
+    # Usamos .any? con un bloque {} en lugar de .where()
+    # Esto evalúa los registros en la memoria RAM (Ruby) y NO dispara consultas SQL.
+    
+    tiene_tareas = self.tarea_pendientes.any? { |t| t.estado_tarea_pendiente_id == 1 }
+
+    tiene_mapas = self.mapa_de_actores.any? { |m| m.flujo.present? && m.flujo.terminado == false }
+
+    # Es editable si NO tiene tareas Y NO tiene mapas asociados
+    !tiene_tareas && !tiene_mapas
   end
 
   def self.nombre_por_rut(rut=nil)
