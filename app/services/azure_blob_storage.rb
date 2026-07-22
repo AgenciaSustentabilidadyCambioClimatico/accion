@@ -23,7 +23,7 @@ class AzureBlobStorage
     ensure_configured!
     file = directory.files.new(key: key, body: body)
     file.content_type = content_type if content_type
-    file.public = AzureStorageFog.public_container?
+    #file.public = AzureStorageFog.public_container?
     file.save
     url(key)
   end
