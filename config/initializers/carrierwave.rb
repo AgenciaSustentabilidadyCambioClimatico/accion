@@ -30,7 +30,7 @@ CarrierWave.configure do |config|
     environment: ENV.fetch("AZURE_STORAGE_ENVIRONMENT", "AzureCloud")
   }
   config.fog_directory = ENV["AZURE_STORAGE_CONTAINER"]
-  config.fog_public = AzureStorageFog.public_container?
+  config.fog_public = false
   config.fog_authenticated_url_expiration = AzureStorageFog.url_expiry_seconds
   config.fog_attributes = {
     "Cache-Control" => "max-age=#{365.days.to_i}"
