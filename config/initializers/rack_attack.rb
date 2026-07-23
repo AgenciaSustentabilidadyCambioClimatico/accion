@@ -4,7 +4,7 @@ class Rack::Attack
   # === SALVAVIDAS PARA AZURE APPLICATION GATEWAY ===
   # Debe ir arriba del todo para que ignore los bloqueos de bots/user-agent en los pings
   require "ipaddr"
-  APP_GATEWAY_SUBNET = IPAddr.new("172.29.4.0/24") unless defined?(APP_GATEWAY_SUBNET)
+  APP_GATEWAY_SUBNET = IPAddr.new("172.29.3.0/24") unless defined?(APP_GATEWAY_SUBNET)
 
   Rack::Attack.safelist("allow Azure App Gateway health probes") do |req|
     begin
