@@ -92,7 +92,35 @@ class Admin::DescargableTareasController < ApplicationController
 
     ruta = @descargable.archivo.url
     if ruta.present?
-      redirect_to ruta
+      
+      # --- INICIO DEL CAMBIO PARA AZURE ---
+      require 'net/http'
+      require 'uri'
+
+      uri = URI(ruta)
+      archivo = @descargable.archivo
+      
+      # Intentamos obtener el tipo y nombre, o ponemos unos por defecto
+      content_type = archivo.content_type || 'application/octet-stream'
+      nombre_original = archivo.file.filename rescue "documento_#{@descargable.id}"
+
+      response.headers['Content-Type'] = content_type
+      response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_original}\""
+      response.headers['Last-Modified'] = Time.now.httpdate
+
+      # Descargamos el archivo por fragmentos (Streaming) para no colapsar la RAM
+      self.response_body = Enumerator.new do |yielder|
+        Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+          request = Net::HTTP::Get.new(uri)
+          http.request(request) do |azure_response|
+            azure_response.read_body do |chunk|
+              yielder << chunk
+            end
+          end
+        end
+      end
+      # --- FIN DEL CAMBIO PARA AZURE ---
+
     elsif @descargable.subido == false && @descargable.contenido.present?
       file = @descargable.file(@metodos)
       send_data file[:content], type: "application/#{file[:format]}", charset: "iso-8859-1", filename: file[:filename] if !file.blank?     
