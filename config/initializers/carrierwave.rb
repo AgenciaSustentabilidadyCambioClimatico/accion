@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'active_model/type'
+
 CarrierWave.configure do |config|
   config.cache_storage = :file
 
