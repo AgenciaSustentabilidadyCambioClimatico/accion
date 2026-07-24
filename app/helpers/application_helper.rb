@@ -555,21 +555,25 @@ module ApplicationHelper
               haml_concat (boton.blank? ? archivos.to_sentence : boton) if nombre_boton
             end
           else
-            # --- INICIO DEL CAMBIO PARA AZURE (Archivo Individual) ---
+            # --- INICIO DEL CAMBIO MEJORADO ---
             begin
-              file_name = field.file.filename
+              # 1. Sacamos el nombre del archivo de forma segura
+              file_name = field.file.filename rescue field.path.split('/').last
               
-              # En lugar de field.url, usamos la ruta de nuestro proxy
-              # Asumiendo que field.mounted_as te da el nombre del campo (ej: :archivo_pdf)
+              # 2. Obtenemos modelo y campo
               nombre_campo = field.mounted_as rescue 'archivo'
               nombre_modelo = objeto.class.name.underscore
               
-              # url = field.url # (Eliminado)
+              # 3. Generamos la URL del Proxy Universal
               url = archivo_generico_path(modelo: nombre_modelo, id: objeto.id, campo: nombre_campo)
-            rescue
-              file_split = field.path.split('/public')
-              url = request.base_url + file_split.last
-              file_name = file_split.last.split('/').last
+              
+            rescue => e
+              # Si algo falla, ahora sí veremos el error en los logs de Dokku
+              Rails.logger.error "=== ERROR GENERANDO RUTA PROXY: #{e.message} ==="
+              
+              # Como plan de emergencia temporal, intentamos usar la URL directa de Azure
+              url = field.url rescue "#"
+              file_name = "documento.pdf" if file_name.blank?
             end
             
             haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
