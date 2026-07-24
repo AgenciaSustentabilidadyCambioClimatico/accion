@@ -63,6 +63,11 @@ Rails.application.routes.draw do
   # DZC 2018-10-25 20:01:31 ruta para descargar zips
   get :desacarga_zip, controller:"application"
 
+  # =================================================================
+  # RUTA PROXY PARA DESCARGA DE ARCHIVOS AZURE
+  # =================================================================
+  get 'descargar_archivo/:modelo/:id/:campo', to: 'archivos#descargar', as: :archivo_generico
+
   get 'hitos-de-prensa' => 'admin/hitos_de_prensa#index'
 
   #DZC agregado como reemplazo de APL-027

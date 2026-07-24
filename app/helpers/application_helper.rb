@@ -557,26 +557,20 @@ module ApplicationHelper
           else
             # --- INICIO DEL CAMBIO MEJORADO ---
             begin
-              # 1. Sacamos el nombre del archivo de forma segura
               file_name = field.file.filename rescue field.path.split('/').last
-              
-              # 2. Obtenemos modelo y campo
               nombre_campo = field.mounted_as rescue 'archivo'
               nombre_modelo = objeto.class.name.underscore
-              
-              # 3. Generamos la URL del Proxy Universal
+
+              # Generamos la URL apuntando a nuestro controlador Proxy
               url = archivo_generico_path(modelo: nombre_modelo, id: objeto.id, campo: nombre_campo)
-              
             rescue => e
-              # Si algo falla, ahora sí veremos el error en los logs de Dokku
               Rails.logger.error "=== ERROR GENERANDO RUTA PROXY: #{e.message} ==="
-              
-              # Como plan de emergencia temporal, intentamos usar la URL directa de Azure
-              url = field.url rescue "#"
-              file_name = "documento.pdf" if file_name.blank?
+              url = "#"
+              file_name = "documento"
             end
-            
-            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", download: '', title: file_name, "data-original-title" => file_name do
+
+            # Remarcamos 'target: _blank' para asegurar que abra o dispare la descarga
+            haml_tag :a, href: url, class: "#{!from_historial ? (from_proveedor ? '' : 'btn btn-sm btn-descargar btn-block tooltip-block '+padding) : 'btn-tabla-instrumentos' }", title: file_name, "data-original-title" => file_name do
               haml_tag :i, class: 'fa fa-download'
               haml_concat (boton.blank? ? file_name : boton) if nombre_boton
             end
