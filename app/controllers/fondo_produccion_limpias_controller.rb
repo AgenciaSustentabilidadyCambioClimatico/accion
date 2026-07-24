@@ -4205,16 +4205,14 @@ class FondoProduccionLimpiasController < ApplicationController
           nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
         )
           
-        # --- NUEVA LÓGICA OPTIMIZADA ---
-        
-        # 1. Si la función devolvió la URL lista de Azure, simplemente enviamos al usuario hacia allá
+        # --- REDIRECCIÓN SEGURA A AZURE ---
         if pdf.is_a?(String) && pdf.start_with?("http")
-          # En Rails modernos a veces pide allow_other_host: true, si te da error cámbialo a: redirect_to pdf, allow_other_host: true
-          redirect_to pdf 
+          # 'allow_other_host: true' es obligatorio en Rails moderno para URLs externas
+          redirect_to pdf, allow_other_host: true
           return
         end
 
-        # 2. Plan B (Respaldo por si falló la subida a Azure y devolvió el binario en local)
+        # --- PLAN B: RESPALDO LOCAL ---
         id_fondo = @flujo.fondo_produccion_limpia_id
         nombre_archivo = "formulario_fpl_#{id_fondo}.pdf"
         
@@ -4226,13 +4224,16 @@ class FondoProduccionLimpiasController < ApplicationController
         elsif File.exist?(ruta_accion)
           send_file ruta_accion, type: "application/pdf", disposition: "attachment", filename: nombre_archivo
         else
-          raise "El método no devolvió una URL de Azure y el archivo físico no se encontró."
+          raise "El método no devolvió una URL válida de Azure ni el archivo existe localmente."
         end
 
       rescue => e
-        Rails.logger.error "=== ERROR DESCARGA FORMULARIO FPL: #{e.message} ==="
+        Rails.logger.error "=== ERROR CRÍTICO DESCARGA FORMULARIO FPL: #{e.message} ==="
+        Rails.logger.error e.backtrace.join("\n")
+        
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
-        redirect_to request.referer || root_path
+        # También agregamos la opción segura en el fallback por si request.referer apunta a otra parte
+        redirect_to(request.referer || root_path, allow_other_host: true)
       end
     end    
 
