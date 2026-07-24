@@ -4188,52 +4188,54 @@ class FondoProduccionLimpiasController < ApplicationController
 
       end
 
-      pdf = @fondo_produccion_limpia.generar_formulario_fpl(
+      # 1. Ejecutamos la generación (ignorar lo que devuelve, ya que puede ser nil)
+      @fondo_produccion_limpia.generar_formulario_fpl(
         objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
         costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, 
         nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
       )
-
-      id_fondo = @flujo.fondo_produccion_limpia_id
-      nombre_archivo = "formulario_fpl_#{id_fondo}.pdf"
-      contenido = nil
+        
+      nombre_archivo = "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
+      # Esta es la ruta EXACTA que usaba tu código original
+      llave_azure = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{nombre_archivo}"
 
       begin
-        pdf = @fondo_produccion_limpia.generar_formulario_fpl(
-          objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-          costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, 
-          nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
-        )
-          
-        # --- REDIRECCIÓN SEGURA A AZURE ---
-        if pdf.is_a?(String) && pdf.start_with?("http")
-          # 'allow_other_host: true' es obligatorio en Rails moderno para URLs externas
-          redirect_to pdf, allow_other_host: true
-          return
+        contenido = nil
+
+        # --- INTENTO 1: Buscar directamente en Azure (Comportamiento Producción) ---
+        begin
+          contenido = AzureBlobStorage.download(llave_azure)
+        rescue => e
+          Rails.logger.info "Azure Blob no encontrado o falló conexión: #{e.message}. Pasando a disco local..."
         end
 
-        # --- PLAN B: RESPALDO LOCAL ---
-        id_fondo = @flujo.fondo_produccion_limpia_id
-        nombre_archivo = "formulario_fpl_#{id_fondo}.pdf"
-        
-        ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
-        ruta_accion = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
-        
-        if File.exist?(ruta_local)
-          send_file ruta_local, type: "application/pdf", disposition: "attachment", filename: nombre_archivo
-        elsif File.exist?(ruta_accion)
-          send_file ruta_accion, type: "application/pdf", disposition: "attachment", filename: nombre_archivo
+        # --- INTENTO 2: Buscar en disco físico (Comportamiento Desarrollo/Local) ---
+        if contenido.blank?
+          ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
+          ruta_accion = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
+          
+          if File.exist?(ruta_local)
+            contenido = File.read(ruta_local)
+          elsif File.exist?(ruta_accion)
+            contenido = File.read(ruta_accion)
+          end
+        end
+
+        # --- ENTREGA AL USUARIO ---
+        if contenido.present?
+          send_data contenido, 
+                    type: "application/pdf", 
+                    disposition: "attachment", 
+                    filename: nombre_archivo
         else
-          raise "El método no devolvió una URL válida de Azure ni el archivo existe localmente."
+          raise "El PDF no se encontró en Azure ni se generó físicamente en las carpetas públicas."
         end
 
       rescue => e
-        Rails.logger.error "=== ERROR CRÍTICO DESCARGA FORMULARIO FPL: #{e.message} ==="
-        Rails.logger.error e.backtrace.join("\n")
-        
-        flash[:alert] = "El archivo solicitado no se encuentra disponible."
-        # También agregamos la opción segura en el fallback por si request.referer apunta a otra parte
-        redirect_to(request.referer || root_path, allow_other_host: true)
+        Rails.logger.error "=== ERROR DESCARGA FORMULARIO FPL: #{e.message} ==="
+        # Mensaje visible en pantalla para saber qué falló
+        flash[:alert] = "Error al descargar: #{e.message}"
+        redirect_to(request.referer || root_path)
       end
     end    
 
