@@ -4188,17 +4188,50 @@ class FondoProduccionLimpiasController < ApplicationController
 
       end
 
-      pdf = @fondo_produccion_limpia.generar_formulario_fpl(objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
-                                                 costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores)
-        
-      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
+      pdf = @fondo_produccion_limpia.generar_formulario_fpl(
+        objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
+        costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, 
+        nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
+      )
+
+      id_fondo = @flujo.fondo_produccion_limpia_id
+      nombre_archivo = "formulario_fpl_#{id_fondo}.pdf"
+      contenido = nil
 
       begin
-        body = AzureBlobStorage.download(pdf_file_name)
-        send_data body, type: "application/pdf", disposition: "attachment",
-                  filename: "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
-      rescue AzureBlobStorage::BlobNotFound
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
+        pdf = @fondo_produccion_limpia.generar_formulario_fpl(
+          objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
+          costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, 
+          nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
+        )
+          
+        # --- NUEVA LÓGICA OPTIMIZADA ---
+        
+        # 1. Si la función devolvió la URL lista de Azure, simplemente enviamos al usuario hacia allá
+        if pdf.is_a?(String) && pdf.start_with?("http")
+          # En Rails modernos a veces pide allow_other_host: true, si te da error cámbialo a: redirect_to pdf, allow_other_host: true
+          redirect_to pdf 
+          return
+        end
+
+        # 2. Plan B (Respaldo por si falló la subida a Azure y devolvió el binario en local)
+        id_fondo = @flujo.fondo_produccion_limpia_id
+        nombre_archivo = "formulario_fpl_#{id_fondo}.pdf"
+        
+        ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
+        ruta_accion = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
+        
+        if File.exist?(ruta_local)
+          send_file ruta_local, type: "application/pdf", disposition: "attachment", filename: nombre_archivo
+        elsif File.exist?(ruta_accion)
+          send_file ruta_accion, type: "application/pdf", disposition: "attachment", filename: nombre_archivo
+        else
+          raise "El método no devolvió una URL de Azure y el archivo físico no se encontró."
+        end
+
+      rescue => e
+        Rails.logger.error "=== ERROR DESCARGA FORMULARIO FPL: #{e.message} ==="
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path
       end
     end    
