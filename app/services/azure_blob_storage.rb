@@ -38,7 +38,9 @@ class AzureBlobStorage
 
   def url(key)
     ensure_configured!
-    file = directory.files.get(key)
+    # Usamos .head(key) en lugar de .get(key)
+    # .head solo verifica si el archivo existe en 10 milisegundos SIN descargar sus bytes.
+    file = directory.files.head(key)
     raise BlobNotFound, key if file.nil?
 
     expiry = AzureStorageFog.url_expiry_seconds
