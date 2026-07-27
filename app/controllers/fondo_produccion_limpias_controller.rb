@@ -1653,7 +1653,7 @@ class FondoProduccionLimpiasController < ApplicationController
       end  
 
       respond_to do |format|
-        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso, solo_lectura: @solo_lectura, correlativo: @correlativo  } } 
+        format.js { render 'get_plan_actividades', locals: { recursos_internos: @recursos_internos, recursos_externos: @recursos_externos, plan_id: params['plan_id'], plan_actividades: @plan_actividades, nombre_actividad: @nombre_actividad, gastos_operaciones: @gastos_operaciones, gastos_administraciones: @gastos_administraciones, duracion: @duracion, solo_lectura: @solo_lectura, existe_plan: @existe_plan, tipo_actividad: @tipo_actividad, tipo_permiso: @tipo_permiso, correlativo: @correlativo  } } 
       end
     end
 
@@ -4256,19 +4256,64 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def descargar_admisibilidad_juridica_pdf
-
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
-      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      nombre_archivo = "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      llave_azure = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{nombre_archivo}"
 
       begin
-        body = AzureBlobStorage.download(pdf_file_name)
-        send_data body, type: "application/pdf", disposition: "attachment",
-                  filename: "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
-      rescue AzureBlobStorage::BlobNotFound
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
-        redirect_to request.referer || root_path
+        contenido = nil
+        ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo)
+        ruta_accion = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo)
+
+        # --- INTENTO 1: Si estamos en LOCAL, buscar en disco primero (Evita el bloqueo de Azure) ---
+        if Rails.env.development? || Rails.env.test?
+          if File.exist?(ruta_local)
+            contenido = File.read(ruta_local)
+          elsif File.exist?(ruta_accion)
+            contenido = File.read(ruta_accion)
+          end
+        end
+
+        # --- INTENTO 2: Buscar en Azure (Solo si no se encontró en local o estamos en Producción) ---
+        if contenido.blank?
+          require 'timeout'
+          begin
+            # Escudo Anti-Bloqueos: Obligamos a Azure a responder en máximo 5 segundos
+            Timeout::timeout(5) do
+              contenido = AzureBlobStorage.download(llave_azure)
+            end
+          rescue Timeout::Error
+            Rails.logger.error "⏳ Timeout: Azure tardó más de 5 segundos en responder. Abortando descarga remota."
+          rescue => e
+            Rails.logger.info "☁️ Azure Blob no encontrado o falló: #{e.message}"
+          end
+        end
+
+        # --- INTENTO 3: Respaldo final para producción (Si Azure falló y no habíamos buscado en disco) ---
+        if contenido.blank? && !Rails.env.development?
+          if File.exist?(ruta_local)
+            contenido = File.read(ruta_local)
+          elsif File.exist?(ruta_accion)
+            contenido = File.read(ruta_accion)
+          end
+        end
+
+        # --- ENTREGA AL USUARIO ---
+        if contenido.present?
+          send_data contenido, 
+                    type: "application/pdf", 
+                    disposition: "attachment",
+                    filename: nombre_archivo
+        else
+          raise "El archivo no se encuentra en Azure ni en el disco local."
+        end
+
+      rescue StandardError => e
+        Rails.logger.error "=== ERROR DESCARGA ADMISIBILIDAD JURÍDICA: #{e.message} ==="
+        flash[:alert] = "El archivo solicitado no se encuentra disponible."
+        redirect_to(request.referer || root_path)
       end
     end
 
