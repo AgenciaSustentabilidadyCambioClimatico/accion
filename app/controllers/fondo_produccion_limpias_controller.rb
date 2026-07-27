@@ -4256,57 +4256,79 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def descargar_admisibilidad_juridica_pdf
+      t_inicio = Time.now
+      Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
+      
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-      
+
       revision = params[:revision].presence || "1"
-      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf"
+      nombre_archivo = "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{revision}.pdf"
+      pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{nombre_archivo}"
 
       begin
-        # 1. En Desarrollo/Local: Si el archivo existe físicamente en tu disco local, entrégalo de inmediato
-        if Rails.env.development?
-          ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', "admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf")
-          if File.exist?(ruta_local)
-            return send_data File.read(ruta_local), type: "application/pdf", disposition: "attachment", filename: File.basename(ruta_local)
+        # 1. Verificación local
+        rutas_locales = [
+          Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo),
+          Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'admisibilidad', nombre_archivo)
+        ]
+
+        rutas_locales.each do |ruta|
+          if File.exist?(ruta)
+            return send_data File.read(ruta), type: "application/pdf", disposition: "attachment", filename: nombre_archivo
           end
         end
 
-        # 2. En Producción: Obtenemos la URL firmada pero NO lo descargamos a la RAM
-        # Usamos .url en lugar de .download
-        url_firmada = AzureBlobStorage.url(pdf_file_name)
+        # 2. Obtener URL via CarrierWave SIN carpetas extra
+        Rails.logger.info "=== [RADAR 2] PIDIENDO URL VIA CARRIERWAVE ==="
+        
+        # Creamos un Uploader al vuelo que no agregue 'uploads/' al inicio
+        uploader_class = Class.new(CarrierWave::Uploader::Base) do
+          def store_dir
+            nil # Le decimos estrictamente que la ruta es exacta, sin prefijos
+          end
+        end
+        
+        uploader = uploader_class.new
+        uploader.retrieve_from_store!(pdf_file_name)
+        url_firmada = uploader.url
+        
+        Rails.logger.info "=== [RADAR URL] #{url_firmada} ==="
 
-        # 3. Preparamos las cabeceras para decirle al navegador qué viene
+        # 3. Cabeceras
         response.headers['Content-Type'] = "application/pdf"
-        response.headers['Content-Disposition'] = "attachment; filename=\"admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf\""
-        response.headers['Last-Modified'] = Time.now.httpdate
-
+        response.headers['Content-Disposition'] = "attachment; filename=\"#{nombre_archivo}\""
         response.headers['X-Accel-Buffering'] = 'no'
         response.headers['Cache-Control'] = 'no-cache'
 
-        # 4. El Streamer: Lee de Azure y escupe al usuario en pedacitos (chunks)
+        # 4. El Streamer inteligente
+        Rails.logger.info "=== [RADAR 3] ABRIENDO CONEXIÓN DIRECTA ==="
         uri = URI(url_firmada)
         
         self.response_body = Enumerator.new do |yielder|
           require 'net/http'
-          
           Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
-            # uri.request_uri asegura que viaje el token de Azure (?sp=r&sv=...)
+            http.read_timeout = 600
             request = Net::HTTP::Get.new(uri.request_uri) 
             
             http.request(request) do |azure_response|
-              azure_response.read_body do |chunk|
-                yielder << chunk # Envia el bloque al usuario inmediatamente
+              if azure_response.code.to_i == 200
+                Rails.logger.info "=== [RADAR 4] CODIGO 200 OK. ENVIANDO PDF ==="
+                azure_response.read_body do |chunk|
+                  yielder << chunk
+                end
+              else
+                error_xml = azure_response.read_body
+                Rails.logger.error "=== [ERROR AZURE #{azure_response.code}] #{error_xml} ==="
+                yielder << "Error de Azure: #{azure_response.code}. Verifica los logs."
               end
             end
           end
         end
 
-      rescue AzureBlobStorage::BlobNotFound
-        flash[:alert] = "El archivo solicitado no se encuentra disponible en el almacenamiento."
-        redirect_to(request.referer || root_path)
       rescue StandardError => e
-        Rails.logger.error "=== ERROR DESCARGA ADMISIBILIDAD: #{e.class} - #{e.message} ==="
-        flash[:alert] = "Error al descargar el archivo: #{e.message}"
+        Rails.logger.error "=== [ERROR] #{e.class} - #{e.message} ==="
+        flash[:alert] = "Error: #{e.message}"
         redirect_to(request.referer || root_path)
       end
     end
