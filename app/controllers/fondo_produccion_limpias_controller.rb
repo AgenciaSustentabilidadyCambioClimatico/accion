@@ -4280,6 +4280,9 @@ class FondoProduccionLimpiasController < ApplicationController
         response.headers['Content-Disposition'] = "attachment; filename=\"admisibilidad_juridica_#{flujo.fondo_produccion_limpia_id}_#{params[:revision]}.pdf\""
         response.headers['Last-Modified'] = Time.now.httpdate
 
+        response.headers['X-Accel-Buffering'] = 'no'
+        response.headers['Cache-Control'] = 'no-cache'
+
         # 4. El Streamer: Lee de Azure y escupe al usuario en pedacitos (chunks)
         uri = URI(url_firmada)
         
