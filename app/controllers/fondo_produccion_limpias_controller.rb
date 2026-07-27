@@ -4200,40 +4200,27 @@ class FondoProduccionLimpiasController < ApplicationController
       llave_azure = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{nombre_archivo}"
 
       begin
-        contenido = nil
-
-        # --- INTENTO 1: Buscar directamente en Azure (Comportamiento Producción) ---
-        begin
-          contenido = AzureBlobStorage.download(llave_azure)
-        rescue => e
-          Rails.logger.info "Azure Blob no encontrado o falló conexión: #{e.message}. Pasando a disco local..."
-        end
-
-        # --- INTENTO 2: Buscar en disco físico (Comportamiento Desarrollo/Local) ---
-        if contenido.blank?
-          ruta_local = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
-          ruta_accion = Rails.root.join('accion', 'public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl', nombre_archivo)
+        # 1. Recibimos el binario DIRECTAMENTE desde la memoria RAM (Super rápido)
+        pdf_binario = @fondo_produccion_limpia.generar_formulario_fpl(
+          objetivo_especificos, postulantes, consultores, empresas, actividades, costos, tipo_instrumento, 
+          costos_seguimiento, confinanciamiento_empresa, @fondo_produccion_limpia, manifestacion_de_interes, 
+          nombre_tipo_instrumento, comentarios, @empresas_adheridas_fpl, auditores
+        )
           
-          if File.exist?(ruta_local)
-            contenido = File.read(ruta_local)
-          elsif File.exist?(ruta_accion)
-            contenido = File.read(ruta_accion)
-          end
-        end
+        nombre_archivo = "formulario_fpl_#{@flujo.fondo_produccion_limpia_id}.pdf"
 
-        # --- ENTREGA AL USUARIO ---
-        if contenido.present?
-          send_data contenido, 
+        # 2. Se lo enviamos al usuario al instante (¡Cortamos el viaje de descarga desde Azure!)
+        if pdf_binario.present?
+          send_data pdf_binario, 
                     type: "application/pdf", 
                     disposition: "attachment", 
                     filename: nombre_archivo
         else
-          raise "El PDF no se encontró en Azure ni se generó físicamente en las carpetas públicas."
+          raise "El generador de PDF (Prawn) devolvió un archivo vacío."
         end
 
       rescue => e
         Rails.logger.error "=== ERROR DESCARGA FORMULARIO FPL: #{e.message} ==="
-        # Mensaje visible en pantalla para saber qué falló
         flash[:alert] = "Error al descargar: #{e.message}"
         redirect_to(request.referer || root_path)
       end
