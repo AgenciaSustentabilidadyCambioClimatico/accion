@@ -502,18 +502,35 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta temporal en el sistema local para el PDF
-    pdf_temp = StringIO.new(pdf.render)
-    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
-
+    # 1. Generamos el binario del PDF en memoria (Toma 1 segundo)
+    pdf_binario = pdf.render
+    
     pdf_file_name = "formulario_fpl_#{self.id}.pdf"
     blob_key = "accion/public/uploads/fondo_produccion_limpia/formulario_fpl/#{pdf_file_name}"
 
-    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
+    # 2. MAGIA: Enviar a Azure en un Hilo en Segundo Plano (Background Thread)
+    # Así el usuario NO espera a que Azure responda.
+    Thread.new do
+      begin
+        # Le damos unos segundos al servidor para que respire antes de subirlo
+        sleep(2) 
+        AzureBlobStorage.upload(blob_key, pdf_binario, content_type: "application/pdf")
+        Rails.logger.info "✅ PDF subido exitosamente a Azure en segundo plano: #{blob_key}"
+      rescue StandardError => e
+        Rails.logger.error "❌ Error subiendo PDF a Azure: #{e.message}"
+      end
+    end
     
-    rescue StandardError => e
-      Rails.logger.error "Error generando PDF: #{e.message}"
-    nil
+    # 3. Guardado local (solo para desarrollo)
+    if Rails.env.development?
+      require 'fileutils'
+      ruta_dir = Rails.root.join('public', 'uploads', 'fondo_produccion_limpia', 'formulario_fpl')
+      FileUtils.mkdir_p(ruta_dir) unless File.directory?(ruta_dir)
+      File.binwrite(ruta_dir.join(pdf_file_name), pdf_binario)
+    end
+
+    # 4. Devolvemos el PDF inmediatamente al controlador
+    return pdf_binario
   end
 
   # Método para crear una tabla con cuatro campos en el PDF
