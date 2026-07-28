@@ -102,11 +102,10 @@ class FondoProduccionLimpia < ApplicationRecord
     Responsable.__personas_responsables(Rol::REVISOR_TECNICO, nombre_acuerdo).map{|p| [p.user.nombre_completo, p.id]}
   end
 
-  def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
+   def generar_pdf(revision = nil, objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
                   costos_seguimiento = nil, confinanciamiento_empresa = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, nombre_tipo_instrumento = nil,
                   comentarios = nil)
-    require 'stringio'
-
+    
     pdf = Prawn::Document.new
     pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
 
@@ -128,15 +127,15 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    # CONTENIDO
-    validaciones = self.get_campos_validaciones
+    # OPTIMIZACIÓN BD: Consultamos al contribuyente UNA sola vez
+    contribuyente = obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id)
 
+    # CONTENIDO
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
-      # Aquí se agregan los elementos del PDF, según el contenido necesario.
       proyecto_fpl = "Proyecto: #{fondo_produccion_limpia.codigo_proyecto}"
       proyecto_apl = "APL: #{manifestacion_de_interes.flujo.nombre_instrumento}"
-      beneficiario = "Beneficiario: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).razon_social}"
-      rut_beneficiario = "Rut: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).dv}"
+      beneficiario = "Beneficiario: #{contribuyente.razon_social}"
+      rut_beneficiario = "Rut: #{contribuyente.rut}-#{contribuyente.dv}"
       
       self.pdf_titulo_formato(pdf, TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA)
 
@@ -175,7 +174,6 @@ class FondoProduccionLimpia < ApplicationRecord
         self.pdf_tabla_empresas_A_G(pdf, self.empresas_asociadas_ag, self.empresas_no_asociadas_ag)
         self.pdf_separador(pdf, 20)
       else
-        #implementar tabla elementos 
         self.pdf_tabla_cantidad_empresas_elementos(pdf, self.cantidad_micro_empresa, self.cantidad_pequeña_empresa, self.cantidad_mediana_empresa, self.cantidad_grande_empresa, self.elementos_micro_empresa, self.elementos_pequena_empresa, self.elementos_mediana_empresa, self.elementos_grande_empresa)
         self.pdf_separador(pdf, 20)
       end
@@ -191,7 +189,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_contenido_formato(pdf, duracion_formateado)
       self.pdf_separador(pdf, 20)
-      # Añade más contenido según sea necesario
+      
       self.pdf_titulo_formato(pdf, I18n.t(:equipo_tabajo))
       self.pdf_sub_titulo_formato(pdf, "Equipo de Institución Receptora del Cofinanciamiento")
       self.pdf_tabla_equipo_trabajo(pdf, postulantes)
@@ -208,10 +206,6 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_titulo_formato(pdf, I18n.t(:plan_actividades))
       self.pdf_tabla_plan_actividades(pdf, planes)    
       self.pdf_separador(pdf, 20)
-
-      #self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
-      #self.pdf_sub_titulo_formato(pdf, "Antecedentes que se deben adjuntar")
-      #self.pdf_separador(pdf, 20)
 
       self.pdf_titulo_formato(pdf, I18n.t(:costos))
       self.pdf_sub_titulo_formato(pdf, "Resumen")
@@ -232,22 +226,39 @@ class FondoProduccionLimpia < ApplicationRecord
       self.pdf_separador(pdf, 20)
     end
 
-    # Ruta temporal en el sistema local para el PDF
-    pdf_temp = StringIO.new(pdf.render)
-    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
-
+    # --- INICIO MAGIA DE SUBIDA RAPIDA ---
+    pdf_string = pdf.render
     pdf_file_name = "fondo_produccion_limpia_#{self.id}_#{revision}.pdf"
-    blob_key = "accion/public/uploads/fondo_produccion_limpia/pdf/#{pdf_file_name}"
+    
+    # 1. Guardamos el PDF de memoria al disco temporal del servidor
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
 
-    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
+    # 2. Usamos CarrierWave para subirlo directo y sin cuellos de botella
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/pdf"
+        end
+      end
+      
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
 
-    rescue StandardError => e
-      Rails.logger.error "Error generando PDF: #{e.message}"
+    # 3. Borramos el archivo temporal
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+    # --- FIN MAGIA DE SUBIDA RAPIDA ---
+
+  rescue StandardError => e
+    Rails.logger.error "Error generando PDF: #{e.message}"
     nil
   end
 
   def generar_admisibilidad_juridica_pdf(revision = nil, flujo_id = nil, tipo_contribuyentes_id = nil, fondo_produccion_limpia = nil, manifestacion_de_interes = nil, tipo_instrumento = nil)
-    require 'stringio'
+    t_inicio = Time.now
+    Rails.logger.info "=== [RADAR PDF 1] INICIANDO GENERACIÓN (t=0s) ==="
+    
     pdf = Prawn::Document.new
     pdf.font Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
 
@@ -269,19 +280,16 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    ####CONTENIDO ENCUESTA####
-
-    validaciones = self.get_campos_validaciones
+    Rails.logger.info "=== [RADAR PDF 2] OBTENIENDO CONTRIBUYENTE a los (#{Time.now - t_inicio}s) ==="
+    contribuyente = obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id)
 
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 100], width: pdf.bounds.width do
-      # Aquí se agregan los elementos del PDF, según el contenido necesario.
       proyecto_fpl = "Proyecto: #{fondo_produccion_limpia.codigo_proyecto}"
       proyecto_apl = "APL: #{manifestacion_de_interes.flujo.nombre_instrumento}"
-      beneficiario = "Beneficiario: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).razon_social}"
-      rut_beneficiario = "Rut: #{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).rut}-#{obtiene_contribuyente(fondo_produccion_limpia.institucion_entregables_id).dv}"
+      beneficiario = "Beneficiario: #{contribuyente.razon_social}"
+      rut_beneficiario = "Rut: #{contribuyente.rut}-#{contribuyente.dv}"
       
       self.pdf_titulo_formato(pdf, TipoInstrumento::STR_FONDO_DE_PRODUCCION_LIMPIA)
-      
       self.pdf_sub_titulo_formato(pdf, tipo_instrumento)
       self.pdf_sub_titulo_formato(pdf, proyecto_fpl)
       self.pdf_sub_titulo_formato(pdf, proyecto_apl)
@@ -291,31 +299,54 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_titulo_formato(pdf, I18n.t(:documentacion_legal))
 
+      Rails.logger.info "=== [RADAR PDF 3] GENERANDO TABLA 1 a los (#{Time.now - t_inicio}s) ==="
       self.pdf_sub_titulo_formato(pdf, "A) Postulante")
       self.pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, 1)
       self.pdf_separador(pdf, 20)
 
+      Rails.logger.info "=== [RADAR PDF 4] GENERANDO TABLA 2 a los (#{Time.now - t_inicio}s) ==="
       self.pdf_sub_titulo_formato(pdf, "B) Receptor cofinanciamiento")
       self.pdf_tabla_cuestionario(pdf, flujo_id, tipo_contribuyentes_id, 2)
       self.pdf_separador(pdf, 20)
 
+      Rails.logger.info "=== [RADAR PDF 5] GENERANDO TABLA EJECUTOR a los (#{Time.now - t_inicio}s) ==="
       self.pdf_sub_titulo_formato(pdf, "C) Ejecutor")
       self.pdf_tabla_cuestionario_ejecutor(pdf, flujo_id)
       self.pdf_separador(pdf, 20)
     end
     
-    # Ruta temporal en el sistema local para el PDF
-    pdf_temp = StringIO.new(pdf.render)
-    pdf_temp.seek(0) # Asegúrate de leer desde el inicio del archivo temporal
+     Rails.logger.info "=== [RADAR PDF 6] RENDERIZANDO PDF a los (#{Time.now - t_inicio}s) ==="
+    pdf_string = pdf.render
 
     pdf_file_name = "admisibilidad_juridica_#{self.id}_#{revision}.pdf"
-    blob_key = "accion/public/uploads/fondo_produccion_limpia/admisibilidad/#{pdf_file_name}"
 
-    AzureBlobStorage.upload(blob_key, pdf_temp.read, content_type: "application/pdf")
+    Rails.logger.info "=== [RADAR PDF 7] SUBIENDO A AZURE VIA CARRIERWAVE a los (#{Time.now - t_inicio}s) ==="
+    
+    # 1. Guardamos el PDF de memoria al disco temporal del servidor
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
 
-    rescue StandardError => e
-      Rails.logger.error "Error generando PDF: #{e.message}"
-      nil
+    # 2. Usamos nuestro "Caballo de Troya" para subirlo en milisegundos
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/admisibilidad"
+        end
+      end
+      
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    # 3. Borramos el archivo temporal para mantener el servidor limpio
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    Rails.logger.info "=== [RADAR PDF 8] SUBIDA EXITOSA a los (#{Time.now - t_inicio}s) ==="
+
+  rescue StandardError => e
+    tiempo_total = Time.now - t_inicio
+    Rails.logger.error "=== [RADAR PDF ERROR] FALLA a los #{tiempo_total}s: #{e.class} - #{e.message} ==="
+    nil
   end
 
   def generar_formulario_fpl(objetivo_especificos = nil, postulantes = nil, consultores = nil, empresa = nil, planes = nil, costos = nil, tipo_instrumento = nil, 
