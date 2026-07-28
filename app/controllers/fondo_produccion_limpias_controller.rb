@@ -4105,7 +4105,7 @@ class FondoProduccionLimpiasController < ApplicationController
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
 
       revision = params[:revision].presence || "1"
-      nombre_archivo = "fondo_produccion_limpia_1019_1.pdf"
+      nombre_archivo = "fondo_produccion_limpia_#{flujo.fondo_produccion_limpia_id}_#{revision}.pdf"
       pdf_file_name = "accion/public/uploads/fondo_produccion_limpia/pdf/#{nombre_archivo}"
 
       begin
