@@ -4355,15 +4355,65 @@ class FondoProduccionLimpiasController < ApplicationController
     def descargar_resolucion_pdf
       flujo = Flujo.find(params[:id])
       @fondo_produccion_limpia = FondoProduccionLimpia.find(flujo.fondo_produccion_limpia_id)
-      # Retrieve the URL of the file from CarrierWave
-      archivo_resolucion_url = @fondo_produccion_limpia.archivo_resolucion.url
 
-      if archivo_resolucion_url.present?
-        redirect_to archivo_resolucion_url
+      # 1. Obtenemos el objeto directamente de la base de datos
+      archivo = @fondo_produccion_limpia.archivo_resolucion
+
+      if archivo.present? && archivo.url.present?
+        # Sacamos el nombre real del archivo
+        nombre_archivo = archivo.file.filename
+        url_firmada = archivo.url
+
+        # 2. Manejo LOCAL (Desarrollo)
+        if Rails.env.development? && url_firmada.start_with?('/')
+          ruta_local = Rails.root.join('public', url_firmada.sub(/^\//, ''))
+          if File.exist?(ruta_local)
+            return send_file ruta_local, 
+                             type: "application/pdf", 
+                             disposition: "inline", 
+                             filename: nombre_archivo
+          end
+        end
+
+        # 3. Cabeceras anti-timeout y modo visualización (inline)
+        response.headers['Content-Type'] = "application/pdf"
+        response.headers['Content-Disposition'] = "inline; filename=\"#{nombre_archivo}\""
+        response.headers['X-Accel-Buffering'] = 'no'
+        response.headers['Cache-Control'] = 'no-cache'
+
+        # 4. El Streamer
+        Rails.logger.info "=== [VISUALIZANDO PDF] URL: #{url_firmada} ==="
+        uri = URI(url_firmada)
+        
+        self.response_body = Enumerator.new do |yielder|
+          require 'net/http'
+          Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+            http.read_timeout = 600
+            request = Net::HTTP::Get.new(uri.request_uri) 
+            
+            http.request(request) do |azure_response|
+              if azure_response.code.to_i == 200
+                azure_response.read_body do |chunk|
+                  yielder << chunk
+                end
+              else
+                error_xml = azure_response.read_body
+                Rails.logger.error "=== [ERROR AZURE RESOLUCION #{azure_response.code}] #{error_xml} ==="
+                yielder << "Error: El archivo no fue encontrado en la nube. Código: #{azure_response.code}"
+              end
+            end
+          end
+        end
+
       else
         flash[:alert] = "El archivo solicitado no se encuentra disponible."
         redirect_to request.referer || root_path
       end
+      
+    rescue StandardError => e
+      Rails.logger.error "=== ERROR VISUALIZAR CONTRATO: #{e.class} - #{e.message} ==="
+      flash[:alert] = "Error al visualizar el archivo: #{e.message}"
+      redirect_to request.referer || root_path
     end
 
     def descargar_admisibilidad_juridica_pdf
