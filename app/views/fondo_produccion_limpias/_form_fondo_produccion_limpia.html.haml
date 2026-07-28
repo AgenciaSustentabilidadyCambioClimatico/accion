@@ -3634,9 +3634,9 @@
                     %td.contenido-form= user.funciones_proyecto
                     %td.contenido-form= number_to_currency user.valor_hh
                     %td.contenido-form
-                      = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
+                      = __descargar_archivo(user.copia_ci, user, false, false)
                     %td.contenido-form
-                      = __descargar_archivo(user.curriculum,user.curriculum,false,false)
+                      = __descargar_archivo(user.curriculum, user, false, false)
                     - if !solo_lectura
                       %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
                         - if recurso_humano_existente?(user.id, user.flujo.id)
@@ -3678,9 +3678,9 @@
                       %td.contenido-form= user.funciones_proyecto
                       %td.contenido-form= number_to_currency user.valor_hh
                       %td.contenido-form
-                        = __descargar_archivo(user.copia_ci,user.copia_ci,false,false)
+                        = __descargar_archivo(user.copia_ci, user, false, false)
                       %td.contenido-form
-                        = __descargar_archivo(user.curriculum,user.curriculum,false,false)
+                        = __descargar_archivo(user.curriculum, user, false, false)
                       - if !solo_lectura
                         %td.contenido-form.dos.iconos-acciones{id: "iconos-acciones-#{user.id}"}
                           - if recurso_humano_existente?(user.id, user.flujo.id)
