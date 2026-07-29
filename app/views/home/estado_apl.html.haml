@@ -25,7 +25,7 @@
           - t_manif = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 30 }
           - vacio_manif =  m.archivo_pertinencia_factibilidad.blank? || m.archivo_pertinencia_factibilidad.nil?
           - des_manif = vacio_manif ?  "" : __descargar_archivo(m.archivo_pertinencia_factibilidad,m, true,true,nil, "Ficha de Manifestacion",false,true)
-          - red_manif = descargar_manifestacion_pdf_admin_historial_instrumentos_path(m)
+          - red_manif = descargar_manifestacion_pdf_archivo_admin_historial_instrumentos_path(m)
           // Diagnostico
           - t_diag = m.flujo.tarea_pendientes.find { |t| t.tarea_id == 66 }
           - if t_diag.nil?
