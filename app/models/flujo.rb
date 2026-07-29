@@ -449,7 +449,7 @@ class Flujo < ApplicationRecord
       end
       # Documentos asociados funcionará como arreglo de diferentes documentos con sus datos
       if t.tarea.codigo == Tarea::COD_APL_005
-        documentos_asociados = [{nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
+        documentos_asociados = [{nombre: "Manifestación de Interés", url: 'descargar_manifestacion_pdf_archivo_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
       elsif t.tarea.codigo == Tarea::COD_APL_011
         documentos_asociados = []
         convocatorias_apl_once = Convocatoria.where(flujo_id: self.id).where(tarea_codigo: "APL-011").all

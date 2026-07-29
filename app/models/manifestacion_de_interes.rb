@@ -1160,7 +1160,11 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_contenido_formato_custom(pdf, :acuerdo_de_alcance_nacional, (self.acuerdo_de_alcance_nacional ? "Si" : "No"), validaciones, true)
       self.pdf_contenido_formato_checks(pdf, :comunas_ids, self.comunas_beauty_tree_selector, validaciones)
       
-      pdf.image StringIO.new(Base64.decode64(splitBase64(mapa_territorio)[:data])), fit: [pdf.bounds.width, 400]
+      datos_territorio = splitBase64(mapa_territorio)
+      if datos_territorio.present? && datos_territorio[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_territorio[:data])), fit: [pdf.bounds.width, 400]
+      end
+
       pdf.move_down 11
       self.pdf_contenido_formato_checks(pdf, :cuencas_ids, self.cuencas_beauty_tree_selector, validaciones)
       self.pdf_contenido_formato(pdf, :caracterizacion_sector_territorio, validaciones)
@@ -1210,11 +1214,19 @@ class ManifestacionDeInteres < ApplicationRecord
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :detalle_de_localizacion, validaciones)
       
-      pdf.image StringIO.new(Base64.decode64(splitBase64(mapa_area_influencia)[:data])), fit: [pdf.bounds.width, 400]
+      datos_influencia = splitBase64(mapa_area_influencia)
+      if datos_influencia.present? && datos_influencia[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_influencia[:data])), fit: [pdf.bounds.width, 400]
+      end
+
       pdf.move_down 11
       self.pdf_contenido_formato(pdf, :area_influencia_proyecto_archivo, validaciones)
       
-      pdf.image StringIO.new(Base64.decode64(splitBase64(mapa_alternativas)[:data])), fit: [pdf.bounds.width, 400]
+      datos_alternativas = splitBase64(mapa_alternativas)
+      if datos_alternativas.present? && datos_alternativas[:data].present?
+        pdf.image StringIO.new(Base64.decode64(datos_alternativas[:data])), fit: [pdf.bounds.width, 400]
+      end
+
       pdf.move_down 11
       self.pdf_separador(pdf, 11)
       self.pdf_contenido_formato(pdf, :estado_proyecto, validaciones)
@@ -1378,6 +1390,7 @@ class ManifestacionDeInteres < ApplicationRecord
   end
 
   def splitBase64(uri)
+    return nil if uri.blank?
     if uri.match(%r{^data:(.*?);(.*?),(.*)$})
       return {
         type:      $1, # "image/png"
