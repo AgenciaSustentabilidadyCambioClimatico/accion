@@ -72,7 +72,7 @@
   -if !solo_lectura
     .float-left
       = button_tag t(:anular_y_eliminar), id: 'anular_y_eliminar', class: "btn btn-sm btn-danger"
-      = link_to "Descargar manifestación de interés", descargar_manifestacion_pdf_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm"
+      = link_to "Descargar manifestación de interés", descargar_manifestacion_pdf_archivo_admin_historial_instrumentos_path(@manifestacion_de_interes), class: "btn btn-success btn-sm", data: { turbo: false, turbolinks: false }, download: ""
     .float-right
       = link_to t(:back), root_path, class: 'btn btn-sm btn-warning'
       -#

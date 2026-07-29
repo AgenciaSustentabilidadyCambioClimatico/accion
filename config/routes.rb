@@ -588,7 +588,7 @@ Rails.application.routes.draw do
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta/:tarea_id', to: "historial_instrumentos#descargar_respuesta_encuesta", as: :descargar_respuesta_encuesta
         get ':manifestacion_de_interes_id/descargar_respuesta_encuesta_auditoria/:tarea_id/:auditoria_id', to: "historial_instrumentos#descargar_respuesta_encuesta_auditoria", as: :descargar_respuesta_encuesta_auditoria
         get ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf", as: :descargar_manifestacion_pdf
-        post ':manifestacion_de_interes_id/descargar_manifestacion_pdf', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
+        get ':manifestacion_de_interes_id/descargar_manifestacion_pdf_archivo', to: "historial_instrumentos#descargar_manifestacion_pdf_archivo", as: :descargar_manifestacion_pdf_archivo
         get ':manifestacion_de_interes_id/descargar_informe_acuerdo_pdf', to: "historial_instrumentos#descargar_informe_acuerdo_pdf", as: :descargar_informe_acuerdo_pdf
       end
     end     

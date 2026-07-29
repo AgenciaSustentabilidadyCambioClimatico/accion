@@ -17,17 +17,17 @@ class Admin::HistorialInstrumentosController < ApplicationController
   def descargar_manifestacion_pdf_archivo
     @manifestacion_de_interes = ManifestacionDeInteres.find(params[:manifestacion_de_interes_id])
     
-    # 1. Generamos el PDF en memoria (super rápido con la optimización que hicimos)
+    # 1. Generamos el PDF en memoria
     pdf = @manifestacion_de_interes.generar_pdf(params[:url_territorio], params[:url_area_influencia], params[:url_alternativas])
     
     # 2. Cabeceras anti-timeout para Nginx
     response.headers['X-Accel-Buffering'] = 'no'
     response.headers['Cache-Control'] = 'no-cache'
     
-    # 3. Enviamos los bytes directamente al navegador para que lo abra en la pantalla
+    # 3. Enviamos los bytes para DESCARGA DIRECTA ("attachment")
     send_data pdf.render, 
               type: "application/pdf", 
-              disposition: "inline", 
+              disposition: "attachment", # 👈 "attachment" fuerza la descarga del archivo
               filename: "Manifestacion_de_interes_#{@manifestacion_de_interes.id}.pdf"
   end
 
