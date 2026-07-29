@@ -3,42 +3,46 @@
 
   /- if policy(@manifestacion).index?
   = render 'tarea_pendientes/table', titulo: t(:lista_de_, items: t(:tareas_pendientes).downcase), pendientes: @pendientes, todos: true
--else
+- else
   .row
-    -@clasificaciones_padre.datos.each do |data|
-      - image_url = Clasificacion.find(data[:id]).imagen.url
-      - icono_url = Clasificacion.find(data[:id]).icono.url
+    - @clasificaciones_padre.datos.each do |data|
+      -# 1. IGNORAMOS data[:imagen] (S3 viejo) y no hacemos Clasificacion.find() para evitar lentitud.
+      -# 2. Armamos la ruta directa a nuestro nuevo Proxy usando el ID:
+      - image_url = archivo_generico_path(modelo: 'clasificacion', id: data[:id], campo: 'imagen')
+      - icono_url = archivo_generico_path(modelo: 'clasificacion', id: data[:id], campo: 'icono')
+
       .col-12.col-lg-4.py-2.px-lg-2
         .flip-card
           .flip-card-inner
+            -# Usamos el image_url del proxy para el fondo
             .flip-card-front{style: "background-image:url('#{image_url}');background-repeat:no-repeat;background-size:cover;"}
               .d-flex.flex-column.h-100
                 .flip-card-icon.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
                   %img{src: icono_url}
                 .flip-card-name-container{style: "background-color: #{data[:color]};"}
-                  =data[:nombre]
+                  = data[:nombre]
             .flip-card-back
               .d-flex.flex-column.h-100
                 .d-flex.mb-2
-                  .flip-card-name=data[:nombre]
+                  .flip-card-name= data[:nombre]
                   .flip-card-icon-back.ml-auto.d-flex.align-items-center.justify-content-center{style: "background-color: #{data[:color]};"}
                     %img{src: icono_url}
-                .flip-card-description.mb-2=data[:descripcion]
+                .flip-card-description.mb-2= data[:descripcion]
                 .d-flex.w-100.justify-content-between
                   .flip-number
-                    .number=data[:acuerdos]
+                    .number= data[:acuerdos]
                     .title acuerdos
                   .flip-number
-                    .number=data[:acciones]
+                    .number= data[:acciones]
                     .title acciones
                   .flip-number
-                    .number=data[:empresas]
+                    .number= data[:empresas]
                     .title empresas
                   .flip-number
-                    .number=data[:elementos]
+                    .number= data[:elementos]
                     .title elementos totales
                 .d-flex.mt-auto.align-items-center
-                  =link_to "#", class: "flip-access mr-2 iniciar-sesion-header" do
+                  = link_to "#", class: "flip-access mr-2 iniciar-sesion-header" do
                     Ingresar
-                  =link_to acuerdos_firmados_path(clasificacion_id: data[:id]), class: "flip-more-info" do
+                  = link_to acuerdos_firmados_path(clasificacion_id: data[:id]), class: "flip-more-info" do
                     Más información
