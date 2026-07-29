@@ -487,21 +487,35 @@ class Flujo < ApplicationRecord
           documentos_asociados = [{nombre: "Observaciones de Informe y de Metas y Acciones", url: 'descargar_observaciones_informe_metas_acciones_admin_historial_instrumentos_path', parametros: [self.manifestacion_de_interes_id], metodo: true}]
         end
       elsif t.tarea.codigo == Tarea::COD_APL_022
-        tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 62).first
-        convocatoria = Convocatoria.where(flujo_id: self.id, tarea_codigo: "APL-021").first
-        if !convocatoria.minuta.acta.file.nil?
-          minuta_id = convocatoria&.minuta&.id
-          acta = {nombre: "Texto Acuerdo Firmado", url: "descargar_acta_path", parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "acta"] ,metodo: true}
+        tarea_pendiente = TareaPendiente.find_by(flujo_id: self.id, tarea_id: 62)
+        convocatoria = Convocatoria.find_by(flujo_id: self.id, tarea_codigo: "APL-021")
+        
+        # Navegación segura para evitar errores 500 si la convocatoria no tiene minuta
+        minuta = convocatoria&.minuta
+
+        if minuta.present? && (minuta.acta.present? rescue false)
+          acta = {
+            nombre: "Texto Acuerdo Firmado", 
+            url: "archivo_generico_path", 
+            parametros: [{ modelo: 'minuta', id: minuta.id, campo: 'acta' }], 
+            metodo: true
+          }
         else
-          acta = {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
+          acta = { nombre: "Sin documentos aun", url: "", parametros: [], metodo: false }
         end
-        if !convocatoria.minuta.archivo_resolucion.file.nil?
-          minuta_id = convocatoria&.minuta&.id
-          resolucion = {nombre: "Resolución Aprueba APL", url: 'descargar_archivo_resolucion_path', parametros: [tarea_pendiente_id: tarea_pendiente.id, convocatoria_id: convocatoria.id, id: minuta_id, tipo: "resolucion"] ,metodo: true}
+
+        if minuta.present? && (minuta.archivo_resolucion.present? rescue false)
+          resolucion = {
+            nombre: "Resolución Aprueba APL", 
+            url: "archivo_generico_path", 
+            parametros: [{ modelo: 'minuta', id: minuta.id, campo: 'archivo_resolucion' }], 
+            metodo: true
+          }
         else
-          resolucion = {nombre: "Sin documentos aun", url: "", parametros: [], metodo: false}
+          resolucion = { nombre: "Sin documentos aun", url: "", parametros: [], metodo: false }
         end
-          documentos_asociados = [acta, resolucion]
+        
+        documentos_asociados = [acta, resolucion]
       elsif t.tarea.codigo == Tarea::COD_APL_028
         tarea_pendiente = TareaPendiente.where(flujo_id: self.id, tarea_id: 54).first
         documentos_asociados = [{nombre: "Documentos Adhesiones", url: "descargar_compilado_adhesion_path", parametros: [tarea_pendiente], metodo: true}]
