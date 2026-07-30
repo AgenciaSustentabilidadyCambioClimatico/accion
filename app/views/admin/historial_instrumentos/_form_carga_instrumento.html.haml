@@ -85,26 +85,32 @@
                               = "Contrato"
                       -# Se recorre arreglo con los documentos asociados a cada APL.
                       - ins[:documentos_asociados].each do |documento| 
-                        - if documento[:url].blank?
+                        - es_flujo_48 = (ins[:id_instrumento] || @instrumento&.id).to_i == 48
+                        - es_apl_028 = ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
+
+                        - if es_flujo_48 && es_apl_028
+                        - elsif documento[:url].blank?
                           - next if %w[FPL-01].include?(ins[:tarea][:codigo]) && documento[:nombre] == "Sin documentos asociados"
                           =documento[:nombre]
                         - else
-                          -if documento[:url] == "modal"
+                          - if documento[:url] == "modal"
                             =render 'modal_descargas_especiales', manifestacion_de_interes: ins[:manifestacion_de_interes], tarea: ins[:tarea], lista: documento[:lista]
                             =link_to '#', "data-target" => "#modal_descargas_especiales-"+ins[:tarea].id.to_s, "data-toggle" => "modal", class: "btn-tabla-instrumentos" do
                               =fa_icon 'download'
                               =documento[:nombre]
-                          -else
+                          - else
                             -enlace = documento[:metodo] ? public_send(documento[:url], *documento[:parametros]) : documento[:url]
                             =link_to enlace, class: "btn-tabla-instrumentos" do
                               =fa_icon 'download'
                               =documento[:nombre]
-                            - if ins[:nombre_tarea] == 'APL-028- Aprobar Adhesión, Admisión y Certificación'
-                              -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
-                              - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
-                              =link_to f, {target: '_blank', class: 'mt-1 btn-tabla-instrumentos'} do
-                                =fa_icon 'download'
-                                ='Consolidado Adhesiones'
+
+                        -# Se dibuja el botón Consolidado Adhesiones independientemente de si el documento anterior fue restringido o no
+                        - if es_apl_028
+                          -data_url = url_segun_tarea(ins[:pendiente], ins[:tarea], @instrumento)
+                          - f = data_url[:url] + '?action=revisar&controller=adhesion&format=xlsx'
+                          =link_to f, {target: '_blank', class: 'mt-1 btn-tabla-instrumentos'} do
+                            =fa_icon 'download'
+                            ='Consolidado Adhesiones'
 
 
                           -# Método para añadir archivo solo aceptaba uno, el cual se setea en flujo.rb, para el caso de esta tarea era
