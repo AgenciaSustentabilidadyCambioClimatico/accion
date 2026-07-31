@@ -182,16 +182,13 @@
               -elsif !@ppp.blank?
                 %h5.no-margin=titulo_programa.html_safe
               %h5.no-margin=datos_beneficiario.html_safe
-            .card.mb-0.mt-3.mt-lg-0
-              .card-body.px-3.py-2
-                .form-group
-                  %label.string.control-label
-                    = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
-                  - if @tarea_pendiente&.flujo&.id == 48
-                    %span.text-muted.small.d-block
-                      %i.fa.fa-info-circle.mr-1
-                      Para descargar la información de este APL por favor contacte al equipo técnico de la ASCC
-                  - else
+            
+            - if @tarea_pendiente&.flujo&.id != 48
+              .card.mb-0.mt-3.mt-lg-0  
+                .card-body.px-3.py-2
+                  .form-group
+                    %label.string.control-label
+                      = t(:archivos_de_adhesión_y_documentación_entregada_por_solicitante_de_adhesiones)
                     = link_to descargar_compilado_adhesion_path(@tarea_pendiente), class: 'btn btn-sm btn-descargar btn-block' do
                       %i.fa.fa-download
                       = t(:descargar_documentación)
