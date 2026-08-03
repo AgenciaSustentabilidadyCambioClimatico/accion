@@ -354,6 +354,12 @@ Rails.application.routes.draw do
   patch ':id/resolucion_contrato', to: "fondo_produccion_limpias#adjuntar_resolucion_contrato", as: :adjuntar_resolucion_contrato_fondo_produccion_limpia
   get ':id/descargar_contrato_pdf', to: "fondo_produccion_limpias#descargar_contrato_pdf", as: :descargar_contrato_pdf_fondo_produccion_limpia
   get ':id/descargar_resolucion_pdf', to: "fondo_produccion_limpias#descargar_resolucion_pdf", as: :descargar_resolucion_pdf_fondo_produccion_limpia
+  
+  #Tarea FPL-12
+  get ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#rendicion_subir_documentos_actividades", as: :rendicion_subir_documentos_actividades_fondo_produccion_limpia
+  patch ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#adjuntar_rendicion_subir_documentos_actividades", as: :adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia
+
+
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

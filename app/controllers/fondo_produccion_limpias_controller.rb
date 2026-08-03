@@ -15,7 +15,7 @@ class FondoProduccionLimpiasController < ApplicationController
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
-    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos]
+    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos, :adjuntar_rendicion_subir_documentos_actividades, :rendicion_subir_documentos_actividades]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -32,7 +32,8 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :revisar_entregable_diagnostico,
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
                                         :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
-                                        :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante]
+                                        :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante,
+                                        :rendicion_subir_documentos_actividades]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
                                         :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
@@ -4051,6 +4052,66 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def adjuntar_resolucion_contrato
+      respond_to do |format|
+        # Validamos que existan ambos archivos
+        if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?
+          
+          # SE CAMBIA EL ESTADO DEL FPL-11 A 2 (ENVIADA)
+          tarea_fondo_fpl_11 = Tarea.find_by_codigo(Tarea::COD_FPL_11)
+          tarea_pendiente_fpl_11 = TareaPendiente.find_by(
+            tarea_id: tarea_fondo_fpl_11.id,
+            flujo_id: @tarea_pendiente.flujo_id,
+            user_id: @tarea_pendiente.user_id
+          )
+
+          if tarea_pendiente_fpl_11.present?
+            tarea_pendiente_fpl_11.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+            tarea_pendiente_fpl_11.save
+          end
+
+          format.js do
+            flash.now[:success] = 'Documentos verificados correctamente'
+            render js: "window.location='#{root_path}'"
+          end
+
+          format.html do
+            redirect_to root_path, flash: { notice: 'Documentos verificados correctamente' }
+          end
+
+        else
+          # Si falta algún documento, mostramos error
+          faltantes = []
+          faltantes << "Resolución" unless @fondo_produccion_limpia.archivo_resolucion.present?
+          faltantes << "Contrato" unless @fondo_produccion_limpia.archivo_contrato.present?
+          
+          flash[:error] = "Debe adjuntar los documentos: #{faltantes.join(' y ')}"
+
+          format.js do
+            render js: "alert('Debe adjuntar los documentos: #{faltantes.join(' y ')}');"
+          end
+
+          format.html do
+            redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id),
+              flash: { error: "Debe adjuntar los documentos: #{faltantes.join(' y ')}" }
+          end
+        end
+      end
+    end
+
+    def rendicion_subir_documentos_actividades # FPL-12
+      # Cargar la instancia de FondoProduccionLimpia asociada al flujo de la tarea
+      @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente&.flujo_id) || FondoProduccionLimpia.new
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos == nil
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
+      set_actividades_x_linea
+    end
+
+    def adjuntar_rendicion_subir_documentos_actividades # FPL-12
       respond_to do |format|
         # Validamos que existan ambos archivos
         if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?

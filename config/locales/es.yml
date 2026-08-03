@@ -1521,6 +1521,9 @@ es:
   tipo_b: Tipo B
   adjuntar_resolucion_contrato: Adjuntar Resolución y Contrato
   resolucion_contrato: Resolución y Contrato
+  documentos_rendicion: Documentos de rendición por actividad
+  adjuntar_resolucion_contrato: Adjuntar documentos de rendición por actividad
+  subir_documento_rendicion: Subir Documento Rendición
   no_aplica: No Aplica
   iniciar_flujo_fpl: Iniciar Flujo FPL
   mantenedor_mapa_actores: Mantenedor Mapa Actores
