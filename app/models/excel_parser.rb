@@ -1,18 +1,41 @@
 class ExcelParser 
 	attr_accessor :errors, :tabulated, :sheet, :sheet_name, :columns
 	def initialize(file, columns={}, sheet=nil, start_index=1, first_row=2, last_row=nil)
-		spreadsheet 		= Roo::Spreadsheet.open(file)
-		self.errors 		= []
-		self.tabulated 	= []
-		self.sheet_name = ( sheet.nil? ? spreadsheet.sheets().first : sheet )
-		if spreadsheet.sheets().include?(self.sheet_name)
-			self.sheet 		=	spreadsheet.sheet(self.sheet_name)
-			self.columns 	= __columns(columns,start_index)
-			tabulated_data(first_row,last_row)
-		else
-			self.errors << "No existe la hoja #{@sheet_name} en el archivo excel"
-		end
-	end
+        self.errors     = []
+        self.tabulated  = []
+        
+        # --- MAGIA DE LECTURA SEGURA ---
+        ruta_temporal = nil
+        archivo_para_abrir = file
+        
+        # Detectamos si 'file' es el objeto de CarrierWave (responde a :read)
+        if file.respond_to?(:read)
+            ruta_temporal = Rails.root.join("tmp", "excel_parser_#{Time.now.to_i}_#{rand(1000)}.xlsx")
+            # Descargamos los datos desde Azure a nuestro disco temporal seguro
+            File.binwrite(ruta_temporal, file.read)
+            archivo_para_abrir = ruta_temporal.to_s
+        end
+        # -------------------------------
+
+        begin
+            # Ahora Roo lee desde la ruta segura (o la ruta normal si no era CarrierWave)
+            spreadsheet = Roo::Spreadsheet.open(archivo_para_abrir)
+            
+            self.sheet_name = ( sheet.nil? ? spreadsheet.sheets().first : sheet )
+            
+            if spreadsheet.sheets().include?(self.sheet_name)
+                self.sheet   = spreadsheet.sheet(self.sheet_name)
+                self.columns = __columns(columns,start_index)
+                tabulated_data(first_row,last_row) # Ejecuta el análisis
+            else
+                self.errors << "No existe la hoja #{@sheet_name} en el archivo excel"
+            end
+        ensure
+            # LIMPIEZA: Sin importar si el Excel estaba bueno o si falló, 
+            # borramos el archivo temporal para no llenar el servidor de basura.
+            File.delete(ruta_temporal) if ruta_temporal && File.exist?(ruta_temporal)
+        end
+    end
 
 	def self.parameterize(s)
 		unless s.nil?||s.empty?
