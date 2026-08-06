@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_06_04_163422) do
+ActiveRecord::Schema.define(version: 2026_08_06_124859) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1866,12 +1866,49 @@ ActiveRecord::Schema.define(version: 2026_06_04_163422) do
     t.index ["tipo_proveedor_id"], name: "index_registro_proveedores_on_tipo_proveedor_id"
   end
 
+  create_table "rendicion_detalle_actividades_fpl", force: :cascade do |t|
+    t.bigint "rendicion_detalle_fpl_id", null: false
+    t.bigint "plan_actividad_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["plan_actividad_id"], name: "idx_rend_det_act_on_act_id"
+    t.index ["rendicion_detalle_fpl_id"], name: "idx_rend_det_act_on_det_id"
+  end
+
+  create_table "rendicion_detalles_fpl", force: :cascade do |t|
+    t.bigint "rendicion_fpl_id", null: false
+    t.integer "tipo_tab", default: 0, null: false
+    t.boolean "realizada"
+    t.text "observacion"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.string "archivo"
+    t.integer "cumple"
+    t.text "comentario_revisor"
+    t.index ["rendicion_fpl_id"], name: "index_rendicion_detalles_fpl_on_rendicion_fpl_id"
+  end
+
   create_table "rendiciones", force: :cascade do |t|
     t.integer "proyecto_id"
     t.date "fecha_rendicion"
     t.integer "modalidad_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "rendiciones_fpl", force: :cascade do |t|
+    t.bigint "flujo_id", null: false
+    t.integer "mes_a_rendir", null: false
+    t.integer "estado", default: 0, null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.integer "revisor_tecnico_id"
+    t.integer "revisor_financiero_id"
+    t.text "comentario_asignar_revisor"
+    t.index ["flujo_id"], name: "index_rendiciones_fpl_on_flujo_id"
+  end
+
+  create_table "rendiciones_y_detalles", force: :cascade do |t|
   end
 
   create_table "reporte_sustentabilidads", force: :cascade do |t|
@@ -2363,6 +2400,10 @@ ActiveRecord::Schema.define(version: 2026_06_04_163422) do
   add_foreign_key "registro_proveedores", "contribuyentes"
   add_foreign_key "registro_proveedores", "tipo_contribuyentes"
   add_foreign_key "registro_proveedores", "tipo_proveedores"
+  add_foreign_key "rendicion_detalle_actividades_fpl", "plan_actividades"
+  add_foreign_key "rendicion_detalle_actividades_fpl", "rendicion_detalles_fpl", column: "rendicion_detalle_fpl_id"
+  add_foreign_key "rendicion_detalles_fpl", "rendiciones_fpl", column: "rendicion_fpl_id"
+  add_foreign_key "rendiciones_fpl", "flujos"
   add_foreign_key "responsables", "actividad_economicas"
   add_foreign_key "responsables", "cargos"
   add_foreign_key "responsables", "contribuyentes"

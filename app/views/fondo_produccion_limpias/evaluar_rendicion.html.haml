@@ -1,0 +1,220 @@
+:javascript
+  $(document).ready(function() {
+    htmlErrorToTooltip('top');
+    validarFormulario();
+  });
+
+  function toggleComentariosRevisor(selectElement, id) {
+    const comentarioInput = document.getElementById('comentario_revisor_' + id);
+    if (comentarioInput) {
+      if (selectElement.value.toLowerCase() === 'no') {
+        comentarioInput.disabled = false;
+      } else {
+        comentarioInput.disabled = true;
+        comentarioInput.value = '';
+      }
+    }
+    validarFormulario();
+  }
+
+  function validarFormulario() {
+    let formularioValido = true;
+    
+    // Recorre todos los selects de "Cumple" en la pantalla
+    document.querySelectorAll('select[id^="cumple_"]').forEach(select => {
+      const id = select.id.split('_').pop();
+      const comentario = document.getElementById('comentario_revisor_' + id);
+      
+      if (select.value === '') {
+        formularioValido = false; // Falta evaluar
+      } else if (select.value.toLowerCase() === 'no') {
+        if (!comentario || comentario.value.trim() === '') {
+          formularioValido = false; // Evaluó "No" pero no dejó comentario
+        }
+      }
+    });
+
+    const botonEnviar = document.getElementById('enviar-button');
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+      if (formularioValido) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
+    }
+  }
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- titulo t(:evaluacion_rendicion)
+
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin=titulo_instrumento_fpl.html_safe
+          %h5.no-margin=titulo_instrumento.html_safe
+          %h5.no-margin=titulo_proyecto_fpl.html_safe
+          %h5.no-margin=titulo_apl.html_safe
+          %h5.no-margin=datos_beneficiario_fpl.html_safe
+
+-# Definimos dinámicamente qué pestañas mostrar basado en el tipo de revisor
+- tabs = {}
+- tabs['tecnica'] = true if @es_revision_tecnica
+- tabs['financiera-fpl'] = true if @es_revision_financiera
+- tabs['financiera-aporte'] = false if @es_revision_financiera
+
+#tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+    - tabs.each do |tab, active|
+      %li.nav-item.tab-block{id: "#{tab}-tab"}
+        %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          = t(tab.to_s.gsub('-','_'))
+
+-# Reemplaza `evaluar_rendicion_path` con la ruta real de tu controlador para grabar la revisión
+= simple_form_for fpl_objeto, url: '#', html: { autocomplete: :off }, remote: true do |f|
+  .tab-content#manifestacionContent
+
+    - if @es_revision_tecnica
+      / ----------------------------------------------------
+      / Pestaña 1: Evaluación Técnica
+      / ----------------------------------------------------
+      .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
+        .card
+          .card-header
+            %h5.no-margin Evaluación Técnica de Rendición (Mes: #{@rendicion.mes_a_rendir})
+          .card-body
+            .table-responsive
+              %table.table.table-striped.usuarios.no-margin
+                %thead
+                  %tr
+                    %th.encabezado-form{style: 'width: 5%;'} N°
+                    %th.encabezado-form{style: 'width: 20%;'} Actividades
+                    %th.encabezado-form{style: 'width: 10%;'} Realizada
+                    %th.encabezado-form{style: 'width: 20%;'} Observación (Postulante)
+                    %th.encabezado-form{style: 'width: 15%;'} Archivos Cargados
+                    %th.encabezado-form{style: 'width: 10%;'} Cumple
+                    %th.encabezado-form{style: 'width: 20%;'} Comentarios (Revisor)
+                %tbody
+                  - if @actividad_x_linea.present?
+                    - @actividad_x_linea.each do |actividad|
+                      - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
+                      
+                      -# Solo mostramos la fila si el postulante envió un detalle para esta actividad
+                      - if detalle.present?
+                        %tr{id: "fila_eval_actividad_#{actividad.id}"}
+                          %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                          %td.contenido-form= actividad.nombre
+                          %td.contenido-form.text-center
+                            %span.badge{class: detalle.realizada? ? 'badge-success' : 'badge-danger'}
+                              = detalle.realizada? ? 'Sí' : 'No'
+                          %td.contenido-form= detalle.observacion.presence || '--'
+                          %td.contenido-form
+                            = __descargar_archivo_sin_titulo(detalle.archivo, detalle)
+                          
+                          -# Inputs de Evaluación del Revisor (Se envían como hash: detalles[ID][campo])
+                          %td.contenido-form
+                            - valor_cumple = detalle.try(:cumple)
+                            = select_tag "detalles[#{detalle.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], valor_cumple), class: "form-control smaller-text border-text", id: "cumple_#{detalle.id}", onchange: "toggleComentariosRevisor(this, '#{detalle.id}')"
+                          %td.contenido-form
+                            - valor_comentario = detalle.try(:comentario_revisor)
+                            = text_area_tag "detalles[#{detalle.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple.to_s.downcase != 'no'), placeholder: "Ingrese comentarios (obligatorio si no cumple)...", rows: 2, onkeyup: "validarFormulario()"
+
+
+    - if @es_revision_financiera
+      / ----------------------------------------------------
+      / Pestaña 2: Evaluación Financiera FPL
+      / ----------------------------------------------------
+      .tab-pane.fade.show.active#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+        .card{style: 'overflow: visible;'}
+          .card-header
+            %h5.no-margin Evaluación Financiera FPL de Rendición (Mes: #{@rendicion.mes_a_rendir})
+          .card-body{style: 'padding-bottom: 15px;'}
+            .table-responsive
+              %table.table.table-striped.no-margin
+                %thead
+                  %tr
+                    %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
+                    %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada
+                    %th.encabezado-form{style: 'width: 15%;'} Cumple
+                    %th.encabezado-form{style: 'width: 30%;'} Comentarios (Revisor)
+                %tbody
+                  - if @documentos_fpl.present?
+                    - @documentos_fpl.each do |doc|
+                      - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                      %tr
+                        %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                        %td.contenido-form= act_nombres.presence || '--'
+                        %td.contenido-form
+                          - valor_cumple = doc.cumple
+                          = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], valor_cumple), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                        %td.contenido-form
+                          - valor_comentario = doc.try(:comentario_revisor)
+                          = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple.to_s.downcase != 'no'), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                  - else
+                    %tr
+                      %td.text-center.text-muted{colspan: 4} No se enviaron documentos financieros FPL para evaluar.
+
+      / ----------------------------------------------------
+      / Pestaña 3: Evaluación Financiera Aporte
+      / ----------------------------------------------------
+      .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+        .card{style: 'overflow: visible; mt-3'}
+          .card-header
+            %h5.no-margin  Evaluación Financiera Aporte de Rendición (Mes: #{@rendicion.mes_a_rendir})
+          .card-body{style: 'padding-bottom: 15px;'}
+            .table-responsive
+              %table.table.table-striped.no-margin
+                %thead
+                  %tr
+                    %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
+                    %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada
+                    %th.encabezado-form{style: 'width: 15%;'} Cumple
+                    %th.encabezado-form{style: 'width: 30%;'} Comentarios (Revisor)
+                %tbody
+                  - if @documentos_aporte.present?
+                    - @documentos_aporte.each do |doc|
+                      - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                      %tr
+                        %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                        %td.contenido-form= act_nombres.presence || '--'
+                        %td.contenido-form
+                          - valor_cumple = doc.cumple
+                          = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], valor_cumple), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                        %td.contenido-form
+                          - valor_comentario = doc.try(:comentario_revisor)
+                          = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple.to_s.downcase != 'no'), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                  - else
+                    %tr
+                      %td.text-center.text-muted{colspan: 4} No se enviaron documentos de aporte para evaluar.
+
+  .float-right.mt-3
+    = volver_root
+    - if @tiene_permisos
+      = button_tag "Grabar Avance", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'grabar', 
+        class: "btn btn-sm btn-primary mr-2", 
+        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+
+      = button_tag t(:enviar_evaluacion), 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'enviar', 
+        id: 'enviar-button', 
+        class: "btn btn-sm btn-success btn-disabled", 
+        disabled: true, 
+        data: { confirm: "¿Está seguro que desea enviar la evaluación de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }

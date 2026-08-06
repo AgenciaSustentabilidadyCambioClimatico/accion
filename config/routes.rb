@@ -359,7 +359,17 @@ Rails.application.routes.draw do
   get ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#rendicion_subir_documentos_actividades", as: :rendicion_subir_documentos_actividades_fondo_produccion_limpia
   patch ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#adjuntar_rendicion_subir_documentos_actividades", as: :adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia
 
-
+  #Tarea FPL-13
+  get ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#asignar_revisor_rendicion", as: :asignar_revisor_rendicion_fondo_produccion_limpia
+  patch ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#guardar_asignar_revisor_rendicion", as: :guardar_asignar_revisor_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-14 - Revisión Financiera de Rendición
+  get ':id/revision_financiera_rendicion', to: "fondo_produccion_limpias#revision_financiera_rendicion", as: :revision_financiera_rendicion_fondo_produccion_limpia
+  patch ':id/revision_financiera_rendicion', to: "fondo_produccion_limpias#guardar_revision_financiera_rendicion", as: :guardar_revision_financiera_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-15 - Revisión Técnica de Rendición
+  get ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#revision_tecnica_rendicion", as: :revision_tecnica_rendicion_fondo_produccion_limpia
+  patch ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#guardar_revision_tecnica_rendicion", as: :guardar_revision_tecnica_rendicion_fondo_produccion_limpia
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

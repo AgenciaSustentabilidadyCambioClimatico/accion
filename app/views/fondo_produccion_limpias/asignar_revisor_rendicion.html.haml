@@ -1,0 +1,259 @@
+:javascript
+  $(document).ready(function(){
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
+    cargarRevisor();
+
+    $('#manifestacion a.nav-link').on('shown.bs.tab', function (e) {
+      var tab_selected = e.target;
+      $('.accordionTabs .card-body a').removeClass('hide');
+      if($(tab_selected).prop('id') != 'asignar-revisor-tab'){
+        if($(tab_selected).prop('id') == 'asignar-revisor-externo'){
+          $('#collapseTabs').removeClass("show");
+          $('a.nav-link#asignar-revisor-tab').tab('show');
+          $('.accordionTabs .card-header a').removeClass('active');
+          $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+        }else{
+          $('#asignar-revisor-externo').removeClass('active');
+          $('.accordionTabs .card-header a').addClass('active');
+          $('.accordionTabs .card-header a .titulo-accordion').html($(tab_selected).html());
+          $('.accordionTabs .card-body a[tab="'+$(tab_selected).attr('aria-controls')+'"]').addClass('hide');
+        }
+      }else{
+        $('#asignar-revisor-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+        $('.accordionTabs .card-header a .titulo-accordion').html('Información de Rendición');
+      }
+    });
+
+    $('.collapse-tab-item').click(function(e){
+      var tab = $(this).attr('tab');
+      $('#collapseTabs').removeClass("show");
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      $('a.nav-link#'+tab+'-tab').tab('show');
+    });
+
+    $('#collapseTabs').on('show.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-h').removeClass('fa-ellipsis-h').addClass('fa-ellipsis-v');
+      $('#asignar-revisor-externo').removeClass('active');
+      $('.accordionTabs .card-header a').addClass('active');
+    });
+
+    $('#collapseTabs').on('hide.bs.collapse', function () {
+      $('.accordionTabs .card-header a .fa-ellipsis-v').removeClass('fa-ellipsis-v').addClass('fa-ellipsis-h');
+      if($('.accordionTabs .card-header a .titulo-accordion').html() == 'Información de Rendición'){
+        $('#asignar-revisor-externo').addClass('active');
+        $('.accordionTabs .card-header a').removeClass('active');
+      }
+    });
+  });
+
+  function cargarRevisor() {
+    $.ajax({
+      url: "#{get_revisor_fondo_produccion_limpia_path}",
+      data: {
+        flujo_id: "#{@fondo_produccion_limpia.nil? ? '' : @fondo_produccion_limpia.flujo.id}"
+      },
+      method: "GET",
+      error: function(error) {
+        console.error("Error al llamar al método del controlador", error);
+      }
+    });
+  }
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+
+
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
+
+= simple_form_for fpl_objeto, url: asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
+  = f.hidden_field :temporal, as: :boolean, value: true
+  .row
+    .col-12
+      .card
+        .card-header.p-0
+          .p-3
+            %h5.no-margin= titulo_instrumento_fpl.html_safe
+            %h5.no-margin= titulo_instrumento.html_safe
+            %h5.no-margin= titulo_proyecto_fpl.html_safe
+            %h5.no-margin= titulo_apl.html_safe
+            %h5.no-margin= datos_beneficiario_fpl.html_safe
+          #tab-menu-controls.parent-nav.mb-0.mt-3{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+              %li.nav-item
+                %a.nav-link{id: "asignar-revisor-externo", class: 'active', "aria-controls" => 'asignar-revisor-externo', "aria-expanded" => "true", "data-toggle" => "tab", :href => "#asignar-revisor-externo", :role => "tab"}
+                  = t('asignar_revisor')
+
+        .card-body.border-tabs.px-2.pt-3
+          -# Definición de las 3 pestañas anteriores + la pestaña de asignar revisor activa
+          - tabs = { "tecnica" => false, "financiera-fpl" => false, "financiera-aporte" => false, "asignar-revisor" => true }
+          - titulo t(:asignar_revisor_rendicion)
+          
+          #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
+            %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
+              - tabs.each do |tab, active|
+                %li.nav-item{id: "#{tab}-tab", class: (tab == 'asignar-revisor' ? 'd-none' : '')}
+                  %a.nav-link{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+                    = t(tab.to_s.gsub('-','_'))
+
+            .accordionTabs.d-block.d-lg-none
+              .card.mb-0
+                .card-header.p-0
+                  %a.d-flex.justify-content-left.align-items-center{'data-toggle': 'collapse', href: '#collapseTabs', role: 'button', 'aria-expanded': false, 'aria-controls': 'collapseTabs'}
+                    .accordion-icon.text-center
+                      = fa_icon "ellipsis-h"
+                    .titulo-accordion.font-weight-bold Información de Rendición
+                #collapseTabs.collapse.p-0
+                  .card-body.p-0
+                    .list-group.list-group-flush
+                      - tabs.each do |tab, active|
+                        - if tab != 'asignar-revisor'
+                          %a.collapse-tab-item.list-group-item.list-group-item-action.d-flex.justify-content-between.align-items-center{tab: "#{tab}"}
+                            = t(tab.to_s.gsub('-','_'))
+
+          .tab-content#manifestacionContent
+            / Pestaña 1: Técnica
+            .tab-pane.fade#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
+              .card.mt-2
+                .card-body
+                  .table-responsive
+                    %table.table.table-striped.usuarios.no-margin
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                          %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
+                          %th.encabezado-form{style: 'width: 15%;'} Realizada
+                          %th.encabezado-form{style: 'width: 25%;'} Observación
+                          %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
+                      %tbody
+                        - if @actividad_x_linea.present?
+                          - @actividad_x_linea.each do |actividad|
+                            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
+                            - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'Sí' : 'No')
+                            - observacion_valor = detalle_tecnico&.observacion
+                            - archivo = detalle_tecnico&.archivo
+                            
+                            %tr{id: "fila_actividad_#{actividad.id}"}
+                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                              %td.contenido-form= actividad.nombre
+                              %td.contenido-form= realizada_valor
+                              %td.contenido-form= observacion_valor.presence || '--'
+                              %td.contenido-form
+                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+
+            / Pestaña 2: Financiera FPL
+            .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+              .card.mt-2
+                .card-body
+                  .table-responsive
+                    %table.table.table-striped.no-margin#tabla-financiera-fpl
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 30%;'} Archivos Cargados
+                          %th.encabezado-form{style: 'width: 70%;'} Actividad relacionada
+                      %tbody
+                        - if @documentos_fpl.present?
+                          - @documentos_fpl.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                            %tr
+                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              %td.contenido-form= act_nombres.presence || '--'
+
+            / Pestaña 3: Financiera Aporte
+            .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+              .card.mt-2
+                .card-body
+                  .table-responsive
+                    %table.table.table-striped.no-margin#tabla-financiera-aporte
+                      %thead
+                        %tr
+                          %th.encabezado-form{style: 'width: 30%;'} Archivos Cargados
+                          %th.encabezado-form{style: 'width: 70%;'} Actividad relacionada
+                      %tbody
+                        - if @documentos_aporte.present?
+                          - @documentos_aporte.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                            %tr
+                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              %td.contenido-form= act_nombres.presence || '--'
+
+            / Pestaña 4: Asignar Revisor
+            - if @revisor
+              #asignar-revisor.tab-pane.fade{"aria-expanded" => (tabs["asignar-revisor"] ? 'true' : 'false'), "aria-labelledby" => "asignar-revisor-tab", :role => "tabpanel", class: ("show active" if tabs["asignar-revisor"])}
+                .card.mt-2
+                  .card-body
+                    .row
+                      .col-12.col-lg-6
+                        - if !solo_lectura
+                          %label.label-estilo{ for: 'revisor_tecnico_id' }
+                            %abbr{ title: "Campo requerido" } *
+                            = t(:revisor_tecnico)
+                          %br
+                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.revisor_tecnico_id
+                          - current_tec_id = @rendicion&.revisor_tecnico_id
+                          = f.select :revisor_tecnico_id, options_for_select([['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, current_tec_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
+                        - else
+                          .form-group
+                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
+                            - rev_tecnico = @rendicion&.revisor_tecnico&.nombre_completo
+                            - no_data = rev_tecnico.blank?
+                            %label.control-label.string= t(:revisor_tecnico)
+                            %p.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              = (no_data ? 'No se ingresó respuesta' : rev_tecnico)
+
+                      .col-12.col-lg-6
+                        - if !solo_lectura
+                          %label.label-estilo{ for: 'revisor_financiero_id' }
+                            %abbr{ title: "Campo requerido" } *
+                            = t(:revisor_financiero)
+                          %br
+                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.revisor_financiero_id
+                          - current_fin_id = @rendicion&.revisor_financiero_id
+                          = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
+                        - else
+                          .form-group
+                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
+                            - rev_financiero = @rendicion&.revisor_financiero&.nombre_completo
+                            - no_data = rev_financiero.blank?
+                            %label.control-label.string= t(:revisor_financiero)
+                            %p.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              = (no_data ? 'No se ingresó respuesta' : rev_financiero)
+
+                      .col-12.mt-3
+                        - if !solo_lectura
+                          %label.label-estilo{ for: 'comentario_asignar_revisor' }
+                            %abbr{ title: "Campo requerido" } *
+                            = t(:comentario)
+                          %br
+                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.comentario_asignar_revisor
+                          = f.text_area :comentario_asignar_revisor, value: @rendicion&.comentario_asignar_revisor, class: "form-control text required tooltip-block", required: 'required', type: 'text', id: 'comentario_asignar_revisor_fpl', style: 'width: 100%;', rows: 3
+                        - else
+                          .form-group
+                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
+                            - no_data = @rendicion&.comentario_asignar_revisor.blank?
+                            %label.control-label.string= t(:comentario)
+                            %p.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
+                              = (no_data ? 'No se ingresó respuesta' : @rendicion.comentario_asignar_revisor)
+
+                      .col-12.mt-3
+                        .float-right
+                          = link_to t(:back), root_path, class: 'btn btn-sm btn-warning ml-1'
+                          - if @tiene_permisos
+                            = button_tag t(:save), 'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Guardando...".html_safe, class: "btn btn-sm btn-primary", id: "guardar_button_revisor", type: 'submit'

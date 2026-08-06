@@ -4,30 +4,31 @@
       allow_single_deselect: true,
       no_results_text: 'No se encontraron resultados',
       width: '100%'
+    }).change(function() {
+      validarFormulario();
     });
+    
     $("input:file").on('change',function (){
       $(this).parent().siblings("label").html($(this)[0].files[0].name);
+      validarFormulario();
     });
     htmlErrorToTooltip('top');
   });
 
-  let archivosCargados = {
-  archivo_resolucion: false,
-  archivo_contrato: false
-  };
-
   function guardarYActualizar(event, nombreCampo, origen) {
     guardarArchivos(event, nombreCampo, origen);
+    validarFormulario();
   }
 
   function guardarArchivos(event, nombreCampo, origen) {
     const archivoInput = document.getElementById(nombreCampo);
+    if (!archivoInput || !archivoInput.files[0]) return;
+
     const archivo = archivoInput.files[0];
     const formData = new FormData();
     formData.append('archivo', archivo);
     formData.append('nombre_campo', nombreCampo);
 
-    // ID del flujo
     const Id = "#{@tarea_pendiente.nil? ? '' : @tarea_pendiente.id}";
     formData.append('id', Id);
 
@@ -42,165 +43,347 @@
       const text = await response.text();
       try {
         const data = JSON.parse(text);
-        if (data.success) {
-          marcarArchivoCargado(nombreCampo, true);
-        } else {
-          marcarArchivoCargado(nombreCampo, false);
-        }
       } catch {
-        // Si el servidor retorna JS (window.location), lo ejecutamos
         eval(text);
-        marcarArchivoCargado(nombreCampo, true);
       }
     })
     .catch(error => {
       console.error("Error al subir archivo:", error);
-      marcarArchivoCargado(nombreCampo, false);
     });
   }
 
-  function marcarArchivoCargado(nombreCampo, cargado) {
-    archivosCargados[nombreCampo] = cargado;
-    validarArchivosCargados();
+  function toggleObservacion(selectElement, actividadId) {
+    const obsInput = document.getElementById('observacion_actividad_' + actividadId);
+    if (obsInput) {
+      if (selectElement.value.toLowerCase() === 'no') {
+        obsInput.disabled = false;
+      } else {
+        obsInput.disabled = true;
+        obsInput.value = '';
+      }
+    }
+    validarFormulario();
   }
 
-  function validarArchivosCargados() {
+  function validarFormulario() {
+    let tabTecnicaValido = true;
+    let tabFinancieraFplValido = false;
+    let tabFinancieraAporteValido = false;
+
+    // 1. Validar Tab Técnica
+    const mesSelect = document.getElementById('mes_a_rendir');
+    if (mesSelect && mesSelect.value === '') {
+      tabTecnicaValido = false;
+    }
+
+    document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
+      const id = fila.id.split('_').pop();
+      const selectRealizada = document.getElementById('realizada_actividad_' + id);
+      const observacionInput = document.getElementById('observacion_actividad_' + id);
+      const fileInput = document.getElementById('archivo_rendicion_' + id);
+      const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
+      
+      if (selectRealizada && tdArchivo) {
+        const realizada = selectRealizada.value.toLowerCase();
+        const observacion = observacionInput ? observacionInput.value.trim() : '';
+        const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
+        const tieneArchivoNuevo = fileInput && fileInput.files.length > 0;
+
+        if (realizada === 'si') {
+          if (!tieneArchivoPrevio && !tieneArchivoNuevo) tabTecnicaValido = false;
+        } else if (realizada === 'no') {
+          if (observacion === '') tabTecnicaValido = false;
+        } else {
+          tabTecnicaValido = false; 
+        }
+      }
+    });
+
+    // 2. Validar Tab Financiera FPL
+    document.querySelectorAll('#filas-documentos-fpl tr').forEach(fila => {
+      const fileInput = fila.querySelector('input[type="file"]');
+      const selectActividades = fila.querySelector('select');
+      const tdArchivoPrevio = fila.querySelector('td');
+      const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
+      const tieneActividad = selectActividades && $(selectActividades).val() && $(selectActividades).val().length > 0;
+
+      if (tieneArchivo && tieneActividad) {
+        tabFinancieraFplValido = true;
+      }
+    });
+
+    // 3. Validar Tab Financiera Aporte
+    document.querySelectorAll('#filas-documentos-aporte tr').forEach(fila => {
+      const fileInput = fila.querySelector('input[type="file"]');
+      const selectActividades = fila.querySelector('select');
+      const tdArchivoPrevio = fila.querySelector('td');
+      const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
+      const tieneActividad = selectActividades && $(selectActividades).val() && $(selectActividades).val().length > 0;
+
+      if (tieneArchivo && tieneActividad) {
+        tabFinancieraAporteValido = true;
+      }
+    });
+
+    const formCompleto = tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido;
     const botonEnviar = document.getElementById('enviar-button');
-    if (archivosCargados.archivo_resolucion && archivosCargados.archivo_contrato) {
-      botonEnviar.classList.remove('btn-disabled');
-      botonEnviar.disabled = false;
-    } else {
-      botonEnviar.classList.add('btn-disabled');
-      botonEnviar.disabled = true;
+    
+    if (botonEnviar) {
+      botonEnviar.disabled = !formCompleto;
+      if (formCompleto) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
     }
   }
 
-  // Si quieres que al cargar la página ya se evalúe si existen archivos previos:
+  function agregarFilaDocumento(tablaId) {
+    const tbody = document.getElementById(tablaId);
+    $('#' + tablaId + ' .chosen-control').chosen('destroy');
+
+    const primeraFila = tbody.querySelector('tr');
+    const nuevaFila = primeraFila.cloneNode(true);
+
+    const hiddenId = nuevaFila.querySelector('input[type="hidden"][name*="[id]"]');
+    if (hiddenId) hiddenId.remove();
+
+    const fileInput = nuevaFila.querySelector('input[type="file"]');
+    if (fileInput) fileInput.value = '';
+
+    const select = nuevaFila.querySelector('select');
+    if (select) {
+      Array.from(select.options).forEach(opt => opt.selected = false);
+    }
+
+    tbody.appendChild(nuevaFila);
+
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    }).change(function() {
+      validarFormulario();
+    });
+    
+    validarFormulario();
+  }
+
+  function eliminarFilaDocumento(boton) {
+    const tbody = boton.closest('tbody');
+    if (tbody.querySelectorAll('tr').length > 1) {
+      boton.closest('tr').remove();
+      validarFormulario();
+    } else {
+      alert('Debe mantener al menos una fila de documento.');
+    }
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
-    // Si en el backend ya hay archivos cargados, marcamos esos campos como true:
-  
-    validarArchivosCargados();
+    validarFormulario();
   });
 
-%style
 :css
-  .table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    -ms-overflow-style: -ms-autohiding-scrollbar;
-  }
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  #financiera-fpl .card, #financiera-aporte .card { min-height: auto !important; overflow: visible !important; }
+  #financiera-fpl .card-body, #financiera-aporte .card-body { min-height: auto !important; overflow: visible !important; padding-bottom: 15px !important; }
+  #financiera-fpl .table-responsive, #financiera-aporte .table-responsive, #tabla-financiera-fpl, #tabla-financiera-aporte, #tabla-financiera-fpl tr, #tabla-financiera-aporte tr, #tabla-financiera-fpl td, #tabla-financiera-aporte td { overflow: visible !important; }
+  .chosen-container .chosen-drop { z-index: 9999 !important; position: absolute !important; }
+  #tabla-financiera-fpl td, #tabla-financiera-aporte td { vertical-align: middle; padding: 8px; }
 
-  .table {
-    width: 100%;
-    max-width: 100%;
-    margin-bottom: 1rem;
-    background-color: transparent;
-  }
-
-  .table tbody + tbody {
-    border-top: 2px solid #dee2e6;
-  }
-
-  .table .table {
-    background-color: #fff;
-  }
-
-  .table thead th {
-    font-size: 12px;
-    border-bottom: 2px solid #dee2e6;
-    border-right: 2px solid #dee2e6; 
-    border-left: 2px solid #dee2e6;
-  }
-
-  .encabezado-form {
-    vertical-align: middle;
-    border-bottom: 2px solid #dee2e6;
-    background-color: #E0EFF6;
-    text-align: center;
-    font-weight: bold;
-  }
-
-  .contenido-form {
-    border-bottom: 2px solid #dee2e6;
-    border-right: 2px solid #dee2e6; 
-    border-left: 2px solid #dee2e6; 
-    font-size: 12px; 
-    vertical-align: top;
-    background-color: #fff;
-    color: #5d759e;
-  }
-
-  .smaller-text {
-    font-size: 11px !important;
-    height: auto !important;
-    padding: 2px 4px !important;
-  }
-
-  .border-text {
-    border: 1px solid #cccccc;
-    border-radius: 4px;
-    background-color: #ffffff;
-  }
-
-  .border-error {
-    border: 1px solid #dc3545;
-    border-radius: 4px;
-    background-color: #fff8f8;
-  }
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
-- titulo t(:documentos_rendicion)
+- titulo t(:rendicion_por_actividad)
+- mes_guardado = @rendicion.try(:mes_a_rendir)
+
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin=titulo_instrumento_fpl.html_safe
+          %h5.no-margin=titulo_instrumento.html_safe
+          %h5.no-margin=titulo_proyecto_fpl.html_safe
+          %h5.no-margin=titulo_apl.html_safe
+          %h5.no-margin=datos_beneficiario_fpl.html_safe
+
+- tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
+
+#tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+    - tabs.each do |tab, active|
+      %li.nav-item.tab-block{id: "#{tab}-tab"}
+        %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          = t(tab.to_s.gsub('-','_'))
+
 = simple_form_for fpl_objeto, url: adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
-  .row
-    .col-12
+  .tab-content#manifestacionContent
+    / Pestaña 1: Técnica
+    .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
       .card
-        .card-header.p-0
-          .p-3
-            %h5.no-margin=titulo_instrumento_fpl.html_safe
-            %h5.no-margin=titulo_instrumento.html_safe
-            %h5.no-margin=titulo_proyecto_fpl.html_safe
-            %h5.no-margin=titulo_apl.html_safe
-            %h5.no-margin=datos_beneficiario_fpl.html_safe
         .card-header
           %h5.no-margin= t(:adjuntar_resolucion_contrato)
         .card-body
+          .row.mb-3
+            .col-md-4.col-sm-6
+              %label.font-weight-bold{for: "mes_a_rendir"} Mes a rendir
+              - valor_duracion = @duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : (fpl_objeto.respond_to?(:duracion) ? fpl_objeto.duracion : @duracion_meses)
+              - duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
+              - opciones_meses = (1..duracion).map { |m| ["Mes #{m}", m] }
+              = select_tag "mes_a_rendir", options_for_select(opciones_meses, mes_guardado), prompt: "Seleccione mes...", class: "form-control chosen-control", id: "mes_a_rendir"
+
           .table-responsive
-            %table.table.table-striped.usuarios.no-margin{class: ('users' unless @objetivo.nil? || @objetivo.size <= 0)}
+            %table.table.table-striped.usuarios.no-margin
               %thead
                 %tr
-                  %th.encabezado-form{style: 'width: 10%;'}= t(:n°)
-                  %th.encabezado-form{style: 'width: 40%;'}= t(:actividades)
-                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                  %th.encabezado-form{style: 'width: 30%;'}= t(:actividades)
+                  %th.encabezado-form{style: 'width: 12%;'} Realizada
+                  %th.encabezado-form{style: 'width: 23%;'} Observación
+                  %th.encabezado-form{style: 'width: 15%;'} Archivos Cargados
                   - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                    %th.encabezado-form{style: 'width: 25%;'}= t(:subir_documento_rendicion)
+                    %th.encabezado-form{style: 'width: 15%;'}= t(:subir_documento_rendicion)
               %tbody
                 - if @actividad_x_linea.present?
                   - @actividad_x_linea.each do |actividad|
-                    - nombre_campo = "archivo_rendicion_#{actividad.id}"
-                    - archivo = f.object.respond_to?(nombre_campo) ? f.object.send(nombre_campo) : (actividad.respond_to?(:archivo_rendicion) ? actividad.archivo_rendicion : nil)
+                    = hidden_field_tag "actividades_ids[]", actividad.id
+                    
+                    / Búsqueda de datos guardados en la BD para esta actividad
+                    - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
+                    - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
+                    - observacion_valor = detalle_tecnico&.observacion
+                    - archivo = detalle_tecnico&.archivo
+                    - tiene_archivo = detalle_tecnico&.archivo&.url.present?
 
                     %tr{id: "fila_actividad_#{actividad.id}"}
-                      %td.contenido-form{id: "id_correlativo_plan_actividad_#{actividad.id}", style: 'vertical-align: middle; text-align: center;'}
-                        = actividad.correlativo
-                      %td.contenido-form{id: "nombre_actividad_#{actividad.id}", style: 'vertical-align: middle;'}
-                        = actividad.nombre
-                      %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}"}
-                        = __descargar_archivo_sin_titulo(archivo, f.object)
-                        -#
-                          = __upload_status(f.object, nombre_campo)
+                      %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                      %td.contenido-form= actividad.nombre
+                      %td.contenido-form
+                        = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')"
+                      %td.contenido-form
+                        = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: (realizada_valor.to_s.downcase != 'no'), placeholder: "Ingrese observación...", rows: 2, onkeyup: "validarFormulario()"
+                      %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
+                        / Se pasa detalle_tecnico si existe para generar la URL correcta de Blob Storage
+                        = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
                       - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        %td.contenido-form{style: 'vertical-align: middle;'}
-                          = file_field_tag nombre_campo, id: nombre_campo, class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, '#{actividad.id}', '#{nombre_campo}', 'rendicion')", label: false
+                        %td.contenido-form
+                          = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+
+    / Pestaña 2: Financiera FPL
+    .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+      .card{style: 'overflow: visible;'}
+        .card-header.d-flex.justify-content-between.align-items-center
+          %h5.no-margin Documentos de Rendición Financiera FPL
+          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+            %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-fpl')"}
+              %i.fa.fa-plus
+              Agregar documento
+
+        .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
+          .table-responsive{style: 'overflow: visible;'}
+            %table.table.table-striped.no-margin#tabla-financiera-fpl
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 30%;'} Documento rendición
+                  %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada (elegir actividades realizadas)
+                  - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    %th.encabezado-form{style: 'width: 10%;'} Acciones
+              %tbody#filas-documentos-fpl
+                - if @documentos_fpl.present?
+                  - @documentos_fpl.each do |doc|
+                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                    - act_ids = doc.plan_actividades.pluck(:id)
+                    %tr
+                      = hidden_field_tag "documentos_fpl[][id]", doc.id
+                      %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                      %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                      %td.contenido-form{style: 'overflow: visible;'}
+                        = select_tag "documentos_fpl[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                        %td.contenido-form.text-center
+                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
+                            %i.fa.fa-trash
                 - else
                   %tr
-                    %td.text-center.text-muted{colspan: (@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 ? 4 : 3)}
-                      No hay actividades asociadas
-  .float-right
+                    %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
+                    %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                    %td.contenido-form{style: 'overflow: visible;'}
+                      = select_tag "documentos_fpl[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                      %td.contenido-form.text-center
+                        %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
+                          %i.fa.fa-trash
+
+    / Pestaña 3: Financiera Aporte
+    .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+      .card{style: 'overflow: visible;'}
+        .card-header.d-flex.justify-content-between.align-items-center
+          %h5.no-margin Documentos de Rendición Financiera Aporte
+          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+            %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-aporte')"}
+              %i.fa.fa-plus
+              Agregar documento
+
+        .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
+          .table-responsive{style: 'overflow: visible;'}
+            %table.table.table-striped.no-margin#tabla-financiera-aporte
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 30%;'} Documento rendición
+                  %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada (elegir actividades realizadas)
+                  - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    %th.encabezado-form{style: 'width: 10%;'} Acciones
+              %tbody#filas-documentos-aporte
+                - if @documentos_aporte.present?
+                  - @documentos_aporte.each do |doc|
+                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                    - act_ids = doc.plan_actividades.pluck(:id)
+                    %tr
+                      = hidden_field_tag "documentos_aporte[][id]", doc.id
+                      %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                      %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                      %td.contenido-form{style: 'overflow: visible;'}
+                        = select_tag "documentos_aporte[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                        %td.contenido-form.text-center
+                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
+                            %i.fa.fa-trash
+                - else
+                  %tr
+                    %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
+                    %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                    %td.contenido-form{style: 'overflow: visible;'}
+                      = select_tag "documentos_aporte[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                      %td.contenido-form.text-center
+                        %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
+                          %i.fa.fa-trash
+
+  .float-right.mt-3
     = volver_root
-    -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+      = button_tag "Grabar", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'grabar', 
+        id: 'grabar-button', 
+        class: "btn btn-sm btn-primary mr-2", 
+        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+
       = button_tag t(:enviar), 
-        'data-disable-with' => "<i class='fa fa-spinner fa-spin'></i> Enviando...".html_safe, 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'enviar', 
         id: 'enviar-button', 
         class: "btn btn-sm btn-success btn-disabled", 
-        disabled: true,
-        data: { confirm: "¿Está seguro que desea enviar los documentos?", remote: false }
+        disabled: true, 
+        data: { confirm: "¿Está seguro que desea enviar los documentos de rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando...", remote: false }

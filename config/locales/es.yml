@@ -1522,6 +1522,13 @@ es:
   adjuntar_resolucion_contrato: Adjuntar Resolución y Contrato
   resolucion_contrato: Resolución y Contrato
   documentos_rendicion: Documentos de rendición por actividad
+  rendicion_por_actividad: Rendición por actividad
+  tecnica: Técnica
+  financiera_fpl: Financiera FPL
+  financiera_aporte: Financiera Aporte Propio
+  asignar_revisor_rendicion: Asignar Revisor Rendición
+  evaluacion_rendicion: Evaluacion rendición
+  enviar_evaluacion: Enviar evaluación
   adjuntar_resolucion_contrato: Adjuntar documentos de rendición por actividad
   subir_documento_rendicion: Subir Documento Rendición
   no_aplica: No Aplica

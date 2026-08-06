@@ -15,7 +15,8 @@ class FondoProduccionLimpiasController < ApplicationController
     :revisar_admisibilidad_tecnica, :revisar_admisibilidad, :revisar_admisibilidad_juridica, :revisar_pertinencia_factibilidad, :subir_documento, :subir_documento_refresh_pagina, :get_revisor, 
     :resolucion_contrato, :adjuntar_resolucion_contrato, :insert_recursos_humanos_propios, :insert_recursos_humanos_externos, :insert_gastos_operacion, :eliminar_gasto_operacion,
     :insert_gastos_administracion, :eliminar_gasto_administracion, :eliminar_recursos_humanos, :carga_responsable_postulante, :enviar_observaciones_admisibilidad,
-    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos, :adjuntar_rendicion_subir_documentos_actividades, :rendicion_subir_documentos_actividades]
+    :enviar_observaciones_admisibilidad_tecnica, :seleccionar_documentos_juridicos, :adjuntar_rendicion_subir_documentos_actividades, :rendicion_subir_documentos_actividades,
+    :asignar_revisor_rendicion, :revision_tecnica_rendicion, :revision_financiera_rendicion]
     before_action :set_lineas, only: [:edit, :update, :revisor]
     before_action :set_sub_lineas, only: [:edit, :update, :revisor] 
     before_action :set_manifestacion_de_interes, only: [:edit, :update, :destroy, :descargable,
@@ -33,7 +34,8 @@ class FondoProduccionLimpiasController < ApplicationController
                                         :evaluacion_negociacion, :actualizar_acuerdos_actores,:actualizar_comite_acuerdos,
                                         :eliminar_contribuyente_temporal, :observaciones_informe, :responder_observaciones_informe, :descargar_compilado, 
                                         :guardar_fondo_temporal, :carga_responsable_postulante, :carga_responsable_postulante,
-                                        :rendicion_subir_documentos_actividades]
+                                        :rendicion_subir_documentos_actividades, :asignar_revisor_rendicion, :revision_tecnica_rendicion, 
+                                        :revision_financiera_rendicion]
     before_action :set_representantes, only: [:edit, :update, :destroy, :descargable,
       :revisor, :asignar_revisor, :admisibilidad, :revisar_admisibilidad, :admisibilidad_tecnica,
                                         :admisibilidad_juridica, :revisar_admisibilidad_tecnica, :revisar_admisibilidad_juridica,
@@ -2344,8 +2346,9 @@ class FondoProduccionLimpiasController < ApplicationController
     
     def subir_documento_refresh_pagina
       nombre_campo = params[:nombre_campo]
-      archivo = params[:archivo]
-    
+      archivo      = params[:archivo]
+
+      # 1. Validar extensión del archivo (Lógica original)
       unless valid_extensions?(archivo)
         respond_to do |format|
           format.json { render json: { error: 'La extensión del archivo no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.' }, status: :unprocessable_entity }
@@ -2353,25 +2356,62 @@ class FondoProduccionLimpiasController < ApplicationController
         end
         return
       end
-    
-      custom_params = {
-        fondo_produccion_limpia: {
-          nombre_campo => archivo
-        }
-      }
-    
-      if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-        respond_to do |format|
-          flash[:success] = 'Archivo subido correctamente.'
-          format.js { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
-          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: success }
+
+      # 2. CASO A: Archivos de Rendición por Actividad (Guarda en RendicionDetalleFpl)
+      if nombre_campo.to_s.start_with?('archivo_rendicion_')
+        actividad_id = nombre_campo.gsub('archivo_rendicion_', '').to_i
+        @rendicion   = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id)
+
+        # Buscar si ya existe un detalle técnico para esta actividad
+        detalle = @rendicion.rendicion_detalles_fpl
+                            .joins(:rendicion_detalle_actividades_fpl)
+                            .find_by(
+                              tipo_tab: RendicionDetalleFpl.tipo_tabs[:tecnica],
+                              rendicion_detalle_actividades_fpl: { plan_actividad_id: actividad_id }
+                            )
+
+        detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
+        detalle.archivo = archivo
+
+        if detalle.save
+          # Crear la asociación con la actividad si es nueva
+          unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
+            detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+          end
+
+          respond_to do |format|
+            flash[:success] = 'Archivo subido correctamente.'
+            format.json { render json: { success: true }, status: :ok }
+            format.js   { render js: "window.location.reload();" }
+            format.html { redirect_back(fallback_location: root_path, notice: 'Archivo subido correctamente.') }
+          end
+        else
+          respond_to do |format|
+            format.json { render json: { error: 'No se pudo actualizar el archivo de rendición.' }, status: :unprocessable_entity }
+          end
         end
+
+      # 3. CASO B: Archivos estándar de FondoProduccionLimpia (Lógica original)
       else
-        respond_to do |format|
-          format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+        custom_params = {
+          fondo_produccion_limpia: {
+            nombre_campo => archivo
+          }
+        }
+
+        if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
+          respond_to do |format|
+            flash[:success] = 'Archivo subido correctamente.'
+            format.js   { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
+            format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: 'Archivo subido correctamente.' }
+          end
+        else
+          respond_to do |format|
+            format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+          end
         end
       end
-    end 
+    end
 
     def enviar_postulacion
       respond_to do |format|
@@ -4099,65 +4139,333 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def rendicion_subir_documentos_actividades # FPL-12
-      # Cargar la instancia de FondoProduccionLimpia asociada al flujo de la tarea
-      @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente&.flujo_id) || FondoProduccionLimpia.new
+      @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
-      if tiene_permisos == nil
-        @tiene_permisos = true
+      # 1. Carga de la rendición principal
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id)
+
+      # 2. Carga segura de detalles según tipo de pestaña
+      if @rendicion.present?
+        # Usamos los scopes automáticos del enum 'tipo_tab' definida en RendicionDetalleFpl
+        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
       else
-        @tiene_permisos = false
+        # Colecciones vacías si aún no se ha grabado borrador
+        @documentos_fpl = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
       end
+
+      # 3. Control de permisos
+      solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      @tiene_permisos = solo_lectura.nil?
+
+      # 4. Asignación de actividades del proyecto
       set_actividades_x_linea
     end
 
     def adjuntar_rendicion_subir_documentos_actividades # FPL-12
-      respond_to do |format|
-        # Validamos que existan ambos archivos
-        if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?
+      commit_accion = params[:commit_type] # 'grabar' o 'enviar'
+
+      ActiveRecord::Base.transaction do
+        # 1. Crear o buscar la cabecera de rendición vinculada al Flujo
+        @rendicion = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id) do |r|
+          r.mes_a_rendir = params[:mes_a_rendir]
+          r.estado = :borrador_tecnico
+        end
+
+        @rendicion.update!(mes_a_rendir: params[:mes_a_rendir]) if params[:mes_a_rendir].present?
+
+        # Obtener el valor numérico del enum 'tecnica' (0) para evitar que pase nil en SQL
+        tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
+
+        # -------------------------------------------------------------
+        # TAB 1: TÉCNICA
+        # -------------------------------------------------------------
+        actividades_list = params[:actividades_ids].present? ? params[:actividades_ids] : (@actividad_x_linea || []).map(&:id)
+
+        actividades_list.each do |actividad_id|
+          realizada_val = params["realizada_actividad_#{actividad_id}"]
+          obs_val       = params["observacion_actividad_#{actividad_id}"]
+          archivo_val   = params["archivo_rendicion_#{actividad_id}"]
+
+          next if realizada_val.blank?
+
+          # Búsqueda usando el valor numérico del enum
+          detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
+                                                    .find_by(
+                                                      rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num },
+                                                      plan_actividad_id: actividad_id
+                                                    )
+
+          detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
           
-          # SE CAMBIA EL ESTADO DEL FPL-11 A 2 (ENVIADA)
-          tarea_fondo_fpl_11 = Tarea.find_by_codigo(Tarea::COD_FPL_11)
-          tarea_pendiente_fpl_11 = TareaPendiente.find_by(
-            tarea_id: tarea_fondo_fpl_11.id,
+          detalle.realizada   = (realizada_val.to_s.downcase == 'si')
+          detalle.observacion = (realizada_val.to_s.downcase == 'no') ? obs_val : nil
+          
+          detalle.archivo = archivo_val if archivo_val.present?
+          detalle.save!
+
+          unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
+            detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+          end
+        end
+
+        # -------------------------------------------------------------
+        # TAB 2: FINANCIERA FPL
+        # -------------------------------------------------------------
+        if params[:documentos_fpl].present?
+          params[:documentos_fpl].each do |doc_params|
+            next if doc_params[:archivo].blank? && doc_params[:actividad_ids].blank? && doc_params[:id].blank?
+
+            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
+            detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
+
+            detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+            detalle.save!
+
+            if doc_params[:actividad_ids].present?
+              detalle.rendicion_detalle_actividades_fpl.destroy_all
+              doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
+                detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+              end
+            end
+          end
+        end
+
+        # -------------------------------------------------------------
+        # TAB 3: FINANCIERA APORTE
+        # -------------------------------------------------------------
+        if params[:documentos_aporte].present?
+          params[:documentos_aporte].each do |doc_params|
+            next if doc_params[:archivo].blank? && doc_params[:actividad_ids].blank? && doc_params[:id].blank?
+
+            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
+            detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
+
+            # Corregido: Asignación directa para CarrierWave (se quita .attach)
+            detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+            detalle.save!
+
+            if doc_params[:actividad_ids].present?
+              detalle.rendicion_detalle_actividades_fpl.destroy_all
+              doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
+                detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+              end
+            end
+          end
+        end
+
+        # -------------------------------------------------------------
+        # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y REDIRECCIÓN
+        # -------------------------------------------------------------
+        if commit_accion == 'enviar'
+          @rendicion.update!(estado: :finalizada)
+          @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+
+          tarea_fondo_fpl_12 = Tarea.find_by_codigo(Tarea::COD_FPL_12)
+          tarea_pendiente_fpl_12 = TareaPendiente.find_by(
+            tarea_id: tarea_fondo_fpl_12&.id,
             flujo_id: @tarea_pendiente.flujo_id,
             user_id: @tarea_pendiente.user_id
           )
+          tarea_pendiente_fpl_12.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if tarea_pendiente_fpl_12.present?
 
-          if tarea_pendiente_fpl_11.present?
-            tarea_pendiente_fpl_11.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            tarea_pendiente_fpl_11.save
-          end
+          #Se crea la siguiente tarea FPL-13 y envia el correo
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
 
-          format.js do
-            flash.now[:success] = 'Documentos verificados correctamente'
-            render js: "window.location='#{root_path}'"
-          end
-
-          format.html do
-            redirect_to root_path, flash: { notice: 'Documentos verificados correctamente' }
-          end
-
+          mensaje_exito = 'Rendición enviada con éxito. Se ha generado la siguiente tarea.'
+          url_destino = root_path
         else
-          # Si falta algún documento, mostramos error
-          faltantes = []
-          faltantes << "Resolución" unless @fondo_produccion_limpia.archivo_resolucion.present?
-          faltantes << "Contrato" unless @fondo_produccion_limpia.archivo_contrato.present?
-          
-          flash[:error] = "Debe adjuntar los documentos: #{faltantes.join(' y ')}"
+          mensaje_exito = 'Avances guardados correctamente.'
+          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id)
+        end
 
+        respond_to do |format|
           format.js do
-            render js: "alert('Debe adjuntar los documentos: #{faltantes.join(' y ')}');"
+            flash[:success] = mensaje_exito
+            render js: "window.location='#{url_destino}';"
           end
-
           format.html do
-            redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id),
-              flash: { error: "Debe adjuntar los documentos: #{faltantes.join(' y ')}" }
+            redirect_to url_destino, notice: mensaje_exito
           end
         end
       end
+
+    rescue => e
+      Rails.logger.error("Error en rendición: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+      respond_to do |format|
+        format.js { render js: "alert('Ocurrió un error al procesar: #{e.message}');" }
+        format.html { redirect_back(fallback_location: root_path, alert: e.message) }
+      end
     end
-    
+
+    def asignar_revisor_rendicion #FPL-13 Tarea FPL correspondencia de revisión
+      @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
+      
+      # Carga solo revisores técnicos y financieros (Se elimina revisor jurídico)
+      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
+      
+      @revisor = true
+      
+      # Carga de datos para las pestañas desarrolladas previamente
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      if @rendicion.present?
+        # Usamos los scopes automáticos del enum 'tipo_tab' definida en RendicionDetalleFpl
+        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+      else
+        # Colecciones vacías si aún no se ha grabado borrador
+        @documentos_fpl = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
+      end
+
+      @solo_lectura = true
+
+      tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+      if tiene_permisos.nil?
+        @tiene_permisos = true
+      else
+        @tiene_permisos = false
+      end
+
+      set_actividades_x_linea
+
+    end
+
+    def guardar_asignar_revisor_rendicion # FPL-13 Tarea FPL correspondencia de revisión
+      ActiveRecord::Base.transaction do
+        # 1. Obtener la tarea pendiente y la rendición asociada al flujo
+        @tarea_pendiente = TareaPendiente.find(params[:id]) if params[:id].present?
+        @rendicion       = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id)
+
+        # 2. Obtener parámetros enviados desde el formulario (soporta :rendicion_fpl o fallback)
+        params_rendicion = params[:rendicion_fpl] || params[:fondo_produccion_limpia] || params
+
+        revisor_tec_id = params_rendicion[:revisor_tecnico_id]
+        revisor_fin_id = params_rendicion[:revisor_financiero_id]
+        comentario     = params_rendicion[:comentario_asignar_revisor]
+
+        # 3. Guardar directamente en la tabla 'rendiciones_fpl'
+        @rendicion.update!(
+          revisor_tecnico_id:         revisor_tec_id,
+          revisor_financiero_id:      revisor_fin_id,
+          comentario_asignar_revisor: comentario
+        )
+
+        # 4. Crear o actualizar registros en MapaDeActor de forma segura
+        if revisor_tec_id.present?
+          persona_tec = Persona.find_by(user_id: revisor_tec_id)
+          if persona_tec.present?
+            # find_or_initialize_by busca por flujo y rol. Si existe, lo actualiza, si no, lo crea.
+            # Esto evita que se dupliquen revisores si editas la asignación.
+            mapa_tec = MapaDeActor.find_or_initialize_by(
+              flujo_id: @tarea_pendiente.flujo_id,
+              rol_id:   Rol::REVISOR_TECNICO
+            )
+            mapa_tec.update!(persona_id: persona_tec.id)
+          end
+        end
+
+        if revisor_fin_id.present?
+          persona_fin = Persona.find_by(user_id: revisor_fin_id)
+          if persona_fin.present?
+            mapa_fin = MapaDeActor.find_or_initialize_by(
+              flujo_id: @tarea_pendiente.flujo_id,
+              rol_id:   Rol::REVISOR_FINANCIERO
+            )
+            mapa_fin.update!(persona_id: persona_fin.id)
+          end
+        end
+
+        # 5. Enviar correos al responsable FPL-14 y FPL-15 mediante el avance de tareas
+        @tarea_pendiente.pasar_a_siguiente_tarea('A') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+        @tarea_pendiente.pasar_a_siguiente_tarea('B') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+
+        # 6. Finalizar la tarea pendiente actual y avanzar el flujo
+        tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_13)
+        jefes_de_linea_fpl = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
+        
+        jefes_de_linea_fpl.each do |responsable|
+          # CORRECCIÓN AQUÍ: Cambiamos @flujo.id por @tarea_pendiente.flujo_id
+          tarea_jefe = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, user_id: responsable.user_id)
+          
+          if tarea_jefe.present?
+            tarea_jefe.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
+            tarea_jefe.save  
+          end
+        end 
+
+        # 7. Redirección y mensaje de éxito
+        mensaje_exito = 'Revisores asignados y rendición procesada con éxito.'
+
+        respond_to do |format|
+          format.js do
+            flash[:notice] = mensaje_exito
+            render js: "window.location='#{root_path}';"
+          end
+          format.html do
+            redirect_to root_path, notice: mensaje_exito
+          end
+        end
+      end
+
+    rescue => e
+      Rails.logger.error("Error al asignar revisores en rendición: #{e.message}")
+      Rails.logger.error(e.backtrace.join("\n"))
+
+      respond_to do |format|
+        format.js   { render js: "alert('Ocurrió un error al asignar revisores: #{e.message}');" }
+        format.html { redirect_back(fallback_location: root_path, alert: e.message) }
+      end
+    end
+
+    def revision_tecnica_rendicion #FPL-15
+      @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
+      @es_revision_tecnica    = true
+      @es_revision_financiera = false
+
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      set_actividades_x_linea if respond_to?(:set_actividades_x_linea)
+
+      @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
+      @tiene_permisos = !@solo_lectura
+      set_actividades_x_linea
+
+      render 'evaluar_rendicion'
+    end
+
+    def guardar_revision_tecnica_rendicion #FPL-15
+      guardar_evaluacion_rendicion
+    end
+
+    def revision_financiera_rendicion #FPL-14
+      @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
+      @es_revision_tecnica    = false
+      @es_revision_financiera = true
+
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      if @rendicion.present?
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+      else
+        @documentos_fpl    = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
+      end
+
+      @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
+      @tiene_permisos = !@solo_lectura
+
+      render 'evaluar_rendicion'
+    end
+
+    def guardar_revision_financiera_rendicion #FPL-14
+      guardar_evaluacion_rendicion
+    end
+        
     def descargar_pdf
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
@@ -5937,5 +6245,50 @@ class FondoProduccionLimpiasController < ApplicationController
           establecimiento_contribuyentes_attributes: [ :id, :casa_matriz, :direccion, :ciudad, :region_id, :comuna_id, :_destroy ],
           dato_anual_contribuyentes_attributes: [ :id, :tipo_contribuyente_id, :rango_venta_contribuyente_id, :periodo, :numero_trabajadores, :f22c_645, :f22c_646, :_destroy ]
         )
+      end
+
+      def guardar_evaluacion_rendicion
+        commit_accion = params[:commit_type] # 'grabar' o 'enviar'
+
+        ActiveRecord::Base.transaction do
+          # 1. Guardar o actualizar la evaluación de cada detalle (cumple y comentario_revisor)
+          if params[:detalles].present?
+            params[:detalles].each do |detalle_id, evaluacion_params|
+              detalle = RendicionDetalleFpl.find_by(id: detalle_id)
+              next unless detalle.present?
+
+              detalle.update!(
+                cumple: evaluacion_params[:cumple],
+                comentario_revisor: evaluacion_params[:comentario_revisor]
+              )
+            end
+          end
+
+          # 2. Si el usuario hace clic en 'Enviar', finaliza la tarea actual y avanza el flujo
+          if commit_accion == 'enviar'
+            @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+            @tarea_pendiente.crear_siguiente_tarea if @tarea_pendiente.respond_to?(:crear_siguiente_tarea)
+            mensaje_exito = 'Evaluación de rendición enviada con éxito.'
+          else
+            mensaje_exito = 'Avance de evaluación guardado correctamente.'
+          end
+
+          respond_to do |format|
+            format.js do
+              flash[:notice] = mensaje_exito
+              render js: "window.location='#{root_path}';"
+            end
+            format.html { redirect_to root_path, notice: mensaje_exito }
+          end
+        end
+
+      rescue => e
+        Rails.logger.error("Error al evaluar rendición: #{e.message}")
+        Rails.logger.error(e.backtrace.join("\n"))
+
+        respond_to do |format|
+          format.js   { render js: "alert('Ocurrió un error al guardar la evaluación: #{e.message}');" }
+          format.html { redirect_back(fallback_location: root_path, alert: e.message) }
+        end
       end
 end
