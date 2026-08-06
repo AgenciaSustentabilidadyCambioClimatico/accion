@@ -4300,67 +4300,54 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def asignar_revisor_rendicion #FPL-13 Tarea FPL correspondencia de revisión
+    def asignar_revisor_rendicion # FPL-13 Tarea FPL correspondencia de revisión
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       
-      # Carga solo revisores técnicos y financieros (Se elimina revisor jurídico)
+      # Carga de revisores
       @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
       
       @revisor = true
       
-      # Carga de datos para las pestañas desarrolladas previamente
+      # Carga de datos de rendición
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
 
       if @rendicion.present?
-        # Usamos los scopes automáticos del enum 'tipo_tab' definida en RendicionDetalleFpl
-        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
         @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
       else
-        # Colecciones vacías si aún no se ha grabado borrador
-        @documentos_fpl = RendicionDetalleFpl.none
+        @documentos_fpl    = RendicionDetalleFpl.none
         @documentos_aporte = RendicionDetalleFpl.none
       end
 
       @solo_lectura = true
 
       tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
-      if tiene_permisos.nil?
-        @tiene_permisos = true
-      else
-        @tiene_permisos = false
-      end
+      @tiene_permisos = tiene_permisos.nil? ? true : false
 
       set_actividades_x_linea
-
     end
 
     def guardar_asignar_revisor_rendicion # FPL-13 Tarea FPL correspondencia de revisión
       ActiveRecord::Base.transaction do
-        # 1. Obtener la tarea pendiente y la rendición asociada al flujo
         @tarea_pendiente = TareaPendiente.find(params[:id]) if params[:id].present?
         @rendicion       = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id)
 
-        # 2. Obtener parámetros enviados desde el formulario (soporta :rendicion_fpl o fallback)
         params_rendicion = params[:rendicion_fpl] || params[:fondo_produccion_limpia] || params
 
         revisor_tec_id = params_rendicion[:revisor_tecnico_id]
         revisor_fin_id = params_rendicion[:revisor_financiero_id]
         comentario     = params_rendicion[:comentario_asignar_revisor]
 
-        # 3. Guardar directamente en la tabla 'rendiciones_fpl'
         @rendicion.update!(
           revisor_tecnico_id:         revisor_tec_id,
           revisor_financiero_id:      revisor_fin_id,
           comentario_asignar_revisor: comentario
         )
 
-        # 4. Crear o actualizar registros en MapaDeActor de forma segura
         if revisor_tec_id.present?
           persona_tec = Persona.find_by(user_id: revisor_tec_id)
           if persona_tec.present?
-            # find_or_initialize_by busca por flujo y rol. Si existe, lo actualiza, si no, lo crea.
-            # Esto evita que se dupliquen revisores si editas la asignación.
             mapa_tec = MapaDeActor.find_or_initialize_by(
               flujo_id: @tarea_pendiente.flujo_id,
               rol_id:   Rol::REVISOR_TECNICO
@@ -4380,25 +4367,20 @@ class FondoProduccionLimpiasController < ApplicationController
           end
         end
 
-        # 5. Enviar correos al responsable FPL-14 y FPL-15 mediante el avance de tareas
         @tarea_pendiente.pasar_a_siguiente_tarea('A') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
         @tarea_pendiente.pasar_a_siguiente_tarea('B') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
 
-        # 6. Finalizar la tarea pendiente actual y avanzar el flujo
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_13)
-        jefes_de_linea_fpl = Responsable::__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
+        jefes_de_linea_fpl = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
         
         jefes_de_linea_fpl.each do |responsable|
-          # CORRECCIÓN AQUÍ: Cambiamos @flujo.id por @tarea_pendiente.flujo_id
           tarea_jefe = TareaPendiente.find_by(tarea_id: tarea_fondo.id, flujo_id: @tarea_pendiente.flujo_id, user_id: responsable.user_id)
-          
           if tarea_jefe.present?
             tarea_jefe.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
             tarea_jefe.save  
           end
         end 
 
-        # 7. Redirección y mensaje de éxito
         mensaje_exito = 'Revisores asignados y rendición procesada con éxito.'
 
         respond_to do |format|
@@ -4422,26 +4404,25 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def revision_tecnica_rendicion #FPL-15
+    def revision_tecnica_rendicion # FPL-15
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @es_revision_tecnica    = true
       @es_revision_financiera = false
 
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
-      set_actividades_x_linea if respond_to?(:set_actividades_x_linea)
+      set_actividades_x_linea
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
       @tiene_permisos = !@solo_lectura
-      set_actividades_x_linea
 
       render 'evaluar_rendicion'
     end
 
-    def guardar_revision_tecnica_rendicion #FPL-15
+    def guardar_revision_tecnica_rendicion # FPL-15
       guardar_evaluacion_rendicion
     end
 
-    def revision_financiera_rendicion #FPL-14
+    def revision_financiera_rendicion # FPL-14
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
       @es_revision_tecnica    = false
       @es_revision_financiera = true
@@ -4458,11 +4439,12 @@ class FondoProduccionLimpiasController < ApplicationController
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
       @tiene_permisos = !@solo_lectura
+      set_actividades_x_linea
 
       render 'evaluar_rendicion'
     end
 
-    def guardar_revision_financiera_rendicion #FPL-14
+    def guardar_revision_financiera_rendicion # FPL-14
       guardar_evaluacion_rendicion
     end
         

@@ -77,11 +77,10 @@
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
 
-
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 
-= simple_form_for fpl_objeto, url: asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
+= simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   .row
     .col-12
@@ -100,10 +99,9 @@
                   = t('asignar_revisor')
 
         .card-body.border-tabs.px-2.pt-3
-          -# Definición de las 3 pestañas anteriores + la pestaña de asignar revisor activa
           - tabs = { "tecnica" => false, "financiera-fpl" => false, "financiera-aporte" => false, "asignar-revisor" => true }
           - titulo t(:asignar_revisor_rendicion)
-          
+
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}
               - tabs.each do |tab, active|
@@ -137,8 +135,8 @@
                         %tr
                           %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
                           %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
-                          %th.encabezado-form{style: 'width: 15%;'} Realizada
-                          %th.encabezado-form{style: 'width: 25%;'} Observación
+                          %th.encabezado-form{style: 'width: 5%;'} Realizada
+                          %th.encabezado-form{style: 'width: 35%;'} Observación
                           %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
                       %tbody
                         - if @actividad_x_linea.present?
@@ -147,11 +145,17 @@
                             - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'Sí' : 'No')
                             - observacion_valor = detalle_tecnico&.observacion
                             - archivo = detalle_tecnico&.archivo
-                            
+
                             %tr{id: "fila_actividad_#{actividad.id}"}
                               %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
                               %td.contenido-form= actividad.nombre
-                              %td.contenido-form= realizada_valor
+                              -#%td.contenido-form= realizada_valor
+                              %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                                - if detalle_tecnico.present?
+                                  %span.badge{class: detalle_tecnico.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
+                                    = detalle_tecnico.realizada? ? 'Sí' : 'No'
+                                - else
+                                  %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
                               %td.contenido-form= observacion_valor.presence || '--'
                               %td.contenido-form
                                 = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
@@ -170,7 +174,7 @@
                         - if @documentos_fpl.present?
                           - @documentos_fpl.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end }.compact.uniq.join("<br>").html_safe
                             %tr
                               %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               %td.contenido-form= act_nombres.presence || '--'
@@ -189,7 +193,7 @@
                         - if @documentos_aporte.present?
                           - @documentos_aporte.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - act_nombres = doc.plan_actividades.map { |pa| pa.actividad.try(:nombre) || pa.try(:nombre) }.compact.join(", ")
+                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end }.compact.uniq.join("<br>").html_safe
                             %tr
                               %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               %td.contenido-form= act_nombres.presence || '--'
@@ -206,12 +210,10 @@
                             %abbr{ title: "Campo requerido" } *
                             = t(:revisor_tecnico)
                           %br
-                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.revisor_tecnico_id
                           - current_tec_id = @rendicion&.revisor_tecnico_id
                           = f.select :revisor_tecnico_id, options_for_select([['Seleccione un revisor técnico', '']] + @revisores_tecnicos.map { |p| [p.user.nombre_completo, p.user.id] }, current_tec_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor técnico", id: 'revisor_tecnico_fpl_id' }
                         - else
                           .form-group
-                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
                             - rev_tecnico = @rendicion&.revisor_tecnico&.nombre_completo
                             - no_data = rev_tecnico.blank?
                             %label.control-label.string= t(:revisor_tecnico)
@@ -224,12 +226,10 @@
                             %abbr{ title: "Campo requerido" } *
                             = t(:revisor_financiero)
                           %br
-                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.revisor_financiero_id
                           - current_fin_id = @rendicion&.revisor_financiero_id
                           = f.select :revisor_financiero_id, options_for_select([['Seleccione un revisor financiero', '']] + @revisores_financieros.map { |p| [p.user.nombre_completo, p.user.id] }, current_fin_id), {}, { class: "required-field chosen-control", "data-placeholder" => "Seleccione un revisor financiero", id: 'revisor_financiero_fpl_id' }
                         - else
                           .form-group
-                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
                             - rev_financiero = @rendicion&.revisor_financiero&.nombre_completo
                             - no_data = rev_financiero.blank?
                             %label.control-label.string= t(:revisor_financiero)
@@ -242,11 +242,9 @@
                             %abbr{ title: "Campo requerido" } *
                             = t(:comentario)
                           %br
-                          -# IMPORTANTE: Se asigna el valor actual guardado en @rendicion.comentario_asignar_revisor
                           = f.text_area :comentario_asignar_revisor, value: @rendicion&.comentario_asignar_revisor, class: "form-control text required tooltip-block", required: 'required', type: 'text', id: 'comentario_asignar_revisor_fpl', style: 'width: 100%;', rows: 3
                         - else
                           .form-group
-                            -# IMPORTANTE: Se lee de @rendicion en estado de solo lectura
                             - no_data = @rendicion&.comentario_asignar_revisor.blank?
                             %label.control-label.string= t(:comentario)
                             %p.fs-14{align: :justify, class: (no_data ? 'font-italic text-muted' : '')}
