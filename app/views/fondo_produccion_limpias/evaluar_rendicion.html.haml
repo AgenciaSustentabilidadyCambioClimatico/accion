@@ -58,6 +58,10 @@
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - titulo t(:evaluacion_rendicion)
 
+-# Obtención del mes guardado en rendiciones_fpl y consulta a plan_actividades
+- mes_actual = @rendicion&.mes_a_rendir.to_s
+- planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
 .row
   .col-12
     .card.mb-3
@@ -108,39 +112,45 @@
                     %th.encabezado-form{style: 'width: 25%;'} Comentarios (Revisor)
                 %tbody
                   - if @actividad_x_linea.present?
-                    - @actividad_x_linea.each do |actividad|
-                      - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
-                      - raw_cumple = detalle ? (detalle.read_attribute_before_type_cast(:cumple) || detalle.cumple) : nil
-                      - val_str = raw_cumple.to_s.downcase
-                      - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
-                      - valor_comentario = detalle&.comentario_revisor
+                    - actividades_filtradas = @actividad_x_linea.select { |a| plan = planes_hash[a.id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; mes_actual.blank? || dur_meses.include?(mes_actual) }
+                    
+                    - if actividades_filtradas.present?
+                      - actividades_filtradas.each do |actividad|
+                        - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
+                        - raw_cumple = detalle ? (detalle.read_attribute_before_type_cast(:cumple) || detalle.cumple) : nil
+                        - val_str = raw_cumple.to_s.downcase
+                        - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                        - valor_comentario = detalle&.comentario_revisor
 
-                      %tr{id: "fila_eval_actividad_#{actividad.id}"}
-                        %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                        %td.contenido-form= actividad.nombre
-                        %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                          - if detalle.present?
-                            %span.badge{class: detalle.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
-                              = detalle.realizada? ? 'Sí' : 'No'
-                          - else
-                            %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
-                        %td.contenido-form= detalle&.observacion.presence || '--'
-                        %td.contenido-form
-                          - if detalle.present? && detalle.archivo.present?
-                            = __descargar_archivo_sin_titulo(detalle.archivo, detalle)
-                          - else
-                            = '--'
+                        %tr{id: "fila_eval_actividad_#{actividad.id}"}
+                          %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                          %td.contenido-form= actividad.nombre
+                          %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                            - if detalle.present?
+                              %span.badge{class: detalle.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
+                                = detalle.realizada? ? 'Sí' : 'No'
+                            - else
+                              %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                          %td.contenido-form= detalle&.observacion.presence || '--'
+                          %td.contenido-form
+                            - if detalle.present? && detalle.archivo.present?
+                              = __descargar_archivo_sin_titulo(detalle.archivo, detalle)
+                            - else
+                              = '--'
 
-                        %td.contenido-form
-                          - if detalle.present?
-                            = select_tag "detalles[#{detalle.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{detalle.id}", onchange: "toggleComentariosRevisor(this, '#{detalle.id}')"
-                          - else
-                            = '--'
-                        %td.contenido-form
-                          - if detalle.present?
-                            = text_area_tag "detalles[#{detalle.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios (obligatorio si no cumple)...", rows: 2, onkeyup: "validarFormulario()"
-                          - else
-                            = '--'
+                          %td.contenido-form
+                            - if detalle.present?
+                              = select_tag "detalles[#{detalle.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{detalle.id}", onchange: "toggleComentariosRevisor(this, '#{detalle.id}')"
+                            - else
+                              = '--'
+                          %td.contenido-form
+                            - if detalle.present?
+                              = text_area_tag "detalles[#{detalle.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{detalle.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios (obligatorio si no cumple)...", rows: 2, onkeyup: "validarFormulario()"
+                            - else
+                              = '--'
+                    - else
+                      %tr
+                        %td.text-center.text-muted{colspan: 7} No hay actividades programadas para el Mes #{mes_actual.presence || '--'}.
                   - else
                     %tr
                       %td.text-center.text-muted{colspan: 7} No hay actividades configuradas para esta línea.
@@ -169,7 +179,7 @@
                       - val_str = raw_cumple.to_s.downcase
                       - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
                       - valor_comentario = doc.comentario_revisor
-                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; act ? (act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre) : ((c = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo)).present? ? "#{c} - #{pa.try(:actividad)&.try(:nombre) || pa.try(:nombre)}" : (pa.try(:actividad)&.try(:nombre) || pa.try(:nombre))) }.compact.uniq.join("<br>").html_safe
+                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
 
                       %tr
                         %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
@@ -205,7 +215,7 @@
                       - val_str = raw_cumple.to_s.downcase
                       - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
                       - valor_comentario = doc.comentario_revisor
-                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; act ? (act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre) : ((c = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo)).present? ? "#{c} - #{pa.try(:actividad)&.try(:nombre) || pa.try(:nombre)}" : (pa.try(:actividad)&.try(:nombre) || pa.try(:nombre))) }.compact.uniq.join("<br>").html_safe
+                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
 
                       %tr
                         %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)

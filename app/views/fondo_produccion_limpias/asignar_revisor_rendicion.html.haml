@@ -80,6 +80,10 @@
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
 
+-# Obtención del mes guardado en rendiciones_fpl y consulta a plan_actividades
+- mes_actual = @rendicion&.mes_a_rendir.to_s
+- planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
 = simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
   .row
@@ -140,25 +144,31 @@
                           %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
                       %tbody
                         - if @actividad_x_linea.present?
-                          - @actividad_x_linea.each do |actividad|
-                            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
-                            - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'Sí' : 'No')
-                            - observacion_valor = detalle_tecnico&.observacion
-                            - archivo = detalle_tecnico&.archivo
+                          - actividades_filtradas = @actividad_x_linea.select { |a| plan = planes_hash[a.id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; mes_actual.blank? || dur_meses.include?(mes_actual) }
+                          - if actividades_filtradas.present?
+                            - actividades_filtradas.each do |actividad|
+                              - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
+                              - observacion_valor = detalle_tecnico&.observacion
+                              - archivo = detalle_tecnico&.archivo
 
-                            %tr{id: "fila_actividad_#{actividad.id}"}
-                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                              %td.contenido-form= actividad.nombre
-                              -#%td.contenido-form= realizada_valor
-                              %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                - if detalle_tecnico.present?
-                                  %span.badge{class: detalle_tecnico.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
-                                    = detalle_tecnico.realizada? ? 'Sí' : 'No'
-                                - else
-                                  %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
-                              %td.contenido-form= observacion_valor.presence || '--'
-                              %td.contenido-form
-                                = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                              %tr{id: "fila_actividad_#{actividad.id}"}
+                                %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                                %td.contenido-form= actividad.nombre
+                                %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                                  - if detalle_tecnico.present?
+                                    %span.badge{class: detalle_tecnico.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
+                                      = detalle_tecnico.realizada? ? 'Sí' : 'No'
+                                  - else
+                                    %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                                %td.contenido-form= observacion_valor.presence || '--'
+                                %td.contenido-form
+                                  = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                          - else
+                            %tr
+                              %td.text-center.text-muted{colspan: 5} No hay actividades programadas para el Mes #{mes_actual.presence || '--'}.
+                        - else
+                          %tr
+                            %td.text-center.text-muted{colspan: 5} No hay actividades registradas.
 
             / Pestaña 2: Financiera FPL
             .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
@@ -174,10 +184,13 @@
                         - if @documentos_fpl.present?
                           - @documentos_fpl.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end }.compact.uniq.join("<br>").html_safe
+                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
                             %tr
                               %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               %td.contenido-form= act_nombres.presence || '--'
+                        - else
+                          %tr
+                            %td.text-center.text-muted{colspan: 2} No hay documentos financieros FPL para este mes.
 
             / Pestaña 3: Financiera Aporte
             .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
@@ -193,10 +206,13 @@
                         - if @documentos_aporte.present?
                           - @documentos_aporte.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end }.compact.uniq.join("<br>").html_safe
+                            - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
                             %tr
                               %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               %td.contenido-form= act_nombres.presence || '--'
+                        - else
+                          %tr
+                            %td.text-center.text-muted{colspan: 2} No hay documentos de aporte para este mes.
 
             / Pestaña 4: Asignar Revisor
             - if @revisor

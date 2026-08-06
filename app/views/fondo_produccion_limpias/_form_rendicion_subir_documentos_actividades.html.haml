@@ -7,13 +7,81 @@
     }).change(function() {
       validarFormulario();
     });
-    
-    $("input:file").on('change',function (){
+
+    $("input:file").on('change', function () {
       $(this).parent().siblings("label").html($(this)[0].files[0].name);
       validarFormulario();
     });
+
     htmlErrorToTooltip('top');
+
+    // Escuchar cambios en el selector de mes específico
+    $('#mes_a_rendir').on('change', function() {
+      filtrarPorMes();
+    });
+
+    // Ejecutar filtro inicial
+    filtrarPorMes();
   });
+
+  function filtrarPorMes() {
+    const selectMes = document.getElementById('mes_a_rendir');
+    const mesSeleccionado = (selectMes && selectMes.value) ? selectMes.value.toString().trim() : '';
+
+    // Si no hay mes seleccionado, mostrar todo
+    if (mesSeleccionado === '') {
+      $('tr[id^="fila_actividad_"]').show();
+      $('#filas-documentos-fpl select option, #filas-documentos-aporte select option').prop('disabled', false);
+      $('#filas-documentos-fpl select, #filas-documentos-aporte select').trigger('chosen:updated');
+      validarFormulario();
+      return;
+    }
+
+    // 1. Filtrar las filas de la Pestaña Técnica
+    $('tr[id^="fila_actividad_"]').each(function() {
+      const duracionAttr = $(this).attr('data-duracion');
+      
+      if (duracionAttr && duracionAttr.trim() !== '') {
+        const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
+        if (mesesValidos.indexOf(mesSeleccionado) !== -1) {
+          $(this).show(); // Coincide con el mes
+        } else {
+          $(this).hide(); // No coincide
+        }
+      } else {
+        $(this).hide(); // Ocultar si no tiene duración programada
+      }
+    });
+
+    // 2. Filtrar las opciones de los Chosen (Financiera FPL y Aporte)
+    $('#filas-documentos-fpl select, #filas-documentos-aporte select').each(function() {
+      const $select = $(this);
+      
+      $select.find('option').each(function() {
+        const valOpt = $(this).val();
+        if (!valOpt || valOpt === '') return; // Ignorar el placeholder "Seleccione..."
+
+        const duracionOpt = $(this).attr('data-duracion');
+        
+        if (duracionOpt && duracionOpt.trim() !== '') {
+          const mesesOpt = duracionOpt.split(',').map(function(m) { return m.trim(); });
+          if (mesesOpt.indexOf(mesSeleccionado) !== -1) {
+            $(this).prop('disabled', false);
+          } else {
+            $(this).prop('disabled', true);
+            $(this).prop('selected', false);
+          }
+        } else {
+          $(this).prop('disabled', true);
+          $(this).prop('selected', false);
+        }
+      });
+      
+      $select.trigger('chosen:updated');
+    });
+
+    validarFormulario();
+  }
 
   function guardarYActualizar(event, nombreCampo, origen) {
     guardarArchivos(event, nombreCampo, origen);
@@ -70,13 +138,15 @@
     let tabFinancieraFplValido = false;
     let tabFinancieraAporteValido = false;
 
-    // 1. Validar Tab Técnica
     const mesSelect = document.getElementById('mes_a_rendir');
     if (mesSelect && mesSelect.value === '') {
       tabTecnicaValido = false;
     }
 
+    // 1. Validar solo filas VISIBLES de la Tab Técnica
     document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
+      if (fila.style.display === 'none') return; // Se ignoran filas ocultas por el filtro
+
       const id = fila.id.split('_').pop();
       const selectRealizada = document.getElementById('realizada_actividad_' + id);
       const observacionInput = document.getElementById('observacion_actividad_' + id);
@@ -165,8 +235,9 @@
     }).change(function() {
       validarFormulario();
     });
-    
-    validarFormulario();
+
+    // Re-aplicar el filtro a la nueva fila agregada
+    filtrarPorMes();
   }
 
   function eliminarFilaDocumento(boton) {
@@ -178,10 +249,6 @@
       alert('Debe mantener al menos una fila de documento.');
     }
   }
-
-  document.addEventListener("DOMContentLoaded", function() {
-    validarFormulario();
-  });
 
 :css
   .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -203,16 +270,25 @@
 - titulo t(:rendicion_por_actividad)
 - mes_guardado = @rendicion.try(:mes_a_rendir)
 
+-# 1. Consulta directa y segura de las duraciones desde la tabla plan_actividades
+- planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
+-# 2. Mapeo de actividades con data-duracion para los selects de las pestañas financieras
+- opciones_actividades_select = (@actividad_x_linea || []).map do |a|
+  - plan = planes_hash[a.id]
+  - dur_val = plan ? plan.duracion.to_s : ''
+  - [ "#{a.correlativo} - #{a.nombre}", a.id, { 'data-duracion' => dur_val } ]
+
 .row
   .col-12
     .card.mb-3
       .card-header.p-0
         .p-3
-          %h5.no-margin=titulo_instrumento_fpl.html_safe
-          %h5.no-margin=titulo_instrumento.html_safe
-          %h5.no-margin=titulo_proyecto_fpl.html_safe
-          %h5.no-margin=titulo_apl.html_safe
-          %h5.no-margin=datos_beneficiario_fpl.html_safe
+          %h5.no-margin= titulo_instrumento_fpl.html_safe
+          %h5.no-margin= titulo_instrumento.html_safe
+          %h5.no-margin= titulo_proyecto_fpl.html_safe
+          %h5.no-margin= titulo_apl.html_safe
+          %h5.no-margin= datos_beneficiario_fpl.html_safe
 
 - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
 
@@ -255,14 +331,18 @@
                   - @actividad_x_linea.each do |actividad|
                     = hidden_field_tag "actividades_ids[]", actividad.id
                     
-                    / Búsqueda de datos guardados en la BD para esta actividad
+                    / 3. Rescatar la duración exacta de esta actividad y este flujo
+                    - plan = planes_hash[actividad.id]
+                    - duracion_act = plan ? plan.duracion.to_s : ''
+                    
+                    / Datos guardados previamente
                     - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
                     - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
                     - observacion_valor = detalle_tecnico&.observacion
                     - archivo = detalle_tecnico&.archivo
                     - tiene_archivo = detalle_tecnico&.archivo&.url.present?
 
-                    %tr{id: "fila_actividad_#{actividad.id}"}
+                    %tr{id: "fila_actividad_#{actividad.id}", 'data-duracion' => duracion_act}
                       %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
                       %td.contenido-form= actividad.nombre
                       %td.contenido-form
@@ -270,7 +350,6 @@
                       %td.contenido-form
                         = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: (realizada_valor.to_s.downcase != 'no'), placeholder: "Ingrese observación...", rows: 2, onkeyup: "validarFormulario()"
                       %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
-                        / Se pasa detalle_tecnico si existe para generar la URL correcta de Blob Storage
                         = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
                       - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                         %td.contenido-form
@@ -306,7 +385,7 @@
                       %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                       %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                       %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_fpl[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                        = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
                       - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                         %td.contenido-form.text-center
                           %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
@@ -316,7 +395,7 @@
                     %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
                     %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                     %td.contenido-form{style: 'overflow: visible;'}
-                      = select_tag "documentos_fpl[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                      = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
                     - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                       %td.contenido-form.text-center
                         %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
@@ -352,7 +431,7 @@
                       %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
                       %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                       %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_aporte[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                        = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
                       - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                         %td.contenido-form.text-center
                           %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
@@ -362,7 +441,7 @@
                     %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
                     %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                     %td.contenido-form{style: 'overflow: visible;'}
-                      = select_tag "documentos_aporte[][actividad_ids][]", options_for_select((@actividad_x_linea || []).map { |a| ["#{a.correlativo} - #{a.nombre}", a.id] }), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
+                      = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
                     - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                       %td.contenido-form.text-center
                         %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
