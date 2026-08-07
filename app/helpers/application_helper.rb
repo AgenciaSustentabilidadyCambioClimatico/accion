@@ -1092,6 +1092,15 @@ end
     when Tarea::COD_FPL_15
       data[:url] =  revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_16
+      data[:url] =  verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_17
+      data[:url] =  corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
+    when Tarea::COD_FPL_18
+      data[:url] =  corregir_rendicion_tecnica_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
     #Nuevo flujo postulacion FPL  
     end
   end

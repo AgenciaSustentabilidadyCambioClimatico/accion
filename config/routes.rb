@@ -370,6 +370,19 @@ Rails.application.routes.draw do
   # Tarea FPL-15 - Revisión Técnica de Rendición
   get ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#revision_tecnica_rendicion", as: :revision_tecnica_rendicion_fondo_produccion_limpia
   patch ':id/revision_tecnica_rendicion', to: "fondo_produccion_limpias#guardar_revision_tecnica_rendicion", as: :guardar_revision_tecnica_rendicion_fondo_produccion_limpia
+  
+  # Tarea FPL-16 - Verificación Contable de Rendición
+  get ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#verificacion_contable_rendicion", as: :verificacion_contable_rendicion_fondo_produccion_limpia
+  patch ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#guardar_verificacion_contable_rendicion", as: :guardar_verificacion_contable_rendicion_fondo_produccion_limpia
+
+  # Tarea FPL-17 - Respuesta Observaciones Rendición Financiera
+  get ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#corregir_rendicion_financiera", as: :corregir_rendicion_financiera_fondo_produccion_limpia
+  patch ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#guardar_correccion_financiera_rendicion", as: :guardar_correccion_financiera_rendicion_fondo_produccion_limpia
+
+  # Tarea FPL-18 - Respuesta Observaciones Rendición Técnica
+  get ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#corregir_rendicion_tecnica", as: :corregir_rendicion_tecnica_fondo_produccion_limpia
+  patch ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#guardar_correccion_tecnica_rendicion", as: :guardar_correccion_tecnica_rendicion_fondo_produccion_limpia
+  
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

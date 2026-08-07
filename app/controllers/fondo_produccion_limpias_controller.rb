@@ -4095,23 +4095,17 @@ class FondoProduccionLimpiasController < ApplicationController
       respond_to do |format|
         # Validamos que existan ambos archivos
         if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?
-          
-          # SE CAMBIA EL ESTADO DEL FPL-11 A 2 (ENVIADA)
-          tarea_fondo_fpl_11 = Tarea.find_by_codigo(Tarea::COD_FPL_11)
-          tarea_pendiente_fpl_11 = TareaPendiente.find_by(
-            tarea_id: tarea_fondo_fpl_11.id,
-            flujo_id: @tarea_pendiente.flujo_id,
-            user_id: @tarea_pendiente.user_id
-          )
 
-          if tarea_pendiente_fpl_11.present?
-            tarea_pendiente_fpl_11.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
-            tarea_pendiente_fpl_11.save
-          end
+          @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
+
+          #Se crea la siguiente tarea FPL-12 y envia el correo
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
 
           format.js do
-            flash.now[:success] = 'Documentos verificados correctamente'
-            render js: "window.location='#{root_path}'"
+            # 1. Usar flash (NO flash.now) para que el mensaje sobreviva a la recarga de página
+            # 2. Usar :notice (o :success si tu layout lo soporta)
+            flash[:notice] = 'Documentos verificados correctamente'
+            render js: "window.location.href = '#{root_path}';"
           end
 
           format.html do
@@ -4144,13 +4138,11 @@ class FondoProduccionLimpiasController < ApplicationController
       # 1. Carga de la rendición principal
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id)
 
-      # 2. Carga segura de detalles según tipo de pestaña
+      # 2. Carga segura de detalles precargando la tabla de unión
       if @rendicion.present?
-        # Usamos los scopes automáticos del enum 'tipo_tab' definida en RendicionDetalleFpl
-        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl
-        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
-        # Colecciones vacías si aún no se ha grabado borrador
         @documentos_fpl = RendicionDetalleFpl.none
         @documentos_aporte = RendicionDetalleFpl.none
       end
@@ -4256,24 +4248,29 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
         # -------------------------------------------------------------
-        # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y REDIRECCIÓN
+        # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y EVALUACIÓN DEL ÚLTIMO MES
         # -------------------------------------------------------------
         if commit_accion == 'enviar'
           @rendicion.update!(estado: :finalizada)
-          @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
 
-          tarea_fondo_fpl_12 = Tarea.find_by_codigo(Tarea::COD_FPL_12)
-          tarea_pendiente_fpl_12 = TareaPendiente.find_by(
-            tarea_id: tarea_fondo_fpl_12&.id,
-            flujo_id: @tarea_pendiente.flujo_id,
-            user_id: @tarea_pendiente.user_id
-          )
-          tarea_pendiente_fpl_12.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if tarea_pendiente_fpl_12.present?
+          # 1. Obtener el mes actual y determinar el último mes del proyecto
+          mes_actual = (params[:mes_a_rendir].presence || @rendicion.mes_a_rendir).to_i
+          
+          duraciones = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:duracion)
+          total_meses = duraciones.flat_map { |d| d.to_s.split(',').map(&:strip).map(&:to_i) }.compact.select(&:positive?).max || 1
 
-          #Se crea la siguiente tarea FPL-13 y envia el correo
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
+          es_ultimo_mes = (mes_actual >= total_meses)
 
-          mensaje_exito = 'Rendición enviada con éxito. Se ha generado la siguiente tarea.'
+          if es_ultimo_mes
+            # CERRAR FPL-12 y avanzar a FPL-13 (finaliza = true por defecto)
+            @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
+            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado la tarea de subir documentos."
+          else
+            # AVANZAR A FPL-13 sin cerrar FPL-12 (finaliza = false)
+            @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
+            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea continúa abierta para los siguientes meses."
+          end
+
           url_destino = root_path
         else
           mensaje_exito = 'Avances guardados correctamente.'
@@ -4419,7 +4416,48 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def guardar_revision_tecnica_rendicion # FPL-15
-      guardar_evaluacion_rendicion
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      # 1. Actualizar los estados 'cumple' y 'comentario_revisor'
+      guardar_respuestas_evaluacion(params[:detalles])
+
+      if params[:commit_type] == 'enviar'
+        # 2. Verificar si al menos una actividad fue marcada como "No" (valor 2)
+        hay_rechazo_tecnico = evaluar_rechazos(params[:detalles])
+
+        if hay_rechazo_tecnico
+          # RECHAZO TÉCNICO: Se vuelve a generar la tarea FPL-18 (Corrección Técnica)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+          
+          # Finalizar la tarea pendiente actual del revisor
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+          flash[:notice] = "Evaluación técnica enviada con observaciones. Se ha devuelto la rendición para corrección técnica (FPL-18)."
+        else
+          # 3. Si todo CUMPLE en Técnica, verificar si Financiera también cumple para avanzar a FPL-16
+          if rendicion_financiera_aprobada?(@rendicion)
+            #Se crea la siguiente tarea FPL-16 y envia el correo
+            @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+            flash[:notice] = "Rendición aprobada exitosamente (Técnica y Financiera). Se ha generado la tarea FPL-16."
+          else
+            flash[:notice] = "Evaluación técnica aprobada. Queda a la espera de la evaluación financiera para avanzar a FPL-16."
+          end
+
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        end
+
+        # Redirección segura tanto para HTML normal como AJAX (remote: true)
+        respond_to do |format|
+          format.html { redirect_to root_path }
+          format.js   { render js: "window.location.href = '#{root_path}';" }
+        end
+      else
+        # Grabar avance
+        flash[:notice] = "Avance de evaluación técnica guardado correctamente."
+        respond_to do |format|
+          format.html { redirect_to revision_tecnica_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) }
+          format.js   { render js: "window.location.href = '#{revision_tecnica_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)}';" }
+        end
+      end
     end
 
     def revision_financiera_rendicion # FPL-14
@@ -4445,7 +4483,162 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def guardar_revision_financiera_rendicion # FPL-14
-      guardar_evaluacion_rendicion
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      # 1. Actualizar los estados 'cumple' y 'comentario_revisor'
+      guardar_respuestas_evaluacion(params[:detalles])
+
+      if params[:commit_type] == 'enviar'
+        # 2. Verificar si al menos un documento fue marcado como "No" (valor 2)
+        hay_rechazo_financiero = evaluar_rechazos(params[:detalles])
+
+        if hay_rechazo_financiero
+          # RECHAZO FINANCIERO: Se vuelve a generar la tarea FPL-17 (Corrección Financiera / Re-subir Documentos)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'B'
+          
+          # Finalizar la tarea pendiente actual del revisor
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+          flash[:notice] = "Evaluación financiera enviada con observaciones. Se ha devuelto la rendición para corrección financiera (FPL-17)."
+        else
+          # 3. Si todo CUMPLE en Financiera, verificar si Técnica también cumple para avanzar a FPL-16
+          if rendicion_tecnica_aprobada?(@rendicion)
+            #Se crea la siguiente tarea FPL-16 y envia el correo
+            @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+            flash[:notice] = "Rendición aprobada exitosamente (Técnica y Financiera). Se ha generado la tarea FPL-16."
+          else
+            flash[:notice] = "Evaluación financiera aprobada. Queda a la espera de la evaluación técnica para avanzar a FPL-16."
+          end
+
+          @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        end
+
+        # Redirección segura tanto para HTML normal como AJAX (remote: true)
+        respond_to do |format|
+          format.html { redirect_to root_path }
+          format.js   { render js: "window.location.href = '#{root_path}';" }
+        end
+      else
+        # Grabar avance
+        flash[:notice] = "Avance de evaluación financiera guardado correctamente."
+        respond_to do |format|
+          format.html { redirect_to revision_financiera_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) }
+          format.js   { render js: "window.location.href = '#{revision_financiera_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)}';" }
+        end
+      end
+    end
+
+    # GET /verificacion_contable_rendicion
+    def verificacion_contable_rendicion# FPL-16: VERIFICACIÓN CONTABLE
+      cargar_datos_correccion
+      # En esta tarea se requiere una vista (verificacion_contable.html.haml) o la que uses para que el contable revise.
+      render 'verificacion_contable' 
+    end
+
+    # PATCH /guardar_verificacion_contable_rendicion
+    def guardar_verificacion_contable_rendicion # FPL-16
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      if params[:commit_type] == 'enviar'
+        # Avanza a la siguiente tarea configurada en el motor (Camino 'A')
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        
+        flash[:notice] = "Verificación contable enviada exitosamente."
+        redirect_to root_path
+      else
+        flash[:notice] = "Avance de verificación contable guardado."
+        redirect_to verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)
+      end
+    end
+
+    # GET /corregir_rendicion_financiera
+    def corregir_rendicion_financiera # FPL-17: CORRECCIÓN FINANCIERA (RESPUESTA POSTULANTE)
+      @es_correccion_tecnica    = false
+      @es_correccion_financiera = true
+
+      cargar_datos_correccion
+      render 'corregir_rendicion'
+    end
+
+    # PATCH /guardar_correccion_financiera_rendicion
+    def guardar_correccion_financiera_rendicion # FPL-17
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      if @rendicion.present?
+        # Procesar documentos FPL y Aporte (Actualiza existentes o Crea nuevos)
+        procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
+        procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
+      end
+
+      if params[:commit_type] == 'enviar'
+        # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+
+        flash[:notice] = "Correcciones financieras enviadas para re-evaluación (FPL-14)."
+        url_destino = root_path
+      else
+        flash[:notice] = "Avance de corrección financiera guardado."
+        url_destino = corregir_rendicion_financiera_fondo_produccion_limpia_path(@tarea_pendiente)
+      end
+
+      respond_to do |format|
+        format.html { redirect_to url_destino }
+        format.js   { render js: "window.location.href = '#{url_destino}';" }
+      end
+    end
+
+    # GET /corregir_rendicion_tecnica
+    def corregir_rendicion_tecnica #FPL-18: CORRECCIÓN TÉCNICA (RESPUESTA POSTULANTE)
+      @es_correccion_tecnica    = true
+      @es_correccion_financiera = false
+
+      cargar_datos_correccion
+      render 'corregir_rendicion'
+    end
+
+    # PATCH /guardar_correccion_tecnica_rendicion
+    def guardar_correccion_tecnica_rendicion # FPL-18
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+
+      # 1. Guardar las observaciones, el estado de 'realizada' y los ARCHIVOS en la tabla técnica
+      if params[:actividades_ids].present? && @rendicion.present?
+        params[:actividades_ids].each do |act_id|
+          detalle = @rendicion.rendicion_detalles_fpl.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(act_id.to_i) }
+          
+          if detalle.present?
+            atributos_a_actualizar = {
+              observacion: params["observacion_actividad_#{act_id}"],
+              realizada: (params["realizada_actividad_#{act_id}"] == 'si')
+            }
+            
+            # Guardar el archivo adjunto si el usuario lo seleccionó al momento de grabar
+            archivo_adjunto = params["archivo_rendicion_#{act_id}"]
+            atributos_a_actualizar[:archivo] = archivo_adjunto if archivo_adjunto.present?
+
+            detalle.update(atributos_a_actualizar)
+          end
+        end
+      end
+
+      # 2. Flujo de envío o grabado
+      if params[:commit_type] == 'enviar'
+        # Camino 'A': Devuelve la tarea al revisor técnico (FPL-15)
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+
+        flash[:notice] = "Correcciones técnicas enviadas para re-evaluación (FPL-15)."
+        url_destino = root_path
+      else
+        flash[:notice] = "Avance de corrección técnica guardado."
+        url_destino = corregir_rendicion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente)
+      end
+
+      # Redirección segura para HAML
+      respond_to do |format|
+        format.html { redirect_to url_destino }
+        format.js   { render js: "window.location.href = '#{url_destino}';" }
+      end
     end
         
     def descargar_pdf
@@ -6229,48 +6422,220 @@ class FondoProduccionLimpiasController < ApplicationController
         )
       end
 
-      def guardar_evaluacion_rendicion
-        commit_accion = params[:commit_type] # 'grabar' o 'enviar'
+  # Guarda en la BD las selecciones de 'cumple' y 'comentario_revisor' enviados desde el formulario
+  def guardar_respuestas_evaluacion(detalles_params)
+    return if detalles_params.blank?
 
-        ActiveRecord::Base.transaction do
-          # 1. Guardar o actualizar la evaluación de cada detalle (cumple y comentario_revisor)
-          if params[:detalles].present?
-            params[:detalles].each do |detalle_id, evaluacion_params|
-              detalle = RendicionDetalleFpl.find_by(id: detalle_id)
-              next unless detalle.present?
+    detalles_params.each do |detalle_id, campos|
+      detalle = RendicionDetalleFpl.find_by(id: detalle_id)
+      next unless detalle
 
-              detalle.update!(
-                cumple: evaluacion_params[:cumple],
-                comentario_revisor: evaluacion_params[:comentario_revisor]
-              )
-            end
-          end
+      val_cumple = campos[:cumple].to_s.strip
+      valor_int = ['1', 'si', 'true'].include?(val_cumple.downcase) ? 1 : (['2', 'no', 'false'].include?(val_cumple.downcase) ? 2 : nil)
 
-          # 2. Si el usuario hace clic en 'Enviar', finaliza la tarea actual y avanza el flujo
-          if commit_accion == 'enviar'
-            @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
-            @tarea_pendiente.crear_siguiente_tarea if @tarea_pendiente.respond_to?(:crear_siguiente_tarea)
-            mensaje_exito = 'Evaluación de rendición enviada con éxito.'
-          else
-            mensaje_exito = 'Avance de evaluación guardado correctamente.'
-          end
+      detalle.update(
+        cumple: valor_int,
+        comentario_revisor: (valor_int == 2 ? campos[:comentario_revisor] : nil)
+      )
+    end
+  end
 
-          respond_to do |format|
-            format.js do
-              flash[:notice] = mensaje_exito
-              render js: "window.location='#{root_path}';"
-            end
-            format.html { redirect_to root_path, notice: mensaje_exito }
-          end
+  # Evalúa si existe al menos un registro con 'cumple == 2' (No)
+  def evaluar_rechazos(detalles_params)
+    return false if detalles_params.blank?
+
+    detalles_params.values.any? do |v|
+      val = v[:cumple].to_s.downcase.strip
+      val == '2' || val == 'no' || val == 'false'
+    end
+  end
+
+  # Valida que la evaluación FINANCIERA del mes actual esté 100% aprobada
+  def rendicion_financiera_aprobada?(rendicion)
+    return false unless rendicion.present?
+
+    mes_actual = rendicion.mes_a_rendir.to_s
+    planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
+    # 1. Obtener todos los documentos financieros (FPL y Aporte)
+    detalles_fin = rendicion.rendicion_detalles_fpl.select do |d|
+      ['financiera_fpl', 'financiera_aporte'].include?(d.tipo_tab.to_s)
+    end
+
+    return false if detalles_fin.blank?
+
+    # 2. Filtrar solo los documentos asociados a actividades del mes actual (o documentos generales de la rendición)
+    detalles_fin_mes = detalles_fin.select do |doc|
+      act_ids = doc.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id)
+      act_ids += doc.plan_actividades.map(&:id) if doc.respond_to?(:plan_actividades) && doc.plan_actividades.present?
+      act_ids.uniq!
+
+      if act_ids.present?
+        act_ids.any? do |act_id|
+          plan = planes_hash[act_id]
+          dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+          mes_actual.blank? || dur_meses.include?(mes_actual)
         end
+      else
+        true # Si el documento no tiene actividad atada, pertenece al mes de la rendición
+      end
+    end
 
-      rescue => e
-        Rails.logger.error("Error al evaluar rendición: #{e.message}")
-        Rails.logger.error(e.backtrace.join("\n"))
+    return false if detalles_fin_mes.blank?
 
-        respond_to do |format|
-          format.js   { render js: "alert('Ocurrió un error al guardar la evaluación: #{e.message}');" }
-          format.html { redirect_back(fallback_location: root_path, alert: e.message) }
+    # 3. Verificar que CADA documento financiero del mes tenga 'cumple' igual a 1 (Sí)
+    detalles_fin_mes.all? do |d|
+      raw_cumple = d.read_attribute_before_type_cast(:cumple) || d.cumple
+      ['1', 'si', 'true'].include?(raw_cumple.to_s.downcase.strip)
+    end
+  end
+
+  # Valida que la evaluación TÉCNICA del mes actual esté 100% aprobada
+  def rendicion_tecnica_aprobada?(rendicion)
+    return false unless rendicion.present?
+
+    mes_actual = rendicion.mes_a_rendir.to_s
+    planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
+    # 1. Obtener las actividades de la línea pertenecientes al mes
+    actividades_mes = (@actividad_x_linea || []).select do |a|
+      plan = planes_hash[a.id]
+      dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+      mes_actual.blank? || dur_meses.include?(mes_actual)
+    end
+
+    return false if actividades_mes.blank?
+
+    detalles_tecnicos = rendicion.rendicion_detalles_fpl.select do |d|
+      d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)
+    end
+
+    # 2. CADA actividad técnica del mes debe estar registrada con 'cumple' igual a 1 (Sí)
+    actividades_mes.all? do |act|
+      det = detalles_tecnicos.find do |d|
+        act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id)
+        act_ids += d.plan_actividades.map(&:id) if d.respond_to?(:plan_actividades) && d.plan_actividades.present?
+        act_ids.include?(act.id)
+      end
+
+      next false unless det.present?
+
+      raw_cumple = det.read_attribute_before_type_cast(:cumple) || det.cumple
+      ['1', 'si', 'true'].include?(raw_cumple.to_s.downcase.strip)
+    end
+  end
+
+  # Carga la data general necesaria para renderizar las vistas de corrección FPL-17 y FPL-18
+  def cargar_datos_correccion
+    @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
+    @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id)
+
+    if @rendicion.present?
+      @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
+      @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+    else
+      @documentos_fpl    = RendicionDetalleFpl.none
+      @documentos_aporte = RendicionDetalleFpl.none
+    end
+
+    solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+    @tiene_permisos = solo_lectura.nil?
+
+    set_actividades_x_linea
+  end
+
+  # Guarda las observaciones ingresadas por el postulante en la Pestaña Técnica
+  def guardar_observaciones_postulante_tecnica(parametros)
+    return unless parametros[:actividades_ids].present? && @rendicion.present?
+
+    parametros[:actividades_ids].each do |act_id|
+      nueva_obs = parametros["observacion_actividad_#{act_id}"]
+      realizada_val = parametros["realizada_actividad_#{act_id}"]
+      
+      # Buscar el detalle técnico correspondiente a esta actividad
+      detalle = @rendicion.rendicion_detalles_fpl.find do |d|
+        d.tecnica? && d.plan_actividades.map(&:id).include?(act_id.to_i)
+      end
+      
+      if detalle.present?
+        detalle.update(
+          observacion: nueva_obs,
+          realizada: (realizada_val == 'si')
+        )
+      end
+    end
+  end
+
+  # Guarda las observaciones ingresadas por el postulante en la Pestaña Financiera
+  def guardar_observaciones_postulante_financiera(params_fpl, params_aporte)
+    [params_fpl, params_aporte].compact.each do |grupo|
+      grupo.each do |doc_param|
+        next unless doc_param[:id].present?
+        
+        detalle = RendicionDetalleFpl.find_by(id: doc_param[:id])
+        if detalle.present?
+          # Actualiza el campo de la respuesta del postulante
+          detalle.update(observacion: doc_param[:observacion])
         end
       end
+    end
+  end
+   
+  def procesar_documentos_correccion_financiera(grupo_docs, tipo_tab)
+    # 1. Obtener los IDs de los documentos que siguen presentes en la vista
+    ids_recibidos = (grupo_docs || []).map { |d| d[:id] }.reject(&:blank?).map(&:to_i)
+
+    # 2. Buscar en la BD los registros existentes de este tipo_tab y ELIMINAR los que fueron borrados de la vista
+    detalles_existentes = @rendicion.rendicion_detalles_fpl.select { |d| d.tipo_tab.to_s == tipo_tab.to_s }
+    detalles_existentes.each do |detalle_db|
+      unless ids_recibidos.include?(detalle_db.id)
+        detalle_db.destroy
+      end
+    end
+
+    return if grupo_docs.blank?
+
+    # 3. Procesar los registros restantes (actualizar existentes / crear nuevos)
+    grupo_docs.each do |doc_param|
+      act_ids = doc_param[:actividad_ids].reject(&:blank?) rescue []
+
+      if doc_param[:id].present?
+        # --- ACTUALIZAR REGISTRO EXISTENTE ---
+        detalle = RendicionDetalleFpl.find_by(id: doc_param[:id])
+        next unless detalle.present?
+
+        atributos = { observacion: doc_param[:observacion] }
+        atributos[:archivo] = doc_param[:archivo] if doc_param[:archivo].present?
+
+        detalle.update(atributos)
+
+        if act_ids.present?
+          if detalle.respond_to?(:plan_actividad_ids=)
+            detalle.plan_actividad_ids = act_ids
+          elsif detalle.respond_to?(:plan_actividades=)
+            detalle.plan_actividades = PlanActividad.where(id: act_ids) rescue []
+          end
+        end
+      else
+        # --- CREAR NUEVO REGISTRO ---
+        next if doc_param[:archivo].blank? && doc_param[:observacion].blank? && act_ids.blank?
+
+        nuevo_detalle = @rendicion.rendicion_detalles_fpl.build(
+          tipo_tab: tipo_tab,
+          observacion: doc_param[:observacion]
+        )
+        nuevo_detalle.archivo = doc_param[:archivo] if doc_param[:archivo].present?
+
+        if nuevo_detalle.save
+          if act_ids.present?
+            if nuevo_detalle.respond_to?(:plan_actividad_ids=)
+              nuevo_detalle.plan_actividad_ids = act_ids
+            elsif nuevo_detalle.respond_to?(:plan_actividades=)
+              nuevo_detalle.plan_actividades = PlanActividad.where(id: act_ids) rescue []
+            end
+          end
+        end
+      end
+    end
+  end
 end

@@ -1,0 +1,255 @@
+:javascript
+  $(document).ready(function() {
+    htmlErrorToTooltip('top');
+    validarFormulario();
+  });
+
+  function toggleComentariosRevisor(selectElement, id) {
+    const comentarioInput = document.getElementById('comentario_revisor_' + id);
+    if (comentarioInput) {
+      if (selectElement.value === '2' || selectElement.value.toLowerCase() === 'no') {
+        comentarioInput.disabled = false;
+      } else {
+        comentarioInput.disabled = true;
+        comentarioInput.value = '';
+      }
+    }
+    validarFormulario();
+  }
+
+  function validarFormulario() {
+    let formularioValido = true;
+
+    document.querySelectorAll('select[id^="cumple_"]').forEach(select => {
+      const id = select.id.split('_').pop();
+      const comentario = document.getElementById('comentario_revisor_' + id);
+
+      if (select.value === '') {
+        formularioValido = false;
+      } else if (select.value === '2' || select.value.toLowerCase() === 'no') {
+        if (!comentario || comentario.value.trim() === '') {
+          formularioValido = false;
+        }
+      }
+    });
+
+    const botonEnviar = document.getElementById('enviar-button');
+    if (botonEnviar) {
+      botonEnviar.disabled = !formularioValido;
+      if (formularioValido) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
+    }
+  }
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .box-mes-a-rendir { background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px; padding: 6px 12px; font-weight: bold; color: #495057; display: inline-block; }
+
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- titulo "Verificación Contable de Rendición"
+
+-# Obtención del mes guardado en rendiciones_fpl y consulta a plan_actividades
+- mes_actual = @rendicion&.mes_a_rendir.to_s
+- planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin= titulo_instrumento_fpl.html_safe
+          %h5.no-margin= titulo_instrumento.html_safe
+          %h5.no-margin= titulo_proyecto_fpl.html_safe
+          %h5.no-margin= titulo_apl.html_safe
+          %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+-# Cargar todas las pestañas para revisión contable integral
+- tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
+
+#tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+  %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
+    - tabs.each do |tab, active|
+      %li.nav-item.tab-block{id: "#{tab}-tab"}
+        %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
+          = t(tab.to_s.gsub('-','_'))
+
+= simple_form_for fpl_objeto, url: guardar_verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente), html: { autocomplete: :off }, remote: true do |f|
+  .tab-content#manifestacionContent
+
+    -# ----------------------------------------------------
+    -# Pestaña 1: Información Técnica Consolida
+    -# ----------------------------------------------------
+    .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
+      .card
+        .card-header.d-flex.justify-content-between.align-items-center
+          %h5.no-margin Resumen Técnico de Rendición
+          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
+        .card-body
+          .table-responsive
+            %table.table.table-striped.usuarios.no-margin
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 5%;'} N°
+                  %th.encabezado-form{style: 'width: 25%;'} Actividad
+                  %th.encabezado-form{style: 'width: 8%;'} Realizada
+                  %th.encabezado-form{style: 'width: 22%;'} Observación Postulante
+                  %th.encabezado-form{style: 'width: 15%;'} Archivos Evidencia
+                  %th.encabezado-form{style: 'width: 10%;'} Eval. Técnica
+                  %th.encabezado-form{style: 'width: 15%;'} Comentario Revisor
+              %tbody
+                - if @actividad_x_linea.present?
+                  - actividades_filtradas = @actividad_x_linea.select { |a| plan = planes_hash[a.id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; mes_actual.blank? || dur_meses.include?(mes_actual) }
+                  
+                  - if actividades_filtradas.present?
+                    - actividades_filtradas.each do |actividad|
+                      - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
+                      - raw_cumple = detalle ? (detalle.read_attribute_before_type_cast(:cumple) || detalle.cumple) : nil
+                      - val_str = raw_cumple.to_s.downcase
+                      - es_aprobado = ['1', 'si', 'true'].include?(val_str)
+
+                      %tr
+                        %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                        %td.contenido-form= actividad.nombre
+                        %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                          - if detalle.present?
+                            %span.badge{class: detalle.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px;'}
+                              = detalle.realizada? ? 'Sí' : 'No'
+                          - else
+                            %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px;'} Sin registrar
+                        %td.contenido-form= detalle&.observacion.presence || '--'
+                        %td.contenido-form
+                          - if detalle.present? && detalle.archivo.present?
+                            = __descargar_archivo_sin_titulo(detalle.archivo, detalle)
+                          - else
+                            = '--'
+                        %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                          - if es_aprobado
+                            %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
+                          - else
+                            %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
+                        %td.contenido-form= detalle&.comentario_revisor.presence || '--'
+                  - else
+                    %tr
+                      %td.text-center.text-muted{colspan: 7} No hay actividades registradas en el Mes #{mes_actual.presence || '--'}.
+                - else
+                  %tr
+                    %td.text-center.text-muted{colspan: 7} No hay actividades configuradas para esta línea.
+
+    -# ----------------------------------------------------
+    -# Pestaña 2: Información Financiera FPL
+    -# ----------------------------------------------------
+    .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+      .card
+        .card-header.d-flex.justify-content-between.align-items-center
+          %h5.no-margin Documentos de Rendición Financiera FPL
+          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
+        .card-body{style: 'padding-bottom: 15px;'}
+          .table-responsive
+            %table.table.table-striped.no-margin
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 30%;'} Actividad Relacionada
+                  %th.encabezado-form{style: 'width: 15%;'} Observación Postulante
+                  %th.encabezado-form{style: 'width: 10%;'} Eval. Financiera
+                  %th.encabezado-form{style: 'width: 20%;'} Comentario Revisor
+              %tbody
+                - if @documentos_fpl.present?
+                  - @documentos_fpl.each do |doc|
+                    - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                    - val_str = raw_cumple.to_s.downcase
+                    - es_aprobado = ['1', 'si', 'true'].include?(val_str)
+                    - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+
+                    %tr
+                      %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                      %td.contenido-form= act_nombres.presence || '--'
+                      %td.contenido-form= doc.observacion.presence || '--'
+                      %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                        - if es_aprobado
+                          %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
+                        - else
+                          %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
+                      %td.contenido-form= doc.comentario_revisor.presence || '--'
+                - else
+                  %tr
+                    %td.text-center.text-muted{colspan: 5} No hay documentos financieros FPL para auditar.
+
+    -# ----------------------------------------------------
+    -# Pestaña 3: Información Financiera Aporte Propio
+    -# ----------------------------------------------------
+    .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+      .card
+        .card-header.d-flex.justify-content-between.align-items-center
+          %h5.no-margin Documentos de Rendición Financiera Aporte
+          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
+        .card-body{style: 'padding-bottom: 15px;'}
+          .table-responsive
+            %table.table.table-striped.no-margin
+              %thead
+                %tr
+                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
+                  %th.encabezado-form{style: 'width: 30%;'} Actividad Relacionada
+                  %th.encabezado-form{style: 'width: 15%;'} Observación Postulante
+                  %th.encabezado-form{style: 'width: 10%;'} Eval. Financiera
+                  %th.encabezado-form{style: 'width: 20%;'} Comentario Revisor
+              %tbody
+                - if @documentos_aporte.present?
+                  - @documentos_aporte.each do |doc|
+                    - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                    - val_str = raw_cumple.to_s.downcase
+                    - es_aprobado = ['1', 'si', 'true'].include?(val_str)
+                    - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+
+                    %tr
+                      %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                      %td.contenido-form= act_nombres.presence || '--'
+                      %td.contenido-form= doc.observacion.presence || '--'
+                      %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                        - if es_aprobado
+                          %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
+                        - else
+                          %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
+                      %td.contenido-form= doc.comentario_revisor.presence || '--'
+                - else
+                  %tr
+                    %td.text-center.text-muted{colspan: 5} No hay documentos de aporte para auditar.
+
+  -# Sección de Cierre / Dictamen Contable
+  .card.mt-3
+    .card-header
+      %h5.no-margin Dictamen de Verificación Contable
+    .card-body
+      .row
+        .col-12
+          %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
+          = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
+
+  .float-right.mt-3.mb-4
+    = volver_root
+    - if @tiene_permisos
+      = button_tag "Grabar Avance", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'grabar', 
+        class: "btn btn-sm btn-primary mr-2", 
+        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+
+      = button_tag "Aprobar Verificación Contable", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'enviar', 
+        id: 'enviar-button', 
+        class: "btn btn-sm btn-success", 
+        data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }

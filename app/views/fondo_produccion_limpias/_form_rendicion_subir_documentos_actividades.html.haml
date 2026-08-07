@@ -59,7 +59,7 @@
       
       $select.find('option').each(function() {
         const valOpt = $(this).val();
-        if (!valOpt || valOpt === '') return; // Ignorar el placeholder "Seleccione..."
+        if (!valOpt || valOpt === '') return; // Ignorar el placeholder
 
         const duracionOpt = $(this).attr('data-duracion');
         
@@ -145,7 +145,7 @@
 
     // 1. Validar solo filas VISIBLES de la Tab Técnica
     document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
-      if (fila.style.display === 'none') return; // Se ignoran filas ocultas por el filtro
+      if (fila.style.display === 'none') return;
 
       const id = fila.id.split('_').pop();
       const selectRealizada = document.getElementById('realizada_actividad_' + id);
@@ -216,7 +216,7 @@
     const nuevaFila = primeraFila.cloneNode(true);
 
     const hiddenId = nuevaFila.querySelector('input[type="hidden"][name*="[id]"]');
-    if (hiddenId) hiddenId.remove();
+    if (hiddenId) hiddenId.value = '';
 
     const fileInput = nuevaFila.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
@@ -236,7 +236,6 @@
       validarFormulario();
     });
 
-    // Re-aplicar el filtro a la nueva fila agregada
     filtrarPorMes();
   }
 
@@ -331,11 +330,9 @@
                   - @actividad_x_linea.each do |actividad|
                     = hidden_field_tag "actividades_ids[]", actividad.id
                     
-                    / 3. Rescatar la duración exacta de esta actividad y este flujo
                     - plan = planes_hash[actividad.id]
                     - duracion_act = plan ? plan.duracion.to_s : ''
                     
-                    / Datos guardados previamente
                     - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
                     - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
                     - observacion_valor = detalle_tecnico&.observacion
@@ -379,7 +376,7 @@
                 - if @documentos_fpl.present?
                   - @documentos_fpl.each do |doc|
                     - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                    - act_ids = doc.plan_actividades.pluck(:id)
+                    - act_ids = doc.rendicion_detalle_actividades_fpl.pluck(:plan_actividad_id)
                     %tr
                       = hidden_field_tag "documentos_fpl[][id]", doc.id
                       %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
@@ -392,6 +389,7 @@
                             %i.fa.fa-trash
                 - else
                   %tr
+                    = hidden_field_tag "documentos_fpl[][id]", ""
                     %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
                     %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                     %td.contenido-form{style: 'overflow: visible;'}
@@ -425,7 +423,7 @@
                 - if @documentos_aporte.present?
                   - @documentos_aporte.each do |doc|
                     - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                    - act_ids = doc.plan_actividades.pluck(:id)
+                    - act_ids = doc.rendicion_detalle_actividades_fpl.pluck(:plan_actividad_id)
                     %tr
                       = hidden_field_tag "documentos_aporte[][id]", doc.id
                       %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
@@ -438,6 +436,7 @@
                             %i.fa.fa-trash
                 - else
                   %tr
+                    = hidden_field_tag "documentos_aporte[][id]", ""
                     %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
                     %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                     %td.contenido-form{style: 'overflow: visible;'}

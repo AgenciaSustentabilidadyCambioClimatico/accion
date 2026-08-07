@@ -131,6 +131,10 @@
     background-color: #fff;
     color: #5d759e;
   }
+
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  
 - titulo t(:resolucion_contrato)
 = simple_form_for @fondo_produccion_limpia, url: adjuntar_resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
   .row
