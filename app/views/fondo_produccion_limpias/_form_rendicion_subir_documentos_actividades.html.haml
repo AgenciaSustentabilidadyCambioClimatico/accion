@@ -1,10 +1,16 @@
 :javascript
   $(document).ready(function() {
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    }).change(function() {
+    // 1. Almacenar la selección inicial proveniente de la base de datos (Rails)
+    guardarEstadoSeleccionInicial();
+
+    // 2. Inicializar el componente Chosen
+    inicializarChosen();
+
+    // 3. Registrar cambios hechos manualmente por el usuario para actualizar la memoria
+    $(document).on('change', '#filas-documentos-fpl select, #filas-documentos-aporte select', function() {
+      const currentVals = $(this).val() || [];
+      const strVals = currentVals.map(function(v) { return v.toString(); });
+      $(this).data('saved-selections', strVals);
       validarFormulario();
     });
 
@@ -15,7 +21,7 @@
 
     htmlErrorToTooltip('top');
 
-    // Escuchar cambios en el selector de mes específico
+    // Escuchar cambios en el selector de mes
     $('#mes_a_rendir').on('change', function() {
       filtrarPorMes();
     });
@@ -24,60 +30,107 @@
     filtrarPorMes();
   });
 
+  function guardarEstadoSeleccionInicial() {
+    $('#filas-documentos-fpl select, #filas-documentos-aporte select').each(function() {
+      const $select = $(this);
+      const initialVals = $select.val() || [];
+      const strVals = initialVals.map(function(v) { return v.toString(); });
+      $select.data('saved-selections', strVals);
+    });
+  }
+
+  function inicializarChosen() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+  }
+
   function filtrarPorMes() {
     const selectMes = document.getElementById('mes_a_rendir');
     const mesSeleccionado = (selectMes && selectMes.value) ? selectMes.value.toString().trim() : '';
-
-    // Si no hay mes seleccionado, mostrar todo
-    if (mesSeleccionado === '') {
-      $('tr[id^="fila_actividad_"]').show();
-      $('#filas-documentos-fpl select option, #filas-documentos-aporte select option').prop('disabled', false);
-      $('#filas-documentos-fpl select, #filas-documentos-aporte select').trigger('chosen:updated');
-      validarFormulario();
-      return;
-    }
 
     // 1. Filtrar las filas de la Pestaña Técnica
     $('tr[id^="fila_actividad_"]').each(function() {
       const duracionAttr = $(this).attr('data-duracion');
       
-      if (duracionAttr && duracionAttr.trim() !== '') {
+      if (mesSeleccionado === '') {
+        $(this).show();
+      } else if (duracionAttr && duracionAttr.trim() !== '') {
         const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
         if (mesesValidos.indexOf(mesSeleccionado) !== -1) {
-          $(this).show(); // Coincide con el mes
+          $(this).show();
         } else {
-          $(this).hide(); // No coincide
+          $(this).hide();
         }
       } else {
-        $(this).hide(); // Ocultar si no tiene duración programada
+        $(this).hide();
       }
     });
 
-    // 2. Filtrar las opciones de los Chosen (Financiera FPL y Aporte)
-    $('#filas-documentos-fpl select, #filas-documentos-aporte select').each(function() {
-      const $select = $(this);
-      
-      $select.find('option').each(function() {
-        const valOpt = $(this).val();
-        if (!valOpt || valOpt === '') return; // Ignorar el placeholder
+    // 2. Filtrar tanto las opciones como las FILAS (tr) de las Pestañas Financieras
+    $('#filas-documentos-fpl tr, #filas-documentos-aporte tr').each(function() {
+      const $tr = $(this);
+      const $select = $tr.find('select');
+      if ($select.length === 0) return;
 
-        const duracionOpt = $(this).attr('data-duracion');
-        
-        if (duracionOpt && duracionOpt.trim() !== '') {
+      let savedVals = $select.data('saved-selections');
+      if (!savedVals) {
+        const currentVals = $select.val() || [];
+        savedVals = currentVals.map(function(v) { return v.toString(); });
+        $select.data('saved-selections', savedVals);
+      }
+
+      let tieneActividadesGuardadas = savedVals.length > 0;
+      let tieneAlgunaActividadValidaEnMesActual = false;
+
+      $select.find('option').each(function() {
+        const $opt = $(this);
+        const valOpt = $opt.val();
+        if (!valOpt || valOpt === '') return;
+
+        const strValOpt = valOpt.toString();
+        const duracionOpt = $opt.attr('data-duracion');
+        const estabaSeleccionada = savedVals.indexOf(strValOpt) !== -1;
+
+        let esValidaParaMes = false;
+        if (mesSeleccionado === '') {
+          esValidaParaMes = true;
+        } else if (duracionOpt && duracionOpt.trim() !== '') {
           const mesesOpt = duracionOpt.split(',').map(function(m) { return m.trim(); });
-          if (mesesOpt.indexOf(mesSeleccionado) !== -1) {
-            $(this).prop('disabled', false);
-          } else {
-            $(this).prop('disabled', true);
-            $(this).prop('selected', false);
+          esValidaParaMes = (mesesOpt.indexOf(mesSeleccionado) !== -1);
+        }
+
+        if (esValidaParaMes) {
+          $opt.prop('disabled', false);
+          $opt.prop('selected', estabaSeleccionada);
+          if (estabaSeleccionada) {
+            tieneAlgunaActividadValidaEnMesActual = true;
           }
         } else {
-          $(this).prop('disabled', true);
-          $(this).prop('selected', false);
+          $opt.prop('disabled', true);
+          $opt.prop('selected', false);
         }
       });
-      
+
+      // Refrescar componente visual Chosen
       $select.trigger('chosen:updated');
+
+      // Decidir si mostramos u ocultamos la FILA (tr) completa
+      if (mesSeleccionado === '') {
+        $tr.show();
+      } else if (tieneActividadesGuardadas) {
+        // Si la fila pertenece a actividades de otro mes, Ocultar fila completa
+        if (tieneAlgunaActividadValidaEnMesActual) {
+          $tr.show();
+        } else {
+          $tr.hide();
+        }
+      } else {
+        // Fila limpia/nueva sin actividades aún: Mostrar
+        $tr.show();
+      }
     });
 
     validarFormulario();
@@ -169,8 +222,10 @@
       }
     });
 
-    // 2. Validar Tab Financiera FPL
+    // 2. Validar Tab Financiera FPL solo en filas VISIBLES
     document.querySelectorAll('#filas-documentos-fpl tr').forEach(fila => {
+      if (fila.style.display === 'none') return;
+
       const fileInput = fila.querySelector('input[type="file"]');
       const selectActividades = fila.querySelector('select');
       const tdArchivoPrevio = fila.querySelector('td');
@@ -182,8 +237,10 @@
       }
     });
 
-    // 3. Validar Tab Financiera Aporte
+    // 3. Validar Tab Financiera Aporte solo en filas VISIBLES
     document.querySelectorAll('#filas-documentos-aporte tr').forEach(fila => {
+      if (fila.style.display === 'none') return;
+
       const fileInput = fila.querySelector('input[type="file"]');
       const selectActividades = fila.querySelector('select');
       const tdArchivoPrevio = fila.querySelector('td');
@@ -223,19 +280,16 @@
 
     const select = nuevaFila.querySelector('select');
     if (select) {
-      Array.from(select.options).forEach(opt => opt.selected = false);
+      Array.from(select.options).forEach(function(opt) { opt.selected = false; });
+      $(select).data('saved-selections', []);
     }
+
+    const celdas = nuevaFila.querySelectorAll('td');
+    if (celdas[0]) celdas[0].innerHTML = '--';
 
     tbody.appendChild(nuevaFila);
 
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    }).change(function() {
-      validarFormulario();
-    });
-
+    inicializarChosen();
     filtrarPorMes();
   }
 

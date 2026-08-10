@@ -4160,9 +4160,13 @@ class FondoProduccionLimpiasController < ApplicationController
 
       ActiveRecord::Base.transaction do
         # 1. Crear o buscar la cabecera de rendición vinculada al Flujo
-        @rendicion = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id) do |r|
-          r.mes_a_rendir = params[:mes_a_rendir]
-          r.estado = :borrador_tecnico
+        mes_seleccionado = params[:mes_a_rendir].presence || 1
+
+        @rendicion = RendicionFpl.find_or_create_by!(
+          flujo_id: @tarea_pendiente.flujo_id, 
+          mes_a_rendir: mes_seleccionado
+        ) do |r|
+          r.estado = :borrador
         end
 
         @rendicion.update!(mes_a_rendir: params[:mes_a_rendir]) if params[:mes_a_rendir].present?
@@ -4251,7 +4255,7 @@ class FondoProduccionLimpiasController < ApplicationController
         # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y EVALUACIÓN DEL ÚLTIMO MES
         # -------------------------------------------------------------
         if commit_accion == 'enviar'
-          @rendicion.update!(estado: :finalizada)
+          @rendicion.update!(estado: :enviada_a_revision)
 
           # 1. Obtener el mes actual y determinar el último mes del proyecto
           mes_actual = (params[:mes_a_rendir].presence || @rendicion.mes_a_rendir).to_i
@@ -4337,6 +4341,7 @@ class FondoProduccionLimpiasController < ApplicationController
         comentario     = params_rendicion[:comentario_asignar_revisor]
 
         @rendicion.update!(
+          estado: :en_evaluacion,
           revisor_tecnico_id:         revisor_tec_id,
           revisor_financiero_id:      revisor_fin_id,
           comentario_asignar_revisor: comentario
@@ -4406,7 +4411,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @es_revision_tecnica    = true
       @es_revision_financiera = false
 
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                         .order(created_at: :desc)
+                         .first
       set_actividades_x_linea
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
@@ -4426,6 +4435,8 @@ class FondoProduccionLimpiasController < ApplicationController
         hay_rechazo_tecnico = evaluar_rechazos(params[:detalles])
 
         if hay_rechazo_tecnico
+          @rendicion.update!(estado: :observada_tecnica)
+
           # RECHAZO TÉCNICO: Se vuelve a generar la tarea FPL-18 (Corrección Técnica)
           @tarea_pendiente.pasar_a_siguiente_tarea 'B'
           
@@ -4435,10 +4446,13 @@ class FondoProduccionLimpiasController < ApplicationController
         else
           # 3. Si todo CUMPLE en Técnica, verificar si Financiera también cumple para avanzar a FPL-16
           if rendicion_financiera_aprobada?(@rendicion)
+            @rendicion.update!(estado: :pendiente_verificacion_contable)
+
             #Se crea la siguiente tarea FPL-16 y envia el correo
             @tarea_pendiente.pasar_a_siguiente_tarea 'A'
             flash[:notice] = "Rendición aprobada exitosamente (Técnica y Financiera). Se ha generado la tarea FPL-16."
           else
+            @rendicion.update!(estado: :en_evaluacion)
             flash[:notice] = "Evaluación técnica aprobada. Queda a la espera de la evaluación financiera para avanzar a FPL-16."
           end
 
@@ -4465,7 +4479,11 @@ class FondoProduccionLimpiasController < ApplicationController
       @es_revision_tecnica    = false
       @es_revision_financiera = true
 
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                         .order(created_at: :desc)
+                         .first
 
       if @rendicion.present?
         @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
@@ -4493,6 +4511,7 @@ class FondoProduccionLimpiasController < ApplicationController
         hay_rechazo_financiero = evaluar_rechazos(params[:detalles])
 
         if hay_rechazo_financiero
+          @rendicion.update!(estado: :observada_financiera)
           # RECHAZO FINANCIERO: Se vuelve a generar la tarea FPL-17 (Corrección Financiera / Re-subir Documentos)
           @tarea_pendiente.pasar_a_siguiente_tarea 'B'
           
@@ -4502,10 +4521,12 @@ class FondoProduccionLimpiasController < ApplicationController
         else
           # 3. Si todo CUMPLE en Financiera, verificar si Técnica también cumple para avanzar a FPL-16
           if rendicion_tecnica_aprobada?(@rendicion)
+            @rendicion.update!(estado: :pendiente_verificacion_contable)
             #Se crea la siguiente tarea FPL-16 y envia el correo
             @tarea_pendiente.pasar_a_siguiente_tarea 'A'
             flash[:notice] = "Rendición aprobada exitosamente (Técnica y Financiera). Se ha generado la tarea FPL-16."
           else
+            @rendicion.update!(estado: :en_evaluacion)
             flash[:notice] = "Evaluación financiera aprobada. Queda a la espera de la evaluación técnica para avanzar a FPL-16."
           end
 
@@ -4536,9 +4557,19 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_verificacion_contable_rendicion
     def guardar_verificacion_contable_rendicion # FPL-16
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                         .order(created_at: :desc)
+                         .first
 
       if params[:commit_type] == 'enviar'
+        # 1. Registrar la marca de aprobación y el comentario de auditoría
+        @rendicion.update!(
+          estado: :verificada_contablemente,
+          comentario_contable: params[:comentario_contable]
+        )
+
         # Avanza a la siguiente tarea configurada en el motor (Camino 'A')
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
@@ -4562,7 +4593,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_correccion_financiera_rendicion
     def guardar_correccion_financiera_rendicion # FPL-17
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                         .order(created_at: :desc)
+                         .first
 
       if @rendicion.present?
         # Procesar documentos FPL y Aporte (Actualiza existentes o Crea nuevos)
@@ -4571,6 +4606,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       if params[:commit_type] == 'enviar'
+        @rendicion.update!(estado: :en_evaluacion)
+
         # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
@@ -4599,7 +4636,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_correccion_tecnica_rendicion
     def guardar_correccion_tecnica_rendicion # FPL-18
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                         .order(created_at: :desc)
+                         .first
 
       # 1. Guardar las observaciones, el estado de 'realizada' y los ARCHIVOS en la tabla técnica
       if params[:actividades_ids].present? && @rendicion.present?
@@ -4623,6 +4664,8 @@ class FondoProduccionLimpiasController < ApplicationController
 
       # 2. Flujo de envío o grabado
       if params[:commit_type] == 'enviar'
+        @rendicion.update!(estado: :en_evaluacion)
+
         # Camino 'A': Devuelve la tarea al revisor técnico (FPL-15)
         @tarea_pendiente.pasar_a_siguiente_tarea 'A'
         @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
