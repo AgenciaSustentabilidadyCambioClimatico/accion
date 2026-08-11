@@ -4609,28 +4609,46 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_verificacion_contable_rendicion
     def guardar_verificacion_contable_rendicion # FPL-16
-      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
-      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
-      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                         .order(created_at: :desc)
-                         .first
+      # 1. Buscar la rendición correspondiente al mes activo o la más reciente
+      if params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+      end
+
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                                .order(mes_a_rendir: :desc, id: :desc)
+                                .first
 
       if params[:commit_type] == 'enviar'
-        # 1. Registrar la marca de aprobación y el comentario de auditoría
-        @rendicion.update!(
-          estado: :verificada_contablemente,
-          comentario_contable: params[:comentario_contable]
-        )
+        # 2. Registrar la aprobación contable y comentario en la rendición
+        attrs_a_actualizar = { estado: :verificada_contablemente }
+        if @rendicion.respond_to?(:comentario_contable=)
+          attrs_a_actualizar[:comentario_contable] = params[:comentario_contable]
+        end
+        @rendicion.update!(attrs_a_actualizar)
 
-        # Avanza a la siguiente tarea configurada en el motor (Camino 'A')
-        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
-        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        # 3. Cierre de la tarea FPL-16 y avance del flujo
+        if @tarea_pendiente.present?
+          estado_enviada_id = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
+          
+          @tarea_pendiente.update(
+            estado_tarea_pendiente_id: estado_enviada_id
+          )
+
+          @tarea_pendiente.pasar_a_siguiente_tarea('A') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+        end
+
+        flash[:notice] = "Verificación contable aprobada y tarea FPL-16 cerrada exitosamente."
         
-        flash[:notice] = "Verificación contable enviada exitosamente."
-        redirect_to root_path
+        # Redirección al Dashboard
+        redirect_to dashboard_path
       else
+        # 4. Guardar avance sin cerrar la tarea
+        if @rendicion.respond_to?(:comentario_contable=) && params[:comentario_contable].present?
+          @rendicion.update(comentario_contable: params[:comentario_contable])
+        end
+
         flash[:notice] = "Avance de verificación contable guardado."
-        redirect_to verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente)
+        redirect_to verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion&.mes_a_rendir)
       end
     end
 
@@ -6623,11 +6641,20 @@ class FondoProduccionLimpiasController < ApplicationController
   # Carga la data general necesaria para renderizar las vistas de corrección FPL-17 y FPL-18
   def cargar_datos_correccion
     @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
-    @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id)
+
+    # 1. Buscar la rendición correspondiente al mes enviado por parámetro
+    if params[:mes_a_rendir].present?
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+    end
+
+    # 2. Fallback: Si no viene parámetro en la URL, traer la rendición de mayor mes_a_rendir (ej. Mes 2)
+    @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
+                              .order(mes_a_rendir: :desc, id: :desc)
+                              .first
 
     if @rendicion.present?
-      @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
-      @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+      @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+      @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
     else
       @documentos_fpl    = RendicionDetalleFpl.none
       @documentos_aporte = RendicionDetalleFpl.none

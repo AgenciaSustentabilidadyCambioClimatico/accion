@@ -54,7 +54,6 @@
   .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-  .box-mes-a-rendir { background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px; padding: 6px 12px; font-weight: bold; color: #495057; display: inline-block; }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - titulo "Verificación Contable de Rendición"
@@ -62,6 +61,10 @@
 -# Obtención del mes guardado en rendiciones_fpl y consulta a plan_actividades
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
+
+-# Identificar actividades marcadas como 'No' en meses anteriores
+- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_actual.to_i).pluck(:id)
+- actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
 
 .row
   .col-12
@@ -73,6 +76,17 @@
           %h5.no-margin= titulo_proyecto_fpl.html_safe
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+-# INDICADOR VISUAL DEL MES EN VERIFICACIÓN CONTABLE
+.row.mb-3
+  .col-12
+    .card.border-info.mb-0{style: "border-width: 2px;"}
+      .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+        %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-calendar-check-o.mr-2.text-info
+          Rendición correspondiente a:
+        %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+          = "Mes #{mes_actual.presence || 1}"
 
 -# Cargar todas las pestañas para revisión contable integral
 - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
@@ -88,13 +102,12 @@
   .tab-content#manifestacionContent
 
     -# ----------------------------------------------------
-    -# Pestaña 1: Información Técnica Consolida
+    -# Pestaña 1: Información Técnica Consolidada
     -# ----------------------------------------------------
     .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
       .card
-        .card-header.d-flex.justify-content-between.align-items-center
+        .card-header
           %h5.no-margin Resumen Técnico de Rendición
-          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
         .card-body
           .table-responsive
             %table.table.table-striped.usuarios.no-margin
@@ -109,8 +122,14 @@
                   %th.encabezado-form{style: 'width: 15%;'} Comentario Revisor
               %tbody
                 - if @actividad_x_linea.present?
-                  - actividades_filtradas = @actividad_x_linea.select { |a| plan = planes_hash[a.id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; mes_actual.blank? || dur_meses.include?(mes_actual) }
-                  
+                  - actividades_filtradas = @actividad_x_linea.select do |a|
+                    - plan = planes_hash[a.id]
+                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                    - tiene_detalle = @rendicion&.rendicion_detalles_fpl&.any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                    - es_del_mes || es_pendiente_previo || tiene_detalle
+
                   - if actividades_filtradas.present?
                     - actividades_filtradas.each do |actividad|
                       - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
@@ -151,80 +170,120 @@
     -# ----------------------------------------------------
     .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
       .card
-        .card-header.d-flex.justify-content-between.align-items-center
+        .card-header
           %h5.no-margin Documentos de Rendición Financiera FPL
-          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
         .card-body{style: 'padding-bottom: 15px;'}
           .table-responsive
             %table.table.table-striped.no-margin
               %thead
                 %tr
+                  %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                  %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
                   %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                  %th.encabezado-form{style: 'width: 30%;'} Actividad Relacionada
-                  %th.encabezado-form{style: 'width: 15%;'} Observación Postulante
                   %th.encabezado-form{style: 'width: 10%;'} Eval. Financiera
-                  %th.encabezado-form{style: 'width: 20%;'} Comentario Revisor
+                  %th.encabezado-form{style: 'width: 25%;'} Comentario Revisor
               %tbody
-                - if @documentos_fpl.present?
-                  - @documentos_fpl.each do |doc|
-                    - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                    - val_str = raw_cumple.to_s.downcase
-                    - es_aprobado = ['1', 'si', 'true'].include?(val_str)
-                    - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+                - if @actividad_x_linea.present?
+                  - actividades_fpl_filtradas = @actividad_x_linea.select do |a|
+                    - plan = planes_hash[a.id]
+                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                    - tiene_docs = (@documentos_fpl || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                    - es_del_mes || es_pendiente_previo || tiene_docs
 
+                  - if actividades_fpl_filtradas.present?
+                    - actividades_fpl_filtradas.each do |actividad|
+                      - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                      - if docs_act.present?
+                        - docs_act.each do |doc|
+                          - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                          - val_str = raw_cumple.to_s.downcase
+                          - es_aprobado = ['1', 'si', 'true'].include?(val_str)
+
+                          %tr
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                            %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                              - if es_aprobado
+                                %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
+                              - else
+                                %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
+                            %td.contenido-form= doc.comentario_revisor.presence || '--'
+                      - else
+                        %tr
+                          %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                          %td.contenido-form= actividad.nombre
+                          %td.contenido-form.text-muted Sin documentos cargados
+                          %td.contenido-form --
+                          %td.contenido-form --
+                  - else
                     %tr
-                      %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
-                      %td.contenido-form= act_nombres.presence || '--'
-                      %td.contenido-form= doc.observacion.presence || '--'
-                      %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                        - if es_aprobado
-                          %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
-                        - else
-                          %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
-                      %td.contenido-form= doc.comentario_revisor.presence || '--'
+                      %td.text-center.text-muted{colspan: 5} No hay documentos financieros FPL para auditar en este mes.
                 - else
                   %tr
-                    %td.text-center.text-muted{colspan: 5} No hay documentos financieros FPL para auditar.
+                    %td.text-center.text-muted{colspan: 5} No hay actividades configuradas.
 
     -# ----------------------------------------------------
     -# Pestaña 3: Información Financiera Aporte Propio
     -# ----------------------------------------------------
     .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
       .card
-        .card-header.d-flex.justify-content-between.align-items-center
+        .card-header
           %h5.no-margin Documentos de Rendición Financiera Aporte
-          .box-mes-a-rendir= "Mes Auditado: Mes #{mes_actual.presence || '--'}"
         .card-body{style: 'padding-bottom: 15px;'}
           .table-responsive
             %table.table.table-striped.no-margin
               %thead
                 %tr
+                  %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                  %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
                   %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                  %th.encabezado-form{style: 'width: 30%;'} Actividad Relacionada
-                  %th.encabezado-form{style: 'width: 15%;'} Observación Postulante
                   %th.encabezado-form{style: 'width: 10%;'} Eval. Financiera
-                  %th.encabezado-form{style: 'width: 20%;'} Comentario Revisor
+                  %th.encabezado-form{style: 'width: 25%;'} Comentario Revisor
               %tbody
-                - if @documentos_aporte.present?
-                  - @documentos_aporte.each do |doc|
-                    - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                    - val_str = raw_cumple.to_s.downcase
-                    - es_aprobado = ['1', 'si', 'true'].include?(val_str)
-                    - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+                - if @actividad_x_linea.present?
+                  - actividades_aporte_filtradas = @actividad_x_linea.select do |a|
+                    - plan = planes_hash[a.id]
+                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                    - tiene_docs = (@documentos_aporte || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                    - es_del_mes || es_pendiente_previo || tiene_docs
 
+                  - if actividades_aporte_filtradas.present?
+                    - actividades_aporte_filtradas.each do |actividad|
+                      - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                      - if docs_act.present?
+                        - docs_act.each do |doc|
+                          - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                          - val_str = raw_cumple.to_s.downcase
+                          - es_aprobado = ['1', 'si', 'true'].include?(val_str)
+
+                          %tr
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                            %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                              - if es_aprobado
+                                %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
+                              - else
+                                %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
+                            %td.contenido-form= doc.comentario_revisor.presence || '--'
+                      - else
+                        %tr
+                          %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                          %td.contenido-form= actividad.nombre
+                          %td.contenido-form.text-muted Sin documentos cargados
+                          %td.contenido-form --
+                          %td.contenido-form --
+                  - else
                     %tr
-                      %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
-                      %td.contenido-form= act_nombres.presence || '--'
-                      %td.contenido-form= doc.observacion.presence || '--'
-                      %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                        - if es_aprobado
-                          %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
-                        - else
-                          %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
-                      %td.contenido-form= doc.comentario_revisor.presence || '--'
+                      %td.text-center.text-muted{colspan: 5} No hay documentos de aporte para auditar en este mes.
                 - else
                   %tr
-                    %td.text-center.text-muted{colspan: 5} No hay documentos de aporte para auditar.
+                    %td.text-center.text-muted{colspan: 5} No hay actividades configuradas.
 
   -# Sección de Cierre / Dictamen Contable
   .card.mt-3
