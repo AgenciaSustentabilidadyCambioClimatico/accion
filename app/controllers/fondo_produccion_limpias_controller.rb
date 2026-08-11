@@ -2348,11 +2348,15 @@ class FondoProduccionLimpiasController < ApplicationController
       nombre_campo = params[:nombre_campo]
       archivo      = params[:archivo]
 
-      # 1. Validar extensión del archivo (Lógica original)
-      unless valid_extensions?(archivo)
+      # 1. Validar extensión permitiendo documentos, imágenes, comprimidos y hojas de cálculo (Excel)
+      extension = File.extname(archivo.original_filename).delete('.').downcase rescue ''
+      extensiones_permitidas = %w[pdf jpg jpeg png tiff zip rar doc docx xls xlsx csv]
+
+      unless extensiones_permitidas.include?(extension)
+        mensaje_err = 'La extensión del archivo no es válida. Se permiten: PDF, imágenes, ZIP, Word y Excel (xls, xlsx).'
         respond_to do |format|
-          format.json { render json: { error: 'La extensión del archivo no es válida. Las extensiones permitidas son: pdf, jpg, png, tiff, zip, rar, doc y docx.' }, status: :unprocessable_entity }
-          format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), alert: "La extensión del archivo no es válida." }
+          format.json { render json: { error: mensaje_err }, status: :unprocessable_entity }
+          format.html { redirect_back(fallback_location: root_path, alert: mensaje_err) }
         end
         return
       end
@@ -2360,7 +2364,14 @@ class FondoProduccionLimpiasController < ApplicationController
       # 2. CASO A: Archivos de Rendición por Actividad (Guarda en RendicionDetalleFpl)
       if nombre_campo.to_s.start_with?('archivo_rendicion_')
         actividad_id = nombre_campo.gsub('archivo_rendicion_', '').to_i
-        @rendicion   = RendicionFpl.find_or_create_by!(flujo_id: @tarea_pendiente.flujo_id)
+        mes_val      = params[:mes_a_rendir].presence || 1
+
+        @rendicion = RendicionFpl.find_or_create_by!(
+          flujo_id: @tarea_pendiente.flujo_id,
+          mes_a_rendir: mes_val
+        ) do |r|
+          r.estado = :borrador
+        end
 
         # Buscar si ya existe un detalle técnico para esta actividad
         detalle = @rendicion.rendicion_detalles_fpl
@@ -2373,17 +2384,19 @@ class FondoProduccionLimpiasController < ApplicationController
         detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
         detalle.archivo = archivo
 
-        if detalle.save
-          # Crear la asociación con la actividad si es nueva
+        # Guardar omitiendo validaciones de campos aún no completados en el formulario
+        if detalle.save(validate: false)
           unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
             detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
           end
 
+          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_val)
+
           respond_to do |format|
-            flash[:success] = 'Archivo subido correctamente.'
+            flash[:notice] = 'Archivo subido correctamente.'
             format.json { render json: { success: true }, status: :ok }
-            format.js   { render js: "window.location.reload();" }
-            format.html { redirect_back(fallback_location: root_path, notice: 'Archivo subido correctamente.') }
+            format.js   { render js: "window.location='#{url_destino}';" }
+            format.html { redirect_to url_destino, notice: 'Archivo subido correctamente.' }
           end
         else
           respond_to do |format|
@@ -2391,23 +2404,28 @@ class FondoProduccionLimpiasController < ApplicationController
           end
         end
 
-      # 3. CASO B: Archivos estándar de FondoProduccionLimpia (Lógica original)
+      # 3. CASO B: Archivos estándar de FondoProduccionLimpia
       else
-        custom_params = {
-          fondo_produccion_limpia: {
-            nombre_campo => archivo
-          }
-        }
+        @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new(flujo_id: @tarea_pendiente.flujo_id)
 
-        if @fondo_produccion_limpia.update(custom_params[:fondo_produccion_limpia])
-          respond_to do |format|
-            flash[:success] = 'Archivo subido correctamente.'
-            format.js   { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}'" }
-            format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: 'Archivo subido correctamente.' }
+        if @fondo_produccion_limpia.respond_to?("#{nombre_campo}=")
+          @fondo_produccion_limpia.send("#{nombre_campo}=", archivo)
+          
+          if @fondo_produccion_limpia.save(validate: false)
+            respond_to do |format|
+              flash[:success] = 'Archivo subido correctamente.'
+              format.json { render json: { success: true }, status: :ok }
+              format.js   { render js: "window.location='#{resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id)}';" }
+              format.html { redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id), notice: 'Archivo subido correctamente.' }
+            end
+          else
+            respond_to do |format|
+              format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+            end
           end
         else
           respond_to do |format|
-            format.json { render json: { error: 'No se pudo actualizar el archivo.' }, status: :unprocessable_entity }
+            format.json { render json: { error: "El campo #{nombre_campo} no existe en el modelo." }, status: :unprocessable_entity }
           end
         end
       end
@@ -4135,33 +4153,40 @@ class FondoProduccionLimpiasController < ApplicationController
     def rendicion_subir_documentos_actividades # FPL-12
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-      # 1. Carga de la rendición principal
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id)
+      # 1. Determinar el mes activo a cargar (vía parámetro o el siguiente no rendido)
+      estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
+      rendiciones_enviadas = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
+                                            .where.not(estado: estados_borrador)
+                                            .pluck(:mes_a_rendir).compact
+      ultimo_mes_enviado = rendiciones_enviadas.max || 0
+      mes_a_cargar = params[:mes_a_rendir].presence || (ultimo_mes_enviado + 1)
 
-      # 2. Carga segura de detalles precargando la tabla de unión
+      # 2. Carga de la rendición específica para ese flujo Y ese mes
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: mes_a_cargar)
+
+      # 3. Carga de detalles financieros precargando la tabla de unión para el mes activo
       if @rendicion.present?
-        @documentos_fpl = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
-        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_fpl     = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte  = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
-        @documentos_fpl = RendicionDetalleFpl.none
-        @documentos_aporte = RendicionDetalleFpl.none
+        @documentos_fpl     = RendicionDetalleFpl.none
+        @documentos_aporte  = RendicionDetalleFpl.none
       end
 
-      # 3. Control de permisos
+      # 4. Control de permisos
       solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @tiene_permisos = solo_lectura.nil?
 
-      # 4. Asignación de actividades del proyecto
+      # 5. Asignación de actividades del proyecto
       set_actividades_x_linea
     end
 
     def adjuntar_rendicion_subir_documentos_actividades # FPL-12
       commit_accion = params[:commit_type] # 'grabar' o 'enviar'
+      mes_seleccionado = params[:mes_a_rendir].presence || 1
 
       ActiveRecord::Base.transaction do
-        # 1. Crear o buscar la cabecera de rendición vinculada al Flujo
-        mes_seleccionado = params[:mes_a_rendir].presence || 1
-
+        # 1. Crear o buscar la cabecera de rendición vinculada al Flujo y al Mes Seleccionado
         @rendicion = RendicionFpl.find_or_create_by!(
           flujo_id: @tarea_pendiente.flujo_id, 
           mes_a_rendir: mes_seleccionado
@@ -4169,9 +4194,6 @@ class FondoProduccionLimpiasController < ApplicationController
           r.estado = :borrador
         end
 
-        @rendicion.update!(mes_a_rendir: params[:mes_a_rendir]) if params[:mes_a_rendir].present?
-
-        # Obtener el valor numérico del enum 'tecnica' (0) para evitar que pase nil en SQL
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
 
         # -------------------------------------------------------------
@@ -4186,7 +4208,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
           next if realizada_val.blank?
 
-          # Búsqueda usando el valor numérico del enum
           detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
                                                     .find_by(
                                                       rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num },
@@ -4197,8 +4218,7 @@ class FondoProduccionLimpiasController < ApplicationController
           
           detalle.realizada   = (realizada_val.to_s.downcase == 'si')
           detalle.observacion = (realizada_val.to_s.downcase == 'no') ? obs_val : nil
-          
-          detalle.archivo = archivo_val if archivo_val.present?
+          detalle.archivo     = archivo_val if archivo_val.present?
           detalle.save!
 
           unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
@@ -4238,7 +4258,6 @@ class FondoProduccionLimpiasController < ApplicationController
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
             detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
 
-            # Corregido: Asignación directa para CarrierWave (se quita .attach)
             detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
             detalle.save!
 
@@ -4255,22 +4274,20 @@ class FondoProduccionLimpiasController < ApplicationController
         # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y EVALUACIÓN DEL ÚLTIMO MES
         # -------------------------------------------------------------
         if commit_accion == 'enviar'
-          @rendicion.update!(estado: :enviada_a_revision)
+          @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
 
-          # 1. Obtener el mes actual y determinar el último mes del proyecto
-          mes_actual = (params[:mes_a_rendir].presence || @rendicion.mes_a_rendir).to_i
-          
+          mes_actual = mes_seleccionado.to_i
           duraciones = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:duracion)
           total_meses = duraciones.flat_map { |d| d.to_s.split(',').map(&:strip).map(&:to_i) }.compact.select(&:positive?).max || 1
 
           es_ultimo_mes = (mes_actual >= total_meses)
 
           if es_ultimo_mes
-            # CERRAR FPL-12 y avanzar a FPL-13 (finaliza = true por defecto)
+            # CERRAR FPL-12 y avanzar a FPL-13
             @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
             mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado la tarea de subir documentos."
           else
-            # AVANZAR A FPL-13 sin cerrar FPL-12 (finaliza = false)
+            # AVANZAR A FPL-13 sin cerrar FPL-12
             @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
             mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea continúa abierta para los siguientes meses."
           end
@@ -4278,12 +4295,13 @@ class FondoProduccionLimpiasController < ApplicationController
           url_destino = root_path
         else
           mensaje_exito = 'Avances guardados correctamente.'
-          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id)
+          # IMPORTANTE: Preserva mes_a_rendir en la URL para recargar el mes recién editado
+          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_seleccionado)
         end
 
         respond_to do |format|
           format.js do
-            flash[:success] = mensaje_exito
+            flash[:notice] = mensaje_exito
             render js: "window.location='#{url_destino}';"
           end
           format.html do
