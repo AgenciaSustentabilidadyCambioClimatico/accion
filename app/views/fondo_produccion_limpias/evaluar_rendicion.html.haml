@@ -62,6 +62,10 @@
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
+-# Identificar actividades marcadas como 'No' en meses anteriores
+- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_actual.to_i).pluck(:id)
+- actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
 .row
   .col-12
     .card.mb-3
@@ -72,6 +76,17 @@
           %h5.no-margin= titulo_proyecto_fpl.html_safe
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+-# INDICADOR VISUAL DEL MES EN EVALUACIÓN
+.row.mb-3
+  .col-12
+    .card.border-info.mb-0{style: "border-width: 2px;"}
+      .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+        %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-calendar-check-o.mr-2.text-info
+          Rendición correspondiente a:
+        %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+          = "Mes #{mes_actual.presence || 1}"
 
 - tabs = {}
 - tabs['tecnica'] = true if @es_revision_tecnica
@@ -97,7 +112,7 @@
       .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
         .card
           .card-header
-            %h5.no-margin Evaluación Técnica de Rendición (Mes: #{@rendicion&.mes_a_rendir || '--'})
+            %h5.no-margin Evaluación Técnica de Rendición
           .card-body
             .table-responsive
               %table.table.table-striped.usuarios.no-margin
@@ -112,8 +127,14 @@
                     %th.encabezado-form{style: 'width: 25%;'} Comentarios (Revisor)
                 %tbody
                   - if @actividad_x_linea.present?
-                    - actividades_filtradas = @actividad_x_linea.select { |a| plan = planes_hash[a.id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; mes_actual.blank? || dur_meses.include?(mes_actual) }
-                    
+                    - actividades_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_detalle = @rendicion&.rendicion_detalles_fpl&.any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_detalle
+
                     - if actividades_filtradas.present?
                       - actividades_filtradas.each do |actividad|
                         - detalle = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
@@ -162,71 +183,117 @@
       .tab-pane.fade.show.active#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
         .card{style: 'overflow: visible;'}
           .card-header
-            %h5.no-margin Evaluación Financiera FPL de Rendición (Mes: #{@rendicion&.mes_a_rendir || '--'})
+            %h5.no-margin Evaluación Financiera FPL de Rendición
           .card-body{style: 'padding-bottom: 15px;'}
             .table-responsive
               %table.table.table-striped.no-margin
                 %thead
                   %tr
+                    %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                    %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
                     %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                    %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada
-                    %th.encabezado-form{style: 'width: 15%;'} Cumple
+                    %th.encabezado-form{style: 'width: 10%;'} Cumple
                     %th.encabezado-form{style: 'width: 25%;'} Comentarios (Revisor)
                 %tbody
-                  - if @documentos_fpl.present?
-                    - @documentos_fpl.each do |doc|
-                      - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                      - val_str = raw_cumple.to_s.downcase
-                      - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
-                      - valor_comentario = doc.comentario_revisor
-                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+                  - if @actividad_x_linea.present?
+                    - actividades_fpl_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_docs = (@documentos_fpl || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_docs
 
+                    - if actividades_fpl_filtradas.present?
+                      - actividades_fpl_filtradas.each do |actividad|
+                        - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                            - val_str = raw_cumple.to_s.downcase
+                            - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                            - valor_comentario = doc.comentario_revisor
+
+                            %tr
+                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                              %td.contenido-form= actividad.nombre
+                              %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                              %td.contenido-form
+                                = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                              %td.contenido-form
+                                = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                        - else
+                          %tr
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form.text-muted Sin documentos cargados
+                            %td.contenido-form --
+                            %td.contenido-form --
+                    - else
                       %tr
-                        %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
-                        %td.contenido-form= act_nombres.presence || '--'
-                        %td.contenido-form
-                          = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
-                        %td.contenido-form
-                          = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                        %td.text-center.text-muted{colspan: 5} No hay documentos financieros FPL para evaluar en este mes.
                   - else
                     %tr
-                      %td.text-center.text-muted{colspan: 4} No se enviaron documentos financieros FPL para evaluar.
+                      %td.text-center.text-muted{colspan: 5} No se enviaron documentos financieros FPL para evaluar.
 
       / ----------------------------------------------------
       / Pestaña 3: Evaluación Financiera Aporte
       / ----------------------------------------------------
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
-        .card.mt-3{style: 'overflow: visible;'}
+        .card{style: 'overflow: visible;'}
           .card-header
-            %h5.no-margin Evaluación Financiera Aporte de Rendición (Mes: #{@rendicion&.mes_a_rendir || '--'})
+            %h5.no-margin Evaluación Financiera Aporte de Rendición
           .card-body{style: 'padding-bottom: 15px;'}
             .table-responsive
               %table.table.table-striped.no-margin
                 %thead
                   %tr
+                    %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                    %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
                     %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                    %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada
-                    %th.encabezado-form{style: 'width: 15%;'} Cumple
+                    %th.encabezado-form{style: 'width: 10%;'} Cumple
                     %th.encabezado-form{style: 'width: 25%;'} Comentarios (Revisor)
                 %tbody
-                  - if @documentos_aporte.present?
-                    - @documentos_aporte.each do |doc|
-                      - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                      - val_str = raw_cumple.to_s.downcase
-                      - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
-                      - valor_comentario = doc.comentario_revisor
-                      - act_nombres = doc.plan_actividades.map { |pa| pa_id = pa.respond_to?(:plan_actividad_id) ? pa.plan_actividad_id : pa.id; act = @actividad_x_linea&.find { |a| a.id == pa_id || a.id == pa.id }; plan = planes_hash[act&.id || pa_id]; dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []; if mes_actual.blank? || dur_meses.include?(mes_actual); if act.present?; act.correlativo.present? ? "#{act.correlativo} - #{act.nombre}" : act.nombre; else; nom = pa.try(:actividad)&.try(:nombre) || pa.try(:nombre); corr = pa.try(:actividad)&.try(:correlativo) || pa.try(:correlativo); corr.present? ? "#{corr} - #{nom}" : nom; end; end }.compact.uniq.join("<br>").html_safe
+                  - if @actividad_x_linea.present?
+                    - actividades_aporte_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_docs = (@documentos_aporte || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_docs
 
+                    - if actividades_aporte_filtradas.present?
+                      - actividades_aporte_filtradas.each do |actividad|
+                        - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
+                            - val_str = raw_cumple.to_s.downcase
+                            - valor_cumple_int = ['1', 'si', 'true'].include?(val_str) ? 1 : (['2', 'no', 'false'].include?(val_str) ? 2 : nil)
+                            - valor_comentario = doc.comentario_revisor
+
+                            %tr
+                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                              %td.contenido-form= actividad.nombre
+                              %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
+                              %td.contenido-form
+                                = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
+                              %td.contenido-form
+                                = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                        - else
+                          %tr
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form.text-muted Sin documentos cargados
+                            %td.contenido-form --
+                            %td.contenido-form --
+                    - else
                       %tr
-                        %td.contenido-form= __descargar_archivo_sin_titulo(doc.archivo, doc)
-                        %td.contenido-form= act_nombres.presence || '--'
-                        %td.contenido-form
-                          = select_tag "detalles[#{doc.id}][cumple]", options_for_select([['Seleccione...', ''], ['Sí', 1], ['No', 2]], valor_cumple_int), class: "form-control smaller-text border-text", id: "cumple_#{doc.id}", onchange: "toggleComentariosRevisor(this, '#{doc.id}')"
-                        %td.contenido-form
-                          = text_area_tag "detalles[#{doc.id}][comentario_revisor]", valor_comentario, id: "comentario_revisor_#{doc.id}", class: "form-control smaller-text border-text", disabled: (valor_cumple_int != 2), placeholder: "Ingrese comentarios...", rows: 2, onkeyup: "validarFormulario()"
+                        %td.text-center.text-muted{colspan: 5} No hay documentos de aporte para evaluar en este mes.
                   - else
                     %tr
-                      %td.text-center.text-muted{colspan: 4} No se enviaron documentos de aporte para evaluar.
+                      %td.text-center.text-muted{colspan: 5} No se enviaron documentos de aporte para evaluar.
 
   .float-right.mt-3
     = volver_root
