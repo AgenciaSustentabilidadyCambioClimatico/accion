@@ -84,9 +84,11 @@
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
--# Identificar actividades marcadas como 'No' en meses anteriores
+-# Identificar actividades marcadas con 'NO' previamente que AÚN NO hayan sido marcadas con 'SÍ' en ningún mes anterior
 - rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_actual.to_i).pluck(:id)
-- actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
 
 = simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true

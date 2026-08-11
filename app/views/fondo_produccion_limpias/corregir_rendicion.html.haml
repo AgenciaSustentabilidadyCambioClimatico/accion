@@ -14,59 +14,7 @@
     });
 
     htmlErrorToTooltip('top');
-
-    // Filtrar al cargar según el mes fijo
-    filtrarPorMes();
   });
-
-  function filtrarPorMes() {
-    const mesSeleccionado = $('#mes_a_rendir').val() ? $('#mes_a_rendir').val().toString().trim() : '';
-
-    if (!mesSeleccionado || mesSeleccionado === '') {
-      return;
-    }
-
-    // 1. Filtrar filas de la Pestaña Técnica
-    $('tr[id^="fila_actividad_"]').each(function() {
-      const duracionAttr = $(this).attr('data-duracion');
-      if (duracionAttr && duracionAttr.trim() !== '') {
-        const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
-        if (mesesValidos.indexOf(mesSeleccionado) !== -1) {
-          $(this).show();
-        } else {
-          $(this).hide();
-        }
-      } else {
-        $(this).hide();
-      }
-    });
-
-    // 2. Filtrar opciones de los Chosen en Financiera FPL y Aporte
-    $('#filas-documentos-fpl select, #filas-documentos-aporte select').each(function() {
-      const $select = $(this);
-      $select.find('option').each(function() {
-        const valOpt = $(this).val();
-        if (!valOpt || valOpt === '') return;
-
-        const duracionOpt = $(this).attr('data-duracion');
-        if (duracionOpt && duracionOpt.trim() !== '') {
-          const mesesOpt = duracionOpt.split(',').map(function(m) { return m.trim(); });
-          if (mesesOpt.indexOf(mesSeleccionado) !== -1) {
-            $(this).prop('disabled', false);
-          } else {
-            $(this).prop('disabled', true);
-            $(this).prop('selected', false);
-          }
-        } else {
-          $(this).prop('disabled', true);
-          $(this).prop('selected', false);
-        }
-      });
-      $select.trigger('chosen:updated');
-    });
-
-    validarFormulario();
-  }
 
   function guardarYActualizar(event, nombreCampo, origen) {
     guardarArchivos(event, nombreCampo, origen);
@@ -121,7 +69,7 @@
   function validarFormulario() {
     let formCompleto = true;
 
-    // Validación según pestaña visible
+    // Validación según pestaña técnica visible
     const esTecnica = $('#tecnica').hasClass('active') || $('#tecnica').hasClass('show');
 
     if (esTecnica) {
@@ -162,55 +110,6 @@
     }
   }
 
-  function agregarFilaDocumento(tablaId) {
-    const tbody = document.getElementById(tablaId);
-    $('#' + tablaId + ' .chosen-control').chosen('destroy');
-
-    const primeraFila = tbody.querySelector('tr');
-    const nuevaFila = primeraFila.cloneNode(true);
-
-    // 1. Resetear la etiqueta de ID poniéndola en blanco en lugar de eliminarla
-    nuevaFila.querySelectorAll('input[type="hidden"][name*="[id]"]').forEach(el => el.value = '');
-
-    // 2. Limpiar inputs de archivo
-    nuevaFila.querySelectorAll('input[type="file"]').forEach(el => el.value = '');
-
-    // 3. Limpiar textareas o campos de texto
-    nuevaFila.querySelectorAll('textarea, input[type="text"]').forEach(el => el.value = '');
-
-    // 4. Deseleccionar opciones en los selects
-    nuevaFila.querySelectorAll('select').forEach(select => {
-      Array.from(select.options).forEach(opt => opt.selected = false);
-    });
-
-    // 5. Limpiar celdas visuales de descargas u observaciones previas
-    const celdas = nuevaFila.querySelectorAll('td');
-    if (celdas[0]) celdas[0].innerHTML = '--';
-    if (celdas[1]) celdas[1].innerHTML = '<div class="p-2 bg-light border rounded smaller-text text-muted">Sin observaciones</div>';
-
-    tbody.appendChild(nuevaFila);
-
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    }).change(function() {
-      validarFormulario();
-    });
-
-    filtrarPorMes();
-  }
-
-  function eliminarFilaDocumento(boton) {
-    const tbody = boton.closest('tbody');
-    if (tbody.querySelectorAll('tr').length > 1) {
-      boton.closest('tr').remove();
-      validarFormulario();
-    } else {
-      alert('Debe mantener al menos una fila de documento.');
-    }
-  }
-
 :css
   .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
@@ -221,12 +120,6 @@
   .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-  #financiera-fpl .card, #financiera-aporte .card { min-height: auto !important; overflow: visible !important; }
-  #financiera-fpl .card-body, #financiera-aporte .card-body { min-height: auto !important; overflow: visible !important; padding-bottom: 15px !important; }
-  #financiera-fpl .table-responsive, #financiera-aporte .table-responsive, #tabla-financiera-fpl, #tabla-financiera-aporte, #tabla-financiera-fpl tr, #tabla-financiera-aporte tr, #tabla-financiera-fpl td, #tabla-financiera-aporte td { overflow: visible !important; }
-  .chosen-container .chosen-drop { z-index: 9999 !important; position: absolute !important; }
-  #tabla-financiera-fpl td, #tabla-financiera-aporte td { vertical-align: middle; padding: 8px; }
-  .box-mes-a-rendir { background-color: #e9ecef; border: 1px solid #ced4da; border-radius: 4px; padding: 6px 12px; font-weight: bold; color: #495057; display: inline-block; }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
 - titulo t(:rendicion_por_actividad)
@@ -235,11 +128,11 @@
 -# Consulta directa de las duraciones desde plan_actividades
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
--# Mapeo de opciones de actividades
-- opciones_actividades_select = (@actividad_x_linea || []).map do |a|
-  - plan = planes_hash[a.id]
-  - dur_val = plan ? plan.duracion.to_s : ''
-  - [ "#{a.correlativo} - #{a.nombre}", a.id, { 'data-duracion' => dur_val } ]
+-# Identificar actividades marcadas con 'NO' previamente que AÚN NO hayan sido marcadas con 'SÍ' en ningún mes anterior
+- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_guardado.to_i).pluck(:id)
+- actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
 
 .row
   .col-12
@@ -251,6 +144,17 @@
           %h5.no-margin= titulo_proyecto_fpl.html_safe
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+-# INDICADOR VISUAL DEL MES EN CORRECCIÓN
+.row.mb-3
+  .col-12
+    .card.border-info.mb-0{style: "border-width: 2px;"}
+      .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+        %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+          %i.fa.fa-calendar-check-o.mr-2.text-info
+          Rendición correspondiente a:
+        %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+          = "Mes #{mes_guardado.presence || 1}"
 
 -# Definición de Pestañas según el tipo de tarea (FPL-17 o FPL-18)
 - tabs = {}
@@ -274,16 +178,14 @@
 
   .tab-content#manifestacionContent
     - if @es_correccion_tecnica
+      -# ----------------------------------------------------
       -# Pestaña 1: Corrección Técnica (FPL-18)
+      -# ----------------------------------------------------
       .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
         .card
           .card-header
             %h5.no-margin Corrección Técnica de Rendición
           .card-body
-            .row.mb-3
-              .col-md-4.col-sm-6
-                .box-mes-a-rendir= "Mes en corrección: Mes #{mes_guardado || '--'}"
-
             .table-responsive
               %table.table.table-striped.usuarios.no-margin
                 %thead
@@ -298,154 +200,182 @@
                     %th.encabezado-form{style: 'width: 15%;'} Observación del Postulante
                 %tbody
                   - if @actividad_x_linea.present?
-                    - @actividad_x_linea.each do |actividad|
-                      = hidden_field_tag "actividades_ids[]", actividad.id
-                      - plan = planes_hash[actividad.id]
-                      - duracion_act = plan ? plan.duracion.to_s : ''
-                      - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| d.tecnica? && d.plan_actividades.map(&:id).include?(actividad.id) }
-                      - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
-                      - observacion_valor = detalle_tecnico&.observacion
-                      - comentario_revisor_val = detalle_tecnico&.comentario_revisor
-                      - archivo = detalle_tecnico&.archivo
-                      - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+                    - actividades_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_guardado.blank? || dur_meses.include?(mes_guardado.to_s)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_detalle = @rendicion&.rendicion_detalles_fpl&.any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_detalle
 
-                      %tr{id: "fila_actividad_#{actividad.id}", 'data-duracion' => duracion_act}
-                        %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                        %td.contenido-form= actividad.nombre
-                        %td.contenido-form
-                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')"
-                        %td.contenido-form
-                          .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
-                            = comentario_revisor_val.presence || 'Sin observaciones'
-                        %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
-                          = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
-                        - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                    - if actividades_filtradas.present?
+                      - actividades_filtradas.each do |actividad|
+                        = hidden_field_tag "actividades_ids[]", actividad.id
+                        - plan = planes_hash[actividad.id]
+                        - duracion_act = plan ? plan.duracion.to_s : ''
+                        - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                        - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
+                        - observacion_valor = detalle_tecnico&.observacion
+                        - comentario_revisor_val = detalle_tecnico&.comentario_revisor
+                        - archivo = detalle_tecnico&.archivo
+                        - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+
+                        %tr{id: "fila_actividad_#{actividad.id}", 'data-duracion' => duracion_act}
+                          %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                          %td.contenido-form= actividad.nombre
                           %td.contenido-form
-                            = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
-                        %td.contenido-form
-                          = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", placeholder: "Ingrese o complemente observación (optativo)...", rows: 2, onkeyup: "validarFormulario()"
+                            = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')"
+                          %td.contenido-form
+                            .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
+                              = comentario_revisor_val.presence || 'Sin observaciones'
+                          %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
+                            = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                            %td.contenido-form
+                              = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                          %td.contenido-form
+                            = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", placeholder: "Ingrese o complemente observación (optativo)...", rows: 2, onkeyup: "validarFormulario()"
+                    - else
+                      %tr
+                        %td.text-center.text-muted{colspan: 7} No hay actividades programadas para el Mes #{mes_guardado.presence || '--'}.
+                  - else
+                    %tr
+                      %td.text-center.text-muted{colspan: 7} No hay actividades configuradas.
+
     - else
+      -# ----------------------------------------------------
       -# Pestaña 2: Corrección Financiera FPL (FPL-17)
+      -# ----------------------------------------------------
       .tab-pane.fade.show.active#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
-        .card{style: 'overflow: visible;'}
-          .card-header.d-flex.justify-content-between.align-items-center
+        .card
+          .card-header
             %h5.no-margin Documentos de Rendición Financiera FPL
-            .box-mes-a-rendir= "Mes en corrección: Mes #{mes_guardado || '--'}"
-            - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-              %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-fpl')"}
-                %i.fa.fa-plus
-                Agregar documento
-
-          .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
-            .table-responsive{style: 'overflow: visible;'}
-              %table.table.table-striped.no-margin#tabla-financiera-fpl
+          .card-body{style: 'padding-bottom: 15px;'}
+            .table-responsive
+              %table.table.table-striped.usuarios.no-margin#tabla-financiera-fpl
                 %thead
                   %tr
+                    %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                    %th.encabezado-form{style: 'width: 25%;'}= t(:actividades)
                     %th.encabezado-form{style: 'width: 15%;'} Archivos Cargados
-                    %th.encabezado-form{style: 'width: 25%;'} Observación / Comentario Revisor
-                    %th.encabezado-form{style: 'width: 20%;'} Documento Rendición (Nuevo / Reemplazo)
-                    %th.encabezado-form{style: 'width: 20%;'} Actividad Relacionada
-                    %th.encabezado-form{style: 'width: 15%;'} Observación Postulante (Optativo)
-                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %th.encabezado-form{style: 'width: 5%;'} Acciones
+                    %th.encabezado-form{style: 'width: 20%;'} Observación del Revisor
+                    %th.encabezado-form{style: 'width: 15%;'} Documento Rendición (Nuevo / Reemplazo)
+                    %th.encabezado-form{style: 'width: 20%;'} Observación Postulante (Optativo)
                 %tbody#filas-documentos-fpl
-                  - if @documentos_fpl.present?
-                    - @documentos_fpl.each do |doc|
-                      - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                      - act_ids = doc.plan_actividades.pluck(:id)
-                      - comentario_revisor_val = doc.comentario_revisor
-                      - observacion_postulante_val = doc.try(:observacion)
+                  - if @actividad_x_linea.present?
+                    - actividades_fpl_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_guardado.blank? || dur_meses.include?(mes_guardado.to_s)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_docs = (@documentos_fpl || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_docs
+
+                    - if actividades_fpl_filtradas.present?
+                      - actividades_fpl_filtradas.each do |actividad|
+                        - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - comentario_revisor_val = doc.comentario_revisor
+                            - observacion_postulante_val = doc.try(:observacion)
+                            %tr
+                              = hidden_field_tag "documentos_fpl[][id]", doc.id
+                              = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
+                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                              %td.contenido-form= actividad.nombre
+                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              %td.contenido-form
+                                .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
+                                  = comentario_revisor_val.presence || 'Sin observaciones'
+                              %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                              %td.contenido-form
+                                = text_area_tag "documentos_fpl[][observacion]", observacion_postulante_val, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
+                        - else
+                          %tr
+                            = hidden_field_tag "documentos_fpl[][id]", ""
+                            = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form.text-muted Sin documentos cargados
+                            %td.contenido-form
+                              .p-2.bg-light.border.rounded.smaller-text.text-muted Sin observaciones
+                            %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            %td.contenido-form
+                              = text_area_tag "documentos_fpl[][observacion]", nil, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
+                    - else
                       %tr
-                        = hidden_field_tag "documentos_fpl[][id]", doc.id
-                        %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                        %td.contenido-form
-                          .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
-                            = comentario_revisor_val.presence || 'Sin observaciones'
-                        %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                        %td.contenido-form{style: 'overflow: visible;'}
-                          = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                        %td.contenido-form
-                          = text_area_tag "documentos_fpl[][observacion]", observacion_postulante_val, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
-                        - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                          %td.contenido-form.text-center
-                            %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                              %i.fa.fa-trash
+                        %td.text-center.text-muted{colspan: 6} No hay actividades registradas para este mes.
                   - else
                     %tr
-                      = hidden_field_tag "documentos_fpl[][id]", ""
-                      %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
-                      %td.contenido-form
-                        .p-2.bg-light.border.rounded.smaller-text.text-muted Sin observaciones
-                      %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                      %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                      %td.contenido-form
-                        = text_area_tag "documentos_fpl[][observacion]", nil, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
-                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        %td.contenido-form.text-center
-                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                            %i.fa.fa-trash
+                      %td.text-center.text-muted{colspan: 6} No hay actividades configuradas.
 
+      -# ----------------------------------------------------
       -# Pestaña 3: Corrección Financiera Aporte (FPL-17)
+      -# ----------------------------------------------------
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
-        .card{style: 'overflow: visible;'}
-          .card-header.d-flex.justify-content-between.align-items-center
+        .card
+          .card-header
             %h5.no-margin Documentos de Rendición Financiera Aporte
-            .box-mes-a-rendir= "Mes en corrección: Mes #{mes_guardado || '--'}"
-            - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-              %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-aporte')"}
-                %i.fa.fa-plus
-                Agregar documento
-
-          .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
-            .table-responsive{style: 'overflow: visible;'}
-              %table.table.table-striped.no-margin#tabla-financiera-aporte
+          .card-body{style: 'padding-bottom: 15px;'}
+            .table-responsive
+              %table.table.table-striped.usuarios.no-margin#tabla-financiera-aporte
                 %thead
                   %tr
+                    %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
+                    %th.encabezado-form{style: 'width: 25%;'}= t(:actividades)
                     %th.encabezado-form{style: 'width: 15%;'} Archivos Cargados
-                    %th.encabezado-form{style: 'width: 25%;'} Observación / Comentario Revisor
-                    %th.encabezado-form{style: 'width: 20%;'} Documento Rendición (Nuevo / Reemplazo)
-                    %th.encabezado-form{style: 'width: 20%;'} Actividad Relacionada
-                    %th.encabezado-form{style: 'width: 15%;'} Observación Postulante (Optativo)
-                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %th.encabezado-form{style: 'width: 5%;'} Acciones
+                    %th.encabezado-form{style: 'width: 20%;'} Observación del Revisor
+                    %th.encabezado-form{style: 'width: 15%;'} Documento Rendición (Nuevo / Reemplazo)
+                    %th.encabezado-form{style: 'width: 20%;'} Observación Postulante (Optativo)
                 %tbody#filas-documentos-aporte
-                  - if @documentos_aporte.present?
-                    - @documentos_aporte.each do |doc|
-                      - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                      - act_ids = doc.plan_actividades.pluck(:id)
-                      - comentario_revisor_val = doc.comentario_revisor
-                      - observacion_postulante_val = doc.try(:observacion)
+                  - if @actividad_x_linea.present?
+                    - actividades_aporte_filtradas = @actividad_x_linea.select do |a|
+                      - plan = planes_hash[a.id]
+                      - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
+                      - es_del_mes = mes_guardado.blank? || dur_meses.include?(mes_guardado.to_s)
+                      - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
+                      - tiene_docs = (@documentos_aporte || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
+                      - es_del_mes || es_pendiente_previo || tiene_docs
+
+                    - if actividades_aporte_filtradas.present?
+                      - actividades_aporte_filtradas.each do |actividad|
+                        - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                        - if docs_act.present?
+                          - docs_act.each do |doc|
+                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - comentario_revisor_val = doc.comentario_revisor
+                            - observacion_postulante_val = doc.try(:observacion)
+                            %tr
+                              = hidden_field_tag "documentos_aporte[][id]", doc.id
+                              = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
+                              %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                              %td.contenido-form= actividad.nombre
+                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                              %td.contenido-form
+                                .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
+                                  = comentario_revisor_val.presence || 'Sin observaciones'
+                              %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                              %td.contenido-form
+                                = text_area_tag "documentos_aporte[][observacion]", observacion_postulante_val, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
+                        - else
+                          %tr
+                            = hidden_field_tag "documentos_aporte[][id]", ""
+                            = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
+                            %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
+                            %td.contenido-form= actividad.nombre
+                            %td.contenido-form.text-muted Sin documentos cargados
+                            %td.contenido-form
+                              .p-2.bg-light.border.rounded.smaller-text.text-muted Sin observaciones
+                            %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            %td.contenido-form
+                              = text_area_tag "documentos_aporte[][observacion]", nil, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
+                    - else
                       %tr
-                        = hidden_field_tag "documentos_aporte[][id]", doc.id
-                        %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                        %td.contenido-form
-                          .p-2.bg-light.border.rounded.smaller-text.text-danger.font-weight-bold
-                            = comentario_revisor_val.presence || 'Sin observaciones'
-                        %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                        %td.contenido-form{style: 'overflow: visible;'}
-                          = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                        %td.contenido-form
-                          = text_area_tag "documentos_aporte[][observacion]", observacion_postulante_val, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
-                        - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                          %td.contenido-form.text-center
-                            %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                              %i.fa.fa-trash
+                        %td.text-center.text-muted{colspan: 6} No hay actividades registradas para este mes.
                   - else
                     %tr
-                      = hidden_field_tag "documentos_aporte[][id]", ""
-                      %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
-                      %td.contenido-form
-                        .p-2.bg-light.border.rounded.smaller-text.text-muted Sin observaciones
-                      %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                      %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                      %td.contenido-form
-                        = text_area_tag "documentos_aporte[][observacion]", nil, class: "form-control smaller-text border-text", placeholder: "Respuesta u observación (optativo)...", rows: 2
-                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        %td.contenido-form.text-center
-                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                            %i.fa.fa-trash
+                      %td.text-center.text-muted{colspan: 6} No hay actividades configuradas.
 
   .float-right.mt-3
     = volver_root

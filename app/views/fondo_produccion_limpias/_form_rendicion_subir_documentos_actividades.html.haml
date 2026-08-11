@@ -45,6 +45,7 @@
       if (mesSeleccionado === '') {
         $(this).show();
       } else if (esPendientePrevio) {
+        // Mostrar únicamente si fue marcada 'NO' previamente y AÚN no se ha completado
         $(this).show();
       } else if (duracionAttr && duracionAttr.trim() !== '') {
         const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
@@ -318,7 +319,6 @@
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
 
-  /* Estilos para igualar el encabezado colapsable al diseño técnico */
   .header-actividad-fpl {
     background-color: #E0EFF6 !important;
     border: 2px solid #dee2e6 !important;
@@ -352,8 +352,14 @@
 
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || mes_guardado.presence || mes_actual_a_rendir
 
+-# 3. FILTRADO CORREGIDO:
+-# Identificar actividades marcadas con 'NO' previamente que AÚN NO hayan sido marcadas con 'SÍ' en ningún mes anterior
 - rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
-- actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
+- actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
+- actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
 
 .row
   .col-12
