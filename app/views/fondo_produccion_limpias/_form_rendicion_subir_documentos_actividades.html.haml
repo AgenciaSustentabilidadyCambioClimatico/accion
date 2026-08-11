@@ -334,6 +334,27 @@
 -# 1. Consulta directa de duraciones desde la tabla plan_actividades
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
+-# 2. Configuración general de meses y estado
+- valor_duracion = @duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : (fpl_objeto.respond_to?(:duracion) ? fpl_objeto.duracion : @duracion_meses)
+- duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
+- opciones_meses = (1..duracion).map { |m| ["Mes #{m}", m] }
+
+- estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
+- rendiciones_enviadas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where.not(estado: estados_borrador).pluck(:mes_a_rendir).compact
+
+- val_minimo_habilitar = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
+- estados_habilitadores = RendicionFpl.estados.select { |_k, v| v >= val_minimo_habilitar }.values.presence || [5, 6]
+- meses_aprobados_contable = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where(estado: estados_habilitadores).pluck(:mes_a_rendir).compact
+
+- ultimo_mes_aprobado = meses_aprobados_contable.max || 0
+- mes_actual_a_rendir = ultimo_mes_aprobado + 1
+- meses_deshabilitados = (1..duracion).select { |m| m > mes_actual_a_rendir }
+
+- mes_seleccionado_defecto = params[:mes_a_rendir].presence || mes_guardado.presence || mes_actual_a_rendir
+
+- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
+- actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
 .row
   .col-12
     .card.mb-3
@@ -362,35 +383,18 @@
         .card-header
           %h5.no-margin= t(:adjuntar_resolucion_contrato)
         .card-body
-          .row.mb-3
-            .col-md-4.col-sm-6
+          .row.mb-3.align-items-center
+            .col-md-5.col-sm-6
               %label.font-weight-bold{for: "mes_a_rendir"} Mes a rendir
-              - valor_duracion = @duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : (fpl_objeto.respond_to?(:duracion) ? fpl_objeto.duracion : @duracion_meses)
-              - duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
-              - opciones_meses = (1..duracion).map { |m| ["Mes #{m}", m] }
-
-              -# 1. Meses ya rendidos/enviados
-              - estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-              - rendiciones_enviadas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where.not(estado: estados_borrador).pluck(:mes_a_rendir).compact
-
-              -# 2. Meses aprobados/verificados contablemente
-              - val_minimo_habilitar = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
-              - estados_habilitadores = RendicionFpl.estados.select { |_k, v| v >= val_minimo_habilitar }.values.presence || [5, 6]
-              - meses_aprobados_contable = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where(estado: estados_habilitadores).pluck(:mes_a_rendir).compact
-
-              -# 3. Mes activo a rendir
-              - ultimo_mes_aprobado = meses_aprobados_contable.max || 0
-              - mes_actual_a_rendir = ultimo_mes_aprobado + 1
-              - meses_deshabilitados = (1..duracion).select { |m| m > mes_actual_a_rendir }
-
-              -# 4. Mes seleccionado por defecto
-              - mes_seleccionado_defecto = params[:mes_a_rendir].presence || mes_guardado.presence || mes_actual_a_rendir
-
-              -# 5. Identificar actividades marcadas como "No" en meses anteriores
-              - rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
-              - actividades_no_realizadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-
               = select_tag "mes_a_rendir", options_for_select(opciones_meses, selected: mes_seleccionado_defecto, disabled: meses_deshabilitados), prompt: "Seleccione mes...", class: "form-control chosen-control", id: "mes_a_rendir", data: { meses_rendidos: rendiciones_enviadas.to_json }
+            .col-md-7.col-sm-6.mt-2.mt-sm-0
+              .card.border-info.mb-0{style: "border-width: 2px;"}
+                .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+                  %span.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+                    %i.fa.fa-calendar-check-o.mr-2.text-info
+                    Rendición correspondiente a:
+                  %span.badge.badge-info{style: "font-size: 13px; padding: 6px 12px;"}
+                    = "Mes #{mes_seleccionado_defecto}"
 
           .table-responsive
             %table.table.table-striped.usuarios.no-margin
@@ -433,6 +437,16 @@
 
     / Pestaña 2: Financiera FPL
     .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
+      .row.mb-3
+        .col-12
+          .card.border-info.mb-0{style: "border-width: 2px;"}
+            .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+              %span.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+                %i.fa.fa-calendar-check-o.mr-2.text-info
+                Rendición correspondiente a:
+              %span.badge.badge-info{style: "font-size: 13px; padding: 6px 12px;"}
+                = "Mes #{mes_seleccionado_defecto}"
+
       - if @actividad_x_linea.present?
         - @actividad_x_linea.each do |actividad|
           - plan = planes_hash[actividad.id]
@@ -494,6 +508,16 @@
 
     / Pestaña 3: Financiera Aporte
     .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
+      .row.mb-3
+        .col-12
+          .card.border-info.mb-0{style: "border-width: 2px;"}
+            .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+              %span.font-weight-bold.text-secondary{style: "font-size: 13px;"}
+                %i.fa.fa-calendar-check-o.mr-2.text-info
+                Rendición correspondiente a:
+              %span.badge.badge-info{style: "font-size: 13px; padding: 6px 12px;"}
+                = "Mes #{mes_seleccionado_defecto}"
+
       - if @actividad_x_linea.present?
         - @actividad_x_linea.each do |actividad|
           - plan = planes_hash[actividad.id]

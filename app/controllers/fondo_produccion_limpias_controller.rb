@@ -4344,28 +4344,39 @@ class FondoProduccionLimpiasController < ApplicationController
 
     def asignar_revisor_rendicion # FPL-13 Tarea FPL correspondencia de revisión
       @recuerde_guardar_minutos = FondoProduccionLimpia::MINUTOS_MENSAJE_GUARDAR
-      
-      # Carga de revisores
-      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
-      @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia').id)
-      
-      @revisor = true
-      
-      # Carga de datos de rendición
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
 
+      # 1. Carga de revisores
+      tipo_inst_id = TipoInstrumento.find_by(nombre: 'Fondo de Producción Limpia')&.id
+      @revisores_financieros = Responsable.__personas_responsables(Rol::REVISOR_FINANCIERO, tipo_inst_id)
+      @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_inst_id)
+      @revisor = true
+
+      # 2. Carga de la rendición enviada a revisión
+      estados_revision = RendicionFpl.estados.slice('enviada_a_revision', 'en_evaluacion').values.presence || [1]
+      
+      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                              .where(estado: estados_revision)
+                              .order(mes_a_rendir: :desc, id: :desc)
+                              .first
+
+      # Si no hay registros en revisión explícita, se obtiene la rendición con mayor mes_a_rendir
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                                .order(mes_a_rendir: :desc, id: :desc)
+                                .first
+
+      # 3. Carga de documentos financieros
       if @rendicion.present?
-        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
-        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+        @documentos_fpl     = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte  = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
-        @documentos_fpl    = RendicionDetalleFpl.none
-        @documentos_aporte = RendicionDetalleFpl.none
+        @documentos_fpl     = RendicionDetalleFpl.none
+        @documentos_aporte  = RendicionDetalleFpl.none
       end
 
+      # 4. Permisos
       @solo_lectura = true
-
       tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
-      @tiene_permisos = tiene_permisos.nil? ? true : false
+      @tiene_permisos = tiene_permisos.nil?
 
       set_actividades_x_linea
     end
