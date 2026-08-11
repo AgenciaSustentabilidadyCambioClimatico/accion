@@ -4153,18 +4153,40 @@ class FondoProduccionLimpiasController < ApplicationController
     def rendicion_subir_documentos_actividades # FPL-12
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-      # 1. Determinar el mes activo a cargar (vía parámetro o el siguiente no rendido)
+      # 1. Identificar estados de borrador
       estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-      rendiciones_enviadas = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                                            .where.not(estado: estados_borrador)
-                                            .pluck(:mes_a_rendir).compact
-      ultimo_mes_enviado = rendiciones_enviadas.max || 0
-      mes_a_cargar = params[:mes_a_rendir].presence || (ultimo_mes_enviado + 1)
 
-      # 2. Carga de la rendición específica para ese flujo Y ese mes
+      # 2. Identificar meses que YA fueron aprobados/verificados contablemente (estado >= 5)
+      val_minimo_habilitar = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
+      estados_habilitadores = RendicionFpl.estados.select { |_k, v| v >= val_minimo_habilitar }.values.presence || [5, 6]
+      
+      meses_aprobados_contable = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
+                                            .where(estado: estados_habilitadores)
+                                            .pluck(:mes_a_rendir).compact
+
+      # 3. El mes máximo permitido para rendición activa es (último mes aprobado contablemente + 1)
+      ultimo_mes_aprobado = meses_aprobados_contable.max || 0
+      mes_permitido = ultimo_mes_aprobado + 1
+
+      # 4. Buscar borrador activo únicamente si pertenece a un mes permitido (<= mes_permitido)
+      borrador_activo = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id, estado: estados_borrador)
+                                    .where('mes_a_rendir <= ?', mes_permitido)
+                                    .order(mes_a_rendir: :asc)
+                                    .first
+
+      mes_sugerido = borrador_activo&.mes_a_rendir || mes_permitido
+
+      # 5. Redirección automática si la URL no trae ?mes_a_rendir=X o si se intenta acceder a un mes aún no permitido
+      if params[:mes_a_rendir].blank? || params[:mes_a_rendir].to_i > mes_permitido
+        redirect_to rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_sugerido) and return
+      end
+
+      mes_a_cargar = params[:mes_a_rendir].to_i
+
+      # 6. Carga de la rendición específica para ese flujo y mes activo
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: mes_a_cargar)
 
-      # 3. Carga de detalles financieros precargando la tabla de unión para el mes activo
+      # 7. Carga de detalles financieros precargando relaciones
       if @rendicion.present?
         @documentos_fpl     = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
         @documentos_aporte  = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
@@ -4173,11 +4195,10 @@ class FondoProduccionLimpiasController < ApplicationController
         @documentos_aporte  = RendicionDetalleFpl.none
       end
 
-      # 4. Control de permisos
+      # 8. Permisos y actividades
       solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @tiene_permisos = solo_lectura.nil?
 
-      # 5. Asignación de actividades del proyecto
       set_actividades_x_linea
     end
 
@@ -4231,7 +4252,8 @@ class FondoProduccionLimpiasController < ApplicationController
         # -------------------------------------------------------------
         if params[:documentos_fpl].present?
           params[:documentos_fpl].each do |doc_params|
-            next if doc_params[:archivo].blank? && doc_params[:actividad_ids].blank? && doc_params[:id].blank?
+            # CORRECCIÓN: Si no tiene ID previo Y no se está subiendo un archivo nuevo, omitir la fila
+            next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
             detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
@@ -4253,7 +4275,8 @@ class FondoProduccionLimpiasController < ApplicationController
         # -------------------------------------------------------------
         if params[:documentos_aporte].present?
           params[:documentos_aporte].each do |doc_params|
-            next if doc_params[:archivo].blank? && doc_params[:actividad_ids].blank? && doc_params[:id].blank?
+            # CORRECCIÓN: Si no tiene ID previo Y no se está subiendo un archivo nuevo, omitir la fila
+            next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
             detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)

@@ -1,19 +1,5 @@
 :javascript
   $(document).ready(function() {
-    // 1. Almacenar la selección inicial proveniente de la base de datos (Rails)
-    guardarEstadoSeleccionInicial();
-
-    // 2. Inicializar el componente Chosen
-    inicializarChosen();
-
-    // 3. Registrar cambios hechos manualmente por el usuario para actualizar la memoria
-    $(document).on('change', '#filas-documentos-fpl select, #filas-documentos-aporte select', function() {
-      const currentVals = $(this).val() || [];
-      const strVals = currentVals.map(function(v) { return v.toString(); });
-      $(this).data('saved-selections', strVals);
-      validarFormulario();
-    });
-
     $("input:file").on('change', function () {
       $(this).parent().siblings("label").html($(this)[0].files[0].name);
       validarFormulario();
@@ -34,23 +20,6 @@
     // Ejecutar filtro inicial
     filtrarPorMes();
   });
-
-  function guardarEstadoSeleccionInicial() {
-    $('#filas-documentos-fpl select, #filas-documentos-aporte select').each(function() {
-      const $select = $(this);
-      const initialVals = $select.val() || [];
-      const strVals = initialVals.map(function(v) { return v.toString(); });
-      $select.data('saved-selections', strVals);
-    });
-  }
-
-  function inicializarChosen() {
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    });
-  }
 
   function filtrarPorMes() {
     const selectMes = document.getElementById('mes_a_rendir');
@@ -76,7 +45,6 @@
       if (mesSeleccionado === '') {
         $(this).show();
       } else if (esPendientePrevio) {
-        // Mostrar y habilitar actividades pendientes ("No" en mes anterior)
         $(this).show();
       } else if (duracionAttr && duracionAttr.trim() !== '') {
         const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
@@ -90,64 +58,24 @@
       }
     });
 
-    // 2. Filtrar las opciones y filas de las Pestañas Financieras
-    $('#filas-documentos-fpl tr, #filas-documentos-aporte tr').each(function() {
-      const $tr = $(this);
-      const $select = $tr.find('select');
-      if ($select.length === 0) return;
-
-      let savedVals = $select.data('saved-selections');
-      if (!savedVals) {
-        const currentVals = $select.val() || [];
-        savedVals = currentVals.map(function(v) { return v.toString(); });
-        $select.data('saved-selections', savedVals);
-      }
-
-      let tieneActividadesGuardadas = savedVals.length > 0;
-      let tieneAlgunaActividadValidaEnMesActual = false;
-
-      $select.find('option').each(function() {
-        const $opt = $(this);
-        const valOpt = $opt.val();
-        if (!valOpt || valOpt === '') return;
-
-        const strValOpt = valOpt.toString();
-        const duracionOpt = $opt.attr('data-duracion');
-        const estabaSeleccionada = savedVals.indexOf(strValOpt) !== -1;
-
-        let esValidaParaMes = false;
-        if (mesSeleccionado === '') {
-          esValidaParaMes = true;
-        } else if (duracionOpt && duracionOpt.trim() !== '') {
-          const mesesOpt = duracionOpt.split(',').map(function(m) { return m.trim(); });
-          esValidaParaMes = (mesesOpt.indexOf(mesSeleccionado) !== -1);
-        }
-
-        if (esValidaParaMes) {
-          $opt.prop('disabled', esMesRendido);
-          $opt.prop('selected', estabaSeleccionada);
-          if (estabaSeleccionada) {
-            tieneAlgunaActividadValidaEnMesActual = true;
-          }
-        } else {
-          $opt.prop('disabled', true);
-          $opt.prop('selected', false);
-        }
-      });
-
-      // Refrescar componente visual Chosen
-      $select.trigger('chosen:updated');
+    // 2. Filtrar los bloques de actividades en Pestañas Financieras
+    $('.actividad-fpl-block, .actividad-aporte-block').each(function() {
+      const duracionAttr = $(this).attr('data-duracion');
+      const esPendientePrevio = $(this).attr('data-pendiente-previo') === 'true';
 
       if (mesSeleccionado === '') {
-        $tr.show();
-      } else if (tieneActividadesGuardadas) {
-        if (tieneAlgunaActividadValidaEnMesActual) {
-          $tr.show();
+        $(this).show();
+      } else if (esPendientePrevio) {
+        $(this).show();
+      } else if (duracionAttr && duracionAttr.trim() !== '') {
+        const mesesValidos = duracionAttr.split(',').map(function(m) { return m.trim(); });
+        if (mesesValidos.indexOf(mesSeleccionado) !== -1) {
+          $(this).show();
         } else {
-          $tr.hide();
+          $(this).hide();
         }
       } else {
-        $tr.show();
+        $(this).hide();
       }
     });
 
@@ -164,13 +92,11 @@
     $('#tecnica select, #tecnica textarea, #tecnica input[type="file"]').prop('disabled', true);
 
     // Bloquear pestañas financieras
-    $('#filas-documentos-fpl input, #filas-documentos-fpl select, #filas-documentos-fpl button').prop('disabled', true);
-    $('#filas-documentos-aporte input, #filas-documentos-aporte select, #filas-documentos-aporte button').prop('disabled', true);
-    
-    $('#filas-documentos-fpl select, #filas-documentos-aporte select').trigger('chosen:updated');
+    $('#financiera-fpl input, #financiera-fpl button').prop('disabled', true);
+    $('#financiera-aporte input, #financiera-aporte button').prop('disabled', true);
 
-    // Ocultar todos los botones de eliminar y agregar en solo lectura
-    $('.btn-outline-danger, button[onclick*="agregarFilaDocumento"]').hide().prop('disabled', true);
+    // Ocultar botones de acción
+    $('.btn-outline-danger, button[onclick*="agregarFilaDocumentoActividad"]').hide().prop('disabled', true);
 
     // Inhabilitar botones principales
     $('#grabar-button, #enviar-button').prop('disabled', true).addClass('btn-disabled');
@@ -189,18 +115,16 @@
     });
 
     // Habilitar pestañas financieras
-    $('#filas-documentos-fpl input, #filas-documentos-fpl select, #filas-documentos-fpl button').prop('disabled', false);
-    $('#filas-documentos-aporte input, #filas-documentos-aporte select, #filas-documentos-aporte button').prop('disabled', false);
+    $('#financiera-fpl input, #financiera-fpl button').prop('disabled', false);
+    $('#financiera-aporte input, #financiera-aporte button').prop('disabled', false);
 
-    $('#filas-documentos-fpl select, #filas-documentos-aporte select').trigger('chosen:updated');
-
-    // Mostrar todos los botones de eliminar y agregar en modo edición
-    $('.btn-outline-danger, button[onclick*="agregarFilaDocumento"]').show().prop('disabled', false);
+    // Mostrar botones de acción
+    $('.btn-outline-danger, button[onclick*="agregarFilaDocumentoActividad"]').show().prop('disabled', false);
 
     // Habilitar botón Grabar
     $('#grabar-button').prop('disabled', false).removeClass('btn-disabled');
 
-    // Validar formulario para determinar si Enviar se habilita
+    // Validar formulario
     validarFormulario();
   }
 
@@ -269,7 +193,7 @@
       tabTecnicaValido = false;
     }
 
-    // 1. Validar solo filas VISIBLES de la Tab Técnica
+    // 1. Validar Pestaña Técnica
     document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
       if (fila.style.display === 'none') return;
 
@@ -295,34 +219,34 @@
       }
     });
 
-    // 2. Validar Tab Financiera FPL solo en filas VISIBLES
-    document.querySelectorAll('#filas-documentos-fpl tr').forEach(fila => {
-      if (fila.style.display === 'none') return;
+    // 2. Validar Tab Financiera FPL
+    document.querySelectorAll('.actividad-fpl-block').forEach(block => {
+      if (block.style.display === 'none') return;
 
-      const fileInput = fila.querySelector('input[type="file"]');
-      const selectActividades = fila.querySelector('select');
-      const tdArchivoPrevio = fila.querySelector('td');
-      const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
-      const tieneActividad = selectActividades && $(selectActividades).val() && $(selectActividades).val().length > 0;
+      block.querySelectorAll('tbody tr').forEach(fila => {
+        const fileInput = fila.querySelector('input[type="file"]');
+        const tdArchivoPrevio = fila.querySelector('td');
+        const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
 
-      if (tieneArchivo && tieneActividad) {
-        tabFinancieraFplValido = true;
-      }
+        if (tieneArchivo) {
+          tabFinancieraFplValido = true;
+        }
+      });
     });
 
-    // 3. Validar Tab Financiera Aporte solo en filas VISIBLES
-    document.querySelectorAll('#filas-documentos-aporte tr').forEach(fila => {
-      if (fila.style.display === 'none') return;
+    // 3. Validar Tab Financiera Aporte
+    document.querySelectorAll('.actividad-aporte-block').forEach(block => {
+      if (block.style.display === 'none') return;
 
-      const fileInput = fila.querySelector('input[type="file"]');
-      const selectActividades = fila.querySelector('select');
-      const tdArchivoPrevio = fila.querySelector('td');
-      const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
-      const tieneActividad = selectActividades && $(selectActividades).val() && $(selectActividades).val().length > 0;
+      block.querySelectorAll('tbody tr').forEach(fila => {
+        const fileInput = fila.querySelector('input[type="file"]');
+        const tdArchivoPrevio = fila.querySelector('td');
+        const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
 
-      if (tieneArchivo && tieneActividad) {
-        tabFinancieraAporteValido = true;
-      }
+        if (tieneArchivo) {
+          tabFinancieraAporteValido = true;
+        }
+      });
     });
 
     const formCompleto = tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido;
@@ -338,24 +262,23 @@
     }
   }
 
-  function agregarFilaDocumento(tablaId) {
-    const tbody = document.getElementById(tablaId);
-    $('#' + tablaId + ' .chosen-control').chosen('destroy');
+  function agregarFilaDocumentoActividad(tbodyId, actividadId) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
 
     const primeraFila = tbody.querySelector('tr');
+    if (!primeraFila) return;
+
     const nuevaFila = primeraFila.cloneNode(true);
 
     const hiddenId = nuevaFila.querySelector('input[type="hidden"][name*="[id]"]');
     if (hiddenId) hiddenId.value = '';
 
+    const hiddenAct = nuevaFila.querySelector('input[type="hidden"][name*="[actividad_ids]"]');
+    if (hiddenAct) hiddenAct.value = actividadId;
+
     const fileInput = nuevaFila.querySelector('input[type="file"]');
     if (fileInput) fileInput.value = '';
-
-    const select = nuevaFila.querySelector('select');
-    if (select) {
-      Array.from(select.options).forEach(function(opt) { opt.selected = false; });
-      $(select).data('saved-selections', []);
-    }
 
     const celdas = nuevaFila.querySelectorAll('td');
     if (celdas[0]) celdas[0].innerHTML = '--';
@@ -363,18 +286,25 @@
     $(nuevaFila).show();
     tbody.appendChild(nuevaFila);
 
-    inicializarChosen();
-    filtrarPorMes();
+    validarFormulario();
   }
 
   function eliminarFilaDocumento(boton) {
     const tbody = boton.closest('tbody');
     if (tbody.querySelectorAll('tr').length > 1) {
       boton.closest('tr').remove();
-      validarFormulario();
     } else {
-      alert('Debe mantener al menos una fila de documento.');
+      const tr = boton.closest('tr');
+      const hiddenId = tr.querySelector('input[type="hidden"][name*="[id]"]');
+      if (hiddenId) hiddenId.value = '';
+
+      const fileInput = tr.querySelector('input[type="file"]');
+      if (fileInput) fileInput.value = '';
+
+      const celdas = tr.querySelectorAll('td');
+      if (celdas[0]) celdas[0].innerHTML = '--';
     }
+    validarFormulario();
   }
 
 :css
@@ -387,24 +317,22 @@
   .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-  #financiera-fpl .card, #financiera-aporte .card { min-height: auto !important; overflow: visible !important; }
-  #financiera-fpl .card-body, #financiera-aporte .card-body { min-height: auto !important; overflow: visible !important; padding-bottom: 15px !important; }
-  #financiera-fpl .table-responsive, #financiera-aporte .table-responsive, #tabla-financiera-fpl, #tabla-financiera-aporte, #tabla-financiera-fpl tr, #tabla-financiera-aporte tr, #tabla-financiera-fpl td, #tabla-financiera-aporte td { overflow: visible !important; }
-  .chosen-container .chosen-drop { z-index: 9999 !important; position: absolute !important; }
-  #tabla-financiera-fpl td, #tabla-financiera-aporte td { vertical-align: middle; padding: 8px; }
+
+  /* Estilos para igualar el encabezado colapsable al diseño técnico */
+  .header-actividad-fpl {
+    background-color: #E0EFF6 !important;
+    border: 2px solid #dee2e6 !important;
+    padding: 8px 12px !important;
+    color: #333 !important;
+    font-weight: bold;
+  }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
 - titulo t(:rendicion_por_actividad)
 - mes_guardado = @rendicion.try(:mes_a_rendir)
 
--# 1. Consulta directa y segura de las duraciones desde la tabla plan_actividades
+-# 1. Consulta directa de duraciones desde la tabla plan_actividades
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
-
--# 2. Mapeo de actividades con data-duracion para los selects de las pestañas financieras
-- opciones_actividades_select = (@actividad_x_linea || []).map do |a|
-  - plan = planes_hash[a.id]
-  - dur_val = plan ? plan.duracion.to_s : ''
-  - [ "#{a.correlativo} - #{a.nombre}", a.id, { 'data-duracion' => dur_val } ]
 
 .row
   .col-12
@@ -505,97 +433,125 @@
 
     / Pestaña 2: Financiera FPL
     .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
-      .card{style: 'overflow: visible;'}
-        .card-header.d-flex.justify-content-between.align-items-center
-          %h5.no-margin Documentos de Rendición Financiera FPL
-          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-            %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-fpl')"}
-              %i.fa.fa-plus
-              Agregar documento
+      - if @actividad_x_linea.present?
+        - @actividad_x_linea.each do |actividad|
+          - plan = planes_hash[actividad.id]
+          - duracion_act = plan ? plan.duracion.to_s : ''
+          - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
+          - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
 
-        .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
-          .table-responsive{style: 'overflow: visible;'}
-            %table.table.table-striped.no-margin#tabla-financiera-fpl
-              %thead
-                %tr
-                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                  %th.encabezado-form{style: 'width: 30%;'} Documento rendición
-                  %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada (elegir actividades realizadas)
+          .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+            .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+              .d-flex.align-items-center
+                %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+              %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                %i.fa.fa-chevron-down.mr-1
+                Ver / Ocultar
+
+            .collapse.show{id: "collapse_fpl_#{actividad.id}"}
+              .card-body.p-2
+                .d-flex.justify-content-end.mb-2
                   - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                    %th.encabezado-form{style: 'width: 10%;'} Acciones
-              %tbody#filas-documentos-fpl
-                - if @documentos_fpl.present?
-                  - @documentos_fpl.each do |doc|
-                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                    - act_ids = doc.rendicion_detalle_actividades_fpl.pluck(:plan_actividad_id)
-                    %tr
-                      = hidden_field_tag "documentos_fpl[][id]", doc.id
-                      %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                      %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                      %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        %td.contenido-form.text-center
-                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                            %i.fa.fa-trash
-                - else
-                  %tr
-                    = hidden_field_tag "documentos_fpl[][id]", ""
-                    %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
-                    %td.contenido-form= file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                    %td.contenido-form{style: 'overflow: visible;'}
-                      = select_tag "documentos_fpl[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %td.contenido-form.text-center
-                        %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                          %i.fa.fa-trash
+                    %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-fpl-#{actividad.id}', #{actividad.id})"}
+                      %i.fa.fa-plus.mr-1
+
+                .table-responsive
+                  %table.table.table-striped.no-margin
+                    %thead
+                      %tr
+                        %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                        %th.encabezado-form{style: 'width: 55%;'} Subir Documento Rendición
+                        - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                          %th.encabezado-form{style: 'width: 10%;'} Acciones
+                    %tbody{id: "filas-fpl-#{actividad.id}"}
+                      - if docs_act.present?
+                        - docs_act.each do |doc|
+                          - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                          %tr
+                            %td.contenido-form
+                              = hidden_field_tag "documentos_fpl[][id]", doc.id
+                              = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
+                              = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                            %td.contenido-form
+                              = file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                              %td.contenido-form.text-center
+                                %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                  %i.fa.fa-trash
+                      - else
+                        %tr
+                          %td.contenido-form
+                            = hidden_field_tag "documentos_fpl[][id]", ""
+                            = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
+                            = __descargar_archivo_sin_titulo(nil, f.object)
+                          %td.contenido-form
+                            = file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                            %td.contenido-form.text-center
+                              %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                %i.fa.fa-trash
 
     / Pestaña 3: Financiera Aporte
     .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
-      .card{style: 'overflow: visible;'}
-        .card-header.d-flex.justify-content-between.align-items-center
-          %h5.no-margin Documentos de Rendición Financiera Aporte
-          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-            %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumento('filas-documentos-aporte')"}
-              %i.fa.fa-plus
-              Agregar documento
+      - if @actividad_x_linea.present?
+        - @actividad_x_linea.each do |actividad|
+          - plan = planes_hash[actividad.id]
+          - duracion_act = plan ? plan.duracion.to_s : ''
+          - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
+          - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
 
-        .card-body{style: 'overflow: visible; padding-bottom: 15px;'}
-          .table-responsive{style: 'overflow: visible;'}
-            %table.table.table-striped.no-margin#tabla-financiera-aporte
-              %thead
-                %tr
-                  %th.encabezado-form{style: 'width: 25%;'} Archivos Cargados
-                  %th.encabezado-form{style: 'width: 30%;'} Documento rendición
-                  %th.encabezado-form{style: 'width: 35%;'} Actividad relacionada (elegir actividades realizadas)
+          .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
+            .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+              .d-flex.align-items-center
+                %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+              %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                %i.fa.fa-chevron-down.mr-1
+                Ver / Ocultar
+
+            .collapse.show{id: "collapse_aporte_#{actividad.id}"}
+              .card-body.p-2
+                .d-flex.justify-content-end.mb-2
                   - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                    %th.encabezado-form{style: 'width: 10%;'} Acciones
-              %tbody#filas-documentos-aporte
-                - if @documentos_aporte.present?
-                  - @documentos_aporte.each do |doc|
-                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                    - act_ids = doc.rendicion_detalle_actividades_fpl.pluck(:plan_actividad_id)
-                    %tr
-                      = hidden_field_tag "documentos_aporte[][id]", doc.id
-                      %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                      %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                      %td.contenido-form{style: 'overflow: visible;'}
-                        = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select, act_ids), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                        %td.contenido-form.text-center
-                          %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                            %i.fa.fa-trash
-                - else
-                  %tr
-                    = hidden_field_tag "documentos_aporte[][id]", ""
-                    %td.contenido-form= __descargar_archivo_sin_titulo(nil, f.object)
-                    %td.contenido-form= file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
-                    %td.contenido-form{style: 'overflow: visible;'}
-                      = select_tag "documentos_aporte[][actividad_ids][]", options_for_select(opciones_actividades_select), multiple: true, class: "form-control chosen-control", data: { placeholder: "Seleccione actividades..." }
-                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %td.contenido-form.text-center
-                        %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)"}
-                          %i.fa.fa-trash
+                    %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-aporte-#{actividad.id}', #{actividad.id})"}
+                      %i.fa.fa-plus.mr-1
+
+                .table-responsive
+                  %table.table.table-striped.no-margin
+                    %thead
+                      %tr
+                        %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
+                        %th.encabezado-form{style: 'width: 55%;'} Subir Documento Rendición
+                        - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                          %th.encabezado-form{style: 'width: 10%;'} Acciones
+                    %tbody{id: "filas-aporte-#{actividad.id}"}
+                      - if docs_act.present?
+                        - docs_act.each do |doc|
+                          - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                          %tr
+                            %td.contenido-form
+                              = hidden_field_tag "documentos_aporte[][id]", doc.id
+                              = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
+                              = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                            %td.contenido-form
+                              = file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                            - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                              %td.contenido-form.text-center
+                                %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                  %i.fa.fa-trash
+                      - else
+                        %tr
+                          %td.contenido-form
+                            = hidden_field_tag "documentos_aporte[][id]", ""
+                            = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
+                            = __descargar_archivo_sin_titulo(nil, f.object)
+                          %td.contenido-form
+                            = file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                            %td.contenido-form.text-center
+                              %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
+                                %i.fa.fa-trash
 
   .float-right.mt-3
     = volver_root
