@@ -4110,41 +4110,44 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     def adjuntar_resolucion_contrato
+      # Actualiza la fecha si viene en los parámetros del formulario
+      if params[:fondo_produccion_limpia].present?
+        @fondo_produccion_limpia.update(fondo_produccion_limpia_resolucion_params)
+      end
+
       respond_to do |format|
-        # Validamos que existan ambos archivos
-        if @fondo_produccion_limpia.archivo_resolucion.present? && @fondo_produccion_limpia.archivo_contrato.present?
+        # Validamos que existan ambos archivos y la fecha de resolución
+        if @fondo_produccion_limpia.archivo_resolucion.present? && 
+          @fondo_produccion_limpia.archivo_contrato.present? && 
+          @fondo_produccion_limpia.fecha_resolucion.present?
 
           @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
-
-          #Se crea la siguiente tarea FPL-12 y envia el correo
           @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
 
           format.js do
-            # 1. Usar flash (NO flash.now) para que el mensaje sobreviva a la recarga de página
-            # 2. Usar :notice (o :success si tu layout lo soporta)
-            flash[:notice] = 'Documentos verificados correctamente'
+            flash[:notice] = 'Documentos y fecha verificados correctamente'
             render js: "window.location.href = '#{root_path}';"
           end
 
           format.html do
-            redirect_to root_path, flash: { notice: 'Documentos verificados correctamente' }
+            redirect_to root_path, flash: { notice: 'Documentos y fecha verificados correctamente' }
           end
 
         else
-          # Si falta algún documento, mostramos error
           faltantes = []
           faltantes << "Resolución" unless @fondo_produccion_limpia.archivo_resolucion.present?
           faltantes << "Contrato" unless @fondo_produccion_limpia.archivo_contrato.present?
+          faltantes << "Fecha de Resolución" unless @fondo_produccion_limpia.fecha_resolucion.present?
           
-          flash[:error] = "Debe adjuntar los documentos: #{faltantes.join(' y ')}"
+          flash[:error] = "Debe completar: #{faltantes.join(', ')}"
 
           format.js do
-            render js: "alert('Debe adjuntar los documentos: #{faltantes.join(' y ')}');"
+            render js: "alert('Debe completar: #{faltantes.join(', ')}');"
           end
 
           format.html do
             redirect_to resolucion_contrato_fondo_produccion_limpia_path(@tarea_pendiente.id),
-              flash: { error: "Debe adjuntar los documentos: #{faltantes.join(' y ')}" }
+                        flash: { error: "Debe completar: #{faltantes.join(', ')}" }
           end
         end
       end
@@ -4178,7 +4181,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
       # 5. Redirección automática si la URL no trae ?mes_a_rendir=X o si se intenta acceder a un mes aún no permitido
       if params[:mes_a_rendir].blank? || params[:mes_a_rendir].to_i > mes_permitido
-        redirect_to rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_sugerido) and return
+        redirect_to rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(
+          @tarea_pendiente.id, 
+          mes_a_rendir: mes_sugerido, 
+          paso: params[:paso]
+        ) and return
       end
 
       mes_a_cargar = params[:mes_a_rendir].to_i
@@ -4213,6 +4220,12 @@ class FondoProduccionLimpiasController < ApplicationController
           mes_a_rendir: mes_seleccionado
         ) do |r|
           r.estado = :borrador
+        end
+
+        # Guardar estado del checkbox de "Última Rendición"
+        if params[:ultima_rendicion].present? || params[:ultima_rendicion_paso1].present?
+          es_ultima = (params[:ultima_rendicion] == '1' || params[:ultima_rendicion_paso1] == '1')
+          @rendicion.update!(ultima_rendicion: es_ultima) if @rendicion.respond_to?(:ultima_rendicion)
         end
 
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
@@ -4252,7 +4265,6 @@ class FondoProduccionLimpiasController < ApplicationController
         # -------------------------------------------------------------
         if params[:documentos_fpl].present?
           params[:documentos_fpl].each do |doc_params|
-            # CORRECCIÓN: Si no tiene ID previo Y no se está subiendo un archivo nuevo, omitir la fila
             next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
@@ -4275,7 +4287,6 @@ class FondoProduccionLimpiasController < ApplicationController
         # -------------------------------------------------------------
         if params[:documentos_aporte].present?
           params[:documentos_aporte].each do |doc_params|
-            # CORRECCIÓN: Si no tiene ID previo Y no se está subiendo un archivo nuevo, omitir la fila
             next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
@@ -4294,7 +4305,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
         # -------------------------------------------------------------
-        # ACCIÓN SEGÚN EL BOTÓN PRESIONADO Y EVALUACIÓN DEL ÚLTIMO MES
+        # ACCIÓN SEGÚN EL BOTÓN PRESIONADO
         # -------------------------------------------------------------
         if commit_accion == 'enviar'
           @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
@@ -4303,14 +4314,13 @@ class FondoProduccionLimpiasController < ApplicationController
           duraciones = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:duracion)
           total_meses = duraciones.flat_map { |d| d.to_s.split(',').map(&:strip).map(&:to_i) }.compact.select(&:positive?).max || 1
 
-          es_ultimo_mes = (mes_actual >= total_meses)
+          es_ultima_flag = @rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion
+          es_ultimo_mes = (mes_actual >= total_meses) || es_ultima_flag
 
           if es_ultimo_mes
-            # CERRAR FPL-12 y avanzar a FPL-13
             @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
             mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado la tarea de subir documentos."
           else
-            # AVANZAR A FPL-13 sin cerrar FPL-12
             @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
             mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea continúa abierta para los siguientes meses."
           end
@@ -4318,8 +4328,12 @@ class FondoProduccionLimpiasController < ApplicationController
           url_destino = root_path
         else
           mensaje_exito = 'Avances guardados correctamente.'
-          # IMPORTANTE: Preserva mes_a_rendir en la URL para recargar el mes recién editado
-          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_seleccionado)
+          # Redirección al Paso 2 (Pestañas/Formulario) manteniendo el mes
+          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(
+            @tarea_pendiente.id, 
+            mes_a_rendir: mes_seleccionado, 
+            paso: 2
+          )
         end
 
         respond_to do |format|
@@ -6535,16 +6549,50 @@ class FondoProduccionLimpiasController < ApplicationController
         )
       end
 
-  # Guarda en la BD las selecciones de 'cumple' y 'comentario_revisor' enviados desde el formulario
+  # Guarda en la BD las selecciones de 'cumple' y 'comentario_revisor'
   def guardar_respuestas_evaluacion(detalles_params)
     return if detalles_params.blank?
 
-    detalles_params.each do |detalle_id, campos|
-      detalle = RendicionDetalleFpl.find_by(id: detalle_id)
-      next unless detalle
+    detalles_params.each do |key_id, campos|
+      next if campos.blank?
 
-      val_cumple = campos[:cumple].to_s.strip
-      valor_int = ['1', 'si', 'true'].include?(val_cumple.downcase) ? 1 : (['2', 'no', 'false'].include?(val_cumple.downcase) ? 2 : nil)
+      val_cumple = campos[:cumple].to_s.strip.downcase
+      # Omitir si no se seleccionó opción para no sobreescribir valores previos con nil
+      next if val_cumple.blank?
+
+      valor_int = if ['1', 'si', 'true'].include?(val_cumple)
+                    1
+                  elsif ['2', 'no', 'false'].include?(val_cumple)
+                    2
+                  else
+                    nil
+                  end
+
+      next if valor_int.nil?
+
+      # 1. Buscar por ID directo de RendicionDetalleFpl
+      detalle = RendicionDetalleFpl.find_by(id: key_id)
+
+      # 2. Si no se encuentra por ID (p. ej. si key_id es plan_actividad_id o fila sin registro),
+      #    buscar el detalle asociado a la actividad en esta rendición o crearlo.
+      if detalle.nil? && @rendicion.present?
+        actividad_id = key_id
+        detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
+                                                  .find_by(
+                                                    rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id },
+                                                    plan_actividad_id: actividad_id
+                                                  )
+        detalle = detalle_act&.rendicion_detalle_fpl
+
+        # Si aún no existe el registro en la BD, se crea para guardar la evaluación
+        if detalle.nil?
+          tipo_tab_eval = campos[:tipo_tab].presence || :tecnica
+          detalle = @rendicion.rendicion_detalles_fpl.create!(tipo_tab: tipo_tab_eval)
+          detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+        end
+      end
+
+      next unless detalle
 
       detalle.update(
         cumple: valor_int,
@@ -6759,5 +6807,9 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
     end
+  end
+
+  def fondo_produccion_limpia_resolucion_params
+    params.require(:fondo_produccion_limpia).permit(:fecha_resolucion, :archivo_resolucion, :archivo_contrato)
   end
 end

@@ -12,8 +12,9 @@
   });
 
   let archivosCargados = {
-  archivo_resolucion: false,
-  archivo_contrato: false
+    archivo_resolucion: false,
+    archivo_contrato: false,
+    fecha_resolucion: false
   };
 
   function guardarYActualizar(event, nombreCampo, origen) {
@@ -66,7 +67,12 @@
 
   function validarArchivosCargados() {
     const botonEnviar = document.getElementById('enviar-button');
-    if (archivosCargados.archivo_resolucion && archivosCargados.archivo_contrato) {
+    const inputFecha = document.getElementById('fecha_resolucion');
+    
+    // Evaluar si la fecha tiene valor
+    archivosCargados.fecha_resolucion = inputFecha && inputFecha.value !== '';
+
+    if (archivosCargados.archivo_resolucion && archivosCargados.archivo_contrato && archivosCargados.fecha_resolucion) {
       botonEnviar.classList.remove('btn-disabled');
       botonEnviar.disabled = false;
     } else {
@@ -75,11 +81,16 @@
     }
   }
 
-  // Si quieres que al cargar la página ya se evalúe si existen archivos previos:
   document.addEventListener("DOMContentLoaded", function() {
-    // Si en el backend ya hay archivos cargados, marcamos esos campos como true:
     archivosCargados.archivo_resolucion = #{@fondo_produccion_limpia.archivo_resolucion.present?};
     archivosCargados.archivo_contrato = #{@fondo_produccion_limpia.archivo_contrato.present?};
+    
+    // Escuchar cambios en la fecha
+    const fechaElem = document.getElementById('fecha_resolucion');
+    if (fechaElem) {
+      fechaElem.addEventListener('change', validarArchivosCargados);
+    }
+
     validarArchivosCargados();
   });
 
@@ -152,6 +163,15 @@
                   -if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
                     %th.encabezado-form{style: 'width: 25%;'} Subir Documento
                 %tbody
+                  %tr{id: "fila_fecha_resolucion"}
+                    %td.contenido-form{style: 'vertical-align: middle;'}
+                      %abbr{ title: "Campo requerido" } *
+                      Fecha Resolución
+                    %td.contenido-form{colspan: (@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 ? 2 : 1)}
+                      - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                        = f.input :fecha_resolucion, as: :date, html5: true, label: false, input_html: { id: "fecha_resolucion", class: "form-control smaller-text border-text", onchange: "validarArchivosCargados()" }
+                      - else
+                        = l(@fondo_produccion_limpia.fecha_resolucion, format: :default) if @fondo_produccion_limpia.fecha_resolucion.present?
                   %tr{id: "fila_resolucion", data: { original_title: "", title: "" }}
                     %td.contenido-form{style: 'vertical-align: middle;'}
                       %abbr{ title: "Campo requerido" } *

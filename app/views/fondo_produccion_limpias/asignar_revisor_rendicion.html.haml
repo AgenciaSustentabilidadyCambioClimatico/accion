@@ -84,11 +84,14 @@
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 - planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
--# Identificar actividades marcadas con 'NO' previamente que AÚN NO hayan sido marcadas con 'SÍ' en ningún mes anterior
+-# Identificar actividades marcadas con 'NO' previamente
 - rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_actual.to_i).pluck(:id)
 - actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
 - actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
 - actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
+
+-# CLAVE: Identificar todas las actividades registradas en la rendición actual (BD)
+- actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 
 = simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
@@ -166,8 +169,8 @@
                             - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
                             - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
                             - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                            - tiene_detalle = @rendicion&.rendicion_detalles_fpl&.any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
-                            - es_del_mes || es_pendiente_previo || tiene_detalle
+                            - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
+                            - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
 
                           - if actividades_filtradas.present?
                             - actividades_filtradas.each do |actividad|
@@ -212,8 +215,8 @@
                             - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
                             - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
                             - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                            - tiene_docs = (@documentos_fpl || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
-                            - es_del_mes || es_pendiente_previo || tiene_docs
+                            - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
+                            - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
 
                           - if actividades_fpl_filtradas.present?
                             - actividades_fpl_filtradas.each do |actividad|
@@ -253,8 +256,8 @@
                             - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
                             - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
                             - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                            - tiene_docs = (@documentos_aporte || []).any? { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(a.id) }
-                            - es_del_mes || es_pendiente_previo || tiene_docs
+                            - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
+                            - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
 
                           - if actividades_aporte_filtradas.present?
                             - actividades_aporte_filtradas.each do |actividad|
