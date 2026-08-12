@@ -277,9 +277,10 @@
 - rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
 - actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
 
--# 3. EN PROCESO (Estados 1, 2, 3 y 4: enviada_a_revision, en_evaluacion, observada; excluyendo la rendición actual) -> Badge Naranjo "En proceso"
+-# 3. EN PROCESO (Estados 1, 2, 3 y 4: enviada_a_revision, en_evaluacion, observada) -> Badge Naranjo "En proceso"
+-# CORRECCIÓN: Se quita .where.not(id: @rendicion&.id) para incluir todas las rendiciones enviadas a revisión
 - estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).where.not(id: @rendicion&.id).pluck(:id)
+- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).pluck(:id)
 - actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
 
 -# 4. PENDIENTES DE MESES ANTERIORES
@@ -348,7 +349,6 @@
                 - es_rendida = actividades_rendidas_ids.include?(actividad.id)
                 - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
                 
-                -# CORRECCIÓN: Solamente viene chequeada si NO está Aprobada, Rendida ni En proceso.
                 - debe_marcarse = !es_aprobada && !es_rendida && !es_en_proceso && (es_mes_actual || es_pendiente_previo || ya_guardada)
                 - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
 
@@ -371,7 +371,7 @@
                   %td.contenido-form.text-center
                     %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act }, checked: debe_marcarse, disabled: esta_deshabilitada, title: (es_aprobada ? "Actividad aprobada en FPL-16" : (es_rendida ? "Actividad rendida pendiente de verificación contable" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : "")))}
                     - if es_aprobada
-                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 9px;"} Aprobada
+                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 9px;"} Aprobada Parcial
                     - elsif es_rendida
                       %span.badge.badge-success.d-block.mt-1{style: "font-size: 9px;"} Rendida
                     - elsif es_en_proceso

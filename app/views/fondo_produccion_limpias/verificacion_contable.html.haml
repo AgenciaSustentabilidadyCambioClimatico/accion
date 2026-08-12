@@ -58,17 +58,10 @@
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - titulo "Verificación Contable de Rendición"
 
--# Obtención del mes guardado en rendiciones_fpl y consulta a plan_actividades
+-# Obtención del mes guardado en rendiciones_fpl
 - mes_actual = @rendicion&.mes_a_rendir.to_s
-- planes_hash = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:actividad_id) rescue {}
 
--# Descontar actividades que fueron marcadas como 'No' previamente pero YA se completaron con 'Sí' en meses posteriores
-- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_actual.to_i).pluck(:id)
-- actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-- actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
-
--# CLAVE: Identificar TODAS las actividades que forman parte de esta rendición en la BD
+-# CLAVE: Identificar ÚNICAMENTE las actividades que forman parte de esta rendición en la BD
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 
 .row
@@ -129,13 +122,7 @@
                   %th.encabezado-form{style: 'width: 15%;'} Comentario Revisor
               %tbody
                 - if @actividad_x_linea.present?
-                  - actividades_filtradas = @actividad_x_linea.select do |a|
-                    - plan = planes_hash[a.id]
-                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
-                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
-                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                    - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
-                    - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
+                  - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
                   - if actividades_filtradas.present?
                     - actividades_filtradas.each do |actividad|
@@ -167,7 +154,7 @@
                         %td.contenido-form= detalle&.comentario_revisor.presence || '--'
                   - else
                     %tr
-                      %td.text-center.text-muted{colspan: 7} No hay actividades registradas en el Mes #{mes_actual.presence || '--'}.
+                      %td.text-center.text-muted{colspan: 7} No hay actividades registradas en esta rendición.
                 - else
                   %tr
                     %td.text-center.text-muted{colspan: 7} No hay actividades configuradas para esta línea.
@@ -191,13 +178,7 @@
                   %th.encabezado-form{style: 'width: 25%;'} Comentario Revisor
               %tbody
                 - if @actividad_x_linea.present?
-                  - actividades_fpl_filtradas = @actividad_x_linea.select do |a|
-                    - plan = planes_hash[a.id]
-                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
-                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
-                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                    - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
-                    - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
+                  - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
                   - if actividades_fpl_filtradas.present?
                     - actividades_fpl_filtradas.each do |actividad|
@@ -251,13 +232,7 @@
                   %th.encabezado-form{style: 'width: 25%;'} Comentario Revisor
               %tbody
                 - if @actividad_x_linea.present?
-                  - actividades_aporte_filtradas = @actividad_x_linea.select do |a|
-                    - plan = planes_hash[a.id]
-                    - dur_meses = plan ? plan.duracion.to_s.split(',').map(&:strip) : []
-                    - es_del_mes = mes_actual.blank? || dur_meses.include?(mes_actual)
-                    - es_pendiente_previo = actividades_no_realizadas_previas.include?(a.id)
-                    - es_de_rendicion_actual = actividades_en_rendicion.include?(a.id)
-                    - es_del_mes || es_pendiente_previo || es_de_rendicion_actual
+                  - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
                   - if actividades_aporte_filtradas.present?
                     - actividades_aporte_filtradas.each do |actividad|
