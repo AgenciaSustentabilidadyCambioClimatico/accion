@@ -104,6 +104,8 @@
           = t(tab.to_s.gsub('-','_'))
 
 = simple_form_for fpl_objeto, url: guardar_verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente), html: { autocomplete: :off }, remote: true do |f|
+  = hidden_field_tag "mes_a_rendir", mes_actual.presence || @rendicion&.mes_a_rendir || 1
+  
   .tab-content#manifestacionContent
 
     -# ----------------------------------------------------

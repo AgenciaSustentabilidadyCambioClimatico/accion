@@ -262,11 +262,30 @@
 -# Mes a rendir actual determinado automáticamente por el sistema
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
 
--# Identificación de actividades
-- rendiciones_previas_ids = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
-- actividades_completadas_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+-# -------------------------------------------------------------
+-# LOGICA DE ESTADOS EN BASE DE DATOS
+-# -------------------------------------------------------------
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+
+-# 1. APROBADAS DEFINITIVAMENTE EN FPL-16 (Estado 6: verificada_contablemente) -> Badge Azul "Aprobada"
+- estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
+- rendiciones_aprobadas_ids = rendiciones_todas.where(estado: estado_aprobado_val).pluck(:id)
+- actividades_aprobadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_aprobadas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
+-# 2. RENDIDAS / LISTAS PARA AUDITORÍA CONTABLE (Estado 5: pendiente_verificacion_contable) -> Badge Verde "Rendida"
+- estado_rendido_val = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
+- rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
+- actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
+
+-# 3. EN PROCESO (Estados 1, 2, 3 y 4: enviada_a_revision, en_evaluacion, observada; excluyendo la rendición actual) -> Badge Naranjo "En proceso"
+- estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
+- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).where.not(id: @rendicion&.id).pluck(:id)
+- actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+
+-# 4. PENDIENTES DE MESES ANTERIORES
+- rendiciones_previas_ids = rendiciones_todas.where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
 - actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-- actividades_no_realizadas_previas = actividades_no_previas - actividades_completadas_previas
+- actividades_no_realizadas_previas = actividades_no_previas - actividades_aprobadas_ids - actividades_rendidas_ids
 
 - actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 
@@ -324,11 +343,14 @@
                 - es_mes_actual = duraciones.include?(mes_seleccionado_defecto.to_s)
                 - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
                 - ya_guardada = actividades_ya_guardadas_ids.include?(actividad.id)
-                - es_completada_previamente = actividades_completadas_previas.include?(actividad.id)
                 
-                -# Si ya fue rendida previamente, no se debe seleccionar para rendir de nuevo
-                - debe_marcarse = !es_completada_previamente && (es_mes_actual || es_pendiente_previo || ya_guardada)
-                - esta_deshabilitada = !es_editable || es_completada_previamente
+                - es_aprobada = actividades_aprobadas_ids.include?(actividad.id)
+                - es_rendida = actividades_rendidas_ids.include?(actividad.id)
+                - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
+                
+                -# CORRECCIÓN: Solamente viene chequeada si NO está Aprobada, Rendida ni En proceso.
+                - debe_marcarse = !es_aprobada && !es_rendida && !es_en_proceso && (es_mes_actual || es_pendiente_previo || ya_guardada)
+                - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
 
                 - valor_hh_tipo_3 = detalle.try(:valor_hh_tipo_3).to_f
                 - valor_hh_tipos_1_2 = detalle.try(:valor_hh_tipos_1_2).to_f
@@ -347,9 +369,13 @@
                   %td.contenido-form.text-right
                     = number_to_currency(suma)
                   %td.contenido-form.text-center
-                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act }, checked: debe_marcarse, disabled: esta_deshabilitada, title: (es_completada_previamente ? "Actividad ya rendida en un mes anterior" : "")}
-                    - if es_completada_previamente
+                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act }, checked: debe_marcarse, disabled: esta_deshabilitada, title: (es_aprobada ? "Actividad aprobada en FPL-16" : (es_rendida ? "Actividad rendida pendiente de verificación contable" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : "")))}
+                    - if es_aprobada
+                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 9px;"} Aprobada
+                    - elsif es_rendida
                       %span.badge.badge-success.d-block.mt-1{style: "font-size: 9px;"} Rendida
+                    - elsif es_en_proceso
+                      %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 9px; background-color: #fd7e14;"} En proceso
 
             %tr
               %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + duracion} Total
