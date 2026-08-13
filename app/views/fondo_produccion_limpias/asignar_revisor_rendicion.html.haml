@@ -76,6 +76,7 @@
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
 
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - solo_lectura = @tarea_pendiente.estado_tarea_pendiente_id == EstadoTareaPendiente::ENVIADA || @solo_lectura == 'solo_lectura'
@@ -83,8 +84,17 @@
 -# Obtención del mes guardado en rendiciones_fpl
 - mes_actual = @rendicion&.mes_a_rendir.to_s
 
--# CLAVE: Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición (Paso 1)
+-# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+
+-# Lambda auxiliar para consultar gastos
+- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
+  - f_id = @tarea_pendiente&.flujo_id
+  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
 = simple_form_for fpl_objeto, url: guardar_asignar_revisor_rendicion_fondo_produccion_limpia_path(@tarea_pendiente) do |f|
   = f.hidden_field :temporal, as: :boolean, value: true
@@ -143,7 +153,7 @@
                             = t(tab.to_s.gsub('-','_'))
 
           .tab-content#manifestacionContent
-            / Pestaña 1: Técnica
+            / Pestaña 1: Técnica (Modo Lectura)
             .tab-pane.fade#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
               .card.mt-2
                 .card-body
@@ -151,10 +161,12 @@
                     %table.table.table-striped.usuarios.no-margin
                       %thead
                         %tr
-                          %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
-                          %th.encabezado-form{style: 'width: 35%;'}= t(:actividades)
-                          %th.encabezado-form{style: 'width: 5%;'} Realizada
-                          %th.encabezado-form{style: 'width: 35%;'} Observación
+                          %th.encabezado-form{style: 'width: 4%;'}= t(:n°)
+                          %th.encabezado-form{style: 'width: 22%;'}= t(:actividades)
+                          %th.encabezado-form{style: 'width: 10%;'} Fecha de Inicio
+                          %th.encabezado-form{style: 'width: 10%;'} Fecha de Término
+                          %th.encabezado-form{style: 'width: 10%;'} Nivel de avance
+                          %th.encabezado-form{style: 'width: 24%;'} Descripción del Avance
                           %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
                       %tbody
                         - if @actividad_x_linea.present?
@@ -163,97 +175,123 @@
                           - if actividades_filtradas.present?
                             - actividades_filtradas.each do |actividad|
                               - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                              - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_inicio) || '--'
+                              - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%d') || detalle_tecnico&.try(:fecha_termino) || '--'
+                              - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
                               - observacion_valor = detalle_tecnico&.observacion
                               - archivo = detalle_tecnico&.archivo
 
                               %tr{id: "fila_actividad_#{actividad.id}"}
                                 %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
                                 %td.contenido-form= actividad.nombre
+                                %td.contenido-form.text-center= fecha_inicio_valor
+                                %td.contenido-form.text-center= fecha_termino_valor
                                 %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                  - if detalle_tecnico.present?
-                                    %span.badge{class: detalle_tecnico.realizada? ? 'badge-success' : 'badge-danger', style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'}
-                                      = detalle_tecnico.realizada? ? 'Sí' : 'No'
+                                  - case nivel_avance_val
+                                  - when '0'
+                                    %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
+                                  - when '1'
+                                    %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
+                                  - when '2'
+                                    %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
                                   - else
-                                    %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                                    - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
+                                      %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                                    - else
+                                      %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
                                 %td.contenido-form= observacion_valor.presence || '--'
                                 %td.contenido-form
                                   = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
                           - else
                             %tr
-                              %td.text-center.text-muted{colspan: 5} No hay actividades registradas en esta rendición.
+                              %td.text-center.text-muted{colspan: 7} No hay actividades registradas en esta rendición.
                         - else
                           %tr
-                            %td.text-center.text-muted{colspan: 5} No hay actividades registradas.
+                            %td.text-center.text-muted{colspan: 7} No hay actividades registradas.
 
-            / Pestaña 2: Financiera FPL
+            / Pestaña 2: Financiera FPL (Modo Lectura con Desglose)
             .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
-              .card.mt-2
-                .card-body
-                  .table-responsive
-                    %table.table.table-striped.usuarios.no-margin#tabla-financiera-fpl
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
-                          %th.encabezado-form{style: 'width: 45%;'}= t(:actividades)
-                          %th.encabezado-form{style: 'width: 50%;'} Archivos Cargados
-                      %tbody
-                        - if @actividad_x_linea.present?
-                          - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
+              - if @actividad_x_linea.present?
+                - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
-                          - if actividades_fpl_filtradas.present?
-                            - actividades_fpl_filtradas.each do |actividad|
-                              - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
-                              %tr
-                                %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                                %td.contenido-form= actividad.nombre
-                                %td.contenido-form
-                                  - if docs_act.present?
-                                    - docs_act.each do |doc|
-                                      - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                                      .mb-1= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                                  - else
-                                    %span.text-muted Sin documentos cargados
-                          - else
-                            %tr
-                              %td.text-center.text-muted{colspan: 3} No hay documentos financieros FPL para este mes.
-                        - else
-                          %tr
-                            %td.text-center.text-muted{colspan: 3} No hay actividades registradas.
+                - if actividades_fpl_filtradas.present?
+                  - actividades_fpl_filtradas.each do |actividad|
+                    - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                    - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
-            / Pestaña 3: Financiera Aporte
+                    .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
+                      .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                        .d-flex.align-items-center
+                          %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                          %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                          %i.fa.fa-chevron-down.mr-1
+                          Ver / Ocultar
+
+                      .collapse.show{id: "collapse_fpl_read_#{actividad.id}"}
+                        .card-body.p-2
+                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false
+
+                          .table-responsive.mt-2
+                            %table.table.table-striped.no-margin
+                              %thead
+                                %tr
+                                  %th.encabezado-form{style: 'width: 100%;'} Archivos Cargados
+                              %tbody
+                                - if docs_act.present?
+                                  - docs_act.each do |doc|
+                                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                                    %tr
+                                      %td.contenido-form
+                                        = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                                - else
+                                  %tr
+                                    %td.contenido-form.text-muted.text-center Sin documentos cargados
+                - else
+                  .card.mt-2
+                    .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
+
+            / Pestaña 3: Financiera Aporte Propio (Modo Lectura con Desglose)
             .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
-              .card.mt-2
-                .card-body
-                  .table-responsive
-                    %table.table.table-striped.usuarios.no-margin#tabla-financiera-aporte
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
-                          %th.encabezado-form{style: 'width: 45%;'}= t(:actividades)
-                          %th.encabezado-form{style: 'width: 50%;'} Archivos Cargados
-                      %tbody
-                        - if @actividad_x_linea.present?
-                          - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
+              - if @actividad_x_linea.present?
+                - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
-                          - if actividades_aporte_filtradas.present?
-                            - actividades_aporte_filtradas.each do |actividad|
-                              - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
-                              %tr
-                                %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                                %td.contenido-form= actividad.nombre
-                                %td.contenido-form
-                                  - if docs_act.present?
-                                    - docs_act.each do |doc|
-                                      - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                                      .mb-1= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                                  - else
-                                    %span.text-muted Sin documentos cargados
-                          - else
-                            %tr
-                              %td.text-center.text-muted{colspan: 3} No hay documentos de aporte para este mes.
-                        - else
-                          %tr
-                            %td.text-center.text-muted{colspan: 3} No hay actividades registradas.
+                - if actividades_aporte_filtradas.present?
+                  - actividades_aporte_filtradas.each do |actividad|
+                    - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                    - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
+
+                    .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
+                      .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                        .d-flex.align-items-center
+                          %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                          %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                          %i.fa.fa-chevron-down.mr-1
+                          Ver / Ocultar
+
+                      .collapse.show{id: "collapse_aporte_read_#{actividad.id}"}
+                        .card-body.p-2
+                          = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false
+
+                          .table-responsive.mt-2
+                            %table.table.table-striped.no-margin
+                              %thead
+                                %tr
+                                  %th.encabezado-form{style: 'width: 100%;'} Archivos Cargados
+                              %tbody
+                                - if docs_act.present?
+                                  - docs_act.each do |doc|
+                                    - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                                    %tr
+                                      %td.contenido-form
+                                        = __descargar_archivo_sin_titulo(archivo, doc || f.object)
+                                - else
+                                  %tr
+                                    %td.contenido-form.text-muted.text-center Sin documentos cargados
+                - else
+                  .card.mt-2
+                    .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
 
             / Pestaña 4: Asignar Revisor
             - if @revisor
