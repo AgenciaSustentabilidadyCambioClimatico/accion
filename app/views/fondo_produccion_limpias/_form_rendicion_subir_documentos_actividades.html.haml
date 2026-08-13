@@ -1,6 +1,67 @@
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
+- titulo t(:rendicion_por_actividad)
+
+-# -------------------------------------------------------------
+-# 1. INICIALIZACIÓN DE VARIABLES Y EVALUACIÓN DE EDITABILIDAD
+-# -------------------------------------------------------------
+- es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && (@rendicion.nil? || @rendicion.borrador?)
+
+-# Determinar paso actual (Paso 1 o Paso 2)
+- paso_actual = params[:paso].to_s == '2' ? 2 : 1
+
+-# Carga de detalles de plan de actividades por ID
+- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| d.respond_to?(:actividad_id) ? d.actividad_id : d.id } rescue {}
+
+-# Duración total en meses (@duracion / N)
+- valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
+- duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
+
+-# Mes a rendir actual determinado automáticamente por el sistema
+- mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
+
+-# -------------------------------------------------------------
+-# LOGICA DE ESTADOS EN BASE DE DATOS
+-# -------------------------------------------------------------
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+
+-# Aprobadas en FPL-16
+- estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
+- rendiciones_aprobadas_ids = rendiciones_todas.where(estado: estado_aprobado_val).pluck(:id)
+- actividades_aprobadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_aprobadas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
+-# Rendidas
+- estado_rendido_val = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
+- rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
+- actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
+
+-# En proceso
+- estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
+- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).pluck(:id)
+- actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+
+-# Pendientes de meses anteriores
+- rendiciones_previas_ids = rendiciones_todas.where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
+- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- actividades_no_realizadas_previas = actividades_no_previas - actividades_aprobadas_ids - actividades_rendidas_ids
+
+- actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+
+-# Lambda auxiliar para consultar gastos
+- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
+  - f_id = @tarea_pendiente&.flujo_id
+  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+
+-# -------------------------------------------------------------
+-# 2. BLOQUE JAVASCRIPT CORREGIDO CON raw(...)
+-# -------------------------------------------------------------
 :javascript
-  // Variable global enviada desde Rails para controlar el estado de edición
-  const ES_EDITABLE = #{@tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && (@rendicion.nil? || @rendicion.borrador?) ? 'true' : 'false'};
+  const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
+  const PASO_ACTUAL = #{paso_actual.to_i};
+  const ACTIVIDADES_GUARDADAS = #{raw actividades_ya_guardadas_ids.map(&:to_s).to_json};
 
   $(document).ready(function() {
     $("input:file").on('change', function () {
@@ -39,8 +100,12 @@
       $('#paso1_resumen').fadeIn();
     });
 
-    const seleccionadasIniciales = obtenerActividadesSeleccionadas();
-    filtrarVistaPorSeleccion(seleccionadasIniciales);
+    if (PASO_ACTUAL === 2 && ACTIVIDADES_GUARDADAS.length > 0) {
+      filtrarVistaPorSeleccion(ACTIVIDADES_GUARDADAS);
+    } else {
+      const seleccionadasIniciales = obtenerActividadesSeleccionadas();
+      filtrarVistaPorSeleccion(seleccionadasIniciales);
+    }
 
     if (!ES_EDITABLE) {
       bloquearFormularioSoloLectura();
@@ -131,7 +196,7 @@
       tabTecnicaValido = false;
     }
 
-    // 2. VALIDAR TAB FINANCIERA FPL (Omite filas destruidas/ocultas)
+    // 2. VALIDAR TAB FINANCIERA FPL
     let tieneBloquesFpl = false;
     let tieneDocFpl = false;
 
@@ -157,7 +222,7 @@
 
     const tabFinancieraFplValido = tieneBloquesFpl ? tieneDocFpl : true;
 
-    // 3. VALIDAR TAB FINANCIERA APORTE PROPIO (Omite filas destruidas/ocultas)
+    // 3. VALIDAR TAB FINANCIERA APORTE PROPIO
     let tieneBloquesAporte = false;
     let tieneDocAporte = false;
 
@@ -234,16 +299,13 @@
     const hiddenId = $tr.find('input[type="hidden"][name*="[id]"]').val();
 
     if (hiddenId && hiddenId !== '') {
-      // Si el registro ya existe en la BD: marcar para eliminar y ocultar
       $tr.find('input.destroy-flag').val('1');
       $tr.hide();
     } else {
-      // Si es una fila nueva sin guardar aún
       const $tbody = $tr.closest('tbody');
       if ($tbody.find('tr:visible').length > 1) {
         $tr.remove();
       } else {
-        // Si es la única fila, solo limpiamos el input
         $tr.find('input[type="file"]').val('');
         $tr.find('input[type="hidden"][name*="[id]"]').val('');
       }
@@ -269,63 +331,6 @@
     color: #333 !important;
     font-weight: bold;
   }
-
-- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new  
-- titulo t(:rendicion_por_actividad)
-
--# EVALUACIÓN DE EDITABILIDAD
-- es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && (@rendicion.nil? || @rendicion.borrador?)
-
--# Determinar paso actual (Paso 1 o Paso 2)
-- paso_actual = params[:paso].to_s == '2' ? 2 : 1
-
--# Carga de detalles de plan de actividades por ID
-- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| d.respond_to?(:actividad_id) ? d.actividad_id : d.id } rescue {}
-
--# Duración total en meses (@duracion / N)
-- valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
-- duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
-
--# Mes a rendir actual determinado automáticamente por el sistema
-- mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
-
--# -------------------------------------------------------------
--# LOGICA DE ESTADOS EN BASE DE DATOS
--# -------------------------------------------------------------
-- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-
--# 1. APROBADAS DEFINITIVAMENTE EN FPL-16
-- estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-- rendiciones_aprobadas_ids = rendiciones_todas.where(estado: estado_aprobado_val).pluck(:id)
-- actividades_aprobadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_aprobadas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-
--# 2. RENDIDAS / LISTAS PARA AUDITORÍA CONTABLE
-- estado_rendido_val = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
-- rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
-- actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
-
--# 3. EN PROCESO
-- estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).pluck(:id)
-- actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
-
--# 4. PENDIENTES DE MESES ANTERIORES
-- rendiciones_previas_ids = rendiciones_todas.where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
-- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-- actividades_no_realizadas_previas = actividades_no_previas - actividades_aprobadas_ids - actividades_rendidas_ids
-
-- actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
-
--# -------------------------------------------------------------
--# LAMBDA AUXILIAR PARA CONSULTAR GASTOS FILTRADOS POR ACTIVIDAD
--# -------------------------------------------------------------
-- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
-  - f_id = @tarea_pendiente&.flujo_id
-  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
@@ -373,7 +378,6 @@
                 %th.encabezado-form{style: 'width: 30px; text-align: center;'}= m
           %tbody
             - total_total_suma = 0
-            - tiene_guardadas = actividades_ya_guardadas_ids.present?
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
                 - detalle = detalles_hash[actividad.id]
@@ -388,7 +392,8 @@
                 - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
                 
                 - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
-                - debe_marcarse = !esta_deshabilitada && (tiene_guardadas ? ya_guardada : (es_mes_actual || es_pendiente_previo))
+
+                - debe_marcarse = !esta_deshabilitada && (es_mes_actual || es_pendiente_previo || ya_guardada)
 
                 - valor_hh_tipo_3 = detalle.try(:valor_hh_tipo_3).to_f
                 - valor_hh_tipos_1_2 = detalle.try(:valor_hh_tipos_1_2).to_f

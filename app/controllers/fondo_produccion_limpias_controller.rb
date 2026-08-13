@@ -4342,18 +4342,33 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
 
           mes_actual = mes_seleccionado.to_i
-          duraciones = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:duracion)
-          total_meses = duraciones.flat_map { |d| d.to_s.split(',').map(&:strip).map(&:to_i) }.compact.select(&:positive?).max || 1
+          flujo_id_actual = @tarea_pendiente.flujo_id
+
+          # 1. Total de actividades planificadas en el proyecto
+          todas_actividades_ids = PlanActividad.where(flujo_id: flujo_id_actual).pluck(:id)
+
+          # 2. Actividades que ya han sido marcadas como completadas (nivel_avance = 2)
+          actividades_completadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
+                                                           .where(rendiciones_fpl: { flujo_id: flujo_id_actual })
+                                                           .where("rendicion_detalles_fpl.nivel_avance = 2 OR rendicion_detalles_fpl.realizada = ?", true)
+                                                           .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+
+          # 3. Evaluar si realmente quedan actividades pendientes
+          quedan_pendientes = (todas_actividades_ids - actividades_completadas_ids).present?
 
           es_ultima_flag = @rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion
-          es_ultimo_mes = (mes_actual >= total_meses) || es_ultima_flag
 
-          if es_ultimo_mes
+          # La tarea FPL-12 SE CIERRA solo si se marca 'Última rendición' o si YA NO quedan actividades pendientes
+          debe_cerrar_fpl12 = es_ultima_flag || !quedan_pendientes
+
+          if debe_cerrar_fpl12
+            # Completa y cierra definitivamente la tarea FPL-12
             @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
-            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado la tarea de subir documentos."
+            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado el proceso de rendición FPL-12."
           else
+            # Deriva el avance a FPL-13 pero MANTIENE FPL-12 abierta para los siguientes meses/actividades
             @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
-            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea continúa abierta para los siguientes meses."
+            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea FPL-12 permanece abierta para rendir las actividades pendientes."
           end
 
           url_destino = root_path
