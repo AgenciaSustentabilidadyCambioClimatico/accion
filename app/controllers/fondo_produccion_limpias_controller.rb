@@ -4471,8 +4471,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
         @tarea_pendiente.pasar_a_siguiente_tarea('A') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-        @tarea_pendiente.pasar_a_siguiente_tarea('B') if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-
+       
         tarea_fondo = Tarea.find_by_codigo(Tarea::COD_FPL_13)
         jefes_de_linea_fpl = Responsable.__personas_responsables(Rol::JEFE_DE_LINEA, 11) 
         
@@ -4579,18 +4578,13 @@ class FondoProduccionLimpiasController < ApplicationController
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
           flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se ha devuelto la rendición para corrección técnica (FPL-18)."
         else
-          # 7. Si todo CUMPLE en Técnica, verificar si Financiera también cumple para avanzar a FPL-16
-          if rendicion_financiera_aprobada?(@rendicion)
-            @rendicion.update!(estado: :pendiente_verificacion_contable)
+          # 7. Si todo CUMPLE en Técnica, para avanzar a FPL-14 
+          @rendicion.update!(estado: :pendiente_verificacion_contable)
 
             # Se crea la siguiente tarea FPL-16 y envía el correo
-            @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            flash[:notice] = "Rendición del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente (Técnica y Financiera). Se ha generado la tarea FPL-16."
-          else
-            @rendicion.update!(estado: :en_evaluacion)
-            flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} aprobada. Queda a la espera de la evaluación financiera para avanzar a FPL-16."
-          end
-
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+          flash[:notice] = "Rendición del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente (Técnica). Se ha generado la tarea FPL-14."
+         
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
         end
 
@@ -4679,16 +4673,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
           flash[:notice] = "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se devolvió a corrección financiera (FPL-17)."
         else
-          # 6. Si CUMPLE en Financiera, verificar si Técnica también cumple para avanzar a FPL-16
-          if rendicion_tecnica_aprobada?(@rendicion)
-            @rendicion.update!(estado: :pendiente_verificacion_contable)
-            @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            flash[:notice] = "Rendición del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente (Técnica y Financiera). Se generó la tarea FPL-16."
-          else
-            @rendicion.update!(estado: :en_evaluacion)
-            flash[:notice] = "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} aprobada. En espera de la evaluación técnica para avanzar a FPL-16."
-          end
-
+          # 6. Si CUMPLE en Financiera, para avanzar a FPL-16
+          @rendicion.update!(estado: :pendiente_verificacion_contable)
+          @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+          flash[:notice] = "Rendición del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente (Financiera). Se generó la tarea FPL-16."
+         
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
         end
 
@@ -4772,7 +4761,7 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
         flash[:notice] = "Verificación contable del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente."
-        
+
         respond_to do |format|
           format.html { redirect_to root_path }
           format.js   { render js: "window.location.href = '#{root_path}';" }
