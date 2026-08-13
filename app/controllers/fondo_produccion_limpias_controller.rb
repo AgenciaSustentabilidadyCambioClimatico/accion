@@ -4236,9 +4236,11 @@ class FondoProduccionLimpiasController < ApplicationController
         actividades_list = params[:actividades_ids].present? ? params[:actividades_ids] : (@actividad_x_linea || []).map(&:id)
 
         actividades_list.each do |actividad_id|
-          realizada_val = params["realizada_actividad_#{actividad_id}"]
-          obs_val       = params["observacion_actividad_#{actividad_id}"]
-          archivo_val   = params["archivo_rendicion_#{actividad_id}"]
+          realizada_val     = params["realizada_actividad_#{actividad_id}"]
+          obs_val           = params["observacion_actividad_#{actividad_id}"]
+          archivo_val       = params["archivo_rendicion_#{actividad_id}"]
+          fecha_inicio_val  = params["fecha_inicio_actividad_#{actividad_id}"]
+          fecha_termino_val = params["fecha_termino_actividad_#{actividad_id}"]
 
           next if realizada_val.blank?
 
@@ -4250,8 +4252,17 @@ class FondoProduccionLimpiasController < ApplicationController
 
           detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
           
-          detalle.realizada   = (realizada_val.to_s.downcase == 'si')
-          detalle.observacion = (realizada_val.to_s.downcase == 'no') ? obs_val : nil
+          # Asignación de fechas
+          detalle.fecha_inicio  = fecha_inicio_val if detalle.respond_to?(:fecha_inicio=)
+          detalle.fecha_termino = fecha_termino_val if detalle.respond_to?(:fecha_termino=)
+
+          # Manejo de estado 'si', 'no' y 'parcial'
+          val_str = realizada_val.to_s.downcase
+          detalle.realizada = (val_str == 'si') # Mantiene compatibilidad si 'realizada' es booleano
+          detalle.realizada_valor = val_str if detalle.respond_to?(:realizada_valor=) # Guarda 'si', 'no' o 'parcial'
+
+          # La 'Descripción del Avance' siempre se guarda
+          detalle.observacion = obs_val
           detalle.archivo     = archivo_val if archivo_val.present?
           detalle.save!
 

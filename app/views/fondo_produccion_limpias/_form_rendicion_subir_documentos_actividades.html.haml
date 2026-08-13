@@ -84,21 +84,13 @@
   }
 
   function toggleObservacion(selectElement, actividadId) {
-    const obsInput = document.getElementById('observacion_actividad_' + actividadId);
-    if (obsInput) {
-      if (ES_EDITABLE && selectElement.value.toLowerCase() === 'no') {
-        obsInput.disabled = false;
-      } else {
-        obsInput.disabled = true;
-        obsInput.value = '';
-      }
-    }
+    // La 'Descripción del Avance' permanece siempre habilitada cuando el formulario es editable
     validarFormulario();
   }
 
   function bloquearFormularioSoloLectura() {
     $('#paso1_resumen input[type="checkbox"], #paso2_formulario input[type="checkbox"]').prop('disabled', true);
-    $('#paso2_formulario select, #paso2_formulario textarea, #paso2_formulario input[type="file"]').prop('disabled', true);
+    $('#paso2_formulario select, #paso2_formulario textarea, #paso2_formulario input[type="file"], #paso2_formulario input[type="date"]').prop('disabled', true);
     $('.btn-outline-danger, button[onclick*="agregarFilaDocumentoActividad"]').hide().prop('disabled', true);
     $('#grabar-button, #enviar-button').prop('disabled', true).addClass('btn-disabled');
   }
@@ -131,7 +123,7 @@
 
         if (realizada === 'si') {
           if (!tieneArchivoPrevio && !tieneArchivoNuevo) tabTecnicaValido = false;
-        } else if (realizada === 'no') {
+        } else if (realizada === 'no' || realizada === 'parcial') {
           if (observacion === '') tabTecnicaValido = false;
         } else {
           tabTecnicaValido = false; 
@@ -444,13 +436,15 @@
               %table.table.table-striped.usuarios.no-margin
                 %thead
                   %tr
-                    %th.encabezado-form{style: 'width: 5%;'}= t(:n°)
-                    %th.encabezado-form{style: 'width: 30%;'}= t(:actividades)
-                    %th.encabezado-form{style: 'width: 12%;'} Realizada
-                    %th.encabezado-form{style: 'width: 23%;'} Observación
-                    %th.encabezado-form{style: 'width: 15%;'} Archivos Cargados
+                    %th.encabezado-form{style: 'width: 4%;'}= t(:n°)
+                    %th.encabezado-form{style: 'width: 22%;'}= t(:actividades)
+                    %th.encabezado-form{style: 'width: 10%;'} Fecha de Inicio
+                    %th.encabezado-form{style: 'width: 10%;'} Fecha de Término
+                    %th.encabezado-form{style: 'width: 10%;'} Nivel de avance
+                    %th.encabezado-form{style: 'width: 20%;'} Descripción del Avance
+                    %th.encabezado-form{style: 'width: 12%;'} Archivos Cargados
                     - if es_editable
-                      %th.encabezado-form{style: 'width: 15%;'}= t(:subir_documento_rendicion)
+                      %th.encabezado-form{style: 'width: 12%;'}= t(:subir_documento_rendicion)
                 %tbody
                   - if @actividad_x_linea.present?
                     - @actividad_x_linea.each do |actividad|
@@ -461,7 +455,9 @@
                       - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
                       
                       - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
-                      - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.realizada? ? 'si' : 'no')
+                      - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
+                      - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
+                      - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.try(:realizada_valor).presence || detalle_tecnico.try(:estado_realizada) || (detalle_tecnico.realizada? ? 'si' : 'no'))
                       - observacion_valor = detalle_tecnico&.observacion
                       - archivo = detalle_tecnico&.archivo
                       - tiene_archivo = detalle_tecnico&.archivo&.url.present?
@@ -470,9 +466,13 @@
                         %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
                         %td.contenido-form= actividad.nombre
                         %td.contenido-form
-                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sí', 'si'], ['No', 'no']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable
+                          = date_field_tag "fecha_inicio_actividad_#{actividad.id}", fecha_inicio_valor, class: "form-control smaller-text border-text", disabled: !es_editable, onchange: "validarFormulario()"
                         %td.contenido-form
-                          = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: (!es_editable || realizada_valor.to_s.downcase != 'no'), placeholder: "Ingrese observación...", rows: 2, onkeyup: "validarFormulario()"
+                          = date_field_tag "fecha_termino_actividad_#{actividad.id}", fecha_termino_valor, class: "form-control smaller-text border-text", disabled: !es_editable, onchange: "validarFormulario()"
+                        %td.contenido-form
+                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sín iniciar', '0'], ['En proceso', '1'], ['Completado', '2']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable
+                        %td.contenido-form
+                          = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: !es_editable, placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
                         %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
                           = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
                         - if es_editable

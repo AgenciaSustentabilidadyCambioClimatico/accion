@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_13_170900) do
+ActiveRecord::Schema.define(version: 2026_08_13_183104) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1885,6 +1885,8 @@ ActiveRecord::Schema.define(version: 2026_08_13_170900) do
     t.string "archivo"
     t.integer "cumple"
     t.text "comentario_revisor"
+    t.date "fecha_inicio"
+    t.date "fecha_termino"
     t.index ["rendicion_fpl_id"], name: "index_rendicion_detalles_fpl_on_rendicion_fpl_id"
   end
 
