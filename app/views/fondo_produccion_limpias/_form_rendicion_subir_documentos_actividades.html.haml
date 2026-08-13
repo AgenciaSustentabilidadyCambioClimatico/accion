@@ -336,6 +336,7 @@
                 %th.encabezado-form{style: 'width: 30px; text-align: center;'}= m
           %tbody
             - total_total_suma = 0
+            - tiene_guardadas = actividades_ya_guardadas_ids.present?
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
                 - detalle = detalles_hash[actividad.id]
@@ -349,8 +350,11 @@
                 - es_rendida = actividades_rendidas_ids.include?(actividad.id)
                 - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
                 
-                - debe_marcarse = !es_aprobada && !es_rendida && !es_en_proceso && (es_mes_actual || es_pendiente_previo || ya_guardada)
                 - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
+
+                -# CORRECCIÓN DEL BUG: Si ya hay un borrador guardado en BD, marcamos solo las guardadas.
+                -# Si es un borrador nuevo, marcamos por defecto las del mes actual o pendientes previas.
+                - debe_marcarse = !esta_deshabilitada && (tiene_guardadas ? ya_guardada : (es_mes_actual || es_pendiente_previo))
 
                 - valor_hh_tipo_3 = detalle.try(:valor_hh_tipo_3).to_f
                 - valor_hh_tipos_1_2 = detalle.try(:valor_hh_tipos_1_2).to_f
@@ -469,7 +473,7 @@
                         %td.contenido-form
                           = date_field_tag "fecha_termino_actividad_#{actividad.id}", fecha_termino_valor, class: "form-control smaller-text border-text", disabled: !es_editable, onchange: "validarFormulario()"
                         %td.contenido-form
-                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sin iniciar', '0'], ['En proceso', '1'], ['Completado', '2']], :last, :first, nivel_avance_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable                        
+                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sin iniciar', '0'], ['En proceso', '1'], ['Completado', '2']], :last, :first, nivel_avance_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable
                         %td.contenido-form
                           = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: !es_editable, placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
                         %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
