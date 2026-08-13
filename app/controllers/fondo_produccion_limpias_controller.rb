@@ -4264,7 +4264,9 @@ class FondoProduccionLimpiasController < ApplicationController
         # TAB 2: FINANCIERA FPL
         # -------------------------------------------------------------
         if params[:documentos_fpl].present?
-          params[:documentos_fpl].each do |doc_params|
+          docs_fpl_list = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : Array(params[:documentos_fpl])
+
+          docs_fpl_list.each do |doc_params|
             next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
@@ -4286,7 +4288,9 @@ class FondoProduccionLimpiasController < ApplicationController
         # TAB 3: FINANCIERA APORTE
         # -------------------------------------------------------------
         if params[:documentos_aporte].present?
-          params[:documentos_aporte].each do |doc_params|
+          docs_aporte_list = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : Array(params[:documentos_aporte])
+
+          docs_aporte_list.each do |doc_params|
             next if doc_params[:id].blank? && doc_params[:archivo].blank?
 
             detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
@@ -4303,6 +4307,11 @@ class FondoProduccionLimpiasController < ApplicationController
             end
           end
         end
+
+        # -------------------------------------------------------------
+        # GUARDADO DE GASTOS RENDIDOS DETALLADOS POR ACTIVIDAD
+        # -------------------------------------------------------------
+        guardar_gastos_rendiciones_detallados(@rendicion, actividades_list)
 
         # -------------------------------------------------------------
         # ACCIÓN SEGÚN EL BOTÓN PRESIONADO
@@ -4917,7 +4926,64 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js   { render js: "window.location.href = '#{url_destino}';" }
       end
     end
-        
+
+    # GET /descargar_informe_gastos/:id
+    def descargar_informe_gastos
+      t_inicio = Time.now
+      Rails.logger.info "=== [RADAR INFORME GASTOS] Iniciando generación de PDF (Tarea ID: #{params[:id]}) ==="
+
+      # 1. Búsqueda de tarea pendiente y carga de datos
+      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      cargar_datos_verificacion_contable
+
+      if @rendicion.nil? || @fondo_produccion_limpia.nil?
+        Rails.logger.warn "=== [RADAR INFORME GASTOS] Rendición o FPL no encontrados para la Tarea ID: #{params[:id]} ==="
+        redirect_back(fallback_location: root_path, alert: "No se encontró registro de la rendición para generar el PDF.")
+        return
+      end
+
+      begin
+        # 2. Filtrar únicamente las actividades correspondientes a esta rendición
+        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.uniq
+        actividades_filtradas = (@actividad_x_linea || []).select { |a| actividades_rendicion_ids.include?(a.id) }
+
+        Rails.logger.info "=== [RADAR INFORME GASTOS] Generando binario PDF Prawn (Mes #{@rendicion.mes_a_rendir}) ==="
+
+        # 3. Generación del contenido PDF mediante Prawn
+        pdf_binary = @fondo_produccion_limpia.generar_informe_gastos_pdf(
+          "v1",
+          @fondo_produccion_limpia,
+          @rendicion,
+          actividades_filtradas,
+          @documentos_fpl,
+          @documentos_aporte
+        )
+
+        # 4. Verificación del binario y envío de respuesta
+        if pdf_binary.present?
+          # Sanitizar el nombre del archivo reemplazando caracteres especiales
+          codigo_proy = @fondo_produccion_limpia.codigo_proyecto.to_s.gsub(/[^0-9A-Za-z.\-]/, '_')
+          nombre_archivo = "Informe_Gastos_Mes_#{@rendicion.mes_a_rendir}_#{codigo_proy}.pdf"
+
+          tiempo_total = (Time.now - t_inicio).round(2)
+          Rails.logger.info "=== [RADAR INFORME GASTOS] PDF generado con éxito en #{tiempo_total}s. Enviando al navegador ==="
+
+          send_data pdf_binary,
+                    filename: nombre_archivo,
+                    type: 'application/pdf',
+                    disposition: 'inline' # Muestra el PDF en el visor del navegador ('attachment' para descarga forzada)
+        else
+          Rails.logger.error "=== [RADAR INFORME GASTOS] El método generador de PDF devolvió un contenido vacío ==="
+          redirect_back(fallback_location: root_path, alert: "Ocurrió un error al generar el contenido del documento PDF.")
+        end
+
+      rescue StandardError => e
+        Rails.logger.error "=== [ERROR INFORME GASTOS] #{e.class} - #{e.message} ==="
+        Rails.logger.error e.backtrace.join("\n")
+        redirect_back(fallback_location: root_path, alert: "Error al generar el informe de gastos: #{e.message}")
+      end
+    end
+
     def descargar_pdf
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
@@ -6994,5 +7060,46 @@ class FondoProduccionLimpiasController < ApplicationController
     @tiene_permisos = solo_lectura.nil?
 
     set_actividades_x_linea
+  end
+
+  def guardar_gastos_rendiciones_detallados(rendicion, actividades_permitidas_ids = [])
+    return if params[:gastos_rendidos].blank?
+
+    gastos_list = params[:gastos_rendidos].respond_to?(:values) ? params[:gastos_rendidos].values : Array(params[:gastos_rendidos])
+
+    gastos_list.each do |gasto_raw|
+      gasto = gasto_raw.respond_to?(:with_indifferent_access) ? gasto_raw.with_indifferent_access : gasto_raw
+
+      plan_act_id = gasto[:plan_actividad_id].to_s
+      item_id     = gasto[:item_origen_id]
+
+      next if plan_act_id.blank? || item_id.blank?
+
+      # Descartar si el gasto pertenece a una actividad que no está seleccionada
+      if actividades_permitidas_ids.present?
+        next unless actividades_permitidas_ids.map(&:to_s).include?(plan_act_id)
+      end
+
+      registro = RendicionGastoFpl.find_or_initialize_by(
+        rendicion_fpl_id: rendicion.id,
+        plan_actividad_id: plan_act_id,
+        categoria: gasto[:categoria],
+        item_origen_id: item_id
+      )
+
+      cant_rendida = gasto[:cantidad_rendida].to_f.clamp(0, 999)
+      val_unitario = gasto[:valor_unitario].to_f
+
+      registro.assign_attributes(
+        tipo_aporte: gasto[:tipo_aporte],
+        valor_unitario: val_unitario,
+        cantidad_postulada: gasto[:cantidad_postulada].to_f,
+        costo_postulado: gasto[:costo_postulado].to_f,
+        cantidad_rendida: cant_rendida,
+        costo_rendido: (cant_rendida * val_unitario).round(2)
+      )
+
+      registro.save!
+    end
   end
 end

@@ -7,6 +7,7 @@ class RendicionFpl < ApplicationRecord
 
   # Especificar class_name evita que Rails busque 'RendicionDetallesFpl'
   has_many :rendicion_detalles_fpl, class_name: 'RendicionDetalleFpl', foreign_key: :rendicion_fpl_id, dependent: :destroy
+  has_many :rendicion_gastos_fpl, class_name: 'RendicionGastoFpl', dependent: :destroy
   accepts_nested_attributes_for :rendicion_detalles_fpl, allow_destroy: true
 
   enum estado: {

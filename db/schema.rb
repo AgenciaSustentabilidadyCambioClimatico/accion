@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_11_194131) do
+ActiveRecord::Schema.define(version: 2026_08_13_170900) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1888,6 +1888,24 @@ ActiveRecord::Schema.define(version: 2026_08_11_194131) do
     t.index ["rendicion_fpl_id"], name: "index_rendicion_detalles_fpl_on_rendicion_fpl_id"
   end
 
+  create_table "rendicion_gastos_fpl", force: :cascade do |t|
+    t.bigint "rendicion_fpl_id", null: false
+    t.bigint "plan_actividad_id", null: false
+    t.string "categoria", null: false
+    t.integer "item_origen_id", null: false
+    t.string "tipo_aporte"
+    t.decimal "valor_unitario", precision: 12, scale: 2, default: "0.0"
+    t.decimal "cantidad_postulada", precision: 8, scale: 2, default: "0.0"
+    t.decimal "costo_postulado", precision: 14, scale: 2, default: "0.0"
+    t.decimal "cantidad_rendida", precision: 8, scale: 2, default: "0.0"
+    t.decimal "costo_rendido", precision: 14, scale: 2, default: "0.0"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["plan_actividad_id"], name: "index_rendicion_gastos_fpl_on_plan_actividad_id"
+    t.index ["rendicion_fpl_id", "plan_actividad_id", "categoria", "item_origen_id"], name: "idx_rendicion_gastos_unique_item", unique: true
+    t.index ["rendicion_fpl_id"], name: "index_rendicion_gastos_fpl_on_rendicion_fpl_id"
+  end
+
   create_table "rendiciones", force: :cascade do |t|
     t.integer "proyecto_id"
     t.date "fecha_rendicion"
@@ -2404,6 +2422,8 @@ ActiveRecord::Schema.define(version: 2026_08_11_194131) do
   add_foreign_key "rendicion_detalle_actividades_fpl", "plan_actividades"
   add_foreign_key "rendicion_detalle_actividades_fpl", "rendicion_detalles_fpl", column: "rendicion_detalle_fpl_id"
   add_foreign_key "rendicion_detalles_fpl", "rendiciones_fpl", column: "rendicion_fpl_id"
+  add_foreign_key "rendicion_gastos_fpl", "plan_actividades"
+  add_foreign_key "rendicion_gastos_fpl", "rendiciones_fpl", column: "rendicion_fpl_id"
   add_foreign_key "rendiciones_fpl", "flujos"
   add_foreign_key "responsables", "actividad_economicas"
   add_foreign_key "responsables", "cargos"

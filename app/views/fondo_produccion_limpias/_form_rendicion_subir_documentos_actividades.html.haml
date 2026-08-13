@@ -19,7 +19,7 @@
       $('#chk_ultima_rendicion_paso1').prop('checked', $(this).is(':checked'));
     });
 
-    // Cambiar de Paso 1 (Print 2) a Paso 2 (Print 1)
+    // Cambiar de Paso 1 a Paso 2
     $('#btn-continuar-paso2').on('click', function() {
       const seleccionadas = obtenerActividadesSeleccionadas();
 
@@ -28,11 +28,8 @@
         return;
       }
 
-      // Ocultar Paso 1 y mostrar Paso 2
       $('#paso1_resumen').hide();
       $('#paso2_formulario').fadeIn();
-
-      // Filtrar filas del formulario según las actividades seleccionadas
       filtrarVistaPorSeleccion(seleccionadas);
     });
 
@@ -42,11 +39,9 @@
       $('#paso1_resumen').fadeIn();
     });
 
-    // Filtrar automáticamente las actividades visibles según selección inicial
     const seleccionadasIniciales = obtenerActividadesSeleccionadas();
     filtrarVistaPorSeleccion(seleccionadasIniciales);
 
-    // Si NO es editable, aplicar bloqueo total a la vista
     if (!ES_EDITABLE) {
       bloquearFormularioSoloLectura();
     }
@@ -66,8 +61,10 @@
       const id = $(this).attr('id').replace('fila_actividad_', '');
       if (actividadesIds.includes(id)) {
         $(this).show();
+        $(this).find('input, select, textarea').prop('disabled', false);
       } else {
         $(this).hide();
+        $(this).find('input, select, textarea').prop('disabled', true);
       }
     });
 
@@ -76,8 +73,10 @@
       const id = $(this).attr('id').replace('fpl_actividad_card_', '').replace('aporte_actividad_card_', '');
       if (actividadesIds.includes(id)) {
         $(this).show();
+        $(this).find('input, select, textarea').prop('disabled', false);
       } else {
         $(this).hide();
+        $(this).find('input, select, textarea').prop('disabled', true);
       }
     });
 
@@ -98,16 +97,9 @@
   }
 
   function bloquearFormularioSoloLectura() {
-    // Inhabilitar checkboxes de selección y flags
     $('#paso1_resumen input[type="checkbox"], #paso2_formulario input[type="checkbox"]').prop('disabled', true);
-
-    // Inhabilitar controles de formulario (selects, textareas, inputs de archivo)
     $('#paso2_formulario select, #paso2_formulario textarea, #paso2_formulario input[type="file"]').prop('disabled', true);
-
-    // Ocultar y deshabilitar botones de acciones dinámicas (+ y papelera)
     $('.btn-outline-danger, button[onclick*="agregarFilaDocumentoActividad"]').hide().prop('disabled', true);
-
-    // Inhabilitar botones de envío y grabado
     $('#grabar-button, #enviar-button').prop('disabled', true).addClass('btn-disabled');
   }
 
@@ -121,7 +113,7 @@
     let tabFinancieraFplValido = false;
     let tabFinancieraAporteValido = false;
 
-    // Validar Pestaña Técnica (solo actividades visibles)
+    // Validar Pestaña Técnica
     document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
       if (fila.style.display === 'none') return;
 
@@ -182,28 +174,35 @@
     }
   }
 
+  // GENERACIÓN DE NUEVAS FILAS CON CLAVE ÚNICA E INPUTS OCULTOS INTEGRADOS
   function agregarFilaDocumentoActividad(tbodyId, actividadId) {
     if (!ES_EDITABLE) return;
     const tbody = document.getElementById(tbodyId);
     if (!tbody) return;
-    const primeraFila = tbody.querySelector('tr');
-    if (!primeraFila) return;
 
-    const nuevaFila = primeraFila.cloneNode(true);
-    const hiddenId = nuevaFila.querySelector('input[type="hidden"][name*="[id]"]');
-    if (hiddenId) hiddenId.value = '';
+    const timestamp = Date.now() + Math.floor(Math.random() * 1000);
+    const esFpl = tbodyId.includes('filas-fpl');
+    const paramName = esFpl ? 'documentos_fpl' : 'documentos_aporte';
 
-    const hiddenAct = nuevaFila.querySelector('input[type="hidden"][name*="[actividad_ids]"]');
-    if (hiddenAct) hiddenAct.value = actividadId;
+    const nuevaFilaHtml = `
+      <tr>
+        <td class="contenido-form">
+          <input type="hidden" name="${paramName}[${timestamp}][id]" value="" />
+          <input type="hidden" name="${paramName}[${timestamp}][actividad_ids][]" value="${actividadId}" />
+          --
+        </td>
+        <td class="contenido-form">
+          <input type="file" name="${paramName}[${timestamp}][archivo]" class="form-control smaller-text border-text" onchange="validarFormulario()" />
+        </td>
+        <td class="contenido-form text-center">
+          <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarFilaDocumento(this)" title="Eliminar">
+            <i class="fa fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `;
 
-    const fileInput = nuevaFila.querySelector('input[type="file"]');
-    if (fileInput) fileInput.value = '';
-
-    const celdas = nuevaFila.querySelectorAll('td');
-    if (celdas[0]) celdas[0].innerHTML = '--';
-
-    $(nuevaFila).show();
-    tbody.appendChild(nuevaFila);
+    $(tbody).append(nuevaFilaHtml);
     validarFormulario();
   }
 
@@ -267,18 +266,17 @@
 -# -------------------------------------------------------------
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
 
--# 1. APROBADAS DEFINITIVAMENTE EN FPL-16 (Estado 6: verificada_contablemente) -> Badge Azul "Aprobada"
+-# 1. APROBADAS DEFINITIVAMENTE EN FPL-16
 - estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
 - rendiciones_aprobadas_ids = rendiciones_todas.where(estado: estado_aprobado_val).pluck(:id)
 - actividades_aprobadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_aprobadas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
 
--# 2. RENDIDAS / LISTAS PARA AUDITORÍA CONTABLE (Estado 5: pendiente_verificacion_contable) -> Badge Verde "Rendida"
+-# 2. RENDIDAS / LISTAS PARA AUDITORÍA CONTABLE
 - estado_rendido_val = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
 - rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
 - actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
 
--# 3. EN PROCESO (Estados 1, 2, 3 y 4: enviada_a_revision, en_evaluacion, observada) -> Badge Naranjo "En proceso"
--# CORRECCIÓN: Se quita .where.not(id: @rendicion&.id) para incluir todas las rendiciones enviadas a revisión
+-# 3. EN PROCESO
 - estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
 - rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).pluck(:id)
 - actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
@@ -289,6 +287,17 @@
 - actividades_no_realizadas_previas = actividades_no_previas - actividades_aprobadas_ids - actividades_rendidas_ids
 
 - actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+
+-# -------------------------------------------------------------
+-# LAMBDA AUXILIAR PARA CONSULTAR GASTOS FILTRADOS POR ACTIVIDAD
+-# -------------------------------------------------------------
+- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
+  - f_id = @tarea_pendiente&.flujo_id
+  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
+  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
@@ -478,6 +487,8 @@
             - duracion_act = detalle.try(:duracion).to_s
             - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
             - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            
+            - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
             .card.mb-2.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -490,10 +501,13 @@
 
               .collapse.show{id: "collapse_fpl_#{actividad.id}"}
                 .card-body.p-2
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id
+
                   .d-flex.justify-content-end.mb-2
                     - if es_editable
                       %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-fpl-#{actividad.id}', #{actividad.id})"}
                         %i.fa.fa-plus.mr-1
+                        Agregar documento
 
                   .table-responsive
                     %table.table.table-striped.no-margin
@@ -507,30 +521,32 @@
                         - if docs_act.present?
                           - docs_act.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - row_key = doc.id
                             %tr
                               %td.contenido-form
-                                = hidden_field_tag "documentos_fpl[][id]", doc.id
-                                = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_fpl[#{row_key}][id]", doc.id
+                                = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
                                 = __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               - if es_editable
                                 %td.contenido-form
-                                  = file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                                  = file_field_tag "documentos_fpl[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                                 %td.contenido-form.text-center
                                   %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                     %i.fa.fa-trash
                         - elsif es_editable
+                          - row_key = "init_fpl_#{actividad.id}"
                           %tr
                             %td.contenido-form
-                              = hidden_field_tag "documentos_fpl[][id]", ""
-                              = hidden_field_tag "documentos_fpl[][actividad_ids][]", actividad.id
-                              = __descargar_archivo_sin_titulo(nil, f.object)
+                              = hidden_field_tag "documentos_fpl[#{row_key}][id]", ""
+                              = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
+                              = '--'
                             %td.contenido-form
-                              = file_field_tag "documentos_fpl[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                              = file_field_tag "documentos_fpl[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                             %td.contenido-form.text-center
                               %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                 %i.fa.fa-trash
 
-      / Pestaña 3: Financiera Aporte
+      / Pestaña 3: Financiera Aporte Propio
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
@@ -538,6 +554,8 @@
             - duracion_act = detalle.try(:duracion).to_s
             - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
             - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            
+            - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
             .card.mb-2.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, 'data-pendiente-previo' => es_pendiente_previo.to_s, style: "border: 2px solid #dee2e6;"}
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
@@ -550,10 +568,13 @@
 
               .collapse.show{id: "collapse_aporte_#{actividad.id}"}
                 .card-body.p-2
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id
+
                   .d-flex.justify-content-end.mb-2
                     - if es_editable
                       %button.btn.btn-sm.btn-primary{type: "button", onclick: "agregarFilaDocumentoActividad('filas-aporte-#{actividad.id}', #{actividad.id})"}
                         %i.fa.fa-plus.mr-1
+                        Agregar documento
 
                   .table-responsive
                     %table.table.table-striped.no-margin
@@ -567,25 +588,27 @@
                         - if docs_act.present?
                           - docs_act.each do |doc|
                             - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
+                            - row_key = doc.id
                             %tr
                               %td.contenido-form
-                                = hidden_field_tag "documentos_aporte[][id]", doc.id
-                                = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_aporte[#{row_key}][id]", doc.id
+                                = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
                                 = __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               - if es_editable
                                 %td.contenido-form
-                                  = file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                                  = file_field_tag "documentos_aporte[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                                 %td.contenido-form.text-center
                                   %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                     %i.fa.fa-trash
                         - elsif es_editable
+                          - row_key = "init_aporte_#{actividad.id}"
                           %tr
                             %td.contenido-form
-                              = hidden_field_tag "documentos_aporte[][id]", ""
-                              = hidden_field_tag "documentos_aporte[][actividad_ids][]", actividad.id
-                              = __descargar_archivo_sin_titulo(nil, f.object)
+                              = hidden_field_tag "documentos_aporte[#{row_key}][id]", ""
+                              = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
+                              = '--'
                             %td.contenido-form
-                              = file_field_tag "documentos_aporte[][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
+                              = file_field_tag "documentos_aporte[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
                             %td.contenido-form.text-center
                               %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                 %i.fa.fa-trash

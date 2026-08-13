@@ -374,6 +374,7 @@ Rails.application.routes.draw do
   # Tarea FPL-16 - Verificación Contable de Rendición
   get ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#verificacion_contable_rendicion", as: :verificacion_contable_rendicion_fondo_produccion_limpia
   patch ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#guardar_verificacion_contable_rendicion", as: :guardar_verificacion_contable_rendicion_fondo_produccion_limpia
+  get ':id/descargar_informe_gastos', to: "fondo_produccion_limpias#descargar_informe_gastos", as: :descargar_informe_gastos_fondo_produccion_limpia
 
   # Tarea FPL-17 - Respuesta Observaciones Rendición Financiera
   get ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#corregir_rendicion_financiera", as: :corregir_rendicion_financiera_fondo_produccion_limpia

@@ -279,6 +279,11 @@
 
   .float-right.mt-3.mb-4
     = volver_root
+    - if @rendicion.present?
+      = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info mr-2", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
+        %i.fa.fa-file-pdf-o.mr-1
+        Descargar Informe PDF
+        
     - if @tiene_permisos
       = button_tag "Grabar Avance", 
         type: 'submit', 

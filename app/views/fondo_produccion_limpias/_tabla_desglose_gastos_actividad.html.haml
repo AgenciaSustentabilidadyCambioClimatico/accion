@@ -1,0 +1,127 @@
+:javascript
+  function calcularCostoRendido(input) {
+    let val = parseFloat(input.value);
+    if (isNaN(val) || val < 0) {
+      val = 0;
+    } else if (val > 999) {
+      val = 999;
+    }
+    input.value = val;
+
+    const valorUnitario = parseFloat($(input).data('valor-unitario')) || 0;
+    const costoRendido = val * valorUnitario;
+
+    const $tr = $(input).closest('tr');
+    const $cellCosto = $tr.find('.cell-costo-rendido');
+    $cellCosto.data('val-costo', costoRendido);
+
+    const formateado = new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(costoRendido);
+
+    $cellCosto.text(formateado);
+
+    const $table = $(input).closest('table');
+    let totalRendido = 0;
+
+    $table.find('.cell-costo-rendido').each(function() {
+      totalRendido += parseFloat($(this).data('val-costo')) || 0;
+    });
+
+    const totalFormateado = new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(totalRendido);
+
+    $table.find('.cell-total-costo-rendido').text(totalFormateado);
+  }
+
+- gastos = local_assigns[:gastos] || {}
+- act_id = local_assigns[:actividad_id] || local_assigns[:actividad]&.id
+- tiene_gastos = gastos.values.any?(&:present?)
+
+- total_costo_postulado = 0
+- total_costo_rendido = 0
+
+-# Carga de rendiciones previas guardadas para esta rendición (si existen)
+- rendicion_gastos_map = @rendicion.present? ? @rendicion.rendicion_gastos_fpl.where(plan_actividad_id: act_id).index_by { |g| "#{g.categoria}_#{g.item_origen_id}" } : {}
+
+.card.mb-3.border-light
+  .card-header.py-2.bg-light.d-flex.justify-content-between.align-items-center
+    %span.font-weight-bold.text-secondary{style: "font-size: 12px;"}
+      %i.fa.fa-calculator.mr-1
+      Presupuesto / Gastos de la Actividad
+  .card-body.p-2
+    - if tiene_gastos
+      .table-responsive
+        %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+          %thead
+            %tr.bg-light
+              %th.encabezado-form{style: "width: 15%;"} Categoría
+              %th.encabezado-form{style: "width: 25%;"} Nombre / Ítem
+              %th.encabezado-form{style: "width: 10%;"} Valor HH / Unitario
+              %th.encabezado-form{style: "width: 10%;"} HH Postulado
+              %th.encabezado-form{style: "width: 10%;"} Tipo Aporte
+              %th.encabezado-form{style: "width: 10%;"} Costo Postulado
+              %th.encabezado-form{style: "width: 10%;"} HH Rendido
+              %th.encabezado-form{style: "width: 10%;"} Costo Rendido
+          %tbody
+            -# Iteración dinámica de categorías
+            - [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ].each do |cat_key, cat_label|
+              - gastos[cat_key].to_a.each do |item|
+                - current_act_id = act_id || item.try(:plan_actividad_id) || item.try(:actividad_id)
+                - row_key = "#{current_act_id}_#{cat_key}_#{item.id}"
+                - g_guardado = rendicion_gastos_map["#{cat_key}_#{item.id}"]
+
+                - if g_guardado.present?
+                  - v_unitario        = g_guardado.valor_unitario.to_f
+                  - hh_postulada      = g_guardado.cantidad_postulada.to_f
+                  - monto_postulado   = g_guardado.costo_postulado.to_f
+                  - cantidad_rendida  = g_guardado.cantidad_rendida.to_f
+                  - monto_rendido     = g_guardado.costo_rendido.to_f
+                - else
+                  - v_unitario        = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+                  - hh_postulada      = (item.try(:hh) || item.try(:cantidad)).to_f
+                  - monto_postulado   = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario)
+                  - cantidad_rendida  = hh_postulada
+                  - monto_rendido     = cantidad_rendida * v_unitario
+
+                - total_costo_postulado += monto_postulado
+                - total_costo_rendido   += monto_rendido
+
+                %tr
+                  %td.contenido-form= cat_label
+                  %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                  %td.contenido-form.text-right= number_to_currency(v_unitario)
+                  %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
+                  %td.contenido-form.text-center
+                    %span.badge.badge-info= item.try(:tipo_aporte)&.titleize
+                  %td.contenido-form.text-right.font-weight-bold= number_to_currency(monto_postulado)
+                  %td.contenido-form.text-center
+                    -# Campos Ocultos para Persistencia
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", current_act_id
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
+                    = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
+
+                    = number_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "form-control smaller-text border-text text-center input-cantidad-rendida", min: 0, max: 999, data: { valor_unitario: v_unitario }, oninput: "calcularCostoRendido(this)", style: "width: 70px; margin: 0 auto;"
+                  %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
+
+            -# FILA DE TOTALES GENERALES
+            %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
+              %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL:
+              %td.contenido-form.text-right.font-weight-bold.text-primary= number_to_currency(total_costo_postulado)
+              %td.contenido-form
+              %td.contenido-form.text-right.font-weight-bold.text-success.cell-total-costo-rendido= number_to_currency(total_costo_rendido)
+    - else
+      .text-center.text-muted.py-2{style: "font-size: 11px;"}
+        %i.fa.fa-info-circle.mr-1
+        No hay gastos registrados para esta pestaña en esta actividad.

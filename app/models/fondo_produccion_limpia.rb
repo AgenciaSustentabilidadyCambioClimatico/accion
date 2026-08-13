@@ -1621,4 +1621,309 @@ class FondoProduccionLimpia < ApplicationRecord
     end
   end
 
+  def generar_informe_gastos_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil, detalles_fpl = nil, detalles_beneficiaria = nil)
+    t_inicio = Time.now
+    Rails.logger.info "=== [PDF INFORME GASTOS] INICIANDO GENERACIÓN (t=0s) ==="
+
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :portrait, margin: [30, 30, 30, 30])
+
+    # ---------------------------------------------------------------------------
+    # CONFIGURACIÓN DE FAMILIA DE FUENTES
+    # ---------------------------------------------------------------------------
+    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+
+    pdf.font_families.update("OpenSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "OpenSans"
+
+    # ---------------------------------------------------------------------------
+    # HEADER REPETITIVO EN TODAS LAS PÁGINAS
+    # ---------------------------------------------------------------------------
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
+        pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119
+        pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
+          pdf.font "OpenSans", style: :bold do
+            pdf.text "INFORME DE GASTOS - FPL", size: 10, color: "003DA6", align: :right
+          end
+        end
+        pdf.move_down 5
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 3
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    # Datos auxiliares
+    contribuyente = obtiene_contribuyente(fondo_produccion_limpia&.institucion_entregables_id) rescue nil
+    razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
+    rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
+
+    # Obtención segura del nombre del proyecto
+    titulo_proyecto = fondo_produccion_limpia.try(:nombre_acuerdo).presence || fondo_produccion_limpia.try(:nombre) || fondo_produccion_limpia.try(:codigo_proyecto).to_s
+
+    # ---------------------------------------------------------------------------
+    # CONTENIDO PRINCIPAL
+    # ---------------------------------------------------------------------------
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 60], width: pdf.bounds.width do
+
+      # === TITULO PRINCIPAL ===
+      self.pdf_titulo_formato(pdf, "INFORME DE GASTOS")
+      self.pdf_sub_titulo_formato(pdf, "PROYECTOS EN EJECUCIÓN FONDO DE PROMOCIÓN DE LA PRODUCCIÓN LIMPIA")
+      self.pdf_separador(pdf, 10)
+
+      # =========================================================================
+      # 1. ANTECEDENTES GENERALES
+      # =========================================================================
+      self.pdf_sub_titulo_formato(pdf, "ANTECEDENTES GENERALES DEL PROYECTO")
+      
+      tabla_antecedentes = [
+        [ { content: "<b>CÓDIGO:</b>", inline_format: true }, fondo_produccion_limpia&.codigo_proyecto.to_s, { content: "<b>IMPUTACIÓN:</b>", inline_format: true }, "Programa:" ],
+        [ { content: "<b>Título del proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ],
+        [ { content: "<b>Nombre Entidad Beneficiaria:</b>", inline_format: true }, { content: razon_social, colspan: 3 } ],
+        [ { content: "<b>N° de informe:</b>", inline_format: true }, rendicion&.mes_a_rendir.to_s, { content: "<b>Origen de los recursos:</b>", inline_format: true }, "FPL" ],
+        [ { content: "<b>Fecha de inicio actividades:</b>", inline_format: true }, rendicion&.created_at&.strftime("%d/%m/%Y").to_s, { content: "<b>Fecha de término actividades:</b>", inline_format: true }, Time.now.strftime("%d/%m/%Y") ]
+      ]
+
+      pdf.table(tabla_antecedentes, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
+        column(0).background_color = 'E0EFF6'
+        column(2).background_color = 'E0EFF6'
+      end
+
+      self.pdf_separador(pdf, 15)
+
+      # =========================================================================
+      # 2. GASTOS DEL PROYECTO (RESUMEN)
+      # =========================================================================
+      self.pdf_sub_titulo_formato(pdf, "GASTOS DEL PROYECTO")
+
+      tabla_gastos = [
+        [ "ÍTEM DE GASTOS", "MONTO POR RENDIR", "GASTOS RENDIDOS", "PORCENTAJE DE EJECUCIÓN" ],
+        [ "Recursos Humanos Propios", "$0", "$0", "0%" ],
+        [ "Recursos Humanos Externos", "$0", "$0", "0%" ],
+        [ "Gastos de Operación", "$0", "$0", "0%" ],
+        [ "Gastos de Administración", "$0", "$0", "0%" ],
+        [ { content: "<b>TOTAL</b>", inline_format: true }, "<b>$0</b>", "<b>$0</b>", "<b>0%</b>" ]
+      ]
+
+      pdf.table(tabla_gastos, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', align: :center, inline_format: true }) do
+        row(0).background_color = '003DA6'
+        row(0).text_color = 'FFFFFF'
+        row(0).font_style = :bold
+        column(0).align = :left
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      self.pdf_separador(pdf, 10)
+
+      # Declaración Jurada
+      texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Consejo Nacional de Producción Limpia u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
+      pdf.font_size(7) do
+        pdf.text texto_declaracion, inline_format: true, align: :justify, color: '333333'
+      end
+
+      self.pdf_separador(pdf, 25)
+
+      # Firma Representante
+      pdf.bounding_box([pdf.bounds.width - 250, pdf.cursor], width: 250) do
+        pdf.stroke_horizontal_line 0, 250
+        pdf.move_down 4
+        pdf.text "<b>#{razon_social}</b>", size: 8, align: :center, inline_format: true
+        pdf.text "RUT: #{rut_beneficiaria}", size: 8, align: :center
+        pdf.text "Representante Legal de la Beneficiaria", size: 8, align: :center, font_style: :italic
+      end
+
+      self.pdf_separador(pdf, 20)
+
+      # =========================================================================
+      # 3. DESCRIPCIÓN DE ACTIVIDADES
+      # =========================================================================
+      pdf.start_new_page
+      self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES")
+      pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado. Esta descripción debe ser coherente con lo entregado en el informe técnico.", size: 8, font_style: :italic
+
+      self.pdf_separador(pdf, 8)
+
+      tabla_actividades = [
+        [ "Nº", "Etapa / Actividades", "Descripción de las actividades realizadas", "Estado\n(Ejecución / Pendiente / Finalizada)" ]
+      ]
+
+      if actividades.present?
+        actividades.each do |act|
+          tabla_actividades << [
+            act.try(:correlativo) || "1.1",
+            act.try(:nombre) || "Actividad",
+            act.try(:descripcion).presence || "Actividad ejecutada según plan de trabajo",
+            "Finalizada"
+          ]
+        end
+      else
+        tabla_actividades << [ "1.1", "Elaboración del Plan de Trabajo", "Se realizaron las reuniones iniciales...", "Finalizada" ]
+      end
+
+      pdf.table(tabla_actividades, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = '003DA6'
+        row(0).text_color = 'FFFFFF'
+        row(0).font_style = :bold
+        column(0).width = 30
+        column(0).align = :center
+        column(3).width = 110
+        column(3).align = :center
+      end
+
+      self.pdf_separador(pdf, 20)
+
+      # =========================================================================
+      # 4. PLANILLA DE RENDICIÓN DE GASTOS - FONDO PRODUCCIÓN LIMPIA
+      # =========================================================================
+      pdf.start_new_page
+      self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL")
+
+      header_fpl = [
+        [ { content: "N°", rowspan: 2 }, { content: "Etapa/Actividades", rowspan: 2 }, { content: "Ítem de gastos", rowspan: 2 }, { content: "Detalle", rowspan: 2 }, { content: "RRHH (si aplica)", colspan: 2 }, { content: "N° de comprobante", colspan: 3 }, { content: "Fecha", rowspan: 2 }, { content: "Nombre persona natural/jurídica", rowspan: 2 }, { content: "Gasto [$]", rowspan: 2 } ],
+        [ "N° HH", "Valor HH", "N° Boleta", "N° Factura", "Otro respaldo" ]
+      ]
+
+      # Filas dinámicas de FPL
+      filas_fpl = []
+      if detalles_fpl.present?
+        detalles_fpl.each_with_index do |det, idx|
+          act_nombres = det.plan_actividades.map { |pa| pa.try(:nombre) }.compact.join(", ").presence || "Actividad Rendición"
+          filas_fpl << [ (idx + 1).to_s, act_nombres, det.try(:item_gasto).presence || "RRHH Externos", det.try(:observacion).to_s, "-", "-", "-", "-", "-", Time.now.strftime("%d/%m/%Y"), razon_social, "$0" ]
+        end
+      else
+        filas_fpl << [ "1", "1 Coordinación y Difusión Inicial", "RRHH Externos", "Consultoría inicial", "-", "-", "-", "1234", "-", Time.now.strftime("%d/%m/%Y"), razon_social, "$0" ]
+      end
+
+      filas_fpl << [ { content: "<b>TOTAL</b>", colspan: 11, align: :right, inline_format: true }, "<b>$0</b>" ]
+
+      pdf.table(header_fpl + filas_fpl, width: pdf.bounds.width, cell_style: { size: 6.5, padding: 3, border_color: 'CCCCCC', align: :center, inline_format: true }) do
+        row(0).background_color = '003DA6'
+        row(0).text_color = 'FFFFFF'
+        row(0).font_style = :bold
+        row(1).background_color = '003DA6'
+        row(1).text_color = 'FFFFFF'
+        row(1).font_style = :bold
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      self.pdf_separador(pdf, 15)
+
+      # Tabla Resumen FPL
+      resumen_fpl = [
+        [ { content: "<b>Tabla Resumen FPL</b>", colspan: 2, inline_format: true } ],
+        [ "Ítem", "Gasto [$]" ],
+        [ "RRHH Externos", "$0" ],
+        [ "RRHH Propios", "$0" ],
+        [ "Gastos de Operación", "$0" ],
+        [ "Gastos de Administración", "$0" ],
+        [ "<b>Total</b>", "<b>$0</b>" ]
+      ]
+
+      pdf.table(resumen_fpl, width: 220, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(1).background_color = 'F0F0F0'
+        row(1).font_style = :bold
+        column(1).align = :right
+      end
+
+      self.pdf_separador(pdf, 20)
+
+      # =========================================================================
+      # 5. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA
+      # =========================================================================
+      pdf.start_new_page
+      self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA")
+
+      header_beneficiaria = [
+        [ { content: "N°", rowspan: 2 }, { content: "Etapa/Actividades", rowspan: 2 }, { content: "Ítem de gastos", rowspan: 2 }, { content: "Tipo de aporte\n(líquido/valorado)", rowspan: 2 }, { content: "Detalle", rowspan: 2 }, { content: "RRHH (si aplica)", colspan: 2 }, { content: "N° de comprobante", colspan: 3 }, { content: "Fecha", rowspan: 2 }, { content: "Nombre persona natural/jurídica", rowspan: 2 }, { content: "Gasto [$]", rowspan: 2 } ],
+        [ "N° HH", "Valor HH", "N° Boleta", "N° Factura", "Otro respaldo" ]
+      ]
+
+      filas_ben = []
+      if detalles_beneficiaria.present?
+        detalles_beneficiaria.each_with_index do |det, idx|
+          act_nombres = det.plan_actividades.map { |pa| pa.try(:nombre) }.compact.join(", ").presence || "Actividad Rendición"
+          filas_ben << [ (idx + 1).to_s, act_nombres, det.try(:item_gasto).presence || "RRHH Propios", "Líquido", det.try(:observacion).to_s, "-", "-", "-", "-", "-", Time.now.strftime("%d/%m/%Y"), razon_social, "$0" ]
+        end
+      else
+        filas_ben << [ "1", "1 Coordinación y Difusión Inicial", "RRHH Propios", "Valorado", "Aporte profesional", "-", "-", "-", "-", "-", Time.now.strftime("%d/%m/%Y"), razon_social, "$0" ]
+      end
+
+      filas_ben << [ { content: "<b>TOTAL</b>", colspan: 12, align: :right, inline_format: true }, "<b>$0</b>" ]
+
+      pdf.table(header_beneficiaria + filas_ben, width: pdf.bounds.width, cell_style: { size: 6, padding: 2.5, border_color: 'CCCCCC', align: :center, inline_format: true }) do
+        row(0).background_color = '003DA6'
+        row(0).text_color = 'FFFFFF'
+        row(0).font_style = :bold
+        row(1).background_color = '003DA6'
+        row(1).text_color = 'FFFFFF'
+        row(1).font_style = :bold
+        row(-1).background_color = 'F0F0F0'
+      end
+
+      self.pdf_separador(pdf, 15)
+
+      # Tabla Resumen Beneficiaria
+      resumen_ben = [
+        [ { content: "<b>Tabla Resumen Beneficiaria</b>", colspan: 2, inline_format: true } ],
+        [ "Ítem", "Gasto [$]" ],
+        [ "RRHH Externos", "$0" ],
+        [ "RRHH Propios", "$0" ],
+        [ "Gastos de Operación", "$0" ],
+        [ "Gastos de Administración", "$0" ],
+        [ "<b>Total</b>", "<b>$0</b>" ]
+      ]
+
+      pdf.table(resumen_ben, width: 220, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        row(0).background_color = 'E0EFF6'
+        row(1).background_color = 'F0F0F0'
+        row(1).font_style = :bold
+        column(1).align = :right
+      end
+
+    end
+
+    # ---------------------------------------------------------------------------
+    # SUBIDA RÁPIDA VÍA CARRIERWAVE
+    # ---------------------------------------------------------------------------
+    Rails.logger.info "=== [PDF INFORME GASTOS] RENDERIZANDO MEMORIA a los (#{Time.now - t_inicio}s) ==="
+    pdf_string = pdf.render
+    pdf_file_name = "informe_gastos_#{self.try(:id) || 'temp'}_#{revision}.pdf"
+
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
+
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/informe_gastos"
+        end
+      end
+      
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    Rails.logger.info "=== [PDF INFORME GASTOS] GENERACIÓN Y SUBIDA EXITOSA ==="
+    pdf_string
+
+  rescue StandardError => e
+    tiempo_total = Time.now - t_inicio
+    Rails.logger.error "=== [PDF INFORME GASTOS ERROR] FALLA a los #{tiempo_total}s: #{e.class} - #{e.message} ==="
+    nil
+  end
+
+  # Retorna 'nombre_acuerdo' o en su defecto el 'codigo_proyecto' si 'nombre' es solicitado
+  def nombre
+    nombre_acuerdo.presence || codigo_proyecto
+  end
+
 end
