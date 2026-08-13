@@ -101,12 +101,12 @@
     }
 
     let tabTecnicaValido = true;
-    let tabFinancieraFplValido = false;
-    let tabFinancieraAporteValido = false;
+    let tieneActividadesTecnicas = false;
 
-    // Validar Pestaña Técnica
+    // 1. VALIDAR PESTAÑA TÉCNICA
     document.querySelectorAll('tr[id^="fila_actividad_"]').forEach(fila => {
       if (fila.style.display === 'none') return;
+      tieneActividadesTecnicas = true;
 
       const id = fila.id.split('_').pop();
       const selectRealizada = document.getElementById('realizada_actividad_' + id);
@@ -115,42 +115,73 @@
       const tdArchivo = document.getElementById('archivo_cargado_actividad_' + id);
       
       if (selectRealizada && tdArchivo) {
-        const realizada = selectRealizada.value.toLowerCase();
+        const realizada = selectRealizada.value.trim();
         const observacion = observacionInput ? observacionInput.value.trim() : '';
         const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
-        const tieneArchivoNuevo = fileInput && fileInput.files.length > 0;
+        const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+        const tieneArchivo = tieneArchivoPrevio || tieneArchivoNuevo;
 
-        if (realizada === 'si' || realizada === '2') {
-          if (!tieneArchivoPrevio && !tieneArchivoNuevo) tabTecnicaValido = false;
-        } else if (realizada === 'no' || realizada === '0' || realizada === '1' || realizada === 'parcial') {
-          if (observacion === '') tabTecnicaValido = false;
-        } else {
-          tabTecnicaValido = false; 
+        if (realizada === '' || observacion === '' || !tieneArchivo) {
+          tabTecnicaValido = false;
         }
       }
     });
 
-    // Validar Tab Financiera FPL
+    if (!tieneActividadesTecnicas) {
+      tabTecnicaValido = false;
+    }
+
+    // 2. VALIDAR TAB FINANCIERA FPL (Omite filas destruidas/ocultas)
+    let tieneBloquesFpl = false;
+    let tieneDocFpl = false;
+
     document.querySelectorAll('.actividad-fpl-block').forEach(block => {
       if (block.style.display === 'none') return;
+      tieneBloquesFpl = true;
+
       block.querySelectorAll('tbody tr').forEach(fila => {
+        if (fila.style.display === 'none') return;
+        const destroyFlag = fila.querySelector('input.destroy-flag');
+        if (destroyFlag && destroyFlag.value === '1') return;
+
         const fileInput = fila.querySelector('input[type="file"]');
         const tdArchivoPrevio = fila.querySelector('td');
-        const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
-        if (tieneArchivo) tabFinancieraFplValido = true;
+        const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+        const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
+
+        if (tieneArchivoNuevo || tieneArchivoPrevio) {
+          tieneDocFpl = true;
+        }
       });
     });
 
-    // Validar Tab Financiera Aporte
+    const tabFinancieraFplValido = tieneBloquesFpl ? tieneDocFpl : true;
+
+    // 3. VALIDAR TAB FINANCIERA APORTE PROPIO (Omite filas destruidas/ocultas)
+    let tieneBloquesAporte = false;
+    let tieneDocAporte = false;
+
     document.querySelectorAll('.actividad-aporte-block').forEach(block => {
       if (block.style.display === 'none') return;
+      tieneBloquesAporte = true;
+
       block.querySelectorAll('tbody tr').forEach(fila => {
+        if (fila.style.display === 'none') return;
+        const destroyFlag = fila.querySelector('input.destroy-flag');
+        if (destroyFlag && destroyFlag.value === '1') return;
+
         const fileInput = fila.querySelector('input[type="file"]');
         const tdArchivoPrevio = fila.querySelector('td');
-        const tieneArchivo = (fileInput && fileInput.files.length > 0) || (tdArchivoPrevio && tdArchivoPrevio.querySelector('a'));
-        if (tieneArchivo) tabFinancieraAporteValido = true;
+        const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
+        const tieneArchivoPrevio = tdArchivoPrevio && tdArchivoPrevio.querySelector('a') !== null;
+
+        if (tieneArchivoNuevo || tieneArchivoPrevio) {
+          tieneDocAporte = true;
+        }
       });
     });
+
+    const tabFinancieraAporteValido = tieneBloquesAporte ? tieneDocAporte : true;
 
     const formCompleto = tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido;
     const botonEnviar = document.getElementById('enviar-button');
@@ -165,7 +196,6 @@
     }
   }
 
-  // GENERACIÓN DE NUEVAS FILAS CON CLAVE ÚNICA E INPUTS OCULTOS INTEGRADOS
   function agregarFilaDocumentoActividad(tbodyId, actividadId) {
     if (!ES_EDITABLE) return;
     const tbody = document.getElementById(tbodyId);
@@ -180,6 +210,7 @@
         <td class="contenido-form">
           <input type="hidden" name="${paramName}[${timestamp}][id]" value="" />
           <input type="hidden" name="${paramName}[${timestamp}][actividad_ids][]" value="${actividadId}" />
+          <input type="hidden" name="${paramName}[${timestamp}][_destroy]" value="0" class="destroy-flag" />
           --
         </td>
         <td class="contenido-form">
@@ -199,17 +230,23 @@
 
   function eliminarFilaDocumento(boton) {
     if (!ES_EDITABLE) return;
-    const tbody = boton.closest('tbody');
-    if (tbody.querySelectorAll('tr').length > 1) {
-      boton.closest('tr').remove();
+    const $tr = $(boton).closest('tr');
+    const hiddenId = $tr.find('input[type="hidden"][name*="[id]"]').val();
+
+    if (hiddenId && hiddenId !== '') {
+      // Si el registro ya existe en la BD: marcar para eliminar y ocultar
+      $tr.find('input.destroy-flag').val('1');
+      $tr.hide();
     } else {
-      const tr = boton.closest('tr');
-      const hiddenId = tr.querySelector('input[type="hidden"][name*="[id]"]');
-      if (hiddenId) hiddenId.value = '';
-      const fileInput = tr.querySelector('input[type="file"]');
-      if (fileInput) fileInput.value = '';
-      const celdas = tr.querySelectorAll('td');
-      if (celdas[0]) celdas[0].innerHTML = '--';
+      // Si es una fila nueva sin guardar aún
+      const $tbody = $tr.closest('tbody');
+      if ($tbody.find('tr:visible').length > 1) {
+        $tr.remove();
+      } else {
+        // Si es la única fila, solo limpiamos el input
+        $tr.find('input[type="file"]').val('');
+        $tr.find('input[type="hidden"][name*="[id]"]').val('');
+      }
     }
     validarFormulario();
   }
@@ -304,7 +341,7 @@
           %h5.no-margin= datos_beneficiario_fpl.html_safe
 
 -# ==========================================
--# PASO 1: MATRIZ / RESUMEN DE ACTIVIDADES (PRINT 2)
+-# PASO 1: MATRIZ / RESUMEN DE ACTIVIDADES
 -# ==========================================
 #paso1_resumen{style: ("display: none;" if paso_actual == 2)}
   .card.mb-3
@@ -351,9 +388,6 @@
                 - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
                 
                 - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
-
-                -# CORRECCIÓN DEL BUG: Si ya hay un borrador guardado en BD, marcamos solo las guardadas.
-                -# Si es un borrador nuevo, marcamos por defecto las del mes actual o pendientes previas.
                 - debe_marcarse = !esta_deshabilitada && (tiene_guardadas ? ya_guardada : (es_mes_actual || es_pendiente_previo))
 
                 - valor_hh_tipo_3 = detalle.try(:valor_hh_tipo_3).to_f
@@ -393,11 +427,10 @@
           %i.fa.fa-arrow-right.ml-1
 
 -# ==========================================
--# PASO 2: FORMULARIO DE RENDICIÓN POR PESTAÑAS (PRINT 1)
+-# PASO 2: FORMULARIO DE RENDICIÓN POR PESTAÑAS
 -# ==========================================
 #paso2_formulario{style: ("display: none;" if paso_actual == 1)}
   
-  -# INDICADOR ÚNICO DEL MES ARRIBA DE LOS TABS
   .row.mb-3
     .col-12
       .card.border-info.mb-0{style: "border-width: 2px;"}
@@ -529,6 +562,7 @@
                               %td.contenido-form
                                 = hidden_field_tag "documentos_fpl[#{row_key}][id]", doc.id
                                 = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_fpl[#{row_key}][_destroy]", "0", class: "destroy-flag"
                                 = __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               - if es_editable
                                 %td.contenido-form
@@ -542,6 +576,7 @@
                             %td.contenido-form
                               = hidden_field_tag "documentos_fpl[#{row_key}][id]", ""
                               = hidden_field_tag "documentos_fpl[#{row_key}][actividad_ids][]", actividad.id
+                              = hidden_field_tag "documentos_fpl[#{row_key}][_destroy]", "0", class: "destroy-flag"
                               = '--'
                             %td.contenido-form
                               = file_field_tag "documentos_fpl[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"
@@ -596,6 +631,7 @@
                               %td.contenido-form
                                 = hidden_field_tag "documentos_aporte[#{row_key}][id]", doc.id
                                 = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
+                                = hidden_field_tag "documentos_aporte[#{row_key}][_destroy]", "0", class: "destroy-flag"
                                 = __descargar_archivo_sin_titulo(archivo, doc || f.object)
                               - if es_editable
                                 %td.contenido-form
@@ -609,6 +645,7 @@
                             %td.contenido-form
                               = hidden_field_tag "documentos_aporte[#{row_key}][id]", ""
                               = hidden_field_tag "documentos_aporte[#{row_key}][actividad_ids][]", actividad.id
+                              = hidden_field_tag "documentos_aporte[#{row_key}][_destroy]", "0", class: "destroy-flag"
                               = '--'
                             %td.contenido-form
                               = file_field_tag "documentos_aporte[#{row_key}][archivo]", class: "form-control smaller-text border-text", onchange: "validarFormulario()"

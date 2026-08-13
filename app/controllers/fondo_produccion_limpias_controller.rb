@@ -4273,9 +4273,17 @@ class FondoProduccionLimpiasController < ApplicationController
           docs_fpl_list = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : Array(params[:documentos_fpl])
 
           docs_fpl_list.each do |doc_params|
-            next if doc_params[:id].blank? && doc_params[:archivo].blank?
+            doc_id = doc_params[:id]
 
-            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
+            # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
+            if doc_params[:_destroy].to_s == '1' && doc_id.present?
+              @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
+              next
+            end
+
+            next if doc_id.blank? && doc_params[:archivo].blank?
+
+            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
             detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
 
             detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
@@ -4291,15 +4299,23 @@ class FondoProduccionLimpiasController < ApplicationController
         end
 
         # -------------------------------------------------------------
-        # TAB 3: FINANCIERA APORTE
+        # TAB 3: FINANCIERA APORTE PROPIO
         # -------------------------------------------------------------
         if params[:documentos_aporte].present?
           docs_aporte_list = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : Array(params[:documentos_aporte])
 
           docs_aporte_list.each do |doc_params|
-            next if doc_params[:id].blank? && doc_params[:archivo].blank?
+            doc_id = doc_params[:id]
 
-            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_params[:id]) if doc_params[:id].present?
+            # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
+            if doc_params[:_destroy].to_s == '1' && doc_id.present?
+              @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
+              next
+            end
+
+            next if doc_id.blank? && doc_params[:archivo].blank?
+
+            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
             detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
 
             detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
