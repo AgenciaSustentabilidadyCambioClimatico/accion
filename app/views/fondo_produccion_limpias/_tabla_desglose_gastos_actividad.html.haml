@@ -63,13 +63,13 @@
           %thead
             %tr.bg-light
               %th.encabezado-form{style: "width: 15%;"} Categoría
-              %th.encabezado-form{style: "width: 25%;"} Nombre / Ítem
+              %th.encabezado-form{style: "width: 20%;"} Nombre / Ítem
               %th.encabezado-form{style: "width: 10%;"} Valor HH / Unitario
-              %th.encabezado-form{style: "width: 10%;"} HH Postulado
-              %th.encabezado-form{style: "width: 10%;"} Tipo Aporte
-              %th.encabezado-form{style: "width: 10%;"} Costo Postulado
-              %th.encabezado-form{style: "width: 10%;"} HH Rendido
-              %th.encabezado-form{style: "width: 10%;"} Costo Rendido
+              %th.encabezado-form{style: "width: 10%;"} HH / Unidad Solicitado
+              %th.encabezado-form{style: "width: 15%;"} Tipo Aporte
+              %th.encabezado-form{style: "width: 10%;"} Monto Solicitado
+              %th.encabezado-form{style: "width: 10%;"} HH / Unidad Rendido
+              %th.encabezado-form{style: "width: 10%;"} Monto Rendido
           %tbody
             -# Iteración dinámica de categorías
             - [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ].each do |cat_key, cat_label|
@@ -99,8 +99,7 @@
                   %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
                   %td.contenido-form.text-right= number_to_currency(v_unitario)
                   %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
-                  %td.contenido-form.text-center
-                    %span.badge.badge-info= item.try(:tipo_aporte)&.titleize
+                  %td.contenido-form.text-center= item.try(:tipo_aporte)
                   %td.contenido-form.text-right.font-weight-bold= number_to_currency(monto_postulado)
                   %td.contenido-form.text-center
                     -# Campos Ocultos para Persistencia

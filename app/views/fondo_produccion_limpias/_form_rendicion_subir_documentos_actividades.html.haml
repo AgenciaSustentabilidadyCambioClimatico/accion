@@ -84,7 +84,6 @@
   }
 
   function toggleObservacion(selectElement, actividadId) {
-    // La 'Descripción del Avance' permanece siempre habilitada cuando el formulario es editable
     validarFormulario();
   }
 
@@ -121,9 +120,9 @@
         const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
         const tieneArchivoNuevo = fileInput && fileInput.files.length > 0;
 
-        if (realizada === 'si') {
+        if (realizada === 'si' || realizada === '2') {
           if (!tieneArchivoPrevio && !tieneArchivoNuevo) tabTecnicaValido = false;
-        } else if (realizada === 'no' || realizada === 'parcial') {
+        } else if (realizada === 'no' || realizada === '0' || realizada === '1' || realizada === 'parcial') {
           if (observacion === '') tabTecnicaValido = false;
         } else {
           tabTecnicaValido = false; 
@@ -393,9 +392,21 @@
 -# PASO 2: FORMULARIO DE RENDICIÓN POR PESTAÑAS (PRINT 1)
 -# ==========================================
 #paso2_formulario{style: ("display: none;" if paso_actual == 1)}
+  
+  -# INDICADOR ÚNICO DEL MES ARRIBA DE LOS TABS
+  .row.mb-3
+    .col-12
+      .card.border-info.mb-0{style: "border-width: 2px;"}
+        .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
+          %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
+            %i.fa.fa-calendar-check-o.mr-2.text-info
+            Rendición correspondiente a:
+          %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
+            = "Mes #{mes_seleccionado_defecto}"
+
   - tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
 
-  #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
+  #tab-menu-controls.mb-0.mt-2.px-2{:role => "tabpanel"}
     %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
       - tabs.each do |tab, active|
         %li.nav-item.tab-block{id: "#{tab}-tab"}
@@ -413,24 +424,12 @@
           .card-header
             %h5.no-margin= t(:adjuntar_resolucion_contrato)
           .card-body
-            .row.mb-3.align-items-center
-              .col-md-5.col-sm-6
-                .d-flex.align-items-center
-                  %span.font-weight-bold.mr-2 Mes a rendir:
-                  %span.badge.badge-info{style: "font-size: 13px; padding: 6px 12px;"}= "Mes #{mes_seleccionado_defecto}"
-                .form-check.mt-2
-                  = check_box_tag "ultima_rendicion", "1", @rendicion.try(:ultima_rendicion), class: "form-check-input", id: "chk_ultima_rendicion_form", disabled: !es_editable
-                  %label.form-check-label.font-weight-bold.text-danger{for: "chk_ultima_rendicion_form"}
-                    %i.fa.fa-flag.mr-1
-                    ¿Es la última rendición del proyecto?
-              .col-md-7.col-sm-6.mt-2.mt-sm-0
-                .card.border-info.mb-0{style: "border-width: 2px;"}
-                  .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
-                    %span.font-weight-bold.text-secondary{style: "font-size: 13px;"}
-                      %i.fa.fa-calendar-check-o.mr-2.text-info
-                      Rendición correspondiente a:
-                    %span.badge.badge-info{style: "font-size: 13px; padding: 6px 12px;"}
-                      = "Mes #{mes_seleccionado_defecto}"
+            .mb-3
+              .form-check
+                = check_box_tag "ultima_rendicion", "1", @rendicion.try(:ultima_rendicion), class: "form-check-input", id: "chk_ultima_rendicion_form", disabled: !es_editable
+                %label.form-check-label.font-weight-bold.text-danger{for: "chk_ultima_rendicion_form"}
+                  %i.fa.fa-flag.mr-1
+                  ¿Es la última rendición del proyecto?
 
             .table-responsive
               %table.table.table-striped.usuarios.no-margin
@@ -457,7 +456,7 @@
                       - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
                       - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
                       - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
-                      - realizada_valor = detalle_tecnico.nil? ? '' : (detalle_tecnico.try(:realizada_valor).presence || detalle_tecnico.try(:estado_realizada) || (detalle_tecnico.realizada? ? 'si' : 'no'))
+                      - nivel_avance_valor = detalle_tecnico&.nivel_avance.to_s
                       - observacion_valor = detalle_tecnico&.observacion
                       - archivo = detalle_tecnico&.archivo
                       - tiene_archivo = detalle_tecnico&.archivo&.url.present?
@@ -470,7 +469,7 @@
                         %td.contenido-form
                           = date_field_tag "fecha_termino_actividad_#{actividad.id}", fecha_termino_valor, class: "form-control smaller-text border-text", disabled: !es_editable, onchange: "validarFormulario()"
                         %td.contenido-form
-                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sín iniciar', '0'], ['En proceso', '1'], ['Completado', '2']], :last, :first, realizada_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable
+                          = select_tag "realizada_actividad_#{actividad.id}", options_from_collection_for_select([['Seleccione...', ''], ['Sin iniciar', '0'], ['En proceso', '1'], ['Completado', '2']], :last, :first, nivel_avance_valor), class: "form-control smaller-text border-text", onchange: "toggleObservacion(this, '#{actividad.id}')", disabled: !es_editable                        
                         %td.contenido-form
                           = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", disabled: !es_editable, placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
                         %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
