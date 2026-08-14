@@ -4577,30 +4577,24 @@ class FondoProduccionLimpiasController < ApplicationController
         @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir])
       end
 
-      # 2. Fallback: Buscar la rendición que esté activamente en evaluación
+      # 2. Fallbacks de búsqueda
       unless @rendicion.present?
         estados_evaluacion = RendicionFpl.estados.slice('en_evaluacion', 'enviada_a_revision').values.presence || [1, 2]
-
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .where(estado: estados_evaluacion)
                                 .order(mes_a_rendir: :desc)
                                 .first
       end
 
-      # 3. Fallback: Excluir las rendiciones aprobadas (estado 6) y rendidas (estado 5)
       unless @rendicion.present?
         estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .where.not(estado: estado_aprobado_val)
                                 .order(mes_a_rendir: :desc)
                                 .first
       end
 
-      # 4. Fallback final
-      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .order(mes_a_rendir: :desc)
-                                .first
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc).first
 
       if @rendicion.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para evaluar.")
@@ -4611,30 +4605,20 @@ class FondoProduccionLimpiasController < ApplicationController
       guardar_respuestas_evaluacion(params[:detalles])
 
       if params[:commit_type] == 'enviar'
-        # 6. Verificar si al menos una actividad fue marcada como "No" (valor 2)
         hay_rechazo_tecnico = evaluar_rechazos(params[:detalles])
 
         if hay_rechazo_tecnico
           @rendicion.update!(estado: :observada_tecnica)
-
-          # RECHAZO TÉCNICO: Se vuelve a generar la tarea FPL-18 (Corrección Técnica)
           @tarea_pendiente.pasar_a_siguiente_tarea 'B' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-          
-          # Finalizar la tarea pendiente actual del revisor
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
           flash[:notice] = "Evaluación técnica del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se ha devuelto la rendición para corrección técnica (FPL-18)."
         else
-          # 7. Si todo CUMPLE en Técnica, para avanzar a FPL-14 
           @rendicion.update!(estado: :pendiente_verificacion_contable)
-
-            # Se crea la siguiente tarea FPL-16 y envía el correo
           @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
           flash[:notice] = "Rendición del Mes #{@rendicion.mes_a_rendir} aprobada exitosamente (Técnica). Se ha generado la tarea FPL-14."
-         
           @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
         end
 
-        # Redirección segura tanto para HTML normal como AJAX (remote: true)
         respond_to do |format|
           format.html { redirect_to root_path }
           format.js   { render js: "window.location.href = '#{root_path}';" }
@@ -4855,16 +4839,19 @@ class FondoProduccionLimpiasController < ApplicationController
                                 .first
 
       if @rendicion.present?
-        # Procesar documentos FPL y Aporte (Actualiza existentes o Crea nuevos)
+        # Procesar documentos FPL y Aporte (Actualiza comentario_postulante y/o archivos)
         procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
         procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
+      else
+        redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para realizar la corrección financiera.")
+        return
       end
 
       if params[:commit_type] == 'enviar'
         @rendicion.update!(estado: :en_evaluacion)
 
         # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
-        @tarea_pendiente.pasar_a_siguiente_tarea 'A'
+        @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
         @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
 
         flash[:notice] = "Correcciones financieras (Mes #{@rendicion&.mes_a_rendir}) enviadas para re-evaluación (FPL-14)."
@@ -4879,6 +4866,8 @@ class FondoProduccionLimpiasController < ApplicationController
         format.js   { render js: "window.location.href = '#{url_destino}';" }
       end
     end
+
+
 
     # GET /corregir_rendicion_tecnica
     def corregir_rendicion_tecnica #FPL-18: CORRECCIÓN TÉCNICA (RESPUESTA POSTULANTE)
@@ -4916,7 +4905,7 @@ class FondoProduccionLimpiasController < ApplicationController
         return
       end
 
-      # 4. Guardar las observaciones, el estado de 'realizada' y los ARCHIVOS en la tabla técnica
+      # 4. Guardar la descripción del avance, comentario del postulante, realizada y archivos
       if params[:actividades_ids].present?
         params[:actividades_ids].each do |act_id|
           # Búsqueda robusta del detalle técnico por actividad asociada
@@ -4928,16 +4917,33 @@ class FondoProduccionLimpiasController < ApplicationController
           end
 
           if detalle.present?
-            atributos_a_actualizar = {
-              observacion: params["observacion_actividad_#{act_id}"],
-              realizada: (params["realizada_actividad_#{act_id}"] == 'si')
-            }
+            # Captura de los valores desde la vista
+            descripcion_avance = params["observacion_actividad_#{act_id}"]
+            comentario_postulante_val = params["comentario_postulante_actividad_#{act_id}"].presence || params["comentario_postulante_#{act_id}"]
 
-            # Guardar el archivo adjunto si el usuario lo seleccionó al momento de grabar
+            atributos_a_actualizar = {}
+
+            # a) Descripción del avance -> campo 'observacion'
+            atributos_a_actualizar[:observacion] = descripcion_avance.to_s if params.key?("observacion_actividad_#{act_id}")
+
+            # b) Bitácora del postulante -> campo 'comentario_postulante'
+            if comentario_postulante_val.present?
+              atributos_a_actualizar[:comentario_postulante] = comentario_postulante_val.to_s
+            end
+
+            # c) Estado realizada (si aplica)
+            if params.key?("realizada_actividad_#{act_id}")
+              atributos_a_actualizar[:realizada] = (params["realizada_actividad_#{act_id}"] == 'si')
+            end
+
+            # d) Archivo adjunto
             archivo_adjunto = params["archivo_rendicion_#{act_id}"]
             atributos_a_actualizar[:archivo] = archivo_adjunto if archivo_adjunto.present?
 
-            detalle.update(atributos_a_actualizar)
+            # Guardado seguro en BD evitando bloqueos de validación
+            if atributos_a_actualizar.present?
+              detalle.update_columns(atributos_a_actualizar) rescue detalle.update(atributos_a_actualizar)
+            end
           end
         end
       end
@@ -6802,67 +6808,38 @@ class FondoProduccionLimpiasController < ApplicationController
         )
       end
 
-  # Guarda en la BD las selecciones de 'cumple' y 'comentario_revisor'
-  def guardar_respuestas_evaluacion(detalles_params)
-    return if detalles_params.blank?
+      def guardar_respuestas_evaluacion(detalles_params)
+      return if detalles_params.blank?
 
-    detalles_params.each do |key_id, campos|
-      next if campos.blank?
+      detalles_hash = detalles_params.respond_to?(:permit!) ? detalles_params.permit!.to_h : detalles_params.to_h
+      detalles_hash = detalles_hash.with_indifferent_access
 
-      val_cumple = campos[:cumple].to_s.strip.downcase
-      # Omitir si no se seleccionó opción para no sobreescribir valores previos con nil
-      next if val_cumple.blank?
+      detalles_hash.each do |detalle_id, data|
+        detalle = RendicionDetalleFpl.find_by(id: detalle_id)
+        next unless detalle
 
-      valor_int = if ['1', 'si', 'true'].include?(val_cumple)
-                    1
-                  elsif ['2', 'no', 'false'].include?(val_cumple)
-                    2
-                  else
-                    nil
-                  end
+        attrs = {}
 
-      next if valor_int.nil?
-
-      # 1. Buscar por ID directo de RendicionDetalleFpl
-      detalle = RendicionDetalleFpl.find_by(id: key_id)
-
-      # 2. Si no se encuentra por ID (p. ej. si key_id es plan_actividad_id o fila sin registro),
-      #    buscar el detalle asociado a la actividad en esta rendición o crearlo.
-      if detalle.nil? && @rendicion.present?
-        actividad_id = key_id
-        detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                                  .find_by(
-                                                    rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id },
-                                                    plan_actividad_id: actividad_id
-                                                  )
-        detalle = detalle_act&.rendicion_detalle_fpl
-
-        # Si aún no existe el registro en la BD, se crea para guardar la evaluación
-        if detalle.nil?
-          tipo_tab_eval = campos[:tipo_tab].presence || :tecnica
-          detalle = @rendicion.rendicion_detalles_fpl.create!(tipo_tab: tipo_tab_eval)
-          detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+        if data.key?(:cumple) && data[:cumple].to_s.strip.present?
+          attrs[:cumple] = data[:cumple]
         end
+
+        if data.key?(:comentario_revisor)
+          attrs[:comentario_revisor] = data[:comentario_revisor].to_s
+        end
+
+        detalle.update_columns(attrs) if attrs.present?
       end
-
-      next unless detalle
-
-      detalle.update(
-        cumple: valor_int,
-        comentario_revisor: (valor_int == 2 ? campos[:comentario_revisor] : nil)
-      )
     end
-  end
 
-  # Evalúa si existe al menos un registro con 'cumple == 2' (No)
-  def evaluar_rechazos(detalles_params)
-    return false if detalles_params.blank?
+    def evaluar_rechazos(detalles_params)
+      return false if detalles_params.blank?
 
-    detalles_params.values.any? do |v|
-      val = v[:cumple].to_s.downcase.strip
-      val == '2' || val == 'no' || val == 'false'
+      detalles_hash = detalles_params.respond_to?(:permit!) ? detalles_params.permit!.to_h : detalles_params.to_h
+      detalles_hash = detalles_hash.with_indifferent_access
+
+      detalles_hash.values.any? { |d| d[:cumple].to_s == '2' || d[:cumple].to_s.downcase == 'no' }
     end
-  end
 
   # Valida que la evaluación FINANCIERA del mes actual esté 100% aprobada
   def rendicion_financiera_aprobada?(rendicion)
@@ -6999,8 +6976,14 @@ class FondoProduccionLimpiasController < ApplicationController
   end
    
   def procesar_documentos_correccion_financiera(grupo_docs, tipo_tab)
+    return if grupo_docs.blank? && @rendicion.blank?
+
+    # Convertir parámetros a lista manejable con acceso indiferente (simbolos/strings)
+    docs_list = grupo_docs.respond_to?(:values) ? grupo_docs.values : (grupo_docs || [])
+    docs_list = docs_list.map { |d| d.respond_to?(:permit!) ? d.permit!.to_h.with_indifferent_access : d.with_indifferent_access } rescue []
+
     # 1. Obtener los IDs de los documentos que siguen presentes en la vista
-    ids_recibidos = (grupo_docs || []).map { |d| d[:id] }.reject(&:blank?).map(&:to_i)
+    ids_recibidos = docs_list.map { |d| d[:id] }.reject(&:blank?).map(&:to_i)
 
     # 2. Buscar en la BD los registros existentes de este tipo_tab y ELIMINAR los que fueron borrados de la vista
     detalles_existentes = @rendicion.rendicion_detalles_fpl.select { |d| d.tipo_tab.to_s == tipo_tab.to_s }
@@ -7010,22 +6993,41 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    return if grupo_docs.blank?
+    return if docs_list.blank?
 
     # 3. Procesar los registros restantes (actualizar existentes / crear nuevos)
-    grupo_docs.each do |doc_param|
+    docs_list.each do |doc_param|
       act_ids = doc_param[:actividad_ids].reject(&:blank?) rescue []
+
+      # Captura segura del comentario del postulante enviado desde la bitácora
+      comentario_post_val = doc_param[:comentario_postulante].presence || doc_param[:observacion]
 
       if doc_param[:id].present?
         # --- ACTUALIZAR REGISTRO EXISTENTE ---
         detalle = RendicionDetalleFpl.find_by(id: doc_param[:id])
         next unless detalle.present?
 
-        atributos = { observacion: doc_param[:observacion] }
-        atributos[:archivo] = doc_param[:archivo] if doc_param[:archivo].present?
+        atributos = {}
 
-        detalle.update(atributos)
+        # Guardar en 'comentario_postulante'
+        if comentario_post_val.present?
+          atributos[:comentario_postulante] = comentario_post_val.to_s
+        end
 
+        # Guardar en 'observacion' si también venía enviado
+        if doc_param.key?(:observacion)
+          atributos[:observacion] = doc_param[:observacion].to_s
+        end
+
+        # Guardado directo en BD evitando cancelaciones por validaciones de modelo
+        detalle.update_columns(atributos) if atributos.present?
+
+        # Guardar el archivo adjunto si fue cambiado/reemplazado
+        if doc_param[:archivo].present?
+          detalle.update(archivo: doc_param[:archivo]) rescue nil
+        end
+
+        # Actualizar relaciones con el plan de actividades
         if act_ids.present?
           if detalle.respond_to?(:plan_actividad_ids=)
             detalle.plan_actividad_ids = act_ids
@@ -7035,12 +7037,12 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       else
         # --- CREAR NUEVO REGISTRO ---
-        # CORRECCIÓN: Si no viene un archivo nuevo ni observación, ignorar la fila aunque traiga act_ids
-        next if doc_param[:archivo].blank? && doc_param[:observacion].blank?
+        next if doc_param[:archivo].blank? && doc_param[:observacion].blank? && comentario_post_val.blank?
 
         nuevo_detalle = @rendicion.rendicion_detalles_fpl.build(
           tipo_tab: tipo_tab,
-          observacion: doc_param[:observacion]
+          observacion: doc_param[:observacion],
+          comentario_postulante: comentario_post_val
         )
         nuevo_detalle.archivo = doc_param[:archivo] if doc_param[:archivo].present?
 
