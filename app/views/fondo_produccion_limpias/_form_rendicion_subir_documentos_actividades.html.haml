@@ -248,7 +248,20 @@
 
     const tabFinancieraAporteValido = tieneBloquesAporte ? tieneDocAporte : true;
 
-    const formCompleto = tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido;
+    // 4. VALIDAR SECCIÓN DE CONCLUSIONES (NUEVO)
+    let resumenValido = true;
+    const inputResultado = document.getElementById('rendicion_resultado_actividades_realizadas');
+    const inputConclusion = document.getElementById('rendicion_conclusion');
+
+    if (inputResultado && inputResultado.value.trim() === '') {
+      resumenValido = false;
+    }
+    if (inputConclusion && inputConclusion.value.trim() === '') {
+      resumenValido = false;
+    }
+
+    // Validación Básica Resumen Final
+    const formCompleto = tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido && resumenValido;
     const botonEnviar = document.getElementById('enviar-button');
     
     if (botonEnviar) {
@@ -323,14 +336,8 @@
   .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
   .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-
-  .header-actividad-fpl {
-    background-color: #E0EFF6 !important;
-    border: 2px solid #dee2e6 !important;
-    padding: 8px 12px !important;
-    color: #333 !important;
-    font-weight: bold;
-  }
+  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
 
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
@@ -658,6 +665,32 @@
                               %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                 %i.fa.fa-trash
 
+    -# ----------------------------------------------------
+    -# SECCIÓN: RESUMEN Y CONCLUSIONES DE LA RENDICIÓN
+    -# ----------------------------------------------------
+    .card.mt-3.mb-3{style: 'border: 2px solid #dee2e6;'}
+      .card-header.encabezado-form{style: 'text-align: left; padding: 10px 15px;'}
+        %h5.no-margin.font-weight-bold{style: 'font-size: 14px; color: #5d759e;'}
+          %i.fa.fa-file-text-o.mr-2.text-info
+          Información Complementaria de la Rendición
+      .card-body.p-3
+        .row
+          .col-12.mb-3
+            %label.label-estilo{for: 'rendicion_resultado_actividades_realizadas'}
+              Resultado de las actividades realizadas
+              %span.text-danger *
+            = text_area_tag "rendicion[resultado_actividades_realizadas]", @rendicion&.resultado_actividades_realizadas, class: "form-control border-text", rows: 4, disabled: !es_editable, placeholder: "Describa detalladamente el resultado de las actividades realizadas...", required: true, onkeyup: "validarFormulario()", onchange: "validarFormulario()"
+
+          .col-12.mb-3
+            %label.label-estilo{for: 'rendicion_informacion_adicional'}
+              Información adicional (Opcional)
+            = text_area_tag "rendicion[informacion_adicional]", @rendicion&.informacion_adicional, class: "form-control border-text", rows: 2, disabled: !es_editable, placeholder: "Ingrese cualquier información adicional relevante (opcional)..."
+
+          .col-12.mb-1
+            %label.label-estilo{for: 'rendicion_conclusion'}
+              Conclusión
+              %span.text-danger *
+            = text_area_tag "rendicion[conclusion]", @rendicion&.conclusion, class: "form-control border-text", rows: 3, disabled: !es_editable, placeholder: "Ingrese la conclusión general de la rendición...", required: true, onkeyup: "validarFormulario()", onchange: "validarFormulario()"
     .d-flex.justify-content-between.mt-3
       %button.btn.btn-sm.btn-secondary#btn-volver-paso1{type: "button"}
         %i.fa.fa-arrow-left.mr-1

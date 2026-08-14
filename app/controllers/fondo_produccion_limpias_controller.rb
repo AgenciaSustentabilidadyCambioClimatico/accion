@@ -4222,10 +4222,23 @@ class FondoProduccionLimpiasController < ApplicationController
           r.estado = :borrador
         end
 
-        # Guardar estado del checkbox de "Última Rendición"
+        # -------------------------------------------------------------
+        # GUARDAR CAMPOS GLOBALES DE LA RENDICIÓN
+        # -------------------------------------------------------------
+        # Checkbox de "Última Rendición"
         if params[:ultima_rendicion].present? || params[:ultima_rendicion_paso1].present?
           es_ultima = (params[:ultima_rendicion] == '1' || params[:ultima_rendicion_paso1] == '1')
           @rendicion.update!(ultima_rendicion: es_ultima) if @rendicion.respond_to?(:ultima_rendicion)
+        end
+
+        # Nuevos campos de Información Complementaria
+        if params[:rendicion].present?
+          params_rendicion = params.require(:rendicion).permit(
+            :resultado_actividades_realizadas, 
+            :informacion_adicional, 
+            :conclusion
+          )
+          @rendicion.update!(params_rendicion)
         end
 
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
@@ -4347,26 +4360,22 @@ class FondoProduccionLimpiasController < ApplicationController
           # 1. Total de actividades planificadas en el proyecto
           todas_actividades_ids = PlanActividad.where(flujo_id: flujo_id_actual).pluck(:id)
 
-          # 2. Actividades que ya han sido marcadas como completadas (nivel_avance = 2)
+          # 2. Actividades completadas
           actividades_completadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
-                                                           .where(rendiciones_fpl: { flujo_id: flujo_id_actual })
-                                                           .where("rendicion_detalles_fpl.nivel_avance = 2 OR rendicion_detalles_fpl.realizada = ?", true)
-                                                           .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+                                                          .where(rendiciones_fpl: { flujo_id: flujo_id_actual })
+                                                          .where("rendicion_detalles_fpl.nivel_avance = 2 OR rendicion_detalles_fpl.realizada = ?", true)
+                                                          .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
 
-          # 3. Evaluar si realmente quedan actividades pendientes
+          # 3. Evaluar pendientes
           quedan_pendientes = (todas_actividades_ids - actividades_completadas_ids).present?
-
           es_ultima_flag = @rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion
 
-          # La tarea FPL-12 SE CIERRA solo si se marca 'Última rendición' o si YA NO quedan actividades pendientes
           debe_cerrar_fpl12 = es_ultima_flag || !quedan_pendientes
 
           if debe_cerrar_fpl12
-            # Completa y cierra definitivamente la tarea FPL-12
             @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
             mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado el proceso de rendición FPL-12."
           else
-            # Deriva el avance a FPL-13 pero MANTIENE FPL-12 abierta para los siguientes meses/actividades
             @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
             mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea FPL-12 permanece abierta para rendir las actividades pendientes."
           end
@@ -4374,7 +4383,6 @@ class FondoProduccionLimpiasController < ApplicationController
           url_destino = root_path
         else
           mensaje_exito = 'Avances guardados correctamente.'
-          # Redirección al Paso 2 (Pestañas/Formulario) manteniendo el mes
           url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(
             @tarea_pendiente.id, 
             mes_a_rendir: mes_seleccionado, 

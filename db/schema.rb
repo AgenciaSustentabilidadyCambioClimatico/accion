@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_14_150122) do
+ActiveRecord::Schema.define(version: 2026_08_14_183228) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1929,6 +1929,9 @@ ActiveRecord::Schema.define(version: 2026_08_14_150122) do
     t.integer "revisor_financiero_id"
     t.text "comentario_asignar_revisor"
     t.text "comentario_contable"
+    t.text "resultado_actividades_realizadas"
+    t.text "informacion_adicional"
+    t.text "conclusion"
     t.index ["flujo_id"], name: "index_rendiciones_fpl_on_flujo_id"
   end
 
