@@ -358,6 +358,7 @@ Rails.application.routes.draw do
   #Tarea FPL-12
   get ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#rendicion_subir_documentos_actividades", as: :rendicion_subir_documentos_actividades_fondo_produccion_limpia
   patch ':id/rendicion_subir_documentos_actividades', to: "fondo_produccion_limpias#adjuntar_rendicion_subir_documentos_actividades", as: :adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia
+  get ':id/descargar_informe_gastos', to: "fondo_produccion_limpias#descargar_informe_gastos", as: :descargar_informe_gastos_fondo_produccion_limpia
 
   #Tarea FPL-13
   get ':id/asignar_revisor_rendicion', to: "fondo_produccion_limpias#asignar_revisor_rendicion", as: :asignar_revisor_rendicion_fondo_produccion_limpia
@@ -374,7 +375,7 @@ Rails.application.routes.draw do
   # Tarea FPL-16 - Verificación Contable de Rendición
   get ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#verificacion_contable_rendicion", as: :verificacion_contable_rendicion_fondo_produccion_limpia
   patch ':id/verificacion_contable_rendicion', to: "fondo_produccion_limpias#guardar_verificacion_contable_rendicion", as: :guardar_verificacion_contable_rendicion_fondo_produccion_limpia
-  get ':id/descargar_informe_gastos', to: "fondo_produccion_limpias#descargar_informe_gastos", as: :descargar_informe_gastos_fondo_produccion_limpia
+  get ':id/descargar_informe_actividades', to: "fondo_produccion_limpias#descargar_informe_actividades", as: :descargar_informe_actividades_fondo_produccion_limpia
 
   # Tarea FPL-17 - Respuesta Observaciones Rendición Financiera
   get ':id/corregir_rendicion_financiera', to: "fondo_produccion_limpias#corregir_rendicion_financiera", as: :corregir_rendicion_financiera_fondo_produccion_limpia

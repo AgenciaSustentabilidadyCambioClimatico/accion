@@ -728,6 +728,10 @@
 
       .float-right
         = volver_root
+        - if @rendicion.present?
+          = link_to descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-success mr-2", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Actividades Excel" do
+            %i.fa.fa-file-excel-o.mr-1
+            Descargar Informe Excel
         - if es_editable
           = button_tag "Grabar", 
             type: 'submit', 
