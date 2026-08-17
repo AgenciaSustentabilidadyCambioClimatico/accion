@@ -64,8 +64,38 @@
   const ACTIVIDADES_GUARDADAS = #{raw actividades_ya_guardadas_ids.map(&:to_s).to_json};
 
   $(document).ready(function() {
+    // -------------------------------------------------------------
+    // FLAG VISUAL INMEDIATO PARA ARCHIVOS CARGADOS
+    // -------------------------------------------------------------
     $("input:file").on('change', function () {
-      $(this).parent().siblings("label").html($(this)[0].files[0].name);
+      const input = $(this);
+      const celda = input.closest('td');
+
+      // Limpia mensajes verdes anteriores si el usuario cambia el archivo
+      celda.find('.mensaje-archivo-listo').remove();
+
+      if (this.files && this.files.length > 0) {
+        const nombreArchivo = this.files[0].name;
+
+        // Estilo verde al input para destacar
+        input.css({
+          'border': '2px solid #28a745',
+          'background-color': '#e8f5e9'
+        });
+
+        // Crea el mensaje verde y lo inyecta debajo del input
+        const mensajeHtml = `
+          <div class="mensaje-archivo-listo text-success mt-1" style="font-size: 10px; font-weight: bold; line-height: 1.2;">
+            <i class="fa fa-check-circle mr-1"></i> ¡Archivo listo para adjuntar!<br>
+            
+          </div>
+        `;
+        input.after(mensajeHtml);
+      } else {
+        // Restaura estilo normal si cancela la selección
+        input.css({ 'border': '', 'background-color': '' });
+      }
+
       validarFormulario();
     });
 
@@ -485,14 +515,14 @@
                 %thead
                   %tr
                     %th.encabezado-form{style: 'width: 4%;'}= t(:n°)
-                    %th.encabezado-form{style: 'width: 22%;'}= t(:actividades)
+                    %th.encabezado-form{style: 'width: 21%;'}= t(:actividades)
                     %th.encabezado-form{style: 'width: 10%;'} Fecha de Inicio
                     %th.encabezado-form{style: 'width: 10%;'} Fecha de Término
                     %th.encabezado-form{style: 'width: 10%;'} Nivel de avance
                     %th.encabezado-form{style: 'width: 20%;'} Descripción del Avance
                     %th.encabezado-form{style: 'width: 12%;'} Archivos Cargados
                     - if es_editable
-                      %th.encabezado-form{style: 'width: 12%;'}= t(:subir_documento_rendicion)
+                      %th.encabezado-form{style: 'width: 13%;'}= t(:subir_documento_rendicion)
                 %tbody
                   - if @actividad_x_linea.present?
                     - @actividad_x_linea.each do |actividad|
