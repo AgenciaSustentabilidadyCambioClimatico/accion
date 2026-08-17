@@ -2095,9 +2095,9 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # Sección III
       if respond_to?(:pdf_sub_titulo_formato)
-        self.pdf_sub_titulo_formato(pdf, "GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
+        self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
       else
-        pdf.text "GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS", size: 9, style: :bold
+        pdf.text "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS", size: 9, style: :bold
       end
 
       tabla_act = [
@@ -2220,13 +2220,30 @@ class FondoProduccionLimpia < ApplicationRecord
       end
       pdf.move_down 10
 
-      tabla_firmas = [
-        [ "Nombre del Responsable:", "_______________________", "Firma del responsable del informe:", "_______________________" ],
-        [ "RUT:", "_______________________", "", "" ],
-        [ "Cargo:", "_______________________", "", "" ]
+      # Bloque de dos columnas para los responsables
+      tabla_funcionarios = [
+        [ "Nombre del Responsable", "___________________________", "", "Nombre del Responsable", "___________________________" ],
+        [ "RUT",                    "___________________________", "", "RUT",                    "___________________________" ],
+        [ "Cargo",                  "___________________________", "", "Cargo",                  "___________________________" ],
+        [ "Dependencia",            "___________________________", "", "Dependencia",            "___________________________" ]
       ]
 
-      pdf.table(tabla_firmas, width: pdf.bounds.width, cell_style: { size: 8, padding: 3, borders: [] })
+      pdf.table(tabla_funcionarios, cell_style: { size: 8, padding: 3, borders: [] }) do
+        column(0).font_style = :bold
+        column(3).font_style = :bold
+        column(2).width = 60 # Espaciador central entre bloques
+      end
+
+      pdf.move_down 25
+
+      # Línea de firma ubicada a la derecha
+      pdf.bounding_box([pdf.bounds.width - 280, pdf.cursor], width: 280) do
+        pdf.stroke_horizontal_line 0, 280
+        pdf.move_down 5
+        pdf.font "OpenSans", style: :bold do
+          pdf.text "Firma y nombre del responsable del informe", size: 8, align: :left
+        end
+      end
     end
 
     pdf_string = pdf.render
