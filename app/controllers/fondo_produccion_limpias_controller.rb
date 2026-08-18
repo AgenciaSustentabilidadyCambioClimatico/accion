@@ -4241,6 +4241,12 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.update!(params_rendicion)
         end
 
+        # Guardar estado del checkbox de "Sin Movimientos"
+        if params[:sin_movimientos].present? || params[:sin_movimientos_paso1].present?
+          es_sin_mov = (params[:sin_movimientos] == '1' || params[:sin_movimientos_paso1] == '1')
+          @rendicion.update!(sin_movimientos: es_sin_mov) if @rendicion.respond_to?(:sin_movimientos)
+        end
+
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
 
         # -------------------------------------------------------------

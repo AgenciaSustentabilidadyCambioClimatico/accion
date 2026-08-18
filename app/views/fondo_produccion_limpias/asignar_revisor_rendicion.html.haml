@@ -87,6 +87,18 @@
 -# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 
+-# -------------------------------------------------------------
+-# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
+-# -------------------------------------------------------------
+- fecha_res = fpl_objeto.try(:fecha_resolucion)
+- mes_nombre = nil
+- if fecha_res.present?
+  - fecha_target = fecha_res.to_date + (mes_actual.to_i - 1).months
+  - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+
+- texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
+
+
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
   - f_id = @tarea_pendiente&.flujo_id
@@ -128,7 +140,7 @@
                     %i.fa.fa-calendar-check-o.mr-2.text-info
                     Rendición correspondiente a:
                   %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
-                    = "Mes #{mes_actual.presence || 1}"
+                    = texto_mes_display
 
           #tab-menu-controls.no-border.mb-0{:role => "tabpanel"}
             %ul#manifestacion.nav.nav-tabs.d-none.d-lg-flex{:role => "tablist"}

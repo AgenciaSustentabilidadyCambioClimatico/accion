@@ -207,6 +207,17 @@
 -# Identificar ÚNICAMENTE las actividades seleccionadas en esta rendición
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 
+-# -------------------------------------------------------------
+-# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
+-# -------------------------------------------------------------
+- fecha_res = fpl_objeto.try(:fecha_resolucion)
+- mes_nombre = nil
+- if fecha_res.present?
+  - fecha_target = fecha_res.to_date + (mes_guardado.to_i - 1).months
+  - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+
+- texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_guardado})" : "Rendición #{mes_guardado}"
+
 -# Lambda auxiliar para consultar gastos por actividad
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
   - f_id = @tarea_pendiente&.flujo_id
@@ -236,7 +247,7 @@
           %i.fa.fa-calendar-check-o.mr-2.text-info
           Rendición correspondiente a:
         %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
-          = "Mes #{mes_guardado.presence || 1}"
+          = texto_mes_display
 
 -# Definición de Pestañas: Se muestran TODOS los tabs
 - tabs = { "tecnica" => @es_correccion_tecnica, "financiera-fpl" => !@es_correccion_tecnica, "financiera-aporte" => false }
