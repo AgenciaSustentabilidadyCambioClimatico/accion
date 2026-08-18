@@ -7245,14 +7245,18 @@ class FondoProduccionLimpiasController < ApplicationController
       val_unitario_original = gasto[:valor_unitario_postulado].to_s.tr(',', '.').to_f
       val_unitario_rendido  = gasto[:valor_unitario].to_s.tr(',', '.').to_f
 
+      # Sanitización de comprobante_ref (solo letras y números, mayúsculas, max 10 caracteres)
+      comprobante_ref_clean = gasto[:comprobante_ref].to_s.gsub(/[^a-zA-Z0-9]/, '').upcase.first(10)
+
       registro.assign_attributes(
         tipo_aporte:            gasto[:tipo_aporte],
         valor_unitario:         val_unitario_original,     # (Mantienes el histórico del presupuesto)
-        valor_unitario_rendido: val_unitario_rendido,      # <--- NUEVA COLUMNA BBDD
+        valor_unitario_rendido: val_unitario_rendido,
         cantidad_postulada:     gasto[:cantidad_postulada].to_s.tr(',', '.').to_f,
         costo_postulado:        gasto[:costo_postulado].to_s.tr(',', '.').to_f,
         cantidad_rendida:       cant_rendida,
-        costo_rendido:          (cant_rendida * val_unitario_rendido).round(2)
+        costo_rendido:          (cant_rendida * val_unitario_rendido).round(2),
+        comprobante_ref:        comprobante_ref_clean      # <--- NUEVO CAMPO AGREGADO
       )
 
       registro.save!

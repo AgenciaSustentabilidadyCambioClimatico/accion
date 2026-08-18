@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_18_132704) do
+ActiveRecord::Schema.define(version: 2026_08_18_210605) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1907,6 +1907,7 @@ ActiveRecord::Schema.define(version: 2026_08_18_132704) do
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.decimal "valor_unitario_rendido"
+    t.string "comprobante_ref"
     t.index ["plan_actividad_id"], name: "index_rendicion_gastos_fpl_on_plan_actividad_id"
     t.index ["rendicion_fpl_id", "plan_actividad_id", "categoria", "item_origen_id"], name: "idx_rendicion_gastos_unique_item", unique: true
     t.index ["rendicion_fpl_id"], name: "index_rendicion_gastos_fpl_on_rendicion_fpl_id"

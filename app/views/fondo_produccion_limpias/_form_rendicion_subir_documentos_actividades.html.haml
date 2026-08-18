@@ -24,31 +24,41 @@
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
 -# -------------------------------------------------------------
--# LOGICA DE ESTADOS EN BASE DE DATOS
+-# LOGICA DE ESTADOS EN BASE DE DATOS (EN MEMORIA - ULTRA SEGURO)
 -# -------------------------------------------------------------
-- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
 
--# Aprobadas en FPL-16
-- estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-- rendiciones_aprobadas_ids = rendiciones_todas.where(estado: estado_aprobado_val).pluck(:id)
-- actividades_aprobadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_aprobadas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+- estado_aprobado_val  = (RendicionFpl.estados['verificada_contablemente'] || 6).to_i
+- estado_rendido_val   = (RendicionFpl.estados['pendiente_verificacion_contable'] || 5).to_i
+- estados_borrador_vals = (RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]).map(&:to_i)
 
--# Rendidas
-- estado_rendido_val = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
-- rendiciones_rendidas_ids = rendiciones_todas.where(estado: estado_rendido_val).pluck(:id)
-- actividades_rendidas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_rendidas_ids, realizada: true).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids
+-# Helper para obtener el valor numérico del estado
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
--# En proceso
-- estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-- rendiciones_en_proceso_ids = rendiciones_todas.where.not(estado: estados_borrador + [estado_aprobado_val, estado_rendido_val]).pluck(:id)
-- actividades_en_proceso_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_en_proceso_ids).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+-# 1. Rendiciones Aprobadas en FPL-16
+- rendiciones_aprobadas = rendiciones_todas.select { |r| get_estado_num.call(r) == estado_aprobado_val }
+- act_det_aprobadas = rendiciones_aprobadas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
+- act_gastos_aprobadas = rendiciones_aprobadas.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
+- actividades_aprobadas_ids = (act_det_aprobadas + act_gastos_aprobadas).compact.map(&:to_i).uniq
 
--# Pendientes de meses anteriores
-- rendiciones_previas_ids = rendiciones_todas.where('mes_a_rendir < ?', mes_seleccionado_defecto.to_i).pluck(:id)
-- actividades_no_previas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl).where(rendicion_fpl_id: rendiciones_previas_ids, realizada: false).pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
-- actividades_no_realizadas_previas = actividades_no_previas - actividades_aprobadas_ids - actividades_rendidas_ids
+-# 2. Rendiciones Enviadas / Rendidas
+- rendiciones_rendidas = rendiciones_todas.select { |r| get_estado_num.call(r) == estado_rendido_val }
+- act_det_rendidas = rendiciones_rendidas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
+- act_gastos_rendidas = rendiciones_rendidas.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
+- actividades_rendidas_ids = (act_det_rendidas + act_gastos_rendidas).compact.map(&:to_i).uniq - actividades_aprobadas_ids
 
-- actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+-# 3. Rendiciones En Proceso (Otras revisiones distintas a la actual)
+- rendiciones_en_proceso = rendiciones_todas.reject { |r| r.id == @rendicion&.id || [estado_aprobado_val, estado_rendido_val].include?(get_estado_num.call(r)) || estados_borrador_vals.include?(get_estado_num.call(r)) }
+- act_det_proceso = rendiciones_en_proceso.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
+- act_gastos_proceso = rendiciones_en_proceso.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
+- actividades_en_proceso_ids = (act_det_proceso + act_gastos_proceso).compact.map(&:to_i).uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+
+-# 4. Pendientes de Meses Anteriores (Evaluación limpia en Ruby)
+- rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
+- act_det_previas = rendiciones_previas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
+- actividades_no_realizadas_previas = act_det_previas.compact.map(&:to_i).uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+
+- actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.compact&.map(&:to_i)&.uniq || []
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -574,7 +584,7 @@
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -644,7 +654,7 @@
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -713,7 +723,7 @@
               .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
