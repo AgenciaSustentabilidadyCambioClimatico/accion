@@ -111,14 +111,14 @@
             %tr.bg-light
               %th.encabezado-form{style: "width: 14%;"} Categoría
               %th.encabezado-form{style: "width: 15%;"} Nombre / Ítem
-              %th.encabezado-form{style: "width: 10%;"} Tipo Aporte
+              %th.encabezado-form{style: "width: 14%;"} Tipo Aporte
               %th.encabezado-form{style: "width: 8%;"} HH / Und. Solicitado
               %th.encabezado-form{style: "width: 9%;"} Valor Und. Solicitado
-              %th.encabezado-form{style: "width: 9%;"} Monto Solicitado
+              %th.encabezado-form{style: "width: 8%;"} Monto Solicitado
               %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
-              %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
-              %th.encabezado-form{style: "width: 9%;"} Monto Rendido
-              %th.encabezado-form{style: "width: 9%;"} Saldo
+              %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
+              %th.encabezado-form{style: "width: 8%;"} Monto Rendido
+              %th.encabezado-form{style: "width: 8%;"} Saldo
           %tbody
             -# Iteración dinámica de categorías
             - [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ].each do |cat_key, cat_label|

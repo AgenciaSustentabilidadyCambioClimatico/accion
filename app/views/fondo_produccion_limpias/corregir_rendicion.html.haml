@@ -24,7 +24,6 @@
     const targetPostulanteId = idInputPostulante + id;
     const targetRevisorId = idInputRevisor + id;
 
-    // Guarda el ID del campo oculto donde el postulante escribirá su comentario
     $('#modalBitacoraComentarios').attr('data-target-input', targetPostulanteId);
     $('#modal_titulo_actividad').text(tituloActividad);
 
@@ -34,7 +33,6 @@
     const textoPostulante = inputPostulante ? inputPostulante.value : '';
     const textoRevisor = inputRevisor ? inputRevisor.value : '';
 
-    // Renderiza el historial unificado (Revisor en rojo, Postulante en azul)
     $('#bitacora_historial_container').html(formatearBitacoraDoble(textoPostulante, textoRevisor));
     $('#nuevo_comentario_modal').val('');
 
@@ -63,11 +61,9 @@
       let historialPrevio = campoOculto.value.trim();
       let nuevoHistorial = historialPrevio ? historialPrevio + '\n' + entradaBitacora : entradaBitacora;
 
-      // Se guarda la nueva entrada en el campo oculto de 'comentario_postulante'
       campoOculto.value = nuevoHistorial;
       $(campoOculto).attr('value', nuevoHistorial).trigger('change');
 
-      // Actualizar contador visual
       const badgeContainer = document.getElementById('preview_' + targetInputId);
       if (badgeContainer) {
         const total = contarLineasComentarios(nuevoHistorial);
@@ -167,7 +163,7 @@
 
         if (tdArchivo) {
           const tieneArchivoPrevio = tdArchivo.getAttribute('data-tiene-archivo') === 'true';
-          const tieneArchivoNuevo = fileInput && fileInput.files.length > 0;
+          const tieneArchivoNuevo = fileInput && fileInput.files && fileInput.files.length > 0;
 
           if (!tieneArchivoPrevio && !tieneArchivoNuevo) {
             formCompleto = false;
@@ -204,12 +200,9 @@
 - titulo t(:rendicion_por_actividad)
 - mes_guardado = @rendicion.try(:mes_a_rendir)
 
--# Identificar ÚNICAMENTE las actividades seleccionadas en esta rendición
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
--# -------------------------------------------------------------
--# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
--# -------------------------------------------------------------
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
 - if fecha_res.present?
@@ -218,7 +211,6 @@
 
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_guardado})" : "Rendición #{mes_guardado}"
 
--# Lambda auxiliar para consultar gastos por actividad
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
   - f_id = @tarea_pendiente&.flujo_id
   - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
@@ -238,7 +230,6 @@
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
 
--# INDICADOR VISUAL DEL MES EN CORRECCIÓN
 .row.mb-3
   .col-12
     .card.border-info.mb-0{style: "border-width: 2px;"}
@@ -249,7 +240,6 @@
         %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
           = texto_mes_display
 
--# Definición de Pestañas: Se muestran TODOS los tabs
 - tabs = { "tecnica" => @es_correccion_tecnica, "financiera-fpl" => !@es_correccion_tecnica, "financiera-aporte" => false }
 
 #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
@@ -270,104 +260,139 @@
     / Pestaña 1: Corrección Técnica
     / ----------------------------------------------------
     .tab-pane.fade#tecnica{class: ('show active' if @es_correccion_tecnica), :role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
-      .card.mt-2
-        .card-header
-          %h5.no-margin Corrección Técnica de Rendición
-        .card-body
-          .table-responsive
-            %table.table.table-striped.usuarios.no-margin
-              %thead
-                %tr
-                  %th.encabezado-form{style: 'width: 4%;'}= t(:n°)
-                  %th.encabezado-form{style: 'width: 18%;'}= t(:actividades)
-                  %th.encabezado-form{style: 'width: 9%;'} Fecha de Inicio
-                  %th.encabezado-form{style: 'width: 9%;'} Fecha de Término
-                  %th.encabezado-form{style: 'width: 10%;'} Nivel de avance
-                  - if @es_correccion_tecnica
-                    %th.encabezado-form{style: 'width: 18%;'} Descripción del Avance
-                    %th.encabezado-form{style: 'width: 11%;'} Archivos Cargados
-                    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                      %th.encabezado-form{style: 'width: 11%;'}= t(:subir_documento_rendicion)
-                    %th.encabezado-form{style: 'width: 10%;'} Comentarios
-                  - else
-                    %th.encabezado-form{style: 'width: 23%;'} Descripción del Avance
-                    %th.encabezado-form{style: 'width: 23%;'} Archivos Cargados
-              %tbody
-                - if @actividad_x_linea.present?
-                  - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
+      - if @actividad_x_linea.present?
+        - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
-                  - if actividades_filtradas.present?
-                    - actividades_filtradas.each do |actividad|
-                      = hidden_field_tag "actividades_ids[]", actividad.id
-                      - plan = planes_hash[actividad.id] rescue nil
-                      - duracion_act = plan ? plan.duracion.to_s : ''
-                      - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
-                      - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_inicio) || '--'
-                      - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_termino) || '--'
-                      - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
-                      
-                      -# 1. Descripción del Avance (Apunta directamente al campo observacion de la BD)
-                      - observacion_valor = detalle_tecnico&.observacion
-                      
-                      -# 2. Comentarios del Revisor y Postulante
-                      - comentario_revisor_val = detalle_tecnico&.comentario_revisor
-                      - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
+        - if actividades_filtradas.present?
+          - actividades_filtradas.each do |actividad|
+            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            
+            - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+            - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
+            
+            - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+            - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
-                      - archivo = detalle_tecnico&.archivo
-                      - tiene_archivo = detalle_tecnico&.archivo&.url.present?
-                      - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
+            - duracion_act = plan_act.try(:duracion).to_s
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            
+            - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_inicio) || '--'
+            - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_termino) || '--'
+            - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
+            - observacion_valor = detalle_tecnico&.observacion
+            
+            - comentario_revisor_val = detalle_tecnico&.comentario_revisor
+            - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
+            - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
 
-                      %tr{id: "fila_actividad_#{actividad.id}", 'data-duracion' => duracion_act}
-                        %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                        %td.contenido-form= actividad.nombre
-                        %td.contenido-form.text-center= fecha_inicio_valor
-                        %td.contenido-form.text-center= fecha_termino_valor
-                        
-                        -# Nivel de Avance en texto/badge
-                        %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                          - case nivel_avance_val
-                          - when '0'
-                            %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
-                          - when '1'
-                            %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
-                          - when '2'
-                            %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+            - archivo = detalle_tecnico&.archivo
+            - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+
+            .card.mb-3.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, style: "border: 2px solid #dee2e6;"}
+              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                .d-flex.align-items-center
+                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                  %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                  %i.fa.fa-chevron-down.mr-1
+                  Ver / Ocultar
+
+              .collapse.show{id: "collapse_tecnica_#{actividad.id}"}
+                .card-body.p-2
+                  = hidden_field_tag "actividades_ids[]", actividad.id
+
+                  .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
+                    %i.fa.fa-question-circle.mr-2{style: "font-size: 15px; color: #004085;"}
+                    %span
+                      %strong Indicador asociado al objetivo:
+                      = indicador_texto
+
+                  .table-responsive
+                    %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+                      %thead
+                        %tr.bg-light
+                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Inicio
+                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Término
+                          %th.encabezado-form{style: 'width: 15%;'} Nivel de avance
+                          %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
+                      %tbody
+                        %tr
+                          %td.contenido-form.text-center= fecha_inicio_valor
+                          %td.contenido-form.text-center= fecha_termino_valor
+                          %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                            - case nivel_avance_val
+                            - when '0'
+                              %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
+                            - when '1'
+                              %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
+                            - when '2'
+                              %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                            - else
+                              - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
+                                %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                              - else
+                                %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                          - if @es_correccion_tecnica
+                            %td.contenido-form
+                              = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text w-100", placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
                           - else
-                            %span.text-muted= nivel_avance_val.presence || '--'
+                            %td.contenido-form= observacion_valor.presence || '--'
 
-                        - if @es_correccion_tecnica
-                          -# 1. Descripción del Avance: Área de texto que se guarda en observacion
-                          %td.contenido-form
-                            = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text", placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
+                  .mt-3.mb-2.px-1
+                    %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
+                      %i.fa.fa-file-pdf-o.mr-1
+                      Documento de Respaldo Técnico
 
+                  .table-responsive
+                    %table.table.table-striped.usuarios.no-margin
+                      %thead
+                        %tr
+                          - if @es_correccion_tecnica
+                            %th.encabezado-form{style: 'width: 30%;'} Archivos Cargados
+                            - if (@tiene_permisos.nil? || @tiene_permisos) && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                              %th.encabezado-form{style: 'width: 40%;'}= t(:subir_documento_rendicion)
+                            %th.encabezado-form{style: 'width: 30%;'} Comentarios Revisor / Postulante
+                          - else
+                            %th.encabezado-form{style: 'width: 50%;'} Archivos Cargados
+                            %th.encabezado-form{style: 'width: 50%;'} Comentarios Revisor / Postulante
+                      %tbody
+                        %tr{id: "fila_actividad_#{actividad.id}"}
                           %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
                             = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
-                          - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
-                            %td.contenido-form
-                              = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
-
-                          -# 2. Observación del Postulante: MODAL POPUP (Guarda exclusivamente en comentario_postulante)
-                          %td.contenido-form.text-center
-                            = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
-                            = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
-                            
-                            %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', false)"}
-                              %i.fa.fa-comments.mr-1
-                              Bitácora
-                            .mt-1{id: "preview_comentario_postulante_actividad_#{actividad.id}"}
-                              %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
-                                %i.fa.fa-comments
-                                = "#{num_comentarios_post} registro(s)"
-                        - else
-                          %td.contenido-form= observacion_valor.presence || '--'
-                          %td.contenido-form
-                            = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
-                  - else
-                    %tr
-                      %td.text-center.text-muted{colspan: 9} No hay actividades registradas en esta rendición.
-                - else
-                  %tr
-                    %td.text-center.text-muted{colspan: 9} No hay actividades configuradas.
+                          
+                          - if @es_correccion_tecnica
+                            - if (@tiene_permisos.nil? || @tiene_permisos) && @tarea_pendiente.estado_tarea_pendiente_id == 1
+                              %td.contenido-form
+                                = file_field_tag "archivo_rendicion_#{actividad.id}", id: "archivo_rendicion_#{actividad.id}", class: "form-control smaller-text border-text", onchange: "guardarYActualizar(event, 'archivo_rendicion_#{actividad.id}', 'rendicion');"
+                            %td.contenido-form.text-center
+                              = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
+                              = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
+                              
+                              %button.btn.btn-sm.btn-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', false)"}
+                                %i.fa.fa-comments.mr-1
+                                Bitácora
+                              .mt-1{id: "preview_comentario_postulante_actividad_#{actividad.id}"}
+                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                  %i.fa.fa-comments
+                                  = "#{num_comentarios_post} registro(s)"
+                          - else
+                            %td.contenido-form.text-center
+                              = hidden_field_tag "comentario_revisor_act_#{actividad.id}", comentario_revisor_val, id: "comentario_revisor_act_#{actividad.id}"
+                              = hidden_field_tag "comentario_postulante_actividad_#{actividad.id}", comentario_postulante_val, id: "comentario_postulante_actividad_#{actividad.id}"
+                              
+                              %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{actividad.id}', '#{j actividad.nombre}', 'comentario_postulante_actividad_', 'comentario_revisor_act_', true)"}
+                                %i.fa.fa-comments.mr-1
+                                Bitácora
+                              .mt-1{id: "preview_comentario_postulante_actividad_#{actividad.id}"}
+                                %span.badge{class: num_comentarios_post > 0 ? 'badge-info' : 'badge-secondary'}
+                                  %i.fa.fa-comments
+                                  = "#{num_comentarios_post} registro(s)"
+        - else
+          .card.mt-2
+            .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
+      - else
+        .card.mt-2
+          .card-body.text-center.text-muted No hay actividades configuradas.
 
     / ----------------------------------------------------
     / Pestaña 2: Corrección Financiera FPL
@@ -393,7 +418,8 @@
 
               .collapse.show{id: "collapse_fpl_corr_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false
+                  -# HABILITADO PARA EDITAR SI NO ES CORRECCIÓN TÉCNICA
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false)
 
                   - if !@es_correccion_tecnica
                     .table-responsive.mt-3
@@ -488,7 +514,8 @@
 
               .collapse.show{id: "collapse_aporte_corr_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false
+                  -# HABILITADO PARA EDITAR SI NO ES CORRECCIÓN TÉCNICA
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false)
 
                   - if !@es_correccion_tecnica
                     .table-responsive.mt-3
@@ -561,7 +588,7 @@
 
   .float-right.mt-3
     = volver_root
-    - if @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1
+    - if (@tiene_permisos.nil? || @tiene_permisos) && @tarea_pendiente.estado_tarea_pendiente_id == 1
       = button_tag "Grabar", 
         type: 'submit', 
         name: 'commit_type', 

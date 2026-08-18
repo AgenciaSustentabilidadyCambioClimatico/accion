@@ -86,6 +86,7 @@
 
 -# Identificar ÚNICAMENTE las actividades que fueron seleccionadas y guardadas en esta rendición
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
+- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
 -# -------------------------------------------------------------
 -# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
@@ -97,7 +98,6 @@
   - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
 
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
-
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -165,61 +165,97 @@
                             = t(tab.to_s.gsub('-','_'))
 
           .tab-content#manifestacionContent
-            / Pestaña 1: Técnica (Modo Lectura)
+            
+            / -------------------------------------------------------------
+            / Pestaña 1: Técnica (Modo Lectura NUEVO FORMATO)
+            / -------------------------------------------------------------
             .tab-pane.fade#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
-              .card.mt-2
-                .card-body
-                  .table-responsive
-                    %table.table.table-striped.usuarios.no-margin
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 4%;'}= t(:n°)
-                          %th.encabezado-form{style: 'width: 22%;'}= t(:actividades)
-                          %th.encabezado-form{style: 'width: 10%;'} Fecha de Inicio
-                          %th.encabezado-form{style: 'width: 10%;'} Fecha de Término
-                          %th.encabezado-form{style: 'width: 10%;'} Nivel de avance
-                          %th.encabezado-form{style: 'width: 24%;'} Descripción del Avance
-                          %th.encabezado-form{style: 'width: 20%;'} Archivos Cargados
-                      %tbody
-                        - if @actividad_x_linea.present?
-                          - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
+              - if @actividad_x_linea.present?
+                - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
 
-                          - if actividades_filtradas.present?
-                            - actividades_filtradas.each do |actividad|
-                              - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
-                              - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_inicio) || '--'
-                              - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%d') || detalle_tecnico&.try(:fecha_termino) || '--'
-                              - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
-                              - observacion_valor = detalle_tecnico&.observacion
-                              - archivo = detalle_tecnico&.archivo
+                - if actividades_filtradas.present?
+                  - actividades_filtradas.each do |actividad|
+                    - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+                    
+                    - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+                    - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
 
-                              %tr{id: "fila_actividad_#{actividad.id}"}
-                                %td.contenido-form{style: 'text-align: center;'}= actividad.correlativo
-                                %td.contenido-form= actividad.nombre
-                                %td.contenido-form.text-center= fecha_inicio_valor
-                                %td.contenido-form.text-center= fecha_termino_valor
-                                %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                  - case nivel_avance_val
-                                  - when '0'
-                                    %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
-                                  - when '1'
-                                    %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
-                                  - when '2'
-                                    %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
-                                  - else
-                                    - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
+                    - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+                    - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+
+                    - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+                    
+                    - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || '--'
+                    - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || '--'
+                    - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
+                    - observacion_valor = detalle_tecnico&.observacion
+                    - archivo = detalle_tecnico&.archivo
+
+                    .card.mb-2.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
+                      .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
+                        .d-flex.align-items-center
+                          %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
+                          %span{style: "color: #333; font-size: 12px;"}= actividad.nombre
+                        %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_read_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
+                          %i.fa.fa-chevron-down.mr-1
+                          Ver / Ocultar
+
+                      .collapse.show{id: "collapse_tecnica_read_#{actividad.id}"}
+                        .card-body.p-2
+                          -# CAJA INFORMATIVA DEL INDICADOR
+                          .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
+                            %i.fa.fa-question-circle.mr-2{style: "font-size: 15px; color: #004085;"}
+                            %span
+                              %strong Indicador:
+                              = indicador_texto
+
+                          .table-responsive
+                            %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+                              %thead
+                                %tr.bg-light
+                                  %th.encabezado-form{style: 'width: 15%;'} Fecha de Inicio
+                                  %th.encabezado-form{style: 'width: 15%;'} Fecha de Término
+                                  %th.encabezado-form{style: 'width: 15%;'} Nivel de avance
+                                  %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
+                              %tbody
+                                %tr
+                                  %td.contenido-form.text-center= fecha_inicio_valor
+                                  %td.contenido-form.text-center= fecha_termino_valor
+                                  %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
+                                    - case nivel_avance_val
+                                    - when '0'
+                                      %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
+                                    - when '1'
+                                      %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
+                                    - when '2'
                                       %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
                                     - else
-                                      %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
-                                %td.contenido-form= observacion_valor.presence || '--'
-                                %td.contenido-form
-                                  = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
-                          - else
-                            %tr
-                              %td.text-center.text-muted{colspan: 7} No hay actividades registradas en esta rendición.
-                        - else
-                          %tr
-                            %td.text-center.text-muted{colspan: 7} No hay actividades registradas.
+                                      - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
+                                        %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                                      - else
+                                        %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                                  %td.contenido-form= observacion_valor.presence || '--'
+
+                          .mt-3.mb-2.px-1
+                            %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
+                              %i.fa.fa-file-pdf-o.mr-1
+                              Documento de Respaldo Técnico
+                          
+                          .table-responsive
+                            %table.table.table-striped.no-margin
+                              %thead
+                                %tr
+                                  %th.encabezado-form{style: 'width: 100%;'} Archivo Cargado
+                              %tbody
+                                %tr
+                                  %td.contenido-form
+                                    = __descargar_archivo_sin_titulo(archivo, detalle_tecnico || f.object)
+                - else
+                  .card.mt-2
+                    .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
+              - else
+                .card.mt-2
+                  .card-body.text-center.text-muted No hay actividades registradas.
 
             / Pestaña 2: Financiera FPL (Modo Lectura con Desglose)
             .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
