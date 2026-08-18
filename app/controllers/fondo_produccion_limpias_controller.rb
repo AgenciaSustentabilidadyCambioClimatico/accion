@@ -4247,112 +4247,152 @@ class FondoProduccionLimpiasController < ApplicationController
           @rendicion.update!(sin_movimientos: es_sin_mov) if @rendicion.respond_to?(:sin_movimientos)
         end
 
+        # -------------------------------------------------------------
+        # EXTRACCIÓN DE IDs DE ACTIVIDADES ACTIVAS
+        # -------------------------------------------------------------
+        # Leemos el campo oculto generado por JS con las actividades que quedaron marcadas
+        act_seleccionadas_str = params[:actividades_seleccionadas].to_s.presence || params[:actividades_ids].to_a.join(',')
+        actividades_list = act_seleccionadas_str.split(',').reject(&:blank?).map(&:to_s)
+
+        # -----------------------------------------------------------------
+        # LIMPIEZA / ELIMINACIÓN DE REGISTROS DE ACTIVIDADES DESMARCADAS
+        # -----------------------------------------------------------------
+        if @rendicion.persisted? && !@rendicion.try(:sin_movimientos)
+          if actividades_list.present?
+            # A) Eliminar Gastos Financieros de actividades desmarcadas
+            @rendicion.rendicion_gastos_fpl.where.not(plan_actividad_id: actividades_list).destroy_all
+
+            # B) Desvincular/Eliminar relaciones de actividades en los detalles técnicos/financieros
+            RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
+                                        .where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id })
+                                        .where.not(plan_actividad_id: actividades_list)
+                                        .destroy_all
+
+            # C) Eliminar detalles huérfanos (que se quedaron sin actividades asociadas)
+            @rendicion.rendicion_detalles_fpl.reload.each do |detalle|
+              detalle.destroy if detalle.rendicion_detalle_actividades_fpl.empty?
+            end
+          else
+            # Si se desmarcaron TODAS las actividades, borrar todos los gastos y detalles
+            @rendicion.rendicion_gastos_fpl.destroy_all
+            @rendicion.rendicion_detalles_fpl.destroy_all
+          end
+        elsif @rendicion.try(:sin_movimientos)
+          # Si se marcó "Sin movimientos", purgar toda la rendición
+          @rendicion.rendicion_gastos_fpl.destroy_all
+          @rendicion.rendicion_detalles_fpl.destroy_all
+        end
+
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica']
 
         # -------------------------------------------------------------
-        # TAB 1: TÉCNICA
+        # PROCESAR LAS PESTAÑAS (SOLO SI NO ES "SIN MOVIMIENTOS")
         # -------------------------------------------------------------
-        actividades_list = params[:actividades_ids].present? ? params[:actividades_ids] : (@actividad_x_linea || []).map(&:id)
-
-        actividades_list.each do |actividad_id|
-          nivel_avance_val  = params["realizada_actividad_#{actividad_id}"] # '0', '1' o '2'
-          obs_val           = params["observacion_actividad_#{actividad_id}"]
-          archivo_val       = params["archivo_rendicion_#{actividad_id}"]
-          fecha_inicio_val  = params["fecha_inicio_actividad_#{actividad_id}"]
-          fecha_termino_val = params["fecha_termino_actividad_#{actividad_id}"]
-
-          next if nivel_avance_val.blank?
-
-          detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                                    .find_by(
-                                                      rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num },
-                                                      plan_actividad_id: actividad_id
-                                                    )
-
-          detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
+        unless @rendicion.try(:sin_movimientos)
           
-          # Guardado directo de campos
-          detalle.fecha_inicio  = fecha_inicio_val
-          detalle.fecha_termino = fecha_termino_val
-          detalle.nivel_avance  = nivel_avance_val.to_i  # Guarda 0, 1 o 2 directamente
-          detalle.observacion   = obs_val
-          detalle.archivo       = archivo_val if archivo_val.present?
-          
-          detalle.save!
+          # -------------------------------------------------------------
+          # TAB 1: TÉCNICA
+          # -------------------------------------------------------------
+          actividades_list.each do |actividad_id|
+            nivel_avance_val  = params["realizada_actividad_#{actividad_id}"] # '0', '1' o '2'
+            obs_val           = params["observacion_actividad_#{actividad_id}"]
+            archivo_val       = params["archivo_rendicion_#{actividad_id}"]
+            fecha_inicio_val  = params["fecha_inicio_actividad_#{actividad_id}"]
+            fecha_termino_val = params["fecha_termino_actividad_#{actividad_id}"]
 
-          unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
-            detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
-          end
-        end
+            next if nivel_avance_val.blank?
 
-        # -------------------------------------------------------------
-        # TAB 2: FINANCIERA FPL
-        # -------------------------------------------------------------
-        if params[:documentos_fpl].present?
-          docs_fpl_list = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : Array(params[:documentos_fpl])
+            detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
+                                                      .find_by(
+                                                        rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num },
+                                                        plan_actividad_id: actividad_id
+                                                      )
 
-          docs_fpl_list.each do |doc_params|
-            doc_id = doc_params[:id]
-
-            # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
-            if doc_params[:_destroy].to_s == '1' && doc_id.present?
-              @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
-              next
-            end
-
-            next if doc_id.blank? && doc_params[:archivo].blank?
-
-            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
-            detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
-
-            detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+            detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
+            
+            # Guardado directo de campos
+            detalle.fecha_inicio  = fecha_inicio_val
+            detalle.fecha_termino = fecha_termino_val
+            detalle.nivel_avance  = nivel_avance_val.to_i  # Guarda 0, 1 o 2 directamente
+            detalle.observacion   = obs_val
+            detalle.archivo       = archivo_val if archivo_val.present?
+            
             detalle.save!
 
-            if doc_params[:actividad_ids].present?
-              detalle.rendicion_detalle_actividades_fpl.destroy_all
-              doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
-                detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+            unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
+              detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+            end
+          end
+
+          # -------------------------------------------------------------
+          # TAB 2: FINANCIERA FPL
+          # -------------------------------------------------------------
+          if params[:documentos_fpl].present?
+            docs_fpl_list = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : Array(params[:documentos_fpl])
+
+            docs_fpl_list.each do |doc_params|
+              doc_id = doc_params[:id]
+
+              # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
+              if doc_params[:_destroy].to_s == '1' && doc_id.present?
+                @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
+                next
+              end
+
+              next if doc_id.blank? && doc_params[:archivo].blank?
+
+              detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
+              detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
+
+              detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+              detalle.save!
+
+              if doc_params[:actividad_ids].present?
+                detalle.rendicion_detalle_actividades_fpl.destroy_all
+                doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
+                  detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+                end
               end
             end
           end
-        end
 
-        # -------------------------------------------------------------
-        # TAB 3: FINANCIERA APORTE PROPIO
-        # -------------------------------------------------------------
-        if params[:documentos_aporte].present?
-          docs_aporte_list = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : Array(params[:documentos_aporte])
+          # -------------------------------------------------------------
+          # TAB 3: FINANCIERA APORTE PROPIO
+          # -------------------------------------------------------------
+          if params[:documentos_aporte].present?
+            docs_aporte_list = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : Array(params[:documentos_aporte])
 
-          docs_aporte_list.each do |doc_params|
-            doc_id = doc_params[:id]
+            docs_aporte_list.each do |doc_params|
+              doc_id = doc_params[:id]
 
-            # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
-            if doc_params[:_destroy].to_s == '1' && doc_id.present?
-              @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
-              next
-            end
+              # ELIMINACIÓN FÍSICA SI SE MARCA _destroy == '1'
+              if doc_params[:_destroy].to_s == '1' && doc_id.present?
+                @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
+                next
+              end
 
-            next if doc_id.blank? && doc_params[:archivo].blank?
+              next if doc_id.blank? && doc_params[:archivo].blank?
 
-            detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
-            detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
+              detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
+              detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
 
-            detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
-            detalle.save!
+              detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+              detalle.save!
 
-            if doc_params[:actividad_ids].present?
-              detalle.rendicion_detalle_actividades_fpl.destroy_all
-              doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
-                detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+              if doc_params[:actividad_ids].present?
+                detalle.rendicion_detalle_actividades_fpl.destroy_all
+                doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
+                  detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+                end
               end
             end
           end
-        end
 
-        # -------------------------------------------------------------
-        # GUARDADO DE GASTOS RENDIDOS DETALLADOS POR ACTIVIDAD
-        # -------------------------------------------------------------
-        guardar_gastos_rendiciones_detallados(@rendicion, actividades_list)
+          # -------------------------------------------------------------
+          # GUARDADO DE GASTOS RENDIDOS DETALLADOS POR ACTIVIDAD
+          # -------------------------------------------------------------
+          guardar_gastos_rendiciones_detallados(@rendicion, actividades_list)
+        end # Fin unless sin_movimientos
 
         # -------------------------------------------------------------
         # ACCIÓN SEGÚN EL BOTÓN PRESIONADO
