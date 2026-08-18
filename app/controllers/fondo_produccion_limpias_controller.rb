@@ -7196,16 +7196,23 @@ class FondoProduccionLimpiasController < ApplicationController
         item_origen_id: item_id
       )
 
-      cant_rendida = gasto[:cantidad_rendida].to_f.clamp(0, 999)
-      val_unitario = gasto[:valor_unitario].to_f
+      # ----------------------------------------------------------------------
+      # REEMPLAZAR COMA POR PUNTO Y CONVERTIR A FLOTANTE PARA EVITAR FALLOS
+      # ----------------------------------------------------------------------
+      cant_rendida = gasto[:cantidad_rendida].to_s.tr(',', '.').to_f.clamp(0, 999.99)
+      
+      # El valor unitario original se mantiene en la columna antigua, el editado en la nueva
+      val_unitario_original = gasto[:valor_unitario_postulado].to_s.tr(',', '.').to_f
+      val_unitario_rendido  = gasto[:valor_unitario].to_s.tr(',', '.').to_f
 
       registro.assign_attributes(
-        tipo_aporte: gasto[:tipo_aporte],
-        valor_unitario: val_unitario,
-        cantidad_postulada: gasto[:cantidad_postulada].to_f,
-        costo_postulado: gasto[:costo_postulado].to_f,
-        cantidad_rendida: cant_rendida,
-        costo_rendido: (cant_rendida * val_unitario).round(2)
+        tipo_aporte:            gasto[:tipo_aporte],
+        valor_unitario:         val_unitario_original,     # (Mantienes el histórico del presupuesto)
+        valor_unitario_rendido: val_unitario_rendido,      # <--- NUEVA COLUMNA BBDD
+        cantidad_postulada:     gasto[:cantidad_postulada].to_s.tr(',', '.').to_f,
+        costo_postulado:        gasto[:costo_postulado].to_s.tr(',', '.').to_f,
+        cantidad_rendida:       cant_rendida,
+        costo_rendido:          (cant_rendida * val_unitario_rendido).round(2)
       )
 
       registro.save!

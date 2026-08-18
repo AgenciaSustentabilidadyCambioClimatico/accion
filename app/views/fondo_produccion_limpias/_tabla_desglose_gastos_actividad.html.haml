@@ -1,17 +1,53 @@
 :javascript
-  function calcularCostoRendido(input) {
-    let val = parseFloat(input.value);
-    if (isNaN(val) || val < 0) {
-      val = 0;
-    } else if (val > 999) {
-      val = 999;
+  function sanitizarDecimalesYCalcular(input) {
+    // 1. Eliminar cualquier carácter que NO sea número o coma
+    let valor = input.value.replace(/[^0-9,]/g, '');
+
+    // 2. Asegurar que solo exista UNA coma
+    const partes = valor.split(',');
+    if (partes.length > 2) {
+      // Si hay más de una, unimos el resto quitando las comas extra
+      valor = partes[0] + ',' + partes.slice(1).join('').replace(/,/g, '');
     }
-    input.value = val;
 
-    const valorUnitario = parseFloat($(input).data('valor-unitario')) || 0;
-    const costoRendido = val * valorUnitario;
+    // 3. Limitar a máximo 2 decimales después de la coma
+    if (partes.length === 2 && partes[1].length > 2) {
+      valor = partes[0] + ',' + partes[1].substring(0, 2);
+    }
 
-    const $tr = $(input).closest('tr');
+    // Actualizar visualmente el input si se limpió algo
+    if (input.value !== valor) {
+      input.value = valor;
+    }
+
+    // Proceder al cálculo
+    calcularCostoRendidoFila(input);
+  }
+
+  function calcularCostoRendidoFila(elemento) {
+    const $tr = $(elemento).closest('tr');
+    
+    // Inputs Visibles (Tienen comas)
+    const $inputVisCantidad = $tr.find('.input-cantidad-rendida');
+    const $inputVisValorUnitario = $tr.find('.input-valor-unitario-rendido');
+    
+    // Inputs Ocultos (Enviarán puntos al backend)
+    const $hiddenCantidad = $tr.find('.real-cantidad-rendida');
+    const $hiddenValorUnitario = $tr.find('.real-valor-unitario-rendido');
+    
+    // Convertir de coma a punto para calcular en JavaScript
+    let cantidad = parseFloat($inputVisCantidad.val().replace(',', '.'));
+    if (isNaN(cantidad) || cantidad < 0) { cantidad = 0; }
+    
+    let valorUnitario = parseFloat($inputVisValorUnitario.val().replace(',', '.'));
+    if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
+
+    // Sincronizar valores correctos (con punto) hacia los campos ocultos para el guardado en BD
+    $hiddenCantidad.val(cantidad);
+    $hiddenValorUnitario.val(valorUnitario);
+
+    // Calcular e imprimir monto rendido en la fila
+    const costoRendido = cantidad * valorUnitario;
     const $cellCosto = $tr.find('.cell-costo-rendido');
     $cellCosto.data('val-costo', costoRendido);
 
@@ -24,7 +60,8 @@
 
     $cellCosto.text(formateado);
 
-    const $table = $(input).closest('table');
+    // Recalcular Total General de la Tabla
+    const $table = $tr.closest('table');
     let totalRendido = 0;
 
     $table.find('.cell-costo-rendido').each(function() {
@@ -64,13 +101,14 @@
           %thead
             %tr.bg-light
               %th.encabezado-form{style: "width: 15%;"} Categoría
-              %th.encabezado-form{style: "width: 20%;"} Nombre / Ítem
-              %th.encabezado-form{style: "width: 10%;"} Valor HH / Unitario
-              %th.encabezado-form{style: "width: 10%;"} HH / Unidad Solicitado
-              %th.encabezado-form{style: "width: 15%;"} Tipo Aporte
+              %th.encabezado-form{style: "width: 15%;"} Nombre / Ítem
+              %th.encabezado-form{style: "width: 10%;"} HH / Und. Solicitado
+              %th.encabezado-form{style: "width: 10%;"} Valor Und. Solicitado
               %th.encabezado-form{style: "width: 10%;"} Monto Solicitado
-              %th.encabezado-form{style: "width: 10%;"} HH / Unidad Rendido
+              %th.encabezado-form{style: "width: 10%;"} HH / Und. Rendido
+              %th.encabezado-form{style: "width: 10%;"} Valor Und. Rendido
               %th.encabezado-form{style: "width: 10%;"} Monto Rendido
+              %th.encabezado-form{style: "width: 10%;"} Tipo Aporte
           %tbody
             -# Iteración dinámica de categorías
             - [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ].each do |cat_key, cat_label|
@@ -79,52 +117,85 @@
                 - row_key = "#{current_act_id}_#{cat_key}_#{item.id}"
                 - g_guardado = rendicion_gastos_map["#{current_act_id}_#{cat_key}_#{item.id}"]
 
+                -# Variables base (Solicitado / Presupuestado)
+                - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+                - hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
+                - monto_postulado = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario_solicitado)
+
+                -# Variables dinámicas (Rendido)
                 - if g_guardado.present?
-                  - v_unitario        = g_guardado.valor_unitario.to_f
-                  - hh_postulada      = g_guardado.cantidad_postulada.to_f
-                  - monto_postulado   = g_guardado.costo_postulado.to_f
-                  - cantidad_rendida  = g_guardado.cantidad_rendida.to_f
-                  - monto_rendido     = g_guardado.costo_rendido.to_f
+                  - cantidad_rendida = g_guardado.cantidad_rendida.to_f
+                  
+                  -# OJO AQUÍ: Intenta leer la nueva columna, si no existe o es nula (registros antiguos), lee la original.
+                  - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present?
+                    - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
+                  - else
+                    - v_unitario_rendido = g_guardado.valor_unitario.to_f
+                    
+                  - monto_rendido = g_guardado.costo_rendido.to_f
                 - else
-                  - v_unitario        = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-                  - hh_postulada      = (item.try(:hh) || item.try(:cantidad)).to_f
-                  - monto_postulado   = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario)
-                  - cantidad_rendida  = hh_postulada
-                  - monto_rendido     = cantidad_rendida * v_unitario
+                  - cantidad_rendida = hh_postulada
+                  - v_unitario_rendido = v_unitario_solicitado
+                  - monto_rendido = cantidad_rendida * v_unitario_rendido
 
                 - total_costo_postulado += monto_postulado
-                - total_costo_rendido   += monto_rendido
+                - total_costo_rendido += monto_rendido
+
+                -# Formateo para la vista inicial (Si es entero no muestra decimales, y reemplaza punto por coma)
+                - cantidad_rendida_str = (cantidad_rendida % 1 == 0 ? cantidad_rendida.to_i : cantidad_rendida.round(2)).to_s.tr('.', ',')
+                - v_unitario_rendido_str = (v_unitario_rendido % 1 == 0 ? v_unitario_rendido.to_i : v_unitario_rendido.round(2)).to_s.tr('.', ',')
 
                 %tr
                   %td.contenido-form= cat_label
                   %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
-                  %td.contenido-form.text-right= number_to_currency(v_unitario)
+                  
+                  -# Bloque Presupuesto Original
                   %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
-                  %td.contenido-form.text-center= item.try(:tipo_aporte)
+                  %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
                   %td.contenido-form.text-right.font-weight-bold= number_to_currency(monto_postulado)
-                  %td.contenido-form.text-center
-                    - if es_editable
-                      -# MODO EDICIÓN: Cuadro de entrada
+
+                  -# Bloque Edición Rendición
+                  - if es_editable
+                    %td.contenido-form.text-center
                       = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", current_act_id
                       = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key
                       = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
                       = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
-                      = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario
                       = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
                       = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
+                      
+                      -# OJO AQUÍ: Mandamos el valor original al backend con la llave :valor_unitario_postulado
+                      = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
 
-                      = number_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "form-control smaller-text border-text text-center input-cantidad-rendida", min: 0, max: 999, data: { valor_unitario: v_unitario }, oninput: "calcularCostoRendido(this)", style: "width: 70px; margin: 0 auto;"
-                    - else
-                      -# MODO LECTURA: Texto simple
-                      %span.font-weight-bold= cantidad_rendida
+                      -# Campo oculto que enviará el número REAL de Cantidad a BD
+                      = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
+                      
+                      -# Campo visible tipo texto con filtro de comas (CANTIDAD)
+                      = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
+                    
+                    %td.contenido-form.text-center
+                      -# Campo oculto que enviará el número REAL del Valor Unitario a BD
+                      = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
+                      
+                      -# Campo visible tipo texto con filtro de comas (VALOR UNITARIO RENDIDO)
+                      = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 90px; margin: 0 auto;", autocomplete: "off"
+                  - else
+                    %td.contenido-form.text-center
+                      %span.font-weight-bold= cantidad_rendida_str
+                    %td.contenido-form.text-center
+                      %span.font-weight-bold= number_to_currency(v_unitario_rendido)
+
+                  -# Resultado Dinámico
                   %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
+                  %td.contenido-form.text-center= item.try(:tipo_aporte)
 
             -# FILA DE TOTALES GENERALES
             %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
-              %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL:
+              %td.contenido-form.text-right.font-weight-bold{colspan: 4} TOTAL:
               %td.contenido-form.text-right.font-weight-bold.text-primary= number_to_currency(total_costo_postulado)
-              %td.contenido-form
+              %td.contenido-form{colspan: 2}
               %td.contenido-form.text-right.font-weight-bold.text-success.cell-total-costo-rendido= number_to_currency(total_costo_rendido)
+              %td.contenido-form
     - else
       .text-center.text-muted.py-2{style: "font-size: 11px;"}
         %i.fa.fa-info-circle.mr-1
