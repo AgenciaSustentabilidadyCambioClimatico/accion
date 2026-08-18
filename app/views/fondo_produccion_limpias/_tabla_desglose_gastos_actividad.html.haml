@@ -46,36 +46,44 @@
     $hiddenCantidad.val(cantidad);
     $hiddenValorUnitario.val(valorUnitario);
 
-    // Calcular e imprimir monto rendido en la fila
-    const costoRendido = cantidad * valorUnitario;
-    const $cellCosto = $tr.find('.cell-costo-rendido');
-    $cellCosto.data('val-costo', costoRendido);
-
-    const formateado = new Intl.NumberFormat('es-CL', {
+    // Formateador moneda
+    const formateador = new Intl.NumberFormat('es-CL', {
       style: 'currency',
       currency: 'CLP',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(costoRendido);
+    });
 
-    $cellCosto.text(formateado);
+    // Calcular e imprimir Monto Rendido en la fila
+    const costoRendido = cantidad * valorUnitario;
+    const $cellCosto = $tr.find('.cell-costo-rendido');
+    $cellCosto.data('val-costo', costoRendido);
+    $cellCosto.text(formateador.format(costoRendido));
 
-    // Recalcular Total General de la Tabla
+    // Calcular e imprimir Saldo en la fila (Monto Solicitado - Monto Rendido, mínimo 0)
+    const costoSolicitado = parseFloat($tr.find('.cell-costo-solicitado').data('val-solicitado')) || 0;
+    let saldo = costoSolicitado - costoRendido;
+    if (saldo < 0) { saldo = 0; }
+    
+    const $cellSaldo = $tr.find('.cell-saldo');
+    $cellSaldo.data('val-saldo', saldo);
+    $cellSaldo.text(formateador.format(saldo));
+
+    // Recalcular Totales Generales de la Tabla
     const $table = $tr.closest('table');
     let totalRendido = 0;
+    let totalSaldo = 0;
 
     $table.find('.cell-costo-rendido').each(function() {
       totalRendido += parseFloat($(this).data('val-costo')) || 0;
     });
 
-    const totalFormateado = new Intl.NumberFormat('es-CL', {
-      style: 'currency',
-      currency: 'CLP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(totalRendido);
+    $table.find('.cell-saldo').each(function() {
+      totalSaldo += parseFloat($(this).data('val-saldo')) || 0;
+    });
 
-    $table.find('.cell-total-costo-rendido').text(totalFormateado);
+    $table.find('.cell-total-costo-rendido').text(formateador.format(totalRendido));
+    $table.find('.cell-total-saldo').text(formateador.format(totalSaldo));
   }
 
 - gastos = local_assigns[:gastos] || {}
@@ -85,6 +93,7 @@
 
 - total_costo_postulado = 0
 - total_costo_rendido = 0
+- total_saldo_general = 0
 
 -# Carga de rendiciones previas guardadas para esta rendición (si existen)
 - rendicion_gastos_map = @rendicion.present? ? @rendicion.rendicion_gastos_fpl.index_by { |g| "#{g.plan_actividad_id}_#{g.categoria}_#{g.item_origen_id}" } : {}
@@ -100,15 +109,16 @@
         %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
           %thead
             %tr.bg-light
-              %th.encabezado-form{style: "width: 15%;"} Categoría
+              %th.encabezado-form{style: "width: 14%;"} Categoría
               %th.encabezado-form{style: "width: 15%;"} Nombre / Ítem
-              %th.encabezado-form{style: "width: 10%;"} HH / Und. Solicitado
-              %th.encabezado-form{style: "width: 10%;"} Valor Und. Solicitado
-              %th.encabezado-form{style: "width: 10%;"} Monto Solicitado
-              %th.encabezado-form{style: "width: 10%;"} HH / Und. Rendido
-              %th.encabezado-form{style: "width: 10%;"} Valor Und. Rendido
-              %th.encabezado-form{style: "width: 10%;"} Monto Rendido
               %th.encabezado-form{style: "width: 10%;"} Tipo Aporte
+              %th.encabezado-form{style: "width: 8%;"} HH / Und. Solicitado
+              %th.encabezado-form{style: "width: 9%;"} Valor Und. Solicitado
+              %th.encabezado-form{style: "width: 9%;"} Monto Solicitado
+              %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
+              %th.encabezado-form{style: "width: 9%;"} Valor Und. Rendido
+              %th.encabezado-form{style: "width: 9%;"} Monto Rendido
+              %th.encabezado-form{style: "width: 9%;"} Saldo
           %tbody
             -# Iteración dinámica de categorías
             - [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ].each do |cat_key, cat_label|
@@ -138,8 +148,13 @@
                   - v_unitario_rendido = v_unitario_solicitado
                   - monto_rendido = cantidad_rendida * v_unitario_rendido
 
+                -# Variables Dinámicas (Saldo)
+                - saldo_actual = monto_postulado - monto_rendido
+                - saldo_actual = 0 if saldo_actual < 0
+
                 - total_costo_postulado += monto_postulado
                 - total_costo_rendido += monto_rendido
+                - total_saldo_general += saldo_actual
 
                 -# Formateo para la vista inicial (Si es entero no muestra decimales, y reemplaza punto por coma)
                 - cantidad_rendida_str = (cantidad_rendida % 1 == 0 ? cantidad_rendida.to_i : cantidad_rendida.round(2)).to_s.tr('.', ',')
@@ -148,11 +163,14 @@
                 %tr
                   %td.contenido-form= cat_label
                   %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                  %td.contenido-form.text-center= item.try(:tipo_aporte)
                   
                   -# Bloque Presupuesto Original
                   %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
                   %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
-                  %td.contenido-form.text-right.font-weight-bold= number_to_currency(monto_postulado)
+                  
+                  -# Columna Monto Solicitado (Añadido ID cell-costo-solicitado para el JS)
+                  %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
 
                   -# Bloque Edición Rendición
                   - if es_editable
@@ -164,7 +182,7 @@
                       = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
                       = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
                       
-                      -# OJO AQUÍ: Mandamos el valor original al backend con la llave :valor_unitario_postulado
+                      -# Mandamos el valor original al backend con la llave :valor_unitario_postulado
                       = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
 
                       -# Campo oculto que enviará el número REAL de Cantidad a BD
@@ -185,17 +203,19 @@
                     %td.contenido-form.text-center
                       %span.font-weight-bold= number_to_currency(v_unitario_rendido)
 
-                  -# Resultado Dinámico
+                  -# Resultado Dinámico: Monto Rendido
                   %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
-                  %td.contenido-form.text-center= item.try(:tipo_aporte)
+                  
+                  -# Resultado Dinámico: Saldo
+                  %td.contenido-form.text-right.font-weight-bold.cell-saldo{data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
 
             -# FILA DE TOTALES GENERALES
             %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
-              %td.contenido-form.text-right.font-weight-bold{colspan: 4} TOTAL:
-              %td.contenido-form.text-right.font-weight-bold.text-primary= number_to_currency(total_costo_postulado)
+              %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL:
+              %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
               %td.contenido-form{colspan: 2}
               %td.contenido-form.text-right.font-weight-bold.text-success.cell-total-costo-rendido= number_to_currency(total_costo_rendido)
-              %td.contenido-form
+              %td.contenido-form.text-right.font-weight-bold.cell-total-saldo= number_to_currency(total_saldo_general)
     - else
       .text-center.text-muted.py-2{style: "font-size: 11px;"}
         %i.fa.fa-info-circle.mr-1
