@@ -2039,6 +2039,7 @@ class FondoProduccionLimpia < ApplicationRecord
     razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
     rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
     titulo_proyecto = fpl.try(:nombre_acuerdo).presence || fpl.try(:nombre) || fpl.try(:codigo_proyecto).to_s
+    programa_texto = fpl.try(:programa).presence || "--"
 
     # Helper para identificar registros de la Pestaña Técnica
     es_tecnica_tab = lambda do |d|
@@ -2082,6 +2083,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       tabla_ii = [
         [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
+        [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
         [ { content: "<b>Código SISREC:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Código Externo:</b>", inline_format: true }, "--" ],
         [ { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ]
       ]
@@ -2223,9 +2225,9 @@ class FondoProduccionLimpia < ApplicationRecord
       # Bloque de dos columnas para los responsables
       tabla_funcionarios = [
         [ "Nombre del Responsable", "___________________________", "", "Nombre del Responsable", "___________________________" ],
-        [ "RUT",                    "___________________________", "", "RUT",                    "___________________________" ],
-        [ "Cargo",                  "___________________________", "", "Cargo",                  "___________________________" ],
-        [ "Dependencia",            "___________________________", "", "Dependencia",            "___________________________" ]
+        [ "RUT",                     "___________________________", "", "RUT",                     "___________________________" ],
+        [ "Cargo",                   "___________________________", "", "Cargo",                   "___________________________" ],
+        [ "Dependencia",             "___________________________", "", "Dependencia",             "___________________________" ]
       ]
 
       pdf.table(tabla_funcionarios, cell_style: { size: 8, padding: 3, borders: [] }) do

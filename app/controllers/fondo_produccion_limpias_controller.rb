@@ -2538,6 +2538,7 @@ class FondoProduccionLimpiasController < ApplicationController
         custom_params = {
           fondo_produccion_limpia: {
             codigo_proyecto: params[:codigo_proyecto],
+            programa: params[:programa],
             revisor_tecnico_id: params[:revisor_tecnico_id],
             revisor_financiero_id: params[:revisor_financiero_id],
             revisor_juridico_id: params[:revisor_juridico_id],
