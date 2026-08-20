@@ -64,8 +64,13 @@
 
     // 1. Recalcular Totales de la Tabla Específica
     const $table = $tr.closest('table');
+    let totalSolicitado = 0;
     let totalRendido = 0;
     let totalSaldo = 0;
+
+    $table.find('.cell-costo-solicitado').each(function() {
+      totalSolicitado += parseFloat($(this).data('val-solicitado')) || 0;
+    });
 
     $table.find('.cell-costo-rendido').each(function() {
       totalRendido += parseFloat($(this).data('val-costo')) || 0;
@@ -75,8 +80,21 @@
       totalSaldo += parseFloat($(this).data('val-saldo')) || 0;
     });
 
-    $table.find('.cell-total-costo-rendido').text(formateador.format(totalRendido));
+    const $cellTotalRendido = $table.find('.cell-total-costo-rendido');
+    $cellTotalRendido.text(formateador.format(totalRendido));
     $table.find('.cell-total-saldo').text(formateador.format(totalSaldo));
+
+    // VALIDACIÓN EXCESO DE MONTO RENDIDO
+    const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
+    if (totalRendido > totalSolicitado) {
+      $cellTotalRendido.removeClass('text-success').addClass('text-danger');
+      $table.addClass('has-exceso-error');
+      $msgExceso.slideDown(200);
+    } else {
+      $cellTotalRendido.removeClass('text-danger').addClass('text-success');
+      $table.removeClass('has-exceso-error');
+      $msgExceso.slideUp(200);
+    }
 
     // 2. Recalcular Gran Total General de la Actividad
     const $container = $tr.closest('.card-body');
@@ -93,6 +111,10 @@
 
     $container.find('.cell-gran-total-costo-rendido').text(formateador.format(granTotalRendido));
     $container.find('.cell-gran-total-saldo').text(formateador.format(granTotalSaldo));
+
+    if (typeof validarFormulario === 'function') {
+      validarFormulario();
+    }
   }
 
 - gastos = local_assigns[:gastos] || {}
@@ -136,112 +158,120 @@
               %i.fa.fa-layer-group.mr-1
               = tp_info[:label]
 
-        .table-responsive.mb-3
-          %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
-            %thead
-              %tr.bg-light
-                %th.encabezado-form{style: "width: 13%;"} Categoría
-                %th.encabezado-form{style: "width: 14%;"} Nombre / Ítem
-                %th.encabezado-form{style: "width: 12%;"} Tipo Aporte
-                %th.encabezado-form{style: "width: 8%;"} HH / Und. Solicitado
-                %th.encabezado-form{style: "width: 8%;"} Valor Und. Solicitado
-                %th.encabezado-form{style: "width: 8%;"} Monto Solicitado
-                %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
-                %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
-                %th.encabezado-form{style: "width: 8%;"} Monto Rendido
-                %th.encabezado-form{style: "width: 6%;"} Saldo
-                %th.encabezado-form{style: "width: 7%;"} Comprobante Ref.
-            %tbody
-              - categorias_def.each do |cat_key, cat_label|
-                - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }
-                - items_cat.each do |item|
-                  - current_act_id = actividad_id_param || item.try(:plan_actividad_id) || item.try(:actividad_id)
-                  - row_key = "#{current_act_id}_#{cat_key}_#{item.id}"
-                  - g_guardado = rendicion_gastos_map["#{current_act_id}_#{cat_key}_#{item.id}"]
-                  - comprobante_ref_val = ""
+        .table-responsive-container.mb-3
+          .table-responsive
+            %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+              %thead
+                %tr.bg-light
+                  %th.encabezado-form{style: "width: 13%;"} Categoría
+                  %th.encabezado-form{style: "width: 14%;"} Nombre / Ítem
+                  %th.encabezado-form{style: "width: 12%;"} Tipo Aporte
+                  %th.encabezado-form{style: "width: 8%;"} HH / Und. Solicitado
+                  %th.encabezado-form{style: "width: 8%;"} Valor Und. Solicitado
+                  %th.encabezado-form{style: "width: 8%;"} Monto Solicitado
+                  %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
+                  %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
+                  %th.encabezado-form{style: "width: 8%;"} Monto Rendido
+                  %th.encabezado-form{style: "width: 6%;"} Saldo
+                  %th.encabezado-form{style: "width: 7%;"} Comprobante Ref.
+              %tbody
+                - categorias_def.each do |cat_key, cat_label|
+                  - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }
+                  - items_cat.each do |item|
+                    - current_act_id = actividad_id_param || item.try(:plan_actividad_id) || item.try(:actividad_id)
+                    - row_key = "#{current_act_id}_#{cat_key}_#{item.id}"
+                    - g_guardado = rendicion_gastos_map["#{current_act_id}_#{cat_key}_#{item.id}"]
+                    - comprobante_ref_val = ""
 
-                  - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-                  - hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
-                  - monto_postulado = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario_solicitado)
+                    - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
+                    - hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
+                    - monto_postulado = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario_solicitado)
 
-                  - if g_guardado.present?
-                    - cantidad_rendida = g_guardado.cantidad_rendida.to_f
-                    - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present?
-                      - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
-                    - else
-                      - v_unitario_rendido = g_guardado.valor_unitario.to_f
-                    - monto_rendido = g_guardado.costo_rendido.to_f
-                    - comprobante_ref_val = g_guardado.try(:comprobante_ref).to_s
-                  - else
-                    - cantidad_rendida = hh_postulada
-                    - v_unitario_rendido = v_unitario_solicitado
-                    - monto_rendido = cantidad_rendida * v_unitario_rendido
-
-                  - saldo_actual = monto_postulado - monto_rendido
-                  - saldo_actual = 0 if saldo_actual < 0
-
-                  - total_costo_postulado += monto_postulado
-                  - total_costo_rendido += monto_rendido
-                  - total_saldo_general += saldo_actual
-
-                  - cantidad_rendida_str = (cantidad_rendida % 1 == 0 ? cantidad_rendida.to_i : cantidad_rendida.round(2)).to_s.tr('.', ',')
-                  - v_unitario_rendido_str = (v_unitario_rendido % 1 == 0 ? v_unitario_rendido.to_i : v_unitario_rendido.round(2)).to_s.tr('.', ',')
-
-                  -# Evaluación para permitir edición de Valor Unitario únicamente en Operaciones y Administración
-                  - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
-
-                  %tr
-                    %td.contenido-form= cat_label
-                    %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
-                    %td.contenido-form.text-center= item.try(:tipo_aporte)
-                    
-                    %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
-                    %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
-                    
-                    %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
-
-                    - if es_editable
-                      %td.contenido-form.text-center
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", current_act_id
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
-
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
-                        = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
-                      
-                      %td.contenido-form.text-center
-                        = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
-                        - if es_gasto_oper_adm
-                          = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 90px; margin: 0 auto;", autocomplete: "off"
-                        - else
-                          = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
-                          %span.font-weight-bold= number_to_currency(v_unitario_rendido)
-                    - else
-                      %td.contenido-form.text-center
-                        %span.font-weight-bold= cantidad_rendida_str
-                      %td.contenido-form.text-center
-                        %span.font-weight-bold= number_to_currency(v_unitario_rendido)
-
-                    %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
-                    %td.contenido-form.text-right.font-weight-bold.cell-saldo{data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
-
-                    %td.contenido-form.text-center
-                      - if es_editable
-                        = text_field_tag "gastos_rendidos[#{row_key}][comprobante_ref]", comprobante_ref_val, class: "form-control smaller-text border-text text-center input-comprobante-ref", oninput: "sanitizarComprobante(this)", maxlength: 10, style: "width: 80px; margin: 0 auto; text-transform: uppercase;", autocomplete: "off", placeholder: "Ej: F1234"
+                    - if g_guardado.present?
+                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f
+                      - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present? && g_guardado.valor_unitario_rendido.to_f > 0
+                        - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
                       - else
-                        %span.font-weight-bold= comprobante_ref_val.presence || '--'
+                        - v_unitario_rendido = g_guardado.valor_unitario.to_f
+                      
+                      - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
+                      - comprobante_ref_val = g_guardado.try(:comprobante_ref).to_s
+                    - else
+                      - cantidad_rendida = hh_postulada
+                      - v_unitario_rendido = v_unitario_solicitado
+                      - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
 
-              %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
-                %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL TABLA:
-                %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
-                %td.contenido-form{colspan: 2}
-                %td.contenido-form.text-right.font-weight-bold.text-success.cell-total-costo-rendido= number_to_currency(total_costo_rendido)
-                %td.contenido-form.text-right.font-weight-bold.cell-total-saldo= number_to_currency(total_saldo_general)
-                %td.contenido-form
+                    - saldo_actual = monto_postulado - monto_rendido
+                    - saldo_actual = 0 if saldo_actual < 0
+
+                    -# SUMA CORRECTA DE TOTALES EN CADA ITERACIÓN
+                    - total_costo_postulado += monto_postulado
+                    - total_costo_rendido += monto_rendido
+                    - total_saldo_general += saldo_actual
+
+                    - cantidad_rendida_str = (cantidad_rendida % 1 == 0 ? cantidad_rendida.to_i : cantidad_rendida.round(2)).to_s.tr('.', ',')
+                    - v_unitario_rendido_str = (v_unitario_rendido % 1 == 0 ? v_unitario_rendido.to_i : v_unitario_rendido.round(2)).to_s.tr('.', ',')
+
+                    - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
+
+                    %tr
+                      %td.contenido-form= cat_label
+                      %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
+                      %td.contenido-form.text-center= item.try(:tipo_aporte)
+                      
+                      %td.contenido-form.text-center= "#{hh_postulada} #{item.try(:unidad) || 'HH'}"
+                      %td.contenido-form.text-right= number_to_currency(v_unitario_solicitado)
+                      
+                      %td.contenido-form.text-right.font-weight-bold.cell-costo-solicitado{data: { val_solicitado: monto_postulado }}= number_to_currency(monto_postulado)
+
+                      - if es_editable
+                        %td.contenido-form.text-center
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", current_act_id
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][costo_postulado]", monto_postulado
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario_postulado]", v_unitario_solicitado
+
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_rendida]", cantidad_rendida, class: "real-cantidad-rendida"
+                          = text_field_tag "vis_cant_#{row_key}", cantidad_rendida_str, class: "form-control smaller-text border-text text-center input-cantidad-rendida", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 70px; margin: 0 auto;", autocomplete: "off"
+                        
+                        %td.contenido-form.text-center
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
+                          - if es_gasto_oper_adm
+                            = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 90px; margin: 0 auto;", autocomplete: "off"
+                          - else
+                            = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
+                            %span.font-weight-bold= number_to_currency(v_unitario_rendido)
+                      - else
+                        %td.contenido-form.text-center
+                          %span.font-weight-bold= cantidad_rendida_str
+                        %td.contenido-form.text-center
+                          %span.font-weight-bold= number_to_currency(v_unitario_rendido)
+
+                      %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
+                      %td.contenido-form.text-right.font-weight-bold.cell-saldo{data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
+
+                      %td.contenido-form.text-center
+                        - if es_editable
+                          = text_field_tag "gastos_rendidos[#{row_key}][comprobante_ref]", comprobante_ref_val, class: "form-control smaller-text border-text text-center input-comprobante-ref", oninput: "sanitizarComprobante(this)", maxlength: 10, style: "width: 80px; margin: 0 auto; text-transform: uppercase;", autocomplete: "off", placeholder: "Ej: F1234"
+                        - else
+                          %span.font-weight-bold= comprobante_ref_val.presence || '--'
+
+                - tiene_exceso = total_costo_rendido > total_costo_postulado
+
+                %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
+                  %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL TABLA:
+                  %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
+                  %td.contenido-form{colspan: 2}
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-costo-rendido{class: (tiene_exceso ? 'text-danger' : 'text-success')}= number_to_currency(total_costo_rendido)
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-saldo= number_to_currency(total_saldo_general)
+                  %td.contenido-form
+
+          .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless tiene_exceso}"}
+            %i.fa.fa-exclamation-triangle.mr-1
+            El total del Monto Rendido no puede superar al Monto Solicitado.
 
         - gran_total_costo_postulado += total_costo_postulado
         - gran_total_costo_rendido += total_costo_rendido

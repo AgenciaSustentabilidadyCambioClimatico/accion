@@ -328,7 +328,8 @@
       resumenValido = false;
     }
 
-    const formCompleto = esSinMovimientos ? resumenValido : (tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido && resumenValido);
+    const tieneExcesoMonto = $('.has-exceso-error').length > 0;
+    const formCompleto = esSinMovimientos ? resumenValido : (tabTecnicaValido && tabFinancieraFplValido && tabFinancieraAporteValido && resumenValido && !tieneExcesoMonto);
     const botonEnviar = document.getElementById('enviar-button');
     
     if (botonEnviar) {
