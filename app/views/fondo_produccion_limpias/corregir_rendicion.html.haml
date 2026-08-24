@@ -203,6 +203,22 @@
 - actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
 - detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
+-# -------------------------------------------------------------
+-# CÁLCULO DE NIVELES DE AVANCE Y FECHA MES DISPLAY
+-# -------------------------------------------------------------
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).to_a rescue []
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
+- avances_aprobados_por_actividad = Hash.new(0)
+- rendiciones_todas.each do |rend|
+  - est_num = get_estado_num.call(rend)
+  - if [5, 6].include?(est_num)
+    - rend.rendicion_detalles_fpl.each do |det|
+      - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+      - val_av = det.nivel_avance.to_i
+      - det.rendicion_detalle_actividades_fpl.each do |rda|
+        - t_id = rda.plan_actividad_id.to_i
+        - avances_aprobados_por_actividad[t_id] = [avances_aprobados_por_actividad[t_id], val_av].max
+
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
 - if fecha_res.present?
@@ -276,11 +292,24 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
             
-            - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_inicio) || '--'
-            - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || detalle_tecnico&.try(:fecha_termino) || '--'
-            - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
+            - fecha_inicio_raw = detalle_tecnico&.try(:fecha_inicio)
+            - fecha_termino_raw = detalle_tecnico&.try(:fecha_termino)
+            - fecha_inicio_valor = fecha_inicio_raw&.try(:strftime, '%d-%m-%Y') || '--'
+            - fecha_termino_valor = fecha_termino_raw&.try(:strftime, '%d-%m-%Y') || '--'
+            - fecha_inicio_input = fecha_inicio_raw&.try(:strftime, '%Y-%m-%d') || fecha_inicio_raw
+            - fecha_termino_input = fecha_termino_raw&.try(:strftime, '%Y-%m-%d') || fecha_termino_raw
+
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+            - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
+
+            - nivel_avance_valor = detalle_tecnico&.nivel_avance.to_s
+            - min_avance = [min_avance, nivel_avance_valor.to_i].min if nivel_avance_valor.present? && nivel_avance_valor.to_i > 0
+            - opciones_avance = [['Seleccione...', '']] + (min_avance..100).map { |n| ["#{n}%", n.to_s] }
+
             - observacion_valor = detalle_tecnico&.observacion
-            
             - comentario_revisor_val = detalle_tecnico&.comentario_revisor
             - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
             - num_comentarios_post = comentario_postulante_val.to_s.split("\n").reject(&:blank?).count
@@ -317,18 +346,24 @@
                           %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
                       %tbody
                         %tr
-                          %td.contenido-form.text-center= fecha_inicio_valor
-                          %td.contenido-form.text-center= fecha_termino_valor
-                          %td.contenido-form.text-center
-                            - avance_num = detalle_tecnico&.nivel_avance.to_i
-                            - if avance_num > 0
-                              %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
-                            - else
-                              %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
                           - if @es_correccion_tecnica
+                            %td.contenido-form
+                              = date_field_tag "fecha_inicio_actividad_#{actividad.id}", fecha_inicio_input, class: "form-control smaller-text border-text w-100", onchange: "validarFormulario()"
+                            %td.contenido-form
+                              = date_field_tag "fecha_termino_actividad_#{actividad.id}", fecha_termino_input, class: "form-control smaller-text border-text w-100", onchange: "validarFormulario()"
+                            %td.contenido-form
+                              = select_tag "realizada_actividad_#{actividad.id}", options_for_select(opciones_avance, nivel_avance_valor), class: "form-control smaller-text border-text w-100", onchange: "validarFormulario()"
                             %td.contenido-form
                               = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text w-100", placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"
                           - else
+                            %td.contenido-form.text-center= fecha_inicio_valor
+                            %td.contenido-form.text-center= fecha_termino_valor
+                            %td.contenido-form.text-center
+                              - avance_num = detalle_tecnico&.nivel_avance.to_i
+                              - if avance_num > 0
+                                %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
+                              - else
+                                %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
                             %td.contenido-form= observacion_valor.presence || '--'
 
                   .mt-3.mb-2.px-1
@@ -411,7 +446,6 @@
 
               .collapse.show{id: "collapse_fpl_corr_#{actividad.id}"}
                 .card-body.p-2
-                  -# HABILITADO PARA EDITAR SI NO ES CORRECCIÓN TÉCNICA
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false)
 
                   - if !@es_correccion_tecnica
@@ -507,7 +541,6 @@
 
               .collapse.show{id: "collapse_aporte_corr_#{actividad.id}"}
                 .card-body.p-2
-                  -# HABILITADO PARA EDITAR SI NO ES CORRECCIÓN TÉCNICA
                   = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: (!@es_correccion_tecnica && @tiene_permisos != false)
 
                   - if !@es_correccion_tecnica

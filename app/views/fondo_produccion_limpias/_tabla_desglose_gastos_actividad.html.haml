@@ -173,7 +173,7 @@
                   %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
                   %th.encabezado-form{style: "width: 8%;"} Monto Rendido
                   %th.encabezado-form{style: "width: 6%;"} Saldo
-                  %th.encabezado-form{style: "width: 7%;"} Comprobante Ref.
+                  %th.encabezado-form{style: "width: 7%;"} N° Documento Respaldo
               %tbody
                 - categorias_def.each do |cat_key, cat_label|
                   - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }

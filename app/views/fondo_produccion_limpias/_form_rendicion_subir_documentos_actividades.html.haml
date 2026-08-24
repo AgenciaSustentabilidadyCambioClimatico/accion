@@ -4,13 +4,23 @@
 -# -------------------------------------------------------------
 -# 1. INICIALIZACIÓN DE VARIABLES Y EVALUACIÓN DE EDITABILIDAD
 -# -------------------------------------------------------------
-- es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && (@rendicion.nil? || @rendicion.borrador?)
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
+
+-# Permite editar si es borrador (0), observada técnica (3) o observada financiera (4)
+- estado_rend_actual = @rendicion ? get_estado_num.call(@rendicion) : 0
+- es_borrador_o_observada = @rendicion.nil? || [0, 3, 4].include?(estado_rend_actual)
+- es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && es_borrador_o_observada
+
 - paso_actual = params[:paso].to_s == '2' ? 2 : 1
 - detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
 - valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
 - duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
+
+-# Evaluación limpia y robusta de "Sin movimientos"
+- es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
 
 -# -------------------------------------------------------------
 -# CÁLCULO DE FECHA MES DISPLAY
@@ -24,18 +34,13 @@
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
 -# -------------------------------------------------------------
--# LOGICA DE ESTADOS Y EVALUACIÓN EN PROCESO (ESTADOS 1, 2, 3, 4)
+-# LOGICA DE ESTADOS Y EVALUACIÓN EN PROCESO (ESTADOS 1, 2)
 -# -------------------------------------------------------------
-- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
-- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
-
--# Extracción limpia de IDs en proceso (Estados 1, 2, 3, 4)
-- rendiciones_en_proceso = rendiciones_todas.select { |r| [1, 2, 3, 4].include?(get_estado_num.call(r)) }
+- rendiciones_en_proceso = rendiciones_todas.select { |r| [1, 2].include?(get_estado_num.call(r)) }
 - act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
 
--# Extracción limpia de IDs en borrador (Estado 0)
-- rendiciones_borrador = rendiciones_todas.select { |r| get_estado_num.call(r) == 0 }
-- act_ids_borrador = rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+- rendiciones_borrador = rendiciones_todas.select { |r| [0, 3, 4].include?(get_estado_num.call(r)) }
+- act_ids_borrador = es_sin_movimientos ? [] : rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
 
 -# Pendientes de Meses Anteriores
 - rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
@@ -57,8 +62,8 @@
     - det.rendicion_detalle_actividades_fpl.each do |rda|
       - t_id = rda.plan_actividad_id.to_i
       - avances_aprobados_por_actividad[t_id] = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
-      - avances_proceso_por_actividad[t_id]   = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2, 3, 4].include?(est_num)
-      - avances_borrador_por_actividad[t_id]  = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
+      - avances_proceso_por_actividad[t_id]   = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2].include?(est_num)
+      - avances_borrador_por_actividad[t_id]  = [avances_borrador_por_actividad[t_id], val_av].max if [0, 3, 4].include?(est_num)
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -118,14 +123,26 @@
           const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
           if (!permDisabled) {
             $(this).prop('disabled', false);
+            const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
+            if (debeMarcar) {
+              $(this).prop('checked', true);
+            }
           }
         });
       }
+      filtrarVistaPorSeleccion(obtenerActividadesSeleccionadas());
       validarFormulario();
     });
 
     if ($('#chk_sin_movimientos_paso1').is(':checked')) {
       $('#chk_sin_movimientos_paso1').trigger('change');
+    } else {
+      if (PASO_ACTUAL === 2 && ACTIVIDADES_GUARDADAS.length > 0) {
+        filtrarVistaPorSeleccion(ACTIVIDADES_GUARDADAS);
+      } else {
+        const seleccionadasIniciales = obtenerActividadesSeleccionadas();
+        filtrarVistaPorSeleccion(seleccionadasIniciales);
+      }
     }
 
     $('#chk_ultima_rendicion_paso1').on('change', function() {
@@ -159,13 +176,6 @@
       const seleccionadas = obtenerActividadesSeleccionadas();
       $('#hdn_actividades_seleccionadas').val(seleccionadas.join(','));
     });
-
-    if (PASO_ACTUAL === 2 && ACTIVIDADES_GUARDADAS.length > 0) {
-      filtrarVistaPorSeleccion(ACTIVIDADES_GUARDADAS);
-    } else {
-      const seleccionadasIniciales = obtenerActividadesSeleccionadas();
-      filtrarVistaPorSeleccion(seleccionadasIniciales);
-    }
 
     if (!ES_EDITABLE) {
       bloquearFormularioSoloLectura();
@@ -420,7 +430,7 @@
             %span.badge.badge-primary{style: "font-size: 13px; padding: 6px 12px;"}= texto_mes_display
           
           .form-check.form-check-inline.mb-1.mb-md-0.mr-3
-            = check_box_tag "sin_movimientos_paso1", "1", @rendicion.try(:sin_movimientos), class: "form-check-input", id: "chk_sin_movimientos_paso1", disabled: !es_editable
+            = check_box_tag "sin_movimientos_paso1", "1", es_sin_movimientos, class: "form-check-input", id: "chk_sin_movimientos_paso1", disabled: !es_editable
             %label.form-check-label.font-weight-bold.text-secondary{for: "chk_sin_movimientos_paso1"}
               %i.fa.fa-minus-circle.mr-1
               Sin movimientos
@@ -471,9 +481,10 @@
                 - es_pendiente_previo = es_mes_previo && !completada_100
                 - tiene_avance_parcial = max_avance_aprobado > 0 && !completada_100
 
-                -# SE BLOQUEA SI TIENE UNA RENDICIÓN EN REVISIÓN (ESTADOS 1 A 4) O SI FUE COMPLETADA AL 100%
+                -# REGLA DE SELECCIÓN DE ACTIVIDAD
                 - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
-                - debe_marcarse = !esta_deshabilitada && (es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador) && !@rendicion.try(:sin_movimientos)
+                - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador
+                - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
 
                 - valor_hh_tipo_3 = plan_act.try(:valor_hh_tipo_3).to_f
                 - valor_hh_tipos_1_2 = plan_act.try(:valor_hh_tipos_1_2).to_f
@@ -492,15 +503,15 @@
                   %td.contenido-form.text-right
                     = number_to_currency(suma)
                   %td.contenido-form.text-center
-                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || @rendicion.try(:sin_movimientos), title: (completada_100 ? "Actividad completada al 100%" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : ""))}
+                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s, 'debe-marcar-defecto' => (!esta_deshabilitada && es_sugerida_defecto).to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || es_sin_movimientos, title: (completada_100 ? "Actividad completada al 100%" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : ""))}
                     
-                    -# EVALUACIÓN PRIORITARIA Y DIRECTA DE ETIQUETAS
+                    -# PRIORIDAD DE ETIQUETAS
                     - if es_en_proceso
                       - txt_av = max_avance_proceso > 0 ? " (#{max_avance_proceso}%)" : ""
                       %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC #{txt_av}"
                     - elsif completada_100
                       %span.badge.badge-success.d-block.mt-1{style: "font-size: 11px;"} Finalizada 100%
-                    - elsif es_borrador
+                    - elsif es_borrador && !es_sin_movimientos
                       - txt_av = max_avance_borrador > 0 ? " (#{max_avance_borrador}%)" : ""
                       %span.badge.badge-info.text-white.d-block.mt-1{style: "font-size: 11px;"}= "Borrador#{txt_av}"
                     - elsif max_avance_aprobado > 0
@@ -544,7 +555,7 @@
   = simple_form_for fpl_objeto, url: adjuntar_rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente), html: { multipart: true, autocomplete: :off }, remote: true do |f|
     = hidden_field_tag "mes_a_rendir", mes_seleccionado_defecto
     = hidden_field_tag "paso", "2"
-    = hidden_field_tag "sin_movimientos", (@rendicion.try(:sin_movimientos) ? "1" : "0"), id: "hdn_sin_movimientos"
+    = hidden_field_tag "sin_movimientos", (es_sin_movimientos ? "1" : "0"), id: "hdn_sin_movimientos"
     = hidden_field_tag "actividades_seleccionadas", "", id: "hdn_actividades_seleccionadas"
 
     .tab-content#manifestacionContent
@@ -563,7 +574,10 @@
         - if @actividad_x_linea.present?
           - @actividad_x_linea.uniq(&:id).each do |actividad|
             - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
-            
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
             - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
             
@@ -571,16 +585,12 @@
             - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
             - duracion_act = plan_act.try(:duracion).to_s
-            - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
 
-            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
             
-            - act_id_num = actividad.id.to_i
-            - plan_act_id_num = plan_act.try(:id).to_i
-            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
-
             - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
             - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
             
@@ -655,10 +665,14 @@
       .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - detalle = detalles_hash[actividad.id]
-            - duracion_act = detalle.try(:duracion).to_s
-            - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
-            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - duracion_act = plan_act.try(:duracion).to_s
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
+            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
             
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
@@ -726,10 +740,14 @@
       .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
         - if @actividad_x_linea.present?
           - @actividad_x_linea.each do |actividad|
-            - detalle = detalles_hash[actividad.id]
-            - duracion_act = detalle.try(:duracion).to_s
-            - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
-            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }
+            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - duracion_act = plan_act.try(:duracion).to_s
+            - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
+            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
             
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 
