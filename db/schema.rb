@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_19_202544) do
+ActiveRecord::Schema.define(version: 2026_08_24_154616) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1935,6 +1935,7 @@ ActiveRecord::Schema.define(version: 2026_08_19_202544) do
     t.text "resultado_actividades_realizadas"
     t.text "informacion_adicional"
     t.text "conclusion"
+    t.boolean "sin_movimientos"
     t.index ["flujo_id"], name: "index_rendiciones_fpl_on_flujo_id"
   end
 
