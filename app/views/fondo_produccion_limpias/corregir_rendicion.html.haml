@@ -319,19 +319,12 @@
                         %tr
                           %td.contenido-form.text-center= fecha_inicio_valor
                           %td.contenido-form.text-center= fecha_termino_valor
-                          %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                            - case nivel_avance_val
-                            - when '0'
-                              %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
-                            - when '1'
-                              %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
-                            - when '2'
-                              %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                          %td.contenido-form.text-center
+                            - avance_num = detalle_tecnico&.nivel_avance.to_i
+                            - if avance_num > 0
+                              %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
                             - else
-                              - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
-                                %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
-                              - else
-                                %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
+                              %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
                           - if @es_correccion_tecnica
                             %td.contenido-form
                               = text_area_tag "observacion_actividad_#{actividad.id}", observacion_valor, id: "observacion_actividad_#{actividad.id}", class: "form-control smaller-text border-text w-100", placeholder: "Ingrese descripción del avance...", rows: 2, onkeyup: "validarFormulario()"

@@ -218,22 +218,21 @@
                                   %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
                               %tbody
                                 %tr
-                                  %td.contenido-form.text-center= fecha_inicio_valor
-                                  %td.contenido-form.text-center= fecha_termino_valor
-                                  %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                    - case nivel_avance_val
-                                    - when '0'
-                                      %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin iniciar
-                                    - when '1'
-                                      %span.badge.badge-warning.text-white{style: 'font-size: 10px; padding: 6px 12px; display: inline-block; background-color: #fd7e14;'} En proceso
-                                    - when '2'
-                                      %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
+                                  %td.contenido-form.text-center
+                                    = fecha_inicio_valor.presence || '--'
+                                  %td.contenido-form.text-center
+                                    = fecha_termino_valor.presence || '--'
+                                  
+                                  -# CELDA NIVEL DE AVANCE ACTUALIZADA
+                                  %td.contenido-form.text-center
+                                    - avance_num = detalle_tecnico&.nivel_avance.to_i
+                                    - if avance_num > 0
+                                      %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
                                     - else
-                                      - if detalle_tecnico.present? && detalle_tecnico.try(:realizada?)
-                                        %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Completado
-                                      - else
-                                        %span.badge.badge-secondary{style: 'font-size: 10px; padding: 6px 12px; display: inline-block;'} Sin registrar
-                                  %td.contenido-form= observacion_valor.presence || '--'
+                                      %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
+
+                                  %td.contenido-form
+                                    = observacion_valor.presence || '--'
 
                           .mt-3.mb-2.px-1
                             %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 

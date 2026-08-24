@@ -13,7 +13,7 @@
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
 
 -# -------------------------------------------------------------
--# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
+-# CÁLCULO DE FECHA MES DISPLAY
 -# -------------------------------------------------------------
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
@@ -24,41 +24,41 @@
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
 -# -------------------------------------------------------------
--# LOGICA DE ESTADOS EN BASE DE DATOS (EN MEMORIA - ULTRA SEGURO)
+-# LOGICA DE ESTADOS Y EVALUACIÓN EN PROCESO (ESTADOS 1, 2, 3, 4)
 -# -------------------------------------------------------------
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
-
-- estado_aprobado_val   = (RendicionFpl.estados['verificada_contablemente'] || 6).to_i
-- estado_rendido_val    = (RendicionFpl.estados['pendiente_verificacion_contable'] || 5).to_i
-- estados_borrador_vals = (RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]).map(&:to_i)
-
--# Helper para obtener el valor numérico del estado
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
--# 1. Rendiciones Aprobadas en FPL-16
-- rendiciones_aprobadas = rendiciones_todas.select { |r| get_estado_num.call(r) == estado_aprobado_val }
-- act_det_aprobadas = rendiciones_aprobadas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
-- act_gastos_aprobadas = rendiciones_aprobadas.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
-- actividades_aprobadas_ids = (act_det_aprobadas + act_gastos_aprobadas).compact.map(&:to_i).uniq
+-# Extracción limpia de IDs en proceso (Estados 1, 2, 3, 4)
+- rendiciones_en_proceso = rendiciones_todas.select { |r| [1, 2, 3, 4].include?(get_estado_num.call(r)) }
+- act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
 
--# 2. Rendiciones Enviadas / Rendidas
-- rendiciones_rendidas = rendiciones_todas.select { |r| get_estado_num.call(r) == estado_rendido_val }
-- act_det_rendidas = rendiciones_rendidas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
-- act_gastos_rendidas = rendiciones_rendidas.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
-- actividades_rendidas_ids = (act_det_rendidas + act_gastos_rendidas).compact.map(&:to_i).uniq - actividades_aprobadas_ids
+-# Extracción limpia de IDs en borrador (Estado 0)
+- rendiciones_borrador = rendiciones_todas.select { |r| get_estado_num.call(r) == 0 }
+- act_ids_borrador = rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
 
--# 3. Rendiciones En Proceso (Otras revisiones distintas a la actual)
-- rendiciones_en_proceso = rendiciones_todas.reject { |r| r.id == @rendicion&.id || [estado_aprobado_val, estado_rendido_val].include?(get_estado_num.call(r)) || estados_borrador_vals.include?(get_estado_num.call(r)) }
-- act_det_proceso = rendiciones_en_proceso.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
-- act_gastos_proceso = rendiciones_en_proceso.flat_map(&:rendicion_gastos_fpl).map(&:plan_actividad_id)
-- actividades_en_proceso_ids = (act_det_proceso + act_gastos_proceso).compact.map(&:to_i).uniq - actividades_aprobadas_ids - actividades_rendidas_ids
-
--# 4. Pendientes de Meses Anteriores (Evaluación limpia en Ruby)
+-# Pendientes de Meses Anteriores
 - rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
 - act_det_previas = rendiciones_previas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
-- actividades_no_realizadas_previas = act_det_previas.compact.map(&:to_i).uniq - actividades_aprobadas_ids - actividades_rendidas_ids
+- actividades_no_realizadas_previas = act_det_previas.compact.map(&:to_i).uniq
 
-- actividades_ya_guardadas_ids = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.compact&.map(&:to_i)&.uniq || []
+-# -------------------------------------------------------------
+-# MAPAS DE NIVELES DE AVANCE POR CATEGORÍA DE ESTADO
+-# -------------------------------------------------------------
+- avances_aprobados_por_actividad = Hash.new(0)
+- avances_proceso_por_actividad   = Hash.new(0)
+- avances_borrador_por_actividad  = Hash.new(0)
+
+- rendiciones_todas.each do |rend|
+  - est_num = get_estado_num.call(rend)
+  - rend.rendicion_detalles_fpl.each do |det|
+    - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+    - val_av = det.nivel_avance.to_i
+    - det.rendicion_detalle_actividades_fpl.each do |rda|
+      - t_id = rda.plan_actividad_id.to_i
+      - avances_aprobados_por_actividad[t_id] = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
+      - avances_proceso_por_actividad[t_id]   = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2, 3, 4].include?(est_num)
+      - avances_borrador_por_actividad[t_id]  = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -75,7 +75,7 @@
 :javascript
   const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
   const PASO_ACTUAL = #{paso_actual.to_i};
-  const ACTIVIDADES_GUARDADAS = #{raw actividades_ya_guardadas_ids.map(&:to_s).to_json};
+  const ACTIVIDADES_GUARDADAS = #{raw act_ids_borrador.map(&:to_s).to_json};
 
   $(document).ready(function() {
     $("input:file").on('change', function () {
@@ -448,25 +448,37 @@
             - total_total_suma = 0
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
-                - detalle = detalles_hash[actividad.id]
-                - duracion_act = detalle.try(:duracion).to_s
+                - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
+                - duracion_act = plan_act.try(:duracion).to_s
                 - duraciones = duracion_act.split(',').map(&:strip)
                 - es_mes_actual = duraciones.include?(mes_seleccionado_defecto.to_s)
-                - es_pendiente_previo = actividades_no_realizadas_previas.include?(actividad.id)
-                - ya_guardada = actividades_ya_guardadas_ids.include?(actividad.id)
                 
-                - es_aprobada = actividades_aprobadas_ids.include?(actividad.id)
-                - es_rendida = actividades_rendidas_ids.include?(actividad.id)
-                - es_en_proceso = actividades_en_proceso_ids.include?(actividad.id)
-                
-                - esta_deshabilitada = !es_editable || es_aprobada || es_rendida || es_en_proceso
+                - act_id_num = actividad.id.to_i
+                - plan_act_id_num = plan_act.try(:id).to_i
+                - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
-                - debe_marcarse = !esta_deshabilitada && (es_mes_actual || es_pendiente_previo || ya_guardada) && !@rendicion.try(:sin_movimientos)
+                -# VERIFICACIÓN ESTRICTA DE ESTADOS
+                - es_en_proceso = mis_ids.any? { |id| act_ids_en_proceso.include?(id) }
+                - es_borrador   = mis_ids.any? { |id| act_ids_borrador.include?(id) } && !es_en_proceso
 
-                - valor_hh_tipo_3 = detalle.try(:valor_hh_tipo_3).to_f
-                - valor_hh_tipos_1_2 = detalle.try(:valor_hh_tipos_1_2).to_f
-                - total_gastos_tipo_1 = detalle.try(:total_gastos_tipo_1).to_f
-                - total_gastos_tipo_2 = detalle.try(:total_gastos_tipo_2).to_f
+                - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+                - max_avance_proceso  = mis_ids.map { |id| avances_proceso_por_actividad[id] }.max || 0
+                - max_avance_borrador = mis_ids.map { |id| avances_borrador_por_actividad[id] }.max || 0
+
+                - completada_100 = max_avance_aprobado >= 100
+
+                - es_mes_previo = duraciones.any? { |m| m.to_i < mes_seleccionado_defecto.to_i }
+                - es_pendiente_previo = es_mes_previo && !completada_100
+                - tiene_avance_parcial = max_avance_aprobado > 0 && !completada_100
+
+                -# SE BLOQUEA SI TIENE UNA RENDICIÓN EN REVISIÓN (ESTADOS 1 A 4) O SI FUE COMPLETADA AL 100%
+                - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
+                - debe_marcarse = !esta_deshabilitada && (es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador) && !@rendicion.try(:sin_movimientos)
+
+                - valor_hh_tipo_3 = plan_act.try(:valor_hh_tipo_3).to_f
+                - valor_hh_tipos_1_2 = plan_act.try(:valor_hh_tipos_1_2).to_f
+                - total_gastos_tipo_1 = plan_act.try(:total_gastos_tipo_1).to_f
+                - total_gastos_tipo_2 = plan_act.try(:total_gastos_tipo_2).to_f
                 - suma = valor_hh_tipo_3 + valor_hh_tipos_1_2 + total_gastos_tipo_1 + total_gastos_tipo_2
                 - total_total_suma += suma
 
@@ -480,13 +492,19 @@
                   %td.contenido-form.text-right
                     = number_to_currency(suma)
                   %td.contenido-form.text-center
-                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || @rendicion.try(:sin_movimientos), title: (es_aprobada ? "Actividad aprobada en FPL-16" : (es_rendida ? "Actividad rendida pendiente de verificación contable" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : "")))}
-                    - if es_aprobada
-                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 9px;"} Aprobada Parcial
-                    - elsif es_rendida
-                      %span.badge.badge-success.d-block.mt-1{style: "font-size: 9px;"} Rendida
-                    - elsif es_en_proceso
-                      %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 9px; background-color: #fd7e14;"} En proceso
+                    %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || @rendicion.try(:sin_movimientos), title: (completada_100 ? "Actividad completada al 100%" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : ""))}
+                    
+                    -# EVALUACIÓN PRIORITARIA Y DIRECTA DE ETIQUETAS
+                    - if es_en_proceso
+                      - txt_av = max_avance_proceso > 0 ? " (#{max_avance_proceso}%)" : ""
+                      %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC #{txt_av}"
+                    - elsif completada_100
+                      %span.badge.badge-success.d-block.mt-1{style: "font-size: 11px;"} Finalizada 100%
+                    - elsif es_borrador
+                      - txt_av = max_avance_borrador > 0 ? " (#{max_avance_borrador}%)" : ""
+                      %span.badge.badge-info.text-white.d-block.mt-1{style: "font-size: 11px;"}= "Borrador#{txt_av}"
+                    - elsif max_avance_aprobado > 0
+                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 11px;"}= "en Ejecución (#{max_avance_aprobado}%)"
 
             %tr
               %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + duracion} Total
@@ -559,16 +577,17 @@
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
             
-            -# -------------------------------------------------------------
-            -# LÓGICA DE CÁLCULO DE NIVEL DE AVANCE PREVIO Y COMBOBOX (1 a 100)
-            -# -------------------------------------------------------------
-            - det_previos = rendiciones_todas.reject { |r| r.id == @rendicion&.id }.flat_map(&:rendicion_detalles_fpl)
-            - avances_previos = det_previos.select { |d| (d.tecnica? rescue d.tipo_tab == 0) && d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(actividad.id) }.map { |d| d.nivel_avance.to_i }
-            - max_avance_previo = avances_previos.max || 0
-            - min_avance = max_avance_previo > 0 ? [max_avance_previo + 1, 100].min : 1
-            - opciones_avance = [['Seleccione...', '']] + (min_avance..100).map { |n| ["#{n}%", n.to_s] }
+            - act_id_num = actividad.id.to_i
+            - plan_act_id_num = plan_act.try(:id).to_i
+            - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+            - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+            - min_avance = max_avance_aprobado > 0 ? [max_avance_aprobado + 1, 100].min : 1
             
             - nivel_avance_valor = detalle_tecnico&.nivel_avance.to_s
+            - min_avance = [min_avance, nivel_avance_valor.to_i].min if nivel_avance_valor.present? && nivel_avance_valor.to_i > 0
+            - opciones_avance = [['Seleccione...', '']] + (min_avance..100).map { |n| ["#{n}%", n.to_s] }
+            
             - observacion_valor = detalle_tecnico&.observacion
             - archivo = detalle_tecnico&.archivo
             - tiene_archivo = detalle_tecnico&.archivo&.url.present?
@@ -816,7 +835,7 @@
             value: 'grabar', 
             id: 'grabar-button', 
             class: "btn btn-sm btn-primary mr-2", 
-            data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+            data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Guardando..." }
 
           = button_tag t(:enviar), 
             type: 'submit', 
