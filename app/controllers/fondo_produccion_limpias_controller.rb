@@ -7180,25 +7180,23 @@ class FondoProduccionLimpiasController < ApplicationController
   def cargar_datos_verificacion_contable
     @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-    # 1. Si se especifica el mes explícitamente por URL (?mes_a_rendir=X)
+    # 1. Si viene parámetro explícito en la URL
     if params[:mes_a_rendir].present?
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: params[:mes_a_rendir])
     end
 
-    # 2. Buscar la rendición que está PENDIENTE DE AUDITORÍA CONTABLE (Estado 5: pendiente_verificacion_contable)
+    # 2. Buscar por estado 5 (pendiente_verificacion_contable)
     unless @rendicion.present?
       estado_pendiente_contable = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
 
-      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                              .where(estado: estado_pendiente_contable)
-                              .order(mes_a_rendir: :asc)
-                              .first
+      @rendicion = RendicionFpl.find_by(
+        flujo_id: @tarea_pendiente.flujo_id,
+        estado: estado_pendiente_contable
+      )
     end
 
-    # 3. Fallback: Si no hay ninguna en estado 5, buscar la última rendición del flujo
-    @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                              .order(mes_a_rendir: :desc)
-                              .first
+    # 3. Fallback final
+    @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id).order(mes_a_rendir: :desc).first
 
     if @rendicion.present?
       @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)

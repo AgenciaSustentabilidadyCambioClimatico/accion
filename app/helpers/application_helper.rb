@@ -778,6 +778,8 @@ end
       data[:icon] = "<i class='fa fa-edit'></i>"
     end
   else
+    rend = buscar_rendicion_por_pendiente(pendiente)
+    mes_param = rend&.mes_a_rendir
     case tarea.codigo
     when Tarea::COD_APL_001
     data[:url] = manifestacion_de_interes_path(pendiente)
@@ -1081,25 +1083,25 @@ end
       data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
     when Tarea::COD_FPL_12
-      data[:url] =  rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(pendiente)
+      data[:url] = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_13
-      data[:url] =  asignar_revisor_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:url] = asignar_revisor_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_14
-      data[:url] =  revision_financiera_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:url] = revision_financiera_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_15
-      data[:url] =  revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:url] = revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_16
-      data[:url] =  verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:url] = verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_17
-      data[:url] =  corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente)
+      data[:url] = corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_18
-      data[:url] =  corregir_rendicion_tecnica_fondo_produccion_limpia_path(pendiente)
+      data[:url] = corregir_rendicion_tecnica_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     #Nuevo flujo postulacion FPL  
     end
@@ -1172,6 +1174,61 @@ end
     "#{formatted_rut}-#{dv.upcase}"
   end
   
-  
+  def buscar_rendicion_por_pendiente(pendiente)
+    flujo_id = pendiente.flujo_id
+    codigo = pendiente.tarea.codigo.to_s
+
+    case codigo
+    when 'FPL-16' # Verificación Contable
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:pendiente_verificacion_contable, 5])
+    when 'FPL-14', 'FPL-15', 'FPL-13' # Revisión Financiera / Técnica / Asignación
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:enviada_a_revision, 1, :en_evaluacion, 2])
+    when 'FPL-17' # Corrección Financiera
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_financiera, 4])
+    when 'FPL-18' # Corrección Técnica
+      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_tecnica, 3])
+    when 'FPL-12' # Rendición Documentos por Actividades (Postulante)
+      rend = RendicionFpl.where(flujo_id: flujo_id, estado: [:borrador, 0, :observada_tecnica, 3, :observada_financiera, 4])
+                         .order(mes_a_rendir: :asc).first
+
+      # Si aún no existe un registro borrador guardado en BD para el nuevo mes,
+      # se calcula automáticamente: (último mes verificado + 1)
+      unless rend.present?
+        estados_aprobados = [5, 6] # pendiente_verificacion_contable (5) y verificada_contablemente (6)
+        ultimo_mes_aprobado = RendicionFpl.where(flujo_id: flujo_id, estado: estados_aprobados)
+                                         .pluck(:mes_a_rendir).compact.max || 0
+        mes_sugerido = ultimo_mes_aprobado + 1
+        rend = Struct.new(:mes_a_rendir).new(mes_sugerido)
+      end
+      rend
+    else
+      RendicionFpl.where(flujo_id: flujo_id).order(mes_a_rendir: :desc).first
+    end
+  end
+
+  def nombre_tarea_con_rendicion(pendiente)
+    tarea = pendiente.tarea
+    nombre_base = tarea.nombre
+    codigos_fpl = ['FPL-12', 'FPL-13', 'FPL-14', 'FPL-15', 'FPL-16', 'FPL-17', 'FPL-18']
+
+    if codigos_fpl.any? { |cod| tarea.codigo.to_s.include?(cod) || tarea.nombre.to_s.include?(cod) }
+      rend = buscar_rendicion_por_pendiente(pendiente)
+
+      if rend.present? && rend.try(:mes_a_rendir).present?
+        fpl_obj = pendiente.flujo.try(:proyecto)&.fondo_produccion_limpia || FondoProduccionLimpia.find_by(flujo_id: pendiente.flujo_id)
+        fecha_res = fpl_obj.try(:fecha_resolucion)
+
+        if fecha_res.present?
+          fecha_target = fecha_res.to_date + (rend.mes_a_rendir.to_i - 1).months
+          mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+          return "#{nombre_base} - #{mes_nombre} (Rendición #{rend.mes_a_rendir})"
+        else
+          return "#{nombre_base} - Rendición #{rend.mes_a_rendir}"
+        end
+      end
+    end
+
+    nombre_base
+  end
   
 end

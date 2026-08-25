@@ -23,26 +23,23 @@
     unique_array.forEach((e, index) => {
       let guiData = ""
       let row = null;
-      let seenTaskCodes = new Set(); // Para rastrear códigos de tareas ya procesadas
+      let seenTaskCodes = new Set();
       
       document.querySelectorAll(`[data-flujo="${e}"]`).forEach((element, index) => {
         if (index === 0) {
           row = table.row(element);
         } else {
-          // Verificar si es flujo 1000 y si la tarea ya fue procesada
           const isFlujo1000 = e.includes('flujo1000');
           const taskName = element.querySelector('td:nth-child(3)')?.textContent?.trim() || '';
           
-          // Códigos de tareas que no deben duplicarse en flujo 1000
           const restrictedCodes = ['PRO-002','PRO-003','PRO-005','PRO-007','PRO-008'];
           const isRestrictedTask = restrictedCodes.some(code => taskName.includes(code));
           
-          // Si es flujo 1000 y es una tarea restringida que ya vimos, saltarla
           if (isFlujo1000 && isRestrictedTask) {
             const taskCode = restrictedCodes.find(code => taskName.includes(code));
             if (seenTaskCodes.has(taskCode)) {
               table.row(element).remove();
-              return; // Saltar esta iteración
+              return;
             }
             seenTaskCodes.add(taskCode);
           }
@@ -65,63 +62,50 @@
       })
     })
   }
-              
-      // Función para normalizar caracteres especiales (quitar tildes)
-      function normalizeText(text) {
-        const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        return normalized;
-      }
 
-    $(document).ready(function() {
-     const table=  $('table.acuerdos-pendientes').DataTable({
-        order: [[0, 'asc']],
-        responsive: true,
-        lengthMenu: [[10],[10]],
-        columnDefs: [ { targets: [-1], orderable: false } ],
-        language: {
-          url: "#{asset_path('spanish.json')}"
-        },
-        "defaultContent": "",
-        // MANTENER la búsqueda habilitada pero ocultar el input nativo
-        "searching": true,
-        // Configurar ordenamiento para caracteres especiales
-        "ordering": true,
-        "orderClasses": false
-      });
+  function normalizeText(text) {
+    const normalized = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return normalized;
+  }
 
-      // Personalizar la búsqueda para que funcione con y sin tildes
-      
-      // Esperar a que DataTables esté completamente inicializado
-      setTimeout(function() {
-        customSearch(table);
-      }, 100);
+  $(document).ready(function() {
+    const table = $('table.acuerdos-pendientes').DataTable({
+      order: [[0, 'asc']],
+      responsive: true,
+      lengthMenu: [[10],[10]],
+      columnDefs: [ { targets: [-1], orderable: false } ],
+      language: {
+        url: "#{asset_path('spanish.json')}"
+      },
+      "defaultContent": "",
+      "searching": true,
+      "ordering": true,
+      "orderClasses": false
+    });
+
+    setTimeout(function() {
+      customSearch(table);
+    }, 100);
 
     $('table.acuerdos-pendientes tbody').on('click', '.flujo_tareas', unfoldTareas);
 
-  // Función principal para unfold
-  function unfoldTareas(event) {
-    const tr = $(this).closest('tr'); // Encuentra la fila más cercana
-    const row = table.row(tr); // Obtiene la fila en DataTables
-    const icon = $(this).find('i'); // Obtiene el icono dentro del botón
-    // Toggle para mostrar u ocultar el contenido hijo
-    if (row.child.isShown()) {
-      row.child.hide();
-      tr.removeClass('shown');
-      icon.removeClass('fa-rotate-180');
-    } else {
-      row.child.show();
-      tr.addClass('shown');
-      icon.addClass('fa-rotate-180');
+    function unfoldTareas(event) {
+      const tr = $(this).closest('tr');
+      const row = table.row(tr);
+      const icon = $(this).find('i');
+      if (row.child.isShown()) {
+        row.child.hide();
+        tr.removeClass('shown');
+        icon.removeClass('fa-rotate-180');
+      } else {
+        row.child.show();
+        tr.addClass('shown');
+        icon.addClass('fa-rotate-180');
+      }
     }
 
-
-  }
-
-
     hideTareas(table);
-
   })
-
 
 - tiene_proyectos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.proyecto_id}.compact.size == 0) ? false : true ) )
 - tiene_acuerdos = ((pendientes.size == 0) ? false : ((pendientes.map{|p|p unless p.flujo.manifestacion_de_interes_id.blank?}.compact.size == 0) ? false : true ) )
@@ -131,119 +115,121 @@
     %h5.no-margin
       = titulo
   .card-body
-  - unless current_user.id == 1
-    %%table.table.acuerdos-pendientes
-      %thead
-        %tr
-          %th{style: "width: 80px !important;"}=t(:flujo_id)
-          %th=t(:acuerdo_o_proyecto_o_programa)
-          %th{class: 'd-none'} =t(:tarea)
-          %th Estado del acuerdo
-          %th.dos.iconos-acciones=t(:etapa)
-      %tbody
-        - unless pendientes.size == 0
-          - pendientes.each_with_index do |pendiente, index|
-            - tarea = pendiente.tarea
-            - flujo = pendiente.flujo
-            - encuesta = tarea.encuesta
-            - proyecto = pendiente.flujo.proyecto
-            - acuerdo = pendiente.flujo.manifestacion_de_interes
-            - programa = pendiente.flujo.ppp
-            - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
-            - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
-            - subtipo_instrumento = flujo.subtipo_de_instrumento
-            - manifestacion_de_interes = flujo.manifestacion_de_interes
-            - registro_proveedores = flujo.registro_proveedor
-            %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas",  "data-flujo" => "flujo#{flujo.id}"}
-              %td{:onClick => "", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
-                %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
-                =flujo.id
-              - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)
-              - if fondo_produccion_limpia.present?
-                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}
-                  = fondo_produccion_limpia
-              -else
-                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
-              %td
-                -tarea_nombre = tarea.nombre
-                -if pendiente.es_minuta?
-                  - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
-                -elsif pendiente.es_auditoria?
-                  - unless pendiente.determina_auditoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_021
-                  - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_037
-                  - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank? #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_039
-                  - unless pendiente.determina_auditoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
-                =tarea_nombre
+    - unless current_user.id == 1
+      %table.table.acuerdos-pendientes
+        %thead
+          %tr
+            %th{style: "width: 80px !important;"}=t(:flujo_id)
+            %th=t(:acuerdo_o_proyecto_o_programa)
+            %th{class: 'd-none'} =t(:tarea)
+            %th Estado del acuerdo
+            %th.dos.iconos-acciones=t(:etapa)
+        %tbody
+          - unless pendientes.size == 0
+            - pendientes.each_with_index do |pendiente, index|
+              - tarea = pendiente.tarea
+              - flujo = pendiente.flujo
+              - encuesta = tarea.encuesta
+              - proyecto = pendiente.flujo.proyecto
+              - acuerdo = pendiente.flujo.manifestacion_de_interes
+              - programa = pendiente.flujo.ppp
+              - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
+              - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
+              - subtipo_instrumento = flujo.subtipo_de_instrumento
+              - manifestacion_de_interes = flujo.manifestacion_de_interes
+              - registro_proveedores = flujo.registro_proveedor
+              %tr{:id => "flujo#{flujo.id}", :class => "flujo_tareas",  "data-flujo" => "flujo#{flujo.id}"}
+                %td{:onClick => "", class: 'text-center d-flex align-items-center', style:"cursor: pointer;"}
+                  %i{ :class => "fa fa-caret-down flujo#{flujo.id}", :aria_hidden => 'true', style:'font-size: 25px; margin-right: 20px; cursor: pointer; color: #007bff;' }
+                  =flujo.id
+                - fondo_produccion_limpia = nombre_tarea_fpl(flujo.id)
+                - if fondo_produccion_limpia.present?
+                  %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}
+                    = fondo_produccion_limpia
+                -else
+                  %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;", class:'nombre-instrumento-entrada'}=flujo.nombre_instrumento
+                %td
+                  -tarea_nombre = tarea.nombre
+                  -if pendiente.es_minuta?
+                    - unless pendiente.determina_convocatoria.blank?
+                      -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
+                  -elsif pendiente.es_auditoria?
+                    - unless pendiente.determina_auditoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_021
+                    - unless pendiente.determina_convocatoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_037
+                    - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_039
+                    - unless pendiente.determina_auditoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
+                  -else
+                    -tarea_nombre = nombre_tarea_con_rendicion(pendiente)
+                  =tarea_nombre
                 %td{class: 'estado-tarea-entrada'}
                   - if fondo_produccion_limpia.present?
                     = 'Postulación'
                   - else
                     = manifestacion_de_interes.present? ? manifestacion_de_interes.estado_acuerdo : registro_proveedores&.estado
-              %td.dos.iconos-acciones{class: 'icono-tarea-entrada'}
-                -#Enlaces segun cod tarea
-                -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
-                =link_to data_url[:icon].html_safe, data_url[:url]
-                %p i
+                %td.dos.iconos-acciones{class: 'icono-tarea-entrada'}
+                  -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
+                  =link_to data_url[:icon].html_safe, data_url[:url]
+                  %p i
 
-  -else
-    %table.table.table-striped.acuerdos-pendientes
-      %thead
-        %tr
-          %th{style: "width: 80px; !important"}=t(:flujo_id)
-          - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
-            %th=t(:tarea_pendiente_id)
-          %th=t(:acuerdo_o_proyecto_o_programa)
-          %th=t(:tipo_instrumento)
-          %th=t(:subtipo)
-          %th=t(:tarea)
-          %th.dos.iconos-acciones=t(:acciones)
-      %tbody
-        - unless pendientes.size == 0
-          - pendientes.each_with_index do |pendiente, index|
-            - tarea = pendiente.tarea
-            - flujo = pendiente.flujo
-            - encuesta = tarea.encuesta
-            - proyecto = pendiente.flujo.proyecto
-            - acuerdo = pendiente.flujo.manifestacion_de_interes
-            - programa = pendiente.flujo.ppp
-            - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
-            - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
-            - subtipo_instrumento = flujo.subtipo_de_instrumento
-            - registro_proveedores = flujo.registro_proveedor
-            %tr
-              %td=flujo.id
-              - unless (Rails.env.production? && !current_user.is_admin?) #DZC 2018-10-05 11:49:52 solo muestra el id de tarea pendiente si se trata del administrador o el proyecto esta en ambiente de desarrollo
-                %td=pendiente.id
-              %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
-              %td=tipo_instrumento
-              %td= registro_proveedores.present? ? registro_proveedores.estado : subtipo_instrumento
-              %td
-                -tarea_nombre = tarea.nombre
-                -if pendiente.es_minuta?
-                  - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
-                -elsif pendiente.es_auditoria?
-                  - unless pendiente.determina_auditoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_021
-                  - unless pendiente.determina_convocatoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_037
-                  - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank? #DZC 2019-07-04 16:40:19 se modifica por requerimiento de fecha 20190704
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
-                -elsif tarea.codigo == Tarea::COD_APL_039
-                  - unless pendiente.determina_auditoria.blank?
-                    -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
-                =tarea_nombre
-              %td.dos.iconos-acciones
-                -#Enlaces segun cod tarea
-                -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
-                =link_to data_url[:icon].html_safe, data_url[:url]
+    -else
+      %table.table.table-striped.acuerdos-pendientes
+        %thead
+          %tr
+            %th{style: "width: 80px; !important"}=t(:flujo_id)
+            - unless (Rails.env.production? && !current_user.is_admin?)
+              %th=t(:tarea_pendiente_id)
+            %th=t(:acuerdo_o_proyecto_o_programa)
+            %th=t(:tipo_instrumento)
+            %th=t(:subtipo)
+            %th=t(:tarea)
+            %th.dos.iconos-acciones=t(:acciones)
+        %tbody
+          - unless pendientes.size == 0
+            - pendientes.each_with_index do |pendiente, index|
+              - tarea = pendiente.tarea
+              - flujo = pendiente.flujo
+              - encuesta = tarea.encuesta
+              - proyecto = pendiente.flujo.proyecto
+              - acuerdo = pendiente.flujo.manifestacion_de_interes
+              - programa = pendiente.flujo.ppp
+              - convocatoria = pendiente.es_minuta? ? pendiente.determina_convocatoria : nil
+              - tipo_instrumento = flujo.tipo_instrumento.nombre_tipo
+              - subtipo_instrumento = flujo.subtipo_de_instrumento
+              - registro_proveedores = flujo.registro_proveedor
+              %tr
+                %td=flujo.id
+                - unless (Rails.env.production? && !current_user.is_admin?)
+                  %td=pendiente.id
+                %td{style:"max-width: 150px; min-width: 150px; overflow-wrap: break-word;"}=flujo.nombre_instrumento
+                %td=tipo_instrumento
+                %td= registro_proveedores.present? ? registro_proveedores.estado : subtipo_instrumento
+                %td
+                  -tarea_nombre = tarea.nombre
+                  -if pendiente.es_minuta?
+                    - unless pendiente.determina_convocatoria.blank?
+                      -tarea_nombre += ' para convocatoria "' + pendiente.determina_convocatoria.nombre + '"'
+                  -elsif pendiente.es_auditoria?
+                    - unless pendiente.determina_auditoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_021
+                    - unless pendiente.determina_convocatoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Firma de Acuerdo ','') + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_037
+                    - unless pendiente.determina_convocatoria.blank? || pendiente.determina_convocatoria.nombre.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_convocatoria.nombre.gsub('Ceremonia de Certificación ','') + '"'
+                  -elsif tarea.codigo == Tarea::COD_APL_039
+                    - unless pendiente.determina_auditoria.blank?
+                      -tarea_nombre += ' correspondiente a "' + pendiente.determina_auditoria.nombre + '"'
+                  -else
+                    -tarea_nombre = nombre_tarea_con_rendicion(pendiente)
+                  =tarea_nombre
+                %td.dos.iconos-acciones
+                  -data_url = url_segun_tarea(pendiente, tarea, flujo, encuesta, proyecto)
+                  =link_to data_url[:icon].html_safe, data_url[:url]
