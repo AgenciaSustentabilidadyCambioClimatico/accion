@@ -111,6 +111,82 @@ class TareaPendiente < ApplicationRecord
     self.tarea.get_descargables
   end
 
+  # --- DESSERIALIZACIÓN SEGURA DEL CAMPO DATA (YAML Y HASH) ---
+  def data_parsed
+    return {} if self.data.blank?
+    
+    d = self.data
+    if d.is_a?(Hash)
+      d
+    elsif d.is_a?(String)
+      begin
+        YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue (YAML.load(d) rescue {})
+      rescue
+        {}
+      end
+    else
+      {}
+    end.then { |h| h.is_a?(Hash) ? h.with_indifferent_access : {} }
+  end
+
+  def es_rendicion_paralela?
+    codigos_fpl_paralelos = ['FPL-13', 'FPL-14', 'FPL-15', 'FPL-17', 'FPL-18']
+    codigos_fpl_paralelos.include?(self.tarea.codigo.to_s) rescue false
+  end
+
+  def determina_rendicion
+    d_hash = data_parsed
+    return nil if d_hash.blank?
+
+    if d_hash[:rendicion_fpl_id].present?
+      RendicionFpl.find_by(id: d_hash[:rendicion_fpl_id])
+    elsif d_hash[:mes_a_rendir].present?
+      RendicionFpl.find_by(flujo_id: self.flujo_id, mes_a_rendir: d_hash[:mes_a_rendir].to_i)
+    end
+  end
+
+  # CIERRE EXCLUSIVO DE TAREAS PARALELAS DEL MISMO MES
+  def cerrar_tareas_fpl_paralelas_mismo_mes
+    d_self = data_parsed
+    rend_self = determina_rendicion
+
+    mes_target = rend_self&.mes_a_rendir || d_self[:mes_a_rendir].to_i
+    rend_id_target = rend_self&.id || d_self[:rendicion_fpl_id].to_i
+
+    tareas_paralelas = TareaPendiente.where(
+      flujo_id: self.flujo_id,
+      tarea_id: self.tarea_id,
+      estado_tarea_pendiente_id: EstadoTareaPendiente::NO_INICIADA
+    ).to_a
+
+    tareas_paralelas << self unless tareas_paralelas.include?(self)
+
+    tareas_paralelas.each do |tp|
+      d_tp = tp.data_parsed
+      rend_tp = tp.determina_rendicion
+
+      mes_tp = rend_tp&.mes_a_rendir || d_tp[:mes_a_rendir].to_i
+      rend_id_tp = rend_tp&.id || d_tp[:rendicion_fpl_id].to_i
+
+      coincide = false
+      if rend_id_target > 0 && rend_id_tp > 0
+        coincide = (rend_id_target == rend_id_tp)
+      elsif mes_target > 0 && mes_tp > 0
+        coincide = (mes_target == mes_tp)
+      elsif tp.id == self.id
+        coincide = true
+      end
+
+      # Cierra SOLO si coincide con el mes/rendición de self
+      if coincide
+        tp.update_columns(
+          estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA,
+          updated_at: Time.current
+        )
+      end
+    end
+  end
+
   # aoliva
   # metodo que pasa a la siguiente tarea en el flujo de tareas
   # puede recibir una condicion de salida, para acotar la busqueda, condicion salida puede ser un string 'a' o un arreglo (['a','b'])
@@ -152,7 +228,9 @@ class TareaPendiente < ApplicationRecord
       if tareas_unico_actor.uniq.include?(self.tarea.codigo)
         self.estado_tarea_pendiente_id = EstadoTareaPendiente::ENVIADA
         self.updated_at = DateTime.now
-
+      elsif es_rendicion_paralela?
+        # BIFURCACIÓN PARALELA FPL: Cierra solo las del mismo mes
+        cerrar_tareas_fpl_paralelas_mismo_mes
       #DZC se finalizan las tareas pendientes del mismo tipo para el flujo actual
       else
         #DZC se finalizan todas las tareas del flujo
