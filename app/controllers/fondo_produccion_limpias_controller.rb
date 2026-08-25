@@ -4157,20 +4157,21 @@ class FondoProduccionLimpiasController < ApplicationController
     def rendicion_subir_documentos_actividades # FPL-12
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-      # 1. Identificar estados de borrador
+      # 1. Identificar estados de borrador/edición
       estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
 
-      # 2. Identificar meses que YA fueron aprobados/verificados contablemente (estado >= 5)
-      val_minimo_habilitar = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
-      estados_habilitadores = RendicionFpl.estados.select { |_k, v| v >= val_minimo_habilitar }.values.presence || [5, 6]
-      
-      meses_aprobados_contable = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                                            .where(estado: estados_habilitadores)
-                                            .pluck(:mes_a_rendir).compact
+      # 2. NUEVA LÓGICA: Identificar meses que YA fueron enviados o están en proceso (estado >= 1)
+      # Se consideran todos los estados excepto borrador (enviada_a_revision, en_evaluacion, observadas, etc.)
+      val_minimo_enviado = RendicionFpl.estados['enviada_a_revision'] || 1
+      estados_enviados = RendicionFpl.estados.select { |_k, v| v >= val_minimo_enviado }.values.presence || [1, 2, 3, 4, 5, 6]
 
-      # 3. El mes máximo permitido para rendición activa es (último mes aprobado contablemente + 1)
-      ultimo_mes_aprobado = meses_aprobados_contable.max || 0
-      mes_permitido = ultimo_mes_aprobado + 1
+      meses_enviados = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
+                                  .where(estado: estados_enviados)
+                                  .pluck(:mes_a_rendir).compact
+
+      # 3. El mes máximo permitido para rendición activa es (último mes enviado + 1)
+      ultimo_mes_enviado = meses_enviados.max || 0
+      mes_permitido = ultimo_mes_enviado + 1
 
       # 4. Buscar borrador activo únicamente si pertenece a un mes permitido (<= mes_permitido)
       borrador_activo = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id, estado: estados_borrador)
@@ -4196,11 +4197,11 @@ class FondoProduccionLimpiasController < ApplicationController
 
       # 7. Carga de detalles financieros precargando relaciones
       if @rendicion.present?
-        @documentos_fpl     = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
-        @documentos_aporte  = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
-        @documentos_fpl     = RendicionDetalleFpl.none
-        @documentos_aporte  = RendicionDetalleFpl.none
+        @documentos_fpl    = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
       end
 
       # 8. Permisos y actividades
@@ -4391,12 +4392,15 @@ class FondoProduccionLimpiasController < ApplicationController
 
           debe_cerrar_fpl12 = es_ultima_flag || !quedan_pendientes
 
+          # HASH DE IDENTIFICACIÓN PARA PROPAGAR A FPL-13 Y SUCESIVAS
+          extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: mes_actual }
+
           if debe_cerrar_fpl12
-            @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
-            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito."
+            @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
+            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado el proceso FPL-12."
           else
-            @tarea_pendiente.pasar_a_siguiente_tarea('A', {}, false)
-            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión."
+            @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data, false)
+            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea FPL-12 permanece abierta para los siguientes meses."
           end
 
           url_destino = root_path
@@ -4436,26 +4440,37 @@ class FondoProduccionLimpiasController < ApplicationController
       @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_inst_id)
       @revisor = true
 
-      # 2. Carga de la rendición enviada a revisión
-      estados_revision = RendicionFpl.estados.slice('enviada_a_revision', 'en_evaluacion').values.presence || [1]
-      
-      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                              .where(estado: estados_revision)
-                              .order(mes_a_rendir: :desc, id: :desc)
-                              .first
+      # 2. Carga de la rendición específica vinculada a ESTA tarea pendiente
+      if @tarea_pendiente.respond_to?(:determina_rendicion)
+        @rendicion = @tarea_pendiente.determina_rendicion
+      end
 
-      # Si no hay registros en revisión explícita, se obtiene la rendición con mayor mes_a_rendir
+      # Prioridad 2: Si no viene en 'data', verificar si se especificó vía URL
+      if @rendicion.nil? && params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
+      end
+
+      # Prioridad 3: Fallback por estado en_evaluación / enviada_a_revision (orden asc para tomar el período más antiguo en revisión)
+      unless @rendicion.present?
+        estados_revision = RendicionFpl.estados.slice('enviada_a_revision', 'en_evaluacion').values.presence || [1, 2]
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                                .where(estado: estados_revision)
+                                .order(mes_a_rendir: :asc, id: :asc)
+                                .first
+      end
+
+      # Fallback final
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .order(mes_a_rendir: :desc, id: :desc)
                                 .first
 
       # 3. Carga de documentos financieros
       if @rendicion.present?
-        @documentos_fpl     = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
-        @documentos_aporte  = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
-        @documentos_fpl     = RendicionDetalleFpl.none
-        @documentos_aporte  = RendicionDetalleFpl.none
+        @documentos_fpl    = RendicionDetalleFpl.none
+        @documentos_aporte = RendicionDetalleFpl.none
       end
 
       # 4. Permisos

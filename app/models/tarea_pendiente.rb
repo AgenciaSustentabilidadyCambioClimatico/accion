@@ -485,4 +485,31 @@ class TareaPendiente < ApplicationRecord
     end
     return solo_lectura
   end
+  
+  def determina_rendicion
+    return nil if self.data.blank?
+
+    # Deserializar data si viene como un String YAML o usar el Hash directamente
+    data_hash = if self.data.is_a?(Hash)
+                  self.data
+                elsif self.data.is_a?(String)
+                  begin
+                    YAML.safe_load(self.data, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue YAML.load(self.data)
+                  rescue
+                    {}
+                  end
+                else
+                  {}
+                end
+
+    return nil unless data_hash.is_a?(Hash)
+    data_hash = data_hash.with_indifferent_access
+
+    if data_hash[:rendicion_fpl_id].present?
+      RendicionFpl.find_by(id: data_hash[:rendicion_fpl_id])
+    elsif data_hash[:mes_a_rendir].present?
+      RendicionFpl.find_by(flujo_id: self.flujo_id, mes_a_rendir: data_hash[:mes_a_rendir].to_i)
+    end
+  end
+
 end

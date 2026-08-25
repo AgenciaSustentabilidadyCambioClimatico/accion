@@ -7,7 +7,7 @@
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
--# Permite editar si es borrador (0), observada técnica (3) o observada financiera (4)
+-# Permite editar si es borrador (0), observada técnica (3) u observada financiera (4)
 - estado_rend_actual = @rendicion ? get_estado_num.call(@rendicion) : 0
 - es_borrador_o_observada = @rendicion.nil? || [0, 3, 4].include?(estado_rend_actual)
 - es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && es_borrador_o_observada

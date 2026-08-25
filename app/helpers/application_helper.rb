@@ -1175,29 +1175,32 @@ end
   end
   
   def buscar_rendicion_por_pendiente(pendiente)
+    # 1. Prioridad: Obtener la rendición exacta guardada en el Hash 'data' de la tarea
+    rend = pendiente.determina_rendicion if pendiente.respond_to?(:determina_rendicion)
+    return rend if rend.present?
+
     flujo_id = pendiente.flujo_id
     codigo = pendiente.tarea.codigo.to_s
 
+    # 2. Fallback por estado solo si la tarea no poseía 'data' guardado
     case codigo
-    when 'FPL-16' # Verificación Contable
-      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:pendiente_verificacion_contable, 5])
-    when 'FPL-14', 'FPL-15', 'FPL-13' # Revisión Financiera / Técnica / Asignación
-      RendicionFpl.find_by(flujo_id: flujo_id, estado: [:enviada_a_revision, 1, :en_evaluacion, 2])
-    when 'FPL-17' # Corrección Financiera
+    when 'FPL-13', 'FPL-14', 'FPL-15'
+      RendicionFpl.where(flujo_id: flujo_id, estado: [:enviada_a_revision, 1, :en_evaluacion, 2])
+                  .order(mes_a_rendir: :asc).first
+    when 'FPL-17'
       RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_financiera, 4])
-    when 'FPL-18' # Corrección Técnica
+    when 'FPL-18'
       RendicionFpl.find_by(flujo_id: flujo_id, estado: [:observada_tecnica, 3])
     when 'FPL-12' # Rendición Documentos por Actividades (Postulante)
       rend = RendicionFpl.where(flujo_id: flujo_id, estado: [:borrador, 0, :observada_tecnica, 3, :observada_financiera, 4])
-                         .order(mes_a_rendir: :asc).first
+                        .order(mes_a_rendir: :asc).first
 
-      # Si aún no existe un registro borrador guardado en BD para el nuevo mes,
-      # se calcula automáticamente: (último mes verificado + 1)
+      # Si no hay borrador abierto, calcular (último mes enviado con estado >= 1) + 1
       unless rend.present?
-        estados_aprobados = [5, 6] # pendiente_verificacion_contable (5) y verificada_contablemente (6)
-        ultimo_mes_aprobado = RendicionFpl.where(flujo_id: flujo_id, estado: estados_aprobados)
-                                         .pluck(:mes_a_rendir).compact.max || 0
-        mes_sugerido = ultimo_mes_aprobado + 1
+        estados_enviados = [1, 2, 3, 4, 5, 6]
+        ultimo_mes_enviado = RendicionFpl.where(flujo_id: flujo_id, estado: estados_enviados)
+                                        .pluck(:mes_a_rendir).compact.max || 0
+        mes_sugerido = ultimo_mes_enviado + 1
         rend = Struct.new(:mes_a_rendir).new(mes_sugerido)
       end
       rend
@@ -1209,9 +1212,9 @@ end
   def nombre_tarea_con_rendicion(pendiente)
     tarea = pendiente.tarea
     nombre_base = tarea.nombre
-    codigos_fpl = ['FPL-12', 'FPL-13', 'FPL-14', 'FPL-15', 'FPL-16', 'FPL-17', 'FPL-18']
+    codigos_fpl_paralelos = ['FPL-12', 'FPL-13', 'FPL-14', 'FPL-15', 'FPL-17', 'FPL-18']
 
-    if codigos_fpl.any? { |cod| tarea.codigo.to_s.include?(cod) || tarea.nombre.to_s.include?(cod) }
+    if codigos_fpl_paralelos.any? { |cod| tarea.codigo.to_s.include?(cod) || tarea.nombre.to_s.include?(cod) }
       rend = buscar_rendicion_por_pendiente(pendiente)
 
       if rend.present? && rend.try(:mes_a_rendir).present?
