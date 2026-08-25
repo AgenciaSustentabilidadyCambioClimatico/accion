@@ -4690,11 +4690,24 @@ class FondoProduccionLimpiasController < ApplicationController
       @es_revision_tecnica    = false
       @es_revision_financiera = true
 
-      #@rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id)
-      # Obtener la rendición específica correspondiente al mes en evaluación/corrección
-      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                         .order(created_at: :desc)
-                         .first
+      # 1. Prioridad 1: Obtener la rendición exacta desde la data de @tarea_pendiente
+      if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
+        @rendicion = @tarea_pendiente.determina_rendicion
+      elsif params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
+      end
+
+      # 2. Fallback: Buscar rendiciones en evaluación/revisión ordenadas ascendentemente
+      unless @rendicion.present?
+        estados_evaluacion = RendicionFpl.estados.slice('en_evaluacion', 'enviada_a_revision').values.presence || [1, 2]
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                                .where(estado: estados_evaluacion)
+                                .order(mes_a_rendir: :asc, id: :asc)
+                                .first
+      end
+
+      # 3. Fallback final
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc, id: :desc).first
 
       if @rendicion.present?
         @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
@@ -4711,39 +4724,46 @@ class FondoProduccionLimpiasController < ApplicationController
       render 'evaluar_rendicion'
     end
 
-    # PATCH /guardar_revision_financiera_rendicion
     def guardar_revision_financiera_rendicion # FPL-14
-      # 1. Buscar la rendición específica correspondiente al mes enviado desde el formulario
-      if params[:mes_a_rendir].present?
-        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+      # 1. Buscar prioritariamente la rendición vinculada a la tarea activa o por params
+      if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
+        @rendicion = @tarea_pendiente.determina_rendicion
+      elsif params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # 2. Fallback: Buscar la rendición activa en proceso (excluyendo las aprobadas definitivamente con estado 6)
+      # 2. Fallbacks de búsqueda
+      unless @rendicion.present?
+        estados_evaluacion = RendicionFpl.estados.slice('en_evaluacion', 'enviada_a_revision').values.presence || [1, 2]
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
+                                .where(estado: estados_evaluacion)
+                                .order(mes_a_rendir: :asc)
+                                .first
+      end
+
       unless @rendicion.present?
         estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .where.not(estado: estado_aprobado_val)
                                 .order(mes_a_rendir: :desc)
                                 .first
       end
 
-      # 3. Fallback final
-      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .order(mes_a_rendir: :desc)
-                                .first
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc).first
 
       if @rendicion.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para evaluar.")
         return
       end
 
-      # 4. Actualizar los estados 'cumple' y 'comentario_revisor' en los detalles de ESTA rendición
+      # 3. Actualizar los estados 'cumple' y 'comentario_revisor' en los detalles de ESTA rendición
       guardar_respuestas_evaluacion(params[:detalles])
 
       if params[:commit_type] == 'enviar'
-        # 5. Verificar si al menos un documento fue marcado como "No" (valor 2)
         hay_rechazo_financiero = evaluar_rechazos(params[:detalles])
+
+        # HASH DE IDENTIFICACIÓN PARA PROPAGAR A SIGUIENTES TAREAS
+        extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
 
         if hay_rechazo_financiero
           @rendicion.update!(estado: :observada_financiera)
@@ -4753,7 +4773,7 @@ class FondoProduccionLimpiasController < ApplicationController
           camino_salida = es_sin_mov ? 'C' : 'B'
 
           if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-            @tarea_pendiente.pasar_a_siguiente_tarea(camino_salida)
+            @tarea_pendiente.pasar_a_siguiente_tarea(camino_salida, extra_data)
           end
 
           estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
@@ -4765,9 +4785,11 @@ class FondoProduccionLimpiasController < ApplicationController
             "Evaluación financiera del Mes #{@rendicion.mes_a_rendir} enviada con observaciones. Se devolvió a corrección financiera (FPL-17)."
           end
         else
-          # 6. Si CUMPLE en Financiera, para avanzar a FPL-16
+          # Si CUMPLE en Financiera, para avanzar a FPL-16
           @rendicion.update!(estado: :pendiente_verificacion_contable)
-          @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+          if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+            @tarea_pendiente.pasar_a_siguiente_tarea('A')
+          end
           
           estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
           @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
@@ -4882,47 +4904,58 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_correccion_financiera_rendicion
     def guardar_correccion_financiera_rendicion # FPL-17
-      # 1. Buscar prioritariamente por el mes enviado desde el formulario
-      if params[:mes_a_rendir].present?
-        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+      # 1. Buscar prioritariamente la rendición vinculada a la tarea activa
+      if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
+        @rendicion = @tarea_pendiente.determina_rendicion
+      elsif params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # 2. Fallback: Buscar la rendición activa en corrección (excluyendo las aprobadas con estado 6)
+      # 2. Fallbacks de búsqueda por estado (estado 4 = observada_financiera)
       unless @rendicion.present?
-        estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-
-        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .where.not(estado: estado_aprobado_val)
-                                .order(mes_a_rendir: :desc)
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: [:observada_financiera, 4])
+                                .order(mes_a_rendir: :asc)
                                 .first
       end
 
       # 3. Fallback final
-      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .order(mes_a_rendir: :desc)
-                                .first
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc).first
 
-      if @rendicion.present?
-        # Procesar documentos FPL y Aporte (Actualiza comentario_postulante y/o archivos)
-        procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
-        procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
-      else
+      if @rendicion.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para realizar la corrección financiera.")
         return
       end
 
+      # Asegurar metadata en la tarea activa si venía vacía
+      if @tarea_pendiente.data.blank?
+        @tarea_pendiente.update_column(:data, { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir })
+        @tarea_pendiente.reload
+      end
+
+      # 4. Procesar documentos FPL y Aporte (Actualiza comentario_postulante y/o archivos)
+      procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
+      procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
+
+      # 5. Flujo de envío o grabado de avance
       if params[:commit_type] == 'enviar'
         @rendicion.update!(estado: :en_evaluacion)
 
-        # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
-        @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        # PROPAGAR METADATA AL AVANZAR A FPL-14
+        extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
 
-        flash[:notice] = "Correcciones financieras (Mes #{@rendicion&.mes_a_rendir}) enviadas para re-evaluación (FPL-14)."
+        # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
+        if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+          @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
+        end
+        
+        estado_enviada = defined?(EstadoTareaPendiente::ENVIADA) ? EstadoTareaPendiente::ENVIADA : 2
+        @tarea_pendiente.update(estado_tarea_pendiente_id: estado_enviada)
+
+        flash[:notice] = "Correcciones financieras (Mes #{@rendicion.mes_a_rendir}) enviadas para re-evaluación (FPL-14)."
         url_destino = root_path
       else
-        flash[:notice] = "Avance de corrección financiera (Mes #{@rendicion&.mes_a_rendir}) guardado."
-        url_destino = corregir_rendicion_financiera_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion&.mes_a_rendir)
+        flash[:notice] = "Avance de corrección financiera (Mes #{@rendicion.mes_a_rendir}) guardado."
+        url_destino = corregir_rendicion_financiera_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir)
       end
 
       respond_to do |format|
@@ -4944,35 +4977,36 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # PATCH /guardar_correccion_tecnica_rendicion
     def guardar_correccion_tecnica_rendicion # FPL-18
-      # 1. Buscar la rendición específica por el mes enviado desde el formulario
-      if params[:mes_a_rendir].present?
-        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+      # 1. Buscar prioritariamente la rendición vinculada a la tarea activa
+      if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
+        @rendicion = @tarea_pendiente.determina_rendicion
+      elsif params[:mes_a_rendir].present?
+        @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # 2. Fallback: Buscar la rendición activa en corrección técnica (excluyendo las aprobadas con estado 6)
+      # 2. Fallbacks de búsqueda
       unless @rendicion.present?
-        estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
-
-        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .where.not(estado: estado_aprobado_val)
-                                .order(mes_a_rendir: :desc)
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: [:observada_tecnica, 3])
+                                .order(mes_a_rendir: :asc)
                                 .first
       end
 
-      # 3. Fallback final
-      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                                .order(mes_a_rendir: :desc)
-                                .first
+      @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc).first
 
       if @rendicion.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para realizar la corrección.")
         return
       end
 
-      # 4. Guardar la descripción del avance, comentario del postulante, realizada y archivos
+      # Asegurar metadata en la tarea activa si venía vacía
+      if @tarea_pendiente.data.blank?
+        @tarea_pendiente.update_column(:data, { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir })
+        @tarea_pendiente.reload
+      end
+
+      # 3. Guardar avance, observaciones y archivos de actividades
       if params[:actividades_ids].present?
         params[:actividades_ids].each do |act_id|
-          # Búsqueda robusta del detalle técnico por actividad asociada
           detalle = @rendicion.rendicion_detalles_fpl.find do |d|
             is_tec = (d.tecnica? rescue (d.tipo_tab.to_s == 'tecnica' || d.tipo_tab.to_i == 0))
             act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id)
@@ -4981,30 +5015,23 @@ class FondoProduccionLimpiasController < ApplicationController
           end
 
           if detalle.present?
-            # Captura de los valores desde la vista
             descripcion_avance = params["observacion_actividad_#{act_id}"]
             comentario_postulante_val = params["comentario_postulante_actividad_#{act_id}"].presence || params["comentario_postulante_#{act_id}"]
 
             atributos_a_actualizar = {}
-
-            # a) Descripción del avance -> campo 'observacion'
             atributos_a_actualizar[:observacion] = descripcion_avance.to_s if params.key?("observacion_actividad_#{act_id}")
 
-            # b) Bitácora del postulante -> campo 'comentario_postulante'
             if comentario_postulante_val.present?
               atributos_a_actualizar[:comentario_postulante] = comentario_postulante_val.to_s
             end
 
-            # c) Estado realizada (si aplica)
             if params.key?("realizada_actividad_#{act_id}")
               atributos_a_actualizar[:realizada] = (params["realizada_actividad_#{act_id}"] == 'si')
             end
 
-            # d) Archivo adjunto
             archivo_adjunto = params["archivo_rendicion_#{act_id}"]
             atributos_a_actualizar[:archivo] = archivo_adjunto if archivo_adjunto.present?
 
-            # Guardado seguro en BD evitando bloqueos de validación
             if atributos_a_actualizar.present?
               detalle.update_columns(atributos_a_actualizar) rescue detalle.update(atributos_a_actualizar)
             end
@@ -5012,13 +5039,16 @@ class FondoProduccionLimpiasController < ApplicationController
         end
       end
 
-      # 5. Flujo de envío o grabado de avance
+      # 4. Flujo de envío o grabado de avance
       if params[:commit_type] == 'enviar'
         @rendicion.update!(estado: :en_evaluacion)
 
-        # Camino 'A': Devuelve la tarea al revisor técnico (FPL-15)
-        @tarea_pendiente.pasar_a_siguiente_tarea 'A' if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
-        @tarea_pendiente.update(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA) if defined?(EstadoTareaPendiente)
+        # PROPAGAR METADATA AL AVANZAR A FPL-15
+        extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
+
+        if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
+          @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
+        end
 
         flash[:notice] = "Correcciones técnicas (Mes #{@rendicion.mes_a_rendir}) enviadas para re-evaluación (FPL-15)."
         url_destino = root_path
@@ -5027,7 +5057,6 @@ class FondoProduccionLimpiasController < ApplicationController
         url_destino = corregir_rendicion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir)
       end
 
-      # Redirección segura para HAML / AJAX
       respond_to do |format|
         format.html { redirect_to url_destino }
         format.js   { render js: "window.location.href = '#{url_destino}';" }
@@ -7021,29 +7050,45 @@ class FondoProduccionLimpiasController < ApplicationController
     end
   end
 
-  # Carga la data general necesaria para renderizar las vistas de corrección FPL-16, FPL-17 y FPL-18
+  # Carga la data general necesaria para renderizar las vistas de corrección (FPL-17 y FPL-18)
   def cargar_datos_correccion
     @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-    # 1. Si se especifica el mes en la URL (?mes_a_rendir=X), se carga ese mes directamente
-    if params[:mes_a_rendir].present?
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: params[:mes_a_rendir])
+    # 1. Prioridad 1: Obtener la rendición exacta vinculada al campo 'data' de la tarea pendiente
+    if @tarea_pendiente.respond_to?(:determina_rendicion) && @tarea_pendiente.determina_rendicion.present?
+      @rendicion = @tarea_pendiente.determina_rendicion
+    # 2. Prioridad 2: Si se especifica el mes en la URL (?mes_a_rendir=X)
+    elsif params[:mes_a_rendir].present?
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
     end
 
-    # 2. Si no viene parámetro, buscar la rendición ACTIVA en proceso (excluyendo las ya aprobadas/verificadas)
+    # 3. Prioridad 3: Fallback según el estado correspondiente a la tarea activa
     unless @rendicion.present?
-      estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
+      codigo_tarea = @tarea_pendiente&.tarea&.codigo.to_s
 
-      @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                                 .where.not(estado: estado_aprobado_val)
-                                 .order(mes_a_rendir: :desc)
-                                 .first
+      estado_filtro = if codigo_tarea.include?('FPL-18')
+                        [:observada_tecnica, 3]
+                      elsif codigo_tarea.include?('FPL-17')
+                        [:observada_financiera, 4]
+                      end
+
+      if estado_filtro.present?
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id, estado: estado_filtro)
+                                .order(mes_a_rendir: :asc)
+                                .first
+      else
+        estado_aprobado_val = RendicionFpl.estados['verificada_contablemente'] || 6
+        @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
+                                .where.not(estado: estado_aprobado_val)
+                                .order(mes_a_rendir: :asc)
+                                .first
+      end
     end
 
-    # 3. Fallback final: Si todas están aprobadas, mostrar la última rendición registrada (Mes más alto)
+    # 4. Fallback final
     @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                               .order(mes_a_rendir: :desc)
-                               .first
+                              .order(mes_a_rendir: :desc)
+                              .first
 
     if @rendicion.present?
       @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
