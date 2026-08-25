@@ -1095,7 +1095,7 @@ end
       data[:url] = revision_tecnica_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_16
-      data[:url] = verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
+      data[:url] = verificacion_contable_rendicion_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_17
       data[:url] = corregir_rendicion_financiera_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)

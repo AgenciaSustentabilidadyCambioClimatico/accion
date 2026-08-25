@@ -7233,22 +7233,15 @@ class FondoProduccionLimpiasController < ApplicationController
   def cargar_datos_verificacion_contable
     @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-    # 1. Si viene parámetro explícito en la URL
     if params[:mes_a_rendir].present?
       @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: params[:mes_a_rendir])
     end
 
-    # 2. Buscar por estado 5 (pendiente_verificacion_contable)
     unless @rendicion.present?
       estado_pendiente_contable = RendicionFpl.estados['pendiente_verificacion_contable'] || 5
-
-      @rendicion = RendicionFpl.find_by(
-        flujo_id: @tarea_pendiente.flujo_id,
-        estado: estado_pendiente_contable
-      )
+      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, estado: estado_pendiente_contable)
     end
 
-    # 3. Fallback final
     @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id).order(mes_a_rendir: :desc).first
 
     if @rendicion.present?
@@ -7263,6 +7256,7 @@ class FondoProduccionLimpiasController < ApplicationController
     @tiene_permisos = solo_lectura.nil?
 
     set_actividades_x_linea
+    cargar_estructura_costos_rendicion
   end
 
   def guardar_gastos_rendiciones_detallados(rendicion, actividades_permitidas_ids = [])
@@ -7316,4 +7310,114 @@ class FondoProduccionLimpiasController < ApplicationController
       registro.save!
     end
   end
+
+  # Carga la Estructura de Costos (Presupuesto Base) desde PlanActividad.costos
+  # y calcula la sumatoria acumulada de lo rendido desde la tabla rendicion_gastos_fpl
+  def cargar_estructura_costos_rendicion
+    flujo_id = @tarea_pendiente&.flujo_id
+    return if flujo_id.blank?
+
+    @partidas = [
+      { key: :rrhh_propios, nombre: 'RR HH Propios' },
+      { key: :rrhh_externos, nombre: 'RR HH Externos' },
+      { key: :gastos_operacion, nombre: 'Gastos de Operación' },
+      { key: :gastos_administracion, nombre: 'Gastos de Administración' }
+    ]
+
+    @data_costos = {
+      total:  { rrhh_propios: { tot: 0.0, ren: 0.0 }, rrhh_externos: { tot: 0.0, ren: 0.0 }, gastos_operacion: { tot: 0.0, ren: 0.0 }, gastos_administracion: { tot: 0.0, ren: 0.0 } },
+      fpl:    { rrhh_propios: { tot: 0.0, ren: 0.0 }, rrhh_externos: { tot: 0.0, ren: 0.0 }, gastos_operacion: { tot: 0.0, ren: 0.0 }, gastos_administracion: { tot: 0.0, ren: 0.0 } },
+      aporte: { rrhh_propios: { tot: 0.0, ren: 0.0 }, rrhh_externos: { tot: 0.0, ren: 0.0 }, gastos_operacion: { tot: 0.0, ren: 0.0 }, gastos_administracion: { tot: 0.0, ren: 0.0 } }
+    }
+
+    # 1. PRESUPUESTO FORMULADO (TOTALES POR PARTIDA) DESDE PLANACTIVIDAD.COSTOS
+    @costos = PlanActividad.costos(flujo_id)
+
+    if @costos.present?
+      obtener_valor = lambda do |attr|
+        if @costos.respond_to?(attr)
+          @costos.send(attr).to_f
+        elsif @costos.is_a?(Hash) && @costos[attr.to_s].present?
+          @costos[attr.to_s].to_f
+        else
+          0.0
+        end
+      end
+
+      # A. Total del Proyecto
+      @data_costos[:total][:rrhh_propios][:tot]          = obtener_valor.call(:recursos_humanos_propios)
+      @data_costos[:total][:rrhh_externos][:tot]         = obtener_valor.call(:recursos_humanos_externos)
+      @data_costos[:total][:gastos_operacion][:tot]      = obtener_valor.call(:gastos_operacion)
+      @data_costos[:total][:gastos_administracion][:tot] = obtener_valor.call(:gastos_administrativos)
+
+      # B. A Cargo del Fondo PL
+      @data_costos[:fpl][:rrhh_propios][:tot]          = 0.0
+      @data_costos[:fpl][:rrhh_externos][:tot]         = obtener_valor.call(:aporte_solicitado_fondo_rrhh_externo)
+      @data_costos[:fpl][:gastos_operacion][:tot]      = obtener_valor.call(:aporte_solicitado_fondo_gasto_operacion)
+      @data_costos[:fpl][:gastos_administracion][:tot] = obtener_valor.call(:aporte_solicitado_fondo_gasto_administracion)
+
+      # C. A Cargo del Beneficiario
+      ap_val_rrhh_p = obtener_valor.call(:aporte_propio_valorado_rrhh_propio)
+      ap_liq_rrhh_p = obtener_valor.call(:aporte_propio_liquido_rrhh_propio)
+
+      ap_val_rrhh_e = obtener_valor.call(:aporte_propio_valorado_rrhh_externo)
+      ap_liq_rrhh_e = obtener_valor.call(:aporte_propio_liquido_rrhh_externo)
+
+      ap_val_g_op   = obtener_valor.call(:aporte_propio_valorado_gasto_operacion)
+      ap_liq_g_op   = obtener_valor.call(:aporte_propio_liquido_gasto_operacion)
+
+      ap_val_g_adm  = obtener_valor.call(:aporte_propio_valorado_gasto_administracion)
+      ap_liq_g_adm  = obtener_valor.call(:aporte_propio_liquido_gasto_administracion)
+
+      @data_costos[:aporte][:rrhh_propios][:tot]          = ap_val_rrhh_p + ap_liq_rrhh_p
+      @data_costos[:aporte][:rrhh_externos][:tot]         = ap_val_rrhh_e + ap_liq_rrhh_e
+      @data_costos[:aporte][:gastos_operacion][:tot]      = ap_val_g_op + ap_liq_g_op
+      @data_costos[:aporte][:gastos_administracion][:tot] = ap_val_g_adm + ap_liq_g_adm
+    end
+
+    # 2. ACUMULADO DE GASTOS RENDIDOS (LECTURA DIRECTA DE rendicion_gastos_fpl)
+    # Se consideran las rendiciones acumuladas hasta el mes_a_rendir en evaluación
+    mes_limite = @rendicion.try(:mes_a_rendir).to_i
+    rendiciones_ids = RendicionFpl.where(flujo_id: flujo_id)
+                                  .where('mes_a_rendir <= ?', mes_limite.positive? ? mes_limite : 999)
+                                  .pluck(:id)
+
+    if rendiciones_ids.present?
+      gastos_rendidos = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_ids)
+
+      gastos_rendidos.each do |rg|
+        monto = rg.try(:costo_rendido).to_f
+        next if monto.zero?
+
+        # Identificar Partida según la columna 'categoria'
+        cat_str = rg.try(:categoria).to_s.downcase
+        cat = case cat_str
+              when 'rrhh_propios'
+                :rrhh_propios
+              when 'rrhh_externos'
+                :rrhh_externos
+              when 'operaciones', 'gastos_operacion'
+                :gastos_operacion
+              when 'administracion', 'gastos_administracion'
+                :gastos_administracion
+              else
+                :gastos_operacion
+              end
+
+        # Identificar si pertenece al Fondo PL o al Beneficiario según 'tipo_aporte'
+        tipo_ap = rg.try(:tipo_aporte).to_s.downcase
+        es_fpl = tipo_ap.include?('fondo') || tipo_ap.include?('solicitado')
+
+        if es_fpl
+          @data_costos[:fpl][cat][:ren] += monto
+        else
+          @data_costos[:aporte][cat][:ren] += monto
+        end
+
+        # Sumar al Total del Proyecto
+        @data_costos[:total][cat][:ren] += monto
+      end
+    end
+  end
+
 end

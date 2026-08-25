@@ -4,93 +4,14 @@
       allow_single_deselect: true,
       no_results_text: 'No se encontraron resultados',
       width: '100%'
-    }).change(function() {
-      validarFormulario();
     });
-
-    $("input:file").on('change', function () {
-      $(this).parent().siblings("label").html($(this)[0].files[0].name);
-      validarFormulario();
-    });
-
     htmlErrorToTooltip('top');
-    validarFormulario();
   });
 
-  // ----------------------------------------------------
-  // LÓGICA DE BITÁCORA UNIFICADA (POSTULANTE Y REVISOR)
-  // ----------------------------------------------------
-  function abrirModalComentarios(id, tituloActividad, idInputRevisor, idInputPostulante, esSoloLectura = true) {
-    const targetInputId = idInputRevisor + id;
-    const targetPostulanteId = idInputPostulante + id;
-
-    $('#modalBitacoraComentarios').attr('data-target-input', targetInputId);
-    $('#modal_titulo_actividad').text(tituloActividad);
-
-    const inputRevisor = document.getElementById(targetInputId);
-    const inputPostulante = document.getElementById(targetPostulanteId);
-
-    const textoRevisor = inputRevisor ? inputRevisor.value : '';
-    const textoPostulante = inputPostulante ? inputPostulante.value : '';
-
-    $('#bitacora_historial_container').html(formatearBitacoraDoble(textoPostulante, textoRevisor));
-    $('#nuevo_comentario_modal').val('');
-
-    if (esSoloLectura) {
-      $('#seccion_nuevo_comentario').hide();
-      $('#btn_guardar_modal').hide();
-      $('#btn_cerrar_modal').text('Cerrar');
-    } else {
-      $('#seccion_nuevo_comentario').show();
-      $('#btn_guardar_modal').show();
-      $('#btn_cerrar_modal').text('Cancelar');
-    }
-
-    $('#modalBitacoraComentarios').modal('show');
-  }
-
-  function formatearBitacoraDoble(textoPostulante, textoRevisor) {
-    let html = '';
-
-    if (textoPostulante && textoPostulante.trim() !== '') {
-      html += '<div class="font-weight-bold text-primary mb-1"><i class="fa fa-user mr-1"></i> Comentarios / Observaciones del Postulante:</div>';
-      textoPostulante.split('\n').forEach(linea => {
-        if (linea.trim() !== '') {
-          html += '<div class="p-2 mb-2 bg-info text-white border rounded smaller-text">' + escapeHtml(linea) + '</div>';
-        }
-      });
-    }
-
-    if (textoRevisor && textoRevisor.trim() !== '') {
-      html += '<div class="font-weight-bold text-danger mt-2 mb-1"><i class="fa fa-user-md mr-1"></i> Historial del Revisor:</div>';
-      textoRevisor.split('\n').forEach(linea => {
-        if (linea.trim() !== '') {
-          html += '<div class="p-2 mb-2 bg-light border border-danger text-dark rounded smaller-text">' + escapeHtml(linea) + '</div>';
-        }
-      });
-    }
-
-    if (html === '') {
-      html = '<div class="text-muted font-italic p-3 text-center border rounded bg-light">No hay registros previos en la bitácora.</div>';
-    }
-
-    return html;
-  }
-
-  function contarLineasComentarios(texto) {
-    if (!texto) return 0;
-    return texto.split('\n').filter(linea => linea.trim() !== '').length;
-  }
-
-  function escapeHtml(text) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
-  }
-
   function validarFormulario() {
-    let formularioValido = true;
     const botonEnviar = document.getElementById('enviar-button');
     if (botonEnviar) {
-      botonEnviar.disabled = !formularioValido;
+      botonEnviar.disabled = false;
     }
   }
 
@@ -110,16 +31,8 @@
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - titulo "Verificación Contable de Rendición"
 
--# Obtención del mes guardado en rendiciones_fpl
+-# Obtención del mes actual en verificación
 - mes_actual = @rendicion&.mes_a_rendir.to_s
-
--# Identificar ÚNICAMENTE las actividades que forman parte de esta rendición en la BD
-- actividades_en_rendicion = @rendicion&.rendicion_detalles_fpl&.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }&.uniq || []
-- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
-
--# -------------------------------------------------------------
--# CÁLCULO SINTÁCTICAMENTE CORRECTO DEL MES EN CURSO
--# -------------------------------------------------------------
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
 - if fecha_res.present?
@@ -128,15 +41,37 @@
 
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
 
--# Lambda auxiliar para consultar gastos por actividad
-- obtener_gastos_actividad = lambda do |act_id, tipos_validos|
-  - f_id = @tarea_pendiente&.flujo_id
-  - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - rec_ext = PlanActividad.recursos_externos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_op    = PlanActividad.gastos_operaciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
-  - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
+-# -------------------------------------------------------------
+-# 1. PREPARACIÓN DE DATOS - ACTIVIDADES Y ESTADO DE RENDICIONES
+-# -------------------------------------------------------------
+- detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+- rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).order(mes_a_rendir: :asc).to_a rescue []
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
+- max_avances = Hash.new(0)
+- rendiciones_todas.each do |rend|
+  - est_num = get_estado_num.call(rend)
+  - rend.rendicion_detalles_fpl.each do |det|
+    - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+    - val_av = det.nivel_avance.to_i
+    - det.rendicion_detalle_actividades_fpl.each do |rda|
+      - t_id = rda.plan_actividad_id.to_i
+      - max_avances[t_id] = [max_avances[t_id], val_av].max
+
+- suma_pct = 0
+- actividades_list = (@actividad_x_linea || []).map do |act|
+  - plan_act = detalles_hash[act.id.to_i] || PlanActividad.find_by(id: act.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: act.id)
+  - act_id_num = act.id.to_i
+  - plan_act_id_num = plan_act.try(:id).to_i
+  - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+  - av = mis_ids.map { |id| max_avances[id] }.max || 0
+  - suma_pct += av
+  - { id: act.id, correlativo: act.correlativo, nombre: act.nombre, avance: av, mis_ids: mis_ids }
+
+- pct_proyecto = actividades_list.any? ? (suma_pct.to_f / actividades_list.size) : 0
+- estados_map = { 0 => 'En borrador', 1 => 'Enviada / En revisión', 2 => 'Enviada / En revisión', 3 => 'Observada', 4 => 'Observada', 5 => 'Aceptada', 6 => 'Aceptada' }
+
+-# VISTA PRINCIPAL
 .row
   .col-12
     .card.mb-3
@@ -148,360 +83,243 @@
           %h5.no-margin= titulo_apl.html_safe
           %h5.no-margin= datos_beneficiario_fpl.html_safe
 
--# INDICADOR VISUAL DEL MES EN VERIFICACIÓN CONTABLE
-.row.mb-3
-  .col-12
-    .card.border-info.mb-0{style: "border-width: 2px;"}
-      .card-body.p-2.d-flex.align-items-center.justify-content-between.bg-light
-        %span.font-weight-bold.text-secondary{style: "font-size: 14px;"}
-          %i.fa.fa-calendar-check-o.mr-2.text-info
-          Rendición correspondiente a:
-        %span.badge.badge-info{style: "font-size: 14px; padding: 6px 14px;"}
-          = texto_mes_display
-
--# Cargar todas las pestañas para revisión contable integral
-- tabs = { 'tecnica' => true, 'financiera-fpl' => false, 'financiera-aporte' => false }
-
+-# NAVEGACIÓN POR PESTAÑAS (NAV-TABS)
 #tab-menu-controls.mb-0.mt-3.px-2{:role => "tabpanel"}
   %ul#manifestacion.nav.nav-tabs{:role => "tablist"}
-    - tabs.each do |tab, active|
-      %li.nav-item.tab-block{id: "#{tab}-tab"}
-        %a.nav-link.tab-block{id: "#{tab}-tab", class: (:active if active), "aria-controls" => tab, "aria-expanded" => "true", "data-toggle" => "tab", :href => "##{tab}", :role => "tab"}
-          = t(tab.to_s.gsub('-','_'))
+    %li.nav-item.tab-block
+      %a.nav-link.active#actividades-tab{"aria-controls" => "actividades", "aria-expanded" => "true", "data-toggle" => "tab", :href => "#actividades", :role => "tab"}
+        Actividades y Rendiciones
+    %li.nav-item.tab-block
+      %a.nav-link#costos-tab{"aria-controls" => "costos", "aria-expanded" => "false", "data-toggle" => "tab", :href => "#costos", :role => "tab"}
+        Estructura de Costos
 
 = simple_form_for fpl_objeto, url: guardar_verificacion_contable_rendicion_fondo_produccion_limpia_path(@tarea_pendiente), html: { autocomplete: :off }, remote: true do |f|
   = hidden_field_tag "mes_a_rendir", mes_actual.presence || @rendicion&.mes_a_rendir || 1
-  
-  .tab-content#manifestacionContent
 
-    -# ----------------------------------------------------
-    -# Pestaña 1: Información Técnica Consolidada (NUEVA VISTA)
-    -# ----------------------------------------------------
-    .tab-pane.fade.show.active#tecnica{:role => "tabpanel", "aria-labelledby" => "tecnica-tab"}
-      - if @actividad_x_linea.present?
-        - actividades_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
+  .tab-content#manifestacionContent.mt-3
 
-        - if actividades_filtradas.present?
-          - actividades_filtradas.each do |actividad|
-            - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
-            
-            - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
-            - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
-            
-            - obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
-            - indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+    -# TAB 1: LISTADO ACTIVIDADES Y ESTADO RENDICIONES
+    .tab-pane.fade.show.active#actividades{:role => "tabpanel", "aria-labelledby" => "actividades-tab"}
+      .card.mb-3{style: "border: 2px solid #dee2e6;"}
+        .card-header.header-actividad-fpl
+          .d-flex.align-items-center
+            %span.font-weight-bold{style: "color: #333; font-size: 14px;"} Resumen General de Avances y Rendiciones
 
-            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| is_tec = (d.tipo_tab.to_s == 'tecnica' || (d.respond_to?(:tecnica?) && d.tecnica?)); act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); is_tec && act_ids.include?(actividad.id) }
-            
-            - duracion_act = plan_act.try(:duracion).to_s
-            - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%d-%m-%Y') || '--'
-            - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%d-%m-%Y') || '--'
-            - nivel_avance_val = detalle_tecnico&.try(:nivel_avance).to_s
-            - observacion_valor = detalle_tecnico&.observacion
-            
-            - comentario_postulante_val = detalle_tecnico&.try(:comentario_postulante)
-            - valor_comentario = detalle_tecnico&.comentario_revisor
-            - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
-            
-            - raw_cumple = detalle_tecnico ? (detalle_tecnico.read_attribute_before_type_cast(:cumple) || detalle_tecnico.cumple) : nil
-            - val_str = raw_cumple.to_s.downcase
-            - es_aprobado = ['1', 'si', 'true'].include?(val_str)
-            - archivo = detalle_tecnico&.archivo
-            - tiene_archivo = detalle_tecnico&.archivo&.url.present?
+        .card-body.p-3
+          .row
+            .col-lg-12
+              .table-responsive.mb-3
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form.text-left Actividades
+                      %th.encabezado-form.text-center{style: "width: 170px;"} % Ejecución
+                  %tbody
+                    - actividades_list.each do |act_info|
+                      - mis_ids = act_info[:mis_ids]
+                      
+                      - es_en_proceso = false
+                      - max_avance_aprobado = 0
+                      - max_avance_proceso  = 0
+                      - max_avance_borrador = 0
 
-            .card.mb-3.actividad-tecnica-block{id: "tecnica_actividad_card_#{actividad.id}", 'data-duracion' => duracion_act, style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
-                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
-                  %i.fa.fa-chevron-down.mr-1
-                  Ver / Ocultar
+                      - rendiciones_todas.each do |r|
+                        - est_r = get_estado_num.call(r)
+                        - r.rendicion_detalles_fpl.each do |det|
+                          - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+                          - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
+                          - if (ids_asoc & mis_ids).present?
+                            - av = det.nivel_avance.to_i
+                            - if [1, 2].include?(est_r)
+                              - es_en_proceso = true
+                              - max_avance_proceso = [max_avance_proceso, av].max
+                            - elsif [5, 6].include?(est_r)
+                              - max_avance_aprobado = [max_avance_aprobado, av].max
+                            - elsif [0, 3, 4].include?(est_r)
+                              - max_avance_borrador = [max_avance_borrador, av].max
 
-              .collapse.show{id: "collapse_tecnica_#{actividad.id}"}
-                .card-body.p-2
-                  = hidden_field_tag "actividades_ids[]", actividad.id
+                      %tr
+                        %td.contenido-form= "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                        %td.contenido-form.text-center
+                          - if es_en_proceso
+                            %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
+                              = "En revision ASCC (#{max_avance_proceso}%)"
+                          - elsif max_avance_aprobado >= 100
+                            %span.badge.badge-success{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                              Finalizada 100%
+                          - elsif max_avance_borrador > 0
+                            %span.badge.badge-info.text-white{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                              = "Borrador (#{max_avance_borrador}%)"
+                          - elsif max_avance_aprobado > 0
+                            %span.badge.badge-primary{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                              = "en Ejecución (#{max_avance_aprobado}%)"
+                          - else
+                            %span{style: "font-size: 12px; color: #5d759e;"}= "0%"
 
-                  .alert.d-flex.align-items-center.py-2.px-3.mb-2{style: "background-color: #d0e7ff; border: 1px solid #b8daff; color: #004085; border-radius: 4px; font-size: 12px;"}
-                    %span
-                      %strong Indicador asociado al objetivo:
-                      = indicador_texto
+                    %tr.bg-light
+                      %td.contenido-form.font-weight-bold.text-right Porcentaje Avance Proyecto:
+                      %td.contenido-form.text-center.font-weight-bold
+                        %span.badge.badge-secondary{style: "font-size: 12px; padding: 6px 12px;"}
+                          = "#{pct_proyecto.round(1)}%"
 
-                  .table-responsive
-                    %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
-                      %thead
-                        %tr.bg-light
-                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Inicio
-                          %th.encabezado-form{style: 'width: 15%;'} Fecha de Término
-                          %th.encabezado-form{style: 'width: 15%;'} Nivel de avance
-                          %th.encabezado-form{style: 'width: 55%;'} Descripción del Avance
-                      %tbody
-                        %tr
-                          %td.contenido-form.text-center= fecha_inicio_valor
-                          %td.contenido-form.text-center= fecha_termino_valor
-                          %td.contenido-form.text-center
-                            - avance_num = detalle_tecnico&.nivel_avance.to_i
-                            - if avance_num > 0
-                              %span.badge.badge-info{style: "font-size: 11px; padding: 5px 8px;"}= "#{avance_num}%"
-                            - else
-                              %span.badge.badge-secondary{style: "font-size: 11px; padding: 5px 8px;"} Sin registrar
-                          %td.contenido-form= observacion_valor.presence || '--'
-
-                  .mt-3.mb-2.px-1
-                    %h6.font-weight-bold.text-secondary{style: "font-size: 12px;"} 
-                      %i.fa.fa-file-pdf-o.mr-1
-                      Documento de Respaldo Técnico
-
-                  .table-responsive
-                    %table.table.table-striped.usuarios.no-margin
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 50%;'} Archivos Evidencia
-                          %th.encabezado-form{style: 'width: 25%;'} Eval. Técnica
-                          %th.encabezado-form{style: 'width: 25%;'} Comentarios
-                      %tbody
-                        %tr
-                          %td.contenido-form{id: "archivo_cargado_actividad_#{actividad.id}", data: { tiene_archivo: tiene_archivo.to_s }}
-                            - if detalle_tecnico.present? && archivo.present?
-                              = __descargar_archivo_sin_titulo(archivo, detalle_tecnico)
-                            - else
-                              = '--'
-                          
-                          %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                            - if es_aprobado
-                              %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
-                            - else
-                              %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
-
-                          %td.contenido-form.text-center
-                            - if detalle_tecnico.present?
-                              = hidden_field_tag "comentario_postulante_#{detalle_tecnico.id}", comentario_postulante_val, id: "comentario_postulante_#{detalle_tecnico.id}"
-                              = hidden_field_tag "comentario_revisor_#{detalle_tecnico.id}", valor_comentario, id: "comentario_revisor_#{detalle_tecnico.id}"
-                              
-                              %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{detalle_tecnico.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', true)"}
-                                %i.fa.fa-comments.mr-1
-                                Bitácora
-                              .mt-1{id: "preview_comentario_revisor_#{detalle_tecnico.id}"}
-                                %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
-                                  %i.fa.fa-comments
-                                  = "#{num_comentarios_rev} registro(s)"
-                            - else
-                              = '--'
-        - else
-          .card.mt-2
-            .card-body.text-center.text-muted No hay actividades registradas en esta rendición.
-      - else
-        .card.mt-2
-          .card-body.text-center.text-muted No hay actividades configuradas para esta línea.
-
-    -# ----------------------------------------------------
-    -# Pestaña 2: Información Financiera FPL
-    -# ----------------------------------------------------
-    .tab-pane.fade#financiera-fpl{:role => "tabpanel", "aria-labelledby" => "financiera-fpl-tab"}
-      - if @actividad_x_linea.present?
-        - actividades_fpl_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
-        - docs_fpl_base = @documentos_fpl.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_fpl?) && d.financiera_fpl?) || d.tipo_tab.to_s.include?('fpl') || d.tipo_tab.to_s == '1' }) || []
-
-        - if actividades_fpl_filtradas.present?
-          - actividades_fpl_filtradas.each do |actividad|
-            - docs_act = docs_fpl_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
-            - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
-
-            .card.mb-3.actividad-fpl-block{id: "fpl_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
-                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_audit_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
-                  %i.fa.fa-chevron-down.mr-1
-                  Ver / Ocultar
-
-              .collapse.show{id: "collapse_fpl_audit_#{actividad.id}"}
-                .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_editable: false
-
-                  .table-responsive.mt-3
-                    %table.table.table-striped.no-margin
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
-                          %th.encabezado-form{style: 'width: 15%;'} Eval. Financiera
-                          %th.encabezado-form{style: 'width: 50%;'} Comentarios
-                      %tbody
-                        - if docs_act.present?
-                          - docs_act.each do |doc|
-                            - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                            - val_str = raw_cumple.to_s.downcase
-                            - es_aprobado = ['1', 'si', 'true'].include?(val_str)
-                            - valor_comentario = doc.comentario_revisor
-                            - comentario_postulante_val = doc.try(:comentario_postulante)
-                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
-
-                            %tr
-                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                              %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                - if es_aprobado
-                                  %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
-                                - else
-                                  %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
-                              %td.contenido-form.text-center
-                                = hidden_field_tag "comentario_postulante_#{doc.id}", comentario_postulante_val, id: "comentario_postulante_#{doc.id}"
-                                = hidden_field_tag "comentario_revisor_#{doc.id}", valor_comentario, id: "comentario_revisor_#{doc.id}"
-                                %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', true)"}
-                                  %i.fa.fa-comments.mr-1
-                                  Bitácora
-                                .mt-1{id: "preview_comentario_revisor_#{doc.id}"}
-                                  %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
-                                    %i.fa.fa-comments
-                                    = "#{num_comentarios_rev} registro(s)"
+            .col-lg-12
+              .table-responsive.mb-3
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form{colspan: 2, style: "border-bottom: none;"}
+                      %th.encabezado-form{colspan: 2} Informes Revisión
+                    %tr
+                      %th.encabezado-form Estado Rendiciones
+                      %th.encabezado-form Estado
+                      %th.encabezado-form Actividades
+                      %th.encabezado-form Financiero
+                  %tbody
+                    - rendiciones_todas.each do |r|
+                      - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'
+                      - f_target = fecha_res.to_date + (r.mes_a_rendir.to_i - 1).months rescue Date.today
+                      - m_lbl = (I18n.l(f_target, format: '%B %Y') rescue '').capitalize
+                      %tr
+                        %td.contenido-form= "#{m_lbl} (Rendición #{r.mes_a_rendir})"
+                        %td.contenido-form.text-center= estado_desc
+                        - if get_estado_num.call(r) >= 1
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                         - else
-                          %tr
-                            %td.contenido-form.text-muted.text-center Sin documentos cargados
-                            %td.contenido-form.text-center --
-                            %td.contenido-form.text-center --
-        - else
-          .card.mt-2
-            .card-body.text-center.text-muted No hay documentos financieros FPL para auditar en este mes.
-      - else
-        .card.mt-2
-          .card-body.text-center.text-muted No hay actividades configuradas.
+                          %td.contenido-form.text-center --
+                          %td.contenido-form.text-center --
 
-    -# ----------------------------------------------------
-    -# Pestaña 3: Información Financiera Aporte Propio
-    -# ----------------------------------------------------
-    .tab-pane.fade#financiera-aporte{:role => "tabpanel", "aria-labelledby" => "financiera-aporte-tab"}
-      - if @actividad_x_linea.present?
-        - actividades_aporte_filtradas = @actividad_x_linea.select { |a| actividades_en_rendicion.include?(a.id) }
-        - docs_aporte_base = @documentos_aporte.presence || (@rendicion&.rendicion_detalles_fpl&.select { |d| (d.respond_to?(:financiera_aporte?) && d.financiera_aporte?) || d.tipo_tab.to_s.include?('aporte') || d.tipo_tab.to_s == '2' }) || []
+    -# TAB 2: ESTRUCTURA DE COSTOS (FONDO PL, BENEFICIARIO Y TOTAL DESTACADO AL FINAL)
+    .tab-pane.fade#costos{:role => "tabpanel", "aria-labelledby" => "costos-tab"}
+      - data_costos = @data_costos || { total: {}, fpl: {}, aporte: {} }
+      - items_costo = @partidas || [ { key: :rrhh_propios, nombre: 'RR HH Propios' }, { key: :rrhh_externos, nombre: 'RR HH Externos' }, { key: :gastos_operacion, nombre: 'Gastos de Operación' }, { key: :gastos_administracion, nombre: 'Gastos de Administración' } ]
 
-        - if actividades_aporte_filtradas.present?
-          - actividades_aporte_filtradas.each do |actividad|
-            - docs_act = docs_aporte_base.select { |d| act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) + (d.respond_to?(:plan_actividades) && d.plan_actividades.present? ? d.plan_actividades.map(&:id) : []); act_ids.include?(actividad.id) }
-            - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
-
-            .card.mb-3.actividad-aporte-block{id: "aporte_actividad_card_#{actividad.id}", style: "border: 2px solid #dee2e6;"}
-              .card-header.d-flex.justify-content-between.align-items-center.header-actividad-fpl
-                .d-flex.align-items-center
-                  %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
-                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
-                %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_audit_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
-                  %i.fa.fa-chevron-down.mr-1
-                  Ver / Ocultar
-
-              .collapse.show{id: "collapse_aporte_audit_#{actividad.id}"}
-                .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_editable: false
-
-                  .table-responsive.mt-3
-                    %table.table.table-striped.no-margin
-                      %thead
-                        %tr
-                          %th.encabezado-form{style: 'width: 35%;'} Archivos Cargados
-                          %th.encabezado-form{style: 'width: 15%;'} Eval. Financiera
-                          %th.encabezado-form{style: 'width: 50%;'} Comentarios
-                      %tbody
-                        - if docs_act.present?
-                          - docs_act.each do |doc|
-                            - raw_cumple = doc.read_attribute_before_type_cast(:cumple) || doc.cumple
-                            - val_str = raw_cumple.to_s.downcase
-                            - es_aprobado = ['1', 'si', 'true'].include?(val_str)
-                            - valor_comentario = doc.comentario_revisor
-                            - comentario_postulante_val = doc.try(:comentario_postulante)
-                            - archivo = doc.respond_to?(:archivo) ? doc.archivo : nil
-                            - num_comentarios_rev = valor_comentario.to_s.split("\n").reject(&:blank?).count
-
-                            %tr
-                              %td.contenido-form= __descargar_archivo_sin_titulo(archivo, doc || f.object)
-                              %td.contenido-form.text-center{style: 'vertical-align: middle !important;'}
-                                - if es_aprobado
-                                  %span.badge.badge-success{style: 'font-size: 10px; padding: 6px 12px;'} Cumple
-                                - else
-                                  %span.badge.badge-danger{style: 'font-size: 10px; padding: 6px 12px;'} No Cumple
-                              %td.contenido-form.text-center
-                                = hidden_field_tag "comentario_postulante_#{doc.id}", comentario_postulante_val, id: "comentario_postulante_#{doc.id}"
-                                = hidden_field_tag "comentario_revisor_#{doc.id}", valor_comentario, id: "comentario_revisor_#{doc.id}"
-                                %button.btn.btn-sm.btn-outline-primary.w-100{type: 'button', onclick: "abrirModalComentarios('#{doc.id}', '#{j actividad.nombre}', 'comentario_revisor_', 'comentario_postulante_', true)"}
-                                  %i.fa.fa-comments.mr-1
-                                  Bitácora
-                                .mt-1{id: "preview_comentario_revisor_#{doc.id}"}
-                                  %span.badge{class: num_comentarios_rev > 0 ? 'badge-info' : 'badge-secondary'}
-                                    %i.fa.fa-comments
-                                    = "#{num_comentarios_rev} registro(s)"
-                        - else
-                          %tr
-                            %td.contenido-form.text-muted.text-center Sin documentos cargados
-                            %td.contenido-form.text-center --
-                            %td.contenido-form.text-center --
-        - else
-          .card.mt-2
-            .card-body.text-center.text-muted No hay documentos de aporte para auditar en este mes.
-      - else
-        .card.mt-2
-          .card-body.text-center.text-muted No hay actividades configuradas.
-
-  -# Sección de Cierre / Dictamen Contable
-  .card.mt-3
-    .card-header
-      %h5.no-margin Dictamen de Verificación Contable
-    .card-body
+      -# 1. TABLAS PARCIALES LADO A LADO
       .row
+        - [{ titulo: "A Cargo del Fondo PL", tipo: :fpl }, { titulo: "A Cargo del Beneficiario", tipo: :aporte }].each do |tabla|
+          .col-12.col-lg-6.mb-3
+            .card.h-100{style: "border: 2px solid #dee2e6;"}
+              .card-header.header-actividad-fpl
+                .d-flex.align-items-center
+                  %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= tabla[:titulo]
+              .card-body.p-2
+                .table-responsive
+                  %table.table.table-striped.no-margin
+                    %thead
+                      %tr
+                        %th.encabezado-form.text-left Ítem de Gasto
+                        %th.encabezado-form Total
+                        %th.encabezado-form Gastos Rendidos
+                        %th.encabezado-form por Rendir
+                        %th.encabezado-form % Ejecución
+                    %tbody
+                      - items_costo.each do |item|
+                        - node = data_costos.dig(tabla[:tipo], item[:key]) || { tot: 0.0, ren: 0.0 }
+                        - tot = node[:tot].to_f
+                        - ren = node[:ren].to_f
+                        - por_rendir = tot - ren
+                        - pct = tot > 0 ? (ren / tot * 100) : 0
+                        %tr
+                          %td.contenido-form= item[:nombre]
+                          %td.contenido-form.text-right= number_to_currency(tot, unit: '$', precision: 0)
+                          %td.contenido-form.text-right= number_to_currency(ren, unit: '$', precision: 0)
+                          %td.contenido-form.text-right= number_to_currency(por_rendir, unit: '$', precision: 0)
+                          %td.contenido-form.text-center= number_to_percentage(pct, precision: 1)
+
+                      -# FILA TOTAL PARCIAL POR TABLA
+                      - nodes_hash = data_costos[tabla[:tipo]] || {}
+                      - tot_gen = nodes_hash.values.sum { |v| v[:tot].to_f }
+                      - ren_gen = nodes_hash.values.sum { |v| v[:ren].to_f }
+                      - pct_gen = tot_gen > 0 ? (ren_gen / tot_gen * 100) : 0
+                      %tr.bg-light
+                        %td.contenido-form.font-weight-bold TOTAL
+                        %td.contenido-form.text-right.font-weight-bold= number_to_currency(tot_gen, unit: '$', precision: 0)
+                        %td.contenido-form.text-right.font-weight-bold= number_to_currency(ren_gen, unit: '$', precision: 0)
+                        %td.contenido-form.text-right.font-weight-bold= number_to_currency(tot_gen - ren_gen, unit: '$', precision: 0)
+                        %td.contenido-form.text-center.font-weight-bold= number_to_percentage(pct_gen, precision: 1)
+
+      -# 2. TABLA DESTACADA: TOTAL DEL PROYECTO (AL FINAL DE LA PESTAÑA)
+      .row.mt-2
         .col-12
-          %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
-          = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
+          .card.mb-3{style: "border: 2px solid #5d759e;"}
+            .card-header{style: "background-color: #5d759e; color: #fff; padding: 10px 15px;"}
+              .d-flex.align-items-center.justify-content-between
+                %span.font-weight-bold{style: "font-size: 15px;"}
+                  %i.fa.fa-calculator.mr-2
+                  Total del Proyecto (Consolidado)
+                %span.badge.badge-light{style: "font-size: 11px; color: #5d759e;"} Resumen General
 
-  .float-left
-    - if @rendicion.present?
-      = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info mr-2", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
-        %i.fa.fa-file-pdf-o.mr-1
-        Descargar Informe PDF
-  .float-right.mt-3.mb-4  
-    = volver_root   
-    - if @tiene_permisos
-      = button_tag "Grabar Avance", 
-        type: 'submit', 
-        name: 'commit_type', 
-        value: 'grabar', 
-        class: "btn btn-sm btn-primary mr-2", 
-        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+            .card-body.p-2
+              .table-responsive
+                %table.table.table-striped.no-margin
+                  %thead
+                    %tr
+                      %th.encabezado-form.text-left{style: "background-color: #cbe3f5;"} Ítem de Gasto
+                      %th.encabezado-form{style: "background-color: #cbe3f5;"} Presupuesto Total
+                      %th.encabezado-form{style: "background-color: #cbe3f5;"} Gastos Rendidos
+                      %th.encabezado-form{style: "background-color: #cbe3f5;"} Pendiente por Rendir
+                      %th.encabezado-form{style: "background-color: #cbe3f5;"} % Ejecución Acumulada
+                  %tbody
+                    - items_costo.each do |item|
+                      - node = data_costos.dig(:total, item[:key]) || { tot: 0.0, ren: 0.0 }
+                      - tot = node[:tot].to_f
+                      - ren = node[:ren].to_f
+                      - por_rendir = tot - ren
+                      - pct = tot > 0 ? (ren / tot * 100) : 0
+                      %tr
+                        %td.contenido-form.font-weight-bold= item[:nombre]
+                        %td.contenido-form.text-right= number_to_currency(tot, unit: '$', precision: 0)
+                        %td.contenido-form.text-right= number_to_currency(ren, unit: '$', precision: 0)
+                        %td.contenido-form.text-right= number_to_currency(por_rendir, unit: '$', precision: 0)
+                        %td.contenido-form.text-center
+                          %span= number_to_percentage(pct, precision: 1)
 
-      = button_tag "Aprobar Verificación Contable", 
-        type: 'submit', 
-        name: 'commit_type', 
-        value: 'enviar', 
-        id: 'enviar-button', 
-        class: "btn btn-sm btn-success", 
-        data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
+                    -# FILA TOTAL CONSOLIDADO DESTACADA
+                    - nodes_hash = data_costos[:total] || {}
+                    - tot_gen = nodes_hash.values.sum { |v| v[:tot].to_f }
+                    - ren_gen = nodes_hash.values.sum { |v| v[:ren].to_f }
+                    - pct_gen = tot_gen > 0 ? (ren_gen / tot_gen * 100) : 0
+                    %tr{style: "background-color: #e0eff6;"}
+                      %td.contenido-form.font-weight-bold{style: "font-size: 13px; color: #004085;"} TOTAL CONSOLIDADO PROYECTO
+                      %td.contenido-form.text-right.font-weight-bold{style: "font-size: 13px; color: #004085;"}= number_to_currency(tot_gen, unit: '$', precision: 0)
+                      %td.contenido-form.text-right.font-weight-bold{style: "font-size: 13px; color: #28a745;"}= number_to_currency(ren_gen, unit: '$', precision: 0)
+                      %td.contenido-form.text-right.font-weight-bold{style: "font-size: 13px; color: #dc3545;"}= number_to_currency(tot_gen - ren_gen, unit: '$', precision: 0)
+                      %td.contenido-form.text-center.font-weight-bold{style: "font-size: 13px;"}
+                        %span.badge.badge-dark{style: "font-size: 12px; padding: 6px 12px;"}
+                          = number_to_percentage(pct_gen, precision: 1)
 
-/ ----------------------------------------------------
-/ MODAL POPUP: BITÁCORA Y HISTORIAL DE COMENTARIOS
-/ ----------------------------------------------------
-.modal.fade#modalBitacoraComentarios{tabindex: "-1", role: "dialog", "aria-labelledby" => "modalBitacoraLabel", "aria-hidden" => "true"}
-  .modal-dialog.modal-lg{role: "document"}
-    .modal-content
-      .modal-header.bg-info.text-white
-        %h5.modal-title#modalBitacoraLabel
-          %i.fa.fa-comments.mr-2
-          %span#modalBitacoraLabelText Bitácora de Comentarios
-        %button.close.text-white{type: "button", "data-dismiss" => "modal", "aria-label" => "Cerrar"}
-          %span{"aria-hidden" => "true"} &times;
-      .modal-body
-        .alert.alert-secondary.py-2.mb-3
-          %strong Actividad:
-          %span#modal_titulo_actividad.font-italic
+  -# SECCIÓN INFERIOR: DICTAMEN CONTABLE Y BOTONES
+  -#
+    .card.mt-3{style: 'border: 2px solid #dee2e6;'}
+      .card-header.header-actividad-fpl
+        %h5.no-margin.font-weight-bold Dictamen de Verificación Contable
+      .card-body
+        .row
+          .col-12
+            %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
+            = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
 
-        #bitacora_historial_container.mb-3{style: "max-height: 250px; overflow-y: auto;"}
+  .d-flex.justify-content-between.align-items-center.mt-4.mb-5
+    .left-actions
+      - if @rendicion.present?
+        = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
+          %i.fa.fa-file-pdf-o.mr-1
+          Descargar Informe de Gastos (Mes #{@rendicion.mes_a_rendir})
 
-        #seccion_nuevo_comentario
-          %hr
-          .form-group.mb-0
-            %label.font-weight-bold.text-danger{for: "nuevo_comentario_modal"}
-              %i.fa.fa-pencil.mr-1
-              Agregar Nuevo Comentario:
-            %textarea#nuevo_comentario_modal.form-control.border-text{rows: 3, placeholder: "Escriba aquí el comentario u observación..."}
+    .right-actions
+      = volver_root
+      - if @tiene_permisos
+        = button_tag "Grabar Avance", 
+          type: 'submit', 
+          name: 'commit_type', 
+          value: 'grabar', 
+          class: "btn btn-sm btn-primary ml-2", 
+          data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
 
-      .modal-footer
-        %button.btn.btn-sm.btn-secondary#btn_cerrar_modal{type: "button", "data-dismiss" => "modal"} Cerrar
-        %button.btn.btn-sm.btn-primary#btn_guardar_modal{type: "button", onclick: "guardarComentarioModal()"}
-          %i.fa.fa-plus-circle.mr-1
-          Añadir Entrada a Bitácora
+        = button_tag "Aprobar Verificación Contable", 
+          type: 'submit', 
+          name: 'commit_type', 
+          value: 'enviar', 
+          id: 'enviar-button', 
+          class: "btn btn-sm btn-success ml-2", 
+          data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }
