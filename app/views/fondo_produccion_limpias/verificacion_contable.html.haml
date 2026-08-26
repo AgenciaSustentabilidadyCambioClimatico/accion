@@ -1,33 +1,3 @@
-:javascript
-  $(document).ready(function() {
-    $('.chosen-control').chosen({
-      allow_single_deselect: true,
-      no_results_text: 'No se encontraron resultados',
-      width: '100%'
-    });
-    htmlErrorToTooltip('top');
-  });
-
-  function validarFormulario() {
-    const botonEnviar = document.getElementById('enviar-button');
-    if (botonEnviar) {
-      botonEnviar.disabled = false;
-    }
-  }
-
-:css
-  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
-  .table tbody + tbody { border-top: 2px solid #dee2e6; }
-  .table .table { background-color: #fff; }
-  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
-  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
-  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
-  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
-  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
-  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
-  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
-
 - fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
 - titulo "Verificación Contable de Rendición"
 
@@ -69,7 +39,46 @@
   - { id: act.id, correlativo: act.correlativo, nombre: act.nombre, avance: av, mis_ids: mis_ids }
 
 - pct_proyecto = actividades_list.any? ? (suma_pct.to_f / actividades_list.size) : 0
+- es_proyecto_100 = pct_proyecto.round(1) >= 100.0
 - estados_map = { 0 => 'En borrador', 1 => 'Enviada / En revisión', 2 => 'Enviada / En revisión', 3 => 'Observada', 4 => 'Observada', 5 => 'Aceptada', 6 => 'Aceptada' }
+
+:javascript
+  const ES_PROYECTO_100 = #{es_proyecto_100 ? 'true' : 'false'};
+
+  $(document).ready(function() {
+    $('.chosen-control').chosen({
+      allow_single_deselect: true,
+      no_results_text: 'No se encontraron resultados',
+      width: '100%'
+    });
+    htmlErrorToTooltip('top');
+    validarFormulario();
+  });
+
+  function validarFormulario() {
+    const botonEnviar = document.getElementById('enviar-button');
+    if (botonEnviar) {
+      botonEnviar.disabled = !ES_PROYECTO_100;
+      if (ES_PROYECTO_100) {
+        botonEnviar.classList.remove('btn-disabled');
+      } else {
+        botonEnviar.classList.add('btn-disabled');
+      }
+    }
+  }
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
 
 -# VISTA PRINCIPAL
 .row
@@ -304,22 +313,17 @@
       - if @rendicion.present?
         = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
           %i.fa.fa-file-pdf-o.mr-1
-          Descargar Informe de Gastos (Mes #{@rendicion.mes_a_rendir})
+          Descargar Informe de Gastos
 
     .right-actions
       = volver_root
       - if @tiene_permisos
-        = button_tag "Grabar Avance", 
-          type: 'submit', 
-          name: 'commit_type', 
-          value: 'grabar', 
-          class: "btn btn-sm btn-primary ml-2", 
-          data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
-
         = button_tag "Aprobar Verificación Contable", 
           type: 'submit', 
           name: 'commit_type', 
           value: 'enviar', 
           id: 'enviar-button', 
-          class: "btn btn-sm btn-success ml-2", 
+          class: "btn btn-sm btn-success ml-2 #{'btn-disabled' unless es_proyecto_100}", 
+          disabled: !es_proyecto_100, 
+          title: (es_proyecto_100 ? "" : "El porcentaje de avance del proyecto debe estar al 100% para aprobar la verificación contable"), 
           data: { confirm: "¿Está seguro que desea dar por APROBADA la verificación contable de esta rendición?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Enviando..." }

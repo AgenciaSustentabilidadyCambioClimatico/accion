@@ -119,23 +119,42 @@
       if (esSinMovimientos) {
         $('.chk-actividad-paso1').prop('checked', false).prop('disabled', true);
       } else if (ES_EDITABLE) {
-        $('.chk-actividad-paso1').each(function() {
-          const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
-          if (!permDisabled) {
-            $(this).prop('disabled', false);
-            const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
-            if (debeMarcar) {
-              $(this).prop('checked', true);
+        const esUltima = $('#chk_ultima_rendicion_paso1').is(':checked');
+        if (esUltima) {
+          actualizarComportamientoUltimaRendicion(true);
+        } else {
+          $('.chk-actividad-paso1').each(function() {
+            const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
+            if (!permDisabled) {
+              $(this).prop('disabled', false);
+              const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
+              if (debeMarcar) {
+                $(this).prop('checked', true);
+              }
             }
-          }
-        });
+          });
+        }
       }
       filtrarVistaPorSeleccion(obtenerActividadesSeleccionadas());
       validarFormulario();
     });
 
+    $('#chk_ultima_rendicion_paso1').on('change', function() {
+      const esUltima = $(this).is(':checked');
+      $('#chk_ultima_rendicion_form').prop('checked', esUltima);
+      actualizarComportamientoUltimaRendicion(esUltima);
+    });
+
+    $('#chk_ultima_rendicion_form').on('change', function() {
+      const esUltima = $(this).is(':checked');
+      $('#chk_ultima_rendicion_paso1').prop('checked', esUltima);
+      actualizarComportamientoUltimaRendicion(esUltima);
+    });
+
     if ($('#chk_sin_movimientos_paso1').is(':checked')) {
       $('#chk_sin_movimientos_paso1').trigger('change');
+    } else if ($('#chk_ultima_rendicion_paso1').is(':checked')) {
+      actualizarComportamientoUltimaRendicion(true);
     } else {
       if (PASO_ACTUAL === 2 && ACTIVIDADES_GUARDADAS.length > 0) {
         filtrarVistaPorSeleccion(ACTIVIDADES_GUARDADAS);
@@ -144,14 +163,6 @@
         filtrarVistaPorSeleccion(seleccionadasIniciales);
       }
     }
-
-    $('#chk_ultima_rendicion_paso1').on('change', function() {
-      $('#chk_ultima_rendicion_form').prop('checked', $(this).is(':checked'));
-    });
-
-    $('#chk_ultima_rendicion_form').on('change', function() {
-      $('#chk_ultima_rendicion_paso1').prop('checked', $(this).is(':checked'));
-    });
 
     $('#btn-continuar-paso2').on('click', function() {
       const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
@@ -181,6 +192,28 @@
       bloquearFormularioSoloLectura();
     }
   });
+
+  function actualizarComportamientoUltimaRendicion(esUltima) {
+    const esSinMovimientos = $('#chk_sin_movimientos_paso1').is(':checked');
+    if (!ES_EDITABLE || esSinMovimientos) return;
+
+    $('.chk-actividad-paso1').each(function() {
+      const permDisabled = $(this).data('permanente-disabled') === true || $(this).data('permanente-disabled') === 'true';
+
+      if (!permDisabled) {
+        if (esUltima) {
+          $(this).prop('checked', true).prop('disabled', true);
+        } else {
+          $(this).prop('disabled', false);
+          const debeMarcar = $(this).data('debe-marcar-defecto') === true || $(this).data('debe-marcar-defecto') === 'true';
+          $(this).prop('checked', debeMarcar);
+        }
+      }
+    });
+
+    filtrarVistaPorSeleccion(obtenerActividadesSeleccionadas());
+    validarFormulario();
+  }
 
   function obtenerActividadesSeleccionadas() {
     const seleccionadas = [];
@@ -809,9 +842,9 @@
                               %button.btn.btn-sm.btn-outline-danger{type: "button", onclick: "eliminarFilaDocumento(this)", title: "Eliminar"}
                                 %i.fa.fa-trash
 
-    -# ----------------------------------------------------
+    -# -------------------------------------------------------------
     -# SECCIÓN: RESUMEN Y CONCLUSIONES DE LA RENDICIÓN
-    -# ----------------------------------------------------
+    -# -------------------------------------------------------------
     .card.mt-3.mb-3{style: 'border: 2px solid #dee2e6;'}
       .card-header.encabezado-form{style: 'text-align: left; padding: 10px 15px;'}
         %h5.no-margin.font-weight-bold{style: 'font-size: 14px; color: #5d759e;'}
