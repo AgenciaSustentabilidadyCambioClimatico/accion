@@ -34,13 +34,18 @@
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
 -# -------------------------------------------------------------
--# LOGICA DE ESTADOS Y EVALUACIÓN EN PROCESO (ESTADOS 1, 2)
+-# LÓGICA DE ESTADOS Y EVALUACIÓN DEL MES ACTUAL
 -# -------------------------------------------------------------
-- rendiciones_en_proceso = rendiciones_todas.select { |r| [1, 2].include?(get_estado_num.call(r)) }
+- rendiciones_en_proceso = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [1, 2].include?(get_estado_num.call(r)) }
 - act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
 
-- rendiciones_borrador = rendiciones_todas.select { |r| [0, 3, 4].include?(get_estado_num.call(r)) }
+- rendiciones_observadas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [3, 4].include?(get_estado_num.call(r)) }
+- act_ids_observadas = es_sin_movimientos ? [] : rendiciones_observadas.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+
+- rendiciones_borrador = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && get_estado_num.call(r) == 0 }
 - act_ids_borrador = es_sin_movimientos ? [] : rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+
+- act_ids_editables_actuales = (act_ids_borrador + act_ids_observadas).uniq
 
 -# Pendientes de Meses Anteriores
 - rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
@@ -50,9 +55,10 @@
 -# -------------------------------------------------------------
 -# MAPAS DE NIVELES DE AVANCE POR CATEGORÍA DE ESTADO
 -# -------------------------------------------------------------
-- avances_aprobados_por_actividad = Hash.new(0)
-- avances_proceso_por_actividad   = Hash.new(0)
-- avances_borrador_por_actividad  = Hash.new(0)
+- avances_aprobados_por_actividad  = Hash.new(0)
+- avances_proceso_por_actividad    = Hash.new(0)
+- avances_observados_por_actividad = Hash.new(0)
+- avances_borrador_por_actividad   = Hash.new(0)
 
 - rendiciones_todas.each do |rend|
   - est_num = get_estado_num.call(rend)
@@ -61,9 +67,10 @@
     - val_av = det.nivel_avance.to_i
     - det.rendicion_detalle_actividades_fpl.each do |rda|
       - t_id = rda.plan_actividad_id.to_i
-      - avances_aprobados_por_actividad[t_id] = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
-      - avances_proceso_por_actividad[t_id]   = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2].include?(est_num)
-      - avances_borrador_por_actividad[t_id]  = [avances_borrador_por_actividad[t_id], val_av].max if [0, 3, 4].include?(est_num)
+      - avances_aprobados_por_actividad[t_id]  = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
+      - avances_proceso_por_actividad[t_id]    = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2].include?(est_num)
+      - avances_observados_por_actividad[t_id] = [avances_observados_por_actividad[t_id], val_av].max if [3, 4].include?(est_num)
+      - avances_borrador_por_actividad[t_id]   = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
 
 -# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
@@ -80,7 +87,7 @@
 :javascript
   const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
   const PASO_ACTUAL = #{paso_actual.to_i};
-  const ACTIVIDADES_GUARDADAS = #{raw act_ids_borrador.map(&:to_s).to_json};
+  const ACTIVIDADES_GUARDADAS = #{raw act_ids_editables_actuales.map(&:to_s).to_json};
 
   $(document).ready(function() {
     $("input:file").on('change', function () {
@@ -500,23 +507,25 @@
                 - plan_act_id_num = plan_act.try(:id).to_i
                 - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
-                -# VERIFICACIÓN ESTRICTA DE ESTADOS
+                -# VERIFICACIÓN ESTRICTA DE ESTADOS DEL MES ACTUAL
                 - es_en_proceso = mis_ids.any? { |id| act_ids_en_proceso.include?(id) }
-                - es_borrador   = mis_ids.any? { |id| act_ids_borrador.include?(id) } && !es_en_proceso
+                - es_observada  = mis_ids.any? { |id| act_ids_observadas.include?(id) } && !es_en_proceso
+                - es_borrador   = mis_ids.any? { |id| act_ids_borrador.include?(id) } && !es_en_proceso && !es_observada
 
-                - max_avance_aprobado = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
-                - max_avance_proceso  = mis_ids.map { |id| avances_proceso_por_actividad[id] }.max || 0
-                - max_avance_borrador = mis_ids.map { |id| avances_borrador_por_actividad[id] }.max || 0
+                - max_avance_aprobado  = mis_ids.map { |id| avances_aprobados_por_actividad[id] }.max || 0
+                - max_avance_proceso   = mis_ids.map { |id| avances_proceso_por_actividad[id] }.max || 0
+                - max_avance_observado = mis_ids.map { |id| avances_observados_por_actividad[id] }.max || 0
+                - max_avance_borrador  = mis_ids.map { |id| avances_borrador_por_actividad[id] }.max || 0
 
-                - completada_100 = max_avance_aprobado >= 100
+                - completada_100 = (max_avance_aprobado >= 100) || (max_avance_proceso >= 100)
 
                 - es_mes_previo = duraciones.any? { |m| m.to_i < mes_seleccionado_defecto.to_i }
                 - es_pendiente_previo = es_mes_previo && !completada_100
-                - tiene_avance_parcial = max_avance_aprobado > 0 && !completada_100
+                - tiene_avance_parcial = (max_avance_aprobado > 0 || max_avance_proceso > 0) && !completada_100
 
                 -# REGLA DE SELECCIÓN DE ACTIVIDAD
                 - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
-                - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador
+                - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador || es_observada
                 - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
 
                 - valor_hh_tipo_3 = plan_act.try(:valor_hh_tipo_3).to_f
@@ -542,13 +551,20 @@
                     - if es_en_proceso
                       - txt_av = max_avance_proceso > 0 ? " (#{max_avance_proceso}%)" : ""
                       %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC #{txt_av}"
+                    - elsif es_observada
+                      - txt_av = max_avance_observado > 0 ? " (#{max_avance_observado}%)" : ""
+                      %span.badge.badge-danger.d-block.mt-1{style: "font-size: 11px; background-color: #dc3545;"}= "Observada#{txt_av}"
                     - elsif completada_100
-                      %span.badge.badge-success.d-block.mt-1{style: "font-size: 11px;"} Finalizada 100%
+                      - if max_avance_proceso >= 100 && max_avance_aprobado < 100
+                        %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC (100%)"
+                      - else
+                        %span.badge.badge-success.d-block.mt-1{style: "font-size: 11px;"} Finalizada 100%
                     - elsif es_borrador && !es_sin_movimientos
                       - txt_av = max_avance_borrador > 0 ? " (#{max_avance_borrador}%)" : ""
                       %span.badge.badge-info.text-white.d-block.mt-1{style: "font-size: 11px;"}= "Borrador#{txt_av}"
-                    - elsif max_avance_aprobado > 0
-                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 11px;"}= "en Ejecución (#{max_avance_aprobado}%)"
+                    - elsif (max_avance_aprobado > 0 || max_avance_proceso > 0) && !es_sin_movimientos
+                      - max_av_actual = [max_avance_aprobado, max_avance_proceso].max
+                      %span.badge.badge-primary.d-block.mt-1{style: "font-size: 11px;"}= "en Ejecución (#{max_av_actual}%)"
 
             %tr
               %td.contenido-form{style: 'font-weight: bold;', colspan: 2 + duracion} Total

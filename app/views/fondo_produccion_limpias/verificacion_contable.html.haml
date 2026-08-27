@@ -128,9 +128,11 @@
                       - mis_ids = act_info[:mis_ids]
                       
                       - es_en_proceso = false
-                      - max_avance_aprobado = 0
-                      - max_avance_proceso  = 0
-                      - max_avance_borrador = 0
+                      - es_observada  = false
+                      - max_avance_aprobado  = 0
+                      - max_avance_proceso   = 0
+                      - max_avance_observado = 0
+                      - max_avance_borrador  = 0
 
                       - rendiciones_todas.each do |r|
                         - est_r = get_estado_num.call(r)
@@ -142,9 +144,12 @@
                             - if [1, 2].include?(est_r)
                               - es_en_proceso = true
                               - max_avance_proceso = [max_avance_proceso, av].max
+                            - elsif [3, 4].include?(est_r)
+                              - es_observada = true
+                              - max_avance_observado = [max_avance_observado, av].max
                             - elsif [5, 6].include?(est_r)
                               - max_avance_aprobado = [max_avance_aprobado, av].max
-                            - elsif [0, 3, 4].include?(est_r)
+                            - elsif est_r == 0
                               - max_avance_borrador = [max_avance_borrador, av].max
 
                       %tr
@@ -153,15 +158,23 @@
                           - if es_en_proceso
                             %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
                               = "En revision ASCC (#{max_avance_proceso}%)"
-                          - elsif max_avance_aprobado >= 100
-                            %span.badge.badge-success{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
-                              Finalizada 100%
+                          - elsif es_observada
+                            %span.badge.badge-danger.text-white{style: "font-size: 11px; padding: 6px; background-color: #dc3545; display: block; width: 100%;"}
+                              = "Observada (#{max_avance_observado}%)"
+                          - elsif max_avance_aprobado >= 100 || max_avance_proceso >= 100
+                            - if max_avance_proceso >= 100 && max_avance_aprobado < 100
+                              %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
+                                = "En revision ASCC (100%)"
+                            - else
+                              %span.badge.badge-success{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                                Finalizada 100%
                           - elsif max_avance_borrador > 0
                             %span.badge.badge-info.text-white{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
                               = "Borrador (#{max_avance_borrador}%)"
-                          - elsif max_avance_aprobado > 0
+                          - elsif (max_avance_aprobado > 0 || max_avance_proceso > 0)
+                            - max_av_actual = [max_avance_aprobado, max_avance_proceso].max
                             %span.badge.badge-primary{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
-                              = "en Ejecución (#{max_avance_aprobado}%)"
+                              = "en Ejecución (#{max_av_actual}%)"
                           - else
                             %span{style: "font-size: 12px; color: #5d759e;"}= "0%"
 
@@ -309,14 +322,15 @@
                           = number_to_percentage(pct_gen, precision: 1)
 
   -# SECCIÓN INFERIOR: DICTAMEN CONTABLE Y BOTONES
-  .card.mt-3{style: 'border: 2px solid #dee2e6;'}
-    .card-header.header-actividad-fpl
-      %h5.no-margin.font-weight-bold Dictamen de Verificación Contable
-    .card-body
-      .row
-        .col-12
-          %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
-          = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
+  -#
+    .card.mt-3{style: 'border: 2px solid #dee2e6;'}
+      .card-header.header-actividad-fpl
+        %h5.no-margin.font-weight-bold Dictamen de Verificación Contable
+      .card-body
+        .row
+          .col-12
+            %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
+            = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
 
   .d-flex.justify-content-between.align-items-center.mt-4.mb-5
     .left-actions

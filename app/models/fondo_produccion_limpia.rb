@@ -2047,10 +2047,13 @@ class FondoProduccionLimpia < ApplicationRecord
     razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
     rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
     programa_texto = fpl.try(:programa).presence || "--"
-    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id)
-    mdi_id = Flujo.find(flujo_mdi).pluck(:manifestacion_de_interes_id)
-    nombre_acuerdo = ManifestacionDeInteres.find(mdi_id).pluck(:nombre_acuerdo).first
-    titulo_proyecto = "#{self.codigo_proyecto_fpl} - #{nombre_acuerdo}" 
+    
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
+    mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
+    nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
+    
+    cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
+    titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
 
     # CÁLCULO DINÁMICO DEL MES Y RENDICIÓN DISPLAY (Ej: "Marzo 2026 (Rendición 1)")
     mes_actual_num = rendicion&.mes_a_rendir.to_i
@@ -2107,7 +2110,7 @@ class FondoProduccionLimpia < ApplicationRecord
       tabla_ii = [
         [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
         [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
-        [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto} ]
+        [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ]
       ]
 
       pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
@@ -2146,12 +2149,8 @@ class FondoProduccionLimpia < ApplicationRecord
           gastos_asociados = gastos_fpl_array.select { |g| g.try(:plan_actividad_id).to_i == act_id_num }
           monto_rendido_total = gastos_asociados.sum { |g| g.try(:costo_rendido).to_f }
 
-          porcentaje = case detalle_tecnico&.nivel_avance.to_s
-                       when '0' then "0%"
-                       when '1' then "50%"
-                       when '2' then "100%"
-                       else "0%"
-                       end
+          # CÁLCULO DIRECTO DEL PORCENTAJE DE AVANCE
+          porcentaje = "#{detalle_tecnico&.nivel_avance.to_i}%"
 
           # 3. Obtener el archivo técnico específico de la Pestaña Técnica
           archivos_actividad = []
