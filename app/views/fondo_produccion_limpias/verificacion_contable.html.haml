@@ -177,24 +177,35 @@
                   %thead
                     %tr
                       %th.encabezado-form{colspan: 2, style: "border-bottom: none;"}
-                      %th.encabezado-form{colspan: 2} Informes Revisión
+                      %th.encabezado-form{colspan: 3} Informes Revisión
                     %tr
                       %th.encabezado-form Estado Rendiciones
                       %th.encabezado-form Estado
                       %th.encabezado-form Actividades
+                      %th.encabezado-form Técnico
                       %th.encabezado-form Financiero
                   %tbody
                     - rendiciones_todas.each do |r|
                       - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'
                       - f_target = fecha_res.to_date + (r.mes_a_rendir.to_i - 1).months rescue Date.today
                       - m_lbl = (I18n.l(f_target, format: '%B %Y') rescue '').capitalize
+                      - es_sin_mov = ['1', 'true', true, 1].include?(r.try(:sin_movimientos)) || (r.respond_to?(:sin_movimientos?) && r.sin_movimientos?)
+
                       %tr
-                        %td.contenido-form= "#{m_lbl} (Rendición #{r.mes_a_rendir})"
+                        %td.contenido-form
+                          .d-flex.justify-content-between.align-items-center
+                            %span= "#{m_lbl} (Rendición #{r.mes_a_rendir})"
+                            - if es_sin_mov
+                              %span.badge.badge-secondary{style: "font-size: 10px; padding: 4px 8px; font-weight: normal; background-color: #6c757d;"}
+                                %i.fa.fa-minus-circle.mr-1
+                                Sin movimientos
                         %td.contenido-form.text-center= estado_desc
                         - if get_estado_num.call(r) >= 1
                           %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                           %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
                         - else
+                          %td.contenido-form.text-center --
                           %td.contenido-form.text-center --
                           %td.contenido-form.text-center --
 
@@ -298,15 +309,14 @@
                           = number_to_percentage(pct_gen, precision: 1)
 
   -# SECCIÓN INFERIOR: DICTAMEN CONTABLE Y BOTONES
-  -#
-    .card.mt-3{style: 'border: 2px solid #dee2e6;'}
-      .card-header.header-actividad-fpl
-        %h5.no-margin.font-weight-bold Dictamen de Verificación Contable
-      .card-body
-        .row
-          .col-12
-            %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
-            = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
+  .card.mt-3{style: 'border: 2px solid #dee2e6;'}
+    .card-header.header-actividad-fpl
+      %h5.no-margin.font-weight-bold Dictamen de Verificación Contable
+    .card-body
+      .row
+        .col-12
+          %label.font-weight-bold Comentario de Auditoría / Verificación Contable (Optativo)
+          = text_area_tag "comentario_contable", @rendicion&.try(:comentario_contable), class: "form-control border-text", rows: 3, placeholder: "Ingrese observaciones o notas de auditoría contable..."
 
   .d-flex.justify-content-between.align-items-center.mt-4.mb-5
     .left-actions

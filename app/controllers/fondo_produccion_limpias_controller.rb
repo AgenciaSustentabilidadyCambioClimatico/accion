@@ -5176,6 +5176,62 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
+    # GET /descargar_informe_evaluacion_tecnica/:id
+    def descargar_informe_evaluacion_tecnica
+      t_inicio = Time.now
+      Rails.logger.info "=== [RADAR INFORME TÉCNICO PDF] Iniciando generación de PDF (Tarea ID: #{params[:id]}) ==="
+
+      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+
+      begin
+        cargar_datos_verificacion_contable
+      rescue
+        set_actividades_x_linea if respond_to?(:set_actividades_x_linea, true)
+      end
+
+      @fondo_produccion_limpia ||= FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente&.flujo_id)
+      mes_a_rendir = params[:mes_a_rendir].presence || @rendicion&.mes_a_rendir
+      @rendicion ||= RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: mes_a_rendir)
+
+      if @rendicion.nil? || @fondo_produccion_limpia.nil?
+        redirect_back(fallback_location: root_path, alert: "No se encontró registro de la rendición para generar el PDF.")
+        return
+      end
+
+      begin
+        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.uniq rescue []
+        todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)
+        actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
+        actividades_filtradas = todas_actividades if actividades_filtradas.blank?
+
+        pdf_binary = @fondo_produccion_limpia.generar_informe_evaluacion_tecnica_pdf(
+          "v1",
+          @fondo_produccion_limpia,
+          @rendicion,
+          actividades_filtradas
+        )
+
+        if pdf_binary.present?
+          codigo_proy = @fondo_produccion_limpia.codigo_proyecto.to_s.gsub(/[^0-9A-Za-z.\-]/, '_')
+          nombre_archivo = "Informe_Evaluacion_Tecnica_Mes_#{@rendicion.mes_a_rendir}_#{codigo_proy}.pdf"
+
+          tiempo_total = (Time.now - t_inicio).round(2)
+          Rails.logger.info "=== [RADAR INFORME TÉCNICO PDF] PDF generado con éxito en #{tiempo_total}s ==="
+
+          send_data pdf_binary,
+                    filename: nombre_archivo,
+                    type: 'application/pdf',
+                    disposition: 'inline' # Permite visualizar el PDF en el navegador
+        else
+          redirect_back(fallback_location: root_path, alert: "El generador de PDF devolvió un documento vacío.")
+        end
+
+      rescue StandardError => e
+        Rails.logger.error "=== [ERROR CONTROLLER TÉCNICO PDF] #{e.class} - #{e.message} ==="
+        redirect_back(fallback_location: root_path, alert: "Error al generar el informe técnico en PDF: #{e.message}")
+      end
+    end
+
     def descargar_pdf
       t_inicio = Time.now
       Rails.logger.info "=== [RADAR 1] INICIANDO STREAMER (t=0s) ==="
@@ -7311,8 +7367,8 @@ class FondoProduccionLimpiasController < ApplicationController
     end
   end
 
-  # Carga la Estructura de Costos (Presupuesto Base) desde PlanActividad.costos
-  # y calcula la sumatoria acumulada de lo rendido desde la tabla rendicion_gastos_fpl
+  # Carga y calcula la Estructura de Costos cuadrando directamente la postulación
+  # (RecursoHumano + Gasto) contra lo rendido acumulado (RendicionGastoFpl)
   def cargar_estructura_costos_rendicion
     flujo_id = @tarea_pendiente&.flujo_id
     return if flujo_id.blank?
@@ -7330,66 +7386,55 @@ class FondoProduccionLimpiasController < ApplicationController
       aporte: { rrhh_propios: { tot: 0.0, ren: 0.0 }, rrhh_externos: { tot: 0.0, ren: 0.0 }, gastos_operacion: { tot: 0.0, ren: 0.0 }, gastos_administracion: { tot: 0.0, ren: 0.0 } }
     }
 
-    # 1. PRESUPUESTO FORMULADO (TOTALES POR PARTIDA) DESDE PLANACTIVIDAD.COSTOS
-    @costos = PlanActividad.costos(flujo_id)
+    # 1. CÁLCULO DE PRESUPUESTO FORMULADO (BASE POSTULACIÓN)
+    # a) RecursoHumano (RRHH Propios = tipo_equipo 3, RRHH Externos = 1, 2, 4)
+    RecursoHumano.joins('LEFT JOIN equipo_trabajos ON equipo_trabajos.id = recurso_humanos.equipo_trabajo_id')
+                .where(flujo_id: flujo_id)
+                .find_each do |rh|
+      monto = (rh.try(:hh).to_f * rh.try(:equipo_trabajo).try(:valor_hh).to_f)
+      next if monto.zero?
 
-    if @costos.present?
-      obtener_valor = lambda do |attr|
-        if @costos.respond_to?(attr)
-          @costos.send(attr).to_f
-        elsif @costos.is_a?(Hash) && @costos[attr.to_s].present?
-          @costos[attr.to_s].to_f
-        else
-          0.0
-        end
+      tipo_eq = rh.try(:equipo_trabajo).try(:tipo_equipo).to_i
+      cat = (tipo_eq == 3) ? :rrhh_propios : :rrhh_externos
+      tipo_ap = rh.try(:tipo_aporte_id).to_i
+
+      if tipo_ap == 3 # Solicitado al Fondo PL
+        @data_costos[:fpl][cat][:tot] += monto
+      else # Aporte Beneficiario (Valorado + Líquido)
+        @data_costos[:aporte][cat][:tot] += monto
       end
 
-      # A. Total del Proyecto
-      @data_costos[:total][:rrhh_propios][:tot]          = obtener_valor.call(:recursos_humanos_propios)
-      @data_costos[:total][:rrhh_externos][:tot]         = obtener_valor.call(:recursos_humanos_externos)
-      @data_costos[:total][:gastos_operacion][:tot]      = obtener_valor.call(:gastos_operacion)
-      @data_costos[:total][:gastos_administracion][:tot] = obtener_valor.call(:gastos_administrativos)
-
-      # B. A Cargo del Fondo PL
-      @data_costos[:fpl][:rrhh_propios][:tot]          = 0.0
-      @data_costos[:fpl][:rrhh_externos][:tot]         = obtener_valor.call(:aporte_solicitado_fondo_rrhh_externo)
-      @data_costos[:fpl][:gastos_operacion][:tot]      = obtener_valor.call(:aporte_solicitado_fondo_gasto_operacion)
-      @data_costos[:fpl][:gastos_administracion][:tot] = obtener_valor.call(:aporte_solicitado_fondo_gasto_administracion)
-
-      # C. A Cargo del Beneficiario
-      ap_val_rrhh_p = obtener_valor.call(:aporte_propio_valorado_rrhh_propio)
-      ap_liq_rrhh_p = obtener_valor.call(:aporte_propio_liquido_rrhh_propio)
-
-      ap_val_rrhh_e = obtener_valor.call(:aporte_propio_valorado_rrhh_externo)
-      ap_liq_rrhh_e = obtener_valor.call(:aporte_propio_liquido_rrhh_externo)
-
-      ap_val_g_op   = obtener_valor.call(:aporte_propio_valorado_gasto_operacion)
-      ap_liq_g_op   = obtener_valor.call(:aporte_propio_liquido_gasto_operacion)
-
-      ap_val_g_adm  = obtener_valor.call(:aporte_propio_valorado_gasto_administracion)
-      ap_liq_g_adm  = obtener_valor.call(:aporte_propio_liquido_gasto_administracion)
-
-      @data_costos[:aporte][:rrhh_propios][:tot]          = ap_val_rrhh_p + ap_liq_rrhh_p
-      @data_costos[:aporte][:rrhh_externos][:tot]         = ap_val_rrhh_e + ap_liq_rrhh_e
-      @data_costos[:aporte][:gastos_operacion][:tot]      = ap_val_g_op + ap_liq_g_op
-      @data_costos[:aporte][:gastos_administracion][:tot] = ap_val_g_adm + ap_liq_g_adm
+      @data_costos[:total][cat][:tot] += monto
     end
 
-    # 2. ACUMULADO DE GASTOS RENDIDOS (LECTURA DIRECTA DE rendicion_gastos_fpl)
-    # Se consideran las rendiciones acumuladas hasta el mes_a_rendir en evaluación
+    # b) Gasto (Operación = tipo_gasto 1, Administración = tipo_gasto 2)
+    Gasto.where(flujo_id: flujo_id).find_each do |g|
+      monto = (g.try(:valor_unitario).to_f * g.try(:cantidad).to_f)
+      next if monto.zero?
+
+      cat = (g.try(:tipo_gasto).to_i == 2) ? :gastos_administracion : :gastos_operacion
+      tipo_ap = g.try(:tipo_aporte_id).to_i
+
+      if tipo_ap == 3 # Solicitado al Fondo PL
+        @data_costos[:fpl][cat][:tot] += monto
+      else # Aporte Beneficiario
+        @data_costos[:aporte][cat][:tot] += monto
+      end
+
+      @data_costos[:total][cat][:tot] += monto
+    end
+
+    # 2. ACUMULADO DE GASTOS RENDIDOS (HASTA EL MES EVALUADO)
     mes_limite = @rendicion.try(:mes_a_rendir).to_i
     rendiciones_ids = RendicionFpl.where(flujo_id: flujo_id)
                                   .where('mes_a_rendir <= ?', mes_limite.positive? ? mes_limite : 999)
                                   .pluck(:id)
 
     if rendiciones_ids.present?
-      gastos_rendidos = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_ids)
-
-      gastos_rendidos.each do |rg|
+      RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_ids).find_each do |rg|
         monto = rg.try(:costo_rendido).to_f
         next if monto.zero?
 
-        # Identificar Partida según la columna 'categoria'
         cat_str = rg.try(:categoria).to_s.downcase
         cat = case cat_str
               when 'rrhh_propios'
@@ -7404,7 +7449,6 @@ class FondoProduccionLimpiasController < ApplicationController
                 :gastos_operacion
               end
 
-        # Identificar si pertenece al Fondo PL o al Beneficiario según 'tipo_aporte'
         tipo_ap = rg.try(:tipo_aporte).to_s.downcase
         es_fpl = tipo_ap.include?('fondo') || tipo_ap.include?('solicitado')
 
@@ -7414,8 +7458,75 @@ class FondoProduccionLimpiasController < ApplicationController
           @data_costos[:aporte][cat][:ren] += monto
         end
 
-        # Sumar al Total del Proyecto
         @data_costos[:total][cat][:ren] += monto
+      end
+    end
+  end
+
+  # Carga o inicializa los registros de gastos para una rendición considerando lo rendido previo
+  def preparar_gastos_rendicion(rendicion_actual)
+    flujo_id = rendicion_actual.flujo_id
+    mes_actual = rendicion_actual.mes_a_rendir.to_i
+
+    # Obtener los IDs de rendiciones anteriores de este flujo
+    rendiciones_previas_ids = RendicionFpl.where(flujo_id: flujo_id)
+                                          .where('mes_a_rendir < ?', mes_actual)
+                                          .pluck(:id)
+
+    # Mapear lo acumulado previamente por ítem origen
+    gastos_previos = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_previas_ids)
+    
+    acumulado_por_item = {}
+    gastos_previos.each do |gp|
+      key = "#{gp.categoria}_#{gp.item_origen_id}"
+      acumulado_por_item[key] ||= { cant: 0.0, costo: 0.0 }
+      acumulado_por_item[key][:cant]  += gp.cantidad_rendida.to_f
+      acumulado_por_item[key][:costo] += gp.costo_rendido.to_f
+    end
+
+    # Ajustar o inicializar las filas de la rendición actual
+    gastos_actuales = rendicion_actual.rendicion_gastos_fpl.to_a
+
+    if gastos_actuales.blank?
+      # Si es nueva rendición, construir filas basadas en el saldo remanente
+      PlanActividad.where(flujo_id: flujo_id).find_each do |pa|
+        items_fpl = obtener_items_presupuesto_actividad(pa) # Consulta tu desglose de ítems
+
+        items_fpl.each do |item|
+          key = "#{item[:categoria]}_#{item[:item_origen_id]}"
+          previo = acumulado_por_item[key] || { cant: 0.0, costo: 0.0 }
+
+          cant_pendiente  = [item[:cantidad_postulada].to_f - previo[:cant], 0.0].max
+          costo_pendiente = [item[:costo_postulado].to_f - previo[:costo], 0.0].max
+
+          next if cant_pendiente.zero? && costo_pendiente.zero?
+
+          rendicion_actual.rendicion_gastos_fpl.build(
+            plan_actividad_id: pa.id,
+            categoria:         item[:categoria],
+            item_origen_id:    item[:item_origen_id],
+            tipo_aporte:       item[:tipo_aporte],
+            valor_unitario:    item[:valor_unitario],
+            cantidad_postulada: item[:cantidad_postulada],
+            costo_postulado:   item[:costo_postulado],
+            
+            # PRECARGAR ÚNICAMENTE EL REMANENTE PENDIENTE
+            cantidad_rendida:  cant_pendiente,
+            costo_rendido:     costo_pendiente
+          )
+        end
+      end
+    else
+      # Si la rendición ya existía (ej. borrador), recalcular saldos informativos
+      gastos_actuales.each do |ga|
+        key = "#{ga.categoria}_#{ga.item_origen_id}"
+        previo = acumulado_por_item[key] || { cant: 0.0, costo: 0.0 }
+        
+        # Saldo real disponible para este ítem en esta rendición
+        ga.assign_attributes(
+          cantidad_postulada: [ga.cantidad_postulada.to_f - previo[:cant], 0.0].max,
+          costo_postulado:   [ga.costo_postulado.to_f - previo[:costo], 0.0].max
+        )
       end
     end
   end

@@ -1665,9 +1665,22 @@ class FondoProduccionLimpia < ApplicationRecord
     rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
 
     # Obtención segura del nombre del proyecto
-    titulo_proyecto = fondo_produccion_limpia.try(:nombre_acuerdo).presence || fondo_produccion_limpia.try(:nombre) || fondo_produccion_limpia.try(:codigo_proyecto).to_s
+    flujo_mdi = FondoProduccionLimpia.where(id: fondo_produccion_limpia.id).pluck(:flujo_apl_id)
+    mdi_id = Flujo.find(flujo_mdi).pluck(:manifestacion_de_interes_id)
+    nombre_acuerdo = ManifestacionDeInteres.find(mdi_id).pluck(:nombre_acuerdo).first
+    titulo_proyecto = "#{self.codigo_proyecto_fpl} - #{nombre_acuerdo}" 
 
-    # Helper para obtener gastos (sin usar variables @ de controladores)
+    # CÁLCULO DEL MES Y RENDICIÓN DISPLAY (Ej: "Marzo 2026 (Rendición 1)")
+    mes_actual_num = rendicion&.mes_a_rendir.to_i
+    fecha_res = fondo_produccion_limpia.try(:fecha_resolucion)
+    mes_nombre = nil
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
+
+    # Helper para obtener gastos
     flujo_actual_id = fondo_produccion_limpia.try(:flujo_id) || rendicion.try(:flujo_id)
 
     obtener_gastos = lambda do |act_id, tipos_validos|
@@ -1678,7 +1691,7 @@ class FondoProduccionLimpia < ApplicationRecord
       { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
     end
 
-    # Mapeo de Gastos Rendidos preexistentes (si existen)
+    # Mapeo de Gastos Rendidos preexistentes
     rendicion_gastos_map = rendicion.present? ? rendicion.rendicion_gastos_fpl.index_by { |g| "#{g.plan_actividad_id}_#{g.categoria}_#{g.item_origen_id}" } : {}
 
     # Totalizadores para Cuadro de Resumen General
@@ -1711,7 +1724,7 @@ class FondoProduccionLimpia < ApplicationRecord
         [ { content: "<b>CÓDIGO:</b>", inline_format: true }, fondo_produccion_limpia&.codigo_proyecto.to_s, { content: "<b>IMPUTACIÓN:</b>", inline_format: true }, "Programa:" ],
         [ { content: "<b>Título del proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ],
         [ { content: "<b>Nombre Entidad Beneficiaria:</b>", inline_format: true }, { content: razon_social, colspan: 3 } ],
-        [ { content: "<b>N° de informe:</b>", inline_format: true }, rendicion&.mes_a_rendir.to_s, { content: "<b>Origen de los recursos:</b>", inline_format: true }, "FPL" ],
+        [ { content: "<b>N° de informe:</b>", inline_format: true }, texto_mes_display, { content: "<b>Origen de los recursos:</b>", inline_format: true }, "FPL" ],
         [ { content: "<b>Fecha de inicio actividades:</b>", inline_format: true }, (rendicion&.created_at || Time.now).strftime("%d/%m/%Y"), { content: "<b>Fecha de término actividades:</b>", inline_format: true }, Time.now.strftime("%d/%m/%Y") ]
       ]
 
@@ -1739,11 +1752,11 @@ class FondoProduccionLimpia < ApplicationRecord
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(act.id) && (d.tecnica? rescue false) }
           
           estado_label = case detalle_tecnico&.nivel_avance.to_s
-                         when '0' then 'Sin iniciar'
-                         when '1' then 'En proceso'
-                         when '2' then 'Completado'
-                         else '--'
-                         end
+                        when '0' then 'Sin iniciar'
+                        when '1' then 'En proceso'
+                        when '2' then 'Completado'
+                        else '--'
+                        end
 
           tabla_actividades << [
             act.try(:correlativo) || "-",
@@ -1783,13 +1796,10 @@ class FondoProduccionLimpia < ApplicationRecord
 
       if actividades.present?
         actividades.each do |actividad|
-          # Filtra gastos solicitados al fondo (FPL)
           gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
           
-          # Recorrer categorías
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_fpl[cat_key].to_a.each do |item|
-              
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
               hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
               monto_postulado = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario)
@@ -1843,12 +1853,10 @@ class FondoProduccionLimpia < ApplicationRecord
 
       if actividades.present?
         actividades.each do |actividad|
-          # Filtra gastos de aporte propio
           gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
           
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_aporte[cat_key].to_a.each do |item|
-              
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
               hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
               
@@ -2038,8 +2046,23 @@ class FondoProduccionLimpia < ApplicationRecord
     contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
     razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
     rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
-    titulo_proyecto = fpl.try(:nombre_acuerdo).presence || fpl.try(:nombre) || fpl.try(:codigo_proyecto).to_s
     programa_texto = fpl.try(:programa).presence || "--"
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id)
+    mdi_id = Flujo.find(flujo_mdi).pluck(:manifestacion_de_interes_id)
+    nombre_acuerdo = ManifestacionDeInteres.find(mdi_id).pluck(:nombre_acuerdo).first
+    titulo_proyecto = "#{self.codigo_proyecto_fpl} - #{nombre_acuerdo}" 
+
+    # CÁLCULO DINÁMICO DEL MES Y RENDICIÓN DISPLAY (Ej: "Marzo 2026 (Rendición 1)")
+    mes_actual_num = rendicion&.mes_a_rendir.to_i
+    fecha_res = fpl.try(:fecha_resolucion)
+    mes_nombre = nil
+
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
     # Helper para identificar registros de la Pestaña Técnica
     es_tecnica_tab = lambda do |d|
@@ -2064,7 +2087,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       tabla_i = [
         [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
-        [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, "Mes #{rendicion&.mes_a_rendir}" ]
+        [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
       ]
 
       pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
@@ -2084,8 +2107,7 @@ class FondoProduccionLimpia < ApplicationRecord
       tabla_ii = [
         [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
         [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
-        [ { content: "<b>Código SISREC:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Código Externo:</b>", inline_format: true }, "--" ],
-        [ { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ]
+        [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto} ]
       ]
 
       pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 8, padding: 4, border_color: 'CCCCCC', inline_format: true }) do
@@ -2271,6 +2293,317 @@ class FondoProduccionLimpia < ApplicationRecord
     Rails.logger.error "=== [ERROR GENERANDO PDF ACTIVIDADES MODELO] #{e.class} - #{e.message} ==="
     Rails.logger.error e.backtrace.join("\n")
     nil
+  end
+
+  # Método generador del Informe Técnico de Evaluación por Actividad en PDF (Prawn)
+  def generar_informe_evaluacion_tecnica_pdf(revision = nil, fondo_produccion_limpia = nil, rendicion = nil, actividades = nil)
+    t_inicio = Time.now
+    Rails.logger.info "=== [PDF INFORME TÉCNICO ACTIVIDADES] INICIANDO GENERACIÓN ==="
+
+    pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [30, 30, 30, 30])
+
+    # ---------------------------------------------------------------------------
+    # CONFIGURACIÓN DE FUENTES
+    # ---------------------------------------------------------------------------
+    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
+    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+
+    pdf.font_families.update("OpenSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+    })
+    pdf.font "OpenSans"
+
+    # ---------------------------------------------------------------------------
+    # HEADER REPETITIVO
+    # ---------------------------------------------------------------------------
+    pdf.repeat :all do
+      pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width, height: 50 do
+        logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
+        pdf.image logo_path, width: 119 if File.exist?(logo_path)
+
+        pdf.bounding_box [pdf.bounds.width - 300, 48], width: 300, height: 20 do
+          pdf.font "OpenSans", style: :bold do
+            pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 9, color: "003DA6", align: :right
+          end
+        end
+
+        pdf.move_cursor_to 8
+        pdf.stroke do
+          pdf.stroke_color '003DA6'
+          pdf.line_width 2.5
+          pdf.stroke_horizontal_rule
+        end
+      end
+    end
+
+    # ---------------------------------------------------------------------------
+    # OBTENCIÓN Y PREPARACIÓN DE DATOS
+    # ---------------------------------------------------------------------------
+    fpl = fondo_produccion_limpia || self
+    contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
+    razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
+    rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
+    programa_texto = fpl.try(:programa).presence || "--"
+    
+    flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
+    mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
+    nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
+    
+    cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
+    titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
+
+    # Cálculo dinámico de mes y rendición
+    mes_actual_num = rendicion&.mes_a_rendir.to_i
+    fecha_res = fpl.try(:fecha_resolucion)
+    mes_nombre = nil
+
+    if fecha_res.present? && mes_actual_num > 0
+      fecha_target = fecha_res.to_date + (mes_actual_num - 1).months
+      mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+    end
+
+    texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
+
+    # Helper para identificar la Pestaña Técnica
+    es_tecnica_tab = lambda do |d|
+      return true if d.respond_to?(:tecnica?) && d.tecnica?
+      tipo = d.try(:tipo_tab).to_s.downcase
+      tipo == 'tecnica' || tipo == '0'
+    end
+
+    detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
+    flujo_id_ref = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+    detalles_hash = PlanActividad.where(flujo_id: flujo_id_ref).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+
+    # ---------------------------------------------------------------------------
+    # CONTENIDO PRINCIPAL
+    # ---------------------------------------------------------------------------
+    pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 65], width: pdf.bounds.width do
+
+      pdf.font "OpenSans", style: :bold do
+        pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 11, color: "000000"
+      end
+      pdf.move_down 8
+
+      # Sección I
+      if respond_to?(:pdf_sub_titulo_formato)
+        self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
+      else
+        pdf.text "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS", size: 8.5, style: :bold
+      end
+
+      tabla_i = [
+        [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
+        [ { content: "<b>Origen recursos:</b>", inline_format: true }, "FPL", { content: "<b>Mes / Año:</b>", inline_format: true }, texto_mes_display ]
+      ]
+
+      pdf.table(tabla_i, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        column(0).background_color = 'E0EFF6'
+        column(2).background_color = 'E0EFF6'
+      end
+
+      pdf.move_down 8
+
+      # Sección II
+      if respond_to?(:pdf_sub_titulo_formato)
+        self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
+      else
+        pdf.text "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS", size: 8.5, style: :bold
+      end
+
+      tabla_ii = [
+        [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
+        [ { content: "<b>Programa:</b>", inline_format: true }, { content: programa_texto, colspan: 3 } ],
+        [ { content: "<b>Código Externo:</b>", inline_format: true }, fpl.try(:codigo_proyecto).to_s, { content: "<b>Nombre del Proyecto:</b>", inline_format: true }, { content: titulo_proyecto } ]
+      ]
+
+      pdf.table(tabla_ii, width: pdf.bounds.width, cell_style: { size: 7.5, padding: 3, border_color: 'CCCCCC', inline_format: true }) do
+        column(0).background_color = 'E0EFF6'
+        column(2).background_color = 'E0EFF6'
+      end
+
+      pdf.move_down 10
+
+      # Sección III
+      if respond_to?(:pdf_sub_titulo_formato)
+        self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
+      else
+        pdf.text "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS", size: 8.5, style: :bold
+      end
+      pdf.move_down 6
+
+      # =========================================================================
+      # RENDERIZADO POR TARJETAS / BLOQUES DE ACTIVIDAD
+      # =========================================================================
+      if actividades.present?
+        est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
+
+        actividades.each do |act|
+          act_id_num = act.id.to_i
+
+          # 1. Obtención de PlanActividad e Indicador
+          plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
+          obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
+          obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
+          obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
+          indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
+
+          # 2. Detalle Técnico de la Rendición
+          detalle_tecnico = detalles_fpl_array.find do |d|
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+            act_ids += (d.plan_actividades.to_a.map(&:id) rescue []).compact.map(&:to_i) if d.respond_to?(:plan_actividades)
+            es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
+          end
+
+          # 3. EVALUACIÓN DE ESTADO INDIVIDUAL SEGÚN COLUMNA 'cumple' (1 = Cumple / Aprobado, 2 = No cumple / Observado)
+          val_cumple = if detalle_tecnico.present?
+                        (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
+                      else
+                        0
+                      end
+
+          es_observado = false
+          estado_html = if val_cumple == 1
+                          "<color rgb='28A745'><b>APROBADO</b></color>"
+                        elsif val_cumple == 2
+                          es_observado = true
+                          "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                        else
+                          # Fallback a estado global si 'cumple' no ha sido evaluado aún
+                          if [5, 6].include?(est_global)
+                            "<color rgb='28A745'><b>APROBADO</b></color>"
+                          elsif [3, 4].include?(est_global)
+                            es_observado = true
+                            "<color rgb='DC3545'><b>OBSERVADO</b></color>"
+                          elsif [1, 2].include?(est_global)
+                            "<color rgb='FD7E14'><b>EN REVISIÓN</b></color>"
+                          else
+                            "<color rgb='6C757D'><b>EN BORRADOR</b></color>"
+                          end
+                        end
+
+          f_inicio = detalle_tecnico&.fecha_inicio
+          f_inicio_str = f_inicio.respond_to?(:strftime) ? f_inicio.strftime('%d/%m/%Y') : f_inicio.to_s.presence || "dd-mm-aaaa"
+
+          f_termino = detalle_tecnico&.fecha_termino
+          f_termino_str = f_termino.respond_to?(:strftime) ? f_termino.strftime('%d/%m/%Y') : f_termino.to_s.presence || "dd-mm-aaaa"
+
+          porcentaje_str = "#{detalle_tecnico&.nivel_avance.to_i}%"
+          obs_texto = detalle_tecnico&.observacion.presence || "--"
+
+          nom_archivo = if detalle_tecnico.present? && detalle_tecnico.archivo.present?
+                          detalle_tecnico.try(:archivo_identifier) || detalle_tecnico.archivo.try(:identifier) || (File.basename(detalle_tecnico.archivo.to_s) rescue nil)
+                        end
+          nom_archivo = nom_archivo.presence || "Sin adjuntos"
+
+          # --- DIBUJO DE TARJETA / CARD DE ACTIVIDAD ---
+          header_card = [
+            [
+              { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{act.try(:nombre)}</b>", inline_format: true },
+              { content: estado_html, align: :right, inline_format: true }
+            ]
+          ]
+
+          indicador_card = [
+            [ { content: "<color rgb='004085'><b>Indicador asociado al objetivo:</b> #{indicador_texto}</color>", inline_format: true } ]
+          ]
+
+          tabla_campos = [
+            [ "Fecha de Inicio", "Fecha de Término", "Nivel de avance", "Descripción del Avance" ],
+            [ f_inicio_str, f_termino_str, porcentaje_str, obs_texto ]
+          ]
+
+          # Renderizado de Tarjeta Integrada
+          pdf.table(header_card, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
+          pdf.table(indicador_card, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'B8DAFF', background_color: 'D0E7FF' })
+          pdf.table(tabla_campos, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', align: :center }) do
+            row(0).background_color = 'F8F9FA'
+            row(0).font_style = :bold
+            column(0).width = 80
+            column(1).width = 80
+            column(2).width = 75
+            column(3).align = :left
+          end
+
+          pdf.indent(2) do
+            pdf.move_down 2
+            pdf.font_size(6.5) do
+              pdf.text "<b>Documento de Respaldo técnico:</b> #{nom_archivo}", color: '555555', inline_format: true
+            end
+          end
+
+          # --- MOSTRAR COMENTARIO DEL REVISOR ÚNICAMENTE SI LA ACTIVIDAD FUE OBSERVADA ---
+          if es_observado
+            comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
+                                detalle_tecnico.try(:comentario_evaluacion).presence ||
+                                detalle_tecnico.try(:comentario_tecnico).presence ||
+                                detalle_tecnico.try(:comentario).presence ||
+                                detalle_tecnico.try(:observacion_revisor).presence ||
+                                "Actividad observada durante la revisión técnica."
+
+            tabla_comentario = [
+              [ { content: "<color rgb='721C24'><b>Comentario del Revisor:</b> #{comentario_revisor}</color>", inline_format: true } ]
+            ]
+            pdf.move_down 3
+            pdf.table(tabla_comentario, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'F5C6CB', background_color: 'F8D7DA' })
+          end
+
+          pdf.move_down 8
+        end
+      else
+        pdf.text "Sin actividades reportadas.", size: 8, style: :italic
+      end
+
+      pdf.move_down 15
+
+      # ---------------------------------------------------------------------------
+      # LÍNEA DE FIRMA
+      # ---------------------------------------------------------------------------
+      pdf.bounding_box([pdf.bounds.width - 250, pdf.cursor], width: 250) do
+        pdf.stroke_horizontal_line 0, 250
+        pdf.move_down 4
+        pdf.font "OpenSans", style: :bold do
+          pdf.text "nombre del responsable del informe", size: 8, align: :center
+        end
+      end
+
+    end
+
+    pdf_string = pdf.render
+    pdf_file_name = "informe_evaluacion_tecnica_#{self.try(:id) || 'temp'}.pdf"
+
+    ruta_temporal = Rails.root.join("tmp", pdf_file_name)
+    File.binwrite(ruta_temporal, pdf_string)
+
+    File.open(ruta_temporal) do |archivo_fisico|
+      uploader_class = Class.new(CarrierWave::Uploader::Base) do
+        def store_dir
+          "accion/public/uploads/fondo_produccion_limpia/informe_actividades"
+        end
+      end
+      uploader = uploader_class.new
+      uploader.store!(archivo_fisico)
+    end
+
+    File.delete(ruta_temporal) if File.exist?(ruta_temporal)
+
+    pdf_string
+  rescue StandardError => e
+    Rails.logger.error "=== [ERROR GENERANDO PDF EVALUACIÓN TÉCNICA] #{e.class} - #{e.message} ==="
+    Rails.logger.error e.backtrace.join("\n")
+    nil
+  end
+
+  def codigo_proyecto_fpl
+    case self.flujo.tipo_instrumento_id
+    when TipoInstrumento::FPL_LINEA_1_1, TipoInstrumento::FPL_LINEA_5_1, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_DIAGNOSTICO
+      "DyAPL"        
+    when TipoInstrumento::FPL_LINEA_1_2_1, TipoInstrumento::FPL_LINEA_1_2_2, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO, TipoInstrumento::FPL_EXTRAPRESUPUESTARIO_SEGUIMIENTO_2
+      "SyC"           
+    else
+      nil
+    end
   end
 
 end

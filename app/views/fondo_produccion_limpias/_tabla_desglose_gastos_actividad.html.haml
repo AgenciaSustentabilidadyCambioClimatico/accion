@@ -84,7 +84,7 @@
     $cellTotalRendido.text(formateador.format(totalRendido));
     $table.find('.cell-total-saldo').text(formateador.format(totalSaldo));
 
-    // VALIDACIÓN EXCESO DE MONTO RENDIDO
+    // VALIDACIÓN EXCESO DE MONTO RENDIDO (Contra el Saldo Disponible)
     const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
     if (totalRendido > totalSolicitado) {
       $cellTotalRendido.removeClass('text-success').addClass('text-danger');
@@ -120,6 +120,21 @@
 - gastos = local_assigns[:gastos] || {}
 - actividad_id_param = local_assigns[:actividad_id]
 - es_editable = local_assigns.key?(:es_editable) ? local_assigns[:es_editable] : true
+
+-# OBTENCIÓN ROBUSTA DE PARÁMETROS Y FLUJO
+- mes_a_rendir_num = (params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir) || 1).to_i
+- flujo_id_actual = @rendicion.try(:flujo_id) || @tarea_pendiente.try(:flujo_id) || @flujo.try(:id)
+
+-# CÁLCULO DE HISTÓRICO DE RENDICIONES PREVIAS (< mes_a_rendir_num)
+- rendiciones_previas_ids = []
+- if flujo_id_actual.present? && mes_a_rendir_num > 1
+  - rendiciones_previas_ids = RendicionFpl.where(flujo_id: flujo_id_actual).where('mes_a_rendir < ?', mes_a_rendir_num).pluck(:id)
+
+- cant_hist_hash = {}
+- costo_hist_hash = {}
+- if rendiciones_previas_ids.present?
+  - cant_hist_hash  = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_previas_ids).group(:categoria, :item_origen_id).sum(:cantidad_rendida)
+  - costo_hist_hash = RendicionGastoFpl.where(rendicion_fpl_id: rendiciones_previas_ids).group(:categoria, :item_origen_id).sum(:costo_rendido)
 
 - categorias_def = [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ]
 
@@ -166,9 +181,9 @@
                   %th.encabezado-form{style: "width: 13%;"} Categoría
                   %th.encabezado-form{style: "width: 14%;"} Nombre / Ítem
                   %th.encabezado-form{style: "width: 12%;"} Tipo Aporte
-                  %th.encabezado-form{style: "width: 8%;"} HH / Und. Solicitado
-                  %th.encabezado-form{style: "width: 8%;"} Valor Und. Solicitado
-                  %th.encabezado-form{style: "width: 8%;"} Monto Solicitado
+                  %th.encabezado-form{style: "width: 8%;", title: "Saldo restante para esta rendición"} HH / Und. Disponible
+                  %th.encabezado-form{style: "width: 8%;"} Valor Unitario
+                  %th.encabezado-form{style: "width: 8%;", title: "Saldo restante para esta rendición"} Monto Disponible
                   %th.encabezado-form{style: "width: 8%;"} HH / Und. Rendido
                   %th.encabezado-form{style: "width: 8%;"} Valor Und. Rendido
                   %th.encabezado-form{style: "width: 8%;"} Monto Rendido
@@ -183,12 +198,29 @@
                     - g_guardado = rendicion_gastos_map["#{current_act_id}_#{cat_key}_#{item.id}"]
                     - comprobante_ref_val = ""
 
+                    -# LECTURA Y DESCUENTO ROBUSTO DE HISTÓRICOS RENDIDOS
+                    - cat_key_str = cat_key.to_s.strip.downcase
+                    - item_id_num = item.id.to_i
+
+                    - cant_hist = cant_hist_hash[[cat_key_str, item_id_num]]
+                    - cant_hist ||= cant_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
+                    - cant_hist = cant_hist.to_f
+
+                    - costo_hist = costo_hist_hash[[cat_key_str, item_id_num]]
+                    - costo_hist ||= costo_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
+                    - costo_hist = costo_hist.to_f
+
+                    -# CÁLCULO DEL ORIGINAL POSTULADO
                     - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-                    - hh_postulada = (item.try(:hh) || item.try(:cantidad)).to_f
-                    - monto_postulado = item.try(:costo).presence || item.try(:total).presence || (hh_postulada * v_unitario_solicitado)
+                    - hh_postulada_orig = (item.try(:hh) || item.try(:cantidad)).to_f
+                    - monto_postulado_orig = item.try(:costo).presence || item.try(:total).presence || (hh_postulada_orig * v_unitario_solicitado)
+
+                    -# MONTO Y UNIDADES DISPONIBLES REALES PARA ESTA RENDICIÓN
+                    - hh_postulada = [hh_postulada_orig - cant_hist, 0.0].max
+                    - monto_postulado = [monto_postulado_orig - costo_hist, 0.0].max
 
                     - if g_guardado.present?
-                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f
+                      - cantidad_rendida = [g_guardado.cantidad_rendida.to_f, hh_postulada].min
                       - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present? && g_guardado.valor_unitario_rendido.to_f > 0
                         - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
                       - else
@@ -201,8 +233,7 @@
                       - v_unitario_rendido = v_unitario_solicitado
                       - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
 
-                    - saldo_actual = monto_postulado - monto_rendido
-                    - saldo_actual = 0 if saldo_actual < 0
+                    - saldo_actual = [monto_postulado - monto_rendido, 0.0].max
 
                     -# SUMA CORRECTA DE TOTALES EN CADA ITERACIÓN
                     - total_costo_postulado += monto_postulado
@@ -271,7 +302,7 @@
 
           .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless tiene_exceso}"}
             %i.fa.fa-exclamation-triangle.mr-1
-            El total del Monto Rendido no puede superar al Monto Solicitado.
+            El total del Monto Rendido no puede superar al Monto Disponible restante.
 
         - gran_total_costo_postulado += total_costo_postulado
         - gran_total_costo_rendido += total_costo_rendido
@@ -286,7 +317,7 @@
                 TOTAL GENERAL APORTES DE LA ACTIVIDAD:
               .d-flex.align-items-center.flex-wrap
                 .mr-4.my-1
-                  %span.text-secondary{style: "font-size: 11px;"} Total Solicitado:
+                  %span.text-secondary{style: "font-size: 11px;"} Total Disponible:
                   %strong.text-primary.ml-1{style: "font-size: 13px;"}= number_to_currency(gran_total_costo_postulado)
                 .mr-4.my-1
                   %span.text-secondary{style: "font-size: 11px;"} Total Rendido:
