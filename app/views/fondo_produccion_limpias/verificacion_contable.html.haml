@@ -18,6 +18,24 @@
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).order(mes_a_rendir: :asc).to_a rescue []
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
+-# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-13 Y EXTRAE SUS MESES A RENDIR
+- id_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)&.id rescue nil
+- tps_13_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_13).to_a
+- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
+- meses_con_tp_13 = tps_13_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
+-# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-14 Y EXTRAE SUS MESES A RENDIR
+- id_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14)&.id rescue nil
+- tps_14_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_14).to_a
+- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
+- meses_con_tp_14 = tps_14_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
+-# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-15 Y EXTRAE SUS MESES A RENDIR
+- id_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)&.id rescue nil
+- tps_15_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_15).to_a
+- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
+- meses_con_tp_15 = tps_15_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
 - max_avances = Hash.new(0)
 - rendiciones_todas.each do |rend|
   - est_num = get_estado_num.call(rend)
@@ -203,6 +221,9 @@
                       - f_target = fecha_res.to_date + (r.mes_a_rendir.to_i - 1).months rescue Date.today
                       - m_lbl = (I18n.l(f_target, format: '%B %Y') rescue '').capitalize
                       - es_sin_mov = ['1', 'true', true, 1].include?(r.try(:sin_movimientos)) || (r.respond_to?(:sin_movimientos?) && r.sin_movimientos?)
+                      - tiene_tp_13 = meses_con_tp_13.include?(r.mes_a_rendir.to_i)
+                      - tiene_tp_14 = meses_con_tp_14.include?(r.mes_a_rendir.to_i)
+                      - tiene_tp_15 = meses_con_tp_15.include?(r.mes_a_rendir.to_i)
 
                       %tr
                         %td.contenido-form
@@ -213,10 +234,19 @@
                                 %i.fa.fa-minus-circle.mr-1
                                 Sin movimientos
                         %td.contenido-form.text-center= estado_desc
-                        - if get_estado_num.call(r) >= 1
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
-                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                        - if get_estado_num.call(r) >= 1 
+                          -if tiene_tp_13
+                            %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          -else
+                            %td.contenido-form.text-center --
+                          -if tiene_tp_15
+                            %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          -else
+                            %td.contenido-form.text-center --
+                          -if tiene_tp_14
+                            %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                          -else
+                            %td.contenido-form.text-center --
                         - else
                           %td.contenido-form.text-center --
                           %td.contenido-form.text-center --
@@ -334,8 +364,13 @@
 
   .d-flex.justify-content-between.align-items-center.mt-4.mb-5
     .left-actions
-      - if @rendicion.present?
+      - tiene_tp_14_actual = meses_con_tp_14.include?(@rendicion&.mes_a_rendir.to_i)
+      - if @rendicion.present? && tiene_tp_14_actual
         = link_to descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: @rendicion.mes_a_rendir), class: "btn btn-sm btn-info", target: "_blank", data: { toggle: "tooltip" }, title: "Descargar Informe de Gastos PDF" do
+          %i.fa.fa-file-pdf-o.mr-1
+          Descargar Informe de Gastos
+      - elsif @rendicion.present?
+        %button.btn.btn-sm.btn-secondary{type: "button", disabled: true, title: "No disponible: No existe tarea pendiente FPL-14 asociada al mes de esta rendición"}
           %i.fa.fa-file-pdf-o.mr-1
           Descargar Informe de Gastos
 
