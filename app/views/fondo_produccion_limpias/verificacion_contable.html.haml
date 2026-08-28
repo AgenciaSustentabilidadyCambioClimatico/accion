@@ -252,10 +252,60 @@
                           %td.contenido-form.text-center --
                           %td.contenido-form.text-center --
 
-    -# TAB 2: ESTRUCTURA DE COSTOS (FONDO PL, BENEFICIARIO Y TOTAL DESTACADO AL FINAL)
+    -# TAB 2: ESTRUCTURA DE COSTOS (ACUMULADO TOTAL DE TODAS LAS RENDICIONES DEL PROYECTO)
     .tab-pane.fade#costos{:role => "tabpanel", "aria-labelledby" => "costos-tab"}
-      - data_costos = @data_costos || { total: {}, fpl: {}, aporte: {} }
-      - items_costo = @partidas || [ { key: :rrhh_propios, nombre: 'RR HH Propios' }, { key: :rrhh_externos, nombre: 'RR HH Externos' }, { key: :gastos_operacion, nombre: 'Gastos de Operación' }, { key: :gastos_administracion, nombre: 'Gastos de Administración' } ]
+      -# 1. Presupuestos Base Oficiales del Proyecto (Fijos)
+      - base_presupuesto_fpl = { rrhh_propios: 0.0, rrhh_externos: 153000.0, gastos_operacion: 200000.0, gastos_administracion: 150000.0 }
+      - base_presupuesto_apo = { rrhh_propios: 2009970.0, rrhh_externos: 140000.0, gastos_operacion: 150000.0, gastos_administracion: 200000.0 }
+
+      - items_costo = [ { key: :rrhh_propios, nombre: 'RR HH Propios' }, { key: :rrhh_externos, nombre: 'RR HH Externos' }, { key: :gastos_operacion, nombre: 'Gastos de Operación' }, { key: :gastos_administracion, nombre: 'Gastos de Administración' } ]
+
+      -# Carga de presupuestos base desde @data_costos si vienen presentes
+      - items_costo.each do |item|
+        - k = item[:key]
+        - alt_k = k == :gastos_operacion ? :operaciones : (k == :gastos_administracion ? :administracion : k)
+        - tot_f_cfg = (@data_costos.dig(:fpl, k, :tot) rescue 0).to_f
+        - tot_f_cfg = (@data_costos.dig(:fpl, alt_k, :tot) rescue 0).to_f if tot_f_cfg.zero?
+        - base_presupuesto_fpl[k] = tot_f_cfg if tot_f_cfg > 0
+
+        - tot_a_cfg = (@data_costos.dig(:aporte, k, :tot) rescue 0).to_f
+        - tot_a_cfg = (@data_costos.dig(:aporte, alt_k, :tot) rescue 0).to_f if tot_a_cfg.zero?
+        - base_presupuesto_apo[k] = tot_a_cfg if tot_a_cfg > 0
+
+      -# 2. Consulta acumulada de TODAS las rendiciones del flujo en rendicion_gastos_fpl
+      - rend_ids_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).pluck(:id)
+      - todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
+
+      -# 3. Mapeo de categorías y suma de costo_rendido acumulado
+      - cat_key_map = { 'rrhh_propios' => :rrhh_propios, 'rrhh_externos' => :rrhh_externos, 'operaciones' => :gastos_operacion, 'gastos_operacion' => :gastos_operacion, 'administracion' => :gastos_administracion, 'gastos_administracion' => :gastos_administracion }
+      
+      - ren_acum_fpl = Hash.new(0.0)
+      - ren_acum_apo = Hash.new(0.0)
+
+      - todos_los_gastos.each do |g|
+        - c_key = cat_key_map[g.categoria.to_s.downcase] || g.categoria.to_s.to_sym
+        - val_rend = g.costo_rendido.to_f
+        - es_fpl = g.tipo_aporte.to_s.downcase.include?('solicitado') || g.tipo_aporte.to_s.downcase.include?('fondo')
+
+        - if es_fpl
+          - ren_acum_fpl[c_key] += val_rend
+        - else
+          - ren_acum_apo[c_key] += val_rend
+
+      -# 4. Construcción de la estructura de datos unificada
+      - data_costos = { total: {}, fpl: {}, aporte: {} }
+      - items_costo.each do |item|
+        - k = item[:key]
+
+        - tot_f = base_presupuesto_fpl[k].to_f
+        - ren_f = ren_acum_fpl[k].to_f
+
+        - tot_a = base_presupuesto_apo[k].to_f
+        - ren_a = ren_acum_apo[k].to_f
+
+        - data_costos[:fpl][k] = { tot: tot_f, ren: ren_f }
+        - data_costos[:aporte][k] = { tot: tot_a, ren: ren_a }
+        - data_costos[:total][k] = { tot: tot_f + tot_a, ren: ren_f + ren_a }
 
       -# 1. TABLAS PARCIALES LADO A LADO
       .row
@@ -301,7 +351,7 @@
                         %td.contenido-form.text-right.font-weight-bold= number_to_currency(tot_gen - ren_gen, unit: '$', precision: 0)
                         %td.contenido-form.text-center.font-weight-bold= number_to_percentage(pct_gen, precision: 1)
 
-      -# 2. TABLA DESTACADA: TOTAL DEL PROYECTO (AL FINAL DE LA PESTAÑA)
+      -# 2. TABLA DESTACADA: TOTAL DEL PROYECTO (CONSOLIDADO)
       .row.mt-2
         .col-12
           .card.mb-3{style: "border: 2px solid #5d759e;"}
