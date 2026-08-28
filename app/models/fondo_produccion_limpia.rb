@@ -1629,14 +1629,17 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :portrait, margin: [30, 30, 30, 30])
 
     # ---------------------------------------------------------------------------
-    # CONFIGURACIÓN DE FAMILIA DE FUENTES
+    # CONFIGURACIÓN DE FAMILIA DE FUENTES (CON SOPORTE PARA ITALIC)
     # ---------------------------------------------------------------------------
     font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
     font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    font_path_italic  = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf")
 
     pdf.font_families.update("OpenSans" => {
-      normal: font_path_regular,
-      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
+      normal:      font_path_regular,
+      bold:        File.exist?(font_path_bold)   ? font_path_bold   : font_path_regular,
+      italic:      File.exist?(font_path_italic) ? font_path_italic : font_path_regular,
+      bold_italic: File.exist?(font_path_bold)   ? font_path_bold   : font_path_regular
     })
     pdf.font "OpenSans"
 
@@ -1680,7 +1683,7 @@ class FondoProduccionLimpia < ApplicationRecord
     nombre_postulante = postulante.try(:nombre_completo)
 
     # ---------------------------------------------------------------------------
-    # OBTENCIÓN DE VARIABLES DE CONTEXTO (DECLARADAS ANTES DE LAS CONSULTAS)
+    # OBTENCIÓN DE VARIABLES DE CONTEXTO
     # ---------------------------------------------------------------------------
     mes_actual_num  = rendicion&.mes_a_rendir.to_i
     flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
@@ -1694,7 +1697,7 @@ class FondoProduccionLimpia < ApplicationRecord
     texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
     # ---------------------------------------------------------------------------
-    # OBTIENE FECHA DE RECEPCIÓN (PRIMERA TAREA FPL-14 DEL MES A RENDIR)
+    # OBTIENE FECHAS (PRIMERAS TAREAS FPL-14 Y FPL-16 DEL MES A RENDIR)
     # ---------------------------------------------------------------------------
     tarea_fondo_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14) rescue nil
     tarea_fondo_fpl_16 = Tarea.find_by_codigo(Tarea::COD_FPL_16) rescue nil
@@ -1731,16 +1734,12 @@ class FondoProduccionLimpia < ApplicationRecord
       match ? match[1].to_i : nil
     end
 
-    # 1. Obtener todas las tareas pendientes FPL-14 del flujo ordenadas cronológicamente
+    # Búsqueda y filtrado para FPL-14
     tps_14_todas = TareaPendiente.where(tarea_id: tarea_fondo_fpl_14&.id, flujo_id: flujo_actual_id).order(created_at: :asc)
-
-    # 2. Recorrer y filtrar las correspondientes al mes a rendir
-    tps_14_mes = tps_14_todas.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
-
-    # 3. Obtener la primera tarea FPL-14 del mes
+    tps_14_mes   = tps_14_todas.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
     tp_14_primera = tps_14_mes.first
 
-    # Mismo procedimiento para FPL-16 (Evaluación de Gastos)
+    # Procedimiento para FPL-16 (Evaluación de Gastos)
     tps_16 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_16&.id, flujo_id: flujo_actual_id).order(created_at: :asc).first
 
     # Extracción de fechas
@@ -1819,12 +1818,7 @@ class FondoProduccionLimpia < ApplicationRecord
         actividades.each do |act|
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(act.id) && (d.tecnica? rescue false) } rescue nil
           
-          estado_label = case detalle_tecnico&.nivel_avance.to_s
-                        when '0' then 'Sin iniciar'
-                        when '1' then 'En proceso'
-                        when '2' then 'Completado'
-                        else '--'
-                        end
+          estado_label = "#{detalle_tecnico&.nivel_avance.to_i}%"
 
           tabla_actividades << [
             act.try(:correlativo) || "-",
