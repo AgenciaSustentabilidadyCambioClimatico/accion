@@ -14,6 +14,12 @@
 - paso_actual = params[:paso].to_s == '2' ? 2 : 1
 - detalles_hash = (@actividad_detalle.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
 - valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
 - duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
@@ -488,13 +494,15 @@
             - if @actividad_x_linea.present?
               - @actividad_x_linea.each do |actividad|
                 - plan_act = detalles_hash[actividad.id.to_i] || PlanActividad.find_by(id: actividad.id) || PlanActividad.find_by(flujo_id: @tarea_pendiente&.flujo_id, actividad_id: actividad.id)
-                - duracion_act = plan_act.try(:duracion).to_s
-                - duraciones = duracion_act.split(',').map(&:strip)
-                - es_mes_actual = duraciones.include?(mes_seleccionado_defecto.to_s)
-                
                 - act_id_num = actividad.id.to_i
                 - plan_act_id_num = plan_act.try(:id).to_i
                 - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+
+                - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
+                - duracion_act = plan_act.try(:duracion).to_s
+                - duraciones = duracion_act.split(',').map(&:strip)
+                - es_mes_actual = duraciones.include?(mes_seleccionado_defecto.to_s)
 
                 - es_en_proceso = mis_ids.any? { |id| act_ids_en_proceso.include?(id) }
                 - es_observada  = mis_ids.any? { |id| act_ids_observadas.include?(id) } && !es_en_proceso
@@ -524,7 +532,12 @@
 
                 %tr
                   %td.contenido-form.text-center= actividad.correlativo
-                  %td.contenido-form= actividad.nombre
+                  %td.contenido-form
+                    = actividad.nombre
+                    - if es_reitimizada
+                      %span.badge.ml-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                        %i.fa.fa-refresh.mr-1
+                        Reitimizada
                   - (1..duracion).each do |m|
                     %td.contenido-form.text-center
                       - if duraciones.include?(m.to_s)
@@ -613,6 +626,8 @@
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
+
             - obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
             - obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: @tarea_pendiente&.flujo_id).pluck(:objetivos_especifico_id).first if plan_act.present?
             
@@ -622,7 +637,6 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
 
-            -# TRADUCCIÓN: BUSCA EL DETALLE USANDO GET_ACT_ID PARA SOPORTAR EL 711
             - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
@@ -643,6 +657,10 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -705,6 +723,8 @@
             - act_id_num = actividad.id.to_i
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
@@ -717,6 +737,10 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -780,6 +804,8 @@
             - act_id_num = actividad.id.to_i
             - plan_act_id_num = plan_act.try(:id).to_i
             - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+            
+            - es_reitimizada = (mis_ids & reitimizadas_ids).any?
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
@@ -792,6 +818,10 @@
                 .d-flex.align-items-center
                   %span.badge.badge-primary.mr-2{style: "font-size: 11px;"}= actividad.correlativo
                   %span.font-weight-bold{style: "color: #333; font-size: 14px;"}= actividad.nombre
+                  - if es_reitimizada
+                    %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
+                      %i.fa.fa-refresh.mr-1
+                      Reitimizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar

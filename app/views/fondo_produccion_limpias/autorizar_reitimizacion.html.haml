@@ -1,0 +1,319 @@
+- fpl_objeto = @fondo_produccion_limpia || FondoProduccionLimpia.new
+- titulo "Autorizar Reitimización"
+
+-# Resolución segura del flujo_id
+- flujo_id_actual = @tarea_pendiente.try(:flujo_id) || @rendicion.try(:flujo_id) || @fondo_produccion_limpia.try(:flujo_id)
+
+-# Obtención del mes actual en verificación
+- mes_actual = @rendicion&.mes_a_rendir.to_s
+- fecha_res = fpl_objeto.try(:fecha_resolucion)
+- mes_nombre = nil
+- if fecha_res.present?
+  - fecha_target = fecha_res.to_date + (mes_actual.to_i - 1).months
+  - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
+
+- texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual})" : "Rendición #{mes_actual}"
+
+-# -------------------------------------------------------------
+-# 1. PREPARACIÓN DE DATOS - CONSULTA A PLANACTIVIDAD
+-# -------------------------------------------------------------
+- plan_map = @plan_actividades_map.presence || PlanActividad.where(flujo_id: flujo_id_actual).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
+- rendiciones_todas = RendicionFpl.where(flujo_id: flujo_id_actual).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).order(mes_a_rendir: :asc).to_a rescue []
+- get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
+
+-# TRADUCTOR INVERSO DE IDs
+- map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_actual).index_by(&:id)
+- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+- id_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)&.id rescue nil
+- tps_13_flujo = TareaPendiente.where(flujo_id: flujo_id_actual, tarea_id: id_fpl_13).to_a
+- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
+- meses_con_tp_13 = tps_13_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
+- id_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14)&.id rescue nil
+- tps_14_flujo = TareaPendiente.where(flujo_id: flujo_id_actual, tarea_id: id_fpl_14).to_a
+- meses_con_tp_14 = tps_14_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
+- id_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)&.id rescue nil
+- tps_15_flujo = TareaPendiente.where(flujo_id: flujo_id_actual, tarea_id: id_fpl_15).to_a
+- meses_con_tp_15 = tps_15_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
+
+- max_avances = Hash.new(0)
+- rendiciones_todas.each do |rend|
+  - est_num = get_estado_num.call(rend)
+  - rend.rendicion_detalles_fpl.each do |det|
+    - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+    - val_av = det.nivel_avance.to_i
+    - det.rendicion_detalle_actividades_fpl.each do |rda|
+      - t_id = get_act_id.call(rda.plan_actividad_id)
+      - max_avances[t_id] = [max_avances[t_id], val_av].max
+
+- suma_pct = 0
+- actividades_list = (@actividad_x_linea || []).map do |act|
+  - act_id_num = act.id.to_i
+  - plan_act = plan_map[act_id_num] || PlanActividad.find_by(id: act_id_num) || PlanActividad.find_by(flujo_id: flujo_id_actual, actividad_id: act_id_num)
+  - plan_act_id_num = plan_act.try(:id).to_i
+  - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
+  - av = mis_ids.map { |id| max_avances[id] }.max || 0
+  - suma_pct += av
+  - { id: act_id_num, plan_id: plan_act_id_num, correlativo: act.correlativo, nombre: act.nombre, avance: av, mis_ids: mis_ids, plan_obj: plan_act }
+
+- pct_proyecto = actividades_list.any? ? (suma_pct.to_f / actividades_list.size) : 0
+- estados_map = { 0 => 'En borrador', 1 => 'Enviada / En revisión', 2 => 'Enviada / En revisión', 3 => 'Observada', 4 => 'Observada', 5 => 'Aceptada', 6 => 'Aceptada' }
+
+:javascript
+  $(document).ready(function() {
+    $('.chosen-control').chosen({ allow_single_deselect: true, no_results_text: 'No se encontraron resultados', width: '100%' });
+    htmlErrorToTooltip('top');
+
+    $("input:file").on('change', function () {
+      const fileName = $(this)[0].files[0] ? $(this)[0].files[0].name : '';
+      $(this).parent().find('.custom-file-label').html(fileName);
+    });
+
+    $('.chk-autorizar').on('change', function() {
+      actualizarRequeridosFile($(this));
+    });
+
+    $('.chk-autorizar').each(function() {
+      actualizarRequeridosFile($(this));
+    });
+
+    function actualizarRequeridosFile($chk) {
+      const actId = $chk.data('act-id');
+      const tieneArchivo = $chk.data('tiene-archivo') === true || $chk.data('tiene-archivo') === 'true';
+      const $fileInput = $('#file_actividad_' + actId);
+
+      if ($chk.is(':checked')) {
+        if (!tieneArchivo) {
+          $fileInput.prop('required', true);
+          $fileInput.addClass('border-danger');
+        } else {
+          $fileInput.prop('required', false);
+          $fileInput.removeClass('border-danger');
+        }
+      } else {
+        $fileInput.prop('required', false);
+        $fileInput.removeClass('border-danger');
+      }
+    }
+
+    $('#form-autorizar-reitimizacion').on('submit', function(e) {
+      let valido = true;
+
+      $('.chk-autorizar:checked').each(function() {
+        const actId = $(this).data('act-id');
+        const tieneArchivo = $(this).data('tiene-archivo') === true || $(this).data('tiene-archivo') === 'true';
+        const $fileInput = $('#file_actividad_' + actId);
+        const archivoSeleccionado = $fileInput[0] && $fileInput[0].files.length > 0;
+
+        if (!tieneArchivo && !archivoSeleccionado) {
+          valido = false;
+          $fileInput.addClass('border-danger');
+        }
+      });
+
+      if (!valido) {
+        e.preventDefault();
+        e.stopPropagation();
+        alert('ADVERTENCIA: Debe adjuntar un documento válido para todas las actividades que desea Autorizar.');
+        return false;
+      }
+    });
+  });
+
+:css
+  .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table { width: 100%; max-width: 100%; margin-bottom: 1rem; background-color: transparent; }
+  .table tbody + tbody { border-top: 2px solid #dee2e6; }
+  .table .table { background-color: #fff; }
+  .table thead th { font-size: 12px; border: 2px solid #dee2e6; }
+  .encabezado-form { vertical-align: middle; background-color: #E0EFF6; text-align: center; font-weight: bold; }
+  .contenido-form { border: 2px solid #dee2e6; font-size: 12px; vertical-align: top; background-color: #fff; color: #5d759e; }
+  .smaller-text { font-size: 11px !important; height: auto !important; padding: 2px 4px !important; }
+  .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
+  .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
+  .border-danger { border: 2px solid #dc3545 !important; }
+
+-# CABECERA DE DATOS
+.row
+  .col-12
+    .card.mb-3
+      .card-header.p-0
+        .p-3
+          %h5.no-margin= titulo_instrumento_fpl.html_safe
+          %h5.no-margin= titulo_instrumento.html_safe
+          %h5.no-margin= titulo_proyecto_fpl.html_safe
+          %h5.no-margin= titulo_apl.html_safe
+          %h5.no-margin= datos_beneficiario_fpl.html_safe
+
+= simple_form_for fpl_objeto, url: guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(@tarea_pendiente), html: { id: "form-autorizar-reitimizacion", multipart: true, autocomplete: :off } do |f|
+  = hidden_field_tag "mes_a_rendir", mes_actual.presence || @rendicion&.mes_a_rendir || 1
+
+  .mt-3
+    .card.mb-3{style: "border: 2px solid #dee2e6;"}
+      .card-header.header-actividad-fpl
+        .d-flex.align-items-center
+          %span.font-weight-bold{style: "color: #333; font-size: 14px;"} Resumen General de Avances y Reitimización
+
+      .card-body.p-3
+        .row
+          .col-lg-12
+            .table-responsive.mb-3
+              %table.table.table-striped.no-margin
+                %thead
+                  %tr
+                    %th.encabezado-form.text-left Actividades
+                    %th.encabezado-form.text-center{style: "width: 140px;"} % Ejecución
+                    %th.encabezado-form.text-center{style: "width: 90px;"} Autorizar
+                    %th.encabezado-form.text-center{style: "width: 250px;"} Cargar Documento
+                %tbody
+                  - actividades_list.each do |act_info|
+                    - mis_ids = act_info[:mis_ids]
+                    - plan_act_obj = act_info[:plan_obj]
+                    - id_pk = act_info[:plan_id].presence || act_info[:id]
+                    - is_autorizado = plan_act_obj.try(:autorizado) ? true : false
+                    - archivo_actual = plan_act_obj.try(:archivo_reitimizacion)
+                    - tiene_archivo = archivo_actual.present? && (archivo_actual.respond_to?(:url) ? archivo_actual.url.present? : archivo_actual.to_s.present?)
+                    - url_archivo = archivo_actual.respond_to?(:url) ? archivo_actual.url : archivo_actual.to_s
+
+                    - es_en_proceso = false
+                    - es_observada  = false
+                    - max_avance_aprobado  = 0
+                    - max_avance_proceso   = 0
+                    - max_avance_observado = 0
+                    - max_avance_borrador  = 0
+
+                    - rendiciones_todas.each do |r|
+                      - est_r = get_estado_num.call(r)
+                      - r.rendicion_detalles_fpl.each do |det|
+                        - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
+                        - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
+                        - if (ids_asoc & mis_ids).present?
+                          - av = det.nivel_avance.to_i
+                          - if [1, 2].include?(est_r)
+                            - es_en_proceso = true
+                            - max_avance_proceso = [max_avance_proceso, av].max
+                          - elsif [3, 4].include?(est_r)
+                            - es_observada = true
+                            - max_avance_observado = [max_avance_observado, av].max
+                          - elsif [5, 6].include?(est_r)
+                            - max_avance_aprobado = [max_avance_aprobado, av].max
+                          - elsif est_r == 0
+                            - max_avance_borrador = [max_avance_borrador, av].max
+
+                    %tr
+                      %td.contenido-form= "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                      %td.contenido-form.text-center
+                        - if es_en_proceso
+                          %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
+                            = "En revision ASCC (#{max_avance_proceso}%)"
+                        - elsif es_observada
+                          %span.badge.badge-danger.text-white{style: "font-size: 11px; padding: 6px; background-color: #dc3545; display: block; width: 100%;"}
+                            = "Observada (#{max_avance_observado}%)"
+                        - elsif max_avance_aprobado >= 100 || max_avance_proceso >= 100
+                          - if max_avance_proceso >= 100 && max_avance_aprobado < 100
+                            %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
+                              = "En revision ASCC (100%)"
+                          - else
+                            %span.badge.badge-success{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                              Finalizada 100%
+                        - elsif max_avance_borrador > 0
+                          %span.badge.badge-info.text-white{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                            = "Borrador (#{max_avance_borrador}%)"
+                        - elsif (max_avance_aprobado > 0 || max_avance_proceso > 0)
+                          - max_av_actual = [max_avance_aprobado, max_avance_proceso].max
+                          %span.badge.badge-primary{style: "font-size: 11px; padding: 6px; display: block; width: 100%;"}
+                            = "en Ejecución (#{max_av_actual}%)"
+                        - else
+                          %span{style: "font-size: 12px; color: #5d759e;"}= "0%"
+
+                      -# COLUMNA 1: CHECKEO AUTORIZACIÓN (Persistente con Hidden Field)
+                      %td.contenido-form.text-center{style: "vertical-align: middle;"}
+                        = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "0"
+                        = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
+
+                      -# COLUMNA 2: CARGAR DOCUMENTO Y MOSTRAR EXISTENTE
+                      %td.contenido-form.text-center
+                        - if tiene_archivo
+                          .mb-1
+                            = link_to descargar_archivo_reitimizacion_fondo_produccion_limpia_path(@tarea_pendiente, plan_actividad_id: id_pk), target: "_blank", class: "badge badge-info text-white p-1", style: "font-size: 11px; text-decoration: none;" do
+                              %i.fa.fa-paperclip.mr-1
+                              Ver archivo guardado
+                        = file_field_tag "reitimizacion[actividades][#{id_pk}][archivo]", id: "file_actividad_#{id_pk}", class: "form-control smaller-text border-text"
+
+                  %tr.bg-light
+                    %td.contenido-form.font-weight-bold.text-right Porcentaje Avance Proyecto:
+                    %td.contenido-form.text-center.font-weight-bold
+                      %span.badge.badge-secondary{style: "font-size: 12px; padding: 6px 12px;"}
+                        = "#{pct_proyecto.round(1)}%"
+                    %td.contenido-form{colspan: 2}
+
+          .col-lg-12
+            .table-responsive.mb-3
+              %table.table.table-striped.no-margin
+                %thead
+                  %tr
+                    %th.encabezado-form{colspan: 2, style: "border-bottom: none;"}
+                    %th.encabezado-form{colspan: 3} Informes Revisión
+                  %tr
+                    %th.encabezado-form Estado Rendiciones
+                    %th.encabezado-form Estado
+                    %th.encabezado-form Actividades
+                    %th.encabezado-form Técnico
+                    %th.encabezado-form Financiero
+                %tbody
+                  - rendiciones_todas.each do |r|
+                    - estado_desc = estados_map[get_estado_num.call(r)] || 'En proceso'
+                    - f_target = fecha_res.to_date + (r.mes_a_rendir.to_i - 1).months rescue Date.today
+                    - m_lbl = (I18n.l(f_target, format: '%B %Y') rescue '').capitalize
+                    - es_sin_mov = ['1', 'true', true, 1].include?(r.try(:sin_movimientos)) || (r.respond_to?(:sin_movimientos?) && r.sin_movimientos?)
+                    - tiene_tp_13 = meses_con_tp_13.include?(r.mes_a_rendir.to_i)
+                    - tiene_tp_14 = meses_con_tp_14.include?(r.mes_a_rendir.to_i)
+                    - tiene_tp_15 = meses_con_tp_15.include?(r.mes_a_rendir.to_i)
+
+                    %tr
+                      %td.contenido-form
+                        .d-flex.justify-content-between.align-items-center
+                          %span= "#{m_lbl} (Rendición #{r.mes_a_rendir})"
+                          - if es_sin_mov
+                            %span.badge.badge-secondary{style: "font-size: 10px; padding: 4px 8px; font-weight: normal; background-color: #6c757d;"}
+                              %i.fa.fa-minus-circle.mr-1
+                              Sin movimientos
+                      %td.contenido-form.text-center= estado_desc
+                      - if get_estado_num.call(r) >= 1 
+                        - if tiene_tp_13
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                        - else
+                          %td.contenido-form.text-center --
+                        - if tiene_tp_15
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                        - else
+                          %td.contenido-form.text-center --
+                        - if tiene_tp_14
+                          %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
+                        - else
+                          %td.contenido-form.text-center --
+                      - else
+                        %td.contenido-form.text-center --
+                        %td.contenido-form.text-center --
+                        %td.contenido-form.text-center --
+
+  -# BOTONES DE ACCIÓN
+  .d-flex.justify-content-end.align-items-center.mt-4.mb-5
+    = volver_root
+    - if @tiene_permisos
+      = button_tag "Guardar Avance", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'grabar', 
+        class: "btn btn-sm btn-primary ml-2", 
+        data: { disable_with: "<i class='fa fa-spinner fa-spin'></i> Grabando..." }
+
+      = button_tag "Autorizar Reitimización", 
+        type: 'submit', 
+        name: 'commit_type', 
+        value: 'enviar', 
+        id: 'enviar-button', 
+        class: "btn btn-sm btn-success ml-2", 
+        data: { confirm: "¿Está seguro que desea completar la autorización?", disable_with: "<i class='fa fa-spinner fa-spin'></i> Autorizando..." }

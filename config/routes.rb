@@ -386,6 +386,11 @@ Rails.application.routes.draw do
   get ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#corregir_rendicion_tecnica", as: :corregir_rendicion_tecnica_fondo_produccion_limpia
   patch ':id/corregir_rendicion_tecnica', to: "fondo_produccion_limpias#guardar_correccion_tecnica_rendicion", as: :guardar_correccion_tecnica_rendicion_fondo_produccion_limpia
   
+  # Tarea FPL-11.1 - Respuesta Observaciones Rendición Técnica
+  get  ':id/autorizar_reitimizacion_rendicion',        to: 'fondo_produccion_limpias#autorizar_reitimizacion_rendicion',        as: :autorizar_reitimizacion_rendicion_fondo_produccion_limpia
+  patch ':id/guardar_autorizar_reitimizacion_rendicion', to: 'fondo_produccion_limpias#guardar_autorizar_reitimizacion_rendicion', as: :guardar_autorizar_reitimizacion_rendicion_fondo_produccion_limpia
+  get ':id/descargar_archivo_reitimizacion/:plan_actividad_id', to: 'fondo_produccion_limpias#descargar_archivo_reitimizacion', as: :descargar_archivo_reitimizacion_fondo_produccion_limpia
+  
   #------------------------------------------------------------------------------------------------------------#
 
   post ':id/create(.:format)', to: "objetivo_especificos#create", as: 'create'

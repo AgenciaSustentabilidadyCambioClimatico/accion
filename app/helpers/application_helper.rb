@@ -1082,6 +1082,9 @@ end
     when Tarea::COD_FPL_11
       data[:url] =  resolucion_contrato_fondo_produccion_limpia_path(pendiente)
       data[:icon] = "<i class='fa fa-edit'></i>"  
+    when Tarea::COD_FPL_11_1
+      data[:url] = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(pendiente)
+      data[:icon] = "<i class='fa fa-edit'></i>"
     when Tarea::COD_FPL_12
       data[:url] = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(pendiente, mes_a_rendir: mes_param)
       data[:icon] = "<i class='fa fa-edit'></i>"

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2026_08_24_154616) do
+ActiveRecord::Schema.define(version: 2026_09_01_171408) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -1517,6 +1517,8 @@ ActiveRecord::Schema.define(version: 2026_08_24_154616) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "correlativo"
+    t.boolean "autorizado"
+    t.string "archivo_reitimizacion"
     t.index ["actividad_id"], name: "index_plan_actividades_on_actividad_id"
     t.index ["flujo_id"], name: "index_plan_actividades_on_flujo_id"
     t.index ["objetivos_especifico_id"], name: "index_plan_actividades_on_objetivos_especifico_id"

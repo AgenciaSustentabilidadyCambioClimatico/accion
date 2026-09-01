@@ -416,6 +416,7 @@ class Tarea < ApplicationRecord
 	COD_FPL_09 = 'FPL-09'
 	COD_FPL_10 = 'FPL-10'
 	COD_FPL_11 = 'FPL-11'
+	COD_FPL_11_1 = 'FPL-11.1'
 	COD_FPL_12 = 'FPL-12'
 	COD_FPL_13 = 'FPL-13'
 	COD_FPL_14 = 'FPL-14'

@@ -4124,7 +4124,7 @@ class FondoProduccionLimpiasController < ApplicationController
 
           @tarea_pendiente.update!(estado_tarea_pendiente_id: EstadoTareaPendiente::ENVIADA)
           @tarea_pendiente.pasar_a_siguiente_tarea 'A' 
-
+          @tarea_pendiente.pasar_a_siguiente_tarea 'B' 
           format.js do
             flash[:notice] = 'Documentos y fecha verificados correctamente'
             render js: "window.location.href = '#{root_path}';"
@@ -5111,6 +5111,104 @@ class FondoProduccionLimpiasController < ApplicationController
         format.html { redirect_to url_destino }
         format.js   { render js: "window.location.href = '#{url_destino}';" }
       end
+    end
+
+    # GET /autorizar_reitimizacion_rendicion 
+    def autorizar_reitimizacion_rendicion # FPL-11.1
+      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      cargar_datos_autorizar_reitimizacion
+      render 'autorizar_reitimizacion'
+    end
+
+    # PATCH /:id/guardar_autorizar_reitimizacion_rendicion
+    def guardar_autorizar_reitimizacion_rendicion
+      @tarea_pendiente = TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+      flujo_id_ref = @tarea_pendiente.try(:flujo_id)
+
+      mes_a_cargar = params[:mes_a_rendir].presence || params[:mes_actual].presence
+      if mes_a_cargar.present?
+        @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: mes_a_cargar)
+      end
+      @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first
+
+      mapa_plan_ids = {}
+      if flujo_id_ref.present?
+        PlanActividad.where(flujo_id: flujo_id_ref).each do |p|
+          mapa_plan_ids[p.actividad_id.to_i] = p.id
+          mapa_plan_ids[p.id.to_i]           = p.id
+        end
+      end
+
+      hubo_errores_archivos = false
+
+      # Guardado directo en el modelo PlanActividad
+      if params[:reitimizacion].present? && params[:reitimizacion][:actividades].present?
+        params[:reitimizacion][:actividades].each do |act_id, datos_act|
+          real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
+          plan_actividad = PlanActividad.find_by(id: real_pk)
+
+          if plan_actividad.present?
+            atributos = {}
+            quiere_autorizar = (datos_act[:autorizado] == '1')
+            subio_archivo_nuevo = datos_act[:archivo].present?
+            tiene_archivo_previo = plan_actividad.try(:archivo_reitimizacion).present?
+
+            # VALIDACIÓN: Si quiere autorizar, DEBE tener un documento adjunto
+            if quiere_autorizar && !tiene_archivo_previo && !subio_archivo_nuevo
+              hubo_errores_archivos = true
+              atributos[:autorizado] = false # Forzamos a que no se autorice si falta el documento
+            else
+              atributos[:autorizado] = quiere_autorizar
+            end
+
+            if subio_archivo_nuevo
+              atributos[:archivo_reitimizacion] = datos_act[:archivo]
+            end
+
+            plan_actividad.update(atributos)
+          end
+        end
+      end
+
+      # Configurar URL de retorno (Para recargar la misma página)
+      url_params = {}
+      url_params[:mes_a_rendir] = @rendicion.mes_a_rendir if @rendicion.present?
+      url_destino = autorizar_reitimizacion_rendicion_fondo_produccion_limpia_path(@tarea_pendiente, url_params)
+
+      # Respuesta y Mensajes Flash
+      if hubo_errores_archivos
+        flash[:alert] = "Algunas actividades no se autorizaron porque faltaba adjuntar el documento obligatorio."
+      elsif params[:commit_type] == 'enviar'
+        # NOTA: Aquí iría @tarea_pendiente.pasar_a_siguiente_tarea si decides avanzar el flujo.
+        flash[:notice] = "Reitimización autorizada y guardada exitosamente."
+      else
+        flash[:notice] = "Avance de autorización de reitimización guardado."
+      end
+
+      respond_to do |format|
+        format.html { redirect_to url_destino }
+        format.js   { render js: "window.location.href = '#{url_destino}';" }
+      end
+    end
+
+    # GET /:id/descargar_archivo_reitimizacion/:plan_actividad_id
+    def descargar_archivo_reitimizacion
+      plan_actividad = PlanActividad.find_by(id: params[:plan_actividad_id])
+      uploader = plan_actividad&.archivo_reitimizacion
+
+      if uploader.present? && uploader.file.present?
+        nombre_archivo = uploader.identifier || File.basename(uploader.path.to_s)
+        contenido_binario = uploader.read
+
+        send_data contenido_binario,
+                  filename: nombre_archivo,
+                  disposition: 'inline' # Cambiar a 'attachment' si deseas forzar la descarga en vez de visualización
+      else
+        redirect_back(fallback_location: root_path, alert: "El archivo no se encuentra disponible para descargar.")
+      end
+    rescue StandardError => e
+      Rails.logger.error "=== [ERROR DESCARGA REITIMIZACIÓN] #{e.class} - #{e.message} ==="
+      redirect_back(fallback_location: root_path, alert: "Ocurrió un error al intentar descargar el archivo.")
     end
 
     # GET /descargar_informe_gastos/:id
@@ -7648,4 +7746,68 @@ class FondoProduccionLimpiasController < ApplicationController
     end
   end
 
+  def cargar_datos_autorizar_reitimizacion
+    @tarea_pendiente ||= TareaPendiente.find_by(id: params[:id]) if params[:id].present?
+    flujo_id_ref = @tarea_pendiente.try(:flujo_id)
+
+    @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: flujo_id_ref) || FondoProduccionLimpia.new
+
+    if params[:mes_a_rendir].present?
+      @rendicion = RendicionFpl.find_by(flujo_id: flujo_id_ref, mes_a_rendir: params[:mes_a_rendir])
+    end
+
+    @rendicion ||= RendicionFpl.where(flujo_id: flujo_id_ref).order(mes_a_rendir: :desc).first
+
+    if @rendicion.present?
+      @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+      @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
+    else
+      @documentos_fpl    = RendicionDetalleFpl.none
+      @documentos_aporte = RendicionDetalleFpl.none
+    end
+
+    # =========================================================================
+    # CARGA Y MAPEO EXPLÍCITO DE PLANACTIVIDAD (REITIMIZACIÓN GLOBAL)
+    # =========================================================================
+    @plan_actividades_map = {}
+    if flujo_id_ref.present?
+      PlanActividad.where(flujo_id: flujo_id_ref).each do |pa|
+        @plan_actividades_map[pa.id.to_i]           = pa
+        @plan_actividades_map[pa.actividad_id.to_i] = pa if pa.actividad_id.present?
+      end
+    end
+
+    @detalles_tecnicos_map = {}
+    @rendicion_gastos_map  = {}
+
+    if @rendicion.present? && flujo_id_ref.present?
+      planes_flujo = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
+
+      tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+      @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+        det.rendicion_detalle_actividades_fpl.each do |rda|
+          p_id = rda.plan_actividad_id.to_i
+          plan = planes_flujo[p_id]
+          
+          @detalles_tecnicos_map[p_id] = det
+          @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+        end
+      end
+
+      @rendicion.rendicion_gastos_fpl.each do |gasto|
+        p_id = gasto.plan_actividad_id.to_i
+        cat = gasto.categoria.to_s.strip.downcase
+        item_id = gasto.item_origen_id.to_i
+        plan = planes_flujo[p_id]
+
+        @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+        @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+      end
+    end
+
+    solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
+    @tiene_permisos = solo_lectura.nil?
+
+    set_actividades_x_linea
+  end
 end
