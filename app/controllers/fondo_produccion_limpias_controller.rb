@@ -4154,48 +4154,36 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-    def rendicion_subir_documentos_actividades # FPL-12
+    def rendicion_subir_documentos_actividades # FPL-12 (GET)
       @fondo_produccion_limpia = FondoProduccionLimpia.find_by(flujo_id: @tarea_pendiente.flujo_id) || FondoProduccionLimpia.new
 
-      # 1. Identificar estados de borrador/edición
       estados_borrador = RendicionFpl.estados.slice('borrador', 'borrador_tecnico').values.presence || [0]
-
-      # 2. NUEVA LÓGICA: Identificar meses que YA fueron enviados o están en proceso (estado >= 1)
-      # Se consideran todos los estados excepto borrador (enviada_a_revision, en_evaluacion, observadas, etc.)
       val_minimo_enviado = RendicionFpl.estados['enviada_a_revision'] || 1
       estados_enviados = RendicionFpl.estados.select { |_k, v| v >= val_minimo_enviado }.values.presence || [1, 2, 3, 4, 5, 6]
 
-      meses_enviados = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id)
-                                  .where(estado: estados_enviados)
-                                  .pluck(:mes_a_rendir).compact
-
-      # 3. El mes máximo permitido para rendición activa es (último mes enviado + 1)
+      meses_enviados = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id).where(estado: estados_enviados).pluck(:mes_a_rendir).compact
       ultimo_mes_enviado = meses_enviados.max || 0
       mes_permitido = ultimo_mes_enviado + 1
 
-      # 4. Buscar borrador activo únicamente si pertenece a un mes permitido (<= mes_permitido)
       borrador_activo = RendicionFpl.where(flujo_id: @tarea_pendiente.flujo_id, estado: estados_borrador)
                                     .where('mes_a_rendir <= ?', mes_permitido)
-                                    .order(mes_a_rendir: :asc)
-                                    .first
+                                    .order(mes_a_rendir: :asc).first
 
       mes_sugerido = borrador_activo&.mes_a_rendir || mes_permitido
 
-      # 5. Redirección automática si la URL no trae ?mes_a_rendir=X o si se intenta acceder a un mes aún no permitido
       if params[:mes_a_rendir].blank? || params[:mes_a_rendir].to_i > mes_permitido
         redirect_to rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(
-          @tarea_pendiente.id, 
-          mes_a_rendir: mes_sugerido, 
-          paso: params[:paso]
+          @tarea_pendiente.id, mes_a_rendir: mes_sugerido, paso: params[:paso]
         ) and return
       end
 
       mes_a_cargar = params[:mes_a_rendir].to_i
 
-      # 6. Carga de la rendición específica para ese flujo y mes activo
-      @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: mes_a_cargar)
+      @rendicion = RendicionFpl.includes(
+        rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl,
+        rendicion_gastos_fpl: []
+      ).find_by(flujo_id: @tarea_pendiente.flujo_id, mes_a_rendir: mes_a_cargar)
 
-      # 7. Carga de detalles financieros precargando relaciones
       if @rendicion.present?
         @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
         @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
@@ -4204,19 +4192,48 @@ class FondoProduccionLimpiasController < ApplicationController
         @documentos_aporte = RendicionDetalleFpl.none
       end
 
-      # 8. Permisos y actividades
+      # Diccionarios duales para lectura en la vista
+      @detalles_tecnicos_map = {}
+      @rendicion_gastos_map  = {}
+
+      if @rendicion.present?
+        planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+        tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            p_id = rda.plan_actividad_id.to_i
+            plan = planes_flujo[p_id]
+            
+            @detalles_tecnicos_map[p_id] = det
+            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+          end
+        end
+
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id    = gasto.plan_actividad_id.to_i
+          cat     = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan    = planes_flujo[p_id]
+
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+          if plan.present?
+            @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto
+          end
+        end
+      end
+
       solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
       @tiene_permisos = solo_lectura.nil?
 
       set_actividades_x_linea
     end
 
-    def adjuntar_rendicion_subir_documentos_actividades # FPL-12
-      commit_accion = params[:commit_type] # 'grabar' o 'enviar'
+    def adjuntar_rendicion_subir_documentos_actividades # FPL-12 (POST / PATCH)
+      commit_accion = params[:commit_type]
       mes_seleccionado = params[:mes_a_rendir].presence || 1
 
       ActiveRecord::Base.transaction do
-        # 1. Crear o buscar la cabecera de rendición
         @rendicion = RendicionFpl.find_or_create_by!(
           flujo_id: @tarea_pendiente.flujo_id, 
           mes_a_rendir: mes_seleccionado
@@ -4224,63 +4241,49 @@ class FondoProduccionLimpiasController < ApplicationController
           r.estado = :borrador
         end
 
-        # 2. Estado Sin Movimientos
-        es_sin_mov = (params[:sin_movimientos].to_s == '1' || params[:sin_movimientos_paso1].to_s == '1')
-        
-        if @rendicion.respond_to?(:sin_movimientos=)
-          @rendicion.sin_movimientos = es_sin_mov
+        # CONSTRUCCIÓN SEGURA DEL DICCIONARIO (Mapea tanto actividad_id como id)
+        mapa_plan_ids = {}
+        PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
+          mapa_plan_ids[p.actividad_id.to_i] = p.id
+          mapa_plan_ids[p.id.to_i]           = p.id
         end
 
-        # Checkbox de "Última Rendición"
+        obtener_pk_real = lambda do |id_param|
+          mapa_plan_ids[id_param.to_i]
+        end
+
+        es_sin_mov = (params[:sin_movimientos].to_s == '1' || params[:sin_movimientos_paso1].to_s == '1')
+        @rendicion.sin_movimientos = es_sin_mov if @rendicion.respond_to?(:sin_movimientos=)
+
         if params[:ultima_rendicion].present? || params[:ultima_rendicion_paso1].present?
           es_ultima = (params[:ultima_rendicion] == '1' || params[:ultima_rendicion_paso1] == '1')
           @rendicion.ultima_rendicion = es_ultima if @rendicion.respond_to?(:ultima_rendicion=)
         end
 
-        # Campos de Información Complementaria
         if params[:rendicion].present?
-          params_rendicion = params.require(:rendicion).permit(
-            :resultado_actividades_realizadas, 
-            :informacion_adicional, 
-            :conclusion
-          )
-          @rendicion.assign_attributes(params_rendicion)
+          @rendicion.assign_attributes(params.require(:rendicion).permit(:resultado_actividades_realizadas, :informacion_adicional, :conclusion))
         end
-
         @rendicion.save!
 
-        # 3. Limpieza y preparación según estado de Movimientos
         act_seleccionadas_str = params[:actividades_seleccionadas].to_s.presence || params[:actividades_ids].to_a.join(',')
-        actividades_list = es_sin_mov ? [] : act_seleccionadas_str.split(',').reject(&:blank?).map(&:to_s)
+        actividades_crudas = es_sin_mov ? [] : act_seleccionadas_str.split(',').reject(&:blank?)
+        actividades_pks = actividades_crudas.map { |id| obtener_pk_real.call(id) }.compact.uniq
 
         if es_sin_mov
-          # Purgar gastos y relaciones N:M con actividades específicas
           @rendicion.rendicion_gastos_fpl.destroy_all
-          RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                      .where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id })
-                                      .destroy_all
+          RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl).where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id }).destroy_all
 
-          # CREAR O MANTENER DETALLE GENERAL SIN ACTIVIDAD ASOCIADA PARA EVALUACIÓN
           tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
           detalle_general = @rendicion.rendicion_detalles_fpl.find_or_initialize_by(tipo_tab: tipo_tec_num)
           detalle_general.observacion = "Rendición Sin Movimientos para el período #{mes_seleccionado}."
           detalle_general.nivel_avance = 0
           detalle_general.save!
-
-          # Purgar cualquier otro detalle sobrante
           @rendicion.rendicion_detalles_fpl.where.not(id: detalle_general.id).destroy_all
         else
-          if actividades_list.present?
-            @rendicion.rendicion_gastos_fpl.where.not(plan_actividad_id: actividades_list).destroy_all
-
-            RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                        .where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id })
-                                        .where.not(plan_actividad_id: actividades_list)
-                                        .destroy_all
-
-            @rendicion.rendicion_detalles_fpl.reload.each do |detalle|
-              detalle.destroy if detalle.rendicion_detalle_actividades_fpl.empty?
-            end
+          if actividades_pks.present?
+            @rendicion.rendicion_gastos_fpl.where.not(plan_actividad_id: actividades_pks).destroy_all
+            RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl).where(rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id }).where.not(plan_actividad_id: actividades_pks).destroy_all
+            @rendicion.rendicion_detalles_fpl.reload.each { |d| d.destroy if d.rendicion_detalle_actividades_fpl.empty? }
           else
             @rendicion.rendicion_gastos_fpl.destroy_all
             @rendicion.rendicion_detalles_fpl.destroy_all
@@ -4289,144 +4292,93 @@ class FondoProduccionLimpiasController < ApplicationController
 
         tipo_tecnica_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
 
-        # 4. Procesar Pestañas normales (Solo si hay movimientos)
         unless es_sin_mov
-          # TAB 1: TÉCNICA
-          actividades_list.each do |actividad_id|
-            nivel_avance_val  = params["realizada_actividad_#{actividad_id}"]
-            obs_val           = params["observacion_actividad_#{actividad_id}"]
-            archivo_val       = params["archivo_rendicion_#{actividad_id}"]
-            fecha_inicio_val  = params["fecha_inicio_actividad_#{actividad_id}"]
-            fecha_termino_val = params["fecha_termino_actividad_#{actividad_id}"]
+          # 1. PESTAÑA TÉCNICA
+          actividades_crudas.each do |act_cruda|
+            real_pk = obtener_pk_real.call(act_cruda)
+            next if real_pk.blank?
 
-            next if nivel_avance_val.blank?
+            nivel_avance = params["realizada_actividad_#{act_cruda}"]
+            next if nivel_avance.blank?
 
             detalle_act = RendicionDetalleActividadFpl.joins(:rendicion_detalle_fpl)
-                                                      .find_by(
-                                                        rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num },
-                                                        plan_actividad_id: actividad_id
-                                                      )
-
+                                                    .find_by(
+                                                      rendicion_detalles_fpl: { rendicion_fpl_id: @rendicion.id, tipo_tab: tipo_tecnica_num }, 
+                                                      plan_actividad_id: real_pk
+                                                    )
             detalle = detalle_act&.rendicion_detalle_fpl || @rendicion.rendicion_detalles_fpl.build(tipo_tab: :tecnica)
             
-            detalle.fecha_inicio  = fecha_inicio_val
-            detalle.fecha_termino = fecha_termino_val
-            detalle.nivel_avance  = nivel_avance_val.to_i
-            detalle.observacion   = obs_val
-            detalle.archivo       = archivo_val if archivo_val.present?
+            detalle.fecha_inicio  = params["fecha_inicio_actividad_#{act_cruda}"]
+            detalle.fecha_termino = params["fecha_termino_actividad_#{act_cruda}"]
+            detalle.nivel_avance  = nivel_avance.to_i
+            detalle.observacion   = params["observacion_actividad_#{act_cruda}"]
+            detalle.archivo       = params["archivo_rendicion_#{act_cruda}"] if params["archivo_rendicion_#{act_cruda}"].present?
             detalle.save!
 
-            unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: actividad_id)
-              detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: actividad_id)
+            unless detalle.rendicion_detalle_actividades_fpl.exists?(plan_actividad_id: real_pk)
+              detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: real_pk)
             end
           end
 
-          # TAB 2: FINANCIERA FPL
-          if params[:documentos_fpl].present?
-            docs_fpl_list = params[:documentos_fpl].respond_to?(:values) ? params[:documentos_fpl].values : Array(params[:documentos_fpl])
-            docs_fpl_list.each do |doc_params|
-              doc_id = doc_params[:id]
-              if doc_params[:_destroy].to_s == '1' && doc_id.present?
-                @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
-                next
-              end
-              next if doc_id.blank? && doc_params[:archivo].blank?
+          # 2. PESTAÑAS FINANCIERAS (DOCUMENTOS)
+          [:documentos_fpl, :documentos_aporte].each do |tipo_doc|
+            tipo_tab_enum = tipo_doc == :documentos_fpl ? :financiera_fpl : :financiera_aporte
+            if params[tipo_doc].present?
+              docs_list = params[tipo_doc].respond_to?(:values) ? params[tipo_doc].values : Array(params[tipo_doc])
+              docs_list.each do |doc_params|
+                doc_id = doc_params[:id]
+                if doc_params[:_destroy].to_s == '1' && doc_id.present?
+                  @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
+                  next
+                end
+                next if doc_id.blank? && doc_params[:archivo].blank?
 
-              detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
-              detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_fpl)
-              detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
-              detalle.save!
+                detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
+                detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: tipo_tab_enum)
+                detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
+                detalle.save!
 
-              if doc_params[:actividad_ids].present?
-                detalle.rendicion_detalle_actividades_fpl.destroy_all
-                doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
-                  detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
+                if doc_params[:actividad_ids].present?
+                  detalle.rendicion_detalle_actividades_fpl.destroy_all
+                  doc_params[:actividad_ids].reject(&:blank?).each do |act_cruda|
+                    real_pk = obtener_pk_real.call(act_cruda)
+                    detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: real_pk) if real_pk.present?
+                  end
                 end
               end
             end
           end
 
-          # TAB 3: FINANCIERA APORTE PROPIO
-          if params[:documentos_aporte].present?
-            docs_aporte_list = params[:documentos_aporte].respond_to?(:values) ? params[:documentos_aporte].values : Array(params[:documentos_aporte])
-            docs_aporte_list.each do |doc_params|
-              doc_id = doc_params[:id]
-              if doc_params[:_destroy].to_s == '1' && doc_id.present?
-                @rendicion.rendicion_detalles_fpl.find_by(id: doc_id)&.destroy
-                next
-              end
-              next if doc_id.blank? && doc_params[:archivo].blank?
-
-              detalle = @rendicion.rendicion_detalles_fpl.find_by(id: doc_id) if doc_id.present?
-              detalle ||= @rendicion.rendicion_detalles_fpl.build(tipo_tab: :financiera_aporte)
-              detalle.archivo = doc_params[:archivo] if doc_params[:archivo].present?
-              detalle.save!
-
-              if doc_params[:actividad_ids].present?
-                detalle.rendicion_detalle_actividades_fpl.destroy_all
-                doc_params[:actividad_ids].reject(&:blank?).each do |act_id|
-                  detalle.rendicion_detalle_actividades_fpl.create!(plan_actividad_id: act_id)
-                end
-              end
-            end
-          end
-
-          guardar_gastos_rendiciones_detallados(@rendicion, actividades_list)
+          # 3. GASTOS DETALLADOS
+          guardar_gastos_rendiciones_detallados(@rendicion, actividades_crudas, obtener_pk_real)
         end
 
-        # 5. Envío / Guardado
         if commit_accion == 'enviar'
           @rendicion.update!(estado: :enviada_a_revision) rescue @rendicion.update!(estado: 1)
-
-          mes_actual = mes_seleccionado.to_i
-          flujo_id_actual = @tarea_pendiente.flujo_id
-
-          todas_actividades_ids = PlanActividad.where(flujo_id: flujo_id_actual).pluck(:id)
-          actividades_completadas_ids = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
-                                                          .where(rendiciones_fpl: { flujo_id: flujo_id_actual })
+          todas_actividades_ids = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).pluck(:id)
+          actividades_completadas = RendicionDetalleFpl.joins(:rendicion_detalle_actividades_fpl, :rendicion_fpl)
+                                                          .where(rendiciones_fpl: { flujo_id: @tarea_pendiente.flujo_id })
                                                           .where("rendicion_detalles_fpl.nivel_avance = 100 OR rendicion_detalles_fpl.realizada = ?", true)
                                                           .pluck('rendicion_detalle_actividades_fpl.plan_actividad_id').compact.uniq
+          debe_cerrar = (@rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion) || (todas_actividades_ids - actividades_completadas).empty?
 
-          quedan_pendientes = (todas_actividades_ids - actividades_completadas_ids).present?
-          es_ultima_flag = @rendicion.respond_to?(:ultima_rendicion) && @rendicion.ultima_rendicion
-
-          debe_cerrar_fpl12 = es_ultima_flag || !quedan_pendientes
-
-          # HASH DE IDENTIFICACIÓN PARA PROPAGAR A FPL-13 Y SUCESIVAS
-          extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: mes_actual }
-
-          if debe_cerrar_fpl12
-            @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
-            mensaje_exito = "Rendición final (Mes #{mes_actual}) enviada con éxito. Se ha completado el proceso FPL-12."
-          else
-            @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data, false)
-            mensaje_exito = "Rendición del Mes #{mes_actual} enviada a revisión. La tarea FPL-12 permanece abierta para los siguientes meses."
-          end
-
+          @tarea_pendiente.pasar_a_siguiente_tarea('A', { rendicion_fpl_id: @rendicion.id, mes_a_rendir: mes_seleccionado.to_i }, debe_cerrar)
           url_destino = root_path
+          mensaje = debe_cerrar ? "Rendición final enviada con éxito." : "Rendición enviada a revisión."
         else
-          mensaje_exito = es_sin_mov ? 'Rendición sin movimientos guardada correctamente.' : 'Avances guardados correctamente.'
-          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(
-            @tarea_pendiente.id, 
-            mes_a_rendir: mes_seleccionado, 
-            paso: 1
-          )
+          mensaje = es_sin_mov ? 'Rendición sin movimientos guardada.' : 'Avances guardados.'
+          url_destino = rendicion_subir_documentos_actividades_fondo_produccion_limpia_path(@tarea_pendiente.id, mes_a_rendir: mes_seleccionado, paso: 1)
         end
 
         respond_to do |format|
-          format.js do
-            flash[:notice] = mensaje_exito
-            render js: "window.location='#{url_destino}';"
-          end
-          format.html do
-            redirect_to url_destino, notice: mensaje_exito
-          end
+          format.js { flash[:notice] = mensaje; render js: "window.location='#{url_destino}';" }
+          format.html { redirect_to url_destino, notice: mensaje }
         end
       end
     rescue => e
       Rails.logger.error("Error en rendición: #{e.message}")
       respond_to do |format|
-        format.js { render js: "alert('Ocurrió un error al procesar: #{e.message}');" }
+        format.js { render js: "alert('Error: #{e.message}');" }
         format.html { redirect_back(fallback_location: root_path, alert: e.message) }
       end
     end
@@ -4440,17 +4392,15 @@ class FondoProduccionLimpiasController < ApplicationController
       @revisores_tecnicos    = Responsable.__personas_responsables(Rol::REVISOR_TECNICO, tipo_inst_id)
       @revisor = true
 
-      # 2. Carga de la rendición específica vinculada a ESTA tarea pendiente
+      # 2. Carga de la rendición específica
       if @tarea_pendiente.respond_to?(:determina_rendicion)
         @rendicion = @tarea_pendiente.determina_rendicion
       end
 
-      # Prioridad 2: Si no viene en 'data', verificar si se especificó vía URL
       if @rendicion.nil? && params[:mes_a_rendir].present?
         @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: params[:mes_a_rendir].to_i)
       end
 
-      # Prioridad 3: Fallback por estado en_evaluación / enviada_a_revision (orden asc para tomar el período más antiguo en revisión)
       unless @rendicion.present?
         estados_revision = RendicionFpl.estados.slice('enviada_a_revision', 'en_evaluacion').values.presence || [1, 2]
         @rendicion = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
@@ -4459,7 +4409,6 @@ class FondoProduccionLimpiasController < ApplicationController
                                 .first
       end
 
-      # Fallback final
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
                                 .order(mes_a_rendir: :desc, id: :desc)
                                 .first
@@ -4473,6 +4422,39 @@ class FondoProduccionLimpiasController < ApplicationController
         @documentos_aporte = RendicionDetalleFpl.none
       end
 
+      # =========================================================================
+      # MAPA DUAL DE LECTURA (PARA FPL-13)
+      # Asegura que al visualizar el detalle, empate la vista (101) con BD (711)
+      # =========================================================================
+      @detalles_tecnicos_map = {}
+      @rendicion_gastos_map  = {}
+
+      if @rendicion.present?
+        planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+        tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            p_id = rda.plan_actividad_id.to_i
+            plan = planes_flujo[p_id]
+            
+            @detalles_tecnicos_map[p_id] = det
+            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+          end
+        end
+
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id = gasto.plan_actividad_id.to_i
+          cat = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan = planes_flujo[p_id]
+
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        end
+      end
+      # =========================================================================
+
       # 4. Permisos
       @solo_lectura = true
       tiene_permisos = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
@@ -4481,7 +4463,6 @@ class FondoProduccionLimpiasController < ApplicationController
       set_actividades_x_linea
     end
 
-    # PATCH /guardar_asignar_revisor_rendicion
     def guardar_asignar_revisor_rendicion # FPL-13 Tarea FPL correspondencia de revisión
       ActiveRecord::Base.transaction do
         @tarea_pendiente = TareaPendiente.find(params[:id]) if params[:id].present?
@@ -4590,6 +4571,38 @@ class FondoProduccionLimpiasController < ApplicationController
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc, id: :desc).first
 
       set_actividades_x_linea
+
+      # =========================================================================
+      # MAPA DUAL DE LECTURA (PARA FPL-15)
+      # =========================================================================
+      @detalles_tecnicos_map = {}
+      @rendicion_gastos_map  = {}
+
+      if @rendicion.present?
+        planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+        tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            p_id = rda.plan_actividad_id.to_i
+            plan = planes_flujo[p_id]
+            
+            @detalles_tecnicos_map[p_id] = det
+            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+          end
+        end
+
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id = gasto.plan_actividad_id.to_i
+          cat = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan = planes_flujo[p_id]
+
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        end
+      end
+      # =========================================================================
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
       @tiene_permisos = !@solo_lectura
@@ -4710,12 +4723,44 @@ class FondoProduccionLimpiasController < ApplicationController
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).order(mes_a_rendir: :desc, id: :desc).first
 
       if @rendicion.present?
-        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl
-        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte
+        @documentos_fpl    = @rendicion.rendicion_detalles_fpl.financiera_fpl.includes(:rendicion_detalle_actividades_fpl)
+        @documentos_aporte = @rendicion.rendicion_detalles_fpl.financiera_aporte.includes(:rendicion_detalle_actividades_fpl)
       else
         @documentos_fpl    = RendicionDetalleFpl.none
         @documentos_aporte = RendicionDetalleFpl.none
       end
+
+      # =========================================================================
+      # MAPA DUAL DE LECTURA (PARA FPL-14)
+      # =========================================================================
+      @detalles_tecnicos_map = {}
+      @rendicion_gastos_map  = {}
+
+      if @rendicion.present?
+        planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+        tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+        @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+          det.rendicion_detalle_actividades_fpl.each do |rda|
+            p_id = rda.plan_actividad_id.to_i
+            plan = planes_flujo[p_id]
+            
+            @detalles_tecnicos_map[p_id] = det
+            @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+          end
+        end
+
+        @rendicion.rendicion_gastos_fpl.each do |gasto|
+          p_id = gasto.plan_actividad_id.to_i
+          cat = gasto.categoria.to_s.strip.downcase
+          item_id = gasto.item_origen_id.to_i
+          plan = planes_flujo[p_id]
+
+          @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+          @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+        end
+      end
+      # =========================================================================
 
       @solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : true
       @tiene_permisos = !@solo_lectura
@@ -4814,9 +4859,8 @@ class FondoProduccionLimpiasController < ApplicationController
     end
 
     # GET /verificacion_contable_rendicion
-    def verificacion_contable_rendicion# FPL-16: VERIFICACIÓN CONTABLE
+    def verificacion_contable_rendicion # FPL-16: VERIFICACIÓN CONTABLE
       cargar_datos_verificacion_contable
-      # En esta tarea se requiere una vista (verificacion_contable.html.haml) o la que uses para que el contable revise.
       render 'verificacion_contable' 
     end
 
@@ -4826,25 +4870,24 @@ class FondoProduccionLimpiasController < ApplicationController
       mes_a_cargar = params[:mes_a_rendir].presence || params[:mes_actual].presence
 
       # 2. Buscar la rendición específica del mes auditado.
-      #    Si no viene el parámetro, buscar la rendición activa en proceso de revisión contable.
       if mes_a_cargar.present?
         @rendicion = RendicionFpl.find_by(flujo_id: @tarea_pendiente&.flujo_id, mes_a_rendir: mes_a_cargar)
       end
 
-      # Fallback seguro: Buscar la rendición en revisión en orden ascendente (del mes activo más antiguo al más nuevo)
+      # Fallback seguro: Buscar la rendición en revisión en orden ascendente
       estados_revision = [
         RendicionFpl.estados['enviada_a_revision'],
         RendicionFpl.estados['pendiente_verificacion_contable']
       ].compact.presence || [1, 5]
 
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id, estado: estados_revision)
-                            .order(mes_a_rendir: :asc, id: :asc)
-                            .first
+                                .order(mes_a_rendir: :asc, id: :asc)
+                                .first
 
       # Fallback de seguridad final
       @rendicion ||= RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id)
-                            .order(mes_a_rendir: :asc, id: :asc)
-                            .first
+                                .order(mes_a_rendir: :asc, id: :asc)
+                                .first
 
       if @rendicion.nil?
         redirect_back(fallback_location: root_path, alert: "No se encontró registro de rendición para auditar.")
@@ -4853,7 +4896,6 @@ class FondoProduccionLimpiasController < ApplicationController
 
       if params[:commit_type] == 'enviar'
         # 3. Registrar la aprobación contable y comentario EN LA RENDICIÓN CORRECTA
-        # Definimos el estado aprobado (Verificada Contablemente o Aprobada)
         estado_verificado = RendicionFpl.estados['verificada_contablemente'] || 
                             RendicionFpl.estados['aprobada'] || 
                             RendicionFpl.estados['aprobado'] || 6
@@ -4932,7 +4974,7 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendiente.reload
       end
 
-      # 4. Procesar documentos FPL y Aporte (Actualiza comentario_postulante y/o archivos)
+      # 4. Procesar documentos FPL y Aporte
       procesar_documentos_correccion_financiera(params[:documentos_fpl], 'financiera_fpl')
       procesar_documentos_correccion_financiera(params[:documentos_aporte], 'financiera_aporte')
 
@@ -4940,10 +4982,8 @@ class FondoProduccionLimpiasController < ApplicationController
       if params[:commit_type] == 'enviar'
         @rendicion.update!(estado: :en_evaluacion)
 
-        # PROPAGAR METADATA AL AVANZAR A FPL-14
         extra_data = { rendicion_fpl_id: @rendicion.id, mes_a_rendir: @rendicion.mes_a_rendir }
 
-        # Camino 'A': Devuelve la tarea al revisor financiero (FPL-14)
         if @tarea_pendiente.respond_to?(:pasar_a_siguiente_tarea)
           @tarea_pendiente.pasar_a_siguiente_tarea('A', extra_data)
         end
@@ -4964,10 +5004,8 @@ class FondoProduccionLimpiasController < ApplicationController
       end
     end
 
-
-
     # GET /corregir_rendicion_tecnica
-    def corregir_rendicion_tecnica #FPL-18: CORRECCIÓN TÉCNICA (RESPUESTA POSTULANTE)
+    def corregir_rendicion_tecnica # FPL-18: CORRECCIÓN TÉCNICA (RESPUESTA POSTULANTE)
       @es_correccion_tecnica    = true
       @es_correccion_financiera = false
 
@@ -5004,36 +5042,48 @@ class FondoProduccionLimpiasController < ApplicationController
         @tarea_pendiente.reload
       end
 
-      # 3. Guardar avance, observaciones y archivos de actividades
+      # TRADUCTOR DE IDs PARA BÚSQUEDA Y ACTUALIZACIÓN
+      mapa_plan_ids = {}
+      PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).each do |p|
+        mapa_plan_ids[p.actividad_id.to_i] = p.id
+        mapa_plan_ids[p.id.to_i]           = p.id
+      end
+
+      # 3. Guardar avance, nivel de avance, fechas, observaciones y archivos de actividades
       if params[:actividades_ids].present?
         params[:actividades_ids].each do |act_id|
+          real_pk = mapa_plan_ids[act_id.to_i] || act_id.to_i
+
           detalle = @rendicion.rendicion_detalles_fpl.find do |d|
             is_tec = (d.tecnica? rescue (d.tipo_tab.to_s == 'tecnica' || d.tipo_tab.to_i == 0))
-            act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id)
-            act_ids += d.plan_actividades.map(&:id) if d.respond_to?(:plan_actividades) && d.plan_actividades.present?
-            is_tec && act_ids.include?(act_id.to_i)
+            act_ids = d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
+            act_ids += d.plan_actividades.map(&:id).map(&:to_i) if d.respond_to?(:plan_actividades) && d.plan_actividades.present?
+            is_tec && (act_ids.include?(real_pk) || act_ids.include?(act_id.to_i))
           end
 
           if detalle.present?
             descripcion_avance = params["observacion_actividad_#{act_id}"]
             comentario_postulante_val = params["comentario_postulante_actividad_#{act_id}"].presence || params["comentario_postulante_#{act_id}"]
+            nivel_avance_str = params["realizada_actividad_#{act_id}"]
+            fecha_inicio_val = params["fecha_inicio_actividad_#{act_id}"]
+            fecha_termino_val = params["fecha_termino_actividad_#{act_id}"]
 
             atributos_a_actualizar = {}
             atributos_a_actualizar[:observacion] = descripcion_avance.to_s if params.key?("observacion_actividad_#{act_id}")
+            atributos_a_actualizar[:nivel_avance] = nivel_avance_str.to_i if params.key?("realizada_actividad_#{act_id}")
+            atributos_a_actualizar[:fecha_inicio] = fecha_inicio_val if params.key?("fecha_inicio_actividad_#{act_id}")
+            atributos_a_actualizar[:fecha_termino] = fecha_termino_val if params.key?("fecha_termino_actividad_#{act_id}")
 
             if comentario_postulante_val.present?
               atributos_a_actualizar[:comentario_postulante] = comentario_postulante_val.to_s
-            end
-
-            if params.key?("realizada_actividad_#{act_id}")
-              atributos_a_actualizar[:realizada] = (params["realizada_actividad_#{act_id}"] == 'si')
             end
 
             archivo_adjunto = params["archivo_rendicion_#{act_id}"]
             atributos_a_actualizar[:archivo] = archivo_adjunto if archivo_adjunto.present?
 
             if atributos_a_actualizar.present?
-              detalle.update_columns(atributos_a_actualizar) rescue detalle.update(atributos_a_actualizar)
+              # Se usa update para que los callbacks (como Carrierwave uploaders) funcionen
+              detalle.update(atributos_a_actualizar)
             end
           end
         end
@@ -5079,8 +5129,11 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       begin
-        # 2. Filtrar únicamente las actividades correspondientes a esta rendición
-        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.uniq
+        # 2. Filtrar únicamente las actividades correspondientes a esta rendición usando Traducción Inversa
+        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq
         actividades_filtradas = (@actividad_x_linea || []).select { |a| actividades_rendicion_ids.include?(a.id) }
 
         Rails.logger.info "=== [RADAR INFORME GASTOS] Generando binario PDF Prawn (Mes #{@rendicion.mes_a_rendir}) ==="
@@ -5143,8 +5196,12 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       begin
-        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.uniq rescue []
+        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq rescue []
         todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)
+        
         actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
         actividades_filtradas = todas_actividades if actividades_filtradas.blank?
 
@@ -5199,8 +5256,12 @@ class FondoProduccionLimpiasController < ApplicationController
       end
 
       begin
-        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.uniq rescue []
+        map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+        get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+        actividades_rendicion_ids = @rendicion.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }.map(&get_act_id).uniq rescue []
         todas_actividades = @actividad_x_linea.presence || PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id)
+        
         actividades_filtradas = todas_actividades.select { |a| actividades_rendicion_ids.include?(a.id) }
         actividades_filtradas = todas_actividades if actividades_filtradas.blank?
 
@@ -7154,6 +7215,38 @@ class FondoProduccionLimpiasController < ApplicationController
       @documentos_aporte = RendicionDetalleFpl.none
     end
 
+    # =========================================================================
+    # MAPAS DUALES DE LECTURA (PARA FPL-17 Y FPL-18)
+    # =========================================================================
+    @detalles_tecnicos_map = {}
+    @rendicion_gastos_map  = {}
+
+    if @rendicion.present?
+      planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+      tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+      @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+        det.rendicion_detalle_actividades_fpl.each do |rda|
+          p_id = rda.plan_actividad_id.to_i
+          plan = planes_flujo[p_id]
+          
+          @detalles_tecnicos_map[p_id] = det
+          @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+        end
+      end
+
+      @rendicion.rendicion_gastos_fpl.each do |gasto|
+        p_id = gasto.plan_actividad_id.to_i
+        cat = gasto.categoria.to_s.strip.downcase
+        item_id = gasto.item_origen_id.to_i
+        plan = planes_flujo[p_id]
+
+        @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+        @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+      end
+    end
+    # =========================================================================
+
     solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
     @tiene_permisos = solo_lectura.nil?
 
@@ -7200,9 +7293,21 @@ class FondoProduccionLimpiasController < ApplicationController
   def procesar_documentos_correccion_financiera(grupo_docs, tipo_tab)
     return if grupo_docs.blank? && @rendicion.blank?
 
-    # Convertir parámetros a lista manejable con acceso indiferente (simbolos/strings)
+    # Convertir parámetros a lista manejable con acceso indiferente
     docs_list = grupo_docs.respond_to?(:values) ? grupo_docs.values : (grupo_docs || [])
     docs_list = docs_list.map { |d| d.respond_to?(:permit!) ? d.permit!.to_h.with_indifferent_access : d.with_indifferent_access } rescue []
+
+    # -------------------------------------------------------------------------
+    # MAPA DE TRADUCCIÓN DE IDs (Mapea tanto 'actividad_id' [101] como 'id' [711] a la PK [711])
+    # -------------------------------------------------------------------------
+    flujo_id_ref = @tarea_pendiente&.flujo_id || @rendicion&.flujo_id
+    mapa_plan_ids = {}
+    if flujo_id_ref.present?
+      PlanActividad.where(flujo_id: flujo_id_ref).each do |p|
+        mapa_plan_ids[p.actividad_id.to_i] = p.id
+        mapa_plan_ids[p.id.to_i]           = p.id
+      end
+    end
 
     # 1. Obtener los IDs de los documentos que siguen presentes en la vista
     ids_recibidos = docs_list.map { |d| d[:id] }.reject(&:blank?).map(&:to_i)
@@ -7219,7 +7324,10 @@ class FondoProduccionLimpiasController < ApplicationController
 
     # 3. Procesar los registros restantes (actualizar existentes / crear nuevos)
     docs_list.each do |doc_param|
-      act_ids = doc_param[:actividad_ids].reject(&:blank?) rescue []
+      raw_act_ids = doc_param[:actividad_ids].to_a.reject(&:blank?).map(&:to_i) rescue []
+      
+      # Traducir IDs de actividad al PK real de plan_actividades (711)
+      real_act_pks = raw_act_ids.map { |id| mapa_plan_ids[id] }.compact.uniq
 
       # Captura segura del comentario del postulante enviado desde la bitácora
       comentario_post_val = doc_param[:comentario_postulante].presence || doc_param[:observacion]
@@ -7231,30 +7339,25 @@ class FondoProduccionLimpiasController < ApplicationController
 
         atributos = {}
 
-        # Guardar en 'comentario_postulante'
         if comentario_post_val.present?
           atributos[:comentario_postulante] = comentario_post_val.to_s
         end
 
-        # Guardar en 'observacion' si también venía enviado
         if doc_param.key?(:observacion)
           atributos[:observacion] = doc_param[:observacion].to_s
         end
 
-        # Guardado directo en BD evitando cancelaciones por validaciones de modelo
         detalle.update_columns(atributos) if atributos.present?
 
-        # Guardar el archivo adjunto si fue cambiado/reemplazado
         if doc_param[:archivo].present?
           detalle.update(archivo: doc_param[:archivo]) rescue nil
         end
 
-        # Actualizar relaciones con el plan de actividades
-        if act_ids.present?
-          if detalle.respond_to?(:plan_actividad_ids=)
-            detalle.plan_actividad_ids = act_ids
-          elsif detalle.respond_to?(:plan_actividades=)
-            detalle.plan_actividades = PlanActividad.where(id: act_ids) rescue []
+        # Actualizar relación en la tabla intermedia sin invocar PlanActividad.find(101)
+        if real_act_pks.present?
+          detalle.rendicion_detalle_actividades_fpl.destroy_all
+          real_act_pks.each do |real_pk|
+            detalle.rendicion_detalle_actividades_fpl.find_or_create_by!(plan_actividad_id: real_pk)
           end
         end
       else
@@ -7269,11 +7372,9 @@ class FondoProduccionLimpiasController < ApplicationController
         nuevo_detalle.archivo = doc_param[:archivo] if doc_param[:archivo].present?
 
         if nuevo_detalle.save
-          if act_ids.present?
-            if nuevo_detalle.respond_to?(:plan_actividad_ids=)
-              nuevo_detalle.plan_actividad_ids = act_ids
-            elsif nuevo_detalle.respond_to?(:plan_actividades=)
-              nuevo_detalle.plan_actividades = PlanActividad.where(id: act_ids) rescue []
+          if real_act_pks.present?
+            real_act_pks.each do |real_pk|
+              nuevo_detalle.rendicion_detalle_actividades_fpl.find_or_create_by!(plan_actividad_id: real_pk)
             end
           end
         end
@@ -7308,6 +7409,39 @@ class FondoProduccionLimpiasController < ApplicationController
       @documentos_aporte = RendicionDetalleFpl.none
     end
 
+    # =========================================================================
+    # MAPAS DUALES DE LECTURA (PARA FPL-16)
+    # Indexan registros por PK de PlanActividad (711) y por actividad_id (101)
+    # =========================================================================
+    @detalles_tecnicos_map = {}
+    @rendicion_gastos_map  = {}
+
+    if @rendicion.present?
+      planes_flujo = PlanActividad.where(flujo_id: @tarea_pendiente.flujo_id).index_by(&:id)
+
+      tipo_tec_num = RendicionDetalleFpl.tipo_tabs['tecnica'] rescue 0
+      @rendicion.rendicion_detalles_fpl.where(tipo_tab: tipo_tec_num).each do |det|
+        det.rendicion_detalle_actividades_fpl.each do |rda|
+          p_id = rda.plan_actividad_id.to_i
+          plan = planes_flujo[p_id]
+          
+          @detalles_tecnicos_map[p_id] = det
+          @detalles_tecnicos_map[plan.actividad_id.to_i] = det if plan.present?
+        end
+      end
+
+      @rendicion.rendicion_gastos_fpl.each do |gasto|
+        p_id = gasto.plan_actividad_id.to_i
+        cat = gasto.categoria.to_s.strip.downcase
+        item_id = gasto.item_origen_id.to_i
+        plan = planes_flujo[p_id]
+
+        @rendicion_gastos_map["#{p_id}_#{cat}_#{item_id}"] = gasto
+        @rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat}_#{item_id}"] = gasto if plan.present?
+      end
+    end
+    # =========================================================================
+
     solo_lectura = @tarea_pendiente.present? ? @tarea_pendiente.solo_lectura(current_user, @tarea_pendiente) : nil
     @tiene_permisos = solo_lectura.nil?
 
@@ -7315,54 +7449,37 @@ class FondoProduccionLimpiasController < ApplicationController
     cargar_estructura_costos_rendicion
   end
 
-  def guardar_gastos_rendiciones_detallados(rendicion, actividades_permitidas_ids = [])
+  def guardar_gastos_rendiciones_detallados(rendicion, actividades_crudas, mapeador_pks)
     return if params[:gastos_rendidos].blank?
-
     gastos_list = params[:gastos_rendidos].respond_to?(:values) ? params[:gastos_rendidos].values : Array(params[:gastos_rendidos])
 
-    gastos_list.each do |gasto_raw|
-      gasto = gasto_raw.respond_to?(:with_indifferent_access) ? gasto_raw.with_indifferent_access : gasto_raw
+    gastos_list.each do |gasto|
+      gasto = gasto.with_indifferent_access if gasto.respond_to?(:with_indifferent_access)
+      raw_act_id = gasto[:plan_actividad_id].to_s
+      item_id    = gasto[:item_origen_id]
 
-      plan_act_id = gasto[:plan_actividad_id].to_s
-      item_id     = gasto[:item_origen_id]
+      next if raw_act_id.blank? || item_id.blank?
 
-      next if plan_act_id.blank? || item_id.blank?
-
-      # Descartar si el gasto pertenece a una actividad que no está seleccionada
-      if actividades_permitidas_ids.present?
-        next unless actividades_permitidas_ids.map(&:to_s).include?(plan_act_id)
-      end
+      real_pk = mapeador_pks.call(raw_act_id)
+      next if real_pk.blank?
 
       registro = RendicionGastoFpl.find_or_initialize_by(
-        rendicion_fpl_id: rendicion.id,
-        plan_actividad_id: plan_act_id,
-        categoria: gasto[:categoria],
+        rendicion_fpl_id: rendicion.id, 
+        plan_actividad_id: real_pk, 
+        categoria: gasto[:categoria], 
         item_origen_id: item_id
       )
 
-      # ----------------------------------------------------------------------
-      # REEMPLAZAR COMA POR PUNTO Y CONVERTIR A FLOTANTE PARA EVITAR FALLOS
-      # ----------------------------------------------------------------------
-      cant_rendida = gasto[:cantidad_rendida].to_s.tr(',', '.').to_f.clamp(0, 999.99)
-      
-      # El valor unitario original se mantiene en la columna antigua, el editado en la nueva
-      val_unitario_original = gasto[:valor_unitario_postulado].to_s.tr(',', '.').to_f
-      val_unitario_rendido  = gasto[:valor_unitario].to_s.tr(',', '.').to_f
-
-      # Sanitización de comprobante_ref (solo letras y números, mayúsculas, max 10 caracteres)
-      comprobante_ref_clean = gasto[:comprobante_ref].to_s.gsub(/[^a-zA-Z0-9]/, '').upcase.first(10)
+      cant = gasto[:cantidad_rendida].to_s.tr(',', '.').to_f.clamp(0, 999.99)
+      v_orig = gasto[:valor_unitario_postulado].to_s.tr(',', '.').to_f
+      v_rend = gasto[:valor_unitario].to_s.tr(',', '.').to_f
+      ref_clean = gasto[:comprobante_ref].to_s.gsub(/[^a-zA-Z0-9]/, '').upcase.first(10)
 
       registro.assign_attributes(
-        tipo_aporte:            gasto[:tipo_aporte],
-        valor_unitario:         val_unitario_original,     # (Mantienes el histórico del presupuesto)
-        valor_unitario_rendido: val_unitario_rendido,
-        cantidad_postulada:     gasto[:cantidad_postulada].to_s.tr(',', '.').to_f,
-        costo_postulado:        gasto[:costo_postulado].to_s.tr(',', '.').to_f,
-        cantidad_rendida:       cant_rendida,
-        costo_rendido:          (cant_rendida * val_unitario_rendido).round(2),
-        comprobante_ref:        comprobante_ref_clean      # <--- NUEVO CAMPO AGREGADO
+        tipo_aporte: gasto[:tipo_aporte], valor_unitario: v_orig, valor_unitario_rendido: v_rend,
+        cantidad_postulada: gasto[:cantidad_postulada].to_s.tr(',', '.').to_f, costo_postulado: gasto[:costo_postulado].to_s.tr(',', '.').to_f,
+        cantidad_rendida: cant, costo_rendido: (cant * v_rend).round(2), comprobante_ref: ref_clean
       )
-
       registro.save!
     end
   end

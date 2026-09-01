@@ -84,7 +84,7 @@
     $cellTotalRendido.text(formateador.format(totalRendido));
     $table.find('.cell-total-saldo').text(formateador.format(totalSaldo));
 
-    // VALIDACIÓN EXCESO DE MONTO RENDIDO (Contra el Saldo Disponible)
+    // VALIDACIÓN EXCESO DE MONTO RENDIDO
     const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
     if (totalRendido > totalSolicitado) {
       $cellTotalRendido.removeClass('text-success').addClass('text-danger');
@@ -125,6 +125,13 @@
 - mes_a_rendir_num = (params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir) || 1).to_i
 - flujo_id_actual = @rendicion.try(:flujo_id) || @tarea_pendiente.try(:flujo_id) || @flujo.try(:id)
 
+-# TRADUCCIÓN EXACTA DE ID: OBTIENE EL PK 711 A PARTIR DEL 101 DE LA INTERFAZ
+- plan_act_obj = nil
+- if flujo_id_actual.present? && actividad_id_param.present?
+  - plan_act_obj = PlanActividad.find_by(flujo_id: flujo_id_actual, actividad_id: actividad_id_param)
+  - plan_act_obj ||= PlanActividad.find_by(flujo_id: flujo_id_actual, id: actividad_id_param)
+- real_plan_act_id = plan_act_obj.try(:id) || actividad_id_param
+
 -# CÁLCULO DE HISTÓRICO DE RENDICIONES PREVIAS (< mes_a_rendir_num)
 - rendiciones_previas_ids = []
 - if flujo_id_actual.present? && mes_a_rendir_num > 1
@@ -138,7 +145,15 @@
 
 - categorias_def = [ [:rrhh_propios, 'RRHH Propios'], [:rrhh_externos, 'RRHH Externos'], [:operaciones, 'Gastos de Operación'], [:administracion, 'Gastos de Administración'] ]
 
-- rendicion_gastos_map = @rendicion.present? ? @rendicion.rendicion_gastos_fpl.index_by { |g| "#{g.plan_actividad_id}_#{g.categoria}_#{g.item_origen_id}" } : {}
+-# BÚSQUEDA EN MAPA SOPORTANDO BÚSQUEDA POR 711 O POR 101
+- rendicion_gastos_map = {}
+- if @rendicion.present?
+  - @rendicion.rendicion_gastos_fpl.each do |g|
+    - cat_s = g.categoria.to_s.strip.downcase
+    - item_s = g.item_origen_id.to_s.strip
+    - rendicion_gastos_map["#{g.plan_actividad_id}_#{cat_s}_#{item_s}"] = g
+    - if plan_act_obj.present? && plan_act_obj.actividad_id.present?
+      - rendicion_gastos_map["#{plan_act_obj.actividad_id}_#{cat_s}_#{item_s}"] = g
 
 - tipos_aporte_map = {}
 - categorias_def.each do |cat_key, _cat_label|
@@ -193,15 +208,15 @@
                 - categorias_def.each do |cat_key, cat_label|
                   - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }
                   - items_cat.each do |item|
-                    - current_act_id = actividad_id_param || item.try(:plan_actividad_id) || item.try(:actividad_id)
-                    - row_key = "#{current_act_id}_#{cat_key}_#{item.id}"
-                    - g_guardado = rendicion_gastos_map["#{current_act_id}_#{cat_key}_#{item.id}"]
-                    - comprobante_ref_val = ""
-
-                    -# LECTURA Y DESCUENTO ROBUSTO DE HISTÓRICOS RENDIDOS
                     - cat_key_str = cat_key.to_s.strip.downcase
                     - item_id_num = item.id.to_i
 
+                    -# RECUPERAR REGISTRO GUARDADO EN MAPA
+                    - g_guardado = rendicion_gastos_map["#{real_plan_act_id}_#{cat_key_str}_#{item_id_num}"]
+                    - g_guardado ||= rendicion_gastos_map["#{actividad_id_param}_#{cat_key_str}_#{item_id_num}"]
+                    - comprobante_ref_val = ""
+
+                    -# HISTÓRICOS RENDIDOS
                     - cant_hist = cant_hist_hash[[cat_key_str, item_id_num]]
                     - cant_hist ||= cant_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
                     - cant_hist = cant_hist.to_f
@@ -210,12 +225,11 @@
                     - costo_hist ||= costo_hist_hash.find { |k, _v| k.is_a?(Array) && k[1].to_i == item_id_num }&.last
                     - costo_hist = costo_hist.to_f
 
-                    -# CÁLCULO DEL ORIGINAL POSTULADO
+                    -# POSTULADO
                     - v_unitario_solicitado = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
                     - hh_postulada_orig = (item.try(:hh) || item.try(:cantidad)).to_f
                     - monto_postulado_orig = item.try(:costo).presence || item.try(:total).presence || (hh_postulada_orig * v_unitario_solicitado)
 
-                    -# MONTO Y UNIDADES DISPONIBLES REALES PARA ESTA RENDICIÓN
                     - hh_postulada = [hh_postulada_orig - cant_hist, 0.0].max
                     - monto_postulado = [monto_postulado_orig - costo_hist, 0.0].max
 
@@ -235,7 +249,6 @@
 
                     - saldo_actual = [monto_postulado - monto_rendido, 0.0].max
 
-                    -# SUMA CORRECTA DE TOTALES EN CADA ITERACIÓN
                     - total_costo_postulado += monto_postulado
                     - total_costo_rendido += monto_rendido
                     - total_saldo_general += saldo_actual
@@ -244,6 +257,7 @@
                     - v_unitario_rendido_str = (v_unitario_rendido % 1 == 0 ? v_unitario_rendido.to_i : v_unitario_rendido.round(2)).to_s.tr('.', ',')
 
                     - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
+                    - row_key = "#{real_plan_act_id}_#{cat_key_str}_#{item.id}"
 
                     %tr
                       %td.contenido-form= cat_label
@@ -257,8 +271,9 @@
 
                       - if es_editable
                         %td.contenido-form.text-center
-                          = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", current_act_id
-                          = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key
+                          -# ENVÍA SIEMPRE EL REAL_PLAN_ACT_ID (PK 711) A POSTGRESQL
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", real_plan_act_id
+                          = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key_str
                           = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
                           = hidden_field_tag "gastos_rendidos[#{row_key}][tipo_aporte]", item.try(:tipo_aporte)
                           = hidden_field_tag "gastos_rendidos[#{row_key}][cantidad_postulada]", hh_postulada

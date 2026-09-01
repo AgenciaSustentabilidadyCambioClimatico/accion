@@ -18,6 +18,10 @@
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).order(mes_a_rendir: :asc).to_a rescue []
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
+-# TRADUCTOR INVERSO DE IDs (Mapea PK 711 a actividad_id 101)
+- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
 -# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-13 Y EXTRAE SUS MESES A RENDIR
 - id_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)&.id rescue nil
 - tps_13_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_13).to_a
@@ -27,13 +31,11 @@
 -# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-14 Y EXTRAE SUS MESES A RENDIR
 - id_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14)&.id rescue nil
 - tps_14_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_14).to_a
-- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
 - meses_con_tp_14 = tps_14_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
 
 -# BUSCA TAREAS PENDIENTES ESPECÍFICAS DE FPL-15 Y EXTRAE SUS MESES A RENDIR
 - id_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)&.id rescue nil
 - tps_15_flujo = TareaPendiente.where(flujo_id: @tarea_pendiente&.flujo_id, tarea_id: id_fpl_15).to_a
-- extraer_mes_tp = lambda { |tp| d = tp&.data; next nil if d.blank?; d = (YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue d) if d.is_a?(String); h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d; (h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir) || d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)&.captures&.first).to_i }
 - meses_con_tp_15 = tps_15_flujo.map { |tp| extraer_mes_tp.call(tp) }.compact.reject(&:zero?).uniq
 
 - max_avances = Hash.new(0)
@@ -43,7 +45,7 @@
     - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
     - val_av = det.nivel_avance.to_i
     - det.rendicion_detalle_actividades_fpl.each do |rda|
-      - t_id = rda.plan_actividad_id.to_i
+      - t_id = get_act_id.call(rda.plan_actividad_id)
       - max_avances[t_id] = [max_avances[t_id], val_av].max
 
 - suma_pct = 0
@@ -156,7 +158,7 @@
                         - est_r = get_estado_num.call(r)
                         - r.rendicion_detalles_fpl.each do |det|
                           - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
-                          - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
+                          - ids_asoc = det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&get_act_id) + det.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).map(&:to_i)
                           - if (ids_asoc & mis_ids).present?
                             - av = det.nivel_avance.to_i
                             - if [1, 2].include?(est_r)
@@ -235,17 +237,17 @@
                                 Sin movimientos
                         %td.contenido-form.text-center= estado_desc
                         - if get_estado_num.call(r) >= 1 
-                          -if tiene_tp_13
+                          - if tiene_tp_13
                             %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_actividades_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
-                          -else
+                          - else
                             %td.contenido-form.text-center --
-                          -if tiene_tp_15
+                          - if tiene_tp_15
                             %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_evaluacion_tecnica_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
-                          -else
+                          - else
                             %td.contenido-form.text-center --
-                          -if tiene_tp_14
+                          - if tiene_tp_14
                             %td.contenido-form.text-center= link_to 'descargar revisión', descargar_informe_gastos_fondo_produccion_limpia_path(@tarea_pendiente, mes_a_rendir: r.mes_a_rendir), target: '_blank', class: 'text-info'
-                          -else
+                          - else
                             %td.contenido-form.text-center --
                         - else
                           %td.contenido-form.text-center --
@@ -254,13 +256,11 @@
 
     -# TAB 2: ESTRUCTURA DE COSTOS (ACUMULADO TOTAL DE TODAS LAS RENDICIONES DEL PROYECTO)
     .tab-pane.fade#costos{:role => "tabpanel", "aria-labelledby" => "costos-tab"}
-      -# 1. Presupuestos Base Oficiales del Proyecto (Fijos)
       - base_presupuesto_fpl = { rrhh_propios: 0.0, rrhh_externos: 153000.0, gastos_operacion: 200000.0, gastos_administracion: 150000.0 }
       - base_presupuesto_apo = { rrhh_propios: 2009970.0, rrhh_externos: 140000.0, gastos_operacion: 150000.0, gastos_administracion: 200000.0 }
 
       - items_costo = [ { key: :rrhh_propios, nombre: 'RR HH Propios' }, { key: :rrhh_externos, nombre: 'RR HH Externos' }, { key: :gastos_operacion, nombre: 'Gastos de Operación' }, { key: :gastos_administracion, nombre: 'Gastos de Administración' } ]
 
-      -# Carga de presupuestos base desde @data_costos si vienen presentes
       - items_costo.each do |item|
         - k = item[:key]
         - alt_k = k == :gastos_operacion ? :operaciones : (k == :gastos_administracion ? :administracion : k)
@@ -272,11 +272,9 @@
         - tot_a_cfg = (@data_costos.dig(:aporte, alt_k, :tot) rescue 0).to_f if tot_a_cfg.zero?
         - base_presupuesto_apo[k] = tot_a_cfg if tot_a_cfg > 0
 
-      -# 2. Consulta acumulada de TODAS las rendiciones del flujo en rendicion_gastos_fpl
       - rend_ids_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).pluck(:id)
       - todos_los_gastos = RendicionGastoFpl.where(rendicion_fpl_id: rend_ids_todas).to_a rescue []
 
-      -# 3. Mapeo de categorías y suma de costo_rendido acumulado
       - cat_key_map = { 'rrhh_propios' => :rrhh_propios, 'rrhh_externos' => :rrhh_externos, 'operaciones' => :gastos_operacion, 'gastos_operacion' => :gastos_operacion, 'administracion' => :gastos_administracion, 'gastos_administracion' => :gastos_administracion }
       
       - ren_acum_fpl = Hash.new(0.0)
@@ -292,7 +290,6 @@
         - else
           - ren_acum_apo[c_key] += val_rend
 
-      -# 4. Construcción de la estructura de datos unificada
       - data_costos = { total: {}, fpl: {}, aporte: {} }
       - items_costo.each do |item|
         - k = item[:key]
@@ -307,7 +304,6 @@
         - data_costos[:aporte][k] = { tot: tot_a, ren: ren_a }
         - data_costos[:total][k] = { tot: tot_f + tot_a, ren: ren_f + ren_a }
 
-      -# 1. TABLAS PARCIALES LADO A LADO
       .row
         - [{ titulo: "A Cargo del Fondo PL", tipo: :fpl }, { titulo: "A Cargo del Beneficiario", tipo: :aporte }].each do |tabla|
           .col-12.col-lg-6.mb-3
@@ -339,7 +335,6 @@
                           %td.contenido-form.text-right= number_to_currency(por_rendir, unit: '$', precision: 0)
                           %td.contenido-form.text-center= number_to_percentage(pct, precision: 1)
 
-                      -# FILA TOTAL PARCIAL POR TABLA
                       - nodes_hash = data_costos[tabla[:tipo]] || {}
                       - tot_gen = nodes_hash.values.sum { |v| v[:tot].to_f }
                       - ren_gen = nodes_hash.values.sum { |v| v[:ren].to_f }
@@ -351,7 +346,6 @@
                         %td.contenido-form.text-right.font-weight-bold= number_to_currency(tot_gen - ren_gen, unit: '$', precision: 0)
                         %td.contenido-form.text-center.font-weight-bold= number_to_percentage(pct_gen, precision: 1)
 
-      -# 2. TABLA DESTACADA: TOTAL DEL PROYECTO (CONSOLIDADO)
       .row.mt-2
         .col-12
           .card.mb-3{style: "border: 2px solid #5d759e;"}
@@ -387,7 +381,6 @@
                         %td.contenido-form.text-center
                           %span= number_to_percentage(pct, precision: 1)
 
-                    -# FILA TOTAL CONSOLIDADO DESTACADA
                     - nodes_hash = data_costos[:total] || {}
                     - tot_gen = nodes_hash.values.sum { |v| v[:tot].to_f }
                     - ren_gen = nodes_hash.values.sum { |v| v[:ren].to_f }

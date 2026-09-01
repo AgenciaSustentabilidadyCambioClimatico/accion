@@ -7,7 +7,6 @@
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl, rendicion_gastos_fpl: []).to_a rescue []
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
--# Permite editar si es borrador (0), observada técnica (3) u observada financiera (4)
 - estado_rend_actual = @rendicion ? get_estado_num.call(@rendicion) : 0
 - es_borrador_o_observada = @rendicion.nil? || [0, 3, 4].include?(estado_rend_actual)
 - es_editable = @tiene_permisos && @tarea_pendiente.estado_tarea_pendiente_id == 1 && es_borrador_o_observada
@@ -18,43 +17,37 @@
 - valor_duracion = @duracion.presence || (@duracion_meses.respond_to?(:duracion) ? @duracion_meses.duracion : fpl_objeto.try(:duracion))
 - duracion = (valor_duracion.present? && valor_duracion.to_i > 0) ? valor_duracion.to_i : 12
 - mes_seleccionado_defecto = params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir).presence || 1
-
--# Evaluación limpia y robusta de "Sin movimientos"
 - es_sin_movimientos = ['1', 'true', true, 1].include?(@rendicion.try(:sin_movimientos)) || params[:sin_movimientos].to_s == '1'
 
--# -------------------------------------------------------------
--# CÁLCULO DE FECHA MES DISPLAY
--# -------------------------------------------------------------
 - fecha_res = fpl_objeto.try(:fecha_resolucion)
 - mes_nombre = nil
 - if fecha_res.present?
   - fecha_target = fecha_res.to_date + (mes_seleccionado_defecto.to_i - 1).months
   - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
-
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
--# -------------------------------------------------------------
--# LÓGICA DE ESTADOS Y EVALUACIÓN DEL MES ACTUAL
--# -------------------------------------------------------------
+-# =========================================================================================
+-# TRADUCTOR VISTA (De PK 711 devuelta a actividad_id 101 para que JS y HAML funcionen)
+-# =========================================================================================
+- map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
+- get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+-# LÓGICA DE ESTADOS Y EVALUACIÓN DEL MES ACTUAL CON TRADUCCIÓN
 - rendiciones_en_proceso = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [1, 2].include?(get_estado_num.call(r)) }
-- act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+- act_ids_en_proceso = rendiciones_en_proceso.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
 
 - rendiciones_observadas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && [3, 4].include?(get_estado_num.call(r)) }
-- act_ids_observadas = es_sin_movimientos ? [] : rendiciones_observadas.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+- act_ids_observadas = es_sin_movimientos ? [] : rendiciones_observadas.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
 
 - rendiciones_borrador = rendiciones_todas.select { |r| r.mes_a_rendir.to_i == mes_seleccionado_defecto.to_i && get_estado_num.call(r) == 0 }
-- act_ids_borrador = es_sin_movimientos ? [] : rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&:to_i).uniq
+- act_ids_borrador = es_sin_movimientos ? [] : rendiciones_borrador.flat_map { |r| r.rendicion_detalles_fpl.flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) } + r.rendicion_gastos_fpl.map(&:plan_actividad_id) }.compact.map(&get_act_id).uniq
 
 - act_ids_editables_actuales = (act_ids_borrador + act_ids_observadas).uniq
 
--# Pendientes de Meses Anteriores
 - rendiciones_previas = rendiciones_todas.select { |r| r.mes_a_rendir.to_i < mes_seleccionado_defecto.to_i }
 - act_det_previas = rendiciones_previas.flat_map(&:rendicion_detalles_fpl).flat_map { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id) }
-- actividades_no_realizadas_previas = act_det_previas.compact.map(&:to_i).uniq
+- actividades_no_realizadas_previas = act_det_previas.compact.map(&get_act_id).uniq
 
--# -------------------------------------------------------------
--# MAPAS DE NIVELES DE AVANCE POR CATEGORÍA DE ESTADO
--# -------------------------------------------------------------
 - avances_aprobados_por_actividad  = Hash.new(0)
 - avances_proceso_por_actividad    = Hash.new(0)
 - avances_observados_por_actividad = Hash.new(0)
@@ -66,13 +59,12 @@
     - next unless (det.tecnica? rescue det.tipo_tab.to_i == 0)
     - val_av = det.nivel_avance.to_i
     - det.rendicion_detalle_actividades_fpl.each do |rda|
-      - t_id = rda.plan_actividad_id.to_i
+      - t_id = get_act_id.call(rda.plan_actividad_id)
       - avances_aprobados_por_actividad[t_id]  = [avances_aprobados_por_actividad[t_id], val_av].max if [5, 6].include?(est_num)
       - avances_proceso_por_actividad[t_id]    = [avances_proceso_por_actividad[t_id], val_av].max if [1, 2].include?(est_num)
       - avances_observados_por_actividad[t_id] = [avances_observados_por_actividad[t_id], val_av].max if [3, 4].include?(est_num)
       - avances_borrador_por_actividad[t_id]   = [avances_borrador_por_actividad[t_id], val_av].max if est_num == 0
 
--# Lambda auxiliar para consultar gastos
 - obtener_gastos_actividad = lambda do |act_id, tipos_validos|
   - f_id = @tarea_pendiente&.flujo_id
   - rec_int = PlanActividad.recursos_internos(f_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
@@ -81,9 +73,6 @@
   - g_adm   = PlanActividad.gastos_administraciones(f_id, act_id).select { |g| tipos_validos.any? { |t| g.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
   - { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
 
--# -------------------------------------------------------------
--# 2. BLOQUE JAVASCRIPT
--# -------------------------------------------------------------
 :javascript
   const ES_EDITABLE = #{es_editable ? 'true' : 'false'};
   const PASO_ACTUAL = #{paso_actual.to_i};
@@ -507,7 +496,6 @@
                 - plan_act_id_num = plan_act.try(:id).to_i
                 - mis_ids = [act_id_num, plan_act_id_num].reject(&:zero?).uniq
 
-                -# VERIFICACIÓN ESTRICTA DE ESTADOS DEL MES ACTUAL
                 - es_en_proceso = mis_ids.any? { |id| act_ids_en_proceso.include?(id) }
                 - es_observada  = mis_ids.any? { |id| act_ids_observadas.include?(id) } && !es_en_proceso
                 - es_borrador   = mis_ids.any? { |id| act_ids_borrador.include?(id) } && !es_en_proceso && !es_observada
@@ -523,7 +511,6 @@
                 - es_pendiente_previo = es_mes_previo && !completada_100
                 - tiene_avance_parcial = (max_avance_aprobado > 0 || max_avance_proceso > 0) && !completada_100
 
-                -# REGLA DE SELECCIÓN DE ACTIVIDAD
                 - esta_deshabilitada = !es_editable || completada_100 || es_en_proceso
                 - es_sugerida_defecto = es_mes_actual || es_pendiente_previo || tiene_avance_parcial || es_borrador || es_observada
                 - debe_marcarse = !esta_deshabilitada && !es_sin_movimientos && es_sugerida_defecto
@@ -547,7 +534,6 @@
                   %td.contenido-form.text-center
                     %input.chk-actividad-paso1{type: "checkbox", value: actividad.id, data: { duracion: duracion_act, 'permanente-disabled' => esta_deshabilitada.to_s, 'debe-marcar-defecto' => (!esta_deshabilitada && es_sugerida_defecto).to_s }, checked: debe_marcarse, disabled: esta_deshabilitada || es_sin_movimientos, title: (completada_100 ? "Actividad completada al 100%" : (es_en_proceso ? "Actividad enviada a revisión (En proceso)" : ""))}
                     
-                    -# PRIORIDAD DE ETIQUETAS
                     - if es_en_proceso
                       - txt_av = max_avance_proceso > 0 ? " (#{max_avance_proceso}%)" : ""
                       %span.badge.badge-warning.text-white.d-block.mt-1{style: "font-size: 11px; background-color: #fd7e14;"}= "En revision ASCC #{txt_av}"
@@ -636,7 +622,8 @@
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
 
-            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
+            -# TRADUCCIÓN: BUSCA EL DETALLE USANDO GET_ACT_ID PARA SOPORTAR EL 711
+            - detalle_tecnico = @rendicion&.rendicion_detalles_fpl&.find { |d| (d.tecnica? rescue d.tipo_tab.to_i == 0) && d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
             - fecha_inicio_valor = detalle_tecnico&.try(:fecha_inicio)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_inicio)
             - fecha_termino_valor = detalle_tecnico&.try(:fecha_termino)&.try(:strftime, '%Y-%m-%d') || detalle_tecnico&.try(:fecha_termino)
             
@@ -721,7 +708,7 @@
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
-            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
+            - docs_act = (@documentos_fpl || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
             
             - gastos_fpl = obtener_gastos_actividad.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
 
@@ -796,7 +783,7 @@
 
             - duracion_act = plan_act.try(:duracion).to_s
             - es_pendiente_previo = mis_ids.any? { |id| actividades_no_realizadas_previas.include?(id) }
-            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) } }
+            - docs_act = (@documentos_aporte || []).select { |d| d.rendicion_detalle_actividades_fpl.any? { |rda| mis_ids.include?(rda.plan_actividad_id.to_i) || mis_ids.include?(get_act_id.call(rda.plan_actividad_id.to_i)) } }
             
             - gastos_aporte = obtener_gastos_actividad.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
 

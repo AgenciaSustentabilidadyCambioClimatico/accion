@@ -1629,7 +1629,7 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :portrait, margin: [30, 30, 30, 30])
 
     # ---------------------------------------------------------------------------
-    # CONFIGURACIÓN DE FAMILIA DE FUENTES (CON SOPORTE PARA ITALIC)
+    # CONFIGURACIÓN DE FAMILIA DE FUENTES
     # ---------------------------------------------------------------------------
     font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
     font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
@@ -1663,13 +1663,11 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    # Datos auxiliares resguardados
     fpl = fondo_produccion_limpia || self
     contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
     razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
     rut_beneficiaria = contribuyente.present? ? "#{contribuyente.rut}-#{contribuyente.dv}" : "RUT Beneficiaria"
 
-    # Obtención segura del nombre del proyecto
     flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
     mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
     nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
@@ -1678,13 +1676,9 @@ class FondoProduccionLimpia < ApplicationRecord
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
     programa_texto = fpl.try(:programa).presence || "--"
 
-    # OBTENCIÓN DINÁMICA DEL NOMBRE DEL POSTULANTE (USUARIO DEL FLUJO)
     postulante = User.find_by(id: fpl.try(:usuario_entregables_id))
     nombre_postulante = postulante.try(:nombre_completo)
 
-    # ---------------------------------------------------------------------------
-    # OBTENCIÓN DE VARIABLES DE CONTEXTO
-    # ---------------------------------------------------------------------------
     mes_actual_num  = rendicion&.mes_a_rendir.to_i
     flujo_actual_id = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
 
@@ -1696,60 +1690,51 @@ class FondoProduccionLimpia < ApplicationRecord
     end
     texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
-    # ---------------------------------------------------------------------------
-    # OBTIENE FECHAS (PRIMERAS TAREAS FPL-14 Y FPL-16 DEL MES A RENDIR)
-    # ---------------------------------------------------------------------------
+    # =========================================================================
+    # MAPA DUAL Y TRADUCCIÓN DE IDs (PK 711 <-> ACTIVIDAD 101)
+    # =========================================================================
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:id)
+    map_planes_by_act_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:actividad_id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
+    # FECHAS TAREAS
     tarea_fondo_fpl_14 = Tarea.find_by_codigo(Tarea::COD_FPL_14) rescue nil
     tarea_fondo_fpl_16 = Tarea.find_by_codigo(Tarea::COD_FPL_16) rescue nil
 
-    # Lambda para extraer 'mes_a_rendir' o 'rendicion_fpl_id' desde 'tp.data'
     extraer_mes_data = lambda do |tp|
       return nil if tp&.data.blank?
       d = tp.data
-
-      # Deserializar si viene como String (YAML / JSON)
       if d.is_a?(String)
         begin
           d = YAML.safe_load(d, permitted_classes: [Symbol, Date, Time, ActiveSupport::HashWithIndifferentAccess]) rescue YAML.load(d)
         rescue StandardError
         end
       end
-
       if d.is_a?(Hash) || d.respond_to?(:[])
         h = d.respond_to?(:with_indifferent_access) ? d.with_indifferent_access : d
-        
-        # Coincidencia directa por ID de Rendición si existe
         if rendicion.present? && (h[:rendicion_fpl_id].present? || h[:rendicion_id].present?)
           rend_id = h[:rendicion_fpl_id] || h[:rendicion_id]
           return mes_actual_num if rend_id.to_i == rendicion.id.to_i
         end
-
-        # Coincidencia por número de mes
         val_mes = h[:mes_a_rendir] || h.dig(:params, :mes_a_rendir)
         return val_mes.to_i if val_mes.present?
       end
-
-      # Expresión regular sobre texto crudo como respaldo
       match = d.to_s.match(/mes_a_rendir["']?\s*[:=>]+\s*["']?(\d+)/i)
       match ? match[1].to_i : nil
     end
 
-    # Búsqueda y filtrado para FPL-14
     tps_14_todas = TareaPendiente.where(tarea_id: tarea_fondo_fpl_14&.id, flujo_id: flujo_actual_id).order(created_at: :asc)
     tps_14_mes   = tps_14_todas.select { |tp| extraer_mes_data.call(tp) == mes_actual_num }
     tp_14_primera = tps_14_mes.first
 
-    # Procedimiento para FPL-16 (Evaluación de Gastos)
     tps_16 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_16&.id, flujo_id: flujo_actual_id).order(created_at: :asc).first
 
-    # Extracción de fechas
     f_recepcion_raw  = tp_14_primera&.created_at
     f_evaluacion_raw = tps_16&.created_at || tps_16&.updated_at
 
     fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
     fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
 
-    # Helper para obtener gastos
     obtener_gastos = lambda do |act_id, tipos_validos|
       rec_int = PlanActividad.recursos_internos(flujo_actual_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
       rec_ext = PlanActividad.recursos_externos(flujo_actual_id, act_id).select { |r| tipos_validos.any? { |t| r.try(:tipo_aporte).to_s.downcase.include?(t) } } rescue []
@@ -1758,10 +1743,20 @@ class FondoProduccionLimpia < ApplicationRecord
       { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
     end
 
-    # Mapeo de Gastos Rendidos preexistentes
-    rendicion_gastos_map = rendicion.present? ? rendicion.rendicion_gastos_fpl.index_by { |g| "#{g.plan_actividad_id}_#{g.categoria}_#{g.item_origen_id}" } : {}
+    # Mapeo dual de Gastos Rendidos (Por PK 711 y por Actividad 101)
+    rendicion_gastos_map = {}
+    if rendicion.present?
+      rendicion.rendicion_gastos_fpl.each do |g|
+        p_id = g.plan_actividad_id.to_i
+        cat_s = g.categoria.to_s.strip.downcase
+        item_s = g.item_origen_id.to_s.strip
+        plan = map_planes_by_id[p_id]
 
-    # Totalizadores para Cuadro de Resumen General
+        rendicion_gastos_map["#{p_id}_#{cat_s}_#{item_s}"] = g
+        rendicion_gastos_map["#{plan.actividad_id.to_i}_#{cat_s}_#{item_s}"] = g if plan.present? && plan.actividad_id.present?
+      end
+    end
+
     totales_resumen = {
       rrhh_propios: { fpl: 0.0, aporte: 0.0 },
       rrhh_externos: { fpl: 0.0, aporte: 0.0 },
@@ -1772,19 +1767,13 @@ class FondoProduccionLimpia < ApplicationRecord
     total_fpl = 0.0
     total_aporte = 0.0
 
-    # ---------------------------------------------------------------------------
-    # CONTENIDO PRINCIPAL
-    # ---------------------------------------------------------------------------
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 60], width: pdf.bounds.width do
 
-      # === TITULO PRINCIPAL ===
       self.pdf_titulo_formato(pdf, "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS") rescue nil
       self.pdf_sub_titulo_formato(pdf, "PROYECTOS EN EJECUCIÓN FONDO DE PROMOCIÓN DE LA PRODUCCIÓN LIMPIA") rescue nil
       self.pdf_separador(pdf, 10) rescue nil
 
-      # =========================================================================
       # 1. ANTECEDENTES GENERALES
-      # =========================================================================
       self.pdf_sub_titulo_formato(pdf, "ANTECEDENTES GENERALES DEL PROYECTO") rescue nil
       
       tabla_antecedentes = [
@@ -1802,9 +1791,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 20) rescue nil
 
-      # =========================================================================
       # 2. DESCRIPCIÓN DE ACTIVIDADES
-      # =========================================================================
       self.pdf_titulo_formato(pdf, "DESCRIPCIÓN DE ACTIVIDADES") rescue nil
       pdf.text "Indicar y describir en forma detallada las actividades realizadas y el estado en el marco del Plan de actividades comprometido en el proyecto aprobado.", size: 8, font_style: :italic
 
@@ -1816,7 +1803,13 @@ class FondoProduccionLimpia < ApplicationRecord
 
       if actividades.present?
         actividades.each do |act|
-          detalle_tecnico = rendicion.rendicion_detalles_fpl.find { |d| d.rendicion_detalle_actividades_fpl.map(&:plan_actividad_id).include?(act.id) && (d.tecnica? rescue false) } rescue nil
+          act_id_num = act.id.to_i
+          
+          detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
+            (d.tecnica? rescue false) && act_ids.include?(act_id_num)
+          end rescue nil
           
           estado_label = "#{detalle_tecnico&.nivel_avance.to_i}%"
 
@@ -1843,9 +1836,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 20) rescue nil
 
-      # =========================================================================
-      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FONDO PRODUCCIÓN LIMPIA
-      # =========================================================================
+      # 3. PLANILLA DE RENDICIÓN DE GASTOS - FPL
       pdf.start_new_page
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DEL FPL") rescue nil
 
@@ -1858,13 +1849,19 @@ class FondoProduccionLimpia < ApplicationRecord
 
       if actividades.present?
         actividades.each do |actividad|
+          act_id_num = actividad.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+
           gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
           
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_fpl[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-              
-              g_guardado = rendicion_gastos_map["#{actividad.id}_#{cat_key}_#{item.id}"]
+              cat_key_str = cat_key.to_s.strip.downcase
+              item_id_num = item.id.to_i
+
+              g_guardado = rendicion_gastos_map["#{pk_id_num}_#{cat_key_str}_#{item_id_num}"] || rendicion_gastos_map["#{act_id_num}_#{cat_key_str}_#{item_id_num}"]
               monto_rendido = g_guardado.present? ? g_guardado.costo_rendido.to_f : 0.0
               cant_rendida = g_guardado.present? ? g_guardado.cantidad_rendida.to_f : 0.0
 
@@ -1904,22 +1901,26 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 20) rescue nil
 
-      # =========================================================================
-      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA (APORTE PROPIO)
-      # =========================================================================
+      # 4. PLANILLA DE RENDICIÓN DE GASTOS - BENEFICIARIA
       self.pdf_titulo_formato(pdf, "PLANILLA DE RENDICIÓN DE GASTOS A CARGO DE LA BENEFICIARIA") rescue nil
 
       filas_ben = []
 
       if actividades.present?
         actividades.each do |actividad|
+          act_id_num = actividad.id.to_i
+          plan_act = map_planes_by_act_id[act_id_num] || map_planes_by_id[act_id_num]
+          pk_id_num = plan_act.try(:id).to_i
+
           gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
           
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_aporte[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
-              
-              g_guardado = rendicion_gastos_map["#{actividad.id}_#{cat_key}_#{item.id}"]
+              cat_key_str = cat_key.to_s.strip.downcase
+              item_id_num = item.id.to_i
+
+              g_guardado = rendicion_gastos_map["#{pk_id_num}_#{cat_key_str}_#{item_id_num}"] || rendicion_gastos_map["#{act_id_num}_#{cat_key_str}_#{item_id_num}"]
               monto_rendido = g_guardado.present? ? g_guardado.costo_rendido.to_f : 0.0
               cant_rendida = g_guardado.present? ? g_guardado.cantidad_rendida.to_f : 0.0
 
@@ -1959,9 +1960,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 25) rescue nil
 
-      # =========================================================================
-      # 5. GASTOS DEL PROYECTO (RESUMEN FINANCIERO UNIFICADO)
-      # =========================================================================
+      # 5. RESUMEN FINANCIERO UNIFICADO
       self.pdf_sub_titulo_formato(pdf, "RESUMEN FINANCIERO DEL PROYECTO") rescue nil
 
       fmt_clp = lambda { |m| ActiveSupport::NumberHelper.number_to_currency(m.to_f, delimiter: '.', precision: 0, format: "%u%n", unit: "$") }
@@ -1985,9 +1984,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 30) rescue nil
 
-      # =========================================================================
       # 6. CONCLUSIONES Y FIRMAS
-      # =========================================================================
       self.pdf_sub_titulo_formato(pdf, "CONCLUSIONES Y RESULTADOS") rescue nil
       
       pdf.font_size(8) do
@@ -2005,7 +2002,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 25) rescue nil
 
-      # Declaración Jurada
       texto_declaracion = "La información que respalda esta rendición de gastos, se encuentra disponible en las dependencias de <b>#{razon_social}</b>, para consulta o revisión del Consejo Nacional de Producción Limpia u otro organismo fiscalizador.\n\nDeclaro bajo juramento que los datos contenidos en esta rendición de gastos son verídicos. Asimismo, declaro conocer las disposiciones relativas a sanciones en caso de suministrar información incompleta, falsa o errónea."
       pdf.font_size(7) do
         pdf.text texto_declaracion, inline_format: true, align: :justify, color: '333333'
@@ -2013,7 +2009,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
       self.pdf_separador(pdf, 35) rescue nil
 
-      # Dimensiones y posición del bloque de firma estilizado
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
@@ -2021,7 +2016,6 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.stroke_color '333333'
         pdf.line_width 0.8
         pdf.stroke_horizontal_line 0, ancho_firma
-        
         pdf.move_down 4
 
         pdf.font "OpenSans", style: :bold do
@@ -2035,10 +2029,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
     end
 
-    # ---------------------------------------------------------------------------
     # SUBIDA RÁPIDA VÍA CARRIERWAVE
-    # ---------------------------------------------------------------------------
-    Rails.logger.info "=== [PDF INFORME GASTOS] RENDERIZANDO MEMORIA a los (#{Time.now - t_inicio}s) ==="
     pdf_string = pdf.render
     pdf_file_name = "informe_gastos_#{self.try(:id) || 'temp'}_#{revision}.pdf"
 
@@ -2058,7 +2049,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
     File.delete(ruta_temporal) if File.exist?(ruta_temporal)
 
-    Rails.logger.info "=== [PDF INFORME GASTOS] GENERACIÓN Y SUBIDA EXITOSA ==="
     pdf_string
 
   rescue StandardError => e
@@ -2072,7 +2062,6 @@ class FondoProduccionLimpia < ApplicationRecord
     ActiveSupport::NumberHelper.number_to_currency(numero, delimiter: '.', separator: ',', precision: 0, format: "%u%n", unit: "$")
   end
 
-  # Retorna 'nombre_acuerdo' o en su defecto el 'codigo_proyecto' si 'nombre' es solicitado
   def nombre
     nombre_acuerdo.presence || codigo_proyecto
   end
@@ -2082,10 +2071,8 @@ class FondoProduccionLimpia < ApplicationRecord
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME ACTIVIDADES MODELO] INICIANDO GENERACIÓN CORREGIDA ==="
 
-    # Margen superior ajustado a 60 para alojar el encabezado sin requerir un bounding_box externo
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [60, 30, 25, 30])
 
-    # Configuración de Fuentes
     font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
     font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
 
@@ -2095,7 +2082,6 @@ class FondoProduccionLimpia < ApplicationRecord
     })
     pdf.font "OpenSans"
 
-    # Header repetitivo posicionado dentro del margen superior
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 48], width: pdf.bounds.width, height: 45 do
         logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
@@ -2129,11 +2115,9 @@ class FondoProduccionLimpia < ApplicationRecord
     cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
 
-    # OBTENCIÓN DINÁMICA DEL NOMBRE DEL POSTULANTE (USUARIO DEL FLUJO)
     postulante = User.find_by(id: (fpl.try(:usuario_entregables_id)))
     nombre_postulante = postulante.try(:nombre_completo)
     
-    # CÁLCULO DINÁMICO DEL MES Y RENDICIÓN DISPLAY (Ej: "Marzo 2026 (Rendición 1)")
     mes_actual_num = rendicion&.mes_a_rendir.to_i
     fecha_res = fpl.try(:fecha_resolucion)
     mes_nombre = nil
@@ -2145,12 +2129,13 @@ class FondoProduccionLimpia < ApplicationRecord
 
     texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
-    # ---------------------------------------------------------------------------
-    # OBTIENE FECHAS RECEPCION Y EVALUACION DE ACTIVIDADES POR MES
-    # ---------------------------------------------------------------------------
+    # MAPA DUAL DE TRADUCCIÓN DE IDs DE PLAN ACTIVIDADES
+    flujo_id_ref = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
+
     tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
 
-    # Lambda para extraer 'mes_a_rendir' desde 'tp.data' (soporta Hash, Symbols, Strings o YAML)
     extraer_mes_data = lambda do |tp|
       return nil if tp&.data.blank?
       d = tp.data
@@ -2162,32 +2147,25 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    # Búsqueda de la Tarea Pendiente FPL-13 (Recepción) correspondiente al mes consultado
     tps_13 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_13&.id, flujo_id: fpl.flujo_id)
     tp_13  = tps_13.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_13.last
 
     f_envio_raw  = tp_13&.created_at
     fecha_envio_informe  = f_envio_raw.respond_to?(:strftime)  ? f_envio_raw.strftime('%d/%m/%Y')  : "--"
-   
-    # Helper para identificar registros de la Pestaña Técnica
+  
     es_tecnica_tab = lambda do |d|
       return true if d.respond_to?(:tecnica?) && d.tecnica?
       tipo = d.try(:tipo_tab).to_s.downcase
       tipo == 'tecnica' || tipo == '0'
     end
 
-    # CONTENIDO PRINCIPAL EN FLUJO NATURAL
     pdf.font "OpenSans", style: :bold do
       pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 11, color: "000000"
     end
     pdf.move_down 6
 
     # Sección I
-    if respond_to?(:pdf_sub_titulo_formato)
-      self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
-    else
-      pdf.text "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS", size: 8.5, style: :bold
-    end
+    self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
 
     tabla_i = [
       [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
@@ -2202,11 +2180,7 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.move_down 6
 
     # Sección II
-    if respond_to?(:pdf_sub_titulo_formato)
-      self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
-    else
-      pdf.text "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS", size: 8.5, style: :bold
-    end
+    self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
 
     tabla_ii = [
       [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
@@ -2225,11 +2199,7 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.move_down 6
 
     # Sección III
-    if respond_to?(:pdf_sub_titulo_formato)
-      self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
-    else
-      pdf.text "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS", size: 8.5, style: :bold
-    end
+    self.pdf_sub_titulo_formato(pdf, "III.- GRADO DE CUMPLIMIENTO DE LAS ACTIVIDADES REALIZADAS") rescue nil
 
     tabla_act = [
       [ "N°", "Nombre de la Actividad", "Fecha Inicio", "Fecha Término", "Monto Rendido", "%", "Descripción del Avance", "Medio de Verificación" ]
@@ -2242,23 +2212,25 @@ class FondoProduccionLimpia < ApplicationRecord
       actividades.each do |act|
         act_id_num = act.id.to_i
 
-        # 1. Obtener el detalle técnico estricto de la Pestaña Técnica
+        # BÚSQUDA TRADUCIDA DEL DETALLE TÉCNICO
         detalle_tecnico = detalles_fpl_array.find do |d|
-          act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
-          act_ids += (d.plan_actividades.to_a.map(&:id) rescue []).compact.map(&:to_i) if d.respond_to?(:plan_actividades)
+          act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+          act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
           es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
         end
 
-        # 2. Montos rendidos asociados
-        gastos_asociados = gastos_fpl_array.select { |g| g.try(:plan_actividad_id).to_i == act_id_num }
+        # SUMA DE GASTOS ASOCIADOS TRADUCIDA
+        gastos_asociados = gastos_fpl_array.select do |g|
+          p_id = g.try(:plan_actividad_id).to_i
+          p_id == act_id_num || get_act_id.call(p_id) == act_id_num
+        end
+
         monto_rendido_total = gastos_asociados.sum { |g| g.try(:costo_rendido).to_f }
 
-        # CÁLCULO DIRECTO DEL PORCENTAJE DE AVANCE Y ESTADO DE LA ACTIVIDAD
         avance_num = detalle_tecnico&.nivel_avance.to_i
         porcentaje = "#{avance_num}%"
         descripcion_avance = avance_num >= 100 ? "Finalizado" : "en Ejecución"
 
-        # 3. Obtener el archivo técnico específico de la Pestaña Técnica
         archivos_actividad = []
 
         if detalle_tecnico.present? && detalle_tecnico.archivo.present?
@@ -2266,12 +2238,11 @@ class FondoProduccionLimpia < ApplicationRecord
           archivos_actividad << nom if nom.present?
         end
 
-        # Backup: Si la Pestaña Técnica no tuviera adjunto, busca en pestañas financieras
         if archivos_actividad.empty?
           detalles_docs_fin = detalles_fpl_array.select do |d|
             next false unless d.archivo.present?
-            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
-            act_ids += (d.plan_actividades.to_a.map(&:id) rescue []).compact.map(&:to_i) if d.respond_to?(:plan_actividades)
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
             !es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
           end
 
@@ -2325,7 +2296,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf.move_down 6
 
-    # Secciones de Texto
     pdf.font_size(7.5) do
       pdf.text "<b>RESULTADO DE LAS ACTIVIDADES REALIZADAS:</b>", inline_format: true
       pdf.text rendicion&.resultado_actividades_realizadas.presence || "No especificado.", color: '333333'
@@ -2341,15 +2311,9 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf.move_down 8
 
-    # Sección IV - Firmas
-    if respond_to?(:pdf_sub_titulo_formato)
-      self.pdf_sub_titulo_formato(pdf, "IV.- DATOS DE LOS FUNCIONARIOS RESPONSABLES DE LA EJECUCIÓN DE LAS ACTIVIDADES") rescue nil
-    else
-      pdf.text "IV.- DATOS DE LOS FUNCIONARIOS RESPONSABLES DE LA EJECUCIÓN DE LAS ACTIVIDADES", size: 8.5, style: :bold
-    end
+    self.pdf_sub_titulo_formato(pdf, "IV.- DATOS DE LOS FUNCIONARIOS RESPONSABLES DE LA EJECUCIÓN DE LAS ACTIVIDADES") rescue nil
     pdf.move_down 5
 
-    # Bloque de dos columnas para los responsables
     tabla_funcionarios = [
       [ "Nombre del Responsable", "___________________________", "", "Nombre del Responsable", "___________________________" ],
       [ "RUT",                     "___________________________", "", "RUT",                     "___________________________" ],
@@ -2360,12 +2324,11 @@ class FondoProduccionLimpia < ApplicationRecord
     pdf.table(tabla_funcionarios, cell_style: { size: 7.5, padding: 2, borders: [] }) do
       column(0).font_style = :bold
       column(3).font_style = :bold
-      column(2).width = 50 # Espaciador central entre bloques
+      column(2).width = 50
     end
 
     pdf.move_down 12
 
-    # Dimensiones y posición del bloque de firma estilizado
     ancho_firma = 220
     posicion_x = pdf.bounds.width - ancho_firma
 
@@ -2373,7 +2336,6 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.stroke_color '333333'
       pdf.line_width 0.8
       pdf.stroke_horizontal_line 0, ancho_firma
-      
       pdf.move_down 4
 
       pdf.font "OpenSans", style: :bold do
@@ -2417,9 +2379,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [30, 30, 30, 30])
 
-    # ---------------------------------------------------------------------------
-    # CONFIGURACIÓN DE FUENTES
-    # ---------------------------------------------------------------------------
     font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
     font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
 
@@ -2429,9 +2388,6 @@ class FondoProduccionLimpia < ApplicationRecord
     })
     pdf.font "OpenSans"
 
-    # ---------------------------------------------------------------------------
-    # HEADER REPETITIVO
-    # ---------------------------------------------------------------------------
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width, height: 50 do
         logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
@@ -2452,9 +2408,6 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    # ---------------------------------------------------------------------------
-    # OBTENCIÓN Y PREPARACIÓN DE DATOS
-    # ---------------------------------------------------------------------------
     fpl = fondo_produccion_limpia || self
     contribuyente = obtiene_contribuyente(fpl&.institucion_entregables_id) rescue nil
     razon_social = contribuyente&.razon_social || "Nombre Beneficiaria"
@@ -2468,11 +2421,9 @@ class FondoProduccionLimpia < ApplicationRecord
     cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
 
-    # OBTENCIÓN DINÁMICA DEL NOMBRE DEL POSTULANTE (USUARIO DEL FLUJO)
     revisor = User.find_by(id: (rendicion.try(:revisor_tecnico_id)))
     nombre_revisor = revisor.try(:nombre_completo)
 
-    # Cálculo dinámico de mes y rendición
     mes_actual_num = rendicion&.mes_a_rendir.to_i
     fecha_res = fpl.try(:fecha_resolucion)
     mes_nombre = nil
@@ -2484,7 +2435,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
     texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
-    # Helper para identificar la Pestaña Técnica
     es_tecnica_tab = lambda do |d|
       return true if d.respond_to?(:tecnica?) && d.tecnica?
       tipo = d.try(:tipo_tab).to_s.downcase
@@ -2493,15 +2443,14 @@ class FondoProduccionLimpia < ApplicationRecord
 
     detalles_fpl_array = (rendicion.present? && rendicion.respond_to?(:rendicion_detalles_fpl)) ? rendicion.rendicion_detalles_fpl.to_a : []
     flujo_id_ref = fpl.try(:flujo_id) || rendicion.try(:flujo_id)
+    
+    map_planes_by_id = PlanActividad.where(flujo_id: flujo_id_ref).index_by(&:id)
+    get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
     detalles_hash = PlanActividad.where(flujo_id: flujo_id_ref).index_by { |d| (d.try(:actividad_id).presence || d.id).to_i } rescue {}
 
-    # ---------------------------------------------------------------------------
-    # OBTIENE FECHAS RECEPCION Y EVALUACION DE ACTIVIDADES POR MES
-    # ---------------------------------------------------------------------------
     tarea_fondo_fpl_13 = Tarea.find_by_codigo(Tarea::COD_FPL_13)
     tarea_fondo_fpl_15 = Tarea.find_by_codigo(Tarea::COD_FPL_15)
 
-    # Lambda para extraer 'mes_a_rendir' desde 'tp.data' (soporta Hash, Symbols, Strings o YAML)
     extraer_mes_data = lambda do |tp|
       return nil if tp&.data.blank?
       d = tp.data
@@ -2513,11 +2462,9 @@ class FondoProduccionLimpia < ApplicationRecord
       end
     end
 
-    # Búsqueda de la Tarea Pendiente FPL-13 (Recepción) correspondiente al mes consultado
     tps_13 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_13&.id, flujo_id: flujo_id_ref)
     tp_13  = tps_13.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_13.last
 
-    # Búsqueda de la Tarea Pendiente FPL-15 (Evaluación) correspondiente al mes consultado
     tps_15 = TareaPendiente.where(tarea_id: tarea_fondo_fpl_15&.id, flujo_id: flujo_id_ref)
     tp_15  = tps_15.find { |tp| extraer_mes_data.call(tp).to_i == mes_actual_num } || tps_15.last
 
@@ -2527,9 +2474,6 @@ class FondoProduccionLimpia < ApplicationRecord
     fecha_recepcion  = f_recepcion_raw.respond_to?(:strftime)  ? f_recepcion_raw.strftime('%d/%m/%Y')  : "--"
     fecha_evaluacion = f_evaluacion_raw.respond_to?(:strftime) ? f_evaluacion_raw.strftime('%d/%m/%Y') : "--"
     
-    # ---------------------------------------------------------------------------
-    # CONTENIDO PRINCIPAL
-    # ---------------------------------------------------------------------------
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 65], width: pdf.bounds.width do
 
       pdf.font "OpenSans", style: :bold do
@@ -2538,11 +2482,7 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.move_down 8
 
       # Sección I
-      if respond_to?(:pdf_sub_titulo_formato)
-        self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
-      else
-        pdf.text "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS", size: 8.5, style: :bold
-      end
+      self.pdf_sub_titulo_formato(pdf, "I.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE TRANSFIRIÓ LOS RECURSOS") rescue nil
 
       tabla_i = [
         [ { content: "<b>Nombre servicio otorgante:</b>", inline_format: true }, "Agencia de Sustentabilidad y Cambio Climático", { content: "<b>Tipo Informe:</b>", inline_format: true }, "MENSUAL" ],
@@ -2557,11 +2497,7 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.move_down 8
 
       # Sección II
-      if respond_to?(:pdf_sub_titulo_formato)
-        self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
-      else
-        pdf.text "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS", size: 8.5, style: :bold
-      end
+      self.pdf_sub_titulo_formato(pdf, "II.- IDENTIFICACIÓN DEL SERVICIO O ENTIDAD QUE RECIBIÓ Y EJECUTÓ LOS RECURSOS") rescue nil
 
       tabla_ii = [
         [ { content: "<b>Entidad receptora:</b>", inline_format: true }, razon_social, { content: "<b>RUT:</b>", inline_format: true }, rut_beneficiaria ],
@@ -2578,42 +2514,33 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.move_down 10
 
       # Sección III
-      if respond_to?(:pdf_sub_titulo_formato)
-        self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
-      else
-        pdf.text "III.- ACTIVIDADES REALIZADAS", size: 8.5, style: :bold
-      end
+      self.pdf_sub_titulo_formato(pdf, "III.- EVALUACIÓN DE ACTIVIDADES REALIZADAS") rescue nil
       pdf.move_down 6
 
-      # =========================================================================
-      # RENDERIZADO POR TARJETAS / BLOQUES DE ACTIVIDAD
-      # =========================================================================
       if actividades.present?
         est_global = (rendicion.read_attribute_before_type_cast(:estado) rescue rendicion.try(:estado)).to_i
 
         actividades.each do |act|
           act_id_num = act.id.to_i
 
-          # 1. Obtención de PlanActividad e Indicador
           plan_act = detalles_hash[act_id_num] || PlanActividad.find_by(id: act_id_num) || act
           obj_esp_id = plan_act.respond_to?(:attributes) ? (plan_act.attributes['objetivos_especifico_id'] || plan_act.attributes['objetivo_especifico_id']) : nil
           obj_esp_id ||= PlanActividad.where(actividad_id: plan_act.try(:id), flujo_id: flujo_id_ref).pluck(:objetivos_especifico_id).first if plan_act.present?
           obj_esp = ObjetivosEspecifico.find_by(id: obj_esp_id) if obj_esp_id.present?
           indicador_texto = obj_esp.try(:indicadores).presence || obj_esp.try(:descripcion).presence || "Sin indicador registrado."
 
-          # 2. Detalle Técnico de la Rendición
+          # BÚSQUEDA DEL DETALLE TÉCNICO CON TRADUCCIÓN INVERSA DE IDs
           detalle_tecnico = detalles_fpl_array.find do |d|
-            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
-            act_ids += (d.plan_actividades.to_a.map(&:id) rescue []).compact.map(&:to_i) if d.respond_to?(:plan_actividades)
+            act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
+            act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
             es_tecnica_tab.call(d) && act_ids.include?(act_id_num)
           end
 
-          # 3. EVALUACIÓN DE ESTADO INDIVIDUAL SEGÚN COLUMNA 'cumple' (1 = Cumple / Aprobado, 2 = No cumple / Observado)
           val_cumple = if detalle_tecnico.present?
-                        (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
-                      else
-                        0
-                      end
+                          (detalle_tecnico.read_attribute_before_type_cast(:cumple) rescue detalle_tecnico.try(:cumple)).to_i
+                        else
+                          0
+                        end
 
           es_observado = false
           estado_html = if val_cumple == 1
@@ -2622,7 +2549,6 @@ class FondoProduccionLimpia < ApplicationRecord
                           es_observado = true
                           "<color rgb='DC3545'><b>OBSERVADO</b></color>"
                         else
-                          # Fallback a estado global si 'cumple' no ha sido evaluado aún
                           if [5, 6].include?(est_global)
                             "<color rgb='28A745'><b>APROBADO</b></color>"
                           elsif [3, 4].include?(est_global)
@@ -2649,7 +2575,6 @@ class FondoProduccionLimpia < ApplicationRecord
                         end
           nom_archivo = nom_archivo.presence || "Sin adjuntos"
 
-          # --- DIBUJO DE TARJETA / CARD DE ACTIVIDAD ---
           header_card = [
             [
               { content: "<color rgb='003DA6'><b>#{act.try(:correlativo)}</b></color> <b>#{act.try(:nombre)}</b>", inline_format: true },
@@ -2666,7 +2591,6 @@ class FondoProduccionLimpia < ApplicationRecord
             [ f_inicio_str, f_termino_str, porcentaje_str, obs_texto ]
           ]
 
-          # Renderizado de Tarjeta Integrada
           pdf.table(header_card, width: pdf.bounds.width, cell_style: { size: 9, padding: 3, border_color: 'B8DAFF', background_color: 'E0EFF6' })
           pdf.table(indicador_card, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'B8DAFF', background_color: 'D0E7FF' })
           pdf.table(tabla_campos, width: pdf.bounds.width, cell_style: { size: 7, padding: 3, border_color: 'CCCCCC', align: :center }) do
@@ -2685,7 +2609,6 @@ class FondoProduccionLimpia < ApplicationRecord
             end
           end
 
-          # --- MOSTRAR COMENTARIO DEL REVISOR ÚNICAMENTE SI LA ACTIVIDAD FUE OBSERVADA ---
           if es_observado
             comentario_revisor = detalle_tecnico.try(:comentario_revisor).presence ||
                                 detalle_tecnico.try(:comentario_evaluacion).presence ||
@@ -2709,10 +2632,6 @@ class FondoProduccionLimpia < ApplicationRecord
 
       pdf.move_down 15
 
-      # ---------------------------------------------------------------------------
-      # LÍNEA DE FIRMA
-      # ---------------------------------------------------------------------------
-      # Dimensiones y posición del bloque de firma estilizado
       ancho_firma = 220
       posicion_x = pdf.bounds.width - ancho_firma
 
@@ -2720,7 +2639,6 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.stroke_color '333333'
         pdf.line_width 0.8
         pdf.stroke_horizontal_line 0, ancho_firma
-        
         pdf.move_down 4
 
         pdf.font "OpenSans", style: :bold do
