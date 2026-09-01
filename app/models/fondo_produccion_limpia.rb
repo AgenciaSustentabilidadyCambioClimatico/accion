@@ -1631,17 +1631,14 @@ class FondoProduccionLimpia < ApplicationRecord
     # ---------------------------------------------------------------------------
     # CONFIGURACIÓN DE FAMILIA DE FUENTES
     # ---------------------------------------------------------------------------
-    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
-    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
-    font_path_italic  = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Italic.ttf")
+    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
 
-    pdf.font_families.update("OpenSans" => {
-      normal:      font_path_regular,
-      bold:        File.exist?(font_path_bold)   ? font_path_bold   : font_path_regular,
-      italic:      File.exist?(font_path_italic) ? font_path_italic : font_path_regular,
-      bold_italic: File.exist?(font_path_bold)   ? font_path_bold   : font_path_regular
+    pdf.font_families.update("DejaVuSans" => {
+      normal: font_path_regular,
+      bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
     })
-    pdf.font "OpenSans"
+    pdf.font "DejaVuSans"
 
     # ---------------------------------------------------------------------------
     # HEADER REPETITIVO EN TODAS LAS PÁGINAS
@@ -1650,7 +1647,7 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width do
         pdf.image Rails.root.join("app/assets/images/logo-ascc-nuevo.png"), width: 119 if File.exist?(Rails.root.join("app/assets/images/logo-ascc-nuevo.png"))
         pdf.bounding_box [pdf.bounds.left, pdf.bounds.bottom], width: pdf.bounds.width do
-          pdf.font "OpenSans", style: :bold do
+          pdf.font "DejaVuSans", style: :bold do
             pdf.text "INFORME DE EVALUACIÓN DE RENDICIÓN DE GASTOS - FPL", size: 10, color: "003DA6", align: :right
           end
         end
@@ -1671,7 +1668,7 @@ class FondoProduccionLimpia < ApplicationRecord
     flujo_mdi = FondoProduccionLimpia.where(id: fpl.id).pluck(:flujo_apl_id) rescue []
     mdi_id = Flujo.where(id: flujo_mdi).pluck(:manifestacion_de_interes_id) rescue []
     nombre_acuerdo = ManifestacionDeInteres.where(id: mdi_id).pluck(:nombre_acuerdo).first rescue nil
-    
+
     cod_fpl = fpl.respond_to?(:codigo_proyecto_fpl) ? fpl.codigo_proyecto_fpl : fpl.try(:codigo_proyecto).to_s
     titulo_proyecto = nombre_acuerdo.present? ? "#{cod_fpl} - #{nombre_acuerdo}" : cod_fpl
     programa_texto = fpl.try(:programa).presence || "--"
@@ -1775,7 +1772,7 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # 1. ANTECEDENTES GENERALES
       self.pdf_sub_titulo_formato(pdf, "ANTECEDENTES GENERALES DEL PROYECTO") rescue nil
-      
+
       tabla_antecedentes = [
         [ { content: "<b>Código:</b>", inline_format: true }, fpl&.codigo_proyecto.to_s, { content: "<b>Programa:</b>", inline_format: true }, programa_texto ],
         [ { content: "<b>Título del proyecto:</b>", inline_format: true }, { content: titulo_proyecto, colspan: 3 } ],
@@ -1804,13 +1801,13 @@ class FondoProduccionLimpia < ApplicationRecord
       if actividades.present?
         actividades.each do |act|
           act_id_num = act.id.to_i
-          
+
           detalle_tecnico = rendicion.rendicion_detalles_fpl.find do |d|
             act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
             act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
             (d.tecnica? rescue false) && act_ids.include?(act_id_num)
           end rescue nil
-          
+
           estado_label = "#{detalle_tecnico&.nivel_avance.to_i}%"
 
           tabla_actividades << [
@@ -1854,7 +1851,7 @@ class FondoProduccionLimpia < ApplicationRecord
           pk_id_num = plan_act.try(:id).to_i
 
           gastos_fpl = obtener_gastos.call(actividad.id, ['solicitado al fondo', 'solicitado_al_fondo'])
-          
+
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_fpl[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
@@ -1913,7 +1910,7 @@ class FondoProduccionLimpia < ApplicationRecord
           pk_id_num = plan_act.try(:id).to_i
 
           gastos_aporte = obtener_gastos.call(actividad.id, ['aporte propio valorado', 'aporte propio liquido', 'aporte_propio_valorado', 'aporte_propio_liquido'])
-          
+
           [:rrhh_propios, :rrhh_externos, :operaciones, :administracion].each do |cat_key|
             gastos_aporte[cat_key].to_a.each do |item|
               v_unitario = (item.try(:valor_hh) || item.try(:valor_unitario) || item.try(:valor)).to_f
@@ -1986,12 +1983,12 @@ class FondoProduccionLimpia < ApplicationRecord
 
       # 6. CONCLUSIONES Y FIRMAS
       self.pdf_sub_titulo_formato(pdf, "CONCLUSIONES Y RESULTADOS") rescue nil
-      
+
       pdf.font_size(8) do
         pdf.text "<b>Resultado de las actividades realizadas:</b>", inline_format: true
         pdf.text rendicion&.resultado_actividades_realizadas.presence || "No especificado.", color: '333333'
         pdf.move_down 10
-        
+
         pdf.text "<b>Información Adicional:</b>", inline_format: true
         pdf.text rendicion&.informacion_adicional.presence || "No especificada.", color: '333333'
         pdf.move_down 10
@@ -2018,11 +2015,11 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.stroke_horizontal_line 0, ancho_firma
         pdf.move_down 4
 
-        pdf.font "OpenSans", style: :bold do
+        pdf.font "DejaVuSans", style: :bold do
           pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
-        pdf.font "OpenSans", style: :normal do
+        pdf.font "DejaVuSans", style: :normal do
           pdf.text "Responsable del Informe", size: 7.5, align: :center, color: '555555'
         end
       end
@@ -2042,7 +2039,7 @@ class FondoProduccionLimpia < ApplicationRecord
           "accion/public/uploads/fondo_produccion_limpia/informe_gastos"
         end
       end
-      
+
       uploader = uploader_class.new
       uploader.store!(archivo_fisico)
     end
@@ -2071,24 +2068,27 @@ class FondoProduccionLimpia < ApplicationRecord
     t_inicio = Time.now
     Rails.logger.info "=== [PDF INFORME ACTIVIDADES MODELO] INICIANDO GENERACIÓN CORREGIDA ==="
 
+    # Margen superior ajustado a 60 para alojar el encabezado sin requerir un bounding_box externo
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [60, 30, 25, 30])
 
-    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
-    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    # Configuración de Fuentes DejaVuSans
+    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
 
-    pdf.font_families.update("OpenSans" => {
+    pdf.font_families.update("DejaVuSans" => {
       normal: font_path_regular,
       bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
     })
-    pdf.font "OpenSans"
+    pdf.font "DejaVuSans"
 
+    # Header repetitivo posicionado dentro del margen superior
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top + 48], width: pdf.bounds.width, height: 45 do
         logo_path = Rails.root.join("app/assets/images/logo-ascc-nuevo.png")
         pdf.image logo_path, width: 115 if File.exist?(logo_path)
 
         pdf.bounding_box [pdf.bounds.width - 300, 43], width: 300, height: 18 do
-          pdf.font "OpenSans", style: :bold do
+          pdf.font "DejaVuSans", style: :bold do
             pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 9, color: "003DA6", align: :right
           end
         end
@@ -2159,7 +2159,7 @@ class FondoProduccionLimpia < ApplicationRecord
       tipo == 'tecnica' || tipo == '0'
     end
 
-    pdf.font "OpenSans", style: :bold do
+    pdf.font "DejaVuSans", style: :bold do
       pdf.text "INFORME DE EJECUCIÓN DE ACTIVIDADES", size: 11, color: "000000"
     end
     pdf.move_down 6
@@ -2212,7 +2212,7 @@ class FondoProduccionLimpia < ApplicationRecord
       actividades.each do |act|
         act_id_num = act.id.to_i
 
-        # BÚSQUDA TRADUCIDA DEL DETALLE TÉCNICO
+        # BÚSQUEDA TRADUCIDA DEL DETALLE TÉCNICO
         detalle_tecnico = detalles_fpl_array.find do |d|
           act_ids = (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&get_act_id)
           act_ids += (d.rendicion_detalle_actividades_fpl.to_a.map(&:plan_actividad_id) rescue []).compact.map(&:to_i)
@@ -2338,11 +2338,11 @@ class FondoProduccionLimpia < ApplicationRecord
       pdf.stroke_horizontal_line 0, ancho_firma
       pdf.move_down 4
 
-      pdf.font "OpenSans", style: :bold do
+      pdf.font "DejaVuSans", style: :bold do
         pdf.text nombre_postulante.to_s.upcase, size: 8, align: :center, color: '000000'
       end
 
-      pdf.font "OpenSans", style: :normal do
+      pdf.font "DejaVuSans", style: :normal do
         pdf.text "Responsable del Informe", size: 7.5, align: :center, color: '555555'
       end
     end
@@ -2379,14 +2379,14 @@ class FondoProduccionLimpia < ApplicationRecord
 
     pdf = Prawn::Document.new(page_size: 'LETTER', page_layout: :landscape, margin: [30, 30, 30, 30])
 
-    font_path_regular = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Regular.ttf")
-    font_path_bold    = Rails.root.join("app/assets/fonts/Open_Sans/OpenSans-Bold.ttf")
+    font_path_regular = Rails.root.join("app/assets/fonts/DejaVuSans.ttf").to_s
+    font_path_bold    = Rails.root.join("app/assets/fonts/DejaVuSans-Bold.ttf").to_s
 
-    pdf.font_families.update("OpenSans" => {
+    pdf.font_families.update("DejaVuSans" => {
       normal: font_path_regular,
       bold:   File.exist?(font_path_bold) ? font_path_bold : font_path_regular
     })
-    pdf.font "OpenSans"
+    pdf.font "DejaVuSans"
 
     pdf.repeat :all do
       pdf.bounding_box [pdf.bounds.left, pdf.bounds.top], width: pdf.bounds.width, height: 50 do
@@ -2394,7 +2394,7 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.image logo_path, width: 119 if File.exist?(logo_path)
 
         pdf.bounding_box [pdf.bounds.width - 300, 48], width: 300, height: 20 do
-          pdf.font "OpenSans", style: :bold do
+          pdf.font "DejaVuSans", style: :bold do
             pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 9, color: "003DA6", align: :right
           end
         end
@@ -2476,7 +2476,7 @@ class FondoProduccionLimpia < ApplicationRecord
     
     pdf.bounding_box [pdf.bounds.left, pdf.bounds.top - 65], width: pdf.bounds.width do
 
-      pdf.font "OpenSans", style: :bold do
+      pdf.font "DejaVuSans", style: :bold do
         pdf.text "INFORME DE EVALUACIÓN DE ACTIVIDADES", size: 11, color: "000000"
       end
       pdf.move_down 8
@@ -2641,11 +2641,11 @@ class FondoProduccionLimpia < ApplicationRecord
         pdf.stroke_horizontal_line 0, ancho_firma
         pdf.move_down 4
 
-        pdf.font "OpenSans", style: :bold do
+        pdf.font "DejaVuSans", style: :bold do
           pdf.text nombre_revisor.to_s.upcase, size: 8, align: :center, color: '000000'
         end
 
-        pdf.font "OpenSans", style: :normal do
+        pdf.font "DejaVuSans", style: :normal do
           pdf.text "Revisor Técnico", size: 7.5, align: :center, color: '555555'
         end
       end
