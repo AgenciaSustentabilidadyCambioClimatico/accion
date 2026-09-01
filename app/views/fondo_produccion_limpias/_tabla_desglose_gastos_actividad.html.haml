@@ -26,16 +26,18 @@
 
   function calcularCostoRendidoFila(elemento) {
     const $tr = $(elemento).closest('tr');
-    
+    const $table = $tr.closest('table');
+    const esReitimizada = $tr.data('es-reitimizada') === true || $tr.data('es-reitimizada') === 'true' || $table.data('es-reitimizada') === true || $table.data('es-reitimizada') === 'true';
+
     const $inputVisCantidad = $tr.find('.input-cantidad-rendida');
     const $inputVisValorUnitario = $tr.find('.input-valor-unitario-rendido');
-    
+
     const $hiddenCantidad = $tr.find('.real-cantidad-rendida');
     const $hiddenValorUnitario = $tr.find('.real-valor-unitario-rendido');
-    
+
     let cantidad = parseFloat($inputVisCantidad.val().replace(',', '.'));
     if (isNaN(cantidad) || cantidad < 0) { cantidad = 0; }
-    
+
     let valorUnitario = parseFloat($inputVisValorUnitario.val().replace(',', '.'));
     if (isNaN(valorUnitario) || valorUnitario < 0) { valorUnitario = 0; }
 
@@ -55,15 +57,30 @@
     $cellCosto.text(formateador.format(costoRendido));
 
     const costoSolicitado = parseFloat($tr.find('.cell-costo-solicitado').data('val-solicitado')) || 0;
-    let saldo = costoSolicitado - costoRendido;
-    if (saldo < 0) { saldo = 0; }
     
+    // PERMITE SALDO NEGATIVO SI EL MONTO RENDIDO SUPERA AL DISPONIBLE
+    let saldo = costoSolicitado - costoRendido;
+
+    // Validación individual de fila si NO es reitimizada
+    if (!esReitimizada && costoRendido > costoSolicitado) {
+      $cellCosto.addClass('text-danger font-weight-bold').removeClass('text-dark');
+      $tr.addClass('has-row-exceso');
+    } else {
+      $cellCosto.removeClass('text-danger').addClass('text-dark');
+      $tr.removeClass('has-row-exceso');
+    }
+
     const $cellSaldo = $tr.find('.cell-saldo');
     $cellSaldo.data('val-saldo', saldo);
     $cellSaldo.text(formateador.format(saldo));
 
+    if (saldo < 0) {
+      $cellSaldo.addClass('text-danger font-weight-bold').removeClass('text-dark');
+    } else {
+      $cellSaldo.removeClass('text-danger').addClass('text-dark');
+    }
+
     // 1. Recalcular Totales de la Tabla Específica
-    const $table = $tr.closest('table');
     let totalSolicitado = 0;
     let totalRendido = 0;
     let totalSaldo = 0;
@@ -82,11 +99,20 @@
 
     const $cellTotalRendido = $table.find('.cell-total-costo-rendido');
     $cellTotalRendido.text(formateador.format(totalRendido));
-    $table.find('.cell-total-saldo').text(formateador.format(totalSaldo));
+    
+    const $cellTotalSaldo = $table.find('.cell-total-saldo');
+    $cellTotalSaldo.text(formateador.format(totalSaldo));
+    if (totalSaldo < 0) {
+      $cellTotalSaldo.addClass('text-danger');
+    } else {
+      $cellTotalSaldo.removeClass('text-danger');
+    }
 
     // VALIDACIÓN EXCESO DE MONTO RENDIDO
     const $msgExceso = $table.closest('.table-responsive-container').find('.msg-exceso-monto');
-    if (totalRendido > totalSolicitado) {
+    const tieneExcesoFila = $table.find('.has-row-exceso').length > 0;
+
+    if (totalRendido > totalSolicitado || (!esReitimizada && tieneExcesoFila)) {
       $cellTotalRendido.removeClass('text-success').addClass('text-danger');
       $table.addClass('has-exceso-error');
       $msgExceso.slideDown(200);
@@ -120,6 +146,7 @@
 - gastos = local_assigns[:gastos] || {}
 - actividad_id_param = local_assigns[:actividad_id]
 - es_editable = local_assigns.key?(:es_editable) ? local_assigns[:es_editable] : true
+- es_reitimizada = local_assigns.key?(:es_reitimizada) ? local_assigns[:es_reitimizada] : false
 
 -# OBTENCIÓN ROBUSTA DE PARÁMETROS Y FLUJO
 - mes_a_rendir_num = (params[:mes_a_rendir].presence || @rendicion.try(:mes_a_rendir) || 1).to_i
@@ -181,6 +208,7 @@
         - total_costo_postulado = 0
         - total_costo_rendido = 0
         - total_saldo_general = 0
+        - tiene_exceso_tabla = false
 
         - if tipos_aporte_map.size > 1
           .mt-2.mb-2
@@ -190,7 +218,7 @@
 
         .table-responsive-container.mb-3
           .table-responsive
-            %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;"}
+            %table.table.table-bordered.table-sm.no-margin{style: "font-size: 11px;", data: { es_reitimizada: es_reitimizada.to_s }}
               %thead
                 %tr.bg-light
                   %th.encabezado-form{style: "width: 13%;"} Categoría
@@ -206,9 +234,9 @@
                   %th.encabezado-form{style: "width: 7%;"} N° Documento Respaldo
               %tbody
                 - categorias_def.each do |cat_key, cat_label|
+                  - cat_key_str = cat_key.to_s.strip.downcase
                   - items_cat = gastos[cat_key].to_a.select { |i| i.try(:tipo_aporte).to_s.strip.downcase == tp_key }
                   - items_cat.each do |item|
-                    - cat_key_str = cat_key.to_s.strip.downcase
                     - item_id_num = item.id.to_i
 
                     -# RECUPERAR REGISTRO GUARDADO EN MAPA
@@ -234,7 +262,7 @@
                     - monto_postulado = [monto_postulado_orig - costo_hist, 0.0].max
 
                     - if g_guardado.present?
-                      - cantidad_rendida = [g_guardado.cantidad_rendida.to_f, hh_postulada].min
+                      - cantidad_rendida = g_guardado.cantidad_rendida.to_f
                       - if g_guardado.respond_to?(:valor_unitario_rendido) && g_guardado.valor_unitario_rendido.present? && g_guardado.valor_unitario_rendido.to_f > 0
                         - v_unitario_rendido = g_guardado.valor_unitario_rendido.to_f
                       - else
@@ -247,7 +275,8 @@
                       - v_unitario_rendido = v_unitario_solicitado
                       - monto_rendido = (cantidad_rendida * v_unitario_rendido).round(2)
 
-                    - saldo_actual = [monto_postulado - monto_rendido, 0.0].max
+                    -# CALCULA EL SALDO PERMITIENDO VALORES NEGATIVOS
+                    - saldo_actual = monto_postulado - monto_rendido
 
                     - total_costo_postulado += monto_postulado
                     - total_costo_rendido += monto_rendido
@@ -258,8 +287,11 @@
 
                     - es_gasto_oper_adm = [:operaciones, :administracion].include?(cat_key)
                     - row_key = "#{real_plan_act_id}_#{cat_key_str}_#{item.id}"
+                    
+                    - tiene_exceso_fila = !es_reitimizada && (monto_rendido > monto_postulado)
+                    - tiene_exceso_tabla = true if tiene_exceso_fila
 
-                    %tr
+                    %tr{data: { es_reitimizada: es_reitimizada.to_s }, class: (tiene_exceso_fila ? 'has-row-exceso' : '')}
                       %td.contenido-form= cat_label
                       %td.contenido-form= item.try(:user_name) || item.try(:item) || item.try(:nombre) || '--'
                       %td.contenido-form.text-center= item.try(:tipo_aporte)
@@ -271,7 +303,6 @@
 
                       - if es_editable
                         %td.contenido-form.text-center
-                          -# ENVÍA SIEMPRE EL REAL_PLAN_ACT_ID (PK 711) A POSTGRESQL
                           = hidden_field_tag "gastos_rendidos[#{row_key}][plan_actividad_id]", real_plan_act_id
                           = hidden_field_tag "gastos_rendidos[#{row_key}][categoria]", cat_key_str
                           = hidden_field_tag "gastos_rendidos[#{row_key}][item_origen_id]", item.id
@@ -286,7 +317,7 @@
                         %td.contenido-form.text-center
                           = hidden_field_tag "gastos_rendidos[#{row_key}][valor_unitario]", v_unitario_rendido, class: "real-valor-unitario-rendido"
                           - if es_gasto_oper_adm
-                            = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", style: "width: 90px; margin: 0 auto;", autocomplete: "off"
+                            = text_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "form-control smaller-text border-text text-center input-valor-unitario-rendido", oninput: "sanitizarDecimalesYCalcular(this)", readonly: !es_reitimizada, style: "width: 90px; margin: 0 auto; #{'background-color: #e9ecef; cursor: not-allowed;' unless es_reitimizada}", autocomplete: "off"
                           - else
                             = hidden_field_tag "vis_val_#{row_key}", v_unitario_rendido_str, class: "input-valor-unitario-rendido"
                             %span.font-weight-bold= number_to_currency(v_unitario_rendido)
@@ -296,8 +327,10 @@
                         %td.contenido-form.text-center
                           %span.font-weight-bold= number_to_currency(v_unitario_rendido)
 
-                      %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
-                      %td.contenido-form.text-right.font-weight-bold.cell-saldo{data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
+                      %td.contenido-form.text-right.font-weight-bold.cell-costo-rendido{class: (tiene_exceso_fila ? 'text-danger' : ''), data: { val_costo: monto_rendido }}= number_to_currency(monto_rendido)
+                      
+                      -# FORMATO DE SALDO NEGATIVO (EN ROJO SI ES NEGATIVO)
+                      %td.contenido-form.text-right.font-weight-bold.cell-saldo{class: (saldo_actual < 0 ? 'text-danger' : ''), data: { val_saldo: saldo_actual }}= number_to_currency(saldo_actual)
 
                       %td.contenido-form.text-center
                         - if es_editable
@@ -305,14 +338,14 @@
                         - else
                           %span.font-weight-bold= comprobante_ref_val.presence || '--'
 
-                - tiene_exceso = total_costo_rendido > total_costo_postulado
+                - tiene_exceso = (total_costo_rendido > total_costo_postulado) || tiene_exceso_tabla
 
                 %tr.bg-light{style: "border-top: 2px solid #dee2e6;"}
                   %td.contenido-form.text-right.font-weight-bold{colspan: 5} TOTAL TABLA:
                   %td.contenido-form.text-right.font-weight-bold.text-primary.cell-total-costo-solicitado= number_to_currency(total_costo_postulado)
                   %td.contenido-form{colspan: 2}
                   %td.contenido-form.text-right.font-weight-bold.cell-total-costo-rendido{class: (tiene_exceso ? 'text-danger' : 'text-success')}= number_to_currency(total_costo_rendido)
-                  %td.contenido-form.text-right.font-weight-bold.cell-total-saldo= number_to_currency(total_saldo_general)
+                  %td.contenido-form.text-right.font-weight-bold.cell-total-saldo{class: (total_saldo_general < 0 ? 'text-danger' : '')}= number_to_currency(total_saldo_general)
                   %td.contenido-form
 
           .msg-exceso-monto.alert.alert-danger.py-1.px-2.mt-1.mb-0.font-weight-bold{style: "font-size: 11px; #{'display: none;' unless tiene_exceso}"}

@@ -32,9 +32,7 @@
   - mes_nombre = (I18n.l(fecha_target, format: '%B %Y') rescue fecha_target.strftime('%B %Y')).capitalize
 - texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_seleccionado_defecto})" : "Rendición #{mes_seleccionado_defecto}"
 
--# =========================================================================================
--# TRADUCTOR VISTA (De PK 711 devuelta a actividad_id 101 para que JS y HAML funcionen)
--# =========================================================================================
+-# TRADUCTOR VISTA
 - map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
 - get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
@@ -113,6 +111,26 @@
     });
 
     htmlErrorToTooltip('top');
+
+    // VALIDACIÓN DE MONTO RENDIDO MAXIMO CUANDO NO ES REITIMIZADA
+    $(document).on('input change', '.input-monto-rendido', function() {
+      const $input = $(this);
+      const esReitimizada = $input.data('es-reitimizada') === true || $input.data('es-reitimizada') === 'true';
+      const maxPermitido = parseFloat($input.data('monto-maximo') || $input.attr('max') || 0);
+      const valorIngresado = parseFloat($input.val() || 0);
+
+      if (!esReitimizada && maxPermitido > 0 && valorIngresado > maxPermitido) {
+        $input.addClass('is-invalid has-exceso-error');
+        if ($input.next('.error-max-monto').length === 0) {
+          $input.after(`<small class="error-max-monto text-danger d-block font-weight-bold" style="font-size: 10px;">No puede superar el monto presupuestado ($${maxPermitido.toLocaleString('es-CL')})</small>`);
+        }
+      } else {
+        $input.removeClass('is-invalid has-exceso-error');
+        $input.next('.error-max-monto').remove();
+      }
+
+      validarFormulario();
+    });
 
     $('#chk_sin_movimientos_paso1').on('change', function() {
       const esSinMovimientos = $(this).is(':checked');
@@ -437,6 +455,7 @@
   .border-text { border: 1px solid #cccccc; border-radius: 4px; background-color: #ffffff; }
   .label-estilo { color: #5d759e; font-weight: 400; font-size: 14px; }
   .header-actividad-fpl { background-color: #E0EFF6 !important; border: 2px solid #dee2e6 !important; padding: 8px 12px !important; color: #333 !important; font-weight: bold; }
+  .is-invalid { border-color: #dc3545 !important; }
 
 %input#paso_actual_val{type: "hidden", value: paso_actual}
 
@@ -537,7 +556,7 @@
                     - if es_reitimizada
                       %span.badge.ml-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                         %i.fa.fa-refresh.mr-1
-                        Reitimizada
+                        Reitimización autorizada 
                   - (1..duracion).each do |m|
                     %td.contenido-form.text-center
                       - if duraciones.include?(m.to_s)
@@ -660,7 +679,7 @@
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
-                      Reitimizada
+                      Reitimización autorizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_tecnica_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
@@ -740,14 +759,14 @@
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
-                      Reitimizada
+                      Reitimización autorizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_fpl_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse.show{id: "collapse_fpl_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_fpl, actividad_id: actividad.id, es_reitimizada: es_reitimizada
 
                   .d-flex.justify-content-end.mb-2
                     - if es_editable
@@ -821,14 +840,14 @@
                   - if es_reitimizada
                     %span.badge.ml-2{style: "font-size: 11px; background-color: #6f42c1; color: #ffffff;", title: "Actividad Reitimizada Autorizada"}
                       %i.fa.fa-refresh.mr-1
-                      Reitimizada
+                      Reitimización autorizada
                 %a.btn.btn-sm.btn-outline-info{"data-toggle" => "collapse", href: "#collapse_aporte_#{actividad.id}", role: "button", "aria-expanded" => "true", style: "background-color: #fff; font-size: 11px;"}
                   %i.fa.fa-chevron-down.mr-1
                   Ver / Ocultar
 
               .collapse.show{id: "collapse_aporte_#{actividad.id}"}
                 .card-body.p-2
-                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id
+                  = render 'tabla_desglose_gastos_actividad', gastos: gastos_aporte, actividad_id: actividad.id, es_reitimizada: es_reitimizada
 
                   .d-flex.justify-content-end.mb-2
                     - if es_editable

@@ -200,7 +200,7 @@
 - titulo t(:rendicion_por_actividad)
 - mes_guardado = @rendicion.try(:mes_a_rendir)
 
--# TRADUCTOR INVERSO DE IDs (Convierte PK 711 a actividad_id 101)
+-# TRADUCTOR INVERSO DE IDs
 - map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
 - get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 

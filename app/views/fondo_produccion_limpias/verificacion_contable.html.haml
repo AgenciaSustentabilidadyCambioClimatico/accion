@@ -18,7 +18,13 @@
 - rendiciones_todas = RendicionFpl.where(flujo_id: @tarea_pendiente&.flujo_id).includes(rendicion_detalles_fpl: :rendicion_detalle_actividades_fpl).order(mes_a_rendir: :asc).to_a rescue []
 - get_estado_num = lambda { |r| (r.read_attribute_before_type_cast(:estado) || r.estado).to_i }
 
--# TRADUCTOR INVERSO DE IDs (Mapea PK 711 a actividad_id 101)
+-# ==========================================================
+-# IDENTIFICADOR AISLADO DE ACTIVIDADES REITIMIZADAS
+-# ==========================================================
+- arr_planes = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).to_a rescue []
+- reitimizadas_ids = arr_planes.select { |p| [true, 'true', '1', 1, 't'].include?(p.autorizado) || p.try(:archivo_reitimizacion).to_s.present? }.flat_map { |p| [p.actividad_id.to_i, p.id.to_i] }.compact.reject(&:zero?).uniq
+
+-# TRADUCTOR INVERSO DE IDs
 - map_planes_by_id = PlanActividad.where(flujo_id: @tarea_pendiente&.flujo_id).index_by(&:id)
 - get_act_id = lambda { |db_id| plan = map_planes_by_id[db_id.to_i]; plan.try(:actividad_id).to_i > 0 ? plan.actividad_id.to_i : db_id.to_i }
 
@@ -146,6 +152,7 @@
                   %tbody
                     - actividades_list.each do |act_info|
                       - mis_ids = act_info[:mis_ids]
+                      - es_reitimizada = (mis_ids & reitimizadas_ids).any?
                       
                       - es_en_proceso = false
                       - es_observada  = false
@@ -173,7 +180,12 @@
                               - max_avance_borrador = [max_avance_borrador, av].max
 
                       %tr
-                        %td.contenido-form= "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                        %td.contenido-form
+                          = "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                          - if es_reitimizada
+                            %span.badge.d-block.mt-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff; width: fit-content;", title: "Reitimización Autorizada"}
+                              %i.fa.fa-refresh.mr-1
+                              Reitimizada
                         %td.contenido-form.text-center
                           - if es_en_proceso
                             %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}

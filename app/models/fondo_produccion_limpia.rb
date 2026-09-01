@@ -1688,7 +1688,7 @@ class FondoProduccionLimpia < ApplicationRecord
     texto_mes_display = mes_nombre.present? ? "#{mes_nombre} (Rendición #{mes_actual_num})" : "Rendición #{mes_actual_num}"
 
     # =========================================================================
-    # MAPA DUAL Y TRADUCCIÓN DE IDs (PK 711 <-> ACTIVIDAD 101)
+    # MAPA DUAL Y TRADUCCIÓN DE IDs
     # =========================================================================
     map_planes_by_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:id)
     map_planes_by_act_id = PlanActividad.where(flujo_id: flujo_actual_id).index_by(&:actividad_id)
@@ -1740,7 +1740,7 @@ class FondoProduccionLimpia < ApplicationRecord
       { rrhh_propios: rec_int, rrhh_externos: rec_ext, operaciones: g_op, administracion: g_adm }
     end
 
-    # Mapeo dual de Gastos Rendidos (Por PK 711 y por Actividad 101)
+    # Mapeo dual de Gastos Rendidos
     rendicion_gastos_map = {}
     if rendicion.present?
       rendicion.rendicion_gastos_fpl.each do |g|

@@ -172,10 +172,10 @@
                     - mis_ids = act_info[:mis_ids]
                     - plan_act_obj = act_info[:plan_obj]
                     - id_pk = act_info[:plan_id].presence || act_info[:id]
-                    - is_autorizado = plan_act_obj.try(:autorizado) ? true : false
+                    - val_aut = plan_act_obj.try(:autorizado)
+                    - is_autorizado = [true, 'true', '1', 1, 't'].include?(val_aut) || plan_act_obj.try(:archivo_reitimizacion).to_s.present?
                     - archivo_actual = plan_act_obj.try(:archivo_reitimizacion)
                     - tiene_archivo = archivo_actual.present? && (archivo_actual.respond_to?(:url) ? archivo_actual.url.present? : archivo_actual.to_s.present?)
-                    - url_archivo = archivo_actual.respond_to?(:url) ? archivo_actual.url : archivo_actual.to_s
 
                     - es_en_proceso = false
                     - es_observada  = false
@@ -203,7 +203,13 @@
                             - max_avance_borrador = [max_avance_borrador, av].max
 
                     %tr
-                      %td.contenido-form= "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                      %td.contenido-form
+                        = "#{act_info[:correlativo]} #{act_info[:nombre]}"
+                        - if is_autorizado
+                          %span.badge.d-block.mt-1{style: "font-size: 10px; background-color: #6f42c1; color: #ffffff; width: fit-content;", title: "Reitimización Autorizada"}
+                            %i.fa.fa-refresh.mr-1
+                            Reitimización autorizada
+
                       %td.contenido-form.text-center
                         - if es_en_proceso
                           %span.badge.badge-warning.text-white{style: "font-size: 11px; padding: 6px; background-color: #fd7e14; display: block; width: 100%;"}
@@ -233,7 +239,7 @@
                         = hidden_field_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "0"
                         = check_box_tag "reitimizacion[actividades][#{id_pk}][autorizado]", "1", is_autorizado, id: "chk_autorizar_#{id_pk}", class: "chk-autorizar", data: { act_id: id_pk, tiene_archivo: tiene_archivo ? 'true' : 'false' }
 
-                      -# COLUMNA 2: CARGAR DOCUMENTO Y MOSTRAR EXISTENTE
+                      -# COLUMNA 2: CARGAR DOCUMENTO Y MOSTRAR EXISTENTE VIA PROXY
                       %td.contenido-form.text-center
                         - if tiene_archivo
                           .mb-1
